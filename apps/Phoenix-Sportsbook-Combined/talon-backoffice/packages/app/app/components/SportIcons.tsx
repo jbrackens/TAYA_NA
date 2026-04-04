@@ -3,7 +3,7 @@
 import React from "react";
 import {
   CircleDot,
-  Dribbble,
+  Circle,
   Trophy,
   Swords,
   Target,
@@ -39,9 +39,9 @@ const defaultProps: LucideProps = {
 /** Map sport keys to Lucide icons */
 const icons: Record<string, React.FC> = {
   soccer: () => <CircleDot {...defaultProps} />,
-  football: () => <Dribbble {...defaultProps} />,
-  "american-football": () => <Dribbble {...defaultProps} />,
-  basketball: () => <Dribbble {...defaultProps} />,
+  football: () => <Circle {...defaultProps} />,
+  "american-football": () => <Circle {...defaultProps} />,
+  basketball: () => <Circle {...defaultProps} />,
   tennis: () => <Disc3 {...defaultProps} />,
   baseball: () => <Target {...defaultProps} />,
   "ice-hockey": () => <Gauge {...defaultProps} />,
