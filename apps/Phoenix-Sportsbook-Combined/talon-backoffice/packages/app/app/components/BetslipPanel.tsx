@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Ticket, Clock } from "lucide-react";
 import { useBetslip } from "../hooks/useBetslip";
@@ -44,7 +44,6 @@ export const BetslipPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"betslip" | "open">("betslip");
   const [betState, setBetState] = useState<BetState>("idle");
   const [betError, setBetError] = useState<string>("");
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [oddsChanged, setOddsChanged] = useState(false);
   const [changedSelections, setChangedSelections] = useState<OddsChange[]>([]);
 
@@ -54,8 +53,28 @@ export const BetslipPanel: React.FC = () => {
   const toast = useToast();
   const { user } = useAuth();
 
-  const { selections, stakePerLeg, parlayMode, totalStake, potentialReturn } =
-    betslip;
+  const {
+    selections,
+    stakePerLeg,
+    parlayMode,
+    totalStake,
+    potentialReturn,
+    isOpen,
+    closeBetslip,
+    toggleBetslip,
+  } = betslip;
+
+  // Close on Escape key (unless placing bet)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && betState !== "placing") {
+        closeBetslip();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, betState, closeBetslip]);
 
   const handlePlaceBet = useCallback(async () => {
     if (betState === "idle") {
@@ -539,12 +558,47 @@ export const BetslipPanel: React.FC = () => {
 
   return (
     <>
-      {/* Desktop Betslip Panel */}
-      <aside className="ps-betslip">
+      {/* Backdrop */}
+      <div
+        className={`ps-betslip-backdrop ${isOpen ? "visible" : ""}`}
+        onClick={() => {
+          if (betState !== "placing") closeBetslip();
+        }}
+      />
+
+      {/* Side-sheet */}
+      <div
+        className={`ps-betslip-overlay ${isOpen ? "open" : ""}`}
+        role="dialog"
+        aria-label="Betslip"
+        aria-modal="true"
+      >
         {/* Header */}
         <div className="ps-betslip-header">
-          <span className="ps-betslip-title">{t("BETSLIP")}</span>
-          <span className="ps-betslip-count">{selections.length}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span className="ps-betslip-title">{t("BETSLIP")}</span>
+            <span className="ps-betslip-count">{selections.length}</span>
+          </div>
+          <button
+            onClick={closeBetslip}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#4a5580",
+              cursor: "pointer",
+              padding: 8,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 44,
+              height: 44,
+              borderRadius: 8,
+              transition: "all 0.15s",
+            }}
+            aria-label="Close betslip"
+          >
+            <X size={18} strokeWidth={2} />
+          </button>
         </div>
 
         {/* Tabs: Betslip / Open Bets */}
@@ -570,210 +624,55 @@ export const BetslipPanel: React.FC = () => {
         ) : (
           <OpenBetsTab oddsFormat={oddsFormat} />
         )}
-      </aside>
-
-      {/* Mobile Floating Action Button */}
-      <button
-        className="ps-betslip-fab"
-        onClick={() => setMobileOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
-          border: "none",
-          background: "linear-gradient(135deg, #39ff14 0%, #ea580c 100%)",
-          color: "white",
-          fontSize: 24,
-          cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(57,255,20,0.3)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 40,
-          transition: "all 0.3s ease",
-        }}
-        title={t("OPEN_BETSLIP")}
-      >
-        <div
-          style={{
-            position: "relative",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Ticket size={28} strokeWidth={2} />
-          {selections.length > 0 && (
-            <span
-              style={{
-                position: "absolute",
-                top: -4,
-                right: -4,
-                background: "#ef4444",
-                color: "white",
-                borderRadius: "50%",
-                width: 20,
-                height: 20,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-                fontWeight: 700,
-                border: "2px solid #39ff14",
-              }}
-            >
-              {selections.length}
-            </span>
-          )}
-        </div>
-      </button>
-
-      {/* Mobile Drawer Overlay */}
-      {mobileOpen && (
-        <div
-          className="ps-betslip-drawer-backdrop"
-          onClick={() => setMobileOpen(false)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            zIndex: 50,
-            animation: "fadeIn 0.3s ease",
-          }}
-        />
-      )}
-
-      {/* Mobile Slide-up Drawer */}
-      <div
-        className="ps-betslip-drawer"
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          maxHeight: "80vh",
-          background: "#0f1225",
-          borderTop: "1px solid #1a1f3a",
-          borderRadius: "16px 16px 0 0",
-          zIndex: 51,
-          display: "flex",
-          flexDirection: "column",
-          transform: mobileOpen ? "translateY(0)" : "translateY(100%)",
-          transition: "transform 0.3s ease",
-          boxShadow: "0 -4px 16px rgba(0, 0, 0, 0.4)",
-        }}
-      >
-        {/* Drag Handle Bar */}
-        <div
-          style={{
-            padding: "12px 0",
-            display: "flex",
-            justifyContent: "center",
-            borderBottom: "1px solid #1a1f3a",
-          }}
-        >
-          <div
-            style={{
-              width: 40,
-              height: 4,
-              borderRadius: 2,
-              background: "#374163",
-            }}
-          />
-        </div>
-
-        {/* Header with Close Button */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "12px 16px",
-            borderBottom: "1px solid #1a1f3a",
-          }}
-        >
-          <span
-            style={{
-              fontSize: 16,
-              fontWeight: 600,
-              color: "#f1f5f9",
-            }}
-          >
-            {t("BETSLIP")} ({selections.length})
-          </span>
-          <button
-            onClick={() => setMobileOpen(false)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#4a5580",
-              fontSize: 20,
-              cursor: "pointer",
-              padding: "4px 8px",
-            }}
-            title="Close"
-          >
-            <X size={16} strokeWidth={2} />
-          </button>
-        </div>
-
-        {/* Betslip Content */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {renderBetslipContent()}
-        </div>
       </div>
+
+      {/* FAB trigger — shown when closed and has selections */}
+      {!isOpen && selections.length > 0 && (
+        <button
+          onClick={toggleBetslip}
+          className="ps-betslip-fab"
+          aria-label={`Open betslip (${selections.length} selections)`}
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+            <path d="M13 5v2" />
+            <path d="M13 17v2" />
+            <path d="M13 11v2" />
+          </svg>
+          <span className="ps-betslip-fab-count">{selections.length}</span>
+        </button>
+      )}
 
       {/* Embedded Styles */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @media (min-width: 1200px) {
-          .ps-betslip-fab {
-            display: none !important;
-          }
-          .ps-betslip-drawer {
-            display: none !important;
-          }
-          .ps-betslip-drawer-backdrop {
-            display: none !important;
-          }
+        .ps-betslip-fab {
+          position: fixed; bottom: 24px; right: 24px; z-index: 28;
+          width: 56px; height: 56px; border-radius: 50%;
+          background: #39ff14; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          color: #0f1225; font-weight: 700;
+          box-shadow: 0 4px 16px rgba(57,255,20,0.4);
+          transition: transform 0.2s, box-shadow 0.2s;
         }
-
-        @media (max-width: 1199px) {
-          .ps-betslip {
-            display: none !important;
-          }
-        }
-
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
         .ps-betslip-fab:hover {
           transform: scale(1.1);
-          box-shadow: 0 12px 32px rgba(57, 255, 20, 0.4);
+          box-shadow: 0 6px 20px rgba(57,255,20,0.5);
         }
-
-        .ps-betslip-fab:active {
-          transform: scale(0.95);
+        .ps-betslip-fab-count {
+          position: absolute; top: -4px; right: -4px;
+          min-width: 20px; height: 20px; border-radius: 10px;
+          background: #ef4444; color: #fff; font-size: 11px;
+          font-weight: 700; display: flex; align-items: center;
+          justify-content: center; padding: 0 5px;
         }
       `,
         }}

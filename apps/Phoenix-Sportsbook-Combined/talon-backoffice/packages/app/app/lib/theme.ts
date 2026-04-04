@@ -132,9 +132,20 @@ export const breakpoint = {
 export const zIndex = {
   sidebar: 20,
   topbar: 10,
+  betslipBackdrop: 29,
+  betslip: 30,
   modal: 50,
   toast: 60,
   overlay: 40,
+} as const;
+
+// ── Layout Dimensions ──
+export const layout = {
+  sidebarWidth: "220px",
+  sidebarCollapsed: "60px",
+  betslipWidth: "380px",
+  maxContentWidth: "1440px",
+  headerHeight: "56px",
 } as const;
 
 /**
@@ -152,6 +163,7 @@ export const theme = {
   transition,
   breakpoint,
   zIndex,
+  layout,
 } as const;
 
 export default theme;

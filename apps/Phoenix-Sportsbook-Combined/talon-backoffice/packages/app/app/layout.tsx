@@ -64,19 +64,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                       {/* Main Area */}
                       <div className="ps-main">
-                        {/* Header — Brand, Tabs, Account Controls */}
-                        <HeaderBar />
+                        <div className="ps-main-inner">
+                          {/* Header — Brand, Tabs, Account Controls */}
+                          <HeaderBar />
 
-                        {/* Account Status Banner (self-excluded, cooling off, unverified, etc.) */}
-                        <AccountStatusBar />
+                          {/* Account Status Banner (self-excluded, cooling off, unverified, etc.) */}
+                          <AccountStatusBar />
 
-                        {/* Content + Betslip */}
-                        <div className="ps-content">
                           <div className="ps-page">{children}</div>
-                          <BetslipPanel />
                         </div>
                       </div>
                     </div>
+                    <BetslipPanel />
                     <OpenChatButton />
                   </BetslipProvider>
                 </AuthProvider>
@@ -218,15 +217,32 @@ const globalStyles = `
   }
   .ps-avatar:hover { background: rgba(57,255,20,0.2); }
 
-  /* ── Content + Betslip ── */
-  .ps-content { display: flex; flex: 1; }
-  .ps-page { flex: 1; padding: 24px; overflow-y: auto; max-width: 960px; }
+  /* ── Main Inner (centered content) ── */
+  .ps-main-inner { max-width: 1440px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
+  .ps-page { flex: 1; padding: 24px; overflow-y: auto; }
 
-  /* ── Betslip Panel ── */
-  .ps-betslip {
-    width: 320px; background: #0f1225; border-left: 1px solid #1a1f3a;
-    display: flex; flex-direction: column; position: sticky; top: 56px;
-    height: calc(100vh - 56px); flex-shrink: 0;
+  /* ── Betslip Overlay Side-Sheet ── */
+  .ps-betslip-overlay {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 380px; z-index: 30;
+    background: #0f1225; border-left: 1px solid #1a1f3a;
+    transform: translateX(100%);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+  }
+  .ps-betslip-overlay.open {
+    transform: translateX(0);
+    box-shadow: -8px 0 24px rgba(0,0,0,0.4);
+  }
+  .ps-betslip-backdrop {
+    position: fixed; inset: 0; z-index: 29;
+    background: rgba(0,0,0,0.5);
+    opacity: 0; pointer-events: none;
+    transition: opacity 300ms ease;
+  }
+  .ps-betslip-backdrop.visible {
+    opacity: 1; pointer-events: auto;
   }
   .ps-betslip-header {
     padding: 16px 20px; border-bottom: 1px solid #1a1f3a;
@@ -323,10 +339,7 @@ const globalStyles = `
     .ps-sidebar { display: none; }
     .ps-main { margin-left: 0; }
     .ps-topbar-search { display: none; }
-  }
-  @media (max-width: 1200px) {
-    .ps-betslip { display: none; }
-    .ps-page { max-width: 100%; }
+    .ps-betslip-overlay { width: 100vw; }
   }
   @media (max-width: 1024px) {
     .ps-sidebar { width: 60px; }

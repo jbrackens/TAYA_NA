@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useState, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 
 export interface BetSelection {
   id: string;
@@ -20,12 +27,16 @@ export interface BetslipContextType {
   parlayMode: boolean;
   totalStake: number;
   potentialReturn: number;
+  isOpen: boolean;
   addSelection: (selection: BetSelection) => void;
   removeSelection: (id: string) => void;
   clearAll: () => void;
   setStakePerLeg: (stake: number) => void;
   setParlayMode: (mode: boolean) => void;
   syncInitialOdds: () => void;
+  openBetslip: () => void;
+  closeBetslip: () => void;
+  toggleBetslip: () => void;
 }
 
 export const BetslipContext = createContext<BetslipContextType | undefined>(
@@ -42,6 +53,31 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({
   const [selections, setSelections] = useState<BetSelection[]>([]);
   const [stakePerLeg, setStakePerLeg] = useState(10);
   const [parlayMode, setParlayMode] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear close timer on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const openBetslip = useCallback(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setIsOpen(true);
+  }, []);
+
+  const closeBetslip = useCallback(() => {
+    setIsOpen(false);
+  }, []);
+
+  const toggleBetslip = useCallback(() => {
+    setIsOpen((prev) => !prev);
+  }, []);
 
   const addSelection = useCallback((selection: BetSelection) => {
     setSelections((prev) => {
@@ -55,7 +91,7 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({
       ) {
         return prev;
       }
-      return [
+      const next = [
         ...prev,
         {
           ...selection,
@@ -63,15 +99,36 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({
           initialOdds: selection.odds,
         },
       ];
+      // Auto-open when going from 0 to 1 selection
+      if (prev.length === 0 && next.length === 1) {
+        if (closeTimerRef.current) {
+          clearTimeout(closeTimerRef.current);
+          closeTimerRef.current = null;
+        }
+        setIsOpen(true);
+      }
+      return next;
     });
   }, []);
 
   const removeSelection = useCallback((id: string) => {
-    setSelections((prev) => prev.filter((s) => s.id !== id));
+    setSelections((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      // Auto-close after 1s delay when going from 1 to 0 selections
+      if (prev.length === 1 && next.length === 0) {
+        if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = setTimeout(() => {
+          setIsOpen(false);
+          closeTimerRef.current = null;
+        }, 1000);
+      }
+      return next;
+    });
   }, []);
 
   const clearAll = useCallback(() => {
     setSelections([]);
+    setIsOpen(false);
   }, []);
 
   const syncInitialOdds = useCallback(() => {
@@ -112,12 +169,16 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({
     parlayMode,
     totalStake: totals.totalStake,
     potentialReturn: totals.potentialReturn,
+    isOpen,
     addSelection,
     removeSelection,
     clearAll,
     setStakePerLeg,
     setParlayMode,
     syncInitialOdds,
+    openBetslip,
+    closeBetslip,
+    toggleBetslip,
   };
 
   return (
