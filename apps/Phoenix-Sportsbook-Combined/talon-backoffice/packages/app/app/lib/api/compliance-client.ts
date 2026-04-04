@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import { logger } from "../logger";
 
 // Request types
 export interface SetDepositLimitsRequest {
@@ -27,6 +28,7 @@ export interface CoolOffRequest {
 export interface SelfExcludeRequest {
   user_id: string;
   reason?: string;
+  duration_years?: number;
 }
 
 // Response types (Go API uses snake_case)
@@ -60,6 +62,11 @@ interface CoolOffResponseRaw {
   status: string;
   cool_off_until: string;
   created_at: string;
+}
+
+interface CoolOffStatusRaw {
+  status: string;
+  cool_off_until: string | null;
 }
 
 interface SelfExcludeResponseRaw {
@@ -114,6 +121,11 @@ export interface CoolOffResponse {
   status: string;
   coolOffUntil: string;
   createdAt: string;
+}
+
+export interface CoolOffStatus {
+  status: string;
+  coolOffUntil: string | null;
 }
 
 export interface SelfExcludeResponse {
@@ -261,4 +273,26 @@ export async function getLimitsHistory(
     },
   );
   return normalizeSnakeCase(raw);
+}
+
+/**
+ * Get cool-off status for a user.
+ * Fails open (returns inactive) if the backend is unreachable so login
+ * still works during local development.
+ */
+export async function getCoolOffStatus(userId: string): Promise<CoolOffStatus> {
+  try {
+    const raw = await apiClient.get<CoolOffStatusRaw>(
+      "/api/v1/punters/cool-off-status",
+      { user_id: userId },
+    );
+    return normalizeSnakeCase(raw) as CoolOffStatus;
+  } catch (err) {
+    logger.warn(
+      "Compliance",
+      "Failed to fetch cool-off status, failing open",
+      err instanceof Error ? err.message : String(err),
+    );
+    return { status: "inactive", coolOffUntil: null };
+  }
 }

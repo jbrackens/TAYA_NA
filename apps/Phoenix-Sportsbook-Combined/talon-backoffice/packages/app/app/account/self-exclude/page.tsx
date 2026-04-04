@@ -1,26 +1,33 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../components/ToastProvider';
-import { selfExclude } from '../../lib/api/compliance-client';
-import type { SelfExcludeResponse } from '../../lib/api/compliance-client';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../components/ToastProvider";
+import {
+  selfExclude,
+  SelfExcludeResponse,
+} from "../../lib/api/compliance-client";
 
-type Step = 'warning' | 'form' | 'confirm' | 'success';
+type Step = "warning" | "form" | "confirm" | "success";
+type Duration = "1" | "5" | "lifetime";
 
 export default function SelfExcludePage() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [step, setStep] = useState<Step>('warning');
-  const [reason, setReason] = useState('');
+  const [step, setStep] = useState<Step>("warning");
+  const [duration, setDuration] = useState<Duration>("1");
+  const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<SelfExcludeResponse | null>(null);
 
+  const durationLabel =
+    duration === "1" ? "1 Year" : duration === "5" ? "5 Years" : "Lifetime";
+
   const handleProceed = () => {
-    setStep('form');
+    setStep("form");
   };
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -35,16 +42,22 @@ export default function SelfExcludePage() {
     e.preventDefault();
 
     if (!confirmed) {
-      toast.error('Confirmation required', 'Please confirm you understand the consequences');
+      toast.error(
+        "Confirmation required",
+        "Please confirm you understand the consequences",
+      );
       return;
     }
 
     if (!reason.trim()) {
-      toast.error('Reason required', 'Please provide a reason for self-exclusion');
+      toast.error(
+        "Reason required",
+        "Please provide a reason for self-exclusion",
+      );
       return;
     }
 
-    setStep('confirm');
+    setStep("confirm");
   };
 
   const handleConfirmExclude = async () => {
@@ -55,15 +68,16 @@ export default function SelfExcludePage() {
       const res = await selfExclude({
         user_id: user.id,
         reason: reason.trim(),
+        duration_years: duration === "lifetime" ? undefined : Number(duration),
       });
       setResult(res);
-      setStep('success');
-      toast.success('Self-excluded', 'Your account has been self-excluded');
-    } catch (err: unknown) {
+      setStep("success");
+      toast.success("Self-excluded", "Your account has been self-excluded");
+    } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const msg = message || 'Failed to self-exclude';
-      toast.error('Self-exclusion failed', msg);
-      setStep('form');
+      const msg = message || "Failed to self-exclude";
+      toast.error("Self-exclusion failed", msg);
+      setStep("form");
     } finally {
       setLoading(false);
     }
@@ -79,13 +93,14 @@ export default function SelfExcludePage() {
         </div>
 
         {/* Warning Step */}
-        {step === 'warning' && (
+        {step === "warning" && (
           <div className="se-card se-warning-card">
             <div className="se-warning-icon">⚠️</div>
             <h2>Important Notice</h2>
             <div className="se-warning-content">
               <p>
-                Self-exclusion is a permanent decision that will close your account immediately.
+                Self-exclusion is a permanent decision that will close your
+                account immediately.
               </p>
 
               <div className="se-consequence-list">
@@ -93,7 +108,10 @@ export default function SelfExcludePage() {
                   <span className="se-consequence-icon">🚫</span>
                   <div>
                     <strong>Account Closure</strong>
-                    <p>Your account will be completely blocked and cannot be reopened</p>
+                    <p>
+                      Your account will be completely blocked and cannot be
+                      reopened
+                    </p>
                   </div>
                 </div>
 
@@ -101,7 +119,10 @@ export default function SelfExcludePage() {
                   <span className="se-consequence-icon">💰</span>
                   <div>
                     <strong>Balance Handling</strong>
-                    <p>Any remaining balance will be processed according to our policy</p>
+                    <p>
+                      Any remaining balance will be processed according to our
+                      policy
+                    </p>
                   </div>
                 </div>
 
@@ -109,15 +130,26 @@ export default function SelfExcludePage() {
                   <span className="se-consequence-icon">🔒</span>
                   <div>
                     <strong>No Access</strong>
-                    <p>You will not be able to place bets or use any account features</p>
+                    <p>
+                      You will not be able to place bets or use any account
+                      features
+                    </p>
                   </div>
                 </div>
 
                 <div className="se-consequence-item">
                   <span className="se-consequence-icon">⏱️</span>
                   <div>
-                    <strong>Permanent Exclusion</strong>
-                    <p>This is a permanent action with no exceptions</p>
+                    <strong>
+                      {duration === "lifetime"
+                        ? "Permanent Exclusion"
+                        : `${durationLabel} Exclusion`}
+                    </strong>
+                    <p>
+                      {duration === "lifetime"
+                        ? "This is a permanent action with no exceptions"
+                        : `Your account will be excluded for ${durationLabel.toLowerCase()}`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -125,8 +157,8 @@ export default function SelfExcludePage() {
               <div className="se-help-section">
                 <strong>Need Help?</strong>
                 <p>
-                  If you're struggling with gambling, please contact our support team or
-                  visit responsible gaming resources:
+                  If you're struggling with gambling, please contact our support
+                  team or visit responsible gaming resources:
                 </p>
                 <ul>
                   <li>National Problem Gambling Helpline: 1-800-GAMBLER</li>
@@ -147,7 +179,7 @@ export default function SelfExcludePage() {
         )}
 
         {/* Form Step */}
-        {step === 'form' && (
+        {step === "form" && (
           <div className="se-card">
             <h2>Self-Exclusion Request</h2>
             <p className="se-desc">
@@ -155,6 +187,39 @@ export default function SelfExcludePage() {
             </p>
 
             <form onSubmit={handleSubmit} className="se-form">
+              <div className="se-field">
+                <label className="se-label">Exclusion Duration</label>
+                <div className="se-duration-options">
+                  <button
+                    type="button"
+                    className={`se-duration-btn${
+                      duration === "1" ? " active" : ""
+                    }`}
+                    onClick={() => setDuration("1")}
+                  >
+                    1 Year
+                  </button>
+                  <button
+                    type="button"
+                    className={`se-duration-btn${
+                      duration === "5" ? " active" : ""
+                    }`}
+                    onClick={() => setDuration("5")}
+                  >
+                    5 Years
+                  </button>
+                  <button
+                    type="button"
+                    className={`se-duration-btn${
+                      duration === "lifetime" ? " active" : ""
+                    }`}
+                    onClick={() => setDuration("lifetime")}
+                  >
+                    Lifetime
+                  </button>
+                </div>
+              </div>
+
               <div className="se-field">
                 <label className="se-label">Reason for Self-Exclusion</label>
                 <textarea
@@ -164,9 +229,7 @@ export default function SelfExcludePage() {
                   placeholder="Please tell us why you want to self-exclude (optional but helpful)"
                   rows={6}
                 />
-                <div className="se-char-count">
-                  {reason.length} characters
-                </div>
+                <div className="se-char-count">{reason.length} characters</div>
               </div>
 
               <div className="se-confirmation">
@@ -177,7 +240,8 @@ export default function SelfExcludePage() {
                     onChange={handleConfirmToggle}
                   />
                   <span>
-                    I understand that self-exclusion is permanent and my account cannot be reopened
+                    I understand that self-exclusion is permanent and my account
+                    cannot be reopened
                   </span>
                 </label>
               </div>
@@ -186,7 +250,7 @@ export default function SelfExcludePage() {
                 <button
                   type="button"
                   className="se-btn se-btn-secondary"
-                  onClick={() => setStep('warning')}
+                  onClick={() => setStep("warning")}
                 >
                   Back
                 </button>
@@ -203,7 +267,7 @@ export default function SelfExcludePage() {
         )}
 
         {/* Confirmation Step */}
-        {step === 'confirm' && (
+        {step === "confirm" && (
           <div className="se-card se-confirm-card">
             <div className="se-confirm-icon">🔐</div>
             <h2>Confirm Self-Exclusion</h2>
@@ -213,19 +277,25 @@ export default function SelfExcludePage() {
 
             <div className="se-review">
               <div className="se-review-item">
+                <div className="se-review-label">Duration</div>
+                <div className="se-review-value">{durationLabel}</div>
+              </div>
+
+              <div className="se-review-item">
                 <div className="se-review-label">Reason</div>
                 <div className="se-review-value">{reason}</div>
               </div>
 
               <div className="se-review-warning">
-                ⚠️ This action cannot be undone. Your account will be permanently closed.
+                ⚠️ This action cannot be undone. Your account will be
+                permanently closed.
               </div>
             </div>
 
             <div className="se-actions">
               <button
                 className="se-btn se-btn-secondary"
-                onClick={() => setStep('form')}
+                onClick={() => setStep("form")}
               >
                 Back to Edit
               </button>
@@ -234,14 +304,14 @@ export default function SelfExcludePage() {
                 onClick={handleConfirmExclude}
                 disabled={loading}
               >
-                {loading ? 'Processing...' : 'Confirm Self-Exclusion'}
+                {loading ? "Processing..." : "Confirm Self-Exclusion"}
               </button>
             </div>
           </div>
         )}
 
         {/* Success Step */}
-        {step === 'success' && result && (
+        {step === "success" && result && (
           <div className="se-card se-success-card">
             <div className="se-success-icon">✓</div>
             <h2>Self-Exclusion Confirmed</h2>
@@ -265,7 +335,8 @@ export default function SelfExcludePage() {
             <div className="se-success-message">
               <strong>Your account is now permanently closed.</strong>
               <p>
-                If you need support or have questions about responsible gaming, please contact us.
+                If you need support or have questions about responsible gaming,
+                please contact us.
               </p>
             </div>
 
@@ -365,6 +436,24 @@ const selfExcludeStyles = `
 
   .se-help-section li {
     margin-bottom: 4px;
+  }
+
+  .se-duration-options {
+    display: flex; flex-direction: row; gap: 10px;
+  }
+
+  .se-duration-btn {
+    flex: 1; padding: 12px 16px; background: #161a32; border: 1px solid #1a1f3a;
+    border-radius: 8px; color: #94a3b8; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; text-align: center;
+  }
+
+  .se-duration-btn:hover {
+    border-color: #f97316; color: #f97316;
+  }
+
+  .se-duration-btn.active {
+    background: rgba(249,115,22,0.1); border-color: #f97316; color: #f97316;
   }
 
   .se-form {

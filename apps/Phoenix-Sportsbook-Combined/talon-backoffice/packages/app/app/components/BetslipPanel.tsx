@@ -9,10 +9,12 @@ import {
   getUserBets,
   getCashoutOffer,
   cashoutBet,
+  precheckBets,
 } from "../lib/api/betting-client";
 import {
   PlaceBetRequest,
   PlaceParlayRequest,
+  PrecheckBetsRequest,
   UserBet,
   CashoutOffer,
 } from "../lib/api/betting-client";
@@ -82,6 +84,38 @@ export const BetslipPanel: React.FC = () => {
         setBetState("error");
         setTimeout(() => setBetState("idle"), 4000);
         return;
+      }
+
+      // Bet precheck validation
+      try {
+        const precheckRequest: PrecheckBetsRequest = {
+          user_id: userId,
+          bets: selections.map((sel: BetSelection) => ({
+            fixture_id: sel.fixtureId,
+            market_id: sel.marketId,
+            selection_id: sel.selectionId,
+            stake: stakePerLeg,
+            odds: sel.odds,
+          })),
+        };
+        const precheckResult = await precheckBets(precheckRequest);
+        if (precheckResult.valid === false) {
+          const issueMessages = precheckResult.issues
+            .map((issue) => issue.error)
+            .join("; ");
+          logger.warn("Betslip", "Precheck failed", precheckResult);
+          setBetError(issueMessages);
+          setBetState("error");
+          setTimeout(() => setBetState("idle"), 4000);
+          return;
+        }
+      } catch (err) {
+        // Fail-open: if precheck API is unreachable, proceed with bet placement
+        logger.warn(
+          "Betslip",
+          "Precheck API call failed, proceeding with bet",
+          err instanceof Error ? err.message : String(err),
+        );
       }
 
       if (parlayMode) {
