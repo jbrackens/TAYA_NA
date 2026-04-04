@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { getLeagues } from '../lib/api/events-client';
-import type { League } from '../lib/api/events-client';
+import React, { useEffect, useState } from "react";
+import { getLeagues, League } from "../lib/api/events-client";
 
 interface LeagueNavProps {
   sportKey: string;
@@ -31,7 +30,8 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
         }
       } catch (err) {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Failed to load leagues';
+          const message =
+            err instanceof Error ? err.message : "Failed to load leagues";
           setError(message);
         }
       } finally {
@@ -40,16 +40,18 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
     };
 
     loadLeagues();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [sportKey]);
 
   const navContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: '8px',
-    overflowX: 'auto',
-    padding: '12px 0',
-    marginBottom: '16px',
-    scrollBehavior: 'smooth',
+    display: "flex",
+    gap: "8px",
+    overflowX: "auto",
+    padding: "12px 0",
+    marginBottom: "16px",
+    scrollBehavior: "smooth",
   };
 
   const scrollbarStyle = `
@@ -69,7 +71,7 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (loading) {
     return (
-      <div style={{ ...navContainerStyle, color: '#64748b' }}>
+      <div style={{ ...navContainerStyle, color: "#64748b" }}>
         Loading leagues...
       </div>
     );
@@ -77,7 +79,7 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (error) {
     return (
-      <div style={{ ...navContainerStyle, color: '#f87171' }}>
+      <div style={{ ...navContainerStyle, color: "#f87171" }}>
         Error: {error}
       </div>
     );
@@ -85,7 +87,7 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (leagues.length === 0) {
     return (
-      <div style={{ ...navContainerStyle, color: '#64748b' }}>
+      <div style={{ ...navContainerStyle, color: "#64748b" }}>
         No leagues available
       </div>
     );
@@ -98,15 +100,15 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
         {leagues.map((league: League) => {
           const isActive = activeLeague === league.leagueKey;
           const pillStyle: React.CSSProperties = {
-            padding: '8px 16px',
-            backgroundColor: isActive ? '#f97316' : '#0f1225',
-            color: isActive ? '#000' : '#e2e8f0',
-            border: `1px solid ${isActive ? '#f97316' : '#1a1f3a'}`,
-            borderRadius: '20px',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            whiteSpace: 'nowrap',
-            fontSize: '13px',
+            padding: "8px 16px",
+            backgroundColor: isActive ? "#f97316" : "#0f1225",
+            color: isActive ? "#000" : "#e2e8f0",
+            border: `1px solid ${isActive ? "#f97316" : "#1a1f3a"}`,
+            borderRadius: "20px",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            whiteSpace: "nowrap",
+            fontSize: "13px",
             fontWeight: 500,
             flexShrink: 0,
           };
@@ -117,12 +119,17 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
               style={pillStyle}
               onClick={() => onLeagueSelect?.(league.leagueKey)}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f97316';
-                (e.currentTarget as HTMLButtonElement).style.color = '#000';
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                  "#f97316";
+                (e.currentTarget as HTMLButtonElement).style.color = "#000";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = isActive ? '#f97316' : '#0f1225';
-                (e.currentTarget as HTMLButtonElement).style.color = isActive ? '#000' : '#e2e8f0';
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = isActive
+                  ? "#f97316"
+                  : "#0f1225";
+                (e.currentTarget as HTMLButtonElement).style.color = isActive
+                  ? "#000"
+                  : "#e2e8f0";
               }}
             >
               {league.leagueName} ({league.eventCount})

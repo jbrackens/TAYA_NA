@@ -79,6 +79,21 @@ export async function bcGetLiveGames(): Promise<BCGame[]> {
   return data;
 }
 
+export async function bcGetGames(
+  sportAlias: string,
+  competitionId?: string,
+): Promise<BCGame[]> {
+  let url = `/api/bc/games/?sport=${encodeURIComponent(sportAlias)}`;
+  if (competitionId) {
+    url += `&competition=${encodeURIComponent(competitionId)}`;
+  }
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`BC games proxy error: ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
 export async function bcHealthCheck(): Promise<boolean> {
   try {
     const res = await fetch("/api/bc/sports/");

@@ -3,6 +3,7 @@ import {
   bcGetSports,
   bcGetRegions,
   bcGetCompetitions,
+  bcGetGames,
 } from "./betconstruct-client";
 import { logger } from "../logger";
 
@@ -196,7 +197,11 @@ function normalizeSportKey(alias: string): string {
 // Reverse map: normalized key → BC alias (populated when sports are loaded)
 const bcAliasCache: Map<string, string> = new Map();
 
-function getBcAlias(normalizedKey: string): string {
+async function getBcAlias(normalizedKey: string): Promise<string> {
+  if (bcAliasCache.size === 0) {
+    // Cache empty — populate by loading sports first
+    await getSports();
+  }
   return bcAliasCache.get(normalizedKey) || normalizedKey;
 }
 
@@ -244,7 +249,7 @@ export async function getSports(): Promise<Sport[]> {
  */
 export async function getLeagues(sportKey: string): Promise<League[]> {
   // Reverse-map normalized key → BC alias (e.g. "basketball" → "Basketball")
-  const bcAlias = getBcAlias(sportKey);
+  const bcAlias = await getBcAlias(sportKey);
 
   // Try BetConstruct — returns competitions as "leagues"
   try {
@@ -283,6 +288,47 @@ export async function getLeagues(sportKey: string): Promise<League[]> {
 export async function getEvents(
   params?: GetEventsParams,
 ): Promise<GetEventsPaginatedResponse> {
+  // Try BetConstruct first
+  if (params?.sport) {
+    try {
+      const bcAlias = await getBcAlias(params.sport);
+      const bcGames = await bcGetGames(bcAlias, params?.league);
+      if (bcGames.length > 0) {
+        const page = params?.page || 1;
+        const limit = params?.limit || 12;
+        const start = (page - 1) * limit;
+        const paged = bcGames.slice(start, start + limit);
+        const events: Event[] = paged.map((g) => ({
+          eventId: String(g.id),
+          fixtureId: String(g.id),
+          sportId: "",
+          leagueId: String((g as Record<string, unknown>).competitionId || ""),
+          homeTeam: g.team1_name || "TBD",
+          awayTeam: g.team2_name || "TBD",
+          sportKey: params.sport || "",
+          leagueKey: String((g as Record<string, unknown>).competitionId || ""),
+          startTime: new Date(g.start_ts * 1000).toISOString(),
+          status: g.type === 1 ? "in_play" : "scheduled",
+          hasMarkets: (g.markets_count || 0) > 0,
+        }));
+        return {
+          events,
+          total: bcGames.length,
+          page,
+          limit,
+          totalPages: Math.ceil(bcGames.length / limit),
+        };
+      }
+    } catch (err) {
+      logger.info(
+        "Events",
+        "BetConstruct games unavailable, trying Go backend",
+        err,
+      );
+    }
+  }
+
+  // Fall back to Go backend
   const queryParams: Record<string, string> = {};
   if (params?.sport) queryParams.sport = params.sport;
   if (params?.league) queryParams.league = params.league;

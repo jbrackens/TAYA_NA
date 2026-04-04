@@ -25,42 +25,47 @@ export async function GET(request: NextRequest) {
 
     const raw = data as Record<string, unknown>;
 
-    // Return competitions (more useful than regions for league display)
-    const compMap = raw.competition as
-      | Record<string, Record<string, unknown>>
-      | undefined;
-    if (compMap) {
-      const competitions = Object.values(compMap)
-        .map((c) => ({
-          id: c.id,
-          name: c.name,
-          order: c.order,
-          gameCount: c.game || 0,
-        }))
-        .filter((c) => (c.gameCount as number) > 0)
-        .sort((a, b) => (a.order as number) - (b.order as number));
-
-      return NextResponse.json(competitions);
-    }
-
-    // Fall back to regions
+    // Swarm response nests: region > competition > game (sport is filtered out
+    // by the where clause, so the top level is region directly).
     const regionMap = raw.region as
       | Record<string, Record<string, unknown>>
       | undefined;
     if (!regionMap) return NextResponse.json([]);
 
-    const regions = Object.values(regionMap)
-      .map((r) => ({
-        id: r.id,
-        name: r.name,
-        alias: r.alias,
-        order: r.order,
-        gameCount: r.game || 0,
-      }))
-      .filter((r) => (r.gameCount as number) > 0)
+    // Collect all competitions across all regions
+    const competitions: Array<{
+      id: unknown;
+      name: unknown;
+      order: unknown;
+      gameCount: number;
+    }> = [];
+
+    for (const region of Object.values(regionMap)) {
+      const compMap = region.competition as
+        | Record<string, Record<string, unknown>>
+        | undefined;
+      if (!compMap) continue;
+      for (const comp of Object.values(compMap)) {
+        const gameCount =
+          typeof comp.game === "number"
+            ? comp.game
+            : typeof comp.game === "object" && comp.game !== null
+            ? Object.keys(comp.game as Record<string, unknown>).length
+            : 0;
+        competitions.push({
+          id: comp.id,
+          name: comp.name,
+          order: comp.order,
+          gameCount,
+        });
+      }
+    }
+
+    const filtered = competitions
+      .filter((c) => c.gameCount > 0)
       .sort((a, b) => (a.order as number) - (b.order as number));
 
-    return NextResponse.json(regions);
+    return NextResponse.json(filtered);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 502 });

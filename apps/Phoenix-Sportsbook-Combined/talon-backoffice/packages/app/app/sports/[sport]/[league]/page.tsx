@@ -131,26 +131,31 @@ export default function LeaguePage({ params }: LeaguePageProps) {
       try {
         setLoading(true);
 
-        // Fetch live games from BetConstruct proxy and filter by sport
-        const res = await fetch('/api/bc/live/');
-        if (!res.ok) throw new Error(`Failed to fetch live games: ${res.status}`);
+        // Load sports to populate the BC alias cache, then resolve the alias
+        const sportsRes = await fetch('/api/bc/sports/');
+        const sportsData: Array<{ alias: string; name: string }> = sportsRes.ok ? await sportsRes.json() : [];
+        // Find the BC alias for this sport key
+        const sportEntry = sportsData.find((s) => {
+          const norm = (s.alias || s.name).toLowerCase().replace(/\s+/g, '-');
+          return norm === sport || s.alias?.toLowerCase() === sport;
+        });
+        const bcAlias = sportEntry?.alias || sport;
+
+        // Fetch games for this specific competition from the BC games proxy
+        const url = `/api/bc/games/?sport=${encodeURIComponent(bcAlias)}&competition=${encodeURIComponent(league)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to fetch games: ${res.status}`);
         const games: BCGameRaw[] = await res.json();
 
-        // Filter by sport alias
-        const sportGames = games.filter((g) => {
-          const alias = (g.sportAlias || '').toLowerCase().replace(/\s+/g, '-');
-          return alias === sport || (g.sportAlias || '').toLowerCase() === sport;
-        });
-
         if (!cancelled) {
-          const live = sportGames.filter((g) => g.type === 1).map(bcGameToEvent);
-          const upcoming = sportGames.filter((g) => g.type !== 1).map(bcGameToEvent);
+          const live = games.filter((g) => g.type === 1).map(bcGameToEvent);
+          const upcoming = games.filter((g) => g.type !== 1).map(bcGameToEvent);
           setLiveEvents(live);
           setUpcomingEvents(upcoming);
 
-          // Use first game's competition name as league name if available
-          if (sportGames.length > 0 && sportGames[0].competitionName) {
-            setLeagueName(sportGames[0].competitionName);
+          // Use competition name from response if available
+          if (games.length > 0 && (games[0] as Record<string, unknown>).competitionName) {
+            setLeagueName(String((games[0] as Record<string, unknown>).competitionName));
           }
           setError(null);
         }
