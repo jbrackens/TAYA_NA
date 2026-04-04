@@ -7,15 +7,23 @@ export async function GET(request: NextRequest) {
   const sportAlias = request.nextUrl.searchParams.get("sport");
   const competitionId = request.nextUrl.searchParams.get("competition");
 
-  if (!sportAlias) {
-    return NextResponse.json({ error: "Missing sport param" }, { status: 400 });
+  if (!sportAlias && !competitionId) {
+    return NextResponse.json(
+      { error: "Missing sport or competition param" },
+      { status: 400 },
+    );
   }
 
   try {
     const where: Record<string, unknown> = {
-      sport: { alias: sportAlias },
       game: { type: { "@in": [0, 2] } },
     };
+
+    // Sport filter is optional when competition ID is provided
+    // (competition IDs are globally unique in Swarm)
+    if (sportAlias) {
+      where.sport = { alias: sportAlias };
+    }
 
     if (competitionId) {
       where.competition = { id: Number(competitionId) };

@@ -131,18 +131,8 @@ export default function LeaguePage({ params }: LeaguePageProps) {
       try {
         setLoading(true);
 
-        // Load sports to populate the BC alias cache, then resolve the alias
-        const sportsRes = await fetch('/api/bc/sports/');
-        const sportsData: Array<{ alias: string; name: string }> = sportsRes.ok ? await sportsRes.json() : [];
-        // Find the BC alias for this sport key
-        const sportEntry = sportsData.find((s) => {
-          const norm = (s.alias || s.name).toLowerCase().replace(/\s+/g, '-');
-          return norm === sport || s.alias?.toLowerCase() === sport;
-        });
-        const bcAlias = sportEntry?.alias || sport;
-
-        // Fetch games for this specific competition from the BC games proxy
-        const url = `/api/bc/games/?sport=${encodeURIComponent(bcAlias)}&competition=${encodeURIComponent(league)}`;
+        // Fetch games by competition ID (globally unique, no sport alias needed)
+        const url = `/api/bc/games/?competition=${encodeURIComponent(league)}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Failed to fetch games: ${res.status}`);
         const games: BCGameRaw[] = await res.json();
