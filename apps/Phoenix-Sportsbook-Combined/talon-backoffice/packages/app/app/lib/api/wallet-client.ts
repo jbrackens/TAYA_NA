@@ -37,6 +37,8 @@ interface DepositResponseRaw {
   currency: string;
   created_at: string;
   updated_at: string;
+  redirect_url?: string;
+  requires_redirect?: boolean;
 }
 
 interface WithdrawResponseRaw {
@@ -88,6 +90,8 @@ export interface DepositResponse {
   currency: string;
   createdAt: string;
   updatedAt: string;
+  redirectUrl?: string;
+  requiresRedirect?: boolean;
 }
 
 export interface WithdrawResponse {

@@ -1,23 +1,37 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { getProfile, updateProfile } from '../lib/api/user-client';
-import type { UserProfile, UpdateProfileRequest } from '../lib/api/user-client';
-import { setDepositLimits, setStakeLimits, getLimitsHistory } from '../lib/api/compliance-client';
-import type { SetDepositLimitsRequest, SetStakeLimitsRequest, LimitHistoryItem } from '../lib/api/compliance-client';
-import { useToast } from '../components/ToastProvider';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { getProfile, updateProfile } from "../lib/api/user-client";
+import { UserProfile, UpdateProfileRequest } from "../lib/api/user-client";
+import {
+  setDepositLimits,
+  setStakeLimits,
+  getLimitsHistory,
+} from "../lib/api/compliance-client";
+import {
+  SetDepositLimitsRequest,
+  SetStakeLimitsRequest,
+  LimitHistoryItem,
+} from "../lib/api/compliance-client";
+import { useToast } from "../components/ToastProvider";
+import { useTranslation } from "react-i18next";
+import { logger } from "../lib/logger";
 
-type TabType = 'settings' | 'limits' | 'verification' | 'security';
+type TabType = "settings" | "limits" | "verification" | "security";
 
-const tabValues: TabType[] = ['settings', 'limits', 'verification', 'security'];
+const tabValues: TabType[] = ["settings", "limits", "verification", "security"];
 
-function StatusBadge({ status }: { status?: 'verified' | 'pending' | 'failed' }) {
+function StatusBadge({
+  status,
+}: {
+  status?: "verified" | "pending" | "failed";
+}) {
   const statusColors: Record<string, { bg: string; color: string }> = {
-    verified: { bg: '#1e7e34', color: '#22c55e' },
-    pending: { bg: '#665700', color: '#fbbf24' },
-    failed: { bg: '#7f1d1d', color: '#f87171' },
-    default: { bg: '#0f3460', color: '#4a7eff' },
+    verified: { bg: "#1e7e34", color: "#22c55e" },
+    pending: { bg: "#665700", color: "#fbbf24" },
+    failed: { bg: "#7f1d1d", color: "#f87171" },
+    default: { bg: "#0f3460", color: "#4a7eff" },
   };
 
   const colors = status ? statusColors[status] : statusColors.default;
@@ -25,18 +39,18 @@ function StatusBadge({ status }: { status?: 'verified' | 'pending' | 'failed' })
   return (
     <span
       style={{
-        display: 'inline-block',
-        padding: '4px 12px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        fontWeight: '600',
+        display: "inline-block",
+        padding: "4px 12px",
+        borderRadius: "4px",
+        fontSize: "12px",
+        fontWeight: "600",
         backgroundColor: colors.bg,
         color: colors.color,
       }}
     >
-      {status === 'verified' && 'Verified'}
-      {status === 'pending' && 'Pending'}
-      {status === 'failed' && 'Failed'}
+      {status === "verified" && "Verified"}
+      {status === "pending" && "Pending"}
+      {status === "failed" && "Failed"}
     </span>
   );
 }
@@ -48,23 +62,30 @@ function TabNavigation({
   activeTabIndex: number;
   onChange: (index: number) => void;
 }) {
-  const tabs = ['Settings', 'Limits', 'Verification', 'Security'];
+  const tabs = ["Settings", "Limits", "Verification", "Security"];
 
   return (
-    <div style={{ display: 'flex', borderBottom: '1px solid #1a1f3a', marginBottom: '24px' }}>
+    <div
+      style={{
+        display: "flex",
+        borderBottom: "1px solid #1a1f3a",
+        marginBottom: "24px",
+      }}
+    >
       {tabs.map((label, index) => (
         <button
           key={index}
           onClick={() => onChange(index)}
           style={{
-            padding: '12px 16px',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: activeTabIndex === index ? '#f97316' : '#64748b',
-            borderBottom: activeTabIndex === index ? '2px solid #f97316' : 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500',
+            padding: "12px 16px",
+            border: "none",
+            backgroundColor: "transparent",
+            color: activeTabIndex === index ? "#f97316" : "#64748b",
+            borderBottom:
+              activeTabIndex === index ? "2px solid #f97316" : "none",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
           }}
         >
           {label}
@@ -75,62 +96,115 @@ function TabNavigation({
 }
 
 const inputStyle = {
-  width: '100%',
-  padding: '8px 12px',
-  backgroundColor: '#0b0e1c',
-  border: '1px solid #1a1f3a',
-  borderRadius: '4px',
-  color: '#e2e8f0',
-  fontSize: '14px',
-  boxSizing: 'border-box' as const,
+  width: "100%",
+  padding: "8px 12px",
+  backgroundColor: "#0b0e1c",
+  border: "1px solid #1a1f3a",
+  borderRadius: "4px",
+  color: "#e2e8f0",
+  fontSize: "14px",
+  boxSizing: "border-box" as const,
 };
 
 const labelStyle = {
-  display: 'block',
-  fontSize: '14px',
-  fontWeight: '600' as const,
-  marginBottom: '8px',
-  color: '#ffffff',
+  display: "block",
+  fontSize: "14px",
+  fontWeight: "600" as const,
+  marginBottom: "8px",
+  color: "#ffffff",
 };
 
 const btnStyle = {
-  padding: '10px 20px',
-  backgroundColor: '#f97316',
-  color: '#ffffff',
-  border: 'none',
-  borderRadius: '4px',
-  fontSize: '14px',
-  fontWeight: '600' as const,
-  cursor: 'pointer',
+  padding: "10px 20px",
+  backgroundColor: "#f97316",
+  color: "#ffffff",
+  border: "none",
+  borderRadius: "4px",
+  fontSize: "14px",
+  fontWeight: "600" as const,
+  cursor: "pointer",
 };
+
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "de", label: "German" },
+  { code: "es", label: "Spanish" },
+  { code: "fr", label: "French" },
+];
+
+const TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Anchorage",
+  "Pacific/Honolulu",
+  "Europe/London",
+  "Europe/Berlin",
+  "Europe/Paris",
+  "Europe/Moscow",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Asia/Singapore",
+  "Australia/Sydney",
+  "Pacific/Auckland",
+  "America/Sao_Paulo",
+  "Africa/Johannesburg",
+];
+
+const ODDS_FORMATS = ["Decimal", "American", "Fractional"] as const;
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const toast = useToast();
+  const { i18n } = useTranslation();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = tabValues[activeTabIndex];
+
+  // Preferences state
+  const [prefLanguage, setPrefLanguage] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("phoenix_language") || "en";
+    }
+    return "en";
+  });
+  const [prefTimezone, setPrefTimezone] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("phoenix_timezone") || "UTC";
+    }
+    return "UTC";
+  });
+  const [prefOddsFormat, setPrefOddsFormat] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("phoenix_odds_format") || "Decimal";
+    }
+    return "Decimal";
+  });
 
   // Profile state
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Limits state
-  const [dailyLimit, setDailyLimit] = useState('');
-  const [weeklyLimit, setWeeklyLimit] = useState('');
-  const [monthlyLimit, setMonthlyLimit] = useState('');
-  const [maxStake, setMaxStake] = useState('');
+  const [dailyLimit, setDailyLimit] = useState("");
+  const [weeklyLimit, setWeeklyLimit] = useState("");
+  const [monthlyLimit, setMonthlyLimit] = useState("");
+  const [maxStake, setMaxStake] = useState("");
   const [savingLimits, setSavingLimits] = useState(false);
 
   // Security state
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // Load profile on mount
   useEffect(() => {
@@ -143,15 +217,15 @@ export default function ProfilePage() {
         const p = await getProfile(user.id);
         if (!cancelled) {
           setProfile(p);
-          setFirstName(p.firstName || '');
-          setLastName(p.lastName || '');
-          setEmail(p.email || '');
-          setPhone(p.phone || '');
-          setDateOfBirth(p.dateOfBirth || '');
+          setFirstName(p.firstName || "");
+          setLastName(p.lastName || "");
+          setEmail(p.email || "");
+          setPhone(p.phone || "");
+          setDateOfBirth(p.dateOfBirth || "");
         }
       } catch (err) {
         if (!cancelled) {
-          toast.error('Load Failed', 'Could not load profile data.');
+          toast.error("Load Failed", "Could not load profile data.");
         }
       } finally {
         if (!cancelled) setProfileLoading(false);
@@ -159,7 +233,9 @@ export default function ProfilePage() {
     };
 
     loadProfile();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   // Save profile
@@ -175,10 +251,10 @@ export default function ProfilePage() {
       };
       const updated = await updateProfile(user.id, request);
       setProfile(updated);
-      toast.success('Profile Updated', 'Your changes have been saved.');
+      toast.success("Profile Updated", "Your changes have been saved.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to save profile';
-      toast.error('Save Failed', msg);
+      const msg = err instanceof Error ? err.message : "Failed to save profile";
+      toast.error("Save Failed", msg);
     } finally {
       setSaving(false);
     }
@@ -205,65 +281,119 @@ export default function ProfilePage() {
         };
         await setStakeLimits(stakeReq);
       }
-      toast.success('Limits Updated', 'Your responsible gaming limits have been saved.');
+      toast.success(
+        "Limits Updated",
+        "Your responsible gaming limits have been saved.",
+      );
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Failed to update limits';
-      toast.error('Update Failed', msg);
+      const msg =
+        err instanceof Error ? err.message : "Failed to update limits";
+      toast.error("Update Failed", msg);
     } finally {
       setSavingLimits(false);
     }
   }, [user?.id, dailyLimit, weeklyLimit, monthlyLimit, maxStake, toast]);
 
+  // Save preferences
+  const handleSavePreferences = useCallback(() => {
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("phoenix_language", prefLanguage);
+        localStorage.setItem("phoenix_timezone", prefTimezone);
+        localStorage.setItem("phoenix_odds_format", prefOddsFormat);
+      }
+      i18n.changeLanguage(prefLanguage);
+      logger.info("Profile", "Preferences saved", {
+        prefLanguage,
+        prefTimezone,
+        prefOddsFormat,
+      });
+      toast.success("Preferences Saved", "Your preferences have been updated.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error("Save Failed", msg);
+    }
+  }, [prefLanguage, prefTimezone, prefOddsFormat, i18n, toast]);
+
   // Change password
   const handleChangePassword = useCallback(async () => {
     if (newPassword !== confirmPassword) {
-      toast.error('Password Mismatch', 'New password and confirmation do not match.');
+      toast.error(
+        "Password Mismatch",
+        "New password and confirmation do not match.",
+      );
       return;
     }
     if (!currentPassword || !newPassword) {
-      toast.error('Missing Fields', 'Please fill in all password fields.');
+      toast.error("Missing Fields", "Please fill in all password fields.");
       return;
     }
     // API call would go here — the auth-client doesn't have changePassword yet
     // For now, show a toast indicating the endpoint isn't available
-    toast.info('Not Available', 'Password change API endpoint not yet configured.');
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+    toast.info(
+      "Not Available",
+      "Password change API endpoint not yet configured.",
+    );
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   }, [currentPassword, newPassword, confirmPassword, toast]);
 
   if (profileLoading) {
     return (
-      <div style={{ maxWidth: '800px', padding: '40px', color: '#64748b' }}>
+      <div style={{ maxWidth: "800px", padding: "40px", color: "#64748b" }}>
         Loading profile...
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: '800px' }}>
-      <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '24px', color: '#ffffff' }}>
+    <div style={{ maxWidth: "800px" }}>
+      <h1
+        style={{
+          fontSize: "28px",
+          fontWeight: "700",
+          marginBottom: "24px",
+          color: "#ffffff",
+        }}
+      >
         My Account
       </h1>
 
       <div
         style={{
-          padding: '24px',
-          marginBottom: '24px',
-          backgroundColor: '#0f1225',
-          borderRadius: '8px',
-          border: '1px solid #1a1f3a',
+          padding: "24px",
+          marginBottom: "24px",
+          backgroundColor: "#0f1225",
+          borderRadius: "8px",
+          border: "1px solid #1a1f3a",
         }}
       >
-        <TabNavigation activeTabIndex={activeTabIndex} onChange={setActiveTabIndex} />
+        <TabNavigation
+          activeTabIndex={activeTabIndex}
+          onChange={setActiveTabIndex}
+        />
 
-        {activeTab === 'settings' && (
+        {activeTab === "settings" && (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Personal Information
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                }}
+              >
                 <div>
                   <label style={labelStyle}>First Name</label>
                   <input
@@ -285,20 +415,23 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: "24px" }}>
               <label style={labelStyle}>Email Address</label>
               <input
                 type="email"
                 value={email}
                 disabled
-                style={{ ...inputStyle, opacity: '0.6' }}
+                style={{ ...inputStyle, opacity: "0.6" }}
               />
-              <p style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '8px' }}>
-                Email cannot be changed. Contact support if you need to update it.
+              <p
+                style={{ fontSize: "12px", color: "#a0a0a0", marginTop: "8px" }}
+              >
+                Email cannot be changed. Contact support if you need to update
+                it.
               </p>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: "24px" }}>
               <label style={labelStyle}>Phone Number</label>
               <input
                 type="tel"
@@ -309,7 +442,7 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
+            <div style={{ marginBottom: "24px" }}>
               <label style={labelStyle}>Date of Birth</label>
               <input
                 type="date"
@@ -319,25 +452,114 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div style={{ marginBottom: '0' }}>
+            <div style={{ marginBottom: "24px" }}>
               <button
                 onClick={handleSaveProfile}
                 disabled={saving}
                 style={{ ...btnStyle, opacity: saving ? 0.6 : 1 }}
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+
+            {/* Preferences Section */}
+            <div style={{ borderTop: "1px solid #1a1f3a", paddingTop: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
+                Preferences
+              </h2>
+
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>Language</label>
+                <select
+                  value={prefLanguage}
+                  onChange={(e) => setPrefLanguage(e.target.value)}
+                  style={inputStyle}
+                >
+                  {LANGUAGES.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>Timezone</label>
+                <select
+                  value={prefTimezone}
+                  onChange={(e) => setPrefTimezone(e.target.value)}
+                  style={inputStyle}
+                >
+                  {TIMEZONES.map((tz) => (
+                    <option key={tz} value={tz}>
+                      {tz.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ marginBottom: "16px" }}>
+                <label style={labelStyle}>Odds Format</label>
+                <div style={{ display: "flex", gap: "16px" }}>
+                  {ODDS_FORMATS.map((fmt) => (
+                    <label
+                      key={fmt}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        color: "#e2e8f0",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="oddsFormat"
+                        value={fmt}
+                        checked={prefOddsFormat === fmt}
+                        onChange={(e) => setPrefOddsFormat(e.target.value)}
+                      />
+                      {fmt}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button onClick={handleSavePreferences} style={btnStyle}>
+                Save Preferences
               </button>
             </div>
           </>
         )}
 
-        {activeTab === 'limits' && (
+        {activeTab === "limits" && (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Deposit Limits
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                }}
+              >
                 <div>
                   <label style={labelStyle}>Daily Limit ($)</label>
                   <input
@@ -371,11 +593,24 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Betting Limits
               </h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                }}
+              >
                 <div>
                   <label style={labelStyle}>Max Bet Amount ($)</label>
                   <input
@@ -395,55 +630,118 @@ export default function ProfilePage() {
                 disabled={savingLimits}
                 style={{ ...btnStyle, opacity: savingLimits ? 0.6 : 1 }}
               >
-                {savingLimits ? 'Saving...' : 'Update Limits'}
+                {savingLimits ? "Saving..." : "Update Limits"}
               </button>
             </div>
           </>
         )}
 
-        {activeTab === 'verification' && (
+        {activeTab === "verification" && (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Verification Status
               </h2>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1a1f3a' }}>
-                  <span style={{ color: '#a0a0a0', fontSize: '14px' }}>Email Verification</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "12px 0",
+                    borderBottom: "1px solid #1a1f3a",
+                  }}
+                >
+                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                    Email Verification
+                  </span>
                   <StatusBadge status="verified" />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1a1f3a' }}>
-                  <span style={{ color: '#a0a0a0', fontSize: '14px' }}>Phone Verification</span>
-                  <StatusBadge status={profile?.phone ? 'verified' : 'pending'} />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "12px 0",
+                    borderBottom: "1px solid #1a1f3a",
+                  }}
+                >
+                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                    Phone Verification
+                  </span>
+                  <StatusBadge
+                    status={profile?.phone ? "verified" : "pending"}
+                  />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1a1f3a' }}>
-                  <span style={{ color: '#a0a0a0', fontSize: '14px' }}>Identity Verification (KYC)</span>
-                  <StatusBadge status={profile?.kycStatus === 'approved' ? 'verified' : profile?.kycStatus === 'pending' ? 'pending' : 'failed'} />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "12px 0",
+                    borderBottom: "1px solid #1a1f3a",
+                  }}
+                >
+                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                    Identity Verification (KYC)
+                  </span>
+                  <StatusBadge
+                    status={
+                      profile?.kycStatus === "approved"
+                        ? "verified"
+                        : profile?.kycStatus === "pending"
+                        ? "pending"
+                        : "failed"
+                    }
+                  />
                 </div>
               </div>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Complete Verification
               </h2>
-              <p style={{ color: '#a0a0a0', fontSize: '14px', marginBottom: '16px' }}>
-                Verify your identity to unlock higher limits and improved features.
+              <p
+                style={{
+                  color: "#a0a0a0",
+                  fontSize: "14px",
+                  marginBottom: "16px",
+                }}
+              >
+                Verify your identity to unlock higher limits and improved
+                features.
               </p>
-              <button style={btnStyle}>
-                Start Verification
-              </button>
+              <button style={btnStyle}>Start Verification</button>
             </div>
           </>
         )}
 
-        {activeTab === 'security' && (
+        {activeTab === "security" && (
           <>
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Password
               </h2>
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: "16px" }}>
                 <label style={labelStyle}>Current Password</label>
                 <input
                   type="password"
@@ -453,7 +751,7 @@ export default function ProfilePage() {
                   style={inputStyle}
                 />
               </div>
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: "16px" }}>
                 <label style={labelStyle}>New Password</label>
                 <input
                   type="password"
@@ -463,7 +761,7 @@ export default function ProfilePage() {
                   style={inputStyle}
                 />
               </div>
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: "16px" }}>
                 <label style={labelStyle}>Confirm Password</label>
                 <input
                   type="password"
@@ -478,32 +776,78 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Two-Factor Authentication
               </h2>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', borderBottom: '1px solid #1a1f3a' }}>
-                <span style={{ color: '#a0a0a0', fontSize: '14px' }}>Enable 2FA for added security</span>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "16px 0",
+                  borderBottom: "1px solid #1a1f3a",
+                }}
+              >
+                <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                  Enable 2FA for added security
+                </span>
                 <input
                   type="checkbox"
-                  style={{ width: '50px', height: '24px', cursor: 'pointer' }}
+                  style={{ width: "50px", height: "24px", cursor: "pointer" }}
                 />
               </div>
             </div>
 
-            <div style={{ marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#ffffff' }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h2
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "600",
+                  marginBottom: "16px",
+                  color: "#ffffff",
+                }}
+              >
                 Account Info
               </h2>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1a1f3a' }}>
-                  <span style={{ color: '#a0a0a0', fontSize: '14px' }}>Username</span>
-                  <span style={{ color: '#ffffff', fontWeight: '600' }}>{profile?.username || user?.username}</span>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "12px 0",
+                    borderBottom: "1px solid #1a1f3a",
+                  }}
+                >
+                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                    Username
+                  </span>
+                  <span style={{ color: "#ffffff", fontWeight: "600" }}>
+                    {profile?.username || user?.username}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1a1f3a' }}>
-                  <span style={{ color: '#a0a0a0', fontSize: '14px' }}>Member Since</span>
-                  <span style={{ color: '#ffffff', fontWeight: '600' }}>
-                    {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '-'}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "12px 0",
+                    borderBottom: "1px solid #1a1f3a",
+                  }}
+                >
+                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                    Member Since
+                  </span>
+                  <span style={{ color: "#ffffff", fontWeight: "600" }}>
+                    {profile?.createdAt
+                      ? new Date(profile.createdAt).toLocaleDateString()
+                      : "-"}
                   </span>
                 </div>
               </div>

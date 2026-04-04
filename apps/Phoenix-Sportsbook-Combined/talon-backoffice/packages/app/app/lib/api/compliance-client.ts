@@ -240,6 +240,39 @@ export async function selfExclude(
 }
 
 /**
+ * Upload a KYC document (ID, passport, proof of address, etc.)
+ */
+export async function uploadKycDocument(
+  userId: string,
+  file: File,
+  documentType: string,
+): Promise<{ documentId: string; status: string }> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("phoenix_access_token")
+      : null;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("user_id", userId);
+  formData.append("document_type", documentType);
+
+  const res = await fetch(`${apiUrl}/api/v1/compliance/documents/upload`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "Upload failed");
+    throw new Error(errorBody || "Failed to upload KYC document");
+  }
+
+  return res.json();
+}
+
+/**
  * Get current month's cumulative deposit total for threshold checking.
  * Uses wallet transactions to sum deposits in the current calendar month.
  */

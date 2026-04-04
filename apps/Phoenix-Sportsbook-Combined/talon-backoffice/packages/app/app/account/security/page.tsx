@@ -1,82 +1,112 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../components/ToastProvider';
-import { changePassword } from '../../lib/api/auth-client';
-import type { ChangePasswordRequest } from '../../lib/api/auth-client';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../components/ToastProvider";
+import {
+  changePassword,
+  getSessions,
+  revokeSession,
+} from "../../lib/api/auth-client";
+import { ChangePasswordRequest, Session } from "../../lib/api/auth-client";
+import { logger } from "../../lib/logger";
 
 export default function SecurityPage() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [tab, setTab] = useState<'password' | 'twofa' | 'sessions'>('password');
+  const [tab, setTab] = useState<"password" | "twofa" | "sessions">("password");
 
   // Password form
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  const [passwordError, setPasswordError] = useState("");
 
   // 2FA state
   const [twoFaEnabled, setTwoFaEnabled] = useState(false);
   const [twoFaLoading, setTwoFaLoading] = useState(false);
 
-  // Sessions list (placeholder)
-  const [sessions] = useState([
-    {
-      id: 'session-1',
-      device: 'Chrome on MacOS',
-      location: 'San Francisco, CA',
-      lastActive: new Date(Date.now() - 30 * 60 * 1000), // 30 min ago
-      current: true,
-    },
-    {
-      id: 'session-2',
-      device: 'Safari on iPhone',
-      location: 'San Francisco, CA',
-      lastActive: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-      current: false,
-    },
-  ]);
+  // Sessions list
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+
+  // Load sessions from API
+  useEffect(() => {
+    if (!user?.id) return;
+    const loadSessions = async () => {
+      setSessionsLoading(true);
+      try {
+        const data = await getSessions(user.id);
+        setSessions(data);
+      } catch (err) {
+        logger.error(
+          "Security",
+          "Failed to load sessions",
+          err instanceof Error ? err.message : String(err),
+        );
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+    loadSessions();
+  }, [user?.id]);
+
+  const handleRevokeSession = async (sessionId: string) => {
+    setRevokingId(sessionId);
+    try {
+      await revokeSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      toast.success("Session revoked", "The session has been signed out");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error("Failed to revoke session", message);
+    } finally {
+      setRevokingId(null);
+    }
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPasswordError('');
+    setPasswordError("");
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordError('All fields are required');
+      setPasswordError("All fields are required");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordError('New passwords do not match');
+      setPasswordError("New passwords do not match");
       return;
     }
 
     if (newPassword.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
+      setPasswordError("Password must be at least 8 characters");
       return;
     }
 
     setPasswordLoading(true);
     try {
       await changePassword({
-        user_id: user?.id || '',
+        user_id: user?.id || "",
         current_password: currentPassword,
         new_password: newPassword,
       });
-      toast.success('Password changed', 'Your password has been updated successfully');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err: unknown) {
+      toast.success(
+        "Password changed",
+        "Your password has been updated successfully",
+      );
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const msg = message || 'Failed to change password';
+      const msg = message || "Failed to change password";
       setPasswordError(msg);
-      toast.error('Password change failed', msg);
+      toast.error("Password change failed", msg);
     } finally {
       setPasswordLoading(false);
     }
@@ -86,11 +116,11 @@ export default function SecurityPage() {
     setTwoFaLoading(true);
     try {
       // API call would go here - for now just toggle UI
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
       setTwoFaEnabled(!twoFaEnabled);
-      toast.success('2FA ' + (!twoFaEnabled ? 'enabled' : 'disabled'));
-    } catch (err: unknown) {
-      toast.error('Failed to update 2FA');
+      toast.success("2FA " + (!twoFaEnabled ? "enabled" : "disabled"));
+    } catch (err) {
+      toast.error("Failed to update 2FA");
     } finally {
       setTwoFaLoading(false);
     }
@@ -113,30 +143,32 @@ export default function SecurityPage() {
         {/* Tabs */}
         <div className="sec-tabs">
           <button
-            className={`sec-tab ${tab === 'password' ? 'active' : ''}`}
-            onClick={() => setTab('password')}
+            className={`sec-tab ${tab === "password" ? "active" : ""}`}
+            onClick={() => setTab("password")}
           >
             Password
           </button>
           <button
-            className={`sec-tab ${tab === 'twofa' ? 'active' : ''}`}
-            onClick={() => setTab('twofa')}
+            className={`sec-tab ${tab === "twofa" ? "active" : ""}`}
+            onClick={() => setTab("twofa")}
           >
             Two-Factor Auth
           </button>
           <button
-            className={`sec-tab ${tab === 'sessions' ? 'active' : ''}`}
-            onClick={() => setTab('sessions')}
+            className={`sec-tab ${tab === "sessions" ? "active" : ""}`}
+            onClick={() => setTab("sessions")}
           >
             Active Sessions
           </button>
         </div>
 
         {/* Password Tab */}
-        {tab === 'password' && (
+        {tab === "password" && (
           <div className="sec-card">
             <h2>Change Password</h2>
-            <p className="sec-desc">Update your password to keep your account secure</p>
+            <p className="sec-desc">
+              Update your password to keep your account secure
+            </p>
 
             <form onSubmit={handleChangePassword} className="sec-form">
               <div className="sec-field">
@@ -181,29 +213,31 @@ export default function SecurityPage() {
                 className="sec-submit"
                 disabled={passwordLoading}
               >
-                {passwordLoading ? 'Updating...' : 'Change Password'}
+                {passwordLoading ? "Updating..." : "Change Password"}
               </button>
             </form>
           </div>
         )}
 
         {/* 2FA Tab */}
-        {tab === 'twofa' && (
+        {tab === "twofa" && (
           <div className="sec-card">
             <h2>Two-Factor Authentication</h2>
-            <p className="sec-desc">Add an extra layer of security to your account</p>
+            <p className="sec-desc">
+              Add an extra layer of security to your account
+            </p>
 
             <div className="sec-twofa">
               <div className="sec-twofa-info">
                 <div className="sec-twofa-icon">🔐</div>
                 <div>
                   <div className="sec-twofa-title">
-                    {twoFaEnabled ? '2FA Enabled' : '2FA Disabled'}
+                    {twoFaEnabled ? "2FA Enabled" : "2FA Disabled"}
                   </div>
                   <div className="sec-twofa-desc">
                     {twoFaEnabled
-                      ? 'Your account is protected with two-factor authentication'
-                      : 'Enable 2FA to add extra security via authenticator app'}
+                      ? "Your account is protected with two-factor authentication"
+                      : "Enable 2FA to add extra security via authenticator app"}
                   </div>
                 </div>
               </div>
@@ -211,32 +245,61 @@ export default function SecurityPage() {
               <button
                 onClick={handleToggle2FA}
                 disabled={twoFaLoading}
-                className={`sec-twofa-btn ${twoFaEnabled ? 'disable' : 'enable'}`}
+                className={`sec-twofa-btn ${
+                  twoFaEnabled ? "disable" : "enable"
+                }`}
               >
                 {twoFaLoading
-                  ? 'Updating...'
+                  ? "Updating..."
                   : twoFaEnabled
-                    ? 'Disable 2FA'
-                    : 'Enable 2FA'}
+                  ? "Disable 2FA"
+                  : "Enable 2FA"}
               </button>
             </div>
           </div>
         )}
 
         {/* Sessions Tab */}
-        {tab === 'sessions' && (
+        {tab === "sessions" && (
           <div className="sec-card">
             <h2>Active Sessions</h2>
-            <p className="sec-desc">View and manage devices logged into your account</p>
+            <p className="sec-desc">
+              View and manage devices logged into your account
+            </p>
 
             <div className="sec-sessions">
+              {sessionsLoading && (
+                <div
+                  style={{
+                    padding: "24px",
+                    textAlign: "center",
+                    color: "#64748b",
+                  }}
+                >
+                  Loading sessions...
+                </div>
+              )}
+              {!sessionsLoading && sessions.length === 0 && (
+                <div
+                  style={{
+                    padding: "24px",
+                    textAlign: "center",
+                    color: "#64748b",
+                  }}
+                >
+                  No active sessions found.
+                </div>
+              )}
               {sessions.map((session) => (
                 <div key={session.id} className="sec-session-item">
                   <div className="sec-session-info">
                     <div className="sec-session-device">{session.device}</div>
-                    <div className="sec-session-location">{session.location}</div>
+                    <div className="sec-session-location">
+                      {session.location}
+                    </div>
                     <div className="sec-session-time">
-                      Last active: {session.lastActive.toLocaleString()}
+                      Last active:{" "}
+                      {new Date(session.lastActive).toLocaleString()}
                     </div>
                   </div>
                   <div className="sec-session-actions">
@@ -244,14 +307,21 @@ export default function SecurityPage() {
                       <span className="sec-session-badge">Current</span>
                     )}
                     {!session.current && (
-                      <button className="sec-session-logout">Sign Out</button>
+                      <button
+                        className="sec-session-logout"
+                        onClick={() => handleRevokeSession(session.id)}
+                        disabled={revokingId === session.id}
+                      >
+                        {revokingId === session.id ? "Revoking..." : "Sign Out"}
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
 
               <div className="sec-session-note">
-                ℹ️ Showing all active sessions. You can sign out of other devices above.
+                ℹ️ Showing all active sessions. You can sign out of other
+                devices above.
               </div>
             </div>
           </div>

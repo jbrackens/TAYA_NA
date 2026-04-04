@@ -12,6 +12,7 @@ export interface GetEventsParams {
   sport?: string;
   league?: string;
   status?: string;
+  query?: string;
   page?: number;
   limit?: number;
 }
@@ -333,6 +334,7 @@ export async function getEvents(
   if (params?.sport) queryParams.sport = params.sport;
   if (params?.league) queryParams.league = params.league;
   if (params?.status) queryParams.status = params.status;
+  if (params?.query) queryParams.query = params.query;
   if (params?.page) queryParams.page = String(params.page);
   if (params?.limit) queryParams.limit = String(params.limit);
 

@@ -11,6 +11,7 @@ import { HeaderBar } from "./components/HeaderBar";
 import { BetslipPanel } from "./components/BetslipPanel";
 import { ToastProvider } from "./components/ToastProvider";
 import { AccountStatusBar } from "./components/AccountStatusBar";
+import OpenChatButton from "./components/OpenChatButton";
 
 export default function RootLayout({
   children,
@@ -76,6 +77,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         </div>
                       </div>
                     </div>
+                    <OpenChatButton />
                   </BetslipProvider>
                 </AuthProvider>
               </ToastProvider>

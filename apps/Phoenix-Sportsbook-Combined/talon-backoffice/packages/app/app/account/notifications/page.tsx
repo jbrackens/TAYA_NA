@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../components/ToastProvider';
-import { updatePreferences } from '../../lib/api/user-client';
-import type { UpdatePreferencesRequest } from '../../lib/api/user-client';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../components/ToastProvider";
+import { updatePreferences } from "../../lib/api/user-client";
+import { UpdatePreferencesRequest } from "../../lib/api/user-client";
 
 export default function NotificationsPage() {
   const { user } = useAuth();
@@ -20,6 +20,27 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
+  // Email frequency
+  const [emailFrequency, setEmailFrequency] = useState<
+    "instant" | "daily" | "weekly"
+  >("instant");
+
+  // Notification categories
+  const [categories, setCategories] = useState({
+    bet_results: true,
+    promotions: true,
+    account_updates: true,
+    new_markets: false,
+    odds_alerts: false,
+  });
+
+  const handleCategoryToggle = (key: keyof typeof categories) => {
+    setCategories((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   // Load preferences on mount
   useEffect(() => {
     // In a real app, we'd fetch this from the API
@@ -27,9 +48,9 @@ export default function NotificationsPage() {
   }, [user?.id]);
 
   const handleToggle = (key: keyof typeof prefs) => {
-    setPrefs(prev => ({
+    setPrefs((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
   };
 
@@ -39,11 +60,14 @@ export default function NotificationsPage() {
     setSaveLoading(true);
     try {
       await updatePreferences(user.id, prefs);
-      toast.success('Preferences saved', 'Your notification preferences have been updated');
-    } catch (err: unknown) {
+      toast.success(
+        "Preferences saved",
+        "Your notification preferences have been updated",
+      );
+    } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const msg = message || 'Failed to save preferences';
-      toast.error('Save failed', msg);
+      const msg = message || "Failed to save preferences";
+      toast.error("Save failed", msg);
     } finally {
       setSaveLoading(false);
     }
@@ -83,7 +107,7 @@ export default function NotificationsPage() {
                 <input
                   type="checkbox"
                   checked={prefs.notification_email}
-                  onChange={() => handleToggle('notification_email')}
+                  onChange={() => handleToggle("notification_email")}
                 />
                 <span className="notif-toggle-slider"></span>
               </label>
@@ -101,7 +125,7 @@ export default function NotificationsPage() {
                 <input
                   type="checkbox"
                   checked={prefs.notification_sms}
-                  onChange={() => handleToggle('notification_sms')}
+                  onChange={() => handleToggle("notification_sms")}
                 />
                 <span className="notif-toggle-slider"></span>
               </label>
@@ -119,7 +143,7 @@ export default function NotificationsPage() {
                 <input
                   type="checkbox"
                   checked={prefs.notification_push}
-                  onChange={() => handleToggle('notification_push')}
+                  onChange={() => handleToggle("notification_push")}
                 />
                 <span className="notif-toggle-slider"></span>
               </label>
@@ -130,17 +154,144 @@ export default function NotificationsPage() {
               <div className="notif-item-info">
                 <div className="notif-item-title">Marketing Emails</div>
                 <div className="notif-item-desc">
-                  Receive emails about new features, promotions, and special offers
+                  Receive emails about new features, promotions, and special
+                  offers
                 </div>
               </div>
               <label className="notif-toggle">
                 <input
                   type="checkbox"
                   checked={prefs.marketing_email}
-                  onChange={() => handleToggle('marketing_email')}
+                  onChange={() => handleToggle("marketing_email")}
                 />
                 <span className="notif-toggle-slider"></span>
               </label>
+            </div>
+          </div>
+
+          {/* Email Frequency */}
+          <div style={{ marginBottom: "24px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                fontWeight: 700,
+                color: "#e2e8f0",
+                marginBottom: "12px",
+              }}
+            >
+              Email Frequency
+            </h3>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {([
+                {
+                  value: "instant",
+                  label: "Instant",
+                  desc: "Receive emails as events happen",
+                },
+                {
+                  value: "daily",
+                  label: "Daily Digest",
+                  desc: "One summary email per day",
+                },
+                {
+                  value: "weekly",
+                  label: "Weekly Digest",
+                  desc: "One summary email per week",
+                },
+              ] as const).map((opt) => (
+                <label
+                  key={opt.value}
+                  className="notif-item"
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="notif-item-info">
+                    <div className="notif-item-title">{opt.label}</div>
+                    <div className="notif-item-desc">{opt.desc}</div>
+                  </div>
+                  <input
+                    type="radio"
+                    name="emailFrequency"
+                    value={opt.value}
+                    checked={emailFrequency === opt.value}
+                    onChange={() => setEmailFrequency(opt.value)}
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      accentColor: "#f97316",
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Notification Categories */}
+          <div style={{ marginBottom: "24px" }}>
+            <h3
+              style={{
+                fontSize: "15px",
+                fontWeight: 700,
+                color: "#e2e8f0",
+                marginBottom: "12px",
+              }}
+            >
+              Notification Categories
+            </h3>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              {[
+                {
+                  key: "bet_results" as const,
+                  label: "Bet Results",
+                  desc: "Get notified when your bets are settled",
+                },
+                {
+                  key: "promotions" as const,
+                  label: "Promotions",
+                  desc: "Special offers, bonuses, and promotional events",
+                },
+                {
+                  key: "account_updates" as const,
+                  label: "Account Updates",
+                  desc:
+                    "Deposit confirmations, withdrawal status, and security alerts",
+                },
+                {
+                  key: "new_markets" as const,
+                  label: "New Markets",
+                  desc: "Be notified when new sports or leagues are added",
+                },
+                {
+                  key: "odds_alerts" as const,
+                  label: "Odds Alerts",
+                  desc:
+                    "Get alerted when odds change significantly on your favorites",
+                },
+              ].map((cat) => (
+                <label
+                  key={cat.key}
+                  className="notif-item"
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="notif-item-info">
+                    <div className="notif-item-title">{cat.label}</div>
+                    <div className="notif-item-desc">{cat.desc}</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={categories[cat.key]}
+                    onChange={() => handleCategoryToggle(cat.key)}
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      accentColor: "#f97316",
+                    }}
+                  />
+                </label>
+              ))}
             </div>
           </div>
 
@@ -151,7 +302,7 @@ export default function NotificationsPage() {
               onClick={handleSave}
               disabled={saveLoading}
             >
-              {saveLoading ? 'Saving...' : 'Save Preferences'}
+              {saveLoading ? "Saving..." : "Save Preferences"}
             </button>
           </div>
         </div>

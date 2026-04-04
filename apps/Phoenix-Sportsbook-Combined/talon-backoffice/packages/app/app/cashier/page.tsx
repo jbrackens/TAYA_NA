@@ -185,6 +185,18 @@ export default function CashierPage() {
       });
       setMonthlyTotal((prev) => prev + numAmount);
 
+      // Handle payment gateway redirect flow
+      if (depositRes.requiresRedirect && depositRes.redirectUrl) {
+        logger.info(
+          "Cashier",
+          "Deposit requires redirect to payment gateway",
+          depositRes.redirectUrl,
+        );
+        window.open(depositRes.redirectUrl, "payment", "width=600,height=800");
+        startPolling(depositRes.transactionId);
+        return;
+      }
+
       if (depositRes.status === "PENDING") {
         logger.info(
           "Cashier",
@@ -251,6 +263,22 @@ export default function CashierPage() {
           amount: numAmount,
           payment_method: selectedPayment,
         });
+
+        // Handle payment gateway redirect flow
+        if (depositRes.requiresRedirect && depositRes.redirectUrl) {
+          logger.info(
+            "Cashier",
+            "Deposit requires redirect to payment gateway",
+            depositRes.redirectUrl,
+          );
+          window.open(
+            depositRes.redirectUrl,
+            "payment",
+            "width=600,height=800",
+          );
+          startPolling(depositRes.transactionId);
+          return;
+        }
 
         if (depositRes.status === "PENDING") {
           logger.info(

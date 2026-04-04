@@ -1,25 +1,81 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
-import { useToast } from '../../components/ToastProvider';
-import { getTransactions } from '../../lib/api/wallet-client';
-import type { Transaction, GetTransactionsPaginatedResponse } from '../../lib/api/wallet-client';
+import React, { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import { useAuth } from "../../hooks/useAuth";
+import { useToast } from "../../components/ToastProvider";
+import { getTransactions } from "../../lib/api/wallet-client";
+import {
+  Transaction,
+  GetTransactionsPaginatedResponse,
+} from "../../lib/api/wallet-client";
+import { logger } from "../../lib/logger";
 
-type DateRange = 'all' | '24h' | 'week' | 'month' | '3m' | '6m' | 'year';
-type TxType = 'all' | 'deposit' | 'withdrawal' | 'bet_placement' | 'bet_settlement';
+type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";
+type TxType =
+  | "all"
+  | "deposit"
+  | "withdrawal"
+  | "bet_placement"
+  | "bet_settlement";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [dateRange, setDateRange] = useState<DateRange>('all');
-  const [txType, setTxType] = useState<TxType>('all');
+  const [dateRange, setDateRange] = useState<DateRange>("all");
+  const [txType, setTxType] = useState<TxType>("all");
   const [page, setPage] = useState(1);
-  const [response, setResponse] = useState<GetTransactionsPaginatedResponse | null>(null);
+  const [
+    response,
+    setResponse,
+  ] = useState<GetTransactionsPaginatedResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
+  const handleExportCSV = async () => {
+    if (!user?.id) return;
+    setExporting(true);
+    try {
+      const allData = await getTransactions(user.id, {
+        limit: 1000,
+        transaction_type: txType === "all" ? undefined : txType,
+      });
+      const txns = allData.transactions || [];
+      const header = "Date,Type,Amount,Balance After,Transaction ID";
+      const rows = txns.map((tx) =>
+        [
+          new Date(tx.createdAt).toISOString(),
+          tx.type,
+          tx.amount.toFixed(2),
+          tx.balanceAfter?.toFixed(2) || "",
+          tx.transactionId,
+        ].join(","),
+      );
+      const csvContent = [header, ...rows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `phoenix_transactions_${new Date()
+        .toISOString()
+        .slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      logger.info("Transactions", "CSV export completed", {
+        count: txns.length,
+      });
+      toast.success("Export complete", `${txns.length} transactions exported`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error("Transactions", "CSV export failed", message);
+      toast.error("Export failed", message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Fetch transactions
   useEffect(() => {
@@ -31,11 +87,11 @@ export default function TransactionsPage() {
         const result = await getTransactions(user.id, {
           page,
           limit: 10,
-          transaction_type: txType === 'all' ? undefined : txType,
+          transaction_type: txType === "all" ? undefined : txType,
         });
         setResponse(result);
-      } catch (err: unknown) {
-        toast.error('Failed to load transactions');
+      } catch (err) {
+        toast.error("Failed to load transactions");
       } finally {
         setLoading(false);
       }
@@ -55,9 +111,22 @@ export default function TransactionsPage() {
             <h1>Transaction History</h1>
             <p>View all your deposits, withdrawals, and bets</p>
           </div>
-          <Link href="/account" className="tx-back">
-            ← Back to Account
-          </Link>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              className="tx-back"
+              onClick={handleExportCSV}
+              disabled={exporting}
+              style={{
+                cursor: exporting ? "not-allowed" : "pointer",
+                opacity: exporting ? 0.5 : 1,
+              }}
+            >
+              {exporting ? "Exporting..." : "Export CSV"}
+            </button>
+            <Link href="/account" className="tx-back">
+              ← Back to Account
+            </Link>
+          </div>
         </div>
 
         {/* Filters */}
@@ -65,14 +134,36 @@ export default function TransactionsPage() {
           <div className="tx-filter-group">
             <label className="tx-filter-label">Date Range</label>
             <div className="tx-filter-buttons">
-              {(['all', '24h', 'week', 'month', '3m', '6m', 'year'] as const).map((r) => (
+              {([
+                "all",
+                "24h",
+                "week",
+                "month",
+                "3m",
+                "6m",
+                "year",
+              ] as const).map((r) => (
                 <button
                   key={r}
-                  className={`tx-filter-btn ${dateRange === r ? 'active' : ''}`}
-                  onClick={() => { setDateRange(r); setPage(1); }}
+                  className={`tx-filter-btn ${dateRange === r ? "active" : ""}`}
+                  onClick={() => {
+                    setDateRange(r);
+                    setPage(1);
+                  }}
                 >
-                  {r === 'all' ? 'All Time' : r === '24h' ? 'Last 24h' : r === 'week' ? 'Last Week' :
-                   r === 'month' ? 'Last Month' : r === '3m' ? 'Last 3 Months' : r === '6m' ? 'Last 6 Months' : 'Last Year'}
+                  {r === "all"
+                    ? "All Time"
+                    : r === "24h"
+                    ? "Last 24h"
+                    : r === "week"
+                    ? "Last Week"
+                    : r === "month"
+                    ? "Last Month"
+                    : r === "3m"
+                    ? "Last 3 Months"
+                    : r === "6m"
+                    ? "Last 6 Months"
+                    : "Last Year"}
                 </button>
               ))}
             </div>
@@ -81,14 +172,30 @@ export default function TransactionsPage() {
           <div className="tx-filter-group">
             <label className="tx-filter-label">Type</label>
             <div className="tx-filter-buttons">
-              {(['all', 'deposit', 'withdrawal', 'bet_placement', 'bet_settlement'] as const).map((t) => (
+              {([
+                "all",
+                "deposit",
+                "withdrawal",
+                "bet_placement",
+                "bet_settlement",
+              ] as const).map((t) => (
                 <button
                   key={t}
-                  className={`tx-filter-btn ${txType === t ? 'active' : ''}`}
-                  onClick={() => { setTxType(t); setPage(1); }}
+                  className={`tx-filter-btn ${txType === t ? "active" : ""}`}
+                  onClick={() => {
+                    setTxType(t);
+                    setPage(1);
+                  }}
                 >
-                  {t === 'all' ? 'All' : t === 'deposit' ? 'Deposit' : t === 'withdrawal' ? 'Withdrawal' :
-                   t === 'bet_placement' ? 'Bet Placement' : 'Bet Settlement'}
+                  {t === "all"
+                    ? "All"
+                    : t === "deposit"
+                    ? "Deposit"
+                    : t === "withdrawal"
+                    ? "Withdrawal"
+                    : t === "bet_placement"
+                    ? "Bet Placement"
+                    : "Bet Settlement"}
                 </button>
               ))}
             </div>
@@ -100,7 +207,9 @@ export default function TransactionsPage() {
           {loading ? (
             <div className="tx-loading">Loading transactions...</div>
           ) : transactions.length === 0 ? (
-            <div className="tx-empty">No transactions found for this period.</div>
+            <div className="tx-empty">
+              No transactions found for this period.
+            </div>
           ) : (
             <>
               <div className="tx-table-container">
@@ -120,19 +229,31 @@ export default function TransactionsPage() {
                         <td>{new Date(tx.createdAt).toLocaleString()}</td>
                         <td>
                           <span className="tx-type">
-                            {tx.type === 'deposit' ? 'Deposit' :
-                             tx.type === 'withdrawal' ? 'Withdrawal' :
-                             tx.type === 'bet_placement' ? 'Bet Placement' :
-                             tx.type === 'bet_settlement' ? 'Bet Settlement' : tx.type}
+                            {tx.type === "deposit"
+                              ? "Deposit"
+                              : tx.type === "withdrawal"
+                              ? "Withdrawal"
+                              : tx.type === "bet_placement"
+                              ? "Bet Placement"
+                              : tx.type === "bet_settlement"
+                              ? "Bet Settlement"
+                              : tx.type}
                           </span>
                         </td>
                         <td>
-                          <span className={tx.type === 'deposit' ? 'tx-credit' : 'tx-debit'}>
-                            {tx.type === 'deposit' || tx.type === 'bet_settlement' ? '+' : '-'}
+                          <span
+                            className={
+                              tx.type === "deposit" ? "tx-credit" : "tx-debit"
+                            }
+                          >
+                            {tx.type === "deposit" ||
+                            tx.type === "bet_settlement"
+                              ? "+"
+                              : "-"}
                             ${Math.abs(tx.amount).toFixed(2)}
                           </span>
                         </td>
-                        <td>${tx.balanceAfter?.toFixed(2) || '—'}</td>
+                        <td>${tx.balanceAfter?.toFixed(2) || "—"}</td>
                         <td>
                           <span className="tx-status">{tx.type}</span>
                         </td>
@@ -147,7 +268,7 @@ export default function TransactionsPage() {
                 <div className="tx-pagination">
                   <button
                     className="tx-page-btn"
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
                   >
                     ← Prev
@@ -157,7 +278,7 @@ export default function TransactionsPage() {
                   </div>
                   <button
                     className="tx-page-btn"
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
                   >
                     Next →
