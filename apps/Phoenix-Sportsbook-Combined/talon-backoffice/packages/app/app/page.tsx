@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useBetslip } from './hooks/useBetslip';
-import type { BetSelection } from './components/BetslipProvider';
-import { useAppSelector, useAppDispatch } from './lib/store/hooks';
-import { selectMovements, clearMovement } from './lib/store/marketSlice';
-import { selectOddsFormat } from './lib/store/settingsSlice';
-import { formatOdds } from './lib/utils/odds';
-import { useAuth } from './hooks/useAuth';
-import LandingPage from './components/LandingPage';
+import { useState, useEffect, useCallback } from "react";
+import { useBetslip } from "./hooks/useBetslip";
+import { BetSelection } from "./components/BetslipProvider";
+import { useAppSelector, useAppDispatch } from "./lib/store/hooks";
+import { selectMovements, clearMovement } from "./lib/store/marketSlice";
+import { selectOddsFormat } from "./lib/store/settingsSlice";
+import { formatOdds } from "./lib/utils/odds";
+import { useAuth } from "./hooks/useAuth";
+import LandingPage from "./components/LandingPage";
 
 interface Selection {
   selectionId: string;
@@ -38,8 +38,18 @@ interface Fixture {
   fixtureName: string;
   startTime: string;
   isLive: boolean;
-  sport: { sportId: string; name: string; abbreviation: string; displayToPunters: boolean };
-  tournament: { tournamentId: string; sportId: string; name: string; startTime: string };
+  sport: {
+    sportId: string;
+    name: string;
+    abbreviation: string;
+    displayToPunters: boolean;
+  };
+  tournament: {
+    tournamentId: string;
+    sportId: string;
+    name: string;
+    startTime: string;
+  };
   status: string;
   markets: Market[];
   marketsTotalCount: number;
@@ -54,10 +64,10 @@ interface Sport {
 }
 
 function getTeams(competitors: Record<string, Competitor> | undefined) {
-  if (!competitors) return { home: 'TBD', away: 'TBD' };
-  const home = competitors['home'] || Object.values(competitors)[0];
-  const away = competitors['away'] || Object.values(competitors)[1];
-  return { home: home?.name || 'TBD', away: away?.name || 'TBD' };
+  if (!competitors) return { home: "TBD", away: "TBD" };
+  const home = competitors["home"] || Object.values(competitors)[0];
+  const away = competitors["away"] || Object.values(competitors)[1];
+  return { home: home?.name || "TBD", away: away?.name || "TBD" };
 }
 
 function formatDate(dateStr: string) {
@@ -67,11 +77,20 @@ function formatDate(dateStr: string) {
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeStr = d.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     if (d.toDateString() === now.toDateString()) return `Today, ${timeStr}`;
-    if (d.toDateString() === tomorrow.toDateString()) return `Tomorrow, ${timeStr}`;
-    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + `, ${timeStr}`;
-  } catch { return dateStr; }
+    if (d.toDateString() === tomorrow.toDateString())
+      return `Tomorrow, ${timeStr}`;
+    return (
+      d.toLocaleDateString([], { month: "short", day: "numeric" }) +
+      `, ${timeStr}`
+    );
+  } catch {
+    return dateStr;
+  }
 }
 
 export default function HomePage() {
@@ -85,8 +104,8 @@ function AuthenticatedHome() {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeSport, setActiveSport] = useState('all');
+  const [error, setError] = useState("");
+  const [activeSport, setActiveSport] = useState("all");
 
   // Betslip integration — providers are always mounted in layout.tsx
   const betslip = useBetslip();
@@ -105,48 +124,56 @@ function AuthenticatedHome() {
     for (const key of keys) {
       const age = Date.now() - movements[key].timestamp;
       const remaining = Math.max(0, 2000 - age);
-      timers.push(setTimeout(() => {
-        reduxDispatch(clearMovement(key));
-      }, remaining));
+      timers.push(
+        setTimeout(() => {
+          reduxDispatch(clearMovement(key));
+        }, remaining),
+      );
     }
     return () => timers.forEach(clearTimeout);
   }, [movements, reduxDispatch]);
 
-  const handleOddsClick = useCallback((
-    fixture: Fixture,
-    market: Market,
-    selection: Selection,
-  ) => {
-    if (!betslip || selection.status === 'SUSPENDED') return;
+  const handleOddsClick = useCallback(
+    (fixture: Fixture, market: Market, selection: Selection) => {
+      if (!betslip || selection.status === "SUSPENDED") return;
 
-    const sel: BetSelection = {
-      id: `${market.marketId}-${selection.selectionId}`,
-      fixtureId: fixture.fixtureId,
-      marketId: market.marketId,
-      selectionId: selection.selectionId,
-      matchName: fixture.fixtureName || `${getTeams(fixture.competitors).home} vs ${getTeams(fixture.competitors).away}`,
-      marketName: market.name || 'Match Result',
-      selectionName: selection.name,
-      odds: selection.odds,
-    };
+      const sel: BetSelection = {
+        id: `${market.marketId}-${selection.selectionId}`,
+        fixtureId: fixture.fixtureId,
+        marketId: market.marketId,
+        selectionId: selection.selectionId,
+        matchName:
+          fixture.fixtureName ||
+          `${getTeams(fixture.competitors).home} vs ${
+            getTeams(fixture.competitors).away
+          }`,
+        marketName: market.name || "Match Result",
+        selectionName: selection.name,
+        odds: selection.odds,
+        initialOdds: selection.odds,
+      };
 
-    // Toggle: if already in betslip, remove it; otherwise add
-    const existing = betslip.selections.find(
-      (s: BetSelection) => s.selectionId === selection.selectionId && s.marketId === market.marketId
-    );
-    if (existing) {
-      betslip.removeSelection(existing.id);
-    } else {
-      betslip.addSelection(sel);
-    }
-  }, [betslip]);
+      // Toggle: if already in betslip, remove it; otherwise add
+      const existing = betslip.selections.find(
+        (s: BetSelection) =>
+          s.selectionId === selection.selectionId &&
+          s.marketId === market.marketId,
+      );
+      if (existing) {
+        betslip.removeSelection(existing.id);
+      } else {
+        betslip.addSelection(sel);
+      }
+    },
+    [betslip],
+  );
 
   useEffect(() => {
     async function loadData() {
       try {
         const [fixturesRes, sportsRes] = await Promise.all([
-          fetch('/api/v1/fixtures'),
-          fetch('/api/v1/sports'),
+          fetch("/api/v1/fixtures"),
+          fetch("/api/v1/sports"),
         ]);
         if (fixturesRes.ok) {
           const data = await fixturesRes.json();
@@ -159,7 +186,7 @@ function AuthenticatedHome() {
           setSports(Array.isArray(list) ? list : []);
         }
       } catch (err) {
-        setError('Could not connect to API. Is the backend running?');
+        setError("Could not connect to API. Is the backend running?");
       } finally {
         setLoading(false);
       }
@@ -167,13 +194,16 @@ function AuthenticatedHome() {
     loadData();
   }, []);
 
-  const filteredFixtures = activeSport === 'all'
-    ? fixtures
-    : fixtures.filter(f => f.sport?.sportId === activeSport);
+  const filteredFixtures =
+    activeSport === "all"
+      ? fixtures
+      : fixtures.filter((f) => f.sport?.sportId === activeSport);
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .home-hero {
           background: linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%);
           border-radius: 16px; padding: 32px; margin-bottom: 28px;
@@ -303,11 +333,15 @@ function AuthenticatedHome() {
 
         .skeleton { background: linear-gradient(90deg, #161a35 25%, #1e2243 50%, #161a35 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 10px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-      `}} />
+      `,
+        }}
+      />
 
       {/* Hero */}
       <div className="home-hero">
-        <h1>Welcome to <span className="accent">Phoenix</span></h1>
+        <h1>
+          Welcome to <span className="accent">Phoenix</span>
+        </h1>
         <p>Live odds, instant bets, real-time results.</p>
       </div>
 
@@ -316,15 +350,17 @@ function AuthenticatedHome() {
       {/* Sport pills */}
       <div className="sport-pills">
         <button
-          className={`sport-pill ${activeSport === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveSport('all')}
+          className={`sport-pill ${activeSport === "all" ? "active" : ""}`}
+          onClick={() => setActiveSport("all")}
         >
           All Sports
         </button>
         {sports.map((sport) => (
           <button
             key={sport.sportId}
-            className={`sport-pill ${activeSport === sport.sportId ? 'active' : ''}`}
+            className={`sport-pill ${
+              activeSport === sport.sportId ? "active" : ""
+            }`}
             onClick={() => setActiveSport(sport.sportId)}
           >
             {sport.name}
@@ -335,83 +371,119 @@ function AuthenticatedHome() {
       {/* Fixtures */}
       <div className="section-header">
         <span className="section-title">
-          {loading ? 'Loading...' : 'Upcoming Matches'}
+          {loading ? "Loading..." : "Upcoming Matches"}
         </span>
-        {!loading && <span className="section-count">{filteredFixtures.length} matches</span>}
+        {!loading && (
+          <span className="section-count">
+            {filteredFixtures.length} matches
+          </span>
+        )}
       </div>
 
       {loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[1, 2, 3].map(i => (
-            <div key={`skeleton-${i}`} className="skeleton" style={{ height: 140 }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[1, 2, 3].map((i) => (
+            <div
+              key={`skeleton-${i}`}
+              className="skeleton"
+              style={{ height: 140 }}
+            />
           ))}
         </div>
       )}
 
-      {!loading && filteredFixtures.map((fixture) => {
-        const teams = getTeams(fixture.competitors);
-        const mainMarket = fixture.markets?.[0];
-        return (
-          <div key={fixture.fixtureId} className="fixture-card">
-            <div className="fixture-meta">
-              <span className="fixture-league">
-                {fixture.sport?.name} &middot; {fixture.tournament?.name}
-              </span>
-              <span className={`fixture-time ${fixture.isLive ? 'live' : 'upcoming'}`}>
-                {fixture.isLive ? 'LIVE' : formatDate(fixture.startTime)}
-              </span>
-            </div>
-
-            <div className="fixture-teams">
-              <span className="team-name home">{teams.home}</span>
-              <span className="vs-badge">vs</span>
-              <span className="team-name away">{teams.away}</span>
-            </div>
-
-            {mainMarket && mainMarket.selections?.length > 0 && (
-              <div className="odds-row">
-                {mainMarket.selections.map((sel) => {
-                  const isSelected = betslip?.selections?.some(
-                    (s: BetSelection) => s.selectionId === sel.selectionId && s.marketId === mainMarket.marketId
-                  );
-                  const moveKey = `${mainMarket.marketId}:${sel.selectionId}`;
-                  const movement = movements[moveKey];
-                  const moveClass = movement
-                    ? movement.direction === 'up' ? 'odds-flash-up' : 'odds-flash-down'
-                    : '';
-                  return (
-                    <button
-                      key={sel.selectionId}
-                      className={`odds-btn ${isSelected ? 'selected' : ''} ${moveClass}`}
-                      onClick={() => handleOddsClick(fixture, mainMarket, sel)}
-                      disabled={sel.status === 'SUSPENDED'}
-                    >
-                      <span className="odds-label">{sel.name}</span>
-                      <span className={`odds-value ${sel.status === 'SUSPENDED' ? 'suspended' : ''}`}>
-                        {sel.status === 'SUSPENDED' ? '-' : formatOdds(sel.odds, oddsFormat)}
-                        {movement && movement.direction === 'up' && <span className="odds-arrow up">&#9650;</span>}
-                        {movement && movement.direction === 'down' && <span className="odds-arrow down">&#9660;</span>}
-                      </span>
-                    </button>
-                  );
-                })}
+      {!loading &&
+        filteredFixtures.map((fixture) => {
+          const teams = getTeams(fixture.competitors);
+          const mainMarket = fixture.markets?.[0];
+          return (
+            <div key={fixture.fixtureId} className="fixture-card">
+              <div className="fixture-meta">
+                <span className="fixture-league">
+                  {fixture.sport?.name} &middot; {fixture.tournament?.name}
+                </span>
+                <span
+                  className={`fixture-time ${
+                    fixture.isLive ? "live" : "upcoming"
+                  }`}
+                >
+                  {fixture.isLive ? "LIVE" : formatDate(fixture.startTime)}
+                </span>
               </div>
-            )}
 
-            {fixture.marketsTotalCount > 1 && (
-              <a href={`/fixtures/${fixture.fixtureId}`} className="more-markets">
-                +{fixture.marketsTotalCount - 1} more markets
-              </a>
-            )}
-          </div>
-        );
-      })}
+              <div className="fixture-teams">
+                <span className="team-name home">{teams.home}</span>
+                <span className="vs-badge">vs</span>
+                <span className="team-name away">{teams.away}</span>
+              </div>
+
+              {mainMarket && mainMarket.selections?.length > 0 && (
+                <div className="odds-row">
+                  {mainMarket.selections.map((sel) => {
+                    const isSelected = betslip?.selections?.some(
+                      (s: BetSelection) =>
+                        s.selectionId === sel.selectionId &&
+                        s.marketId === mainMarket.marketId,
+                    );
+                    const moveKey = `${mainMarket.marketId}:${sel.selectionId}`;
+                    const movement = movements[moveKey];
+                    const moveClass = movement
+                      ? movement.direction === "up"
+                        ? "odds-flash-up"
+                        : "odds-flash-down"
+                      : "";
+                    return (
+                      <button
+                        key={sel.selectionId}
+                        className={`odds-btn ${
+                          isSelected ? "selected" : ""
+                        } ${moveClass}`}
+                        onClick={() =>
+                          handleOddsClick(fixture, mainMarket, sel)
+                        }
+                        disabled={sel.status === "SUSPENDED"}
+                      >
+                        <span className="odds-label">{sel.name}</span>
+                        <span
+                          className={`odds-value ${
+                            sel.status === "SUSPENDED" ? "suspended" : ""
+                          }`}
+                        >
+                          {sel.status === "SUSPENDED"
+                            ? "-"
+                            : formatOdds(sel.odds, oddsFormat)}
+                          {movement && movement.direction === "up" && (
+                            <span className="odds-arrow up">&#9650;</span>
+                          )}
+                          {movement && movement.direction === "down" && (
+                            <span className="odds-arrow down">&#9660;</span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {fixture.marketsTotalCount > 1 && (
+                <a
+                  href={`/fixtures/${fixture.fixtureId}`}
+                  className="more-markets"
+                >
+                  +{fixture.marketsTotalCount - 1} more markets
+                </a>
+              )}
+            </div>
+          );
+        })}
 
       {!loading && filteredFixtures.length === 0 && !error && (
         <div className="empty-state">
           <div className="empty-icon">⚽</div>
           <div className="empty-title">No matches available</div>
-          <div className="empty-sub">Check back soon for upcoming fixtures and live odds.</div>
+          <div className="empty-sub">
+            Check back soon for upcoming fixtures and live odds.
+          </div>
         </div>
       )}
     </>

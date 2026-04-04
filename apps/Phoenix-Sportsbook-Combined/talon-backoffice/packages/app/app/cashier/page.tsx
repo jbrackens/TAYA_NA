@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getBalance,
   deposit,
   withdraw,
   getTransactions,
+  getTransactionStatus,
 } from "../lib/api/wallet-client";
 import { Balance, Transaction } from "../lib/api/wallet-client";
+import { logger } from "../lib/logger";
 import { getMonthlyDepositTotal } from "../lib/api/compliance-client";
 import { useAppDispatch } from "../lib/store/hooks";
 import { setCurrentBalance } from "../lib/store/cashierSlice";
@@ -37,6 +39,9 @@ export default function CashierPage() {
   const [error, setError] = useState("");
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
+  const [pendingTxId, setPendingTxId] = useState<string | null>(null);
+  const [pollMessage, setPollMessage] = useState("");
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Store is always available via StoreProvider in layout.tsx
   const dispatch = useAppDispatch();
@@ -65,6 +70,102 @@ export default function CashierPage() {
     load();
   }, [dispatch]);
 
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, []);
+
+  const startPolling = useCallback(
+    (txId: string) => {
+      setPendingTxId(txId);
+      setPollMessage("Processing deposit...");
+      setLoading(true);
+      let retries = 0;
+      const maxRetries = 30;
+
+      pollIntervalRef.current = setInterval(async () => {
+        retries += 1;
+        try {
+          const statusRes = await getTransactionStatus(txId);
+          logger.info("Cashier", "Poll transaction status", {
+            txId,
+            status: statusRes.status,
+            retry: retries,
+          });
+
+          if (statusRes.status === "COMPLETED") {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+            setPendingTxId(null);
+            setPollMessage("");
+            const successMsg = `$${statusRes.amount.toFixed(
+              2,
+            )} deposited successfully!`;
+            setSuccess(successMsg);
+            toast.success("Deposit Successful", successMsg);
+            setLoading(false);
+            try {
+              const bal = await getBalance(user?.id || "");
+              setBalance(bal);
+              dispatch(setCurrentBalance(bal.availableBalance));
+            } catch (err) {
+              logger.error(
+                "Cashier",
+                "Failed to refresh balance after polling",
+                err,
+              );
+            }
+            setTimeout(() => {
+              setSuccess("");
+              setError("");
+            }, 4000);
+            return;
+          }
+
+          if (statusRes.status === "FAILED") {
+            if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+            setPendingTxId(null);
+            setPollMessage("");
+            const errorMsg = "Deposit failed. Please try again.";
+            setError(errorMsg);
+            toast.error("Deposit Failed", errorMsg);
+            setLoading(false);
+            setTimeout(() => {
+              setSuccess("");
+              setError("");
+            }, 4000);
+            return;
+          }
+        } catch (err) {
+          logger.error("Cashier", "Error polling transaction status", err);
+        }
+
+        if (retries >= maxRetries) {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+          setPendingTxId(null);
+          setPollMessage("");
+          const timeoutMsg =
+            "Transaction still processing. Check your history.";
+          setSuccess(timeoutMsg);
+          toast.info("Deposit Processing", timeoutMsg);
+          setLoading(false);
+          setTimeout(() => {
+            setSuccess("");
+            setError("");
+          }, 4000);
+        }
+      }, 2000);
+    },
+    [dispatch, toast, user],
+  );
+
   const handleQuickAmount = (val: string) => {
     setSelectedQuick(val);
     setAmount(val);
@@ -78,14 +179,25 @@ export default function CashierPage() {
     setError("");
     setSuccess("");
     try {
-      await deposit(user?.id || "", {
+      const depositRes = await deposit(user?.id || "", {
         amount: numAmount,
         payment_method: selectedPayment,
       });
+      setMonthlyTotal((prev) => prev + numAmount);
+
+      if (depositRes.status === "PENDING") {
+        logger.info(
+          "Cashier",
+          "Deposit returned PENDING, starting poll",
+          depositRes.transactionId,
+        );
+        startPolling(depositRes.transactionId);
+        return;
+      }
+
       const successMsg = `$${numAmount.toFixed(2)} deposited successfully!`;
       setSuccess(successMsg);
       toast.success("Deposit Successful", successMsg);
-      setMonthlyTotal((prev) => prev + numAmount);
       const bal = await getBalance(user?.id || "");
       setBalance(bal);
       dispatch(setCurrentBalance(bal.availableBalance));
@@ -94,13 +206,25 @@ export default function CashierPage() {
       setError(message || "Deposit failed. Please try again.");
       toast.error("Deposit Failed", message);
     } finally {
-      setLoading(false);
+      if (!pendingTxId) {
+        setLoading(false);
+      }
       setTimeout(() => {
-        setSuccess("");
-        setError("");
+        if (!pendingTxId) {
+          setSuccess("");
+          setError("");
+        }
       }, 4000);
     }
-  }, [amount, selectedPayment, dispatch, toast, user]);
+  }, [
+    amount,
+    selectedPayment,
+    dispatch,
+    toast,
+    user,
+    startPolling,
+    pendingTxId,
+  ]);
 
   const handleSubmit = useCallback(async () => {
     const numAmount = parseFloat(amount);
@@ -123,10 +247,21 @@ export default function CashierPage() {
     setSuccess("");
     try {
       if (activeTab === "deposit") {
-        await deposit(user?.id || "", {
+        const depositRes = await deposit(user?.id || "", {
           amount: numAmount,
           payment_method: selectedPayment,
         });
+
+        if (depositRes.status === "PENDING") {
+          logger.info(
+            "Cashier",
+            "Deposit returned PENDING, starting poll",
+            depositRes.transactionId,
+          );
+          startPolling(depositRes.transactionId);
+          return;
+        }
+
         const successMsg = `$${numAmount.toFixed(2)} deposited successfully!`;
         setSuccess(successMsg);
         toast.success("Deposit Successful", successMsg);
@@ -149,10 +284,14 @@ export default function CashierPage() {
       setError(errorMsg);
       toast.error("Transaction Failed", errorMsg);
     } finally {
-      setLoading(false);
+      if (!pendingTxId) {
+        setLoading(false);
+      }
       setTimeout(() => {
-        setSuccess("");
-        setError("");
+        if (!pendingTxId) {
+          setSuccess("");
+          setError("");
+        }
       }, 4000);
     }
   }, [
@@ -164,6 +303,8 @@ export default function CashierPage() {
     user,
     monthlyTotal,
     executeDeposit,
+    startPolling,
+    pendingTxId,
   ]);
 
   const displayAmount = parseFloat(amount || "0");
@@ -273,6 +414,12 @@ export default function CashierPage() {
             </div>
 
             {/* Messages */}
+            {pendingTxId && (
+              <div className="cashier-msg pending">
+                <span className="cashier-spinner" />
+                {pollMessage}
+              </div>
+            )}
             {error && <div className="cashier-msg error">{error}</div>}
             {success && <div className="cashier-msg success">{success}</div>}
 
@@ -280,9 +427,11 @@ export default function CashierPage() {
             <button
               className="cashier-submit"
               onClick={handleSubmit}
-              disabled={loading || displayAmount <= 0}
+              disabled={loading || displayAmount <= 0 || !!pendingTxId}
             >
-              {loading
+              {pendingTxId
+                ? "Processing deposit..."
+                : loading
                 ? "Processing..."
                 : activeTab === "deposit"
                 ? `Deposit $${displayAmount.toFixed(2)}`
@@ -419,6 +568,12 @@ const cashierStyles = `
   .cashier-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 16px; }
   .cashier-msg.error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
   .cashier-msg.success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #22c55e; }
+  .cashier-msg.pending { background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2); color: #f97316; display: flex; align-items: center; gap: 10px; }
+  @keyframes cashier-spin { to { transform: rotate(360deg); } }
+  .cashier-spinner {
+    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(249,115,22,0.3);
+    border-top-color: #f97316; border-radius: 50%; animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
+  }
   .cashier-submit {
     width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700;
     background: #f97316; border: none; color: #fff; cursor: pointer; transition: opacity 0.15s;

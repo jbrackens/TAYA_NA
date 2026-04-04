@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { createContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useState, useCallback, useMemo } from "react";
 
 export interface BetSelection {
   id: string;
@@ -11,6 +11,7 @@ export interface BetSelection {
   marketName: string;
   selectionName: string;
   odds: number;
+  initialOdds: number;
 }
 
 export interface BetslipContextType {
@@ -24,15 +25,20 @@ export interface BetslipContextType {
   clearAll: () => void;
   setStakePerLeg: (stake: number) => void;
   setParlayMode: (mode: boolean) => void;
+  syncInitialOdds: () => void;
 }
 
-export const BetslipContext = createContext<BetslipContextType | undefined>(undefined);
+export const BetslipContext = createContext<BetslipContextType | undefined>(
+  undefined,
+);
 
 interface BetslipProviderProps {
   children: React.ReactNode;
 }
 
-export const BetslipProvider: React.FC<BetslipProviderProps> = ({ children }) => {
+export const BetslipProvider: React.FC<BetslipProviderProps> = ({
+  children,
+}) => {
   const [selections, setSelections] = useState<BetSelection[]>([]);
   const [stakePerLeg, setStakePerLeg] = useState(10);
   const [parlayMode, setParlayMode] = useState(false);
@@ -40,10 +46,23 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({ children }) =>
   const addSelection = useCallback((selection: BetSelection) => {
     setSelections((prev) => {
       // Don't add duplicate selections
-      if (prev.some((s) => s.selectionId === selection.selectionId && s.marketId === selection.marketId)) {
+      if (
+        prev.some(
+          (s) =>
+            s.selectionId === selection.selectionId &&
+            s.marketId === selection.marketId,
+        )
+      ) {
         return prev;
       }
-      return [...prev, { ...selection, id: `${Date.now()}-${Math.random()}` }];
+      return [
+        ...prev,
+        {
+          ...selection,
+          id: `${Date.now()}-${Math.random()}`,
+          initialOdds: selection.odds,
+        },
+      ];
     });
   }, []);
 
@@ -53,6 +72,10 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({ children }) =>
 
   const clearAll = useCallback(() => {
     setSelections([]);
+  }, []);
+
+  const syncInitialOdds = useCallback(() => {
+    setSelections((prev) => prev.map((s) => ({ ...s, initialOdds: s.odds })));
   }, []);
 
   // Calculate totals
@@ -67,11 +90,17 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({ children }) =>
     if (parlayMode) {
       // Parlay: single stake, multiply all odds
       totalStake = stakePerLeg;
-      potentialReturn = selections.reduce((acc, sel) => acc * sel.odds, stakePerLeg);
+      potentialReturn = selections.reduce(
+        (acc, sel) => acc * sel.odds,
+        stakePerLeg,
+      );
     } else {
       // Single bets: stake per selection, sum of individual returns
       totalStake = stakePerLeg * selections.length;
-      potentialReturn = selections.reduce((acc, sel) => acc + stakePerLeg * sel.odds, 0);
+      potentialReturn = selections.reduce(
+        (acc, sel) => acc + stakePerLeg * sel.odds,
+        0,
+      );
     }
 
     return { totalStake, potentialReturn };
@@ -88,7 +117,10 @@ export const BetslipProvider: React.FC<BetslipProviderProps> = ({ children }) =>
     clearAll,
     setStakePerLeg,
     setParlayMode,
+    syncInitialOdds,
   };
 
-  return <BetslipContext.Provider value={value}>{children}</BetslipContext.Provider>;
+  return (
+    <BetslipContext.Provider value={value}>{children}</BetslipContext.Provider>
+  );
 };

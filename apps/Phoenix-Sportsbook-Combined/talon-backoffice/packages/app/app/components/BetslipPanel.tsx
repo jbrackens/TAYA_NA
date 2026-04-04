@@ -31,12 +31,21 @@ const QUICK_STAKES = [5, 10, 25, 50, 100];
 
 type BetState = "idle" | "confirming" | "placing" | "success" | "error";
 
+interface OddsChange {
+  id: string;
+  name: string;
+  oldOdds: number;
+  newOdds: number;
+}
+
 export const BetslipPanel: React.FC = () => {
   const { t } = useTranslation("betslip");
   const [activeTab, setActiveTab] = useState<"betslip" | "open">("betslip");
   const [betState, setBetState] = useState<BetState>("idle");
   const [betError, setBetError] = useState<string>("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [oddsChanged, setOddsChanged] = useState(false);
+  const [changedSelections, setChangedSelections] = useState<OddsChange[]>([]);
 
   // Providers are always mounted in layout.tsx
   const betslip = useBetslip();
@@ -118,6 +127,28 @@ export const BetslipPanel: React.FC = () => {
         );
       }
 
+      // Odds change detection
+      if (!oddsChanged) {
+        const changes: OddsChange[] = [];
+        for (const sel of selections) {
+          if (sel.odds !== sel.initialOdds) {
+            changes.push({
+              id: sel.id,
+              name: sel.selectionName,
+              oldOdds: sel.initialOdds,
+              newOdds: sel.odds,
+            });
+          }
+        }
+        if (changes.length > 0) {
+          logger.info("Betslip", "Odds changed since selection", changes);
+          setChangedSelections(changes);
+          setOddsChanged(true);
+          setBetState("confirming");
+          return;
+        }
+      }
+
       if (parlayMode) {
         const request: PlaceParlayRequest = {
           user_id: userId,
@@ -161,12 +192,32 @@ export const BetslipPanel: React.FC = () => {
       // Reset to idle after showing error
       setTimeout(() => setBetState("idle"), 3000);
     }
-  }, [betState, parlayMode, selections, totalStake, stakePerLeg, betslip]);
+  }, [
+    betState,
+    parlayMode,
+    selections,
+    totalStake,
+    stakePerLeg,
+    betslip,
+    oddsChanged,
+    user,
+    t,
+    toast,
+  ]);
 
   const cancelConfirmation = useCallback(() => {
     setBetState("idle");
     setBetError("");
+    setOddsChanged(false);
+    setChangedSelections([]);
   }, []);
+
+  const acceptOddsChanges = useCallback(() => {
+    betslip?.syncInitialOdds();
+    setOddsChanged(false);
+    setChangedSelections([]);
+    // Re-trigger placement flow — already in confirming state, call handlePlaceBet
+  }, [betslip]);
 
   // Helper function to render the betslip content (used by both desktop and mobile)
   const renderBetslipContent = () => (
@@ -258,6 +309,76 @@ export const BetslipPanel: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* Odds Change Warning Banner */}
+          {oddsChanged && changedSelections.length > 0 && (
+            <div
+              style={{
+                margin: "8px 12px",
+                padding: "12px",
+                borderRadius: 8,
+                background: "rgba(251, 191, 36, 0.1)",
+                border: "1px solid rgba(251, 191, 36, 0.3)",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#fbbf24",
+                  marginBottom: 8,
+                }}
+              >
+                Odds have changed
+              </div>
+              {changedSelections.map((change) => (
+                <div
+                  key={change.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    fontSize: 12,
+                    color: "#f1f5f9",
+                    padding: "4px 0",
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{change.name}</span>
+                  <span
+                    style={{
+                      color: "#94a3b8",
+                      textDecoration: "line-through",
+                      marginRight: 6,
+                    }}
+                  >
+                    {formatOdds(change.oldOdds, oddsFormat)}
+                  </span>
+                  <span style={{ fontWeight: 600 }}>
+                    {formatOdds(change.newOdds, oddsFormat)}
+                  </span>
+                </div>
+              ))}
+              <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                <button
+                  className="ps-btn-clear"
+                  onClick={cancelConfirmation}
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="ps-btn-place-bet"
+                  onClick={() => {
+                    acceptOddsChanges();
+                    handlePlaceBet();
+                  }}
+                  style={{ flex: 2 }}
+                >
+                  Accept &amp; Place
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Footer: Stake + Summary + Place Bet */}
           <div className="ps-betslip-footer">

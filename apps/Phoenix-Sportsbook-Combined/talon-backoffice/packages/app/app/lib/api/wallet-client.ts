@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient } from "./client";
 
 // Request types
 export interface DepositRequest {
@@ -121,19 +121,42 @@ export interface GetTransactionsPaginatedResponse {
   totalPages: number;
 }
 
+// Transaction status types (for polling pending deposits)
+interface TransactionStatusRaw {
+  transaction_id: string;
+  status: string;
+  amount: number;
+  updated_at: string;
+}
+
+export interface TransactionStatus {
+  transactionId: string;
+  status: string;
+  amount: number;
+  updatedAt: string;
+}
+
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+function normalizeSnakeCase<T extends Record<string, unknown>>(
+  obj: T,
+): Record<string, unknown> {
   if (Array.isArray(obj)) {
-    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
+    return (obj.map(normalizeSnakeCase) as unknown) as Record<string, unknown>;
   }
-  if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce<Record<string, unknown>>((acc, [key, value]) => {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
-      acc[camelKey] = typeof value === 'object' && value !== null
-        ? normalizeSnakeCase(value as Record<string, unknown>)
-        : value;
-      return acc;
-    }, {});
+  if (obj !== null && typeof obj === "object") {
+    return Object.entries(obj).reduce<Record<string, unknown>>(
+      (acc, [key, value]) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
+          letter.toUpperCase(),
+        );
+        acc[camelKey] =
+          typeof value === "object" && value !== null
+            ? normalizeSnakeCase(value as Record<string, unknown>)
+            : value;
+        return acc;
+      },
+      {},
+    );
   }
   return obj;
 }
@@ -149,17 +172,41 @@ export async function getBalance(userId: string): Promise<Balance> {
 /**
  * Deposit funds to wallet
  */
-export async function deposit(userId: string, request: DepositRequest): Promise<DepositResponse> {
-  const raw = await apiClient.post<DepositResponseRaw>(`/api/v1/wallets/${userId}/deposit`, request);
+export async function deposit(
+  userId: string,
+  request: DepositRequest,
+): Promise<DepositResponse> {
+  const raw = await apiClient.post<DepositResponseRaw>(
+    `/api/v1/wallets/${userId}/deposit`,
+    request,
+  );
   return normalizeSnakeCase(raw);
 }
 
 /**
  * Withdraw funds from wallet
  */
-export async function withdraw(userId: string, request: WithdrawRequest): Promise<WithdrawResponse> {
-  const raw = await apiClient.post<WithdrawResponseRaw>(`/api/v1/wallets/${userId}/withdraw`, request);
+export async function withdraw(
+  userId: string,
+  request: WithdrawRequest,
+): Promise<WithdrawResponse> {
+  const raw = await apiClient.post<WithdrawResponseRaw>(
+    `/api/v1/wallets/${userId}/withdraw`,
+    request,
+  );
   return normalizeSnakeCase(raw);
+}
+
+/**
+ * Get transaction status by transaction ID (used for polling pending deposits)
+ */
+export async function getTransactionStatus(
+  transactionId: string,
+): Promise<TransactionStatus> {
+  const raw = await apiClient.get<TransactionStatusRaw>(
+    `/api/v1/wallets/transactions/${transactionId}`,
+  );
+  return (normalizeSnakeCase(raw) as unknown) as TransactionStatus;
 }
 
 /**
@@ -167,16 +214,17 @@ export async function withdraw(userId: string, request: WithdrawRequest): Promis
  */
 export async function getTransactions(
   userId: string,
-  params?: GetTransactionsParams
+  params?: GetTransactionsParams,
 ): Promise<GetTransactionsPaginatedResponse> {
   const queryParams: Record<string, string> = {};
   if (params?.page) queryParams.page = String(params.page);
   if (params?.limit) queryParams.limit = String(params.limit);
-  if (params?.transaction_type) queryParams.transaction_type = params.transaction_type;
+  if (params?.transaction_type)
+    queryParams.transaction_type = params.transaction_type;
 
   const raw = await apiClient.get<GetTransactionsPaginatedResponseRaw>(
     `/api/v1/wallets/${userId}/transactions`,
-    queryParams
+    queryParams,
   );
   return normalizeSnakeCase(raw);
 }
