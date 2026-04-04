@@ -7,14 +7,8 @@ export default function OpenChatButton() {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      // Hide button when user scrolls to top
-      setIsVisible(scrollPosition > 100);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    // Always visible after mount (SSR guard)
+    setIsVisible(true);
   }, []);
 
   const handleClick = () => {
