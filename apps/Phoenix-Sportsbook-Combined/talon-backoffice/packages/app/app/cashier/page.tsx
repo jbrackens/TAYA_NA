@@ -1,31 +1,42 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { getBalance, deposit, withdraw, getTransactions } from '../lib/api/wallet-client';
-import type { Balance, Transaction } from '../lib/api/wallet-client';
-import { useAppDispatch } from '../lib/store/hooks';
-import { setCurrentBalance } from '../lib/store/cashierSlice';
-import { useToast } from '../components/ToastProvider';
-import { useAuth } from '../hooks/useAuth';
+import { useState, useEffect, useCallback } from "react";
+import {
+  getBalance,
+  deposit,
+  withdraw,
+  getTransactions,
+} from "../lib/api/wallet-client";
+import { Balance, Transaction } from "../lib/api/wallet-client";
+import { getMonthlyDepositTotal } from "../lib/api/compliance-client";
+import { useAppDispatch } from "../lib/store/hooks";
+import { setCurrentBalance } from "../lib/store/cashierSlice";
+import { useToast } from "../components/ToastProvider";
+import { useAuth } from "../hooks/useAuth";
+import DepositThresholdModal from "../components/DepositThresholdModal";
 
-const QUICK_AMOUNTS = ['10', '25', '50', '100', '250', '500'];
+const QUICK_AMOUNTS = ["10", "25", "50", "100", "250", "500"];
 const PAYMENT_METHODS = [
-  { id: 'card', label: 'Credit Card' },
-  { id: 'bank', label: 'Bank Transfer' },
-  { id: 'wallet', label: 'E-Wallet' },
-  { id: 'crypto', label: 'Crypto' },
+  { id: "card", label: "Credit Card" },
+  { id: "bank", label: "Bank Transfer" },
+  { id: "wallet", label: "E-Wallet" },
+  { id: "crypto", label: "Crypto" },
 ];
 
 export default function CashierPage() {
-  const [activeTab, setActiveTab] = useState<'deposit' | 'withdrawal'>('deposit');
-  const [amount, setAmount] = useState('50');
-  const [selectedQuick, setSelectedQuick] = useState('50');
-  const [selectedPayment, setSelectedPayment] = useState('card');
+  const [activeTab, setActiveTab] = useState<"deposit" | "withdrawal">(
+    "deposit",
+  );
+  const [amount, setAmount] = useState("50");
+  const [selectedQuick, setSelectedQuick] = useState("50");
+  const [selectedPayment, setSelectedPayment] = useState("card");
   const [balance, setBalance] = useState<Balance | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [monthlyTotal, setMonthlyTotal] = useState(0);
+  const [showThresholdModal, setShowThresholdModal] = useState(false);
 
   // Store is always available via StoreProvider in layout.tsx
   const dispatch = useAppDispatch();
@@ -36,13 +47,19 @@ export default function CashierPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const bal = await getBalance(user?.id || '');
+        const bal = await getBalance(user?.id || "");
         setBalance(bal);
         dispatch(setCurrentBalance(bal.availableBalance));
-      } catch { /* API not available yet */ }
+      } catch {
+        /* API not available yet */
+      }
       try {
-        const txns = await getTransactions(user?.id || '', { limit: 10 });
+        const txns = await getTransactions(user?.id || "", { limit: 10 });
         setTransactions(txns.transactions || []);
+      } catch {}
+      try {
+        const total = await getMonthlyDepositTotal(user?.id || "");
+        setMonthlyTotal(total);
       } catch {}
     };
     load();
@@ -53,45 +70,106 @@ export default function CashierPage() {
     setAmount(val);
   };
 
+  const DEPOSIT_THRESHOLD = 2500;
+
+  const executeDeposit = useCallback(async () => {
+    const numAmount = parseFloat(amount);
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      await deposit(user?.id || "", {
+        amount: numAmount,
+        payment_method: selectedPayment,
+      });
+      const successMsg = `$${numAmount.toFixed(2)} deposited successfully!`;
+      setSuccess(successMsg);
+      toast.success("Deposit Successful", successMsg);
+      setMonthlyTotal((prev) => prev + numAmount);
+      const bal = await getBalance(user?.id || "");
+      setBalance(bal);
+      dispatch(setCurrentBalance(bal.availableBalance));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || "Deposit failed. Please try again.");
+      toast.error("Deposit Failed", message);
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccess("");
+        setError("");
+      }, 4000);
+    }
+  }, [amount, selectedPayment, dispatch, toast, user]);
+
   const handleSubmit = useCallback(async () => {
     const numAmount = parseFloat(amount);
     if (!numAmount || numAmount <= 0) {
-      setError('Please enter a valid amount');
+      setError("Please enter a valid amount");
       return;
     }
+
+    // Check deposit threshold for deposits
+    if (
+      activeTab === "deposit" &&
+      monthlyTotal + numAmount > DEPOSIT_THRESHOLD
+    ) {
+      setShowThresholdModal(true);
+      return;
+    }
+
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     try {
-      if (activeTab === 'deposit') {
-        await deposit(user?.id || '', { amount: numAmount, payment_method: selectedPayment });
+      if (activeTab === "deposit") {
+        await deposit(user?.id || "", {
+          amount: numAmount,
+          payment_method: selectedPayment,
+        });
         const successMsg = `$${numAmount.toFixed(2)} deposited successfully!`;
         setSuccess(successMsg);
-        toast.success('Deposit Successful', successMsg);
+        toast.success("Deposit Successful", successMsg);
       } else {
-        await withdraw(user?.id || '', { amount: numAmount, payment_method: selectedPayment });
+        await withdraw(user?.id || "", {
+          amount: numAmount,
+          payment_method: selectedPayment,
+        });
         const successMsg = `$${numAmount.toFixed(2)} withdrawal submitted!`;
         setSuccess(successMsg);
-        toast.success('Withdrawal Submitted', successMsg);
+        toast.success("Withdrawal Submitted", successMsg);
       }
       // Refresh balance
-      const bal = await getBalance(user?.id || '');
+      const bal = await getBalance(user?.id || "");
       setBalance(bal);
       dispatch(setCurrentBalance(bal.availableBalance));
-    } catch (err: unknown) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMsg = message || 'Transaction failed. Please try again.';
+      const errorMsg = message || "Transaction failed. Please try again.";
       setError(errorMsg);
-      toast.error('Transaction Failed', errorMsg);
+      toast.error("Transaction Failed", errorMsg);
     } finally {
       setLoading(false);
-      setTimeout(() => { setSuccess(''); setError(''); }, 4000);
+      setTimeout(() => {
+        setSuccess("");
+        setError("");
+      }, 4000);
     }
-  }, [amount, activeTab, selectedPayment, dispatch, toast]);
+  }, [
+    amount,
+    activeTab,
+    selectedPayment,
+    dispatch,
+    toast,
+    user,
+    monthlyTotal,
+    executeDeposit,
+  ]);
 
-  const displayAmount = parseFloat(amount || '0');
+  const displayAmount = parseFloat(amount || "0");
   const fee = displayAmount * 0.02;
-  const total = activeTab === 'deposit' ? displayAmount + fee : displayAmount - fee;
+  const total =
+    activeTab === "deposit" ? displayAmount + fee : displayAmount - fee;
 
   return (
     <>
@@ -104,13 +182,15 @@ export default function CashierPage() {
           <div>
             <span className="cashier-balance-label">Available Balance</span>
             <span className="cashier-balance-value">
-              ${balance ? balance.availableBalance.toFixed(2) : '—'}
+              ${balance ? balance.availableBalance.toFixed(2) : "—"}
             </span>
           </div>
           {balance && (
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: "right" }}>
               <span className="cashier-balance-label">Reserved</span>
-              <span className="cashier-balance-sub">${balance.reservedBalance.toFixed(2)}</span>
+              <span className="cashier-balance-sub">
+                ${balance.reservedBalance.toFixed(2)}
+              </span>
             </div>
           )}
         </div>
@@ -121,14 +201,18 @@ export default function CashierPage() {
             {/* Tabs */}
             <div className="cashier-tabs">
               <button
-                className={`cashier-tab ${activeTab === 'deposit' ? 'active' : ''}`}
-                onClick={() => setActiveTab('deposit')}
+                className={`cashier-tab ${
+                  activeTab === "deposit" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("deposit")}
               >
                 Deposit
               </button>
               <button
-                className={`cashier-tab ${activeTab === 'withdrawal' ? 'active' : ''}`}
-                onClick={() => setActiveTab('withdrawal')}
+                className={`cashier-tab ${
+                  activeTab === "withdrawal" ? "active" : ""
+                }`}
+                onClick={() => setActiveTab("withdrawal")}
               >
                 Withdrawal
               </button>
@@ -141,7 +225,9 @@ export default function CashierPage() {
                 {QUICK_AMOUNTS.map((val) => (
                   <button
                     key={val}
-                    className={`cashier-quick-btn ${selectedQuick === val ? 'active' : ''}`}
+                    className={`cashier-quick-btn ${
+                      selectedQuick === val ? "active" : ""
+                    }`}
                     onClick={() => handleQuickAmount(val)}
                   >
                     ${val}
@@ -153,7 +239,10 @@ export default function CashierPage() {
                 className="cashier-input"
                 placeholder="Or enter custom amount"
                 value={amount}
-                onChange={(e) => { setAmount(e.target.value); setSelectedQuick(''); }}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setSelectedQuick("");
+                }}
                 min="1"
                 step="0.01"
               />
@@ -162,20 +251,24 @@ export default function CashierPage() {
             {/* Payment methods */}
             <div className="cashier-section">
               <label className="cashier-label">
-                {activeTab === 'deposit' ? 'Payment Method' : 'Withdrawal Method'}
+                {activeTab === "deposit"
+                  ? "Payment Method"
+                  : "Withdrawal Method"}
               </label>
               <div className="cashier-payment-grid">
-                {PAYMENT_METHODS
-                  .filter((m) => activeTab === 'deposit' || m.id !== 'card')
-                  .map((m) => (
-                    <button
-                      key={m.id}
-                      className={`cashier-payment-btn ${selectedPayment === m.id ? 'active' : ''}`}
-                      onClick={() => setSelectedPayment(m.id)}
-                    >
-                      {m.label}
-                    </button>
-                  ))}
+                {PAYMENT_METHODS.filter(
+                  (m) => activeTab === "deposit" || m.id !== "card",
+                ).map((m) => (
+                  <button
+                    key={m.id}
+                    className={`cashier-payment-btn ${
+                      selectedPayment === m.id ? "active" : ""
+                    }`}
+                    onClick={() => setSelectedPayment(m.id)}
+                  >
+                    {m.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -190,41 +283,68 @@ export default function CashierPage() {
               disabled={loading || displayAmount <= 0}
             >
               {loading
-                ? 'Processing...'
-                : activeTab === 'deposit'
-                  ? `Deposit $${displayAmount.toFixed(2)}`
-                  : `Withdraw $${displayAmount.toFixed(2)}`
-              }
+                ? "Processing..."
+                : activeTab === "deposit"
+                ? `Deposit $${displayAmount.toFixed(2)}`
+                : `Withdraw $${displayAmount.toFixed(2)}`}
             </button>
           </div>
 
           {/* Summary sidebar */}
           <div className="cashier-card cashier-summary">
-            <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 700, marginBottom: 16 }}>
+            <h3
+              style={{
+                color: "#f1f5f9",
+                fontSize: 15,
+                fontWeight: 700,
+                marginBottom: 16,
+              }}
+            >
               Summary
             </h3>
             <div className="cashier-summary-row">
-              <span>Amount</span><span>${displayAmount.toFixed(2)}</span>
+              <span>Amount</span>
+              <span>${displayAmount.toFixed(2)}</span>
             </div>
             <div className="cashier-summary-row">
-              <span>Fee (2%)</span><span>${fee.toFixed(2)}</span>
+              <span>Fee (2%)</span>
+              <span>${fee.toFixed(2)}</span>
             </div>
             <div className="cashier-summary-row total">
-              <span>Total</span><span>${total.toFixed(2)}</span>
+              <span>Total</span>
+              <span>${total.toFixed(2)}</span>
             </div>
 
             {/* Recent transactions */}
             {transactions.length > 0 && (
               <>
-                <h4 style={{ color: '#94a3b8', fontSize: 12, fontWeight: 600, marginTop: 24, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <h4
+                  style={{
+                    color: "#94a3b8",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    marginTop: 24,
+                    marginBottom: 10,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
                   Recent Transactions
                 </h4>
                 {transactions.slice(0, 5).map((tx) => (
-                  <div key={tx.transactionId} className="cashier-summary-row" style={{ fontSize: 12 }}>
-                    <span style={{ color: tx.type === 'deposit' ? '#22c55e' : '#f87171' }}>
-                      {tx.type === 'deposit' ? '+' : '-'}${tx.amount.toFixed(2)}
+                  <div
+                    key={tx.transactionId}
+                    className="cashier-summary-row"
+                    style={{ fontSize: 12 }}
+                  >
+                    <span
+                      style={{
+                        color: tx.type === "deposit" ? "#22c55e" : "#f87171",
+                      }}
+                    >
+                      {tx.type === "deposit" ? "+" : "-"}${tx.amount.toFixed(2)}
                     </span>
-                    <span style={{ color: '#4a5580' }}>
+                    <span style={{ color: "#4a5580" }}>
                       {new Date(tx.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -234,6 +354,17 @@ export default function CashierPage() {
           </div>
         </div>
       </div>
+
+      <DepositThresholdModal
+        open={showThresholdModal}
+        onClose={() => setShowThresholdModal(false)}
+        onConfirm={() => {
+          setShowThresholdModal(false);
+          executeDeposit();
+        }}
+        amount={monthlyTotal + parseFloat(amount || "0")}
+        currentLimit={DEPOSIT_THRESHOLD}
+      />
     </>
   );
 }
