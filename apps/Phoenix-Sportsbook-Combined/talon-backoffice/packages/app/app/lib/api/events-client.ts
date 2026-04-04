@@ -130,7 +130,7 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
   obj: T,
 ): Record<string, unknown> {
   if (Array.isArray(obj)) {
-    return (obj.map(normalizeSnakeCase) as unknown) as Record<string, unknown>;
+    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
   if (obj !== null && typeof obj === "object") {
     return Object.entries(obj).reduce<Record<string, unknown>>(
@@ -207,8 +207,35 @@ async function getBcAlias(normalizedKey: string): Promise<string> {
 }
 
 /**
+ * Philippine market sports whitelist.
+ * BC aliases for the 15 most popular sports in the Philippines.
+ * Sports not in this set are filtered out of the sidebar and landing page.
+ */
+const PH_SPORTS_WHITELIST = new Set([
+  "Basketball",
+  "Boxing",
+  "Soccer",
+  "Volleyball",
+  "CounterStrike",
+  "LeagueOfLegends",
+  "Valorant",
+  "Dota2",
+  "Tennis",
+  "Mma",
+  "Baseball",
+  "Badminton",
+  "Motorsport",
+  "Cricket",
+  "IceHockey",
+  "RugbyUnion",
+  "RugbyLeague",
+  "VirtualHorseRacing",
+]);
+
+/**
  * Get all sports with event counts.
  * Tries BetConstruct feed first, falls back to Go backend.
+ * Filters to Philippine market sports only.
  */
 export async function getSports(): Promise<Sport[]> {
   // Try BetConstruct feed first
@@ -220,16 +247,18 @@ export async function getSports(): Promise<Sport[]> {
         "Loaded sports from BetConstruct feed",
         bcSports.length,
       );
-      return bcSports.map((s) => {
-        const key = normalizeSportKey(s.alias || s.name);
-        bcAliasCache.set(key, s.alias || s.name);
-        return {
-          sportId: String(s.id),
-          sportName: s.name,
-          sportKey: key,
-          eventCount: s.gameCount,
-        };
-      });
+      return bcSports
+        .filter((s) => PH_SPORTS_WHITELIST.has(s.alias || s.name))
+        .map((s) => {
+          const key = normalizeSportKey(s.alias || s.name);
+          bcAliasCache.set(key, s.alias || s.name);
+          return {
+            sportId: String(s.id),
+            sportName: s.name,
+            sportKey: key,
+            eventCount: s.gameCount,
+          };
+        });
     }
   } catch (err) {
     logger.info(

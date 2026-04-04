@@ -19,31 +19,31 @@ interface FeatureSection {
   description: string;
 }
 
-// Fallback data when API is unavailable (dev mode without Go backend)
+// Fallback data — Philippine market top sports (when API is unavailable)
 const FALLBACK_SPORTS: Sport[] = [
-  { sportId: "1", sportKey: "soccer", sportName: "Soccer", eventCount: 142 },
   {
-    sportId: "2",
+    sportId: "1",
     sportKey: "basketball",
     sportName: "Basketball",
-    eventCount: 87,
+    eventCount: 149,
   },
-  { sportId: "3", sportKey: "tennis", sportName: "Tennis", eventCount: 64 },
+  { sportId: "2", sportKey: "boxing", sportName: "Boxing", eventCount: 83 },
+  { sportId: "3", sportKey: "soccer", sportName: "Football", eventCount: 1108 },
   {
     sportId: "4",
-    sportKey: "american-football",
-    sportName: "American Football",
-    eventCount: 38,
+    sportKey: "volleyball",
+    sportName: "Volleyball",
+    eventCount: 26,
   },
-  { sportId: "5", sportKey: "baseball", sportName: "Baseball", eventCount: 52 },
+  { sportId: "5", sportKey: "tennis", sportName: "Tennis", eventCount: 42 },
+  { sportId: "6", sportKey: "mma", sportName: "MMA", eventCount: 63 },
+  { sportId: "7", sportKey: "baseball", sportName: "Baseball", eventCount: 68 },
   {
-    sportId: "6",
-    sportKey: "ice-hockey",
-    sportName: "Ice Hockey",
-    eventCount: 41,
+    sportId: "8",
+    sportKey: "badminton",
+    sportName: "Badminton",
+    eventCount: 23,
   },
-  { sportId: "7", sportKey: "esports", sportName: "Esports", eventCount: 96 },
-  { sportId: "8", sportKey: "mma", sportName: "MMA", eventCount: 24 },
 ];
 
 const FEATURES: FeatureSection[] = [
