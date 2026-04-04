@@ -53,7 +53,6 @@ function OddButton({
     <button
       onClick={() => onSelect(selection)}
       style={{
-        flex: 1,
         padding: "10px 8px",
         borderRadius: "6px",
         border: "1px solid #1a1f3a",
@@ -80,10 +79,11 @@ function OddButton({
         style={{
           fontSize: "11px",
           color: "#64748b",
-          whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
           maxWidth: "100%",
+          textAlign: "center",
+          lineHeight: "1.3",
         }}
       >
         {selection.name}
@@ -103,6 +103,8 @@ function MarketCard({
   onSelect: (s: Selection) => void;
 }) {
   const displayName = market.name + (market.base ? ` (${market.base})` : "");
+  // Use colCount from BC data, default to 3 for most markets
+  const cols = market.colCount > 0 ? Math.min(market.colCount, 4) : 3;
 
   return (
     <div
@@ -127,9 +129,9 @@ function MarketCard({
       <div
         style={{
           padding: "12px 16px",
-          display: "flex",
+          display: "grid",
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
           gap: "8px",
-          flexWrap: "wrap",
         }}
       >
         {market.selections.map((s) => (
