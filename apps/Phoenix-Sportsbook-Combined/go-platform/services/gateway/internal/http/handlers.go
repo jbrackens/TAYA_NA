@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	stdhttp "net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"strings"
 
@@ -92,6 +94,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	paymentService := payments.NewMockPaymentService(walletService)
 	payments.RegisterPaymentRoutes(mux, paymentService)
 
+	// Reverse proxy auth routes to the auth service
+	registerAuthProxy(mux)
+
 	geoService := compliance.NewMockGeoComplianceService()
 	kycService := compliance.NewMockKYCService()
 	rgService := compliance.NewMockResponsibleGamblingService()
@@ -154,4 +159,33 @@ func createReadRepository() domain.ReadRepository {
 	}
 
 	return repository
+}
+
+func registerAuthProxy(mux *stdhttp.ServeMux) {
+	authURL := os.Getenv("AUTH_SERVICE_URL")
+	if authURL == "" {
+		authURL = "http://localhost:18081"
+	}
+	target, err := url.Parse(authURL)
+	if err != nil {
+		log.Printf("warning: invalid AUTH_SERVICE_URL %q: %v; auth proxy disabled", authURL, err)
+		return
+	}
+	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy.ErrorHandler = func(w stdhttp.ResponseWriter, r *stdhttp.Request, err error) {
+		log.Printf("auth proxy error: %v", err)
+		stdhttp.Error(w, `{"error":{"code":"service_unavailable","message":"auth service unreachable"}}`, stdhttp.StatusBadGateway)
+	}
+
+	mux.HandleFunc("/api/v1/auth/", func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Method == stdhttp.MethodOptions {
+			w.WriteHeader(stdhttp.StatusNoContent)
+			return
+		}
+		proxy.ServeHTTP(w, r)
+	})
+	log.Printf("auth proxy registered: /api/v1/auth/* → %s", authURL)
 }

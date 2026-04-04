@@ -51,6 +51,7 @@ services:
       GATEWAY_PORT: "18080"
       GATEWAY_DB_DSN: "postgres://phoenix:localdev@postgres:5432/phoenix_sportsbook"
       REDIS_URL: "redis://redis:6379/0"
+      AUTH_SERVICE_URL: "http://auth:18081"
       LOG_LEVEL: "debug"
       NODE_ENV: "development"
     networks:
