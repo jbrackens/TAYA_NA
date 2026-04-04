@@ -65,7 +65,7 @@ export const spacing = {
 
 // ── Typography ──
 export const font = {
-  family: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+  family: "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif",
   mono: "'SF Mono', 'Fira Code', monospace",
 
   // Sizes
