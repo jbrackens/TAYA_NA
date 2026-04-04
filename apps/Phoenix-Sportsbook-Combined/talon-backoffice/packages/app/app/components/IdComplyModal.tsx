@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef } from "react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { uploadKycDocument } from "../lib/api/compliance-client";
 import { logger } from "../lib/logger";
@@ -633,7 +634,9 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
 
         {step === "success" && (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>✓</div>
+            <div style={{ marginBottom: "16px" }}>
+              <CheckCircle size={48} strokeWidth={2} />
+            </div>
             <h2
               style={{
                 color: "#22c55e",
@@ -652,7 +655,9 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
 
         {step === "failed" && (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>✗</div>
+            <div style={{ marginBottom: "16px" }}>
+              <XCircle size={48} strokeWidth={2} />
+            </div>
             <h2
               style={{
                 color: "#f87171",

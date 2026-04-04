@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { getSports, Sport } from "../lib/api/events-client";
+import { Zap, Gamepad2, ShieldCheck, Wallet, ShieldAlert } from "lucide-react";
 
 /**
  * Pre-login marketing landing page.
@@ -12,7 +13,7 @@ import { getSports, Sport } from "../lib/api/events-client";
  */
 
 interface FeatureSection {
-  icon: string;
+  icon: React.ReactNode;
   heading: string;
   subHeading: string;
   description: string;
@@ -47,25 +48,25 @@ const FALLBACK_SPORTS: Sport[] = [
 
 const FEATURES: FeatureSection[] = [
   {
-    icon: "⚡",
+    icon: <Zap size={24} strokeWidth={2} />,
     heading: "FEATURE_1_HEADING",
     subHeading: "FEATURE_1_SUBHEADING",
     description: "FEATURE_1_DESCRIPTION",
   },
   {
-    icon: "🎮",
+    icon: <Gamepad2 size={24} strokeWidth={2} />,
     heading: "FEATURE_2_HEADING",
     subHeading: "FEATURE_2_SUBHEADING",
     description: "FEATURE_2_DESCRIPTION",
   },
   {
-    icon: "🔒",
+    icon: <ShieldCheck size={24} strokeWidth={2} />,
     heading: "FEATURE_3_HEADING",
     subHeading: "FEATURE_3_SUBHEADING",
     description: "FEATURE_3_DESCRIPTION",
   },
   {
-    icon: "💰",
+    icon: <Wallet size={24} strokeWidth={2} />,
     heading: "FEATURE_4_HEADING",
     subHeading: "FEATURE_4_SUBHEADING",
     description: "FEATURE_4_DESCRIPTION",
@@ -184,7 +185,9 @@ export default function LandingPage() {
 
       {/* ── Responsible Gaming Banner ── */}
       <section className="landing-rg-banner">
-        <span className="landing-rg-icon">🛡️</span>
+        <span className="landing-rg-icon">
+          <ShieldAlert size={24} strokeWidth={2} />
+        </span>
         <div>
           <h3 className="landing-rg-title">{t("RG_TITLE")}</h3>
           <p className="landing-rg-text">

@@ -15,74 +15,13 @@ import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES } from "../lib/i18n/config";
 import { getEvents, getSports, getLeagues } from "../lib/api/events-client";
 import { Event, Sport, League } from "../lib/api/events-client";
-
-// SVG icons as inline components for crisp rendering
-const SearchIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.35-4.35" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-  </svg>
-);
-
-const BellIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-  </svg>
-);
-
-const TicketIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-    <path d="M13 5v2" />
-    <path d="M13 17v2" />
-    <path d="M13 11v2" />
-  </svg>
-);
+import {
+  Search as SearchIcon,
+  Wallet as WalletIcon,
+  Bell as BellIcon,
+  Ticket as TicketIcon,
+  Globe,
+} from "lucide-react";
 
 export const HeaderBar: React.FC = () => {
   const pathname = usePathname();
@@ -261,7 +200,7 @@ export const HeaderBar: React.FC = () => {
               gap: 4,
             }}
           >
-            <span style={{ fontSize: 13 }}>🌐</span>
+            <Globe size={14} strokeWidth={2} />
             {currentLang.toUpperCase()}
           </button>
 
@@ -270,7 +209,7 @@ export const HeaderBar: React.FC = () => {
             className="ps-topbar-search"
             onClick={() => setSearchOpen(!searchOpen)}
           >
-            <SearchIcon />
+            <SearchIcon size={14} strokeWidth={2} />
             <span>{t("SEARCH_PLACEHOLDER")}</span>
           </button>
 
@@ -278,7 +217,7 @@ export const HeaderBar: React.FC = () => {
             <>
               {/* Wallet Balance */}
               <a href="/cashier" className="ps-wallet-badge">
-                <WalletIcon />
+                <WalletIcon size={14} strokeWidth={2} />
                 <span>
                   $
                   {typeof walletBalance === "number"
@@ -289,12 +228,12 @@ export const HeaderBar: React.FC = () => {
 
               {/* My Bets */}
               <a href="/bets" className="ps-topbar-icon" title="My Bets">
-                <TicketIcon />
+                <TicketIcon size={18} strokeWidth={2} />
               </a>
 
               {/* Notifications */}
               <button className="ps-topbar-icon" title="Notifications">
-                <BellIcon />
+                <BellIcon size={18} strokeWidth={2} />
                 <span className="badge" />
               </button>
 

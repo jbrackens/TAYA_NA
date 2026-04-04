@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { getSports, getLeagues, Sport, League } from "../lib/api/events-client";
 import { logger } from "../lib/logger";
 import { SportIcon } from "./SportIcons";
+import { Radio, Clock, Star } from "lucide-react";
 
 // Extended sport with leagues loaded on expand
 interface SidebarSport extends Sport {
@@ -195,7 +196,9 @@ export const SportsSidebar: React.FC = () => {
           className={`ps-sidebar-item ${pathname === "/live" ? "active" : ""}`}
         >
           <span className="ps-sidebar-item-left">
-            <span className="ps-sidebar-item-icon">📡</span>
+            <span className="ps-sidebar-item-icon">
+              <Radio size={15} strokeWidth={2} />
+            </span>
             <span>{t("IN_PLAY")}</span>
           </span>
           <span className="ps-sidebar-badge live">LIVE</span>
@@ -205,7 +208,9 @@ export const SportsSidebar: React.FC = () => {
           className={`ps-sidebar-item ${pathname === "/" ? "active" : ""}`}
         >
           <span className="ps-sidebar-item-left">
-            <span className="ps-sidebar-item-icon">⏰</span>
+            <span className="ps-sidebar-item-icon">
+              <Clock size={15} strokeWidth={2} />
+            </span>
             <span>{t("UPCOMING")}</span>
           </span>
         </a>
@@ -308,7 +313,13 @@ export const SportsSidebar: React.FC = () => {
                       margin: -12,
                     }}
                   >
-                    {favorites.has(sport.sportId) ? "★" : "☆"}
+                    <Star
+                      size={14}
+                      strokeWidth={2}
+                      fill={
+                        favorites.has(sport.sportId) ? "currentColor" : "none"
+                      }
+                    />
                   </span>
                 </span>
               </a>

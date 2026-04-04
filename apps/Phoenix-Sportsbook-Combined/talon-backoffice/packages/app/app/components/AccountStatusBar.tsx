@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '../lib/store/hooks';
-import { selectUserStatus, selectCoolOff } from '../lib/store/settingsSlice';
-import { selectCurrentBalance } from '../lib/store/cashierSlice';
-import { useAuth } from '../hooks/useAuth';
-import { colors, brand, font, radius, spacing } from '../lib/theme';
+import React, { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import { AlertTriangle, Timer, Info, X } from "lucide-react";
+import { useAppSelector } from "../lib/store/hooks";
+import { selectUserStatus, selectCoolOff } from "../lib/store/settingsSlice";
+import { selectCurrentBalance } from "../lib/store/cashierSlice";
+import { useAuth } from "../hooks/useAuth";
+import { colors, brand, font, radius, spacing } from "../lib/theme";
 
 /**
  * AccountStatusBar — prominent alert banner displayed below the header
@@ -24,7 +25,7 @@ import { colors, brand, font, radius, spacing } from '../lib/theme';
  * translation keys (namespace: account-status-bar).
  */
 
-type AlertLevel = 'error' | 'warning' | 'info';
+type AlertLevel = "error" | "warning" | "info";
 
 interface StatusConfig {
   level: AlertLevel;
@@ -34,29 +35,32 @@ interface StatusConfig {
   actionCallback?: () => void;
 }
 
-const LEVEL_STYLES: Record<AlertLevel, { bg: string; border: string; text: string; icon: string }> = {
+const LEVEL_STYLES: Record<
+  AlertLevel,
+  { bg: string; border: string; text: string; icon: React.ReactNode }
+> = {
   error: {
-    bg: 'rgba(239, 68, 68, 0.08)',
-    border: 'rgba(239, 68, 68, 0.25)',
-    text: '#fca5a5',
-    icon: '⚠️',
+    bg: "rgba(239, 68, 68, 0.08)",
+    border: "rgba(239, 68, 68, 0.25)",
+    text: "#fca5a5",
+    icon: <AlertTriangle size={16} strokeWidth={2} />,
   },
   warning: {
-    bg: 'rgba(251, 191, 36, 0.08)',
-    border: 'rgba(251, 191, 36, 0.25)',
-    text: '#fde68a',
-    icon: '⏳',
+    bg: "rgba(251, 191, 36, 0.08)",
+    border: "rgba(251, 191, 36, 0.25)",
+    text: "#fde68a",
+    icon: <Timer size={16} strokeWidth={2} />,
   },
   info: {
-    bg: 'rgba(96, 165, 250, 0.08)',
-    border: 'rgba(96, 165, 250, 0.25)',
-    text: '#93c5fd',
-    icon: 'ℹ️',
+    bg: "rgba(96, 165, 250, 0.08)",
+    border: "rgba(96, 165, 250, 0.25)",
+    text: "#93c5fd",
+    icon: <Info size={16} strokeWidth={2} />,
   },
 };
 
 export const AccountStatusBar: React.FC = () => {
-  const { t } = useTranslation('account-status-bar');
+  const { t } = useTranslation("account-status-bar");
   const { isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -72,37 +76,37 @@ export const AccountStatusBar: React.FC = () => {
     if (!isAuthenticated) return null;
 
     // 1. Self-excluded — highest priority
-    if (accountStatus === 'SELF_EXCLUDED') {
-      return { level: 'error', messageKey: 'SELF_EXCLUDED' };
+    if (accountStatus === "SELF_EXCLUDED") {
+      return { level: "error", messageKey: "SELF_EXCLUDED" };
     }
 
     // 2. Suspended
-    if (accountStatus === 'SUSPENDED') {
-      return { level: 'error', messageKey: 'SUSPENDED' };
+    if (accountStatus === "SUSPENDED") {
+      return { level: "error", messageKey: "SUSPENDED" };
     }
 
     // 3. Negative balance
-    if (typeof balance === 'number' && balance < 0) {
+    if (typeof balance === "number" && balance < 0) {
       return {
-        level: 'error',
-        messageKey: 'NEGATIVE_BALANCE',
-        actionKey: 'DEPOSIT',
-        actionHref: '/cashier',
+        level: "error",
+        messageKey: "NEGATIVE_BALANCE",
+        actionKey: "DEPOSIT",
+        actionHref: "/cashier",
       };
     }
 
     // 4. Cooling off
     if (coolOff) {
-      return { level: 'warning', messageKey: 'COOLING_OFF' };
+      return { level: "warning", messageKey: "COOLING_OFF" };
     }
 
     // 5. Unverified
-    if (accountStatus === 'UNVERIFIED') {
+    if (accountStatus === "UNVERIFIED") {
       return {
-        level: 'info',
-        messageKey: 'UNVERIFIED',
-        actionKey: 'VERIFY',
-        actionHref: '/profile',
+        level: "info",
+        messageKey: "UNVERIFIED",
+        actionKey: "VERIFY",
+        actionHref: "/profile",
       };
     }
 
@@ -129,8 +133,8 @@ export const AccountStatusBar: React.FC = () => {
     <div
       role="alert"
       style={{
-        display: 'flex',
-        alignItems: 'center',
+        display: "flex",
+        alignItems: "center",
         gap: spacing.md,
         padding: `${spacing.md} ${spacing.xl}`,
         background: style.bg,
@@ -138,15 +142,15 @@ export const AccountStatusBar: React.FC = () => {
         fontSize: font.md,
         fontWeight: font.medium,
         color: style.text,
-        lineHeight: '1.5',
+        lineHeight: "1.5",
       }}
     >
       {/* Icon */}
-      <span style={{ fontSize: '16px', flexShrink: 0 }}>{style.icon}</span>
+      <span style={{ fontSize: "16px", flexShrink: 0 }}>{style.icon}</span>
 
       {/* Message */}
       <span style={{ flex: 1 }}>
-        <strong style={{ fontWeight: font.semibold }}>{t('TITLE')}</strong>{' '}
+        <strong style={{ fontWeight: font.semibold }}>{t("TITLE")}</strong>{" "}
         {t(config.messageKey)}
       </span>
 
@@ -158,19 +162,19 @@ export const AccountStatusBar: React.FC = () => {
             padding: `${spacing.xs} ${spacing.lg}`,
             borderRadius: radius.md,
             border: `1px solid ${style.border}`,
-            background: 'transparent',
+            background: "transparent",
             color: style.text,
             fontSize: font.sm,
             fontWeight: font.semibold,
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            transition: 'background 0.15s',
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            transition: "background 0.15s",
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.background = style.bg;
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = 'transparent';
+            (e.currentTarget as HTMLElement).style.background = "transparent";
           }}
         >
           {t(config.actionKey)}
@@ -182,29 +186,29 @@ export const AccountStatusBar: React.FC = () => {
         onClick={() => setDismissed(true)}
         aria-label="Dismiss"
         style={{
-          width: '24px',
-          height: '24px',
+          width: "24px",
+          height: "24px",
           borderRadius: radius.sm,
-          border: 'none',
-          background: 'transparent',
+          border: "none",
+          background: "transparent",
           color: style.text,
-          fontSize: '14px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          fontSize: "14px",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           opacity: 0.6,
           flexShrink: 0,
-          transition: 'opacity 0.15s',
+          transition: "opacity 0.15s",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.opacity = '1';
+          (e.currentTarget as HTMLElement).style.opacity = "1";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.opacity = '0.6';
+          (e.currentTarget as HTMLElement).style.opacity = "0.6";
         }}
       >
-        ✕
+        <X size={14} strokeWidth={2} />
       </button>
     </div>
   );

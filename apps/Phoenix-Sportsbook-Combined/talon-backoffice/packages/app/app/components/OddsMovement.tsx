@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface OddsMovementProps {
   currentOdds: number;
@@ -14,16 +15,16 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
   showPercentage = true,
 }) => {
   const [isFlashing, setIsFlashing] = useState(false);
-  const [movement, setMovement] = useState<'up' | 'down' | null>(null);
+  const [movement, setMovement] = useState<"up" | "down" | null>(null);
 
   useEffect(() => {
     if (!previousOdds) return;
 
     if (currentOdds > previousOdds) {
-      setMovement('up');
+      setMovement("up");
       setIsFlashing(true);
     } else if (currentOdds < previousOdds) {
-      setMovement('down');
+      setMovement("down");
       setIsFlashing(true);
     }
 
@@ -35,9 +36,9 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
     return (
       <span
         style={{
-          fontSize: '14px',
+          fontSize: "14px",
           fontWeight: 600,
-          color: '#e2e8f0',
+          color: "#e2e8f0",
         }}
       >
         {currentOdds.toFixed(2)}
@@ -46,14 +47,20 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
   }
 
   const percentageChange = ((currentOdds - previousOdds) / previousOdds) * 100;
-  const arrow = movement === 'up' ? '↑' : '↓';
-  const arrowColor = movement === 'up' ? '#22c55e' : '#f87171';
-  const percentageColor = movement === 'up' ? '#22c55e' : '#f87171';
+  const arrow =
+    movement === "up" ? (
+      <TrendingUp size={12} strokeWidth={2} />
+    ) : (
+      <TrendingDown size={12} strokeWidth={2} />
+    );
+  const arrowColor = movement === "up" ? "#22c55e" : "#f87171";
+  const percentageColor = movement === "up" ? "#22c55e" : "#f87171";
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes flashAnimation {
             0% {
               opacity: 1;
@@ -65,24 +72,25 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
             }
           }
         `,
-      }} />
+        }}
+      />
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '4px 8px',
-          borderRadius: '4px',
-          animation: isFlashing ? 'flashAnimation 0.6s ease-out' : 'none',
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+          padding: "4px 8px",
+          borderRadius: "4px",
+          animation: isFlashing ? "flashAnimation 0.6s ease-out" : "none",
         }}
       >
         <span
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minWidth: '20px',
-            fontSize: '14px',
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: "20px",
+            fontSize: "14px",
             fontWeight: 700,
             color: arrowColor,
           }}
@@ -91,9 +99,9 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
         </span>
         <span
           style={{
-            fontSize: '14px',
+            fontSize: "14px",
             fontWeight: 600,
-            color: '#e2e8f0',
+            color: "#e2e8f0",
           }}
         >
           {currentOdds.toFixed(2)}
@@ -101,12 +109,13 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
         {showPercentage && (
           <span
             style={{
-              fontSize: '11px',
+              fontSize: "11px",
               color: percentageColor,
               fontWeight: 600,
             }}
           >
-            {percentageChange > 0 ? '+' : ''}{percentageChange.toFixed(1)}%
+            {percentageChange > 0 ? "+" : ""}
+            {percentageChange.toFixed(1)}%
           </span>
         )}
       </div>

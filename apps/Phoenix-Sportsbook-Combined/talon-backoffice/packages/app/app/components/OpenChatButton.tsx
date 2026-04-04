@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { MessageCircle } from "lucide-react";
 
 export default function OpenChatButton() {
   const [isVisible, setIsVisible] = useState(true);
@@ -92,7 +93,9 @@ export default function OpenChatButton() {
           e.currentTarget.style.transform = "scale(1)";
         }}
       >
-        <span style={iconStyle}>💬</span>
+        <span style={iconStyle}>
+          <MessageCircle size={24} strokeWidth={2} />
+        </span>
       </button>
     </div>
   );

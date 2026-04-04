@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { X, Ticket, Clock } from "lucide-react";
 import { useBetslip } from "../hooks/useBetslip";
 import {
   placeBet,
@@ -220,22 +221,7 @@ export const BetslipPanel: React.FC = () => {
       {selections.length === 0 ? (
         <div className="ps-betslip-empty">
           <div className="ps-betslip-empty-icon">
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ opacity: 0.4 }}
-            >
-              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-              <path d="M13 5v2" />
-              <path d="M13 17v2" />
-              <path d="M13 11v2" />
-            </svg>
+            <Ticket size={48} strokeWidth={1.5} style={{ opacity: 0.4 }} />
           </div>
           <div className="ps-betslip-empty-text">{t("NO_BETS_MESSAGE")}</div>
         </div>
@@ -297,7 +283,7 @@ export const BetslipPanel: React.FC = () => {
                       onClick={() => betslip?.removeSelection(sel.id)}
                       title="Remove"
                     >
-                      ✕
+                      <X size={12} strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -619,21 +605,7 @@ export const BetslipPanel: React.FC = () => {
             justifyContent: "center",
           }}
         >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-            <path d="M13 5v2" />
-            <path d="M13 17v2" />
-            <path d="M13 11v2" />
-          </svg>
+          <Ticket size={28} strokeWidth={2} />
           {selections.length > 0 && (
             <span
               style={{
@@ -747,7 +719,7 @@ export const BetslipPanel: React.FC = () => {
             }}
             title="Close"
           >
-            ✕
+            <X size={16} strokeWidth={2} />
           </button>
         </div>
 
@@ -901,20 +873,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
     return (
       <div className="ps-betslip-empty">
         <div className="ps-betslip-empty-icon">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ opacity: 0.4 }}
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+          <Clock size={48} strokeWidth={1.5} style={{ opacity: 0.4 }} />
         </div>
         <div className="ps-betslip-empty-text">{t("NO_BETS_MESSAGE")}</div>
       </div>

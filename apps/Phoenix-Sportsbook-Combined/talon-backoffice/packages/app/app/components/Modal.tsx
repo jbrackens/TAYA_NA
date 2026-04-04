@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import { X } from "lucide-react";
 
 interface ModalProps {
   open: boolean;
@@ -125,7 +126,7 @@ export default function Modal({
               el.style.backgroundColor = "transparent";
             }}
           >
-            ✕
+            <X size={16} strokeWidth={2} />
           </button>
         </div>
         {children && <div style={bodyStyle}>{children}</div>}
