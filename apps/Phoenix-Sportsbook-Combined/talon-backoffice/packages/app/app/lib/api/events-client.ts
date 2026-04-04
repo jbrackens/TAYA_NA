@@ -1,4 +1,10 @@
-import { apiClient } from './client';
+import { apiClient } from "./client";
+import {
+  bcGetSports,
+  bcGetRegions,
+  bcGetCompetitions,
+} from "./betconstruct-client";
+import { logger } from "../logger";
 
 // Request types
 export interface GetEventsParams {
@@ -118,42 +124,165 @@ export interface GetEventsPaginatedResponse {
 }
 
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+function normalizeSnakeCase<T extends Record<string, unknown>>(
+  obj: T,
+): Record<string, unknown> {
   if (Array.isArray(obj)) {
-    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
+    return (obj.map(normalizeSnakeCase) as unknown) as Record<string, unknown>;
   }
-  if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce<Record<string, unknown>>((acc, [key, value]) => {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
-      acc[camelKey] = typeof value === 'object' && value !== null
-        ? normalizeSnakeCase(value as Record<string, unknown>)
-        : value;
-      return acc;
-    }, {});
+  if (obj !== null && typeof obj === "object") {
+    return Object.entries(obj).reduce<Record<string, unknown>>(
+      (acc, [key, value]) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
+          letter.toUpperCase(),
+        );
+        acc[camelKey] =
+          typeof value === "object" && value !== null
+            ? normalizeSnakeCase(value as Record<string, unknown>)
+            : value;
+        return acc;
+      },
+      {},
+    );
   }
   return obj;
 }
 
 /**
- * Get all sports with event counts
+ * Sport alias → normalized key mapping for sidebar icons
+ */
+const SPORT_ALIAS_MAP: Record<string, string> = {
+  Soccer: "soccer",
+  Football: "soccer",
+  Basketball: "basketball",
+  Tennis: "tennis",
+  IceHockey: "ice-hockey",
+  "Ice Hockey": "ice-hockey",
+  Baseball: "baseball",
+  AmericanFootball: "american-football",
+  "American Football": "american-football",
+  Cricket: "cricket",
+  Rugby: "rugby",
+  RugbyUnion: "rugby",
+  RugbyLeague: "rugby",
+  Golf: "golf",
+  Boxing: "boxing",
+  MMA: "mma",
+  MixedMartialArts: "mma",
+  Volleyball: "volleyball",
+  Handball: "handball",
+  TableTennis: "table-tennis",
+  "Table Tennis": "table-tennis",
+  Darts: "darts",
+  Esports: "esports",
+  EGames: "esports",
+  ESports: "esports",
+  CounterStrike: "cs2",
+  CS2: "cs2",
+  Dota2: "dota2",
+  DotA2: "dota2",
+  LeagueOfLegends: "lol",
+  LoL: "lol",
+  Cycling: "cycling",
+  Swimming: "swimming",
+  MotorSports: "racing",
+  "Motor Sports": "racing",
+};
+
+function normalizeSportKey(alias: string): string {
+  return SPORT_ALIAS_MAP[alias] || alias.toLowerCase().replace(/\s+/g, "-");
+}
+
+// Reverse map: normalized key → BC alias (populated when sports are loaded)
+const bcAliasCache: Map<string, string> = new Map();
+
+function getBcAlias(normalizedKey: string): string {
+  return bcAliasCache.get(normalizedKey) || normalizedKey;
+}
+
+/**
+ * Get all sports with event counts.
+ * Tries BetConstruct feed first, falls back to Go backend.
  */
 export async function getSports(): Promise<Sport[]> {
-  const raw = await apiClient.get<SportRaw[]>('/api/v1/sports');
+  // Try BetConstruct feed first
+  try {
+    const bcSports = await bcGetSports();
+    if (bcSports.length > 0) {
+      logger.info(
+        "Events",
+        "Loaded sports from BetConstruct feed",
+        bcSports.length,
+      );
+      return bcSports.map((s) => {
+        const key = normalizeSportKey(s.alias || s.name);
+        bcAliasCache.set(key, s.alias || s.name);
+        return {
+          sportId: String(s.id),
+          sportName: s.name,
+          sportKey: key,
+          eventCount: s.gameCount,
+        };
+      });
+    }
+  } catch (err) {
+    logger.info(
+      "Events",
+      "BetConstruct feed unavailable, trying Go backend",
+      err,
+    );
+  }
+
+  // Fall back to Go backend
+  const raw = await apiClient.get<SportRaw[]>("/api/v1/sports");
   return normalizeSnakeCase(raw);
 }
 
 /**
- * Get leagues for a specific sport
+ * Get leagues (regions + competitions) for a specific sport.
+ * Tries BetConstruct feed first, falls back to Go backend.
  */
 export async function getLeagues(sportKey: string): Promise<League[]> {
-  const raw = await apiClient.get<LeagueRaw[]>(`/api/v1/sports/${sportKey}/leagues`);
-  return normalizeSnakeCase(raw);
+  // Reverse-map normalized key → BC alias (e.g. "basketball" → "Basketball")
+  const bcAlias = getBcAlias(sportKey);
+
+  // Try BetConstruct — returns competitions as "leagues"
+  try {
+    const bcComps = await bcGetRegions(bcAlias);
+    if (bcComps.length > 0) {
+      return bcComps.map((c) => ({
+        leagueId: String(c.id),
+        leagueName: c.name,
+        leagueKey: String(c.id),
+        sportKey,
+        eventCount: c.gameCount || 0,
+      }));
+    }
+  } catch (err) {
+    logger.info(
+      "Events",
+      "BetConstruct regions unavailable, trying Go backend",
+      err,
+    );
+  }
+
+  // Fall back to Go backend
+  try {
+    const raw = await apiClient.get<LeagueRaw[]>(
+      `/api/v1/sports/${sportKey}/leagues`,
+    );
+    return normalizeSnakeCase(raw);
+  } catch {
+    return [];
+  }
 }
 
 /**
  * Get events with optional filtering and pagination
  */
-export async function getEvents(params?: GetEventsParams): Promise<GetEventsPaginatedResponse> {
+export async function getEvents(
+  params?: GetEventsParams,
+): Promise<GetEventsPaginatedResponse> {
   const queryParams: Record<string, string> = {};
   if (params?.sport) queryParams.sport = params.sport;
   if (params?.league) queryParams.league = params.league;
@@ -162,8 +291,8 @@ export async function getEvents(params?: GetEventsParams): Promise<GetEventsPagi
   if (params?.limit) queryParams.limit = String(params.limit);
 
   const raw = await apiClient.get<GetEventsPaginatedResponseRaw>(
-    '/api/v1/events',
-    queryParams
+    "/api/v1/events",
+    queryParams,
   );
   return normalizeSnakeCase(raw);
 }

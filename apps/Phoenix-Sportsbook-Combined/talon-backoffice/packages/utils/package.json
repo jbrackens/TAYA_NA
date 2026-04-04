@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "dist": "tsc",
-    "test": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
+    "test": "jest --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
+    "test:coverage": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
     "bootstrap": "yarn install && lerna bootstrap && yarn dist"
   },
   "dependencies": {

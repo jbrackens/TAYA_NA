@@ -3,23 +3,17 @@
  * Protects private routes and redirects to login when necessary
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = [
-  '/',
-  '/sports',
-  '/match',
-  '/live',
-  '/auth',
-];
+const PUBLIC_ROUTES = ["/", "/sports", "/match", "/live", "/auth"];
 
 /**
  * Check if a route is public
  */
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }
 
@@ -28,14 +22,14 @@ function isPublicRoute(pathname: string): boolean {
  */
 function getAuthToken(request: NextRequest): string | null {
   // Check cookies first
-  const token = request.cookies.get('authToken')?.value;
+  const token = request.cookies.get("authToken")?.value;
   if (token) {
     return token;
   }
 
   // Check Authorization header
-  const authHeader = request.headers.get('authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
     return authHeader.slice(7);
   }
 
@@ -56,8 +50,8 @@ export function middleware(request: NextRequest) {
 
   // Require authentication for protected routes
   if (!token) {
-    const loginUrl = new URL('/auth/login', request.url);
-    loginUrl.searchParams.set('returnUrl', pathname);
+    const loginUrl = new URL("/auth/login", request.url);
+    loginUrl.searchParams.set("returnUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
@@ -78,6 +72,6 @@ export const config = {
      * - robots.txt (robots file)
      * - sitemap.xml (sitemap file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
+    "/((?!api|_next/static|_next/image|static|favicon.ico|robots.txt|sitemap.xml).*)",
   ],
 };

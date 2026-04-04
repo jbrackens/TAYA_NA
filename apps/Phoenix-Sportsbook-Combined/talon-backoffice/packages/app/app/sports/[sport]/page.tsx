@@ -1,30 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import LeagueNav from '../../components/LeagueNav';
 import FixtureList from '../../components/FixtureList';
 
 interface SportPageProps {
-  params: Promise<{
+  params: {
     sport: string;
-  }>;
+  };
 }
 
 export default function SportPage({ params }: SportPageProps) {
-  const [sport, setSport] = useState<string>('');
+  const sport = params.sport;
   const [selectedLeague, setSelectedLeague] = useState<string>('');
-
-  useEffect(() => {
-    const loadParams = async () => {
-      const { sport: sportParam } = await params;
-      setSport(sportParam);
-    };
-    loadParams();
-  }, [params]);
-
-  if (!sport) {
-    return <div>Loading...</div>;
-  }
 
   const sportName = sport.charAt(0).toUpperCase() + sport.slice(1);
 

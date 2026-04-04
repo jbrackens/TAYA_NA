@@ -2116,6 +2116,18 @@
   dependencies:
     tslib "^2.4.0"
 
+"@tanstack/query-core@5.96.2":
+  version "5.96.2"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.96.2.tgz#766dab253476afd0b27959b66abb606d8d2dd9f5"
+  integrity sha512-hzI6cTVh4KNRk8UtoIBS7Lv9g6BnJPXvBKsvYH1aGWvv0347jT3BnSvztOE+kD76XGvZnRC/t6qdW1CaIfwCeA==
+
+"@tanstack/react-query@^5.96.2":
+  version "5.96.2"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.96.2.tgz#a164abfb80eb5e7772bbcddfa7240f3fd8d0d7be"
+  integrity sha512-sYyzzJT4G0g02azzJ8o55VFFV31XvFpdUpG+unxS0vSaYsJnSPKGoI6WdPwUucJL1wpgGfwfmntNX/Ub1uOViA==
+  dependencies:
+    "@tanstack/query-core" "5.96.2"
+
 "@testing-library/dom@^7.28.1":
   version "7.31.2"
   resolved "https://registry.yarnpkg.com/@testing-library/dom/-/dom-7.31.2.tgz#df361db38f5212b88555068ab8119f5d841a8c4a"

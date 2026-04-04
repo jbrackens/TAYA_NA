@@ -1,15 +1,44 @@
 'use client';
 
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getEvents } from '../../../lib/api/events-client';
-import type { Event } from '../../../lib/api/events-client';
+import { Event } from '../../../lib/api/events-client';
+import { logger } from '../../../lib/logger';
 
 interface LeaguePageProps {
-  params: Promise<{
+  params: {
     sport: string;
     league: string;
-  }>;
+  };
+}
+
+interface BCGameRaw {
+  id: number;
+  start_ts: number;
+  team1_name: string;
+  team2_name: string;
+  type: number;
+  markets_count: number;
+  sportName?: string;
+  sportAlias?: string;
+  competitionName?: string;
+  regionName?: string;
+}
+
+function bcGameToEvent(g: BCGameRaw): Event {
+  return {
+    eventId: String(g.id),
+    fixtureId: String(g.id),
+    sportId: '',
+    leagueId: '',
+    homeTeam: g.team1_name || 'TBD',
+    awayTeam: g.team2_name || 'TBD',
+    sportKey: g.sportAlias || '',
+    leagueKey: g.competitionName || '',
+    startTime: new Date(g.start_ts * 1000).toISOString(),
+    status: g.type === 1 ? 'live' : 'upcoming',
+    hasMarkets: (g.markets_count || 0) > 0,
+  };
 }
 
 function LiveBadge() {
@@ -89,29 +118,46 @@ function EventCard({ event }: { event: Event }) {
 }
 
 export default function LeaguePage({ params }: LeaguePageProps) {
-  const { sport, league } = use(params);
+  const { sport, league } = params;
   const [liveEvents, setLiveEvents] = useState<Event[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [leagueName, setLeagueName] = useState(league.replace(/-/g, ' '));
 
   useEffect(() => {
     let cancelled = false;
     const loadEvents = async () => {
       try {
         setLoading(true);
-        const [liveRes, upcomingRes] = await Promise.all([
-          getEvents({ sport, league, status: 'in_play', limit: 50 }),
-          getEvents({ sport, league, status: 'upcoming', limit: 50 }),
-        ]);
+
+        // Fetch live games from BetConstruct proxy and filter by sport
+        const res = await fetch('/api/bc/live/');
+        if (!res.ok) throw new Error(`Failed to fetch live games: ${res.status}`);
+        const games: BCGameRaw[] = await res.json();
+
+        // Filter by sport alias
+        const sportGames = games.filter((g) => {
+          const alias = (g.sportAlias || '').toLowerCase().replace(/\s+/g, '-');
+          return alias === sport || (g.sportAlias || '').toLowerCase() === sport;
+        });
+
         if (!cancelled) {
-          setLiveEvents(liveRes.events || []);
-          setUpcomingEvents(upcomingRes.events || []);
+          const live = sportGames.filter((g) => g.type === 1).map(bcGameToEvent);
+          const upcoming = sportGames.filter((g) => g.type !== 1).map(bcGameToEvent);
+          setLiveEvents(live);
+          setUpcomingEvents(upcoming);
+
+          // Use first game's competition name as league name if available
+          if (sportGames.length > 0 && sportGames[0].competitionName) {
+            setLeagueName(sportGames[0].competitionName);
+          }
           setError(null);
         }
       } catch (err) {
         if (!cancelled) {
           const message = err instanceof Error ? err.message : 'Failed to load events';
+          logger.error('LeaguePage', 'Failed to load events', message);
           setError(message);
         }
       } finally {
@@ -122,8 +168,6 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     loadEvents();
     return () => { cancelled = true; };
   }, [sport, league]);
-
-  const leagueName = league.replace(/-/g, ' ').toUpperCase();
 
   if (loading) {
     return (

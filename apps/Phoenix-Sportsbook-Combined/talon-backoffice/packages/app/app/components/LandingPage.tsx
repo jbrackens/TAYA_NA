@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
-import { getSports } from '../lib/api/events-client';
-import type { Sport } from '../lib/api/events-client';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useTranslation } from "react-i18next";
+import { getSports, Sport } from "../lib/api/events-client";
 
 /**
  * Pre-login marketing landing page.
@@ -19,45 +18,84 @@ interface FeatureSection {
   description: string;
 }
 
+// Fallback data when API is unavailable (dev mode without Go backend)
+const FALLBACK_SPORTS: Sport[] = [
+  { sportId: "1", sportKey: "soccer", sportName: "Soccer", eventCount: 142 },
+  {
+    sportId: "2",
+    sportKey: "basketball",
+    sportName: "Basketball",
+    eventCount: 87,
+  },
+  { sportId: "3", sportKey: "tennis", sportName: "Tennis", eventCount: 64 },
+  {
+    sportId: "4",
+    sportKey: "american-football",
+    sportName: "American Football",
+    eventCount: 38,
+  },
+  { sportId: "5", sportKey: "baseball", sportName: "Baseball", eventCount: 52 },
+  {
+    sportId: "6",
+    sportKey: "ice-hockey",
+    sportName: "Ice Hockey",
+    eventCount: 41,
+  },
+  { sportId: "7", sportKey: "esports", sportName: "Esports", eventCount: 96 },
+  { sportId: "8", sportKey: "mma", sportName: "MMA", eventCount: 24 },
+];
+
 const FEATURES: FeatureSection[] = [
   {
-    icon: '⚡',
-    heading: 'FEATURE_1_HEADING',
-    subHeading: 'FEATURE_1_SUBHEADING',
-    description: 'FEATURE_1_DESCRIPTION',
+    icon: "⚡",
+    heading: "FEATURE_1_HEADING",
+    subHeading: "FEATURE_1_SUBHEADING",
+    description: "FEATURE_1_DESCRIPTION",
   },
   {
-    icon: '🎮',
-    heading: 'FEATURE_2_HEADING',
-    subHeading: 'FEATURE_2_SUBHEADING',
-    description: 'FEATURE_2_DESCRIPTION',
+    icon: "🎮",
+    heading: "FEATURE_2_HEADING",
+    subHeading: "FEATURE_2_SUBHEADING",
+    description: "FEATURE_2_DESCRIPTION",
   },
   {
-    icon: '🔒',
-    heading: 'FEATURE_3_HEADING',
-    subHeading: 'FEATURE_3_SUBHEADING',
-    description: 'FEATURE_3_DESCRIPTION',
+    icon: "🔒",
+    heading: "FEATURE_3_HEADING",
+    subHeading: "FEATURE_3_SUBHEADING",
+    description: "FEATURE_3_DESCRIPTION",
   },
   {
-    icon: '💰',
-    heading: 'FEATURE_4_HEADING',
-    subHeading: 'FEATURE_4_SUBHEADING',
-    description: 'FEATURE_4_DESCRIPTION',
+    icon: "💰",
+    heading: "FEATURE_4_HEADING",
+    subHeading: "FEATURE_4_SUBHEADING",
+    description: "FEATURE_4_DESCRIPTION",
   },
 ];
 
 export default function LandingPage() {
-  const { t } = useTranslation('landing');
+  const { t } = useTranslation("landing");
   const [sports, setSports] = useState<Sport[]>([]);
   const [totalEvents, setTotalEvents] = useState(0);
 
   useEffect(() => {
     getSports()
       .then((data) => {
-        setSports(data.slice(0, 8));
-        setTotalEvents(data.reduce((sum, s) => sum + (s.eventCount || 0), 0));
+        if (data.length > 0) {
+          setSports(data.slice(0, 8));
+          setTotalEvents(data.reduce((sum, s) => sum + (s.eventCount || 0), 0));
+        } else {
+          setSports(FALLBACK_SPORTS);
+          setTotalEvents(
+            FALLBACK_SPORTS.reduce((sum, s) => sum + (s.eventCount || 0), 0),
+          );
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        setSports(FALLBACK_SPORTS);
+        setTotalEvents(
+          FALLBACK_SPORTS.reduce((sum, s) => sum + (s.eventCount || 0), 0),
+        );
+      });
   }, []);
 
   return (
@@ -68,37 +106,37 @@ export default function LandingPage() {
       <section className="landing-hero">
         <div className="landing-hero-glow" />
         <div className="landing-hero-content">
-          <p className="landing-eyebrow">{t('HERO_EYEBROW')}</p>
+          <p className="landing-eyebrow">{t("HERO_EYEBROW")}</p>
           <h1 className="landing-h1">
-            {t('HERO_TITLE_START')} <span className="accent">Phoenix</span>
+            {t("HERO_TITLE_START")} <span className="accent">Phoenix</span>
           </h1>
-          <p className="landing-subtitle">
-            {t('HERO_SUBTITLE')}
-          </p>
+          <p className="landing-subtitle">{t("HERO_SUBTITLE")}</p>
           <div className="landing-cta-row">
             <Link href="/auth/register" className="landing-btn-primary">
-              {t('CTA_CREATE_ACCOUNT')}
+              {t("CTA_CREATE_ACCOUNT")}
             </Link>
             <Link href="/auth/login" className="landing-btn-secondary">
-              {t('CTA_LOGIN')}
+              {t("CTA_LOGIN")}
             </Link>
           </div>
 
           {/* Live stats */}
           <div className="landing-stats">
             <div className="landing-stat">
-              <span className="landing-stat-value">{sports.length || '—'}</span>
-              <span className="landing-stat-label">{t('STATS_SPORTS')}</span>
+              <span className="landing-stat-value">{sports.length || "—"}</span>
+              <span className="landing-stat-label">{t("STATS_SPORTS")}</span>
             </div>
             <div className="landing-stat-divider" />
             <div className="landing-stat">
-              <span className="landing-stat-value">{totalEvents || '—'}</span>
-              <span className="landing-stat-label">{t('STATS_EVENTS')}</span>
+              <span className="landing-stat-value">{totalEvents || "—"}</span>
+              <span className="landing-stat-label">{t("STATS_EVENTS")}</span>
             </div>
             <div className="landing-stat-divider" />
             <div className="landing-stat">
               <span className="landing-stat-value">3</span>
-              <span className="landing-stat-label">{t('STATS_ODDS_FORMATS')}</span>
+              <span className="landing-stat-label">
+                {t("STATS_ODDS_FORMATS")}
+              </span>
             </div>
           </div>
         </div>
@@ -107,7 +145,9 @@ export default function LandingPage() {
       {/* ── Sport Chips ── */}
       {sports.length > 0 && (
         <section className="landing-section">
-          <h2 className="landing-section-title">{t('SECTION_POPULAR_SPORTS')}</h2>
+          <h2 className="landing-section-title">
+            {t("SECTION_POPULAR_SPORTS")}
+          </h2>
           <div className="landing-sport-chips">
             {sports.map((sport) => (
               <Link
@@ -115,8 +155,12 @@ export default function LandingPage() {
                 href={`/sports/${sport.sportKey}`}
                 className="landing-sport-chip"
               >
-                <span className="landing-sport-chip-name">{sport.sportName}</span>
-                <span className="landing-sport-chip-count">{sport.eventCount}</span>
+                <span className="landing-sport-chip-name">
+                  {sport.sportName}
+                </span>
+                <span className="landing-sport-chip-count">
+                  {sport.eventCount}
+                </span>
               </Link>
             ))}
           </div>
@@ -125,7 +169,7 @@ export default function LandingPage() {
 
       {/* ── Features Grid ── */}
       <section className="landing-section">
-        <h2 className="landing-section-title">{t('SECTION_WHY_PHOENIX')}</h2>
+        <h2 className="landing-section-title">{t("SECTION_WHY_PHOENIX")}</h2>
         <div className="landing-features">
           {FEATURES.map((f) => (
             <div key={f.heading} className="landing-feature-card">
@@ -142,11 +186,11 @@ export default function LandingPage() {
       <section className="landing-rg-banner">
         <span className="landing-rg-icon">🛡️</span>
         <div>
-          <h3 className="landing-rg-title">{t('RG_TITLE')}</h3>
+          <h3 className="landing-rg-title">{t("RG_TITLE")}</h3>
           <p className="landing-rg-text">
-            {t('RG_TEXT')}{' '}
+            {t("RG_TEXT")}{" "}
             <Link href="/responsible-gaming" className="landing-rg-link">
-              {t('RG_LEARN_MORE')}
+              {t("RG_LEARN_MORE")}
             </Link>
           </p>
         </div>
@@ -154,10 +198,13 @@ export default function LandingPage() {
 
       {/* ── Final CTA ── */}
       <section className="landing-final-cta">
-        <h2>{t('FINAL_CTA_TITLE')}</h2>
-        <p>{t('FINAL_CTA_SUBTITLE')}</p>
-        <Link href="/auth/register" className="landing-btn-primary landing-btn-lg">
-          {t('FINAL_CTA_BUTTON')}
+        <h2>{t("FINAL_CTA_TITLE")}</h2>
+        <p>{t("FINAL_CTA_SUBTITLE")}</p>
+        <Link
+          href="/auth/register"
+          className="landing-btn-primary landing-btn-lg"
+        >
+          {t("FINAL_CTA_BUTTON")}
         </Link>
       </section>
     </>

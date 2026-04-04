@@ -1,23 +1,30 @@
-'use client';
+"use client";
 
-import React from 'react';
-import StoreProvider from './lib/store/StoreProvider';
-import { QueryProvider } from './lib/query/QueryProvider';
-import { I18nProvider } from './lib/i18n/I18nProvider';
-import { AuthProvider } from './components/AuthProvider';
-import { BetslipProvider } from './components/BetslipProvider';
-import { SportsSidebar } from './components/SportsSidebar';
-import { HeaderBar } from './components/HeaderBar';
-import { BetslipPanel } from './components/BetslipPanel';
-import { ToastProvider } from './components/ToastProvider';
-import { AccountStatusBar } from './components/AccountStatusBar';
+import React from "react";
+import StoreProvider from "./lib/store/StoreProvider";
+import { QueryProvider } from "./lib/query/QueryProvider";
+import { I18nProvider } from "./lib/i18n/I18nProvider";
+import { AuthProvider } from "./components/AuthProvider";
+import { BetslipProvider } from "./components/BetslipProvider";
+import { SportsSidebar } from "./components/SportsSidebar";
+import { HeaderBar } from "./components/HeaderBar";
+import { BetslipPanel } from "./components/BetslipPanel";
+import { ToastProvider } from "./components/ToastProvider";
+import { AccountStatusBar } from "./components/AccountStatusBar";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>
         <title>Phoenix Sportsbook</title>
-        <meta name="description" content="The ultimate sports betting platform" />
+        <meta
+          name="description"
+          content="The ultimate sports betting platform"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
@@ -41,38 +48,38 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             src="https://www.googletagmanager.com/ns.html?id=GTM-PJSSBJG"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
         <StoreProvider>
           <QueryProvider>
-          <I18nProvider>
-          <AuthProvider>
-          <ToastProvider>
-            <BetslipProvider>
-              <div className="ps-shell">
-                {/* Left Sidebar — Sport Navigation */}
-                <SportsSidebar />
+            <I18nProvider>
+              <ToastProvider>
+                <AuthProvider>
+                  <BetslipProvider>
+                    <div className="ps-shell">
+                      {/* Left Sidebar — Sport Navigation */}
+                      <SportsSidebar />
 
-                {/* Main Area */}
-                <div className="ps-main">
-                  {/* Header — Brand, Tabs, Account Controls */}
-                  <HeaderBar />
+                      {/* Main Area */}
+                      <div className="ps-main">
+                        {/* Header — Brand, Tabs, Account Controls */}
+                        <HeaderBar />
 
-                  {/* Account Status Banner (self-excluded, cooling off, unverified, etc.) */}
-                  <AccountStatusBar />
+                        {/* Account Status Banner (self-excluded, cooling off, unverified, etc.) */}
+                        <AccountStatusBar />
 
-                  {/* Content + Betslip */}
-                  <div className="ps-content">
-                    <div className="ps-page">{children}</div>
-                    <BetslipPanel />
-                  </div>
-                </div>
-              </div>
-            </BetslipProvider>
-          </ToastProvider>
-          </AuthProvider>
-          </I18nProvider>
+                        {/* Content + Betslip */}
+                        <div className="ps-content">
+                          <div className="ps-page">{children}</div>
+                          <BetslipPanel />
+                        </div>
+                      </div>
+                    </div>
+                  </BetslipProvider>
+                </AuthProvider>
+              </ToastProvider>
+            </I18nProvider>
           </QueryProvider>
         </StoreProvider>
       </body>

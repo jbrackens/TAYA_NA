@@ -21,8 +21,7 @@ PhoenixBotRevival/
 
 ## GitHub Repos
 
-- Player app: https://github.com/jbrackens/phoenix-sportsbook-frontend
-- Backoffice: https://github.com/jbrackens/TalonRevival
+- Monorepo: https://github.com/jbrackens/PhoenixBotRevival
 - GitHub user: jbrackens
 
 ## Critical Rules
