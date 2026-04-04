@@ -1,0 +1,18 @@
+kind: KeycloakRealm
+apiVersion: keycloak.org/v1alpha1
+metadata:
+  name: {{ .Values.realm.name }}
+  labels:
+    app: {{ .Values.realm.name }}-realm
+spec:
+  instanceSelector:
+    matchLabels:
+      app: phoenix-keycloak
+  realm:
+    id: {{ .Values.realm.name }}
+    realm: {{ .Values.realm.name }}
+    displayName: {{ .Values.realm.name }}
+    enabled: True
+    roles:
+      realm:
+        - name: admin

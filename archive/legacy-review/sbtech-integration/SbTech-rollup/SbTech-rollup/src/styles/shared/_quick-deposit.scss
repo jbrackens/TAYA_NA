@@ -1,0 +1,13 @@
+.quick-deposit-inner-content{
+  padding-bottom:1em;
+}
+html.IsDesktop .quick-deposit-popup-wrapper{
+  border-radius:0px;
+  margin-top:0;
+  right:0;
+}
+
+html.IsMobile .quick-deposit-inner-content, html.IsTablet .quick-deposit-inner-content,
+html.IsMobile .quick-deposit-normal .quick-deposit-content, html.IsTablet .quick-deposit-normal .quick-deposit-content{
+  border-radius:0px;
+}

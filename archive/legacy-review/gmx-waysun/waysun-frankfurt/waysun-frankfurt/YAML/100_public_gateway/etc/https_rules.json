@@ -1,0 +1,8 @@
+{
+  "host":"${TMP_DOMAIN}",
+  "path":"${TMP_PATH}",
+  "backend":{
+    "serviceName":"${TMP_SERVICE_NAME}",
+    "servicePort": ${TMP_SERVICE_PORT}
+  }
+}

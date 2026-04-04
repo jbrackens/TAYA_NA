@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_banners_action_banners",
+  "info": {
+    "displayName": "Banner Group",
+    "icon": "layout",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "banners": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::banner.banner"
+    },
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    }
+  }
+}

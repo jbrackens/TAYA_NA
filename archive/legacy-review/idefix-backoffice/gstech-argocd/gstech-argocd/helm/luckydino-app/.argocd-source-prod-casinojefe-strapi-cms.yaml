@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/casinojefe-strapi-cms
+    forcestring: true
+  - name: image.tag
+    value: v0.3.2-9ca0f14769d2c4d2fa12ce42e09eacddf4ce82ef
+    forcestring: true

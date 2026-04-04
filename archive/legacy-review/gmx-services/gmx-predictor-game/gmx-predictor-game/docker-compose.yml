@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  # forwards to host via 'dockerhost' name
+  dockerhost:
+    image: qoomon/docker-host
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    restart: on-failure
+
+  # apps
+  eventprocessor:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-predictor-game/eventprocessor:latest'
+    env_file:
+    - .local.env
+    depends_on:
+      - "dockerhost"
+
+
+  webgateway:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-predictor-game/webgateway:latest'
+    ports:
+    - "9000:9000"
+    env_file:
+    - .local.env
+    depends_on:
+      - "dockerhost"
+
+
+  admin:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-predictor-game/admin:latest'
+    ports:
+      - "9001:9000"
+    env_file:
+      - .local.env
+    depends_on:
+      - "dockerhost"

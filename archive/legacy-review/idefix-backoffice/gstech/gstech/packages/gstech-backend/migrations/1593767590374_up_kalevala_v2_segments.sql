@@ -1,0 +1,1 @@
+insert into segments ("brandId", "name") values ('LD', 'ok_session'),('LD', 'great_session'),('LD', 'welcome_bonus'), ('LD', 'last_depo_casual'), ('LD', 'last_depo_regular'), ('LD', 'last_depo_potential_highroller'), ('LD', 'last_depo_highroller');

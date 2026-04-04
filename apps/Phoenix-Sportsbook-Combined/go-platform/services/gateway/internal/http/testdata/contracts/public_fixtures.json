@@ -1,0 +1,206 @@
+{
+  "currentPage": 1,
+  "data": [
+    {
+      "competitors": {
+        "away": {
+          "competitorId": "c:f_local_001:away",
+          "name": "Team Beta",
+          "qualifier": "away",
+          "score": 0
+        },
+        "home": {
+          "competitorId": "c:f_local_001:home",
+          "name": "Team Alpha",
+          "qualifier": "home",
+          "score": 0
+        }
+      },
+      "fixtureId": "f:local:001",
+      "fixtureName": "Team Alpha vs Team Beta",
+      "isLive": false,
+      "markets": [
+        {
+          "marketCategory": "MATCH_WINNER",
+          "marketId": "m:local:001",
+          "marketName": "Match Winner",
+          "marketStatus": {
+            "changeReason": {
+              "status": "ACTIVE",
+              "type": "DATA_SUPPLIER_CHANGE"
+            },
+            "type": "BETTABLE"
+          },
+          "marketType": "MATCH_WINNER",
+          "selectionOdds": [
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "-125",
+                "decimal": 1.8,
+                "fractional": "4/5"
+              },
+              "selectionId": "home",
+              "selectionName": "Team Alpha"
+            },
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "+120",
+                "decimal": 2.2,
+                "fractional": "6/5"
+              },
+              "selectionId": "away",
+              "selectionName": "Team Beta"
+            },
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "+215",
+                "decimal": 3.15,
+                "fractional": "43/20"
+              },
+              "selectionId": "draw",
+              "selectionName": "Draw"
+            }
+          ],
+          "specifiers": {
+            "variant": "way:two",
+            "way": "two"
+          }
+        },
+        {
+          "marketCategory": "OVER_UNDER_2_5_GOALS",
+          "marketId": "m:local:002",
+          "marketName": "Over/Under 2.5 Goals",
+          "marketStatus": {
+            "changeReason": {
+              "status": "ACTIVE",
+              "type": "DATA_SUPPLIER_CHANGE"
+            },
+            "type": "BETTABLE"
+          },
+          "marketType": "OVER_UNDER_2_5_GOALS",
+          "selectionOdds": [
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "-105",
+                "decimal": 1.95,
+                "fractional": "19/20"
+              },
+              "selectionId": "over",
+              "selectionName": "Over 2.5"
+            },
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "-111",
+                "decimal": 1.9,
+                "fractional": "9/10"
+              },
+              "selectionId": "under",
+              "selectionName": "Under 2.5"
+            }
+          ],
+          "specifiers": {
+            "line": "2.5",
+            "variant": "goals"
+          }
+        }
+      ],
+      "marketsTotalCount": 2,
+      "sport": {
+        "abbreviation": "FOOT",
+        "displayToPunters": true,
+        "name": "Football",
+        "sportId": "s:football"
+      },
+      "startTime": "2026-04-10T20:00:00Z",
+      "status": "NOT_STARTED",
+      "tournament": {
+        "name": "Premier League",
+        "sportId": "s:football",
+        "startTime": "2026-04-10T20:00:00Z",
+        "tournamentId": "t:premier-league"
+      }
+    },
+    {
+      "competitors": {
+        "away": {
+          "competitorId": "c:f_local_002:away",
+          "name": "Team Delta",
+          "qualifier": "away",
+          "score": 0
+        },
+        "home": {
+          "competitorId": "c:f_local_002:home",
+          "name": "Team Gamma",
+          "qualifier": "home",
+          "score": 0
+        }
+      },
+      "fixtureId": "f:local:002",
+      "fixtureName": "Team Gamma vs Team Delta",
+      "isLive": false,
+      "markets": [
+        {
+          "marketCategory": "BOTH_TEAMS_TO_SCORE",
+          "marketId": "m:local:003",
+          "marketName": "Both Teams To Score",
+          "marketStatus": {
+            "changeReason": {
+              "status": "ACTIVE",
+              "type": "DATA_SUPPLIER_CHANGE"
+            },
+            "type": "NOT_BETTABLE"
+          },
+          "marketType": "BOTH_TEAMS_TO_SCORE",
+          "selectionOdds": [
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "+120",
+                "decimal": 2.2,
+                "fractional": "6/5"
+              },
+              "selectionId": "yes",
+              "selectionName": "Yes"
+            },
+            {
+              "active": true,
+              "displayOdds": {
+                "american": "-161",
+                "decimal": 1.62,
+                "fractional": "31/50"
+              },
+              "selectionId": "no",
+              "selectionName": "No"
+            }
+          ],
+          "specifiers": {
+            "variant": "yes-no"
+          }
+        }
+      ],
+      "marketsTotalCount": 1,
+      "sport": {
+        "abbreviation": "FOOT",
+        "displayToPunters": true,
+        "name": "Football",
+        "sportId": "s:football"
+      },
+      "startTime": "2026-04-11T19:45:00Z",
+      "status": "NOT_STARTED",
+      "tournament": {
+        "name": "Champions League",
+        "sportId": "s:football",
+        "startTime": "2026-04-11T19:45:00Z",
+        "tournamentId": "t:champions-league"
+      }
+    }
+  ],
+  "hasNextPage": false,
+  "itemsPerPage": 20,
+  "totalCount": 2
+}

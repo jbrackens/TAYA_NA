@@ -1,0 +1,50 @@
+name: Verify Frontends
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify-sportsbook:
+    name: verify-sportsbook
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: |
+            phoenix-frontend-brand-viegg/yarn.lock
+
+      - name: Install Yarn Classic
+        run: npm install -g yarn@1.22.22
+
+      - name: Run sportsbook verify gate
+        run: make verify-sportsbook
+
+  verify-talon:
+    name: verify-talon
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: |
+            talon-backoffice/yarn.lock
+
+      - name: Install Yarn Classic
+        run: npm install -g yarn@1.22.22
+
+      - name: Run Talon verify gate
+        run: make verify-talon

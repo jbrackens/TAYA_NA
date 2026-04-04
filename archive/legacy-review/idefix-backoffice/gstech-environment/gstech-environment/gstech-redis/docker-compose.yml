@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  gstech-redis:
+    environment:
+     IP: 0.0.0.0
+     SENTINEL: "false"
+     STANDALONE: "true"
+    build:
+      context: .
+      args:
+        redis_version: '5.0.3'
+      dockerfile: Dockerfile
+    image: gstech-redis
+    container_name: gstech-redis
+    hostname: server
+    ports:
+      - '7000-7007:7000-7007'
+      - '5000-5002:5000-5002'
+      - '6379:6379'
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

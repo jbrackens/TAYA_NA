@@ -1,0 +1,24 @@
+{{- if .Values.enabledFeatures.persistentVolume }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+  finalizers:
+  - kubernetes.io/pv-protection
+  name: {{.Values.persistentVolumeName}}
+spec:
+  accessModes:
+  - ReadWriteMany
+  capacity:
+    storage: {{.Values.capacity}}
+  csi:
+    driver: com.tencent.cloud.csi.cfs
+    volumeAttributes:
+      host: {{.Values.host}}
+      path: /
+    volumeHandle: {{.Values.persistentVolumeName}}
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.storageClassName }}
+  volumeMode: Filesystem
+{{ end }}

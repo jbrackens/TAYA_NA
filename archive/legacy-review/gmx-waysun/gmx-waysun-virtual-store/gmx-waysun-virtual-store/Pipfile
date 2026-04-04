@@ -1,0 +1,35 @@
+[[source]]
+url = 'https://lena-srv01.flipsports.net:4566/repository/pypi-group/simple'
+verify_ssl = true
+
+[packages]
+aws-rest-default = "==7.1.21+waysun"
+django-filter = "~=2.4.0"
+django-inline-actions = "~=2.3.0"
+django-nested-admin = "~=3.3.2"
+pyjwt = "~=1.7.1"
+ujson = "~=4.0.1"
+w3lib = "~=1.22.0"
+urlmatch = "~=1.0.1"
+python-dateutil = "~=2.8.1"
+lxml = "~=4.6.1"
+kafka-python = "~=2.0.2"
+crc32c = "~=2.2"
+dataclasses-json = "*"
+requests-futures = "~=1.0.0"
+cachetools = "~=4.2.1"
+
+[requires]
+python_version = "3.8"
+
+[dev-packages]
+ipython = "*"
+autoflake = "*"
+isort = "*"
+black = "*"
+vulture = "*"
+bandit = "*"
+safety = "*"
+
+[pipenv]
+allow_prereleases = true

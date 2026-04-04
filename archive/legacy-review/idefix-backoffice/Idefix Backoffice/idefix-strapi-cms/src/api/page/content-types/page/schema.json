@@ -1,0 +1,101 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pages",
+  "info": {
+    "singularName": "page",
+    "pluralName": "pages",
+    "displayName": "Pages",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "blocks": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        },
+        "translate": {
+          "translate": "translate"
+        }
+      },
+      "type": "dynamiczone",
+      "components": [
+        "articles.text-article",
+        "common.divider",
+        "common.features",
+        "common.gambling-problems",
+        "common.heading",
+        "common.markdown",
+        "games.category-games",
+        "games.providers-list",
+        "games.related-games",
+        "games.themes-list",
+        "offers.welcome-offer",
+        "pay-and-play.deposit-form",
+        "payments.payment-methods-list",
+        "common.preset-markdown",
+        "promotions.promotions-grid",
+        "promotions.promotions-list",
+        "banners.floating-banner",
+        "banners.fullwidth-banner",
+        "banners.hero-banner",
+        "banners.action-banner",
+        "jefe.welcome-package",
+        "olaspill.features"
+      ],
+      "required": true
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        },
+        "translate": {
+          "translate": "translate"
+        }
+      },
+      "component": "shared.seo",
+      "required": true
+    },
+    "title": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        },
+        "translate": {
+          "translate": "translate"
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "country": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "customField",
+      "customField": "plugin::country-select.country"
+    }
+  }
+}

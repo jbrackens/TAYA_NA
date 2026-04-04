@@ -1,0 +1,34 @@
+export * from "./createStore";
+export * from "./rootReducer";
+
+export * as accountStatusSlice from "./modules/account-status";
+export * as addPlayerConnectionSlice from "./modules/add-player-connection";
+export * as appSlice from "./modules/app";
+export * as authenticationSlice from "./modules/authentication";
+export * as bonusesSlice from "./modules/bonuses";
+export * as campaignsTabSlice from "./modules/campaigns-tab";
+export * as playersSlice from "./modules/players";
+export * as dialogsSlice from "./modules/dialogs";
+export * as documentsSlice from "./modules/documents";
+export * as fraudTaskSlice from "./modules/fraud-task";
+export * as historyAndNotesSlice from "./modules/history-and-notes";
+export * as kycProcessSlice from "./modules/kyc-process";
+export * as limitsSlice from "./modules/limits";
+export * as paymentsSlice from "./modules/payments";
+export * as playerSlice from "./modules/player";
+export * as playerDetailsSlice from "./modules/player-details";
+export * as playerInfoSlice from "./modules/player-info";
+export * as promotionsSlice from "./modules/promotions";
+export * as questionnairesSlice from "./modules/questionnaires";
+export * as reportsSlice from "./modules/reports";
+export * as rewardsSlice from "./modules/rewards";
+export * as risksSlice from "./modules/risks";
+export * as settingsSlice from "./modules/settings";
+export * as sidebarSlice from "./modules/sidebar";
+export * as tagsSlice from "./modules/tags";
+export * as transactionsSlice from "./modules/transactions";
+export * as userInfoSlice from "./modules/user-info";
+export * as usersSidebarSlice from "./modules/users-sidebar";
+export * as withdrawalTaskSlice from "./modules/withdrawal-task";
+
+export { useAppDispatch, useAppSelector } from "./hooks";

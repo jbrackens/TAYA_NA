@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "marketId",
+  "namespace": "sbtech.sportsData.contracts.avro",
+  "fields": [
+    {
+      "name": "id",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

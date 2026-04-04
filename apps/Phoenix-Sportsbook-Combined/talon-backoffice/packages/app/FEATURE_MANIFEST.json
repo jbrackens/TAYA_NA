@@ -1,0 +1,629 @@
+{
+  "$schema": "phoenix-feature-manifest-v1",
+  "generated": "2026-04-03",
+  "summary": {
+    "total_features": 135,
+    "real": 95,
+    "stubbed": 33,
+    "missing": 7
+  },
+  "pages": [
+    {
+      "legacy_path": "pages/index",
+      "legacy_route": "/",
+      "app_equivalent": "app/page.tsx",
+      "status": "REAL",
+      "notes": "Home page with live fixture listings via events-client + wsService"
+    },
+    {
+      "legacy_path": "pages/account/index",
+      "legacy_route": "/account",
+      "app_equivalent": "app/account/page.tsx",
+      "status": "REAL",
+      "notes": "Account dashboard with profile + balance via user-client and wallet-client"
+    },
+    {
+      "legacy_path": "pages/account/bet-history",
+      "legacy_route": "/account/bet-history",
+      "app_equivalent": "app/bets/page.tsx",
+      "status": "REAL",
+      "notes": "BetHistoryList wired to getUserBets() from betting-client"
+    },
+    {
+      "legacy_path": "pages/account/notifications",
+      "legacy_route": "/account/notifications",
+      "app_equivalent": "app/account/notifications/page.tsx",
+      "status": "REAL",
+      "notes": "Notification preferences wired to updatePreferences() from user-client"
+    },
+    {
+      "legacy_path": "pages/account/rg-history",
+      "legacy_route": "/account/rg-history",
+      "app_equivalent": "app/account/rg-history/page.tsx",
+      "status": "REAL",
+      "notes": "RG history wired to getLimitsHistory() from compliance-client"
+    },
+    {
+      "legacy_path": "pages/account/security",
+      "legacy_route": "/account/security",
+      "app_equivalent": "app/account/security/page.tsx",
+      "status": "REAL",
+      "notes": "Security settings with password change, 2FA toggle, session info"
+    },
+    {
+      "legacy_path": "pages/account/settings",
+      "legacy_route": "/account/settings",
+      "app_equivalent": "app/profile/page.tsx",
+      "status": "REAL",
+      "notes": "Profile page wired to getProfile/updateProfile from user-client + compliance-client for limits"
+    },
+    {
+      "legacy_path": "pages/account/transactions",
+      "legacy_route": "/account/transactions",
+      "app_equivalent": "app/account/transactions/page.tsx",
+      "status": "REAL",
+      "notes": "Transaction history with date range + category filters, pagination, wired to getTransactions()"
+    },
+    {
+      "legacy_path": "pages/account/responsible-gaming",
+      "legacy_route": "/account/responsible-gaming",
+      "app_equivalent": "app/responsible-gaming/page.tsx",
+      "status": "REAL",
+      "notes": "Static info page"
+    },
+    {
+      "legacy_path": "pages/account/responsible-gaming/self-exclude",
+      "legacy_route": "/account/responsible-gaming/self-exclude",
+      "app_equivalent": "app/account/self-exclude/page.tsx",
+      "status": "REAL",
+      "notes": "Self-exclusion wizard wired to selfExclude() from compliance-client"
+    },
+    {
+      "legacy_path": "pages/bonus-rules",
+      "legacy_route": "/bonus-rules",
+      "app_equivalent": "app/bonus-rules/page.tsx",
+      "status": "REAL",
+      "notes": "Fetches content from API with static fallback"
+    },
+    {
+      "legacy_path": "pages/cashier/transaction",
+      "legacy_route": "/cashier/transaction",
+      "app_equivalent": "app/cashier/page.tsx",
+      "status": "REAL",
+      "notes": "Cashier wired to wallet-client deposit/withdraw/getBalance with real userId from auth"
+    },
+    {
+      "legacy_path": "pages/cashier/transaction/cheque",
+      "legacy_route": "/cashier/transaction/cheque",
+      "app_equivalent": "app/cashier/cheque/page.tsx",
+      "status": "REAL",
+      "notes": "Cheque withdrawal form wired to withdraw() from wallet-client"
+    },
+    {
+      "legacy_path": "pages/contact-us",
+      "legacy_route": "/contact-us",
+      "app_equivalent": "app/contact-us/page.tsx",
+      "status": "REAL",
+      "notes": "Contact form posting to /api/v1/support/contact"
+    },
+    {
+      "legacy_path": "pages/esports-bets",
+      "legacy_route": "/esports-bets",
+      "app_equivalent": "app/esports-bets/page.tsx",
+      "status": "REAL",
+      "notes": "Dedicated esports page with sport filtering and FeaturedMatches integration"
+    },
+    {
+      "legacy_path": "pages/esports-bets/[gameFilter]",
+      "legacy_route": "/esports-bets/:gameFilter",
+      "app_equivalent": "app/esports-bets/[gameFilter]/page.tsx",
+      "status": "REAL",
+      "notes": "Esports game page with LeagueNav and FixtureList using events-client"
+    },
+    {
+      "legacy_path": "pages/esports-bets/[gameFilter]/match/[fixtureId]",
+      "legacy_route": "/esports-bets/:gameFilter/match/:fixtureId",
+      "app_equivalent": "app/match/[id]/page.tsx",
+      "status": "REAL",
+      "notes": "Match detail wired to getEvent() + getMarkets() with real WebSocket via wsService"
+    },
+    {
+      "legacy_path": "pages/esports-bets/[gameFilter]/competition/[competitionId]",
+      "legacy_route": "/esports-bets/:gameFilter/competition/:competitionId",
+      "app_equivalent": "app/esports-bets/[gameFilter]/competition/[competitionId]/page.tsx",
+      "status": "REAL",
+      "notes": "Esports competition page with FixtureList using events-client and getLeagues"
+    },
+    {
+      "legacy_path": "pages/privacy-policy",
+      "legacy_route": "/privacy-policy",
+      "app_equivalent": "app/privacy/page.tsx",
+      "status": "REAL",
+      "notes": "Static page"
+    },
+    {
+      "legacy_path": "pages/promotions",
+      "legacy_route": "/promotions",
+      "app_equivalent": "app/promotions/page.tsx",
+      "status": "REAL",
+      "notes": "Promotions grid fetching from /api/v1/promotions"
+    },
+    {
+      "legacy_path": "pages/reset-password",
+      "legacy_route": "/reset-password",
+      "app_equivalent": "app/auth/reset-password/page.tsx",
+      "status": "REAL",
+      "notes": "Reset password with token validation, wired to resetPassword() from auth-client"
+    },
+    {
+      "legacy_path": "pages/stream-bets",
+      "legacy_route": "/stream-bets",
+      "app_equivalent": "app/stream-bets/page.tsx",
+      "status": "REAL",
+      "notes": "Stream bets page fetching from /api/v1/streams"
+    },
+    {
+      "legacy_path": "pages/terms-and-conditions",
+      "legacy_route": "/terms-and-conditions",
+      "app_equivalent": "app/terms/page.tsx",
+      "status": "REAL",
+      "notes": "Static page"
+    }
+  ],
+  "components": [
+    {
+      "legacy_path": "components/auth/login",
+      "app_equivalent": "app/components/LoginForm.tsx",
+      "status": "REAL",
+      "notes": "Login form wired to auth-client via AuthProvider"
+    },
+    {
+      "legacy_path": "components/auth/register",
+      "app_equivalent": "app/auth/register/page.tsx",
+      "status": "REAL",
+      "notes": "4-step registration wizard wired to register() from auth-client"
+    },
+    {
+      "legacy_path": "components/auth/forgot-reset-password",
+      "app_equivalent": "app/auth/forgot-password/page.tsx + app/auth/reset-password/page.tsx",
+      "status": "REAL",
+      "notes": "Forgot password and reset password flows wired to auth-client"
+    },
+    {
+      "legacy_path": "components/auth/change-password",
+      "app_equivalent": "app/account/security/page.tsx",
+      "status": "REAL",
+      "notes": "Change password integrated into security page, calls changePassword() from auth-client"
+    },
+    {
+      "legacy_path": "components/auth/mfa-modal",
+      "app_equivalent": "app/components/MfaModal.tsx",
+      "status": "REAL",
+      "notes": "MFA modal with CodeInput, wired to verifyMfa/requestMfaCode from auth-client"
+    },
+    {
+      "legacy_path": "components/auth/accept-terms",
+      "app_equivalent": "app/components/AcceptTermsModal.tsx",
+      "status": "REAL",
+      "notes": "Scroll-to-accept modal wired to acceptTerms() from auth-client"
+    },
+    {
+      "legacy_path": "components/auth/email-confirmation",
+      "app_equivalent": "app/auth/verify-email/page.tsx",
+      "status": "REAL",
+      "notes": "Email verification page wired to verifyEmail() from auth-client"
+    },
+    {
+      "legacy_path": "components/auth/idle-activity",
+      "app_equivalent": "app/components/IdleActivityMonitor.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "components/auth/session-timer",
+      "app_equivalent": "app/components/SessionTimer.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "components/auth/ws-channel",
+      "app_equivalent": "app/lib/websocket/websocket-service.ts",
+      "status": "REAL",
+      "notes": "Handled via WebSocketService singleton with channel subscriptions"
+    },
+    {
+      "legacy_path": "components/auth/deposit-threshold-modal",
+      "app_equivalent": "app/components/DepositThresholdModal.tsx",
+      "status": "REAL",
+      "notes": "Deposit threshold warning modal"
+    },
+    {
+      "legacy_path": "components/auth/auth-wrapper",
+      "app_equivalent": "app/components/AuthProvider.tsx + ProtectedRoute.tsx",
+      "status": "REAL",
+      "notes": "AuthProvider with real login/refresh/logout, token management, session restore"
+    },
+    {
+      "legacy_path": "components/bet-button",
+      "app_equivalent": "app/components/MarketRow.tsx",
+      "status": "REAL",
+      "notes": "MarketRow with OddsButton, integrated with betSlice toggleBetElement dispatch"
+    },
+    {
+      "legacy_path": "components/cashier",
+      "app_equivalent": "app/cashier/page.tsx",
+      "status": "REAL",
+      "notes": "Cashier wired to wallet-client with real auth userId"
+    },
+    {
+      "legacy_path": "components/fixture",
+      "app_equivalent": "app/components/FixtureList.tsx",
+      "status": "REAL",
+      "notes": "FixtureList using events-client getEvents with pagination and betslip integration"
+    },
+    {
+      "legacy_path": "components/geocomply",
+      "app_equivalent": "app/components/GeoComplyCheck.tsx + app/lib/services/geocomply.ts",
+      "status": "REAL",
+      "notes": "GeoComply check component + service calling /api/v1/compliance/geolocation"
+    },
+    {
+      "legacy_path": "components/id-comply-modal",
+      "app_equivalent": "app/components/IdComplyModal.tsx",
+      "status": "REAL",
+      "notes": "ID-Comply KBA/IDPV verification modal with compliance API integration"
+    },
+    {
+      "legacy_path": "components/open-chat-button",
+      "app_equivalent": "app/components/OpenChatButton.tsx",
+      "status": "REAL",
+      "notes": "Floating chat button"
+    },
+    {
+      "legacy_path": "components/layout/betslip",
+      "app_equivalent": "app/components/Betslip.tsx + BetslipPanel.tsx",
+      "status": "REAL",
+      "notes": "BetslipPanel wired to placeBet/placeParlay with real userId from auth, cashout support"
+    },
+    {
+      "legacy_path": "components/layout/sidebar",
+      "app_equivalent": "app/components/SportsSidebar.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "components/results",
+      "app_equivalent": "app/components/WinLossStatistics.tsx",
+      "status": "REAL",
+      "notes": "Win/loss statistics wired to getUserBets() with time period filtering"
+    },
+    {
+      "legacy_path": "components/profile",
+      "app_equivalent": "app/profile/page.tsx",
+      "status": "REAL",
+      "notes": "Profile wired to getProfile/updateProfile from user-client + compliance limits"
+    },
+    {
+      "legacy_path": "components/pagination",
+      "app_equivalent": "app/components/Pagination.tsx",
+      "status": "REAL",
+      "notes": "Reusable pagination with page numbers and ellipsis"
+    },
+    {
+      "legacy_path": "components/transaction-history-list",
+      "app_equivalent": "app/account/transactions/page.tsx",
+      "status": "REAL",
+      "notes": "Transaction history integrated into transactions page with date/category filters"
+    },
+    {
+      "legacy_path": "components/win-loss-statistics-list",
+      "app_equivalent": "app/components/WinLossStatistics.tsx",
+      "status": "REAL",
+      "notes": "Win/loss stats component with time period filtering"
+    },
+    {
+      "legacy_path": "components/avatar",
+      "app_equivalent": "app/components/Avatar.tsx",
+      "status": "REAL",
+      "notes": "Avatar with initials fallback and color hash"
+    },
+    {
+      "legacy_path": "components/current-balance",
+      "app_equivalent": "app/components/CurrentBalance.tsx",
+      "status": "REAL",
+      "notes": "Balance display wired to getBalance() with compact/full modes"
+    },
+    {
+      "legacy_path": "components/count-down-time",
+      "app_equivalent": "app/components/CountdownTimer.tsx",
+      "status": "REAL",
+      "notes": "Countdown timer with days/hours/minutes/seconds"
+    },
+    {
+      "legacy_path": "components/code-input",
+      "app_equivalent": "app/components/CodeInput.tsx",
+      "status": "REAL",
+      "notes": "6-digit code input for MFA with auto-focus and paste support"
+    },
+    {
+      "legacy_path": "components/collapse",
+      "app_equivalent": "app/components/Collapse.tsx",
+      "status": "REAL",
+      "notes": "Expandable/collapsible section with animation"
+    },
+    {
+      "legacy_path": "components/errors",
+      "app_equivalent": "app/error.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "components/form/country-select",
+      "app_equivalent": "app/components/CountrySelect.tsx",
+      "status": "REAL",
+      "notes": "Country dropdown with 20+ countries"
+    },
+    {
+      "legacy_path": "components/form/nationality-select",
+      "app_equivalent": "app/components/CountrySelect.tsx",
+      "status": "REAL",
+      "notes": "Reuses CountrySelect component"
+    },
+    {
+      "legacy_path": "components/modals",
+      "app_equivalent": "app/components/Modal.tsx",
+      "status": "REAL",
+      "notes": "Reusable modal with backdrop, close button, escape key"
+    },
+    {
+      "legacy_path": "components/sandboxes",
+      "app_equivalent": null,
+      "status": "REAL",
+      "notes": "Dev-only sandbox components — not needed for production App Router build"
+    },
+    {
+      "legacy_path": "components/static-page",
+      "app_equivalent": "app/components/StaticPage.tsx",
+      "status": "REAL",
+      "notes": "StaticPage wrapper component for consistent content page styling"
+    },
+    {
+      "legacy_path": "components/table",
+      "app_equivalent": "app/components/DataTable.tsx",
+      "status": "REAL",
+      "notes": "Reusable data table with headers, striped rows, loading skeleton"
+    },
+    {
+      "legacy_path": "components/tabs",
+      "app_equivalent": "app/components/Tabs.tsx",
+      "status": "REAL",
+      "notes": "Reusable horizontal tab bar"
+    },
+    {
+      "legacy_path": "app/components/LiveNow.tsx",
+      "app_equivalent": "app/components/LiveNow.tsx",
+      "status": "REAL",
+      "notes": "Wired to getSports/getEvents from events-client + wsService for real-time fixture updates"
+    },
+    {
+      "legacy_path": "app/components/FeaturedMatches.tsx",
+      "app_equivalent": "app/components/FeaturedMatches.tsx",
+      "status": "REAL",
+      "notes": "Uses events-client getEvents and wsService for live updates with betslip integration"
+    },
+    {
+      "legacy_path": "app/components/UpcomingMatches.tsx",
+      "app_equivalent": "app/components/UpcomingMatches.tsx",
+      "status": "REAL",
+      "notes": "Uses events-client getSports/getEvents for upcoming match display"
+    },
+    {
+      "legacy_path": "app/components/MatchHeader.tsx",
+      "app_equivalent": "app/components/MatchHeader.tsx",
+      "status": "REAL",
+      "notes": "Wired to real wsService for live score/period/clock updates"
+    },
+    {
+      "legacy_path": "app/components/MatchTimeline.tsx",
+      "app_equivalent": "app/components/MatchTimeline.tsx",
+      "status": "REAL",
+      "notes": "Wired to real wsService for live incident updates with deduplication"
+    },
+    {
+      "legacy_path": "app/components/BetCard.tsx",
+      "app_equivalent": "app/components/BetCard.tsx",
+      "status": "REAL",
+      "notes": "Pure presentation component"
+    },
+    {
+      "legacy_path": "app/components/BetHistoryList.tsx",
+      "app_equivalent": "app/components/BetHistoryList.tsx",
+      "status": "REAL",
+      "notes": "Wired to getUserBets() from betting-client with status filtering and pagination"
+    },
+    {
+      "legacy_path": "app/components/MarketGroup.tsx",
+      "app_equivalent": "app/components/MarketGroup.tsx",
+      "status": "REAL",
+      "notes": "Pure presentation component"
+    },
+    {
+      "legacy_path": "app/components/HeaderBar.tsx",
+      "app_equivalent": "app/components/HeaderBar.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/LeagueNav.tsx",
+      "app_equivalent": "app/components/LeagueNav.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/OddsMovement.tsx",
+      "app_equivalent": "app/components/OddsMovement.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/QuickStake.tsx",
+      "app_equivalent": "app/components/QuickStake.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/BetLeg.tsx",
+      "app_equivalent": "app/components/BetLeg.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/ToastProvider.tsx",
+      "app_equivalent": "app/components/ToastProvider.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/BetslipProvider.tsx",
+      "app_equivalent": "app/components/BetslipProvider.tsx",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "app/components/SportSidebar.tsx",
+      "app_equivalent": "app/components/SportSidebar.tsx",
+      "status": "REAL",
+      "notes": ""
+    }
+  ],
+  "services": [
+    {
+      "legacy_path": "services/api/api-service",
+      "app_equivalent": "app/lib/api/ (multiple clients)",
+      "status": "REAL",
+      "notes": "Proper client architecture with 8 domain clients"
+    },
+    {
+      "legacy_path": "services/currency",
+      "app_equivalent": "app/lib/services/currency.ts",
+      "status": "REAL",
+      "notes": "Currency formatting for USD/EUR/GBP/AUD/CAD"
+    },
+    {
+      "legacy_path": "services/geocomply",
+      "app_equivalent": "app/lib/services/geocomply.ts",
+      "status": "REAL",
+      "notes": "GeoComply service checking /api/v1/compliance/geolocation"
+    },
+    {
+      "legacy_path": "services/websocket/websocket-service",
+      "app_equivalent": "app/lib/websocket/",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "services/websocket/channel-subscription-manager",
+      "app_equivalent": "app/lib/websocket/",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "services/websocket/channels-data-handler/bets",
+      "app_equivalent": "app/lib/websocket/handlers/bets-handler.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "services/websocket/channels-data-handler/fixtures",
+      "app_equivalent": "app/lib/websocket/handlers/fixtures-handler.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "services/websocket/channels-data-handler/markets",
+      "app_equivalent": "app/lib/websocket/handlers/markets-handler.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "services/websocket/channels-data-handler/wallets",
+      "app_equivalent": "app/lib/websocket/handlers/wallets-handler.ts",
+      "status": "REAL",
+      "notes": ""
+    }
+  ],
+  "slices": [
+    {
+      "legacy_path": "lib/slices/authSlice",
+      "app_equivalent": "app/lib/store/authSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/betSlice",
+      "app_equivalent": "app/lib/store/betSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/cashierSlice",
+      "app_equivalent": "app/lib/store/cashierSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/fixtureSlice",
+      "app_equivalent": "app/lib/store/fixtureSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/marketSlice",
+      "app_equivalent": "app/lib/store/marketSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/navigationSlice",
+      "app_equivalent": "app/lib/store/navigationSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/profileSlice",
+      "app_equivalent": "app/lib/store/profileSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/settingsSlice",
+      "app_equivalent": "app/lib/store/settingsSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/siteSettingsSlice",
+      "app_equivalent": "app/lib/store/siteSettingsSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/sportSlice",
+      "app_equivalent": "app/lib/store/sportSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/channels/channelSubscriptionSlice",
+      "app_equivalent": "app/lib/store/channelSubscriptionSlice.ts",
+      "status": "REAL",
+      "notes": ""
+    },
+    {
+      "legacy_path": "lib/slices/channels/channelsReducer",
+      "app_equivalent": "app/lib/store/channelSubscriptionSlice.ts",
+      "status": "REAL",
+      "notes": "Equivalent functionality in channelSubscriptionSlice with add/remove/cleanup subscriptions"
+    }
+  ]
+}

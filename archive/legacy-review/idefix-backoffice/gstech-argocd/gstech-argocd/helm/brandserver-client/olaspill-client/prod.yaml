@@ -1,0 +1,27 @@
+nameOverride: "prod-olaspill-client-service"
+fullnameOverride: "prod-olaspill-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3000
+
+ingress:
+  enabled: false
+
+env:
+  SITE_NAME: olaspill
+  NODE_ENV: production
+  PORT: 3000
+  API: http://prod-olaspill-backend-service:3000
+  CAPTCHA_KEY: "6LcfVVclAAAAALRtvgN0zTzKDg4O8bBkw8DQsTfF"

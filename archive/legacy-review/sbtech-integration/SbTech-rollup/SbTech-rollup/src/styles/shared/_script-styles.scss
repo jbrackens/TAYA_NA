@@ -1,0 +1,381 @@
+
+//used for adding link to rewards category in casino
+.cas-rewards-title-link{
+	color:$brand-primary;
+	font-size: 18px;
+	margin-left: 1em;
+	font-weight: bold;
+	font-family: $brand-font--header;
+	text-transform: uppercase;
+}
+.IsMobile .cas-rewards-title-link{
+	font-size: 16px;
+	margin-left: 2px;
+	clear: both;
+	display: block;
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+//styles for first five
+
+.first-five-game .event-details-inner{
+position:relative;
+}
+.first-five-game .event-details-inner:after{
+content:'';
+display:block;
+pointer-events:none;
+position:absolute;
+top:5px;
+right:50px;
+width:50px;
+bottom:0;
+background-image:$first-five-img;
+background-size:contain;
+background-position:right center;
+background-repeat:no-repeat;
+max-height:40px;
+}
+
+.IsTablet .first-five-game .event-details-inner:after,
+.IsMobile .first-five-game .event-details-inner:after{
+width:32px;
+right:3px;
+bottom:-5px;
+top:unset;
+height:28px;
+}
+.IsTablet .event-live.first-five-game .event-details-inner:after,
+.IsMobile .event-live.first-five-game .event-details-inner:after,
+.IsTablet .events-container-live .first-five-game .event-details-inner:after,
+.IsMobile .events-container-live .first-five-game .event-details-inner:after{
+ right: 25px;
+ bottom: 25px;
+ top:0;
+}
+@media screen and (max-width: 1490px) {
+ .IsDesktop .first-five-game .event-details-inner:after{
+  top:15px;
+ }
+}
+
+
+#expires-message{
+  background:$alert;
+  color:$brand-grey;
+	font-weight:bold;
+	text-transform:uppercase;
+  text-align:center;
+  padding:5px;
+	font-size:1.2em;
+}
+#expires-message a{color:white;}
+#expires-message a:hover{color:$brand-primary;}
+
+#opt_in_bonus_block_container {
+  width: 100%;
+}
+#opt_in_bonus_block_container #opt_in_bonus_block {
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+}
+#opt_in_bonus_block_container #opt_in_bonus_block label {
+  display: none;
+}
+#opt_in_bonus_block_container #opt_in_bonus_block input {
+  display: none;
+}
+#opt_in_bonus_block_container #opt_in_bonus_block button {
+  @include brand-button(20);
+}
+
+.league-link-container.not-visible{
+	display:none;
+}
+.league-link-container{
+	display:block;
+}
+.league-link{
+	display:inline-block !important;
+	height:auto !important;
+	line-height:45px !important;
+	&:hover{
+		border-bottom-color: white;
+	}
+	a{
+		text-decoration:none;
+		white-space: nowrap;
+	}
+}
+
+.ag-next-race-bet-button{
+	font-weight:bold;
+	font-size:12px;
+	border-radius:0px;
+}
+
+.video-player{
+	position: relative;
+	display: block;
+	width: 100%;
+	max-width:1000px;
+	margin:1px auto;
+	& > div{
+		padding-top: 56.25%;
+	}
+}
+.agVideoContainer{
+	.video-title{
+	  @include brand-header();
+	}
+	&.no-video > *{
+		display:none;
+	}
+	.IsMobile .panel-right,
+	.IsTablet .panel-right,
+	.IsDesktop .panel-center &{
+		display:none;
+	}
+}
+.youtube-player{
+	position:absolute;
+	top:0;bottom:0;left:0;right:0;
+	.thumbnail{
+		position:absolute;
+		top:0;
+		bottom:0;
+		left:0;
+		right:0;
+		width:100%;
+		height:100%;
+		pointer-events:none;
+		object-fit: contain;
+	}
+	.play-button{
+		box-sizing: border-box;
+    height: 80px;
+    width:80px;
+    cursor: pointer;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    pointer-events:none;
+		background-size:cover;
+		background-image:$play-btn-img;
+		position:absolute;
+		background-position: center center;
+		background-repeat: no-repeat;
+		transition:all 0.8s ease;
+	}
+	&:hover .play-button{
+		opacity:0.9;
+		background-size:90%;
+	}
+	iframe{
+	  position: absolute; top: 0px; right: 0px; bottom: 0px; left: 0px; width: 100%; height: 100%;
+	}
+}
+
+.ag-opt-in-button{
+	text-transform:uppercase;
+}
+
+.your-bet--active .event-view-views-switcher ag-specials{
+	display:none;
+}
+.event-view-views-switcher ag-specials{
+	display:block;
+	margin:5px auto;
+}
+ag-specials .ag-button.small-button{
+	color:$brand-base !important;
+	font-weight:400 !important;
+	font-family:'Titillium Web' !important;
+	text-transform:capitalize !important;
+	&:hover{
+		color:$brand-primary !important;
+	}
+}
+
+// ag specials
+.greyhounds ag-specials{
+	display:none;
+}
+.your-bet--active ag-specials{
+	display:none;
+}
+ag-specials{
+	display:block;
+	margin:5px auto;
+	width:100%;
+}
+
+#cookieContainer {
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  width:450px;
+  background:$brand-base;
+  color:white;
+  z-index:100;
+}
+#cookieContainer:after{
+  display:block;
+  content:'!';
+  position:absolute;
+  top:5px;
+  right:5px;
+  color:$brand-primary;
+  border:2px solid $brand-primary;
+  width:15px;
+  height:15px;
+  border-radius:15px;
+  font-weight:bold;
+  text-align:center;
+  line-height:15px;
+}
+#cookieContainer a {color:$brand-primary; text-decoration:underline;}
+#cookieContainer a:hover {color:$brand-primary--hover; text-decoration:underline;}
+#cookieContainer .cookieContainerText {
+  padding:24px;
+  text-align:center;
+}
+#cookieClose {
+  color: white;
+  background:$brand-primary;
+  display:block;
+  font-size:12px;
+  line-height:24px;
+  text-align:center;
+  text-transform:uppercase;
+  font-weight:bold;
+font-family:'Poppins', sans-serif;
+}
+#cookieClose:hover {
+  background: $brand-primary--hover;
+}
+.IsMobile #cookieContainer{
+  width:auto;
+  left:0px;
+  right:0;
+  bottom:0;
+  border-top:1px solid #808080;
+}
+
+#racing-branch-panel .responsive-super-banner-blok-container,
+#racing-game-panel .responsive-super-banner-blok-container{
+  display:none;
+}
+#racing-branch-panel.horse-racing .responsive-super-banner-blok-container,
+#racing-game-panel.horse-racing .responsive-super-banner-blok-container{
+  display:block;
+}
+
+
+
+// mobile floating
+
+#floating-promo-img{
+  display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -20px;
+  z-index: 01;
+  height:0;
+  visibility:hidden;
+  opacity:0;
+  transition: 0.4s ease all;
+  line-height:0;
+}
+#floating-promo-img:empty{
+  visibility:hidden !important;
+  opacity:0 !important;
+  height:0 !important;
+}
+.IsDesktop #floating-promo-img{
+  display:none;
+}
+.IsMobile #floating-promo-img.banner-visible{
+  opacity:1;
+  visibility: visible;
+  height:unset;
+  bottom:0;
+}
+.IsMobile #floating-promo-img.banner-hidden{
+  opacity:0;
+  visibility: none;
+  height:0;
+  bottom:0;
+  display:none !important;
+}
+.IsMobile #floating-promo-img.banner-hidden *{
+  display:none;
+}
+
+#floating-promo-img{
+	display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: -20px;
+  z-index: 01;
+  height:0;
+  visibility:hidden;
+  opacity:0;
+  transition: 0.4s ease all;
+  line-height:0;
+}
+#floating-promo-img:empty{
+  visibility:hidden !important;
+  opacity:0 !important;
+  height:0 !important;
+}
+.IsDesktop #floating-promo-img{
+  display:none;
+}
+.IsMobile #floating-promo-img.banner-visible{
+  opacity:1;
+  visibility: visible;
+  height:unset;
+  bottom:0;
+}
+.IsMobile #floating-promo-img.banner-hidden{
+  opacity:0;
+  visibility: none;
+  height:0;
+  bottom:0;
+  display:none !important;
+}
+.IsMobile #floating-promo-img.banner-hidden *{
+  display:none;
+}
+#floating-promo-img a{
+  display:block;
+  pointer-events:all;
+}
+#floating-promo-img img{
+  width:100%;
+}
+#floating-promo-img:after{
+  position:absolute;
+  top:0;
+  left:0;
+  width:24px;
+  height:24px;
+  background:$brand-primary;
+  color:white;
+  line-height:24px;
+	font-size:16px;
+  text-align:center;
+  font-weight:bold;
+  font-family:$brand-font--header;
+  content:'X';
+}
+
+.no-doc-upload .account-doc-upload__wrap{
+  display:none;
+}

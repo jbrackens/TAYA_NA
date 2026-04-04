@@ -1,0 +1,7 @@
+# in case of a cluster / sentinel etc., replace this file with an expected one
+singleServerConfig:
+  address: "${EVENT_INGESTOR_REDIS_URL:-redis://127.0.0.1:6379}"
+  retryAttempts: 0
+lockWatchdogTimeout: 10000
+codec:
+  class: org.redisson.codec.Kryo5Codec # instead of a default org.redisson.codec.MarshallingCodec

@@ -1,0 +1,84 @@
+
+// hover effect for event cards
+.IsDesktop {
+  .rj-event-card{
+    padding:0px;
+    &:hover{
+      .rj-event-card-section-item--team-1-name,
+      .rj-event-card-section-item--team-2-name{
+        color:$brand-primary;
+      }
+    }
+    .rj-event-card-section--2-bet-buttons,
+    .rj-event-card-section--3-bet-buttons{
+      padding: 0px 1px
+    }
+  }
+}
+.IsDesktop {
+  .rj-ev-list__ev-card{
+    .rj-ev-list__ev-card__section{
+      padding:0px 1px;
+    }
+    &:hover{
+      .rj-ev-list__ev-card__team-1-name,
+      .rj-ev-list__ev-card__team-2-name{
+        color:$brand-primary;
+      }
+    }
+  }
+}
+.bet-button-wrap:not(:last-child), .bet-button-wrap:not(:last-of-type){
+  padding-right:2px;
+}
+html.IsDesktop .event-wrapper{
+  padding:0;
+  border-radius:0;
+  .event-details-wrap {
+    padding: 4px 0;
+  }
+}
+
+// leage title on live events
+.IsDesktop .sr-lmts-scoreboard-wraper .sr-scoreboard-head,
+.sr-lmts-scoreboard-wraper .sr-scoreboard-head{
+  height:30px;
+}
+
+.IsDesktop .sr-lmts-scoreboard-wraper .sr-scoreboard-head .sr-scoreboard-head-title-wrap .sr-head-title,
+.sr-lmts-scoreboard-wraper .sr-scoreboard-head .sr-scoreboard-head-title-wrap .sr-head-title{
+  height:30px;
+  line-height: 30px;
+  font-size:12px;
+}
+
+.IsTablet .rj-ev-list__sub-heading .rj-ev-list__heading-title,
+.IsMobile .rj-ev-list__sub-heading .rj-ev-list__heading-title{
+  padding-top:10px;
+  padding-bottom:10px;
+}
+.IsMobile .event-view .toggleableHeadline, .IsTablet .event-view .toggleableHeadline{
+  height:36px;
+}
+
+.live-regulation-text{
+  background:white;
+  color:$brand-base;
+  font-size:14px;
+  line-height:1.2;
+  padding:10px;
+}
+
+// event list icons bottom left
+.IsMobile .rj-ev-list__ev-card__game-state, .IsTablet .rj-ev-list__ev-card__game-state,
+.IsMobile .rj-ev-list__ev-card__icons-holder, .IsTablet .rj-ev-list__ev-card__icons-holder{
+top:0;
+}
+.IsMobile .rj-ev-list__ev-card .rj-ev-list__ev-card-icon--tooltip,
+.IsTablet .rj-ev-list__ev-card .rj-ev-list__ev-card-icon--tooltip{
+  padding-top:3px;
+}
+
+.IsDesktop .rj-ev-list__prelive-outright__button-holder{
+  padding:0;
+}

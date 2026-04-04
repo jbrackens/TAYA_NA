@@ -1,0 +1,7 @@
+# File assumes you have global ignore rules from template: https://github.com/flipadmin/command-line-tools/blob/develop/templates/.gitignore-template
+
+####################
+### Local config ###
+
+########################
+### Project specific ###

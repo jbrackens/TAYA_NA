@@ -1,0 +1,22 @@
+{
+  "fixtureId": "f:local:001",
+  "status": "in_play",
+  "period": "1H",
+  "clockSeconds": 1320,
+  "metrics": {
+    "shots_on_target": {
+      "home": 4,
+      "away": 2
+    },
+    "corners": {
+      "home": 5,
+      "away": 1
+    },
+    "possession_pct": {
+      "home": 55,
+      "away": 45,
+      "unit": "percent"
+    }
+  },
+  "updatedAt": "2026-03-04T16:02:00Z"
+}

@@ -1,0 +1,98 @@
+$brand-primary: #57a348;
+$brand-primary--hover: #448038;
+$brand-secondary: #57a348;
+
+$brand-base: #212329;
+$brand-base-light: #272a31;
+$brand-bg:#0f1b21;
+$brand-grey:#212329;
+$brand-grey-btn:#000000;
+$brand-light:#ffffff;
+
+$grey-text:#878787;
+
+$alert: #ff9d2c;
+$brand-alert: $alert;
+$accept:  #359e02;
+
+$brand-font--header:'Titillium Web',Tahoma,Arial,Helvetica,sans-serif;
+$brand-font--body:'Roboto',Tahoma,Arial,Helvetica,sans-serif;
+
+$brand-heading-color: $brand-base;
+
+$center-bg:$brand-base;
+$sidebar-bg:$brand-base;
+$main-bg:$brand-grey;
+
+$button-bg:$brand-primary;
+$button-color:#ffffff;
+$button-bg--hover:$brand-primary--hover;
+
+@mixin brand-button($font-size, $stripe: false, $place: false){
+  background-color:$button-bg;
+  color:white;
+  font-family:$brand-font--header;
+  font-size:$font-size + px;
+  line-height:$font-size * 3px;
+  display:inline-block;
+  padding:0 $font-size + 5px;
+  text-align:center;
+  text-decoration:none;
+  border:none;
+  border-radius:6px;
+  width:fit-content;
+  box-sizing:border-box;
+  &:hover{
+    background:$button-bg--hover;
+  }
+  @if $stripe == true {
+    width:100%;
+  }
+  @if $place == top {
+    margin:0 auto;
+  }
+  @if $place == bottom {
+    margin:0 auto;
+  }
+}
+
+@mixin brand-header($font-size:14px, $bold:true){
+  font-family: $brand-font--header;
+  font-weight:  700;
+  text-transform: uppercase;
+  padding: 10px 12px 10px 29px;
+  font-size: $font-size;
+  margin: 1px 0;
+  position: relative;
+  color: #fff;
+  background:$brand-base;
+  border-radius:0;
+  &:before {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    height: $font-size + 6;
+    width: 3px;
+    content: "";
+    border-radius: 2px;
+    background-color: $brand-primary;
+  }
+}
+
+@mixin force-ar($percentage:56.5%, $div:img){
+  padding-bottom:$percentage;
+  overflow:hidden;
+  position:relative;
+  height:100%;
+   & > #{$div}{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    max-width: none;
+    left: 50%;
+    transform: translateX(-50%);
+    height:100%;
+  }
+}

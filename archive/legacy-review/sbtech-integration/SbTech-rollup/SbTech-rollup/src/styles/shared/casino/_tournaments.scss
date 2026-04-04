@@ -1,0 +1,166 @@
+[data-a10n-component="DesktopTournamentsView"] [data-a10n-component="GridItemComponentContent"] [class$="cas-component-gamegrid-_index__card"]{
+  border-radius:0px;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-TournamentOnFocus-_index__tournament-detail::-webkit-scrollbar-thumb{
+  background:$brand-primary;
+  border-radius:0px;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Header-_index__tournament-widget-title-wrapper{
+  @include brand-header( 16px );
+  padding: 7px 12px 7px 29px;
+  border:none;
+  margin:0;
+  line-height: 16px;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-item-active{
+  background:white;
+  border:1px solid $brand-base;
+}
+.sb-src-components-sbtech-cas-widget-tournament-_index__tournament-wrapper{
+  border-radius:0px;
+  border-bottom: 10px solid white;
+  margin-bottom: 10px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-list{
+  padding-right:0;
+  margin-right:5px;
+  margin-left:10px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-list-margin .sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-item:nth-child(1){
+  margin-top:10px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-item{
+  margin-bottom:10px;
+  padding:10px;
+  position:relative;
+  border-radius:0px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-details{
+  width:100%;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-item-active .sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-date{
+  opacity:1;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Button-_index__btn{
+  @include brand-button(18);
+  height:unset;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Header-_index__tournament-widget-title{
+  color:white;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Header-_index__tournament-widget-header{
+  display: flex;
+  flex-direction: row;
+  height:unset;
+  margin:0 0 2px;
+  width: calc(100% - 2px);
+}
+[data-render-style="Desktop"] .sb-src-components-sbtech-cas-widget-tournament-components-common-Info-_index__pr-pool-wrapper,
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Info-_index__pr-pool-wrapper{
+  color:$brand-base;
+  border-radius:0px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Header-_index__tournament-history-button {
+    height: 100%;
+    line-height: 30px;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-radius: 0px;
+    margin-left: 2px;
+    font-family: $brand-font--header;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__prize-label{
+  width:50%;
+  float:left;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-item:hover{
+  background:#ececec;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-common-GamesList-_index__games-title{
+  padding:0 5px;
+  color:white;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__tournament-item-active .sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__prize-label{
+  color:$brand-primary;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-common-GamesList-_index__games-title-wrapper{
+  display:block;
+  background:$brand-base;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding-left: 1em;
+  line-height: 2;
+  margin-bottom: 1px;
+  width: calc(100% - 14px);
+  margin-left: 1px;
+  margin-top:2px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-List-_index__arrow-right{
+  position:absolute;
+  bottom:30px;
+  right:20px;
+}
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-TournamentOnFocus-_index__tournament-on-focus{
+  padding:10px;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Table-TableRow-_index__highlighted-row{
+  background:$brand-primary;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-TournamentOnFocus-Header-_index__square-banner-img{
+  border-radius:0px;
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-DropDown-_index__dropdown-btn{
+  border-radius:0px;
+}
+
+.IsTablet, [data-cas-device-type="mobile"] {
+  .sb-src-components-sbtech-cas-widget-tournament-_index__item{
+    border-radius:0px;
+    padding:10px;
+    max-width:100%;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-_index__carousel{
+    margin:0;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-components-common-Header-_index__tournament-history-button{
+    height:30px;
+    line-height:30px;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-_index__container{
+    padding:0 2px;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__wrapper-no-banner .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__button{
+    @include brand-button(14);
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__prize .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__label{
+    color:#282828;
+    border-radius:0px;
+    line-height:20px;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__prize{
+    margin-top:5px;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__wrapper-no-banner .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-Info-_index__button{
+    height:unset;
+  }
+  [data-popup-type="HistoryPopup"] .sb-src-components-sbtech-cas-widget-tournament-components-common-Info-_index__title{
+    padding-top:5px;
+  }
+  .sb-src-components-sbtech-cas-widget-tournament-components-views-Mobile-History-_index__scrollable-wrapper{
+    padding:10px;
+  }
+}
+
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-TournamentOnFocus-_index__right-part{
+  width:48%;
+}

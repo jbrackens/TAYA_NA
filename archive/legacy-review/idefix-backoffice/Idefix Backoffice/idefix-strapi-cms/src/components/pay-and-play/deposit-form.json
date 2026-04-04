@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_pay_and_play_deposit_forms",
+  "info": {
+    "displayName": "Deposit Form",
+    "icon": "server",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    }
+  }
+}

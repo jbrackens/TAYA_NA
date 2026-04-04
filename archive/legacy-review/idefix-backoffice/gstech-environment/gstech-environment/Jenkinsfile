@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+    }
+    stages {
+        stage('Network') {
+            steps {
+                sh 'yarn docker:network'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'yarn docker:minio.test'
+                sh 'yarn docker:mongodb.test'
+                sh 'yarn docker:postgres.test'
+                sh 'yarn docker:redis.test'
+            }
+        }
+        stage('Live') {
+            steps {
+                sh 'yarn docker:kafka'
+                sh 'yarn docker:minio'
+                sh 'yarn docker:mongodb'
+                sh 'yarn docker:postgres'
+                sh 'yarn docker:redis'
+            }
+        }
+    }
+}

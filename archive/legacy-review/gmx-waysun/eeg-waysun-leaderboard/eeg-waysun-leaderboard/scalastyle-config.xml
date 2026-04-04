@@ -1,0 +1,29 @@
+<scalastyle>
+ <check level="error" class="org.scalastyle.file.FileTabChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
+  <parameters>
+   <parameter name="regex">ExecutionContext\.global</parameter>
+  </parameters>
+ </check>
+ <check level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
+  <parameters>
+   <parameter name="regex">(?i)ctx\b|cmd\b|evt\b|txn\b</parameter>
+  </parameters>
+ </check>
+ <check level="error" class="org.scalastyle.scalariform.CovariantEqualsChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.EqualsHashCodeChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.IllegalImportsChecker" enabled="true">
+  <parameters>
+   <parameter name="illegalImports">
+    <!-- Do not use `ExecutionContext.global`, rely on ActorSystem's Dispatcher instead (`actorSystem.executionContext`) -->
+    sun._,java.awt._,scala.concurrent.ExecutionContext._,scala.concurrent.ExecutionContext.Implicits._
+   </parameter>
+  </parameters>
+ </check>
+ <check level="error" class="org.scalastyle.scalariform.NoCloneChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.NoFinalizeChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.NullChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.ReturnChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.SimplifyBooleanExpressionChecker" enabled="true"/>
+ <check level="error" class="org.scalastyle.scalariform.UppercaseLChecker" enabled="true"/>
+</scalastyle>

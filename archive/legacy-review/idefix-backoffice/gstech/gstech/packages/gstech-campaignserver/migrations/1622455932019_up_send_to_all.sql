@@ -1,0 +1,1 @@
+alter table campaigns_content add column "sendToAll" boolean default false;

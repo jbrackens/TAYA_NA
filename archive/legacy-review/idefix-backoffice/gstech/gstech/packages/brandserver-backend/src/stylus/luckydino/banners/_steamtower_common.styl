@@ -1,0 +1,107 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$steamtower_common_hero_name = 'steamtower_common_hero';
+$steamtower_common_hero_x = 0px;
+$steamtower_common_hero_y = 0px;
+$steamtower_common_hero_offset_x = 0px;
+$steamtower_common_hero_offset_y = 0px;
+$steamtower_common_hero_width = 351px;
+$steamtower_common_hero_height = 325px;
+$steamtower_common_hero_total_width = 795px;
+$steamtower_common_hero_total_height = 325px;
+$steamtower_common_hero_image = 'steamtower_common_b.png';
+$steamtower_common_hero = 0px 0px 0px 0px 351px 325px 795px 325px 'steamtower_common_b.png' 'steamtower_common_hero';
+$steamtower_common_logo_name = 'steamtower_common_logo';
+$steamtower_common_logo_x = 355px;
+$steamtower_common_logo_y = 0px;
+$steamtower_common_logo_offset_x = -355px;
+$steamtower_common_logo_offset_y = 0px;
+$steamtower_common_logo_width = 440px;
+$steamtower_common_logo_height = 141px;
+$steamtower_common_logo_total_width = 795px;
+$steamtower_common_logo_total_height = 325px;
+$steamtower_common_logo_image = 'steamtower_common_b.png';
+$steamtower_common_logo = 355px 0px -355px 0px 440px 141px 795px 325px 'steamtower_common_b.png' 'steamtower_common_logo';
+$spritesheet_width = 795px;
+$spritesheet_height = 325px;
+$spritesheet_image = 'steamtower_common_b.png';
+$spritesheet_sprites = $steamtower_common_hero $steamtower_common_logo;
+$spritesheet = 795px 325px 'steamtower_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

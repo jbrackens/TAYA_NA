@@ -1,0 +1,25 @@
+{
+  "name": "gstech-environment",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:LuckyDino/gstech-environment.git",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "npm-run-all docker:**",
+    "docker:network": "docker network create gstech || true",
+    "docker:kafka": "docker-compose -f gstech-kafka/docker-compose.yml down && docker-compose -f gstech-kafka/docker-compose.yml up --build -d",
+    "docker:minio": "docker-compose -f gstech-minio/docker-compose.yml down && docker-compose -f gstech-minio/docker-compose.yml up --build -d",
+    "docker:mongodb": "docker-compose -f gstech-mongodb/docker-compose.yml down && docker-compose -f gstech-mongodb/docker-compose.yml up --build -d",
+    "docker:postgres": "docker-compose -f gstech-postgres/docker-compose.yml down && docker-compose -f gstech-postgres/docker-compose.yml up --build -d",
+    "docker:redis": "docker-compose -f gstech-redis/docker-compose.yml down && docker-compose -f gstech-redis/docker-compose.yml up --build -d",
+    "docker:minio.test": "docker-compose -f gstech-minio/docker-compose.test.yml down && docker-compose -f gstech-minio/docker-compose.test.yml up --build -d",
+    "docker:mongodb.test": "docker-compose -f gstech-mongodb/docker-compose.test.yml down && docker-compose -f gstech-mongodb/docker-compose.test.yml up --build -d",
+    "docker:postgres.test": "docker-compose -f gstech-postgres/docker-compose.test.yml down && docker-compose -f gstech-postgres/docker-compose.test.yml up --build -d",
+    "docker:redis.test": "docker-compose -f gstech-redis/docker-compose.test.yml down && docker-compose -f gstech-redis/docker-compose.test.yml up --build -d",
+    "docker:ngrok": "docker-compose -f gstech-ngrok/docker-compose.yml down && docker-compose -f gstech-ngrok/docker-compose.yml up --build -d"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}

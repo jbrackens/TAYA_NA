@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+  <error_code>2</error_code>
+  <error_message>Invalid apikey or secretkey</error_message>
+</nodes>

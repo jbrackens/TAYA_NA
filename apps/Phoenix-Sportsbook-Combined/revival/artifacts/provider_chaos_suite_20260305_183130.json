@@ -1,0 +1,20 @@
+{"Time":"2026-03-05T18:31:30.949068+01:00","Action":"start","Package":"phoenix-revival/gateway/internal/provider"}
+{"Time":"2026-03-05T18:31:30.950008+01:00","Action":"run","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReconnectReplayAvoidsDuplicateApply"}
+{"Time":"2026-03-05T18:31:30.950018+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReconnectReplayAvoidsDuplicateApply","Output":"=== RUN   TestRuntimeChaosReconnectReplayAvoidsDuplicateApply\n"}
+{"Time":"2026-03-05T18:31:30.950027+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReconnectReplayAvoidsDuplicateApply","Output":"--- PASS: TestRuntimeChaosReconnectReplayAvoidsDuplicateApply (0.00s)\n"}
+{"Time":"2026-03-05T18:31:30.950036+01:00","Action":"pass","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReconnectReplayAvoidsDuplicateApply","Elapsed":0}
+{"Time":"2026-03-05T18:31:30.950047+01:00","Action":"run","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReorderAndDuplicateTelemetry"}
+{"Time":"2026-03-05T18:31:30.950052+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReorderAndDuplicateTelemetry","Output":"=== RUN   TestRuntimeChaosReorderAndDuplicateTelemetry\n"}
+{"Time":"2026-03-05T18:31:30.950059+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReorderAndDuplicateTelemetry","Output":"--- PASS: TestRuntimeChaosReorderAndDuplicateTelemetry (0.00s)\n"}
+{"Time":"2026-03-05T18:31:30.950063+01:00","Action":"pass","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosReorderAndDuplicateTelemetry","Elapsed":0}
+{"Time":"2026-03-05T18:31:30.950067+01:00","Action":"run","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosDropGapTelemetry"}
+{"Time":"2026-03-05T18:31:30.950074+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosDropGapTelemetry","Output":"=== RUN   TestRuntimeChaosDropGapTelemetry\n"}
+{"Time":"2026-03-05T18:31:30.950085+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosDropGapTelemetry","Output":"--- PASS: TestRuntimeChaosDropGapTelemetry (0.00s)\n"}
+{"Time":"2026-03-05T18:31:30.95009+01:00","Action":"pass","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosDropGapTelemetry","Elapsed":0}
+{"Time":"2026-03-05T18:31:30.950094+01:00","Action":"run","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosStreamErrorTelemetry"}
+{"Time":"2026-03-05T18:31:30.950098+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosStreamErrorTelemetry","Output":"=== RUN   TestRuntimeChaosStreamErrorTelemetry\n"}
+{"Time":"2026-03-05T18:31:30.950102+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosStreamErrorTelemetry","Output":"--- PASS: TestRuntimeChaosStreamErrorTelemetry (0.00s)\n"}
+{"Time":"2026-03-05T18:31:30.950106+01:00","Action":"pass","Package":"phoenix-revival/gateway/internal/provider","Test":"TestRuntimeChaosStreamErrorTelemetry","Elapsed":0}
+{"Time":"2026-03-05T18:31:30.950109+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Output":"PASS\n"}
+{"Time":"2026-03-05T18:31:30.950113+01:00","Action":"output","Package":"phoenix-revival/gateway/internal/provider","Output":"ok  \tphoenix-revival/gateway/internal/provider\t(cached)\n"}
+{"Time":"2026-03-05T18:31:30.950117+01:00","Action":"pass","Package":"phoenix-revival/gateway/internal/provider","Elapsed":0.001}

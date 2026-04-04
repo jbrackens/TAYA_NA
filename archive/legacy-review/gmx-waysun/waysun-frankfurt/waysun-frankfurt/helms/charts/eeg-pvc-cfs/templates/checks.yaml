@@ -1,0 +1,6 @@
+{{- if not .Values.host }}
+  {{- fail "value for .Values.host must be provided" }}
+{{- end }}
+{{- if not .Values.capacity }}
+  {{- fail "value for .Values.capacity must be provided" }}
+{{- end }}

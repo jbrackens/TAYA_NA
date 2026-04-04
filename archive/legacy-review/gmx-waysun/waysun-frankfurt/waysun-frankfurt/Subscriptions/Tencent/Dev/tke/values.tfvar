@@ -1,0 +1,79 @@
+
+# Environment variables for TKE
+vpc_id = "vpc-4lpl6nut"
+cluster_cidr = "172.16.0.0/16"
+cluster_max_pod_num = 32
+cluster_name = "waysun-dev-tke-cluster"
+cluster_version = "1.20.6"
+cluster_desc = "waysun-dev-tke-cluster"
+cluster_max_service_num = 32
+cluster_deploy_type = "MANAGED_CLUSTER"
+cluster_internet = true
+project_id = "1000000665"
+key_ids    = ["skey-qxveqdz1"]
+tags = {
+  "name" = "waysun-dev-tke-cluster"
+  "environment" = "dev"
+  "project" = "waysun"
+  "project_id" = "1000000665"
+}
+worker_config = [{
+      "number_worker"            = 2
+     "worker_availability_zone"  = "eu-frankfurt-2"
+      "worker_subnet_id"          = "subnet-friij2eq"
+      "worker_instance_name"      = "waysun-dev-core"
+      "worker_instance_type"      = "S5.SMALL2"
+      "worker_system_disk_type"   = "CLOUD_PREMIUM"
+      "worker_system_disk_size"   = "50"
+      "worker_image_id"           = "img-eb30mz89"
+      "worker_security_group_ids" = ["sg-d9mzpi4i", ]
+      "worker_password"           = "Jahh9655221,"
+},
+{
+      "number_worker"            = 1
+     "worker_availability_zone"  = "eu-frankfurt-2"
+      "worker_subnet_id"          = "subnet-friij2eq"
+      "worker_instance_name"      = "waysun-dev"
+      "worker_instance_type"      = "S5.SMALL1"
+      "worker_system_disk_type"   = "CLOUD_PREMIUM"
+      "worker_system_disk_size"   = "50"
+      "worker_image_id"           = "img-eb30mz89"
+      "worker_security_group_ids" = ["sg-d9mzpi4i"]
+      "worker_password"           = "Jahh9655221,"
+}
+]
+        microservices_name = "microservices"
+        microservices_max_size = "3"
+        microservices_min_size = "0"
+        microservices_desired_size = "1"
+        microservices_subnet_ids1 = "subnet-friij2eq"
+        microservices_instance_type = "S5.LARGE8"
+        microservices_key_ids      = ["skey-qxveqdz1"]
+        microservices_security_group_ids   = ["sg-1cl0mufe", "sg-g0mrt50i", "sg-gh5jxwde", "sg-d28mgvxq"]
+
+        streaming_subnet_ids1 = "subnet-hlyrujsk"
+        streaming_instance_type = "M5.LARGE32"
+        streaming_key_ids      = ["skey-qxveqdz1"]
+        streaming_security_group_ids   = ["sg-1cl0mufe", "sg-g0mrt50i", "sg-5ud1d5u0"]
+
+        processing_subnet_ids1 = "subnet-fnur4ul6"
+        processing_subnet_ids2 = "subnet-j5vej5fc"
+        processing_instance_type = "S5.LARGE8"
+        processing_key_ids      = ["skey-qxveqdz1"]
+        processing_security_group_ids   = ["sg-1cl0mufe", "sg-g0mrt50i", "sg-jvfvnfkw", "sg-d28mgvxq"]
+
+        keycloak_subnet_ids1 = "subnet-fnur4ul6"
+        keycloak_instance_type = "S5.SMALL2"
+        keycloak_key_ids      = ["skey-qxveqdz1"]
+        keycloak_security_group_ids   = ["sg-1cl0mufe", "sg-g0mrt50i", "sg-gh5jxwde", "sg-jvfvnfkw"]
+
+        tools_subnet_ids1 = "subnet-j5vej5fc"
+        tools_instance_type = "S5.LARGE8"
+        tools_key_ids      = ["skey-qxveqdz1"]
+        tools_security_group_ids   = ["sg-1cl0mufe", "sg-g0mrt50i", "sg-d28mgvxq", "sg-gh5jxwde"]
+
+        core_subnet_ids1 = "subnet-j5vej5fc"
+        core_instance_type = "S5.SMALL2"
+        core_key_ids      = ["skey-qxveqdz1"]
+        core_security_group_ids   = ["sg-1cl0mufe", "sg-g0mrt50i"]
+

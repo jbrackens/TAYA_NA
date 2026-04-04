@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: leaderboard-ingestor
+    k8s-app: leaderboard-ingestor
+    qcloud-app: leaderboard-ingestor
+  name: leaderboard-ingestor
+  namespace: ${CFG_K8S_NAMESPACE}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: ${CFG_INGESTOR_REPLICAS}
+  selector:
+    matchLabels:
+      app: leaderboard-ingestor
+      k8s-app: leaderboard-ingestor
+      qcloud-app: leaderboard-ingestor
+  strategy:
+    rollingUpdate:
+      maxSurge: ${CFG_STRATEGY_MAX_SURGE}
+      maxUnavailable: ${CFG_STRATEGY_MAX_UNAVAILABLE}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: leaderboard-ingestor
+        k8s-app: leaderboard-ingestor
+        qcloud-app: leaderboard-ingestor
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - ${CFG_DEPLOY_ON_POOL}
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - ${CFG_DEPLOY_ON_POOL}
+      containers:
+      - env:
+        - name: LEADERBOARD_REQUIRE_JWT_AUTH
+          valueFrom:
+            configMapKeyRef:
+              key: REQUIRE_JWT_AUTH
+              name: common
+              optional: false
+        - name: LEADERBOARD_TEST_USER_ID
+          valueFrom:
+            configMapKeyRef:
+              key: TEST_USER_ID
+              name: common
+              optional: false
+        - name: LEADERBOARD_TEST_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              key: TEST_PROJECT_ID
+              name: common
+              optional: false
+        - name: JWT_SERVICE_DISCOVERY_URI
+          valueFrom:
+            configMapKeyRef:
+              key: JWT_SERVICE_DISCOVERY_URI
+              name: common
+              optional: false
+        - name: LEADERBOARD_ISSUER_CACHE_REFRESH_FREQUENCY
+          valueFrom:
+            configMapKeyRef:
+              key: ISSUER_CACHE_REFRESH_FREQUENCY
+              name: common
+              optional: false
+        - name: LEADERBOARD_JWKS_CACHE_REFRESH_FREQUENCY
+          valueFrom:
+            configMapKeyRef:
+              key: JWKS_CACHE_REFRESH_FREQUENCY
+              name: common
+              optional: false
+        - name: LEADERBOARD_SECRET_BOX_HEX_KEY
+          valueFrom:
+            secretKeyRef:
+              key: SECRET_BOX_HEX_KEY
+              name: common
+              optional: false
+        - name: LEADERBOARD_OPEN_API_SERVER_URL
+          valueFrom:
+            configMapKeyRef:
+              key: OPEN_API_SERVER_URL
+              name: common
+              optional: false
+        - name: LEADERBOARD_KAFKA_AGGREGATES_TOPIC_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: TOPIC_NAME_FOR_AGGREGATIONS
+              name: common
+              optional: false
+        - name: LEADERBOARD_KAFKA_SCHEMA_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: KAFKA_SCHEMA_REGISTRY_URL
+              name: common
+              optional: false
+        - name: LEADERBOARD_KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              key: KAFKA_BOOTSTRAP_SERVERS
+              name: common
+              optional: false
+        - name: LOGGING_USE_JSON
+          valueFrom:
+            configMapKeyRef:
+              key: LOGGING_USE_JSON
+              name: common
+              optional: false
+        envFrom:
+        - secretRef:
+            name: leaderboard
+        - configMapRef:
+            name: leaderboard
+        image: "${CFG_DEPLOY_IMAGE}:${CFG_DEPLOY_INGESTOR_TAG}"
+        imagePullPolicy: Always
+        name: ingestor
+        resources:
+          limits:
+            cpu: ${CFG_RESOURCE_INGESTOR_LIMIT_CPU}
+            memory: ${CFG_RESOURCE_INGESTOR_LIMIT_MEMORY}
+          requests:
+            cpu: ${CFG_RESOURCE_INGESTOR_REQUESTS_CPU}
+            memory: ${CFG_RESOURCE_INGESTOR_REQUESTS_MEMORY}
+        securityContext:
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

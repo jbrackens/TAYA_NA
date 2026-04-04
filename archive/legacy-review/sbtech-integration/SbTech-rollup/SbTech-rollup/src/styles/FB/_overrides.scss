@@ -1,0 +1,23 @@
+
+// remove sbtechs grey border on hover of deposit button and others.
+.page-header-element .page-header-link.page-header-deposit-button{
+  border-left:none;
+}
+html.IsDesktop .page-header-button-link:hover, html.IsDesktop .page-header-big-button-link:not(.page-header-login-button):hover{
+  border:none;
+}
+
+// hide text on super banners
+.rj-superbanner__event-text--img-league{
+  display:none;
+}
+
+#history-panel.page.current{
+  .bet-history-total-block{
+    color:white;
+  }
+  .bet-history-total-value{
+    color:$brand-primary
+  }
+
+}

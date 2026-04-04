@@ -1,0 +1,3 @@
+package phoenix
+
+trait CborSerializable {}

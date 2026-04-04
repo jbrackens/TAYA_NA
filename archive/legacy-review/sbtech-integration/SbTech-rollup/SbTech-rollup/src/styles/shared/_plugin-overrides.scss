@@ -1,0 +1,21 @@
+.IsDesktop .ag-next-horse-race-container{
+  padding:0 0 1px;
+}
+.IsDesktop #home.current .ag-next-horse-race-container{
+  padding:0;
+}
+
+// points counter
+.points-counter{
+  background:$sidebar-bg;
+  margin:0;
+  border-bottom:1px solid $main-bg;
+  color:$brand-base;
+  text-transform:none;
+  font-weight:normal;
+  font-family:$brand-font--body;
+}
+// angular point counter
+ag-betslip-points{
+  font-family:$brand-font--body;
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<events>
+    <event id="1812527"
+           contentTypeId="1"
+           startDateTime="2020-08-24T12:00:00+0000"
+           endDateTime="2020-08-24T12:07:36+0000"
+           description="BALLINROBE 13:00 Adare Manor Opportunity Maiden Hurdle"
+           chargeable="false"
+           location="BALLINROBE"
+           blockedCountryCodes="AD AE AF AG AI AL AM AN AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CX CY CZ DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR FX GA GD GE GF GH GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IL IN IO IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SY SZ TA TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT YU ZA ZM ZW "
+    >
+        <identifiers></identifiers>
+        <localisedDescriptions></localisedDescriptions>
+    </event>
+    <event id="1812529"
+           contentTypeId="1"
+           startDateTime="2020-08-24T12:10:00+0000"
+           endDateTime="2020-08-24T12:13:16+0000"
+           description="AYR 13:10 Luxury Breaks At Western House Hotel Nursery"
+           chargeable="false"
+           location="AYR"
+           blockedCountryCodes="AD AE AF AG AI AL AM AN AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CX CY CZ DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR FX GA GD GE GF GH GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IL IN IO IQ IR IS IT JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SY SZ TA TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT YU ZA ZM ZW "
+    >
+        <identifiers></identifiers>
+        <localisedDescriptions></localisedDescriptions>
+    </event>
+</events>

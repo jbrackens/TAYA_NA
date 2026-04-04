@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_vie_offers",
+  "info": {
+    "displayName": "Offer",
+    "icon": "crown",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "text",
+      "required": true
+    },
+    "buttons": {
+      "type": "component",
+      "repeatable": true,
+      "component": "common.action-button",
+      "max": 2
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "subtitle": {
+      "type": "text"
+    },
+    "payAndPlay": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    }
+  }
+}

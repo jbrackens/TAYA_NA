@@ -1,0 +1,67 @@
+nameOverride: "dev-sn-affiliate-site"
+fullnameOverride: "dev-sn-affiliate-site"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  name: "sn-affiliate-site"
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-sn-affiliate-site
+  hosts:
+  - host: sn-affiliate-site.dev.eeg.viegg.net
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: dev-sn-affiliate-site
+      servicePort: 80
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+  tls: []
+
+# env:
+#   DATABASE_HOST: db-sn-affiliate-site.dev.eeg.viegg.net
+#   DATABASE_PORT: 5432
+#   DATABASE_USERNAME: sn_affiliate
+#   DATABASE_NAME: sn_affiliate
+#   DATABASE_SSL: false
+#   HOST: "0.0.0.0"
+#   PORT: 3000
+#   STRAPI_TELEMETRY_DISABLED: true
+#   NODE_ENV: "devuction"
+#   ENABLE_S3_UPLOAD: true
+#   AWS_BUCKET_NAME: "dev-sn-affiliate-site-content"
+#   AWS_REGION: "eu-central-1"
+# secretEnv:
+#   DATABASE_PASSWORD:
+#     dev-sn-affiliate-site: postgres-password
+#   JWT_SECRET:
+#     dev-sn-affiliate-site: jwt-secret
+#   ADMIN_JWT_SECRET:
+#     dev-sn-affiliate-site: admin-jwt-secret
+#   API_TOKEN_SALT:
+#     dev-sn-affiliate-site: api-token-salt
+#   APP_KEYS:
+#     dev-sn-affiliate-site: app-keys

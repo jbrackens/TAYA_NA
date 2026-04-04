@@ -1,0 +1,6 @@
+
+GET        /info/build         net.flipsports.gmx.game.argyll.racingroulette.webgateway.controller.BuildInfoController.getBuildInfo()
+GET        /info/health        net.flipsports.gmx.game.argyll.racingroulette.webgateway.controller.BuildInfoController.getBuildInfo()
+
+->         /api/v1             apiV1.Routes
+->         /ops                ops.Routes

@@ -1,0 +1,40 @@
+[
+  {
+    "Coverage": {
+      "AvailableFeeds": [
+        {
+          "IsLicensed": true,
+          "Type": "MatchState"
+        },
+        {
+          "IsLicensed": true,
+          "Type": "TradingState"
+        }
+      ],
+      "FixtureId": 8577482,
+      "IsBooked": true
+    },
+    "Header": {
+      "MessageGuid": "2c727e3c-9ede-4dcf-955e-1ff819e257a1",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-13T14:32:53.9850806Z"
+    }
+  },
+  {
+    "Coverage": {
+      "AvailableFeeds": [
+        {
+          "IsLicensed": true,
+          "Type": "TradingState"
+        }
+      ],
+      "FixtureId": 8577226,
+      "IsBooked": true
+    },
+    "Header": {
+      "MessageGuid": "300adc56-bed1-4f15-b140-024ea9eaf1cd",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-13T14:32:49.4813267Z"
+    }
+  }
+]

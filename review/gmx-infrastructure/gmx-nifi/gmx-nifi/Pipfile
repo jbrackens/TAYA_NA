@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+responses = "*"
+tox-pipenv = "*"
+ipython = "*"
+
+[packages]
+nipyapi = "*"
+python-decouple = "*"
+click = "*"
+click-plugins = "*"
+gitpython = "*"
+a75c5eb = {path = "./easynipy"}
+
+[requires]
+python_version = "3.7"

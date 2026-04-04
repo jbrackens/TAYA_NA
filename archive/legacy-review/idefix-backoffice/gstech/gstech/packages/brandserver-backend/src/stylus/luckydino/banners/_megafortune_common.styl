@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$megafortune_common_boat_name = 'megafortune_common_boat';
+$megafortune_common_boat_x = 0px;
+$megafortune_common_boat_y = 0px;
+$megafortune_common_boat_offset_x = 0px;
+$megafortune_common_boat_offset_y = 0px;
+$megafortune_common_boat_width = 477px;
+$megafortune_common_boat_height = 138px;
+$megafortune_common_boat_total_width = 628px;
+$megafortune_common_boat_total_height = 282px;
+$megafortune_common_boat_image = 'megafortune_common_b.png';
+$megafortune_common_boat = 0px 0px 0px 0px 477px 138px 628px 282px 'megafortune_common_b.png' 'megafortune_common_boat';
+$megafortune_common_bottle_name = 'megafortune_common_bottle';
+$megafortune_common_bottle_x = 481px;
+$megafortune_common_bottle_y = 0px;
+$megafortune_common_bottle_offset_x = -481px;
+$megafortune_common_bottle_offset_y = 0px;
+$megafortune_common_bottle_width = 147px;
+$megafortune_common_bottle_height = 254px;
+$megafortune_common_bottle_total_width = 628px;
+$megafortune_common_bottle_total_height = 282px;
+$megafortune_common_bottle_image = 'megafortune_common_b.png';
+$megafortune_common_bottle = 481px 0px -481px 0px 147px 254px 628px 282px 'megafortune_common_b.png' 'megafortune_common_bottle';
+$megafortune_common_logo_name = 'megafortune_common_logo';
+$megafortune_common_logo_x = 0px;
+$megafortune_common_logo_y = 142px;
+$megafortune_common_logo_offset_x = 0px;
+$megafortune_common_logo_offset_y = -142px;
+$megafortune_common_logo_width = 366px;
+$megafortune_common_logo_height = 140px;
+$megafortune_common_logo_total_width = 628px;
+$megafortune_common_logo_total_height = 282px;
+$megafortune_common_logo_image = 'megafortune_common_b.png';
+$megafortune_common_logo = 0px 142px 0px -142px 366px 140px 628px 282px 'megafortune_common_b.png' 'megafortune_common_logo';
+$spritesheet_width = 628px;
+$spritesheet_height = 282px;
+$spritesheet_image = 'megafortune_common_b.png';
+$spritesheet_sprites = $megafortune_common_boat $megafortune_common_bottle $megafortune_common_logo;
+$spritesheet = 628px 282px 'megafortune_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

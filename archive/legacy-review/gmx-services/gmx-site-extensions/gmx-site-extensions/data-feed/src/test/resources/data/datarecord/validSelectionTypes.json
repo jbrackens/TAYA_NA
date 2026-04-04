@@ -1,0 +1,68 @@
+[
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA93557499#1075495185_22L198052Q1336111Q2-1"
+    },
+    "value": {
+      "messageId": "40de6b3f-69b2-427e-b397-371c03fa2760",
+      "messageOriginDateUTC": 1626910032,
+      "messageProcessingDateUTC": 1627122263695,
+      "payload": {
+        "id": "0QA93557499#1075495185_22L198052Q1336111Q2-1",
+        "eventId": "93557499",
+        "marketId": "93557499",
+        "selectionIntId": "1075495185",
+        "selectionTypeId": "22",
+        "participantId": "336111",
+        "selectionName": "Alma De Soldado",
+        "isDisabled": false,
+        "trueOdds": 11.0,
+        "displayOdds": {
+          "Fractional": "10/1",
+          "Indo": "10.00",
+          "Malay": "-0.10",
+          "HK": "10.00",
+          "American": "+1000",
+          "Decimal": "11.00"
+        },
+        "details": {
+          "runnerStatus": "DOE"
+        }
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA93565185#1075574303_24L201094Q1954701Q2-1"
+    },
+    "value": {
+      "messageId": "b48b5f78-770b-4b86-938e-b592a5d416be",
+      "messageOriginDateUTC": 1626909912,
+      "messageProcessingDateUTC": 1627122256674,
+      "payload": {
+        "id": "0QA93565185#1075574303_24L201094Q1954701Q2-1",
+        "eventId": "93565185",
+        "marketId": "93565185",
+        "selectionIntId": "1075574303",
+        "selectionTypeId": "24",
+        "participantId": "954701",
+        "selectionName": "Tetheredtothetruth",
+        "isDisabled": false,
+        "trueOdds": -1.0,
+        "displayOdds": {
+          "Fractional": "SP",
+          "Indo": "SP",
+          "Malay": "SP",
+          "HK": "SP",
+          "American": "SP",
+          "Decimal": "SP"
+        },
+        "details": {
+          "runnerStatus": "SP"
+        }
+      }
+    }
+  }
+]

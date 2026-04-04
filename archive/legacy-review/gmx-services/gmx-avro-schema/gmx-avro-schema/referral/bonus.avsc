@@ -1,0 +1,43 @@
+{
+    "type": "record",
+    "name": "Bonus",
+    "namespace": "net.flipsports.gmx.referral",
+    "fields": [
+        {
+            "name": "for_user",
+            "type": "string"
+        },
+        {
+            "name": "originator",
+            "type": "string"
+        },
+        {
+            "name": "company_id",
+            "type": "string"
+        },
+        {
+            "name": "event_type",
+            "type": "string"
+        },
+        {
+            "name": "transaction_id",
+            "type": "string"
+        },
+        {
+            "name": "amount",
+            "type": "string"
+        },
+        {
+            "name": "title",
+            "type": "string"
+        },
+        {
+            "name": "operation_subtype",
+            "type": "string"
+        },
+        {
+            "name": "api_message_request_id",
+            "type": "string"
+        }
+    ]
+}

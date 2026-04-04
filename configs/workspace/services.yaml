@@ -1,0 +1,172 @@
+version: 2
+
+workspace_root: /Users/johnb/Desktop/PhoenixBotRevival
+
+# ============================================================
+# Go Sportsbook Rebuild — Primary Services
+# ============================================================
+
+domains:
+  - name: go_backend
+    path: /Users/johnb/Desktop/PhoenixBotRevival/services/codex-prep
+  - name: player_frontend
+    path: /Users/johnb/Desktop/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/phoenix-frontend-brand-viegg
+  - name: talon_backoffice
+    path: /Users/johnb/Desktop/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/talon-backoffice
+  - name: legacy_reference
+    path: /Users/johnb/Desktop/PhoenixBotRevival/libs/phoenix-core
+  - name: infra_reference
+    path: /Users/johnb/Desktop/PhoenixBotRevival/review/gmx-infrastructure
+
+services:
+
+  # --- Go Backend (Active) ---
+
+  - id: phoenix_gateway
+    status: ACTIVE
+    domain: go_backend
+    port: 8080
+    stack: go
+
+  - id: phoenix_user
+    status: ACTIVE
+    domain: go_backend
+    port: 8001
+    stack: go
+
+  - id: phoenix_wallet
+    status: ACTIVE
+    domain: go_backend
+    port: 8002
+    stack: go
+
+  - id: phoenix_market_engine
+    status: ACTIVE
+    domain: go_backend
+    port: 8003
+    stack: go
+
+  - id: phoenix_betting_engine
+    status: ACTIVE
+    domain: go_backend
+    port: 8004
+    stack: go
+
+  - id: phoenix_events
+    status: ACTIVE
+    domain: go_backend
+    port: 8005
+    stack: go
+
+  - id: phoenix_retention
+    status: ACTIVE
+    domain: go_backend
+    port: 8006
+    stack: go
+
+  - id: phoenix_social
+    status: ACTIVE
+    domain: go_backend
+    port: 8007
+    stack: go
+
+  - id: phoenix_compliance
+    status: ACTIVE
+    domain: go_backend
+    port: 8008
+    stack: go
+
+  - id: phoenix_analytics
+    status: ACTIVE
+    domain: go_backend
+    port: 8009
+    stack: go
+
+  - id: phoenix_settlement
+    status: ACTIVE
+    domain: go_backend
+    port: 8010
+    stack: go
+
+  - id: phoenix_notification
+    status: ACTIVE
+    domain: go_backend
+    port: 8011
+    stack: go
+
+  - id: phoenix_cms
+    status: ACTIVE
+    domain: go_backend
+    port: 8012
+    stack: go
+
+  - id: stella_engagement
+    status: ACTIVE
+    domain: go_backend
+    port: 8013
+    stack: go
+
+  - id: phoenix_audit
+    status: ACTIVE
+    domain: go_backend
+    port: 8015
+    stack: go
+
+  - id: phoenix_support_notes
+    status: ACTIVE
+    domain: go_backend
+    port: 8016
+    stack: go
+
+  - id: phoenix_config
+    status: ACTIVE
+    domain: go_backend
+    port: 8017
+    stack: go
+
+  - id: phoenix_realtime
+    status: ACTIVE
+    domain: go_backend
+    port: 8018
+    stack: go
+
+  # --- Frontends (Active) ---
+
+  - id: player_frontend
+    status: ACTIVE
+    domain: player_frontend
+    stack: react_typescript
+    notes: Migrated to Go API. Package-scoped Node 20 Jest batch green.
+
+  - id: talon_backoffice
+    status: ACTIVE
+    domain: talon_backoffice
+    stack: react_nextjs
+    notes: Partially migrated to Go API. Build blocked by Node/OpenSSL issue.
+
+  # --- Legacy Reference (Read-Only) ---
+
+  - id: phoenix_scala_backend
+    status: REFERENCE
+    domain: legacy_reference
+    path: /Users/johnb/Desktop/PhoenixBotRevival/libs/phoenix-core/attaboy-phoenix-backend/phoenix-backend
+    stack: scala_akka_sbt
+    notes: Extraction source for Go parity. Do not run.
+
+  # --- Archived (Moved to archive/) ---
+  # waysun_rule_configurator: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # waysun_wallet: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # waysun_event_ingestor: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # waysun_event_validator: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # waysun_event_aggregator: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # waysun_event_achievement: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # stella_frontend: ARCHIVED (prediction/Stella — moved to archive/legacy-review/)
+  # nifi_rest_bridge: ARCHIVED (moved to archive/legacy-review/)
+  # sbtech_integration: ARCHIVED (moved to archive/legacy-review/)
+  # phoenix_prediction: ARCHIVED (prediction v2 — moved to archive/v2-prediction/)
+
+notes:
+  - All Go services run via docker-compose.demo.yml in services/codex-prep/
+  - Infrastructure (PostgreSQL, Kafka, Redis) is defined in docker-compose.yml in services/codex-prep/
+  - Archived services are preserved in archive/ for future reference
+  - See CURRENT_STATUS.md in services/codex-prep/ for rebuild progress

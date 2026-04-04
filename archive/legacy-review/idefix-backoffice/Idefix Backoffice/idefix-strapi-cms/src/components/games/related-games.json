@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_games_related_games",
+  "info": {
+    "displayName": "Related Games",
+    "icon": "layout",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    },
+    "games": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::game.game"
+    }
+  }
+}

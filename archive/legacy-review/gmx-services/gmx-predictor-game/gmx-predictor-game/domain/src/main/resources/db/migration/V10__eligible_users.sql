@@ -1,0 +1,8 @@
+ALTER TABLE users
+  ADD COLUMN type VARCHAR(25) NOT NULL DEFAULT 'REAL';
+
+ALTER TABLE users
+  ADD CONSTRAINT ck_users_type CHECK (type IN ('REAL', 'TEST'));
+
+ALTER TABLE user_predictions
+  ADD COLUMN prize_eligible BOOLEAN NOT NULL DEFAULT TRUE;

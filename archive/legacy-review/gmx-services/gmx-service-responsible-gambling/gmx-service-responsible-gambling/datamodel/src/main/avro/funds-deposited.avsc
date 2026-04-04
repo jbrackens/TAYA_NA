@@ -1,0 +1,30 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "FundsDeposited",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": "bytes",
+      "logicalType": "decimal",
+      "precision": 11,
+      "scale": 2
+    },
+    {
+      "name": "gateway",
+      "type": "string"
+    },
+    {
+      "name": "depositedAt",
+      "type": "long"
+    },
+    {
+      "name": "brandId",
+      "type": "string"
+    }
+  ]
+}

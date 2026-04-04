@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DGE_Report>
+    <Report_Date>2013-10-31</Report_Date>
+    <excludedPlayers>
+        <First_Name>NAME</First_Name>
+        <Middle_Name>MNAME</Middle_Name>
+        <Last_Name>LNAME</Last_Name>
+        <DOB>1962-12-29</DOB>
+        <Street_Address_1>STREET1</Street_Address_1>
+        <Street_Address_2>STREET2</Street_Address_2>
+        <City>CITY</City>
+        <State>NJ</State>
+        <Country>US</Country>
+        <ZIP_Code>08560</ZIP_Code>
+        <Document_Type>DRIVER LICENSE</Document_Type>
+        <Country_ID>US</Country_ID>
+        <SSN>999999999</SSN>
+        <Personal_ID>DRIVERS_LICENSE_NUMBER</Personal_ID>
+        <Exclusion_Type>INTERNET</Exclusion_Type>
+        <Status>ACTIVE</Status>
+        <Submitted_Date>2013-10-31T12:35:01.0-04:00</Submitted_Date>
+    </excludedPlayers>
+    <excludedPlayers>
+        <First_Name>BETTY</First_Name>
+        <Middle_Name>BETSY</Middle_Name>
+        <Last_Name>BOLGER</Last_Name>
+        <DOB>1962-12-29</DOB>
+        <Street_Address_1>123 MAIN STREET</Street_Address_1>
+        <City>LAMBERTVILLE</City>
+        <State>NJ</State>
+        <Country>US</Country>
+        <ZIP_Code>08560</ZIP_Code>
+        <Document_Type>DRIVER LICENSE</Document_Type>
+        <Country_ID>US</Country_ID>
+        <SSN>123456789</SSN>
+        <Personal_ID>F9989383888300444</Personal_ID>
+        <Exclusion_Type>INTERNET</Exclusion_Type>
+        <Status>ACTIVE</Status>
+        <Submitted_Date>2013-10-31T12:35:01.0-04:00</Submitted_Date>
+        <Confirmed_Date>2013-10-31</Confirmed_Date>
+        <Modified_Date>2013-10-31</Modified_Date>
+    </excludedPlayers>
+    <excludedPlayers>
+        <First_Name>JULIAN</First_Name>
+        <Middle_Name>JACOB</Middle_Name>
+        <Last_Name>JACOBSON</Last_Name>
+        <DOB>1962-12-29</DOB>
+        <Street_Address_1>123 MAIN STREET</Street_Address_1>
+        <Street_Address_2>APARTMENT 4A</Street_Address_2>
+        <City>MONTVALE</City>
+        <State>US</State>
+        <Country>US</Country>
+        <ZIP_Code>08755</ZIP_Code>
+        <Document_Type>SSN</Document_Type>
+        <Country_ID>US</Country_ID>
+        <SSN>123456789</SSN>
+        <Personal_ID>123456789</Personal_ID>
+        <Exclusion_Type>INTERNET</Exclusion_Type>
+        <Status>ACTIVE</Status>
+        <Submitted_Date>2013-10-31T12:35:01.0-04:00</Submitted_Date>
+    </excludedPlayers>
+    <excludedPlayers>
+        <First_Name>KANAKO</First_Name>
+        <Last_Name>SUZUKI</Last_Name>
+        <DOB>1969-02-25</DOB>
+        <Street_Address_1>123 CHO</Street_Address_1>
+        <Street_Address_2>APARTMENT 4A</Street_Address_2>
+        <City>CHIBA</City>
+        <Country>JP</Country>
+        <ZIP_Code>99999</ZIP_Code>
+        <Document_Type>PASSPORT</Document_Type>
+        <Country_ID>JP</Country_ID>
+        <Personal_ID>JP123423RR</Personal_ID>
+        <Exclusion_Type>INTERNET</Exclusion_Type>
+        <Status>ACTIVE</Status>
+        <Submitted_Date>2013-10-01T07:35:01.0-04:00</Submitted_Date>
+    </excludedPlayers>
+    <excludedPlayers>
+        <First_Name>TERESA</First_Name>
+        <Last_Name>ANDERS</Last_Name>
+        <DOB>1950-01-01</DOB>
+        <Gender>F</Gender>
+        <Street_Address_1>123 SOME ROAD</Street_Address_1>
+        <City>TRENTON</City>
+        <State>NJ</State>
+        <Country>US</Country>
+        <ZIP_Code>08625</ZIP_Code>
+        <Document_Type>DRIVER LICENSE</Document_Type>
+        <Country_ID>US</Country_ID>
+        <SSN>123454321</SSN>
+        <Personal_ID>F9989383888300444</Personal_ID>
+        <Eye_Color>GR</Eye_Color>
+        <Weight>183</Weight>
+        <Height>601</Height>
+        <Exclusion_Type>INTERNET</Exclusion_Type>
+        <Status>REMOVED</Status>
+        <Submitted_Date>2012-10-01T12:35:01.0-04:00</Submitted_Date>
+        <Confirmed_Date>2012-10-01</Confirmed_Date>
+        <Modified_Date>2013-11-01</Modified_Date>
+        <Removal_Date>2013-11-01</Removal_Date>
+    </excludedPlayers>
+    <excludedPlayers>
+        <First_Name>JOSEPH</First_Name>
+        <Middle_Name>JOSEPH</Middle_Name>
+        <Last_Name>JOSEPH</Last_Name>
+        <DOB>1942-01-20</DOB>
+        <Gender>M</Gender>
+        <Street_Address_1>1436 PUTTY AVENUE</Street_Address_1>
+        <City>RIDGELINE</City>
+        <State>NJ</State>
+        <Country>US</Country>
+        <ZIP_Code>11111</ZIP_Code>
+        <Document_Type>OTHER</Document_Type>
+        <SSN>066666060</SSN>
+        <Eye_Color>HAZEL</Eye_Color>
+        <Weight>175</Weight>
+        <Height>510</Height>
+        <Exclusion_Type>DIVISION</Exclusion_Type>
+        <Status>ACTIVE</Status>
+        <Submitted_Date>1995-07-15T00:00:00.0-04:00</Submitted_Date>
+        <Confirmed_Date>1995-07-15</Confirmed_Date>
+    </excludedPlayers>
+    <excludedPlayers>
+        <First_Name>ROBERT</First_Name>
+        <Last_Name>SMITH</Last_Name>
+        <DOB>1950-01-01</DOB>
+        <Gender>M</Gender>
+        <Street_Address_1>456 SOME AVENUE</Street_Address_1>
+        <City>TOMS RIVER</City>
+        <State>NJ</State>
+        <Country>US</Country>
+        <ZIP_Code>08050</ZIP_Code>
+        <Document_Type>DRIVER LICENSE</Document_Type>
+        <Country_ID>US</Country_ID>
+        <SSN>888888888</SSN>
+        <Personal_ID>S8765383888300444</Personal_ID>
+        <Eye_Color>BL</Eye_Color>
+        <Weight>200</Weight>
+        <Height>510</Height>
+        <Exclusion_Type>PROPERTY</Exclusion_Type>
+        <Status>ACTIVE</Status>
+        <Submitted_Date>2012-11-01T12:35:01.0-04:00</Submitted_Date>
+        <Confirmed_Date>2013-11-01</Confirmed_Date>
+    </excludedPlayers>
+</DGE_Report>

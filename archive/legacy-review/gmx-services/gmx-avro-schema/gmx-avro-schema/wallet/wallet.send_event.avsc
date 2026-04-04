@@ -1,0 +1,86 @@
+{
+    "type": "record",
+    "name": "wallet_send_event",
+    "namespace": "net.flipsports.gmx.wallet.send_event",
+    "fields": [
+        {
+            "name": "user_sub",
+            "type": "string"
+        },
+        {
+            "name": "originator",
+            "type": "string"
+        },
+        {
+            "name": "event_data",
+            "type": {
+                "type": "record",
+                "name": "serializer_data",
+                "fields": [
+                    {
+                        "name": "username",
+                        "type": "string"
+                    },
+                    {
+                        "name": "company_id",
+                        "type": "string"
+                    },
+                    {
+                        "name": "operation_uuid",
+                        "type": "string"
+                    },
+                    {
+                        "name": "operation_date",
+                        "type": "string"
+                    },
+                    {
+                        "name": "operation_type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "operation_subtype",
+                        "type": "string"
+                    },
+                    {
+                        "name": "src_transaction_id",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    {
+                        "name": "src_title",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    {
+                        "name": "amount",
+                        "type": "string"
+                    },
+                    {
+                        "name": "balance_before",
+                        "type": "string"
+                    },
+                    {
+                        "name": "balance_after",
+                        "type": "string"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "event_type",
+            "type": "string"
+        },
+        {
+            "name": "event_date",
+            "type": "string"
+        },
+        {
+            "name": "api_message_request_id",
+            "type": "string"
+        }
+    ]
+}

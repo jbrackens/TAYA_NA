@@ -1,0 +1,1 @@
+UPDATE punter_settings SET mfa_enabled = true WHERE punter_id IN (SELECT punter_personal_details.punter_id from punter_personal_details INNER JOIN punter_ssns ON punter_personal_details.punter_id = punter_ssns.punter_id WHERE punter_personal_details.is_test_account = false);

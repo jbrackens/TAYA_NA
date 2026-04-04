@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_vie_welcome_packages",
+  "info": {
+    "displayName": "Welcome Package",
+    "icon": "stack"
+  },
+  "options": {},
+  "attributes": {
+    "offers": {
+      "displayName": "Offer",
+      "type": "component",
+      "repeatable": true,
+      "component": "vie.offer"
+    }
+  }
+}

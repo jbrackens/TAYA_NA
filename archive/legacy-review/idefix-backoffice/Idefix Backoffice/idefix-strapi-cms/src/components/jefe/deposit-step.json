@@ -1,0 +1,59 @@
+{
+  "collectionName": "components_jefe_deposit_steps",
+  "info": {
+    "displayName": "Deposit Step",
+    "icon": "oneWay",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "rewardType": {
+      "type": "string",
+      "required": false
+    },
+    "description": {
+      "type": "text",
+      "required": false
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "benefits": {
+      "type": "richtext",
+      "required": true
+    },
+    "condition": {
+      "type": "text",
+      "required": false
+    },
+    "bonusTitle": {
+      "type": "string",
+      "required": true
+    },
+    "bonusDescription": {
+      "type": "text",
+      "required": true
+    },
+    "bonusPercentage": {
+      "type": "string",
+      "required": true
+    },
+    "bonusLimit": {
+      "type": "string",
+      "required": true
+    },
+    "bonusCondition": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

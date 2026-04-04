@@ -1,0 +1,30 @@
+[
+  {
+    "lowLatency": false,
+    "streamId": "c841098",
+    "startDate": "2020-05-04 00:00:00",
+    "endDate": "2020-05-04 23:59:59",
+    "startDateUtc": "2020-05-03 23:00:00",
+    "endDateUtc": "2020-05-04 22:59:59",
+    "title": null,
+    "sportId": "OT",
+    "sportName": "Other",
+    "competition": "8 W&B",
+    "country": "WO",
+    "blockedCountryCode": []
+  },
+  {
+    "lowLatency": false,
+    "streamId": "c566008",
+    "startDate": "2020-05-05 00:00:00",
+    "endDate": "2020-05-05 23:59:59",
+    "startDateUtc": "2020-05-04 23:00:00",
+    "endDateUtc": "2020-05-05 22:59:59",
+    "title": null,
+    "sportId": "OT",
+    "sportName": "Other",
+    "competition": "8 W&B",
+    "country": "WO",
+    "blockedCountryCode": []
+  }
+]

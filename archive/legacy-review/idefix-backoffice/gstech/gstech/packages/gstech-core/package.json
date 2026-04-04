@@ -1,0 +1,12 @@
+{
+  "name": "gstech-core",
+  "version": "1.18.1",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link",
+    "pretty": "prettier -c '**/*.js'",
+    "test": "NODE_ENV=test mocha --exit --timeout 15000 --require './modules/setup-test' 'modules/**/*.spec.js'",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow"
+  }
+}

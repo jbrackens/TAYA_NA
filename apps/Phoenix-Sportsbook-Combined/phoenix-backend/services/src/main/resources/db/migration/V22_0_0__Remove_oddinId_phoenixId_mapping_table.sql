@@ -1,0 +1,1 @@
+DROP TABLE market_id_mappings;

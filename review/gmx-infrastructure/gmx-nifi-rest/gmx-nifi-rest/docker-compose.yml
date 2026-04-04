@@ -1,0 +1,22 @@
+version: "3.1"
+
+services:
+  nifirest:
+    build: .
+    env_file:
+      - gmx_nifi_rest/.env
+    environment:
+          DEBUG: "TRUE"
+    ports:
+      - "8009:8000"
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nifirest.rule=PathPrefix(`/pc/`)"
+      - "traefik.http.services.nifirest.loadbalancer.server.port=8000"
+
+
+networks:
+  default:
+    external:
+      name: gmx-internal

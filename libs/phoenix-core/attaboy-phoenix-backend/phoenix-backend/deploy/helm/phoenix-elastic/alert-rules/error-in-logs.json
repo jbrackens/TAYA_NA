@@ -1,0 +1,36 @@
+{
+  "throttle": "1h",
+  "name": "error-in-logs",
+  "tags": [],
+  "schedule": {
+    "interval": "1m"
+  },
+  "params": {
+    "timeSize": 5,
+    "timeUnit": "m",
+    "count": {
+      "value": 1,
+      "comparator": "more than or equals"
+    },
+    "criteria": [
+      {
+        "field": "level",
+        "comparator": "equals",
+        "value": "ERROR"
+      }
+    ],
+    "groupBy": [
+      "logger_name"
+    ]
+  },
+  "notify_when": "onThrottleInterval",
+  "actions": [
+    {
+      "group": "logs.threshold.fired",
+      "id": "cc6a0c30-c088-11ec-a010-5312f3904f42",
+      "params": {
+        "message": "{{^context.isRatio}}{{#context.group}}`{{context.group}}`:  {{/context.group}}{{context.matchingDocuments}} log entries have matched the following conditions: {{context.conditions}}{{/context.isRatio}}{{#context.isRatio}}{{#context.group}}{{context.group}} - {{/context.group}} Ratio of the count of log entries matching {{context.numeratorConditions}} to the count of log entries matching {{context.denominatorConditions}} was {{context.ratio}}{{/context.isRatio}}"
+      }
+    }
+  ]
+}

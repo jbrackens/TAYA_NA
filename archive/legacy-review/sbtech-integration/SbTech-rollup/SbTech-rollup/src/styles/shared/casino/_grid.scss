@@ -1,0 +1,87 @@
+
+//grids
+.sb-src-components-sbtech-cas-widget-grid-_index__game-grid-wrapper{
+  background:transparent;
+}
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-grid-_index__game-grid-wrapper{
+  padding:0 2px;
+}
+@media screen and (max-width: 479px){
+  [data-classname="GridComponentContent"] {
+      padding-bottom: 0px;
+  }
+  .sb-src-components-sbtech-cas-component-gamegrid-_index__cell .sb-src-components-sbtech-cas-component-gamegrid-_index__content{
+    bottom:1px;
+    left:1px;
+    right:1px;
+    top:1px;
+  }
+}
+.sb-src-components-sbtech-cas-component-gamegrid-_index__cell .sb-src-components-sbtech-cas-component-gamegrid-_index__content {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    left: 1px;
+}
+.sb-src-components-sbtech-cas-component-gamegrid-_index__grid-cols-2 .sb-src-components-sbtech-cas-component-gamegrid-_index__cell.sb-src-components-sbtech-cas-component-gamegrid-_index__small:nth-child(odd) .sb-src-components-sbtech-cas-component-gamegrid-_index__content{
+  right:1px;
+}
+.sb-src-components-sbtech-cas-component-gamegrid-_index__grid-cols-2 .sb-src-components-sbtech-cas-component-gamegrid-_index__cell.sb-src-components-sbtech-cas-component-gamegrid-_index__small:nth-child(even) .sb-src-components-sbtech-cas-component-gamegrid-_index__content{
+  left:1px;
+}
+.sb-src-components-sbtech-cas-component-gamegrid-_index__grid-cols-2 .sb-src-components-sbtech-cas-component-gamegrid-_index__cell .sb-src-components-sbtech-cas-component-gamegrid-_index__content{
+  bottom:1px;
+}
+.sb-src-components-sbtech-cas-widget-grid-_index__grid-header{
+  margin-bottom:2px;
+}
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item-text:hover,
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__selected, .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__selected{
+  border:none;
+}
+[data-classname="GridComponentContent"]{
+  margin:0;
+  margin-bottom: 10px;
+}
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__synthetic-top-menu{
+  float:left;
+  width:26px;
+}
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-wrapper .sb-src-components-sbtech-cas-component-scrollable-list-_index__btn{
+  display:none;
+}
+
+
+.sb-src-components-sbtech-cas-widget-grid-_index__grid-next{
+  background-color:$brand-grey;
+  opacity:0;
+  right:0;
+  .sb-src-components-sbtech-cas-widget-grid-_index__game-grid-content:hover &{
+    opacity:0.95;
+  }
+}
+
+.sb-src-components-sbtech-cas-widget-grid-_index__grid-prev{
+  background-color:$brand-grey;
+  opacity:0;
+  left:0;
+  .sb-src-components-sbtech-cas-widget-grid-_index__game-grid-content:hover &{
+    opacity:0.95;
+  }
+}
+
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-component-gamegrid-_index__card,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-component-gamegrid-_index__card,
+.sb-src-components-sbtech-cas-component-gamegrid-_index__card{
+  border-radius: 0px;
+}
+/*
+@media (max-width: 1464px){
+  [data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-grid-_index__game-grid-wrapper {
+      margin-left: 0px;
+      margin-right: 0px;
+  }
+}
+*/

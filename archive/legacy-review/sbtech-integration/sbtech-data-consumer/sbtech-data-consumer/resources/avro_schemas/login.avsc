@@ -1,0 +1,67 @@
+{
+  "type": "record",
+  "name": "Login",
+  "namespace": "SBTech.Microservices.Regulations.DBProducers.Models",
+  "fields": [
+    {
+      "name": "LoginID",
+      "type": "string"
+    },
+    {
+      "name": "CustomerID",
+      "type": "int"
+    },
+    {
+      "name": "LoginName",
+      "type": "string"
+    },
+    {
+      "name": "SiteName",
+      "type": "string"
+    },
+    {
+      "name": "Country",
+      "type": "string"
+    },
+    {
+      "name": "LoginDate",
+      "type": "string"
+    },
+    {
+      "name": "LogoutDate",
+      "type": "string"
+    },
+    {
+      "name": "LoginIP",
+      "type": "string"
+    },
+    {
+      "name": "LoginProxyIP",
+      "type": "string"
+    },
+    {
+      "name": "UAFamily",
+      "type": "string"
+    },
+    {
+      "name": "UAName",
+      "type": "string"
+    },
+    {
+      "name": "OSCompany",
+      "type": "string"
+    },
+    {
+      "name": "OSName",
+      "type": "string"
+    },
+    {
+      "name": "DeviceType",
+      "type": "string"
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "long"
+    }
+  ]
+}

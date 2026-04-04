@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "category": "BET_PLACEMENT",
+      "status": "COMPLETED",
+      "transactionId": "tx:1",
+      "createdAt": "2026-03-02T12:34:56Z",
+      "transactionAmount": {
+        "amount": 5,
+        "currency": "USD"
+      },
+      "preTransactionBalance": {
+        "amount": 120,
+        "currency": "USD"
+      },
+      "postTransactionBalance": {
+        "amount": 115,
+        "currency": "USD"
+      }
+    }
+  ],
+  "totalCount": 1,
+  "itemsPerPage": 20,
+  "currentPage": 1,
+  "hasNextPage": false
+}

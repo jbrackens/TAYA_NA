@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$sweetalchemy_common_logo_name = 'sweetalchemy_common_logo';
+$sweetalchemy_common_logo_x = 279px;
+$sweetalchemy_common_logo_y = 0px;
+$sweetalchemy_common_logo_offset_x = -279px;
+$sweetalchemy_common_logo_offset_y = 0px;
+$sweetalchemy_common_logo_width = 320px;
+$sweetalchemy_common_logo_height = 205px;
+$sweetalchemy_common_logo_total_width = 599px;
+$sweetalchemy_common_logo_total_height = 562px;
+$sweetalchemy_common_logo_image = 'sweetalchemy_common_b.png';
+$sweetalchemy_common_logo = 279px 0px -279px 0px 320px 205px 599px 562px 'sweetalchemy_common_b.png' 'sweetalchemy_common_logo';
+$sweetalchemy_common_potions_left_name = 'sweetalchemy_common_potions_left';
+$sweetalchemy_common_potions_left_x = 0px;
+$sweetalchemy_common_potions_left_y = 302px;
+$sweetalchemy_common_potions_left_offset_x = 0px;
+$sweetalchemy_common_potions_left_offset_y = -302px;
+$sweetalchemy_common_potions_left_width = 200px;
+$sweetalchemy_common_potions_left_height = 260px;
+$sweetalchemy_common_potions_left_total_width = 599px;
+$sweetalchemy_common_potions_left_total_height = 562px;
+$sweetalchemy_common_potions_left_image = 'sweetalchemy_common_b.png';
+$sweetalchemy_common_potions_left = 0px 302px 0px -302px 200px 260px 599px 562px 'sweetalchemy_common_b.png' 'sweetalchemy_common_potions_left';
+$sweetalchemy_common_witch_right_name = 'sweetalchemy_common_witch_right';
+$sweetalchemy_common_witch_right_x = 0px;
+$sweetalchemy_common_witch_right_y = 0px;
+$sweetalchemy_common_witch_right_offset_x = 0px;
+$sweetalchemy_common_witch_right_offset_y = 0px;
+$sweetalchemy_common_witch_right_width = 275px;
+$sweetalchemy_common_witch_right_height = 298px;
+$sweetalchemy_common_witch_right_total_width = 599px;
+$sweetalchemy_common_witch_right_total_height = 562px;
+$sweetalchemy_common_witch_right_image = 'sweetalchemy_common_b.png';
+$sweetalchemy_common_witch_right = 0px 0px 0px 0px 275px 298px 599px 562px 'sweetalchemy_common_b.png' 'sweetalchemy_common_witch_right';
+$spritesheet_width = 599px;
+$spritesheet_height = 562px;
+$spritesheet_image = 'sweetalchemy_common_b.png';
+$spritesheet_sprites = $sweetalchemy_common_logo $sweetalchemy_common_potions_left $sweetalchemy_common_witch_right;
+$spritesheet = 599px 562px 'sweetalchemy_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

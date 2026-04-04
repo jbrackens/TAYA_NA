@@ -1,0 +1,7 @@
+.DateRangePicker {
+  flex-shrink: 0;
+}
+
+.DateRangePicker_picker {
+  z-index: 10;
+}

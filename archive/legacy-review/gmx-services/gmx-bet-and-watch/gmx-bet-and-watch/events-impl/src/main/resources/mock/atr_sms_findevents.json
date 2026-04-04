@@ -1,0 +1,3962 @@
+{
+  "IsOK": true,
+  "Events": [
+    {
+      "ID": 394353,
+      "ContentTypeID": 1111,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541583000000)\/",
+      "EndDateTime": "\/Date(1541583900000)\/",
+      "Description": "TestEvent20181107-1",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Finished",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394354,
+      "ContentTypeID": 1111,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541583900000)\/",
+      "EndDateTime": "\/Date(1541584800000)\/",
+      "Description": "TestEvent20181107-2",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Finished",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394355,
+      "ContentTypeID": 1111,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541584800000)\/",
+      "EndDateTime": "\/Date(1541585700000)\/",
+      "Description": "TestEvent20181107-3",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Finished",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394356,
+      "ContentTypeID": 1111,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541585700000)\/",
+      "EndDateTime": "\/Date(1541586600000)\/",
+      "Description": "TestEvent20181107-4",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Finished",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394357,
+      "ContentTypeID": 1111,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541586600000)\/",
+      "EndDateTime": "\/Date(1541587500000)\/",
+      "Description": "TestEvent20181107-5",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Finished",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394358,
+      "ContentTypeID": 1111,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541587500000)\/",
+      "EndDateTime": "\/Date(1541588400000)\/",
+      "Description": "TestEvent20181107-6",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Finished",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394359,
+      "ContentTypeID": 1111,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541588400000)\/",
+      "EndDateTime": "\/Date(1541628000000)\/",
+      "Description": "TestEvent20181107-7",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "Available",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 395352,
+      "ContentTypeID": 1009,
+      "EventNumber": 10,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541549520000)\/",
+      "EndDateTime": "\/Date(1541550420000)\/",
+      "Description": "Race 10 - Claiming",
+      "Location": "Portland Meadows",
+      "VenueCode": "PW",
+      "Country": "US",
+      "LiveEventStatus": "Finished",
+      "VOD": true,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395791,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541634300000)\/",
+      "EndDateTime": "\/Date(1541635200000)\/",
+      "Description": "Race 1 - Maiden Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": [
+          "GB",
+          "PL"
+        ]
+      }
+    },
+    {
+      "ID": 395792,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541633100000)\/",
+      "EndDateTime": "\/Date(1541634000000)\/",
+      "Description": "Race 1 - Maiden Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395793,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541634720000)\/",
+      "EndDateTime": "\/Date(1541635620000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395794,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541631600000)\/",
+      "EndDateTime": "\/Date(1541632500000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395795,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541633220000)\/",
+      "EndDateTime": "\/Date(1541634120000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395796,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541634840000)\/",
+      "EndDateTime": "\/Date(1541635740000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395802,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541610900000)\/",
+      "EndDateTime": "\/Date(1541611800000)\/",
+      "Description": "Race 1 - Maiden Special Weight",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395803,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541612520000)\/",
+      "EndDateTime": "\/Date(1541613420000)\/",
+      "Description": "Race 2 - Maiden Special Weight",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395804,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541613900000)\/",
+      "EndDateTime": "\/Date(1541614800000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395805,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541615520000)\/",
+      "EndDateTime": "\/Date(1541616420000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395806,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541617380000)\/",
+      "EndDateTime": "\/Date(1541618280000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395807,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541619000000)\/",
+      "EndDateTime": "\/Date(1541619900000)\/",
+      "Description": "Race 6 - Allowance",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395808,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541620620000)\/",
+      "EndDateTime": "\/Date(1541621520000)\/",
+      "Description": "Race 7 - Allowance",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395809,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541622240000)\/",
+      "EndDateTime": "\/Date(1541623140000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395825,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541611800000)\/",
+      "EndDateTime": "\/Date(1541612700000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395826,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541613600000)\/",
+      "EndDateTime": "\/Date(1541614500000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395827,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541615400000)\/",
+      "EndDateTime": "\/Date(1541616300000)\/",
+      "Description": "Race 3 - Maiden Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395828,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541617200000)\/",
+      "EndDateTime": "\/Date(1541618100000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395829,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541619060000)\/",
+      "EndDateTime": "\/Date(1541619960000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395830,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541620800000)\/",
+      "EndDateTime": "\/Date(1541621700000)\/",
+      "Description": "Race 6 - Allowance Optional Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395831,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541622600000)\/",
+      "EndDateTime": "\/Date(1541623500000)\/",
+      "Description": "Race 7 - Allowance Optional Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395832,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541624400000)\/",
+      "EndDateTime": "\/Date(1541625300000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395841,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541612700000)\/",
+      "EndDateTime": "\/Date(1541613600000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395842,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541614320000)\/",
+      "EndDateTime": "\/Date(1541615220000)\/",
+      "Description": "Race 2 - Allowance",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395843,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541616000000)\/",
+      "EndDateTime": "\/Date(1541616900000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395844,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541617680000)\/",
+      "EndDateTime": "\/Date(1541618580000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395845,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541619360000)\/",
+      "EndDateTime": "\/Date(1541620260000)\/",
+      "Description": "Race 5 - Allowance",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395846,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541621040000)\/",
+      "EndDateTime": "\/Date(1541621940000)\/",
+      "Description": "Race 6 - Maiden Special Weight",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395847,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541622780000)\/",
+      "EndDateTime": "\/Date(1541623680000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395848,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541624520000)\/",
+      "EndDateTime": "\/Date(1541625420000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395849,
+      "ContentTypeID": 1009,
+      "EventNumber": 9,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541626260000)\/",
+      "EndDateTime": "\/Date(1541627160000)\/",
+      "Description": "Race 9 - Maiden Claiming",
+      "Location": "Mahoning Valley",
+      "VenueCode": "MV",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395850,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541611200000)\/",
+      "EndDateTime": "\/Date(1541612100000)\/",
+      "Description": "Race 1 - Maiden Special Weight",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395851,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541612940000)\/",
+      "EndDateTime": "\/Date(1541613840000)\/",
+      "Description": "Race 2 - Allowance",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395852,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541614680000)\/",
+      "EndDateTime": "\/Date(1541615580000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395853,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541616420000)\/",
+      "EndDateTime": "\/Date(1541617320000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395854,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541618220000)\/",
+      "EndDateTime": "\/Date(1541619120000)\/",
+      "Description": "Race 5 - Maiden Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395855,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541620020000)\/",
+      "EndDateTime": "\/Date(1541620920000)\/",
+      "Description": "Race 6 - Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395856,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541621820000)\/",
+      "EndDateTime": "\/Date(1541622720000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395857,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541623620000)\/",
+      "EndDateTime": "\/Date(1541624520000)\/",
+      "Description": "Race 8 - Allowance",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395858,
+      "ContentTypeID": 1009,
+      "EventNumber": 9,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541625420000)\/",
+      "EndDateTime": "\/Date(1541626320000)\/",
+      "Description": "Race 9 - Maiden Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 394360,
+      "ContentTypeID": 1111,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541669400000)\/",
+      "EndDateTime": "\/Date(1541670300000)\/",
+      "Description": "TestEvent20181108-1",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394361,
+      "ContentTypeID": 1111,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541670300000)\/",
+      "EndDateTime": "\/Date(1541671200000)\/",
+      "Description": "TestEvent20181108-2",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394362,
+      "ContentTypeID": 1111,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541671200000)\/",
+      "EndDateTime": "\/Date(1541672100000)\/",
+      "Description": "TestEvent20181108-3",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394363,
+      "ContentTypeID": 1111,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541672100000)\/",
+      "EndDateTime": "\/Date(1541673000000)\/",
+      "Description": "TestEvent20181108-4",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394364,
+      "ContentTypeID": 1111,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541673000000)\/",
+      "EndDateTime": "\/Date(1541673900000)\/",
+      "Description": "TestEvent20181108-5",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394365,
+      "ContentTypeID": 1111,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541673900000)\/",
+      "EndDateTime": "\/Date(1541674800000)\/",
+      "Description": "TestEvent20181108-6",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394366,
+      "ContentTypeID": 1111,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541674800000)\/",
+      "EndDateTime": "\/Date(1541714400000)\/",
+      "Description": "TestEvent20181108-7",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394367,
+      "ContentTypeID": 1111,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541755800000)\/",
+      "EndDateTime": "\/Date(1541756700000)\/",
+      "Description": "TestEvent20181109-1",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394368,
+      "ContentTypeID": 1111,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541756700000)\/",
+      "EndDateTime": "\/Date(1541757600000)\/",
+      "Description": "TestEvent20181109-2",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394369,
+      "ContentTypeID": 1111,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541757600000)\/",
+      "EndDateTime": "\/Date(1541758500000)\/",
+      "Description": "TestEvent20181109-3",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394370,
+      "ContentTypeID": 1111,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541758500000)\/",
+      "EndDateTime": "\/Date(1541759400000)\/",
+      "Description": "TestEvent20181109-4",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394371,
+      "ContentTypeID": 1111,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541759400000)\/",
+      "EndDateTime": "\/Date(1541760300000)\/",
+      "Description": "TestEvent20181109-5",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394372,
+      "ContentTypeID": 1111,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541760300000)\/",
+      "EndDateTime": "\/Date(1541761200000)\/",
+      "Description": "TestEvent20181109-6",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394373,
+      "ContentTypeID": 1111,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541761200000)\/",
+      "EndDateTime": "\/Date(1541800800000)\/",
+      "Description": "TestEvent20181109-7",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394374,
+      "ContentTypeID": 1111,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541842200000)\/",
+      "EndDateTime": "\/Date(1541843100000)\/",
+      "Description": "TestEvent20181110-1",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394375,
+      "ContentTypeID": 1111,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541843100000)\/",
+      "EndDateTime": "\/Date(1541844000000)\/",
+      "Description": "TestEvent20181110-2",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394376,
+      "ContentTypeID": 1111,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541844000000)\/",
+      "EndDateTime": "\/Date(1541844900000)\/",
+      "Description": "TestEvent20181110-3",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394377,
+      "ContentTypeID": 1111,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541844900000)\/",
+      "EndDateTime": "\/Date(1541845800000)\/",
+      "Description": "TestEvent20181110-4",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394378,
+      "ContentTypeID": 1111,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541845800000)\/",
+      "EndDateTime": "\/Date(1541846700000)\/",
+      "Description": "TestEvent20181110-5",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394379,
+      "ContentTypeID": 1111,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541846700000)\/",
+      "EndDateTime": "\/Date(1541847600000)\/",
+      "Description": "TestEvent20181110-6",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 394380,
+      "ContentTypeID": 1111,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541847600000)\/",
+      "EndDateTime": "\/Date(1541887200000)\/",
+      "Description": "TestEvent20181110-7",
+      "Location": "Test Venue",
+      "VenueCode": "YZ",
+      "Country": "GB",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Deny",
+        "Countries": []
+      }
+    },
+    {
+      "ID": 395797,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541636520000)\/",
+      "EndDateTime": "\/Date(1541637420000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395798,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541638140000)\/",
+      "EndDateTime": "\/Date(1541639040000)\/",
+      "Description": "Race 5 - Allowance Optional Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395799,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541639760000)\/",
+      "EndDateTime": "\/Date(1541640660000)\/",
+      "Description": "Race 6 - Allowance Optional Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395800,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541641380000)\/",
+      "EndDateTime": "\/Date(1541642280000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395801,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541643000000)\/",
+      "EndDateTime": "\/Date(1541643900000)\/",
+      "Description": "Race 8 - Maiden Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395810,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541635200000)\/",
+      "EndDateTime": "\/Date(1541636100000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395811,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541636940000)\/",
+      "EndDateTime": "\/Date(1541637840000)\/",
+      "Description": "Race 2 - Maiden Special Weight",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395812,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541638620000)\/",
+      "EndDateTime": "\/Date(1541639520000)\/",
+      "Description": "Race 3 - Allowance",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395813,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541640240000)\/",
+      "EndDateTime": "\/Date(1541641140000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395814,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541641860000)\/",
+      "EndDateTime": "\/Date(1541642760000)\/",
+      "Description": "Race 5 - Allowance",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395815,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541643480000)\/",
+      "EndDateTime": "\/Date(1541644380000)\/",
+      "Description": "Race 6 - Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395816,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541645220000)\/",
+      "EndDateTime": "\/Date(1541646120000)\/",
+      "Description": "Race 7 - Allowance",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395817,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541646900000)\/",
+      "EndDateTime": "\/Date(1541647800000)\/",
+      "Description": "Race 8 - Allowance",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395818,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541636160000)\/",
+      "EndDateTime": "\/Date(1541637060000)\/",
+      "Description": "Race 2 - Allowance Optional Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395819,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541637960000)\/",
+      "EndDateTime": "\/Date(1541638860000)\/",
+      "Description": "Race 3 - Allowance Optional Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395820,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541639760000)\/",
+      "EndDateTime": "\/Date(1541640660000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395821,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541641800000)\/",
+      "EndDateTime": "\/Date(1541642700000)\/",
+      "Description": "Race 5 - Maiden Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395822,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541643540000)\/",
+      "EndDateTime": "\/Date(1541644440000)\/",
+      "Description": "Race 6 - Allowance",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395823,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541645280000)\/",
+      "EndDateTime": "\/Date(1541646180000)\/",
+      "Description": "Race 7 - Maiden Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395824,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541647020000)\/",
+      "EndDateTime": "\/Date(1541647920000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Woodbine",
+      "VenueCode": "WB",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395833,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541636340000)\/",
+      "EndDateTime": "\/Date(1541637240000)\/",
+      "Description": "Race 3 - Maiden Special Weight",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395834,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541638020000)\/",
+      "EndDateTime": "\/Date(1541638920000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395835,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541639700000)\/",
+      "EndDateTime": "\/Date(1541640600000)\/",
+      "Description": "Race 5 - Maiden Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395836,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541641380000)\/",
+      "EndDateTime": "\/Date(1541642280000)\/",
+      "Description": "Race 6 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395837,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541643060000)\/",
+      "EndDateTime": "\/Date(1541643960000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395838,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541644740000)\/",
+      "EndDateTime": "\/Date(1541645640000)\/",
+      "Description": "Race 8 - Starter Allowance",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395839,
+      "ContentTypeID": 1009,
+      "EventNumber": 9,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541646420000)\/",
+      "EndDateTime": "\/Date(1541647320000)\/",
+      "Description": "Race 9 - Allowance",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 395840,
+      "ContentTypeID": 1009,
+      "EventNumber": 10,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541648100000)\/",
+      "EndDateTime": "\/Date(1541649000000)\/",
+      "Description": "Race 10 - Maiden Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396261,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541721600000)\/",
+      "EndDateTime": "\/Date(1541722500000)\/",
+      "Description": "Race 7 - Maiden Claiming",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396262,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541719500000)\/",
+      "EndDateTime": "\/Date(1541720400000)\/",
+      "Description": "Race 1 - Maiden Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396263,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541721120000)\/",
+      "EndDateTime": "\/Date(1541722020000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396264,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541723160000)\/",
+      "EndDateTime": "\/Date(1541724060000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396265,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541718000000)\/",
+      "EndDateTime": "\/Date(1541718900000)\/",
+      "Description": "Race 1 - Allowance",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396266,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541719620000)\/",
+      "EndDateTime": "\/Date(1541720520000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396267,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541721240000)\/",
+      "EndDateTime": "\/Date(1541722140000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396268,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541709900000)\/",
+      "EndDateTime": "\/Date(1541710800000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396269,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541711760000)\/",
+      "EndDateTime": "\/Date(1541712660000)\/",
+      "Description": "Race 2 - Starter Allowance",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396270,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541713800000)\/",
+      "EndDateTime": "\/Date(1541714700000)\/",
+      "Description": "Race 3 - Starter Allowance",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396271,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541715780000)\/",
+      "EndDateTime": "\/Date(1541716680000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396272,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541717700000)\/",
+      "EndDateTime": "\/Date(1541718600000)\/",
+      "Description": "Race 5 - Allowance",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396273,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541719620000)\/",
+      "EndDateTime": "\/Date(1541720520000)\/",
+      "Description": "Race 6 - Allowance",
+      "Location": "Golden Gate Fields",
+      "VenueCode": "GG",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396274,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541698260000)\/",
+      "EndDateTime": "\/Date(1541699160000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396275,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541700060000)\/",
+      "EndDateTime": "\/Date(1541700960000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396276,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541701860000)\/",
+      "EndDateTime": "\/Date(1541702760000)\/",
+      "Description": "Race 3 - Maiden Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396277,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541703660000)\/",
+      "EndDateTime": "\/Date(1541704560000)\/",
+      "Description": "Race 4 - Maiden Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396278,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541705520000)\/",
+      "EndDateTime": "\/Date(1541706420000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396279,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541707260000)\/",
+      "EndDateTime": "\/Date(1541708160000)\/",
+      "Description": "Race 6 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396280,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541709060000)\/",
+      "EndDateTime": "\/Date(1541709960000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396281,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541710860000)\/",
+      "EndDateTime": "\/Date(1541711760000)\/",
+      "Description": "Race 8 - Maiden Claiming",
+      "Location": "Gulfstream Park West",
+      "VenueCode": "CA",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396282,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541722920000)\/",
+      "EndDateTime": "\/Date(1541723820000)\/",
+      "Description": "Race 4 - Maiden Special Weight",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396283,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541724540000)\/",
+      "EndDateTime": "\/Date(1541725440000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396284,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541726160000)\/",
+      "EndDateTime": "\/Date(1541727060000)\/",
+      "Description": "Race 6 - Allowance",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396285,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541727780000)\/",
+      "EndDateTime": "\/Date(1541728680000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396286,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541729400000)\/",
+      "EndDateTime": "\/Date(1541730300000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Penn National",
+      "VenueCode": "PN",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396287,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541697300000)\/",
+      "EndDateTime": "\/Date(1541698200000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396288,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541698920000)\/",
+      "EndDateTime": "\/Date(1541699820000)\/",
+      "Description": "Race 2 - Allowance",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396289,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541700300000)\/",
+      "EndDateTime": "\/Date(1541701200000)\/",
+      "Description": "Race 3 - Maiden Special Weight",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396290,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541701920000)\/",
+      "EndDateTime": "\/Date(1541702820000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396291,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541703780000)\/",
+      "EndDateTime": "\/Date(1541704680000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396292,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541705400000)\/",
+      "EndDateTime": "\/Date(1541706300000)\/",
+      "Description": "Race 6 - Claiming",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396293,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541707020000)\/",
+      "EndDateTime": "\/Date(1541707920000)\/",
+      "Description": "Race 7 - Allowance",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396294,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541708640000)\/",
+      "EndDateTime": "\/Date(1541709540000)\/",
+      "Description": "Race 8 - Allowance",
+      "Location": "Finger Lakes",
+      "VenueCode": "FL",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396295,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541711400000)\/",
+      "EndDateTime": "\/Date(1541712300000)\/",
+      "Description": "Race 1 - Maiden Claiming",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396296,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541713080000)\/",
+      "EndDateTime": "\/Date(1541713980000)\/",
+      "Description": "Race 2 - Maiden Special Weight",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396297,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541714760000)\/",
+      "EndDateTime": "\/Date(1541715660000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396298,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541716440000)\/",
+      "EndDateTime": "\/Date(1541717340000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396299,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541718120000)\/",
+      "EndDateTime": "\/Date(1541719020000)\/",
+      "Description": "Race 5 - Allowance Optional Claiming",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396300,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541719800000)\/",
+      "EndDateTime": "\/Date(1541720700000)\/",
+      "Description": "Race 6 - Maiden Special Weight",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396301,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541721480000)\/",
+      "EndDateTime": "\/Date(1541722380000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Hawthorne",
+      "VenueCode": "HW",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396302,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541721600000)\/",
+      "EndDateTime": "\/Date(1541722500000)\/",
+      "Description": "Race 1 - Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396303,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541723340000)\/",
+      "EndDateTime": "\/Date(1541724240000)\/",
+      "Description": "Race 2 - Maiden Special Weight",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396304,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541725020000)\/",
+      "EndDateTime": "\/Date(1541725920000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396305,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541726640000)\/",
+      "EndDateTime": "\/Date(1541727540000)\/",
+      "Description": "Race 4 - Maiden Special Weight",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396306,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541728260000)\/",
+      "EndDateTime": "\/Date(1541729160000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396307,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541729880000)\/",
+      "EndDateTime": "\/Date(1541730780000)\/",
+      "Description": "Race 6 - Maiden Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396308,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541731620000)\/",
+      "EndDateTime": "\/Date(1541732520000)\/",
+      "Description": "Race 7 - Allowance Optional Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396309,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541733300000)\/",
+      "EndDateTime": "\/Date(1541734200000)\/",
+      "Description": "Race 8 - Maiden Claiming",
+      "Location": "Charles Town",
+      "VenueCode": "CT",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396310,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541697600000)\/",
+      "EndDateTime": "\/Date(1541698500000)\/",
+      "Description": "Race 1 - Maiden Special Weight",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396311,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541699340000)\/",
+      "EndDateTime": "\/Date(1541700240000)\/",
+      "Description": "Race 2 - Maiden Special Weight",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396312,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541701080000)\/",
+      "EndDateTime": "\/Date(1541701980000)\/",
+      "Description": "Race 3 - Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396313,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541702820000)\/",
+      "EndDateTime": "\/Date(1541703720000)\/",
+      "Description": "Race 4 - Maiden Special Weight",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396314,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541704620000)\/",
+      "EndDateTime": "\/Date(1541705520000)\/",
+      "Description": "Race 5 - Starter Allowance",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396315,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541706420000)\/",
+      "EndDateTime": "\/Date(1541707320000)\/",
+      "Description": "Race 6 - Allowance",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396316,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541708220000)\/",
+      "EndDateTime": "\/Date(1541709120000)\/",
+      "Description": "Race 7 - Starter Allowance",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396317,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541710020000)\/",
+      "EndDateTime": "\/Date(1541710920000)\/",
+      "Description": "Race 8 - Allowance Optional Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396318,
+      "ContentTypeID": 1009,
+      "EventNumber": 9,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541711820000)\/",
+      "EndDateTime": "\/Date(1541712720000)\/",
+      "Description": "Race 9 - Maiden Claiming",
+      "Location": "Aqueduct",
+      "VenueCode": "AQ",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396319,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541722740000)\/",
+      "EndDateTime": "\/Date(1541723640000)\/",
+      "Description": "Race 3 - Maiden Special Weight",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396320,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541724420000)\/",
+      "EndDateTime": "\/Date(1541725320000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396321,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541726100000)\/",
+      "EndDateTime": "\/Date(1541727000000)\/",
+      "Description": "Race 5 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396322,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541727780000)\/",
+      "EndDateTime": "\/Date(1541728680000)\/",
+      "Description": "Race 6 - Maiden Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396323,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541729460000)\/",
+      "EndDateTime": "\/Date(1541730360000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396324,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541731140000)\/",
+      "EndDateTime": "\/Date(1541732040000)\/",
+      "Description": "Race 8 - Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396325,
+      "ContentTypeID": 1009,
+      "EventNumber": 9,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541732820000)\/",
+      "EndDateTime": "\/Date(1541733720000)\/",
+      "Description": "Race 9 - Allowance",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396326,
+      "ContentTypeID": 1009,
+      "EventNumber": 10,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541734500000)\/",
+      "EndDateTime": "\/Date(1541735400000)\/",
+      "Description": "Race 10 - Maiden Claiming",
+      "Location": "Delta Downs",
+      "VenueCode": "DD",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396327,
+      "ContentTypeID": 1009,
+      "EventNumber": 1,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541698200000)\/",
+      "EndDateTime": "\/Date(1541699100000)\/",
+      "Description": "Race 1 - Allowance",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396328,
+      "ContentTypeID": 1009,
+      "EventNumber": 2,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541700000000)\/",
+      "EndDateTime": "\/Date(1541700900000)\/",
+      "Description": "Race 2 - Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396329,
+      "ContentTypeID": 1009,
+      "EventNumber": 3,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541701800000)\/",
+      "EndDateTime": "\/Date(1541702700000)\/",
+      "Description": "Race 3 - Maiden Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396330,
+      "ContentTypeID": 1009,
+      "EventNumber": 4,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541703600000)\/",
+      "EndDateTime": "\/Date(1541704500000)\/",
+      "Description": "Race 4 - Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396331,
+      "ContentTypeID": 1009,
+      "EventNumber": 5,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541705460000)\/",
+      "EndDateTime": "\/Date(1541706360000)\/",
+      "Description": "Race 5 - Starter Optional Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396332,
+      "ContentTypeID": 1009,
+      "EventNumber": 6,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541707200000)\/",
+      "EndDateTime": "\/Date(1541708100000)\/",
+      "Description": "Race 6 - Allowance Optional Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396333,
+      "ContentTypeID": 1009,
+      "EventNumber": 7,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541709000000)\/",
+      "EndDateTime": "\/Date(1541709900000)\/",
+      "Description": "Race 7 - Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396334,
+      "ContentTypeID": 1009,
+      "EventNumber": 8,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541710800000)\/",
+      "EndDateTime": "\/Date(1541711700000)\/",
+      "Description": "Race 8 - Allowance Optional Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    },
+    {
+      "ID": 396335,
+      "ContentTypeID": 1009,
+      "EventNumber": 9,
+      "EventType": "Live",
+      "StartDateTime": "\/Date(1541712600000)\/",
+      "EndDateTime": "\/Date(1541713500000)\/",
+      "Description": "Race 9 - Maiden Claiming",
+      "Location": "Laurel Park",
+      "VenueCode": "LP",
+      "Country": "US",
+      "LiveEventStatus": "NotYetAvailable",
+      "VOD": false,
+      "GeoRule": {
+        "RuleType": "Allow",
+        "Countries": [
+          "IM",
+          "JE",
+          "IE",
+          "GB",
+          "GG"
+        ]
+      }
+    }
+  ]
+}

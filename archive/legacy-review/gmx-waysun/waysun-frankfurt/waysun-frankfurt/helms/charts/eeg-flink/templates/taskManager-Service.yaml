@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-taskmanager-headless
+spec:
+  clusterIP: None
+  ports:
+  - name: 6122-6122-tcp
+    port: 6122
+    protocol: TCP
+    targetPort: 6122
+  - name: 6123-6123-tcp
+    port: 6123
+    protocol: TCP
+    targetPort: 6123
+  - name: 6124-6124-tcp
+    port: 6124
+    protocol: TCP
+    targetPort: 6124
+  - name: 6125-6125-tcp
+    port: 6125
+    protocol: TCP
+    targetPort: 6125
+  selector:
+    app: flink-taskmanager
+    k8s-app: flink-taskmanager
+    qcloud-app: flink-taskmanager
+  sessionAffinity: None
+  type: ClusterIP

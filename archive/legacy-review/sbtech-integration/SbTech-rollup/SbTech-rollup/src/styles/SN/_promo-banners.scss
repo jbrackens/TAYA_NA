@@ -1,0 +1,145 @@
+
+// styles for banners that apear in caurasells and the promotion page
+.promo-strip-btn{
+  @include brand-button(15, true);
+}
+
+.rj-superbanner__image-row .promo-strip-btn,
+.super-banner-image-container .promo-strip-btn{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+}
+.promo-terms-text{
+  color:white;
+  font-family:$brand-font--body;
+  font-size:8px;
+  text-align:center;
+  line-height:10px;
+  .IsDesktop &{
+    font-size:11px;
+    line-height:13px;
+  }
+}
+
+.rj-superbanner__image-row .promo-terms-text-container,
+.super-banner-image-container .promo-terms-text-container,
+.ag-promo .promo-terms-text-container{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:30px;
+  padding:0px 10px 2px 10px;
+  .promo-terms-text{
+    max-width:400px;
+    margin:0 auto;
+  }
+  &.bg-fade{
+    padding-top: 5px;
+    background: rgba(0,0,0,0.7);
+  }
+  & > .promo-strip-button{
+    bottom:-30px;
+  }
+}
+
+.IsDesktop .casino-panel .super-banner-image-container{
+  .promo-strip-btn{
+    @include brand-button(20, true, 'bottom');
+  }
+  &:hover .promo-strip-btn{
+    background: $brand-primary--hover;
+  }
+  .promo-terms-text-container{
+    bottom:40px;
+    & > .promo-strip-button{
+      bottom:-40px;
+    }
+  }
+}
+
+.super-banner-image-container:hover .promo-strip-btn{
+  background: $brand-primary--hover;
+}
+
+.ag-page {
+    max-width: 1688px;
+    margin: 0 auto;
+}
+
+.ag-row{
+  display:flex;
+  flex-direction:row;
+  .ag-promo-small{
+    flex: 1 1 0;
+    margin-left:4px;
+    &:first-of-type{
+      margin-left:0;
+    }
+  }
+}
+
+.ag-promo {
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-top:4px;
+    font-size:0;
+    &-image {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    a{
+      display:block;
+      position:relative;
+      font-size:0;
+    }
+    &.force-ar a{
+      padding-bottom:calc(50% + 30px);
+      overflow:hidden;
+      .ag-promo-image{
+        position: absolute;
+        top: 0;
+        bottom: 30px;
+        height: calc(100% -30px);
+        max-width: none;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .promo-strip-btn{
+        position:absolute;
+        bottom:0;
+        left:0;
+        right:0;
+      }
+    }
+}
+
+.IsMobile{
+  .ag-promo-wide a{
+    padding-bottom: calc(50% + 30px);
+    .ag-promo-image{
+      position: absolute;
+      top: 0;
+      bottom: 30px;
+      height: calc(100% - 30px);
+      max-width: none;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .promo-strip-btn{
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+  .ag-row{
+    flex-direction:column;
+    .ag-promo-small{
+      margin:0;
+      flex-basis:100%;
+    }
+  }
+}

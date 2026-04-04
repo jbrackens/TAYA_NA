@@ -1,0 +1,1 @@
+alter table ledgers alter column "creditDate" set default now();

@@ -1,0 +1,2 @@
+insert into game_manufacturers ("id", "name", "active", "parentId") values ('INT', 'Internal', false, null);
+insert into games ("id", "gameId", "name", "manufacturerId", "manufacturerGameId") values (100, 'INT_Unknown', 'Unknown', 'INT', 'Unknown');

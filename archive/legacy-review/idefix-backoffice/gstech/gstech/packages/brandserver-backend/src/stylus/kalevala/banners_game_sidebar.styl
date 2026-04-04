@@ -1,0 +1,39 @@
+#game-slider
+  .sidebar
+    position relative
+    z-index 200
+    height 500px
+    float right
+    width 150px
+    overflow hidden
+    background-color $kalevala_dark_blue
+  .banner
+    margin-top 40px
+  .buttons
+    position absolute
+    height 40px
+    top 0
+    right 0
+    z-index 200
+    white-space nowrap
+    .hide-info-button
+      display inline-block
+      sprite2x($button_hide, $button_hide_2x)
+      background-color $kalevala_blue
+    .banner-tab1-button
+      display inline-block
+      sprite2x($button_coin, $button_coin_2x)
+      background-color $kalevala_blue
+      &.selected
+        background-color $kalevala_light_blue
+    .banner-tab2-button
+      display inline-block
+      sprite2x($button_alert, $button_alert_2x)
+      background-color $kalevala_blue
+      &.selected
+        background-color $kalevala_light_blue
+    .close-button
+      display inline-block
+      closebutton()
+      background-color $kalevala_dark_blue
+

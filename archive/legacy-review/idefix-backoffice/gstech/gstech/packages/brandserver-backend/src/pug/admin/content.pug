@@ -1,0 +1,25 @@
+.row(data-link='content', style='display: none;')
+  .col-lg-12
+    .panel.panel-default
+      .panel-heading Content
+      .panel-body
+        .row
+          .col-lg-12
+            form#user-form(role='form')
+              button.sync-button.btn.btn-primary(type='button', data-target='contentful') Sync Contentful (Mailers/Notifications/Messages)
+
+            form#user-form(role='form')
+              button.sync-button.btn.btn-primary(type='button', data-target='banners') Sync Content (Campaigns/Banners/Landers)
+
+            form#user-form(role='form')
+              button.sync-button.btn.btn-primary(type='button', data-target='games') Sync games
+
+        .row
+          .col-lg-12
+            #sync-fail.alert.alert-warning(style='display: none;')
+              | Sync failed!
+            #sync-ok.alert.alert-success(style='display: none;')
+              | Sync done!
+        .row#sync-status-holder
+          .col-lg-12
+            pre#sync-status

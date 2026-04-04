@@ -1,0 +1,174 @@
+================================================================================
+PHOENIX SPORTSBOOK FRONTEND - EXACT FIXES REQUIRED
+================================================================================
+
+PRIORITY 1: FIX PHANTOM PACKAGE IMPORTS (9 FILES)
+Replace @phoenix-api/client with @phoenix-ui/api-client
+
+================================================================================
+
+FILE 1: components/FeaturedMatches.tsx
+--------
+OLD (line 3):
+import { PhoenixApiClient, PhoenixWebSocketClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixApiClient, PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 2: components/FixtureList.tsx
+--------
+OLD (line 3):
+import { PhoenixApiClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixApiClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 3: components/LeagueNav.tsx
+--------
+OLD (line 3):
+import { PhoenixApiClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixApiClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 4: components/LiveNow.tsx
+--------
+OLD (line 3):
+import { PhoenixApiClient, PhoenixWebSocketClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixApiClient, PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 5: components/MatchHeader.tsx
+--------
+OLD (line 3):
+import { PhoenixWebSocketClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 6: components/MatchTimeline.tsx
+--------
+OLD (line 2):
+import { PhoenixWebSocketClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 7: components/SportSidebar.tsx
+--------
+OLD (line 3):
+import { PhoenixApiClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixApiClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 8: hooks/useApi.ts
+--------
+OLD (line 2):
+import { PhoenixApiClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixApiClient } from '@phoenix-ui/api-client';
+
+ALSO ADD (before line 1):
+'use client';
+
+Result should start with:
+'use client';
+
+import { useState, useCallback } from 'react';
+import { PhoenixApiClient } from '@phoenix-ui/api-client';
+
+================================================================================
+
+FILE 9: hooks/useLiveData.ts
+--------
+OLD (line 2):
+import { PhoenixWebSocketClient } from '@phoenix-api/client';
+
+NEW:
+import { PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+
+ALSO ADD (before line 1):
+'use client';
+
+Result should start with:
+'use client';
+
+import { useEffect, useRef, useCallback } from 'react';
+import { PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+
+================================================================================
+PRIORITY 2: ADD 'use client' DIRECTIVE (2 FILES)
+
+FILE: hooks/useApi.ts
+ACTION: Add 'use client'; at the very beginning of the file (line 1)
+
+FILE: hooks/useLiveData.ts
+ACTION: Add 'use client'; at the very beginning of the file (line 1)
+
+================================================================================
+PRIORITY 3: ARCHITECTURAL CLEANUP (OPTIONAL BUT RECOMMENDED)
+
+1. DECIDE: SportSidebar.tsx vs SportsSidebar.tsx
+   - If keeping SportSidebar.tsx: Must fix import (Priority 1)
+   - If keeping SportsSidebar.tsx: Can delete SportSidebar.tsx
+   - Current usage: sports/page.tsx imports SportSidebar
+   
+   Recommendation: SportsSidebar.tsx is more feature-complete (favorites, 
+   collapsible leagues). Consider switching sports/page.tsx to use SportsSidebar
+   instead, then delete SportSidebar.tsx.
+
+2. DECIDE: Betslip.tsx vs BetslipPanel.tsx
+   - Betslip.tsx: Simple styled layout (legacy)
+   - BetslipPanel.tsx: Full betting logic (modern)
+   - Current usage: layout.tsx imports BetslipPanel
+   
+   Action: Determine if Betslip.tsx is used anywhere. If not, can be deleted.
+   Check if any local imports reference it.
+
+3. ORPHANED COMPONENTS:
+   - FeaturedMatches.tsx: Not imported anywhere. Either integrate or delete.
+   - SessionTimer.tsx: Not imported anywhere. Either integrate or delete.
+
+================================================================================
+TESTING CHECKLIST
+
+After applying fixes:
+
+[ ] Run TypeScript compiler: npx tsc --noEmit
+    All errors should resolve for files with imports fixed
+
+[ ] Check Next.js build: npm run build
+    No module resolution errors for @phoenix-ui/api-client imports
+
+[ ] Verify imports work:
+    grep -r "@phoenix-api/client" app/
+    Result should be: (no matches)
+    
+    grep -r "@phoenix-ui/api-client" app/
+    Result should show: 9 import statements
+
+[ ] Verify use client directives:
+    grep -l "^'use client'" app/hooks/*.ts
+    Result should include: useApi.ts, useLiveData.ts
+
+[ ] Run application: npm run dev
+    Application should start without import errors
+
+================================================================================

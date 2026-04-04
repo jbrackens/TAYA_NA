@@ -1,0 +1,26 @@
+{
+  "type": "record",
+  "name": "EventId",
+  "namespace": "net.flipsports.gmx.racingroulette.api",
+  "fields": [
+    {
+      "name": "name",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "EventType",
+          "symbols": [
+            "Event",
+            "Selection",
+            "Market"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "id",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,262 @@
+================================================================================
+PHOENIX SPORTSBOOK FRONTEND - COMPREHENSIVE IMPORT/EXPORT AUDIT
+================================================================================
+
+AUDIT DATE: 2026-04-03
+BASE PATH: /sessions/dreamy-bold-ptolemy/mnt/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/phoenix-frontend/packages/app/app/
+
+TOTAL FILES AUDITED: 51
+FILES WITH ISSUES: 9
+FILES OK: 42
+
+================================================================================
+[CRITICAL ISSUES]
+================================================================================
+
+1. PHANTOM PACKAGE IMPORTS - 9 occurrences
+   
+   All 9 instances are importing from @phoenix-api/client, which DOES NOT EXIST.
+   The correct package is @phoenix-ui/api-client (available in node_modules).
+   
+   AFFECTED FILES:
+   
+   a) components/FeaturedMatches.tsx
+      Line: import { PhoenixApiClient, PhoenixWebSocketClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState, useRef - has 'use client' ✓
+   
+   b) components/FixtureList.tsx
+      Line: import { PhoenixApiClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState, useCallback - has 'use client' ✓
+   
+   c) components/LeagueNav.tsx
+      Line: import { PhoenixApiClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState - has 'use client' ✓
+   
+   d) components/LiveNow.tsx
+      Line: import { PhoenixApiClient, PhoenixWebSocketClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState, useRef - has 'use client' ✓
+   
+   e) components/MatchHeader.tsx
+      Line: import { PhoenixWebSocketClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState, useRef - has 'use client' ✓
+   
+   f) components/MatchTimeline.tsx
+      Line: import { PhoenixWebSocketClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState, useRef - has 'use client' ✓
+   
+   g) components/SportSidebar.tsx
+      Line: import { PhoenixApiClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      USAGE: Uses useEffect, useState - has 'use client' ✓
+   
+   h) hooks/useApi.ts
+      Line: import { PhoenixApiClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      STATUS: ALSO missing 'use client' directive (see below)
+   
+   i) hooks/useLiveData.ts
+      Line: import { PhoenixWebSocketClient } from '@phoenix-api/client';
+      FIX: Change to import from '@phoenix-ui/api-client'
+      STATUS: ALSO missing 'use client' directive (see below)
+
+2. MISSING 'use client' DIRECTIVE - 2 occurrences
+   
+   These files use React hooks (useState, useCallback, useRef, useEffect) but lack
+   'use client' at the top of the file. In Next.js 13+ App Router, files with hooks
+   MUST be marked as client components.
+   
+   a) hooks/useApi.ts
+      HOOKS USED: useState, useCallback
+      FIX: Add "use client';" as first line
+   
+   b) hooks/useLiveData.ts
+      HOOKS USED: useEffect, useRef, useCallback
+      FIX: Add "use client';" as first line
+
+================================================================================
+[DUPLICATE COMPONENTS - ARCHITECTURAL DEBT]
+================================================================================
+
+1. SportSidebar.tsx vs SportsSidebar.tsx
+   
+   Two sidebar components exist with slightly different implementations:
+   
+   - SportSidebar.tsx (19 KB):
+     * Imports from @phoenix-api/client (PHANTOM - needs fix)
+     * Uses PhoenixApiClient
+     * Has 'use client'
+     * Uses styled-components
+   
+   - SportsSidebar.tsx (different approach):
+     * Imports from ../lib/api/events-client (local API)
+     * Does NOT import from phantom @phoenix-api/client
+     * Has 'use client'
+     * Uses localStorage for favorites (browser API)
+     * More advanced with collapsible leagues
+   
+   RECOMMENDATION: SportsSidebar.tsx appears to be the modern replacement.
+   SportSidebar.tsx should be deprecated/removed if not in active use.
+   CHECK USAGE: Only sports/page.tsx imports SportSidebar (not SportsSidebar)
+
+2. Betslip.tsx vs BetslipPanel.tsx
+   
+   Two betslip components exist:
+   
+   - Betslip.tsx (old):
+     * Imports from @phoenix-ui/design-system components
+     * Simple styled layout component
+     * Has 'use client'
+   
+   - BetslipPanel.tsx (newer):
+     * More comprehensive implementation with betting logic
+     * Handles place bet, parlays, cashout
+     * Uses Redux store (selectOddsFormat from settingsSlice)
+     * Has 'use client'
+     * Integrates with betting-client API
+   
+   RECOMMENDATION: BetslipPanel.tsx is used in layout.tsx. Betslip.tsx appears
+   to be legacy. Check if Betslip.tsx is still needed.
+
+================================================================================
+[ORPHANED COMPONENTS - NOT IMPORTED ANYWHERE]
+================================================================================
+
+1. FeaturedMatches.tsx
+   - NOT imported by any page or component
+   - Has PHANTOM_PACKAGE issue (@phoenix-api/client)
+   - STATUS: Orphaned legacy code
+   - ACTION: Either integrate into pages or remove
+
+2. SessionTimer.tsx
+   - NOT imported by any page or component
+   - No import issues (clean)
+   - STATUS: Orphaned legacy code
+   - ACTION: Either integrate into layouts or remove
+
+================================================================================
+[STORE WIRING - VERIFIED]
+================================================================================
+
+All slices are properly wired into store.ts:
+
+Slices checked: 12
+Slices wired in store.ts: 12
+Status: ✓ COMPLETE - All slices properly registered
+
+List:
+  ✓ authSlice → auth reducer
+  ✓ betSlice → bets reducer
+  ✓ sportSlice → sports reducer
+  ✓ marketSlice → markets reducer
+  ✓ fixtureSlice → fixtures reducer
+  ✓ settingsSlice → settings reducer
+  ✓ navigationSlice → navigation reducer
+  ✓ cashierSlice → cashier reducer
+  ✓ siteSettingsSlice → siteSettings reducer
+  ✓ channelSubscriptionSlice → channelSubscriptions reducer
+  ✓ profileSlice → profile reducer
+  ✓ predictionSlice → prediction reducer
+
+================================================================================
+[RELATIVE IMPORT INTEGRITY - VERIFIED]
+================================================================================
+
+All relative imports verified:
+- No broken relative imports found
+- All ./components imports resolve correctly
+- All ../lib imports resolve correctly
+- All ../hooks imports resolve correctly
+
+Status: ✓ PASS
+
+================================================================================
+[WEBSOCKET MODULES - VERIFIED]
+================================================================================
+
+All websocket files verified:
+  ✓ channels-map.ts - OK
+  ✓ handlers/bets-handler.ts - OK
+  ✓ handlers/wallets-handler.ts - OK
+  ✓ index.ts - OK
+  ✓ response-data-manager.ts - OK
+  ✓ useWebSocket.ts - OK
+  ✓ websocket-service.ts - OK (not in audit list but exists)
+
+Status: ✓ PASS - All websocket imports valid
+
+================================================================================
+[API CLIENT MODULES - VERIFIED]
+================================================================================
+
+All API client files verified:
+  ✓ client.ts - Base API client
+  ✓ auth-client.ts - Auth operations
+  ✓ betting-client.ts - Betting operations
+  ✓ compliance-client.ts - Compliance/limits
+  ✓ events-client.ts - Sports/leagues/events
+  ✓ markets-client.ts - Market data
+  ✓ user-client.ts - User profile
+  ✓ wallet-client.ts - Wallet/balance
+  ✓ index.ts - Central exports
+
+Status: ✓ PASS - All API exports valid
+
+================================================================================
+[REMEDIATION CHECKLIST]
+================================================================================
+
+PRIORITY 1 (Must Fix - Breaks Compilation):
+  [ ] FeaturedMatches.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] FixtureList.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] LeagueNav.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] LiveNow.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] MatchHeader.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] MatchTimeline.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] SportSidebar.tsx: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] hooks/useApi.ts: @phoenix-api/client → @phoenix-ui/api-client
+  [ ] hooks/useLiveData.ts: @phoenix-api/client → @phoenix-ui/api-client
+
+PRIORITY 2 (Should Fix - May cause runtime errors):
+  [ ] hooks/useApi.ts: Add "use client';" at line 1
+  [ ] hooks/useLiveData.ts: Add "use client';" at line 1
+
+PRIORITY 3 (Code Cleanup - Architectural):
+  [ ] Review SportSidebar.tsx vs SportsSidebar.tsx - determine which to keep
+  [ ] Review Betslip.tsx vs BetslipPanel.tsx - determine which to keep
+  [ ] Remove/archive FeaturedMatches.tsx (orphaned)
+  [ ] Remove/archive SessionTimer.tsx (orphaned)
+
+================================================================================
+[SUMMARY STATISTICS]
+================================================================================
+
+Total Files Audited: 51
+  - Legacy Components: 19
+  - Pages: 10
+  - API Routes: 2
+  - WebSocket Modules: 6
+  - Store Slices: 7
+  - API Clients: 5
+  - Hooks: 2
+
+Issues Found:
+  - PHANTOM_PACKAGE: 9
+  - MISSING_USE_CLIENT: 2
+  - BROKEN_IMPORTS: 0
+  - ORPHANED_FILES: 2
+  - DUPLICATE_COMPONENTS: 2
+
+Files OK: 42/51 (82.4%)
+Files with Issues: 9/51 (17.6%)
+
+Critical Severity: 9 (phantom packages)
+High Severity: 2 (missing use client)
+Medium Severity: 2 (duplicate components)
+Low Severity: 2 (orphaned files)
+

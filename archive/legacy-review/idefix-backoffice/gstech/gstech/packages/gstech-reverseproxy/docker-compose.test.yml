@@ -1,0 +1,15 @@
+version: '3.2'
+
+services:
+  gstech-reverseproxy.test:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-reverseproxy/Dockerfile
+    image: gstech-reverseproxy.test
+    container_name: gstech-reverseproxy.test
+    command: "haproxy -f /usr/local/etc/haproxy/config.d -db -c"
+    networks:
+      - gstech
+networks:
+  gstech:
+    external: true

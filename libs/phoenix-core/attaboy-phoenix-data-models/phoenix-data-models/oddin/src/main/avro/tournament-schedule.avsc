@@ -1,0 +1,145 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "TournamentSchedule",
+  "fields":[
+    {
+      "name": "generatedAt",
+      "type": "long"
+    },
+    {
+      "name": "tournament",
+      "type": {
+        "type": "record",
+        "name": "Tournament",
+        "fields":[
+          {
+            "name": "id",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "scheduled",
+            "type": "string"
+          },
+          {
+            "name": "tournamentLength",
+            "type": [
+              "null",
+              {
+                "type": "record",
+                "namespace": "phoenix.oddin.data",
+                "name": "TournamentLength",
+                "fields": [
+                  {
+                    "name": "startDate",
+                    "type": "string"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "sport",
+            "type": {
+              "type": "record",
+              "name": "Sport",
+              "fields":[
+                {
+                  "name": "id",
+                  "type": "string"
+                },
+                {
+                  "name": "name",
+                  "type": "string"
+                },
+                {
+                  "name": "abbreviation",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          {
+            "name": "competitors",
+            "type": {
+              "type": "array",
+              "items": {
+                "namespace": "phoenix.oddin.data",
+                "type": "record",
+                "name": "Competitor",
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": "string"
+                  },
+                  {
+                    "name": "name",
+                    "type": "string"
+                  },
+                  {
+                    "name": "abbreviation",
+                    "type": "string"
+                  },
+                  {
+                    "name": "qualifier",
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sportEvents",
+      "type": {
+        "type": "array",
+        "items": {
+          "namespace": "phoenix.oddin.data",
+          "type": "record",
+          "name": "SportEvent",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "scheduled",
+              "type": "string"
+            },
+            {
+              "name": "liveodds",
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            {
+              "name": "tournament",
+              "type": "phoenix.oddin.data.Tournament"
+            },
+            {
+              "name": "competitors",
+              "type": {
+                "type": "array",
+                "items": "phoenix.oddin.data.Competitor"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

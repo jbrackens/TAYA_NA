@@ -1,0 +1,1 @@
+../../k8s-operations/sign_up_user.sh

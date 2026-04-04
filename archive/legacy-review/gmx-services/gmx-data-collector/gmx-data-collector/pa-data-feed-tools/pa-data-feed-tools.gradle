@@ -1,0 +1,38 @@
+plugins {
+    id 'io.franzbecker.gradle-lombok' version '2.0'
+}
+
+description = "GMX Platform :: Data Collector :: PA Data Feed Tools"
+
+ext {
+    springBootVersion = "1.5.8.RELEASE"
+
+    awsJavaSdkVersion = "1.11.122"
+    fluentHcVersion = "4.5.7"
+    guavaVersion = "27.0.1-jre"
+
+    commonsLang3Version = "3.5"
+    commonsCompressVersion = "1.18"
+    commonsIoVersion = "2.6"
+}
+
+dependencies {
+    implementation(
+            project(":pa-data-feed"),
+            
+            "org.springframework.boot:spring-boot-starter-logging:$springBootVersion",
+
+            "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion",
+            "org.apache.httpcomponents:fluent-hc:$fluentHcVersion",
+            "com.google.guava:guava:$guavaVersion",
+
+            "org.apache.commons:commons-lang3:$commonsLang3Version",
+            "org.apache.commons:commons-compress:$commonsCompressVersion",
+            "commons-io:commons-io:$commonsIoVersion",
+    )
+}
+
+lombok {
+    version = '1.18.4'
+    sha256 = ""
+}

@@ -1,0 +1,133 @@
+{
+  "$schema": "https://lnav.org/schemas/format-v1.schema.json",
+  "idefix_log": {
+    "title": "idefix_log",
+    "description": "Log format used by Idefix",
+    "json": true,
+    "hide-extra": true,
+    "timestamp-field": "timestamp",
+    "timestamp-format": [
+      "%Y-%m-%dT%H:%M:%S.%L%z"
+    ],
+    "level-field": "level",
+    "body-field": "payload",
+    "module-field": "service",
+    "opid-field": "trace_id",
+    "multiline": false,
+    "level": {
+      "error": "error",
+      "warning": "warn",
+      "debug": "debug",
+      "info": "info",
+      "trace": "trace"
+    },
+    "value": {
+      "message": {
+        "kind": "string",
+        "rewriter": ";select :pretty"
+      },
+      "service": {
+        "kind": "string",
+        "identifier": true,
+        "hidden": true
+      },
+      "service_short": {
+        "kind": "string",
+        "identifier": true,
+        "rewriter": ";select :service"
+      },
+      "level": {
+        "kind": "string",
+        "identifier": true
+      },
+      "metadata": {
+        "kind": "json",
+        "hidden": true
+      },
+      "trace_id": {
+        "kind": "string",
+        "identifier": true,
+        "hidden": true
+      },
+      "span_id": {
+        "kind": "string",
+        "identifier": true,
+        "hidden": true
+      },
+      "pretty": {
+        "kind": "string",
+        "hidden": true
+      }
+    },
+    "line-format": [
+      {
+        "field": "trace_id",
+        "max-width": 6,
+        "overflow": "dot-dot",
+        "align": "left",
+        "min-width": 6,
+        "default-value": ""
+      },
+      " ",
+      { "field": "__timestamp__", "timestamp-format": "%m/%d %H:%M:%S.%L" },
+      " ",
+      {
+        "field": "level",
+        "text-transform": "uppercase",
+        "min-width": 3,
+        "max-width": 3,
+        "align": "left",
+        "overflow": "truncate"
+      },
+      " ",
+      {
+        "field": "service_short",
+        "align": "left",
+        "min-width": 7,
+        "max-width": 7,
+        "overflow": "truncate"
+      },
+      " ",
+      { "field": "message", "text-transform": "none" }
+    ],
+    "highlights": {
+      "request": {
+        "pattern": ">>>+",
+        "color": "Yellow4"
+      },
+      "response": {
+        "pattern": "<<<+",
+        "color": "Green4"
+      },
+      "meta": {
+        "pattern": "\\+\\+\\+",
+        "color": "Blue1"
+      },
+      "wrong": {
+        "pattern": "XXX+",
+        "color": "Red3"
+      },
+      "debug": {
+        "pattern": "DEB",
+        "color": "Grey37"
+      },
+      "warning": {
+        "pattern": "WAR",
+        "color": "DarkOrange3"
+      },
+      "info": {
+        "pattern": "INF",
+        "color": "DodgerBlue1"
+      },
+      "error": {
+        "pattern": "ERR",
+        "color": "Red3"
+      },
+      "knex": {
+        "pattern": "KNEX",
+        "color": "#d5c4a1",
+        "background-color": "#665c54"
+      }
+    }
+  }
+}

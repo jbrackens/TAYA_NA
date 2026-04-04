@@ -1,0 +1,12 @@
+- username:    punter
+  email:       punter@gmail.com
+  firstName:   Jan
+  lastName:    Pawel
+  phoneNumber: +1234567890
+  balance:     1000
+
+- username:     admin
+  email:        admin@gmail.com
+  firstName:    Jan
+  lastName:     Pawel
+  admin:        true

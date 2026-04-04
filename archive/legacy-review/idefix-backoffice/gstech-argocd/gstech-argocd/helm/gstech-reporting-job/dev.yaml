@@ -1,0 +1,48 @@
+nameOverride: "dev-gstech-reporting-job-service"
+fullnameOverride: "dev-gstech-reporting-job-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-dev-fasttrack-csv-s3
+
+service:
+  enabled: false
+  # port: 3001
+
+env:
+  NODE_ENV: development
+  MINIO_HOST: s3.eu-central-1.amazonaws.com
+  MINIO_BUCKET_NAME: bucket-backend.dev.eeg
+  MINIO_REGION: eu-central-1
+  MINIO_PORT: 443
+  MINIO_USE_SSL: "true"
+  REDIS_HOST: redis.dev.eeg.viegg.net
+  REDIS_PORT: 6379
+  POSTGRES_HOST: db-1.dev.eeg.viegg.net
+  POSTGRES_USER: gstech
+  GAME_SERVER_URL: http://dev-gstech-walletserver-service:3004/api/v1
+  COMPLIANCE_SERVER_URL: http://dev-gstech-compliance-service:3009/api/v1
+  AFFILIATE_SYSTEM_URL: http://dev-affmore-backend-service:3034/
+  CAMPAIGN_SERVER_PRIVATE_URL: http://dev-gstech-campaignserver-backend-service:3014/api/v1
+  CONTENT_SERVER_URL: http://dev-gstech-contentserver-service:3017/api/v1
+  FT_MIGRATION_S3: dev-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: us-east-1
+secretEnv:
+  POSTGRES_PASSWORD:
+    dev-gstech-reporting-job-service: postgres-password
+  MINIO_ACCESS_KEY:
+    dev-gstech-backend-service: minio-access-key
+  MINIO_SECRET_KEY:
+    dev-gstech-backend-service: minio-secret-key

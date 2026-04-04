@@ -1,0 +1,10 @@
+.panel-right-inner .ag-panel-heading,
+.panel-center-inner .ag-panel-heading,
+.panel-center .side-menu-card-list-heading, .side-menu-card-list-heading{
+  padding-top:0;
+  padding-bottom:0;
+  line-height:2;
+  &:before{
+    height:1.1em;
+  }
+}

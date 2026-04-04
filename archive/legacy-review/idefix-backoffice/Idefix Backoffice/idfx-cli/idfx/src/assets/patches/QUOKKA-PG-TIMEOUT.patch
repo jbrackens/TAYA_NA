@@ -1,0 +1,12 @@
+diff --git a/packages/gstech-core/modules/pg.js b/packages/gstech-core/modules/pg.js
+index c230440f52..b4730d8e92 100644
+--- a/packages/gstech-core/modules/pg.js
++++ b/packages/gstech-core/modules/pg.js
+@@ -60,6 +60,7 @@ const pg: Knex = knex({
+         }
+       : {}),
+   },
++  acquireConnectionTimeout: 3000, //! DEBUG ONLY - to work with quokka
+ });
+ 
+ module.exports = pg;

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-topics-ui
+  namespace: streaming
+spec:
+  clusterIP: 172.17.254.195
+  ports:
+  - name: 8000-8000-tcp
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    k8s-app: kafka-topics-ui
+    qcloud-app: kafka-topics-ui
+  sessionAffinity: None
+  type: ClusterIP

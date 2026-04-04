@@ -1,0 +1,34 @@
+/* @flow */
+const EUCountries = [
+  'BE',
+  'EL',
+  'LT',
+  'PT',
+  'BG',
+  'ES',
+  'LU',
+  'RO',
+  'CZ',
+  'FR',
+  'HU',
+  'SI',
+  'DK',
+  'HR',
+  'MT',
+  'SK',
+  'DE',
+  'IT',
+  'NL',
+  'FI',
+  'EE',
+  'CY',
+  'AT',
+  'SE',
+  'IE',
+  'LV',
+  'PL',
+];
+
+module.exports = {
+  EUCountries,
+};

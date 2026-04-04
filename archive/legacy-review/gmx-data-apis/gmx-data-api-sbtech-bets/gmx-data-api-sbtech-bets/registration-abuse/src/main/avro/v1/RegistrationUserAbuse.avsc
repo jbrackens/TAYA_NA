@@ -1,0 +1,41 @@
+{
+  "type": "record",
+  "name": "RegistrationUserAbuse",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.RegistrationUserAbuse.v1",
+  "fields": [
+    {
+      "name": "MessageCreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "email",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "customerDetailsMessage",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "customerLoginMessage",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

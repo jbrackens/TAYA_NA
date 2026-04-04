@@ -1,0 +1,97 @@
+name: EEG CD DEV
+
+on:
+  push:
+    branches: [beta]
+
+env:
+  AWS-ACCESS-KEY-ID: ${{ secrets.EEG_AWS_ACCESS_KEY_ID }}
+  AWS-SECRET-ACCESS-KEY: ${{ secrets.EEG_AWS_SECRET_ACCESS_KEY }}
+  role-to-assume: ${{ secrets.EEG_AWS_ROLE_TO_ASSUME }}
+  role-external-id: ${{ secrets.EEG_AWS_ROLE_EXTERNAL_ID }}
+  role-duration-seconds: 3600
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Do not change
+  HELM_VERSION: "v3.5.4"
+  environment: "dev"
+  aws_region: "eu-central-1"
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Push to ECR
+  # --------------------------------------------------------------------------
+  ecr:
+    if: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        container:
+            - folder: "packages/affmore-backend"
+              ecr: affmore-backend
+            - folder: "packages/brandserver-backend"
+              ecr: brandserver-backend
+            - folder: "packages/gstech-backend"
+              ecr: gstech-backend
+            - folder: "packages/gstech-campaignserver"
+              ecr: gstech-campaignserver
+            - folder: "packages/gstech-compliance"
+              ecr: gstech-compliance
+            - folder: "packages/gstech-paymentserver"
+              ecr: gstech-paymentserver
+            - folder: "packages/gstech-rewardserver"
+              ecr: gstech-rewardserver
+            - folder: "packages/gstech-walletserver"
+              ecr: gstech-walletserver
+            - folder: "packages/gstech-contentserver"
+              ecr: gstech-contentserver
+
+    runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          lfs: true
+      - run:
+          git lfs pull --exclude="*-darwin"
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41.0.0
+        with:
+          dir_names: "true"
+          safe_output: false
+          files_ignore: |
+            .github/**
+      - name: Configure AWS credentials
+        if: ${{ contains(steps.changed-files.outputs.all_modified_files, matrix.container.folder ) || contains(steps.changed-files.outputs.all_modified_files, 'packages/gstech-core' ) }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-central-1
+          role-to-assume: arn:aws:iam::743851384875:role/luckydino-ecr-push-role
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Login to Amazon ECR
+        if: ${{ contains(steps.changed-files.outputs.all_modified_files, matrix.container.folder ) || contains(steps.changed-files.outputs.all_modified_files, 'packages/gstech-core' ) }}
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: For each service (matrix) - Build, tag, and push image to Amazon ECR
+        if: ${{ contains(steps.changed-files.outputs.all_modified_files, matrix.container.folder ) || contains(steps.changed-files.outputs.all_modified_files, 'packages/gstech-core' ) }}
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.container.ecr }}
+          IMAGE_TAG: ${{github.sha}}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          docker build -t ${{ matrix.container.ecr }}-$IMAGE_TAG -f ${{ matrix.container.folder }}/Dockerfile .
+          docker tag ${{ matrix.container.ecr }}-$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:${BRANCH_NAME}-$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${BRANCH_NAME}-$IMAGE_TAG
+      - name: Log out of Amazon ECR
+        if: ${{ contains(steps.changed-files.outputs.all_modified_files, matrix.container.folder ) || contains(steps.changed-files.outputs.all_modified_files, 'packages/gstech-core' ) }}
+        # if: always()
+        run: docker logout ${{ steps.login-ecr.outputs.registry }}

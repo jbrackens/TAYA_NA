@@ -1,0 +1,202 @@
+version: '3'
+
+services:
+  luckydino-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: luckydino-backend
+    ports:
+      - "3020:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: luckydino
+      API_URL: http://gstech-backend:3001/api/LD/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.luckydino.com
+      PAYMENT_URL: https://beta-api.luckydino.com
+      tokens_LD: token_LD
+      LOGGER_FACILITY: luckydino-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+  jefe-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: jefe-backend
+    ports:
+      - "3021:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: jefe
+      API_URL: http://gstech-backend:3001/api/CJ/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.casinojefe.com
+      PAYMENT_URL: https://beta-api-cj.luckydino.com
+      tokens_CJ: tokens_CJ
+      LOGGER_FACILITY: jefe-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+  kalevala-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: kalevala-backend
+    ports:
+      - "3022:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: kalevala
+      API_URL: http://gstech-backend:3001/api/KK/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.kalevalakasino.com
+      PAYMENT_URL: https://beta-api-kk.luckydino.com
+      tokens_KK: tokens_KK
+      LOGGER_FACILITY: kalevala-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+  olaspill-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: olaspill-backend
+    ports:
+      - "3023:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: olaspill
+      API_URL: http://gstech-backend:3001/api/OS/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.olaspill.com
+      PAYMENT_URL: https://beta-api-os.luckydino.com
+      tokens_KK: tokens_OS
+      LOGGER_FACILITY: olaspill-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+  fiksu-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: fiksu-backend
+    ports:
+      - "3024:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: fiksu
+      API_URL: http://gstech-backend:3001/api/FK/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.fiksukasino.com
+      PAYMENT_URL: https://beta-api-fk.luckydino.com
+      tokens_FK: tokens_FK
+      LOGGER_FACILITY: fiksu-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+  sportnation-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: sportnation-backend
+    ports:
+      - "3025:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: sportnation
+      API_URL: http://gstech-backend:3001/api/SN/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta-sportnation.fiksukasino.com
+      PAYMENT_URL: https://beta-api-sn.luckydino.com
+      tokens_SN: tokens_SN
+      LOGGER_FACILITY: sportnation-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+  vie-backend:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend
+    container_name: vie-backend
+    ports:
+      - "3026:3000"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: sportnation
+      API_URL: http://gstech-backend:3001/api/VB/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta-vie.fiksukasino.com
+      PAYMENT_URL: https://beta-api-vb.luckydino.com
+      tokens_VB: tokens_VB
+      LOGGER_FACILITY: vie-backend
+    healthcheck:
+      test: curl --fail http://localhost:3000/api/status 2>&1 || exit 1
+      retries: 5
+
+networks:
+  gstech:
+    external: true

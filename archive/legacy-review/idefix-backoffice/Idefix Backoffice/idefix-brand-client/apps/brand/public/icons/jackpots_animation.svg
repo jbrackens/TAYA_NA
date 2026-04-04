@@ -1,0 +1,100 @@
+<svg id="jackpot1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="400px" height="400px" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1080 1080"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    
+   #jackpot1 .fil1, #jackpot1 .fil0 {fill:white}
+   #jackpot1 *{
+		-webkit-animation-timing-function: linear;
+		animation-timing-function: linear;
+		animation-fill-mode:forwards;
+		animation-iteration-count: 1;
+	}
+	#jp1bb{
+		animation-name:jp1bb;
+		animation-duration:0.3s;
+	}
+	@keyframes jp1bb{
+			0%{fill-opacity:0;transform:translate(0, -50px)}
+			50%{transform:translate(0, 10px)}
+			100%{fill-opacity:1;transform:translate(0, 0)}
+	}
+	#jp1tb{
+		animation-name:jp1tb;
+		animation-duration:0.3s;
+	}
+	@keyframes jp1tb{
+			0%{fill-opacity:0;transform:translate(0, 50px)}
+			50%{transform:translate(0, -10px)}
+			100%{fill-opacity:1;transform:translate(0, 0)}
+	}
+	#jp1clp{
+		animation-name:jp1clp;
+		animation-duration:0.45s;
+		transform-origin:540px 540px;
+	}
+	@keyframes jp1clp{
+			0%{transform:scale(0.5)}
+			50%{transform:scale(1,1.2)}
+			100%{transform:translate(1)}
+	}
+	#jp1clpbck{
+		animation-name:jp1clpbck;
+		animation-duration:0s;
+		transform-origin:540px 540px;
+		animation-delay:0.4s;
+	}
+	@keyframes jp1clpbck{
+			0%{visibility:visible;}
+			100%{visibility:hidden;}
+	}
+	#jp1sb1,#jp1sb2,#jp1sb3{
+		animation-name:jp1_sb_mv;
+		animation-duration:0.3s;
+	}
+	#jp1sb1{
+		animation-delay:.35s;
+	}
+	#jp1sb2{
+		animation-delay:.5s;
+	}
+	#jp1sb3{
+		animation-delay:.65s;
+	}
+	@keyframes jp1_sb_mv{
+			0%{transform:translate(0,0)}
+			50%{transform:translate(0,194px)}
+			80%{transform:translate(0,165px)}
+			100%{transform:translate(0,178px)}
+	}
+   ]]>
+  </style>
+   <clipPath id="jp1clp">
+    <path d="M615 460l116 0 0 160 -116 0 0 -160zm-266 0l116 0 0 160 -116 0 0 -160zm133 0l116 0 0 160 -116 0 0 -160z"/>
+   </clipPath>
+ </defs>
+ 
+  <path id="jp1bb" class="fil0" d="M349 640l382 0 0 16c0,3 -2,6 -6,6l-370 0c-4,0 -6,-3 -6,-6l0 -16z"/>
+  <path id="jp1tb" class="fil0" d="M355 418l370 0c4,0 6,3 6,6l0 17 -382 0 0 -17c0,-3 2,-6 6,-6z"/>
+ 
+ <g style="clip-path:url(#jp1clp)">
+   <g>
+   <rect id="jp1clpbck" class="fil0" x="317" y="397" width="446" height="285"/>
+	<g id="jp1sb1">
+     <rect class="fil1" x="349" y="460" width="117" height="160"/>
+     <path class="fil0" d="M349 284l116 0 0 160 -116 0 0 -160zm26 33l64 0 0 18 -33 76 -19 0 33 -74 0 -2 -45 0 0 -18z"/>
+    </g>
+    <g id="jp1sb2">
+     <rect class="fil1" x="482" y="460" width="117" height="160"/>
+     <path class="fil0" d="M482 284l116 0 0 160 -116 0 0 -160zm26 33l64 0 0 18 -33 76 -20 0 34 -74 0 -2 -45 0 0 -18z"/>
+    </g>
+    <g id="jp1sb3">
+     <rect class="fil1" x="615" y="460" width="117" height="160"/>
+     <path class="fil0" d="M615 284l116 0 0 160 -116 0 0 -160zm26 33l64 0 0 18 -33 76 -20 0 34 -74 0 -2 -45 0 0 -18z"/>
+    </g>
+   </g> 
+  </g> 
+ 
+</svg>

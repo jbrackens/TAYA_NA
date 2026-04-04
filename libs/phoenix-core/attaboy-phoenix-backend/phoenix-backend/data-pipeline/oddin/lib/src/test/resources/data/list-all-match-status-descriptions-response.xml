@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<match_status_descriptions response_code="OK">
+    <match_status id="55" description="5th map"></match_status>
+    <match_status id="56" description="6th map"></match_status>
+    <match_status id="0" description="Not started"></match_status>
+    <match_status id="1" description="Closed"></match_status>
+    <match_status id="3" description="Postponed"></match_status>
+    <match_status id="53" description="3rd map"></match_status>
+    <match_status id="54" description="4th map"></match_status>
+    <match_status id="2" description="Cancelled"></match_status>
+    <match_status id="4" description="Delayed"></match_status>
+    <match_status id="51" description="1st map"></match_status>
+    <match_status id="52" description="2nd map"></match_status>
+    <match_status id="57" description="7th map"></match_status>
+</match_status_descriptions>

@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: phoenix-backend
+  labels:
+    release: prometheus-operator
+    cluster: {{ .Values.prometheusRules.cluster }}
+    env: {{ .Values.prometheusRules.env }}
+spec:
+  groups:
+  - name: PhoenixBackend
+    rules:
+    - alert: PhoenixDown
+      expr: count(akka_system_active_actors_sum{system="Phoenix"}) == 0
+      for: 5m
+      labels:
+        severity: critical
+        cluster: {{ .Values.prometheusRules.cluster }}
+        env: {{ .Values.prometheusRules.env }}
+      annotations:
+        summary: "The phoenix backend is down"
+        description: "No actors have been running in the last 5mins"
+    - alert: PhoenixActorsDown
+      expr: count(akka_system_active_actors_sum{system="Phoenix"}) < 3
+      for: 5m
+      labels:
+        severity: warning
+        cluster: {{ .Values.prometheusRules.cluster }}
+        env: {{ .Values.prometheusRules.env }}
+      annotations:
+        summary: "Some phoenix actors are not available"
+        description: "Less than 3 actors have been running in the last 5mins"
+    - alert: PhoenixHighAkkaGroupErrorRate
+      expr: rate(akka_group_errors_total{system="Phoenix"}[2m]) > 10
+      for: 2m
+      labels:
+        severity: critical
+        cluster: {{ .Values.prometheusRules.cluster }}
+        env: {{ .Values.prometheusRules.env }}
+      annotations:
+        summary: "The phoenix backend is returning a lot of errors"
+        description: "The error rate of the Akka group has been over 10 errors/sec in the last 2mins"
+    - alert: PhoenixHighAkkaRouterErrorRate
+      expr: rate(akka_router_errors_total{system="Phoenix"}[2m]) > 10
+      for: 2m
+      labels:
+        severity: critical
+        cluster: {{ .Values.prometheusRules.cluster }}
+        env: {{ .Values.prometheusRules.env }}
+      annotations:
+        summary: "The Akka router is experiencing a lot of errors"
+        description: "The error rate has been over 10 errors/sec in the last 2mins"

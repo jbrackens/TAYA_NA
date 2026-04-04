@@ -1,0 +1,11 @@
+[
+  {
+    "exp": "token expired"
+  },
+  {
+    "message": "Bad token; invalid JSON"
+  },
+  {
+    "message": "Invalid algorithm"
+  }
+]

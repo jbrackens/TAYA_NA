@@ -1,0 +1,27 @@
+image:
+  name: phoenix-ui-app-darkstormlabs
+
+apiGlobalEndpoint: "https://api.vie.gg"
+# TODO (GMV-1224): extract a separate CDN bucket
+cdnUrl: "https://cdn.vie.gg/phoenix/static"
+envName: development
+showForSubmission: 0
+wsGlobalEndpoint: "wss://ws-api.vie.gg/web-socket"
+geocomply:
+  env: "production"
+  mobileServiceUrl: "https://es.geocomply.com/oobee.php"
+  oobeeUrl: "https://oobee.geocomply.com"
+
+imagePullSecrets: [ecr-docker-credentials]
+
+ingress:
+  host: www.vie.gg
+
+  alb:
+    group: "phoenix-frontends"
+    customerOwnedIP:
+      enabled: true
+      ipv4poolCoip: ipv4pool-coip-01cdf968d7c5e4718
+      outpostPublicSubnetID: subnet-08587941113502451
+
+  whitelistedIps: []

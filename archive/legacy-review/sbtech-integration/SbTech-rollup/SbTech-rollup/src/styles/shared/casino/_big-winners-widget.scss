@@ -1,0 +1,193 @@
+
+
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-winners-list-_index__wrapper,
+.sb-src-components-sbtech-cas-widget-winners-list-_index__wrapper{
+  margin:1px auto 10px;
+  // remove backgroudn, height and corners from container
+  .sb-src-components-sbtech-cas-widget-winners-list-_index__content{
+    height:unset;
+    background:transparent;
+    border-radius:0;
+  }
+  //remove buttons and padding from buttons from scrollable wrapper
+  .sb-src-components-sbtech-cas-component-scrollable-list-_index__wrapper[data-a10n-component="ScrollableList"]{
+    padding:0;
+    width:100%;
+    overflow:initial;
+    border-radius:none;
+  }
+  .sb-src-components-sbtech-cas-component-scrollable-list-_index__btn{
+    display:none;
+  }
+
+  //set size of cells
+  .sb-src-components-sbtech-cas-component-scrollable-list-_index__content{
+    height:auto;
+    transform:none !important;
+    & > div{
+      width: 16.6667%;
+      padding: 1px;
+      box-sizing: border-box;
+      &:nth-of-type(n+7){
+        display:none;
+      }
+    }
+  }
+
+  .sb-src-components-sbtech-cas-component-winner-card-_index__container{
+    flex-direction:column;
+    height:unset;
+    width:100%;
+    min-width:unset;
+    border:none;
+    padding:0;
+  }
+
+  //set styles for image and overlay
+  .sb-src-components-sbtech-cas-component-winner-card-_index__game{
+    flex: 1 1 auto;
+    width:100%;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__game__link{
+    height:unset;
+    width:100%;
+    font-size:0px;
+    border-radius:0px;
+  }
+
+  .sb-src-components-sbtech-cas-component-winner-card-_index__game__link img{
+    width:100%;
+    height:unset;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__game__link__overlay{
+    width:100%;
+    height:100%;
+  }
+
+  // overlay play buttons
+  .sb-src-components-sbtech-cas-component-winner-card-_index__game__link__overlay:after{
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0 auto;
+    border-style: solid;
+    border-width: 0;
+    border-color: transparent;
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAxNi4wLjAsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IlBsYXlfMV8iIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB3aWR0aD0iMTYwcHgiIGhlaWdodD0iMTYwcHgiIHZpZXdCb3g9Ii03OS41IDcxMi41IDE2MCAxNjAiIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgLTc5LjUgNzEyLjUgMTYwIDE2MCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8cGF0aCBpZD0iUGxheV8zXyIgZmlsbD0iI0ZGRkZGRiIgZD0iTTI2LjA3OCw3OTYuMjY5TDguMTU2LDgwNi4zMjZsLTE3LjM4NCwxMC4wNTdjLTMuMDQ2LDEuOTc2LTYuMjcyLDEuNjE1LTYuMjcyLTMuNDEzdi0yMC4yOTMNCgl2LTIwLjY1M2MwLTQuMzEsMi4zMy01Ljc0Niw1LjczNS0zLjQxMmwxNy45MjEsMTAuMDU4bDE3LjkyMiwxMC4wNTdDMjkuMTI2LDc5MC43MDEsMjkuNDg0LDc5NC4yOTQsMjYuMDc4LDc5Ni4yNjl6Ii8+DQo8ZyBpZD0iQ2lyY2xlXzJfIj4NCgk8cGF0aCBmaWxsPSIjRkZGRkZGIiBkPSJNMC41LDcxNy45NjdjNDEuMDgsMCw3NC41MzMsMzMuNDUzLDc0LjUzMyw3NC41MzNTNDEuNTgsODY3LjAzMywwLjUsODY3LjAzM1MtNzQuMDMzLDgzMy41OC03NC4wMzMsNzkyLjUNCgkJUy00MC41OCw3MTcuOTY3LDAuNSw3MTcuOTY3IE0wLjUsNzE0LjVjLTQzLjE2LDAtNzgsMzQuODQtNzgsNzhzMzQuODQsNzgsNzgsNzhzNzgtMzQuODQsNzgtNzhTNDMuNjYsNzE0LjUsMC41LDcxNC41TDAuNSw3MTQuNXoiDQoJCS8+DQo8L2c+DQo8L3N2Zz4NCg==);
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-size: 35% auto;
+    background-position: center center;
+    transition: background-size 0.2s;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__game__link__overlay:hover:after{
+    background-size: 40% auto;
+  }
+
+  // details area
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content{
+    width: 100%;
+    background: $brand-base;
+    margin: 0 1px;
+    padding: 1em;
+    box-sizing: border-box;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content .sb-src-components-sbtech-cas-component-winner-card-_index__heading{
+    color:$brand-primary;
+    font-family:$brand-font--header;
+    font-weight:bold;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content p{
+    color:white;
+    font-family:$brand-font--header;
+    font-weight:bold;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content .sb-src-components-sbtech-cas-component-winner-card-_index__message{
+    color:$brand-light;
+    font-family: $brand-font--body;
+    font-weight:normal;
+  }
+}
+
+.custom-casino-grid-title{
+  max-width: 1421px;
+  margin: 1px auto 0px;
+}
+
+.sb-src-components-sbtech-cas-widget-winners-list-_index__header{
+  display:none;
+}
+
+//desktop font font-sizes
+.sb-src-components-sbtech-cas-widget-winners-list-_index__content{
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content .sb-src-components-sbtech-cas-component-winner-card-_index__heading{
+    font-size:18px;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content p{
+    font-size:18px;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content .sb-src-components-sbtech-cas-component-winner-card-_index__message{
+    font-size:14px;
+  }
+  // play button styles
+  .sb-src-components-sbtech-cas-component-winner-card-_index__button{
+    @include brand-button(14);
+    width:100%;
+    height:unset;
+  }
+}
+
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-winners-list-_index__content{
+  margin-top:0px;
+  padding-top:0px;
+  .sb-src-components-sbtech-cas-component-collapsible-list-_index__wrapper{
+    padding:1px;
+  }
+  .sb-src-components-sbtech-cas-component-collapsible-list-_index__content{
+    height:unset !important;
+  }
+  .sb-src-components-sbtech-cas-component-collapsible-list-_index__listItem {
+    border-bottom: none;
+    width: 50%;
+    float: left;
+    padding: 1px;
+    box-sizing: border-box;
+  }
+
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content .sb-src-components-sbtech-cas-component-winner-card-_index__heading{
+    font-size:14px;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content p{
+    font-size:14px;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__content .sb-src-components-sbtech-cas-component-winner-card-_index__message{
+    font-size:11px;
+  }
+  .sb-src-components-sbtech-cas-component-winner-card-_index__button{
+    @include brand-button(12, true);
+  }
+  .sb-src-components-sbtech-cas-component-collapsible-list-_index__action__label{
+    display:none;
+  }
+  .sb-src-components-sbtech-cas-component-collapsible-list-_index__listItem:nth-of-type(n+5){
+    display:none;
+  }
+}
+
+html.IsMobile .sb-src-components-sbtech-cas-widget-grid-_index__grid-title.custom-casino-grid-title:before{
+   left: 14px;
+ }
+
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-winners-list-_index__wrapper .sb-src-components-sbtech-cas-component-scrollable-list-_index__wrapper[data-a10n-component="ScrollableList"],
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-winners-list-_index__wrapper .sb-src-components-sbtech-cas-component-scrollable-list-_index__wrapper[data-a10n-component="ScrollableList"]{
+  width: calc(100% - 50px);
+  margin:0 auto;
+}
+
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-title.big-winner-tittle{
+  margin: 0 auto;
+  width: calc(100% - 123px);
+  }

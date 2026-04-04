@@ -1,0 +1,311 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1558711521019,
+        "description": "",
+        "identifier": "07e4ef4d-ad34-5305-a27b-1bb0a2fc7edf",
+        "modifiedTimestamp": 1574852682509,
+        "name": "ProcessController",
+        "type": "Flow",
+        "versionCount": 30
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+        "inputPorts": [],
+        "labels": [
+            {
+                "componentType": "LABEL",
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "height": 647.6488647460938,
+                "identifier": "3b2cb017-b627-3b67-a654-90d8a9f122a0",
+                "label": "STABLE",
+                "position": {
+                    "x": 322.5535169390687,
+                    "y": 27.443402235850556
+                },
+                "style": {
+                    "background-color": "#c0ffc0",
+                    "font-size": "24px"
+                },
+                "width": 1225.6472778320312
+            }
+        ],
+        "name": "ProcessController",
+        "outputPorts": [],
+        "position": {
+            "x": 406.26103923966366,
+            "y": 70.51099104200284
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "inputPorts": [],
+                "labels": [],
+                "name": "GetOrCreateExtUser",
+                "outputPorts": [],
+                "position": {
+                    "x": 329.84858420721434,
+                    "y": 487.52658343549456
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "0dd351d2-b58c-510e-8f1d-c176ec64a2d4",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 11
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "inputPorts": [],
+                "labels": [],
+                "name": "WalletTopUp",
+                "outputPorts": [],
+                "position": {
+                    "x": 333.07073974609375,
+                    "y": 297.10105895996094
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "808c6e44-a6a4-581d-9d87-706d15f51901",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 19
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "inputPorts": [],
+                "labels": [],
+                "name": "VirtualShopPayment",
+                "outputPorts": [],
+                "position": {
+                    "x": 743.590839267928,
+                    "y": 296.1466743291758
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "3a0a2ab4-686e-5376-8521-e20fd6e2468b",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 7
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "fa61b690-87e0-3d3f-b924-5936d919ece7",
+                "inputPorts": [],
+                "labels": [],
+                "name": "ReferralBonus",
+                "outputPorts": [],
+                "position": {
+                    "x": 744.4072340594275,
+                    "y": 486.0208525348618
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "0fa127ce-dd09-5c6e-a629-51a6c16b1088",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 7
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "954ee6bf-fe0c-372b-a12e-a1214603720f",
+                "inputPorts": [],
+                "labels": [],
+                "name": "SbTechVirtualShopBonusApi",
+                "outputPorts": [],
+                "position": {
+                    "x": 1147.7754865435609,
+                    "y": 295.81905168806
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "1b7f4cdc-2aa4-5091-bedf-bfcbef815e6a",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 8
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "d459cc73-aedf-3ebc-858c-25d9a6c7bf14",
+                "inputPorts": [],
+                "labels": [],
+                "name": "WalletSendEvent",
+                "outputPorts": [],
+                "position": {
+                    "x": 744.6854739157145,
+                    "y": 106.9289782885752
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "7f2cf31b-c89c-5094-9057-dc135056bbaa",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 7
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "05f6fc79-b739-32f0-9ac8-2a654d7fa107",
+                "inputPorts": [],
+                "labels": [],
+                "name": "RefreshOpenIDToken",
+                "outputPorts": [],
+                "position": {
+                    "x": 332.27667236328125,
+                    "y": 106.7048568725586
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "3d097e97-34e0-50d8-9d81-57067746e57b",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 12
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "00594a0a-81f4-35d3-b529-2a5096b71b80",
+                "inputPorts": [],
+                "labels": [],
+                "name": "SbTechRefreshSessionID",
+                "outputPorts": [],
+                "position": {
+                    "x": 1150.5451249210437,
+                    "y": 107.95746245240696
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "bd9894a4-06bd-500d-a773-cfe4d79dab7d",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 3
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "0b603cf4-9aa6-3a62-8657-a066996a3fb3",
+                "inputPorts": [],
+                "labels": [],
+                "name": "UpdateVirtualShopOrderLine",
+                "outputPorts": [],
+                "position": {
+                    "x": 1147.7754865435609,
+                    "y": 485.81905168806
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "560f43cd-154f-54c9-859a-b446a6ef3a5a",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 2
+                }
+            }
+        ],
+        "processors": [],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "version bump",
+        "flowIdentifier": "07e4ef4d-ad34-5305-a27b-1bb0a2fc7edf",
+        "timestamp": 1574181315710,
+        "version": 28
+    }
+}

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flink-config
+  labels:
+    app: flink
+data:
+  flink-conf.yaml: |+
+    kubernetes.cluster-id: {{ .Values.configuration.cluster_id }}
+    kubernetes.flink.log.dir: {{ .Values.configuration.directories.logs }}
+    high-availability: zookeeper
+    high-availability.cluster-id: {{ .Values.configuration.cluster_id }}
+    high-availability.zookeeper.path.root: /{{ .Values.configuration.cluster_id }}
+    high-availability.zookeeper.quorum: {{ .Values.configuration.zookeeper_quorum }}
+    high-availability.storageDir: {{ .Values.configuration.directories.storage }}
+    state.backend: rocksdb
+    state.backend.incremental: true
+    state.backend.rocksdb.log.dir: {{ .Values.configuration.directories.rocksdb }}
+    state.checkpoint-storage: filesystem
+    state.checkpoints.dir: file://{{ .Values.configuration.directories.checkpoints }}
+    state.checkpoints.num-retained: 10
+    state.savepoints.dir: file://{{ .Values.configuration.directories.savepoints }}
+    execution.attached: true
+    taskmanager.numberOfTaskSlots: {{ .Values.taskManager.numberOfTaskSlots }}
+    taskmanager.rpc.port: 6122
+    taskmanager.memory.process.size: {{ .Values.taskManager.memoryProcessSize }}
+    blob.server.port: 6124
+    blob.storage.directory: {{ .Values.configuration.directories.blob }}
+    jobmanager.rpc.port: 6123
+    jobmanager.memory.process.size: {{ .Values.jobManager.memoryProcessSize }}
+    jobmanager.archive.fs.dir: file://{{ .Values.configuration.directories.archive.jobmanager }}
+    historyserver.archive.fs.dir: file://{{ .Values.configuration.directories.archive.historyserver }}
+    queryable-state.proxy.ports: 6125
+    parallelism.default: {{.Values.taskManager.parallelism}}
+    web.upload.dir: {{.Values.configuration.directories.web.upload}}
+    web.submit.enable: true
+    web.cancel.enable: true
+    web.log.path: {{.Values.configuration.directories.web.log}}
+    env.log.dir: {{ .Values.configuration.directories.envLogs }}
+
+  log4j-console.properties: |+
+    log4j.rootLogger=info, stdout
+    log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+    log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+    log4j.appender.stdout.layout.ConversionPattern=%d{HH:mm:ss,SSS} %-5p %t [%c] %m%n
+
+    # This affects logging for both user code and Flink
+    log4j.rootLogger.level = INFO
+    log4j.rootLogger.appenderRef.console.ref = ConsoleAppender
+    log4j.logger.flink.name = org.apache.flink
+    log4j.logger.flink.level = INFO
+    log4j.logger.akka.name = akka
+    log4j.logger.akka.level = INFO
+    log4j.logger.kafka.name= org.apache.kafka
+    log4j.logger.kafka.level = INFO
+    log4j.logger.hadoop.name = org.apache.hadoop
+    log4j.logger.hadoop.level = INFO
+    log4j.logger.zookeeper.name = org.apache.zookeeper
+    log4j.logger.zookeeper.level = INFO
+
+    # Log all infos to the console
+    log4j.appender.console.name = ConsoleAppender
+    log4j.appender.console.type = CONSOLE
+    log4j.appender.console.layout.type = PatternLayout
+    log4j.appender.console.layout.pattern = %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %-60c %x - %m%n
+
+    # Suppress the irrelevant (wrong) warnings from the Netty channel handler
+    log4j.logger.netty.name = org.jboss.netty.channel.DefaultChannelPipeline
+    log4j.logger.netty.level = WARN
+
+

@@ -1,0 +1,52 @@
+#header-reward-element{
+  position:relative;
+  margin-right:20px;
+  &:after{
+    position:absolute;
+    top: 5px;
+    right: -15px;
+    height: 20px;
+    width: 20px;
+    content:'';
+    //background-image:url('/img/49110');
+    background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!-- Generator: Adobe Illustrator 24.3.0, SVG Export Plug-In . SVG Version: 6.00 Build 0) --%3E%3Csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 190.7 190.7' style='enable-background:new 0 0 190.7 190.7;' xml:space='preserve'%3E%3Cstyle type='text/css'%3E .st0%7Bfill:%23FF521D;%7D .st1%7Bfill:%23FFFFFF;%7D%0A%3C/style%3E%3Cg%3E%3Ccircle class='st0' cx='95.3' cy='95.3' r='95.3'/%3E%3Cpolygon class='st1' points='95.3,134.8 54.7,156.1 62.5,110.9 29.7,78.9 75,72.3 95.3,31.2 115.6,72.3 161,78.9 128.2,110.9 135.9,156.1 '/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 100% auto;
+    background-position:center center;
+    transition: background-size 2s ease-in;
+    background-repeat: no-repeat;
+    animation-direction: alternate;
+    animation: background-animation 15s infinite;
+  }
+  &:hover:after{
+    animation:none;
+  }
+}
+
+.IsMobile #header-reward-element,
+.IsTablet #header-reward-element{
+  display:inline;
+  font-size:14px;
+  &:after{
+    top: 2px;
+    right: -12px;
+    height: 18px;
+    width: 18px;
+  }
+}
+// reward store sdebars
+.panels-left-holder,
+.panels-left-holder{
+z-index:0
+}
+
+@keyframes background-animation {
+  0% {
+    transform: rotateY(0deg);
+  }
+  5% {
+    transform: rotateY(360deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}

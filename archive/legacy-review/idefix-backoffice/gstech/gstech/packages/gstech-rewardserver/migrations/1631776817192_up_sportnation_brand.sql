@@ -1,0 +1,2 @@
+ALTER TYPE brand_id ADD VALUE 'SN';
+

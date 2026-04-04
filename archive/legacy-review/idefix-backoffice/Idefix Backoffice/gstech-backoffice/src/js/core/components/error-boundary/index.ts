@@ -1,0 +1,1 @@
+export { ErrorBoundaryComponent } from "./ErrorBoundary";

@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$jackandthebeanstalk_common_jack_name = 'jackandthebeanstalk_common_jack';
+$jackandthebeanstalk_common_jack_x = 0px;
+$jackandthebeanstalk_common_jack_y = 219px;
+$jackandthebeanstalk_common_jack_offset_x = 0px;
+$jackandthebeanstalk_common_jack_offset_y = -219px;
+$jackandthebeanstalk_common_jack_width = 230px;
+$jackandthebeanstalk_common_jack_height = 218px;
+$jackandthebeanstalk_common_jack_total_width = 724px;
+$jackandthebeanstalk_common_jack_total_height = 437px;
+$jackandthebeanstalk_common_jack_image = 'jackandthebeanstalk_common_b.png';
+$jackandthebeanstalk_common_jack = 0px 219px 0px -219px 230px 218px 724px 437px 'jackandthebeanstalk_common_b.png' 'jackandthebeanstalk_common_jack';
+$jackandthebeanstalk_common_logo_name = 'jackandthebeanstalk_common_logo';
+$jackandthebeanstalk_common_logo_x = 263px;
+$jackandthebeanstalk_common_logo_y = 0px;
+$jackandthebeanstalk_common_logo_offset_x = -263px;
+$jackandthebeanstalk_common_logo_offset_y = 0px;
+$jackandthebeanstalk_common_logo_width = 461px;
+$jackandthebeanstalk_common_logo_height = 70px;
+$jackandthebeanstalk_common_logo_total_width = 724px;
+$jackandthebeanstalk_common_logo_total_height = 437px;
+$jackandthebeanstalk_common_logo_image = 'jackandthebeanstalk_common_b.png';
+$jackandthebeanstalk_common_logo = 263px 0px -263px 0px 461px 70px 724px 437px 'jackandthebeanstalk_common_b.png' 'jackandthebeanstalk_common_logo';
+$jackandthebeanstalk_common_ogre_name = 'jackandthebeanstalk_common_ogre';
+$jackandthebeanstalk_common_ogre_x = 0px;
+$jackandthebeanstalk_common_ogre_y = 0px;
+$jackandthebeanstalk_common_ogre_offset_x = 0px;
+$jackandthebeanstalk_common_ogre_offset_y = 0px;
+$jackandthebeanstalk_common_ogre_width = 259px;
+$jackandthebeanstalk_common_ogre_height = 215px;
+$jackandthebeanstalk_common_ogre_total_width = 724px;
+$jackandthebeanstalk_common_ogre_total_height = 437px;
+$jackandthebeanstalk_common_ogre_image = 'jackandthebeanstalk_common_b.png';
+$jackandthebeanstalk_common_ogre = 0px 0px 0px 0px 259px 215px 724px 437px 'jackandthebeanstalk_common_b.png' 'jackandthebeanstalk_common_ogre';
+$spritesheet_width = 724px;
+$spritesheet_height = 437px;
+$spritesheet_image = 'jackandthebeanstalk_common_b.png';
+$spritesheet_sprites = $jackandthebeanstalk_common_jack $jackandthebeanstalk_common_logo $jackandthebeanstalk_common_ogre;
+$spritesheet = 724px 437px 'jackandthebeanstalk_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

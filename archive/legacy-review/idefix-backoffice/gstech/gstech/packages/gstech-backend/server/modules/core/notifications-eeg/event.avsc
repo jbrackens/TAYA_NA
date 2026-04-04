@@ -1,0 +1,474 @@
+{
+  "type": "record",
+  "name": "Event",
+  "namespace": "com.idefix.events",
+  "fields": [
+    {
+      "name": "createdDateUtc",
+      "type": "long",
+      "doc": "Message creation date"
+    },
+    {
+      "name": "messageType",
+      "type": "string",
+      "doc": "Payload descriptor for example: [PlayerRegistration | PlayerUpdate | PlayerDeposit | PlayerWithdrawal]"
+    },
+    {
+      "name": "customerId",
+      "type": "string",
+      "doc": "Customer internal unique identity"
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "type": "record",
+          "doc": "The event is emitted when a new player is registered in the Idefix platform",
+          "name": "PlayerRegistration",
+          "fields": [
+            {
+              "name": "player",
+              "type": {
+                "type": "record",
+                "name": "Player",
+                "fields": [
+                  {
+                    "name": "playerId",
+                    "type": "int"
+                  },
+                  {
+                    "name": "brandId",
+                    "type": "string"
+                  },
+                  {
+                    "name": "username",
+                    "type": "string"
+                  },
+                  {
+                    "name": "email",
+                    "type": "string"
+                  },
+                  {
+                    "name": "firstName",
+                    "type": "string"
+                  },
+                  {
+                    "name": "lastName",
+                    "type": "string"
+                  },
+                  {
+                    "name": "address",
+                    "type": "string"
+                  },
+                  {
+                    "name": "postCode",
+                    "type": "string"
+                  },
+                  {
+                    "name": "city",
+                    "type": "string"
+                  },
+                  {
+                    "name": "mobilePhone",
+                    "type": "string"
+                  },
+                  {
+                    "name": "countryId",
+                    "type": "string"
+                  },
+                  {
+                    "name": "dateOfBirth",
+                    "type": "string"
+                  },
+                  {
+                    "name": "placeOfBirth",
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "nationality",
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "languageId",
+                    "type": "string"
+                  },
+                  {
+                    "name": "nationalId",
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "currencyId",
+                    "type": "string"
+                  },
+                  {
+                    "name": "activated",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "verified",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "accountClosed",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "accountSuspended",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "loginBlocked",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "gamblingProblem",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "testPlayer",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "partial",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "allowEmailPromotions",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "allowSMSPromotions",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "allowGameplay",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "allowTransactions",
+                    "type": "boolean"
+                  },
+                  {
+                    "name": "registrationSource",
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "createdAt",
+                    "type": "long"
+                  },
+                  {
+                    "name": "tags",
+                    "type": {
+                      "type": "array",
+                      "items": "string"
+                    }
+                  },
+                  {
+                    "name": "numDeposits",
+                    "type": "int"
+                  },
+                  {
+                    "name": "tcVersion",
+                    "type": "int"
+                  },
+                  {
+                    "name": "selfExclusionEnd",
+                    "type": [
+                      "null",
+                      "long"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "additionalFields",
+                    "type": [
+                      "null",
+                      {
+                        "type": "map",
+                        "values": "string"
+                      }
+                    ],
+                    "default": null
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "doc": "The event is emitted when the player's details are changed for any reason",
+          "name": "PlayerUpdate",
+          "fields": [
+            {
+              "name": "player",
+              "type": "com.idefix.events.Player"
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "doc": "The event is emitted each time player's deposit state is changing. For the first time event emitted with a deposit in 'created' state.",
+          "name": "PlayerDeposit",
+          "fields": [
+            {
+              "name": "player",
+              "type": "com.idefix.events.Player"
+            },
+            {
+              "name": "deposit",
+              "type": {
+                "type": "record",
+                "name": "Deposit",
+                "fields": [
+                  {
+                    "name": "paymentId",
+                    "type": "int"
+                  },
+                  {
+                    "name": "playerId",
+                    "type": "int"
+                  },
+                  {
+                    "name": "accountId",
+                    "type": [
+                      "null",
+                      "int"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "timestamp",
+                    "type": "long"
+                  },
+                  {
+                    "name": "transactionKey",
+                    "type": "string"
+                  },
+                  {
+                    "name": "status",
+                    "type": {
+                      "name": "PaymentStatus",
+                      "type": "enum",
+                      "symbols": [
+                        "created",
+                        "pending",
+                        "accepted",
+                        "processing",
+                        "complete",
+                        "settled",
+                        "failed",
+                        "expired",
+                        "cancelled"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "paymentParameters",
+                    "type": [
+                      "null",
+                      {
+                        "type": "map",
+                        "values": "string"
+                      }
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "accountParameters",
+                    "type": [
+                      "null",
+                      {
+                        "type": "map",
+                        "values": "string"
+                      }
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "counterId",
+                    "type": [
+                      "null",
+                      "int"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "counterTarget",
+                    "type": [
+                      "null",
+                      "double"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "counterValue",
+                    "type": [
+                      "null",
+                      "double"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "bonus",
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "bonusId",
+                    "type": [
+                      "null",
+                      "int"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "amount",
+                    "type": "double"
+                  },
+                  {
+                    "name": "paymentFee",
+                    "type": [
+                      "null",
+                      "double"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "paymentCost",
+                    "type": [
+                      "null",
+                      "double"
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "paymentMethod",
+                    "type": "string"
+                  },
+                  {
+                    "name": "paymentProvider",
+                    "type": "string"
+                  },
+                  {
+                    "name": "index",
+                    "type": [
+                      "null",
+                      "int"
+                    ],
+                    "default": null
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "doc": "The event is emitted each time player's withdrawal state is changing. For the first time event emitted with a withdrawal in 'created' state.",
+          "name": "PlayerWithdrawal",
+          "fields": [
+            {
+              "name": "player",
+              "type": "com.idefix.events.Player"
+            },
+            {
+              "name": "withdrawal",
+              "type": {
+                "type": "record",
+                "name": "Withdrawal",
+                "fields": [
+                  {
+                    "name": "paymentId",
+                    "type": "int"
+                  },
+                  {
+                    "name": "playerId",
+                    "type": "int"
+                  },
+                  {
+                    "name": "accountId",
+                    "type": "int"
+                  },
+                  {
+                    "name": "account",
+                    "type": "string"
+                  },
+                  {
+                    "name": "timestamp",
+                    "type": "long"
+                  },
+                  {
+                    "name": "transactionKey",
+                    "type": "string"
+                  },
+                  {
+                    "name": "status",
+                    "type": "PaymentStatus"
+                  },
+                  {
+                    "name": "amount",
+                    "type": "double"
+                  },
+                  {
+                    "name": "paymentParameters",
+                    "type": [
+                      "null",
+                      {
+                        "type": "map",
+                        "values": "string"
+                      }
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "accountParameters",
+                    "type": [
+                      "null",
+                      {
+                        "type": "map",
+                        "values": "string"
+                      }
+                    ],
+                    "default": null
+                  },
+                  {
+                    "name": "paymentMethod",
+                    "type": "string"
+                  },
+                  {
+                    "name": "paymentProvider",
+                    "type": [
+                      "null",
+                      "string"
+                    ],
+                    "default": null
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

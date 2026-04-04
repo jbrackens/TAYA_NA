@@ -1,0 +1,27 @@
+| Package | Current | Latest | Workspace | Type | Class |
+|---|---|---|---|---|---|
+| @babel/runtime | 7.0.0 | 7.28.6 | phoenix-ui | dependencies | minor |
+| @commitlint/cli | 8.3.5 | 20.4.3 | phoenix-ui | devDependencies | major |
+| @commitlint/config-conventional | 8.3.4 | 20.4.3 | phoenix-ui | devDependencies | major |
+| @fingerprintjs/fingerprintjs | 3.3.3 | 5.1.0 | @phoenix-ui/utils | dependencies | major |
+| @reduxjs/toolkit | 1.4.0 | 2.11.2 | @phoenix-ui/app | devDependencies | major |
+| @reduxjs/toolkit | 1.4.0 | 2.11.2 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @testing-library/jest-dom | 5.11.4 | 6.9.1 | phoenix-ui | devDependencies | major |
+| @testing-library/jest-dom | 5.11.4 | 6.9.1 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @testing-library/react | 11.0.4 | 16.3.2 | phoenix-ui | devDependencies | major |
+| @testing-library/react | 11.0.4 | 16.3.2 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @testing-library/react-hooks | 3.4.2 | 8.0.1 | phoenix-ui | devDependencies | major |
+| @testing-library/react-hooks | 3.4.2 | 8.0.1 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @testing-library/user-event | 7.2.1 | 14.6.1 | phoenix-ui | devDependencies | major |
+| @testing-library/user-event | 7.2.1 | 14.6.1 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @types/enzyme | 3.10.8 | 3.10.19 | phoenix-ui | devDependencies | patch |
+| @types/enzyme-adapter-react-16 | 1.0.6 | 1.0.9 | phoenix-ui | devDependencies | patch |
+| @types/express | 4.17.25 | 5.0.6 | @phoenix-ui/mock-server | devDependencies | major |
+| @types/jest | 24.0.23 | 30.0.0 | phoenix-ui | devDependencies | major |
+| @types/jest | 24.0.23 | 30.0.0 | @phoenix-ui/app | devDependencies | major |
+| @types/jest | 24.0.23 | 30.0.0 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @types/jsonwebtoken | 7.2.8 | 9.0.10 | @phoenix-ui/app | devDependencies | major |
+| @types/jsonwebtoken | 7.2.8 | 9.0.10 | @phoenix-ui/app-darkstormlabs | devDependencies | major |
+| @types/jsonwebtoken | 7.2.8 | 9.0.10 | @phoenix-ui/mock-server | devDependencies | major |
+| @types/lodash | 4.14.161 | 4.17.24 | phoenix-ui | devDependencies | minor |
+| @types/lodash | 4.14.161 | 4.17.24 | @phoenix-ui/app-darkstormlabs | devDependencies | minor |

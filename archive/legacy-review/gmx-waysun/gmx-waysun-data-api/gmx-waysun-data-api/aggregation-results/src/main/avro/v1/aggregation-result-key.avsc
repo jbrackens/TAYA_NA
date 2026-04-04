@@ -1,0 +1,25 @@
+{
+  "namespace": "stella.dataapi.aggregation",
+  "type": "record",
+  "name": "AggregationResultKey",
+  "fields": [
+    {
+      "name": "aggregationRuleId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "projectId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "groupByFieldValue",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

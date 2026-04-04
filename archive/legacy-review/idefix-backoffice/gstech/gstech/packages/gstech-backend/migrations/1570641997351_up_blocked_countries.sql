@@ -1,0 +1,1 @@
+update countries set blocked=true where id='US';

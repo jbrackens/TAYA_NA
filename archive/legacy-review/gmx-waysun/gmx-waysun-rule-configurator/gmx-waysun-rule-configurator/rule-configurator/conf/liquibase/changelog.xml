@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <preConditions>
+        <dbms type="postgresql"/>
+    </preConditions>
+
+    <include file="init.xml" relativeToChangelogFile="true"/>
+    <include file="aggregation-rule-configurations.xml" relativeToChangelogFile="true"/>
+    <include file="achievement-configurations.xml" relativeToChangelogFile="true"/>
+    <include file="achievement-configurations-webhook.xml" relativeToChangelogFile="true"/>
+    <include file="unique-name-constraints.xml" relativeToChangelogFile="true"/>
+    <include file="drop-null-constraint-in-achievement-conditions.xml" relativeToChangelogFile="true"/>
+    <include file="add-achievement-configuration-description.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>

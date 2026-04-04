@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_banners_hero_banners",
+  "info": {
+    "displayName": "Hero Banner",
+    "icon": "arrowUp",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "banner": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::banner.banner"
+    }
+  }
+}

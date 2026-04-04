@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_common_features",
+  "info": {
+    "displayName": "Casino Features",
+    "icon": "grid",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "character": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "features": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::feature.feature"
+    }
+  }
+}

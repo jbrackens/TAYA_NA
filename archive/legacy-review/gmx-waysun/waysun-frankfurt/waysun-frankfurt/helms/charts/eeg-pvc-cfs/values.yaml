@@ -1,0 +1,15 @@
+capacity: # example: 100Gi
+host:  # example: 10.17.105.17
+permissionGroupId:  # example pgroup-5nnsx6up
+subnetId:  # example  subnet-mqulbblm
+vpcId:  # example  vpc-fc428r6x
+region:  # example  eu-frankfurt-1
+persistentVolumeName: storage-cfs-pv
+persistentVolumeClaimName: storage-cfs-pvc
+storageClassName: storage-cfs
+
+enabledFeatures:
+  persistentVolume: true
+  persistentVolumeClaim: true
+  storageClass: true
+

@@ -1,0 +1,39 @@
+procs:
+  "backend:3001":
+    shell: ./start.sh backend
+    cwd: <CONFIG_DIR>
+  "backend:worker":
+    shell: ./start.sh backend-worker
+    cwd: <CONFIG_DIR>
+  "backend:crontab":
+    shell: ./start.sh backend-cron
+    cwd: <CONFIG_DIR>
+  "payment:3006":
+    shell: ./start.sh paymentserver
+    cwd: <CONFIG_DIR>
+  "wallet:3004":
+    shell: ./start.sh walletserver
+    cwd: <CONFIG_DIR>
+  "campaign:3013":
+    shell: ./start.sh campaignserver
+    cwd: <CONFIG_DIR>
+  "rewards:3012":
+    shell: ./start.sh rewardserver
+    cwd: <CONFIG_DIR>
+  "compliance:3009":
+    shell: ./start.sh compliance
+    cwd: <CONFIG_DIR>
+  "idefix:3000":
+    shell: ./start.sh backoffice
+    cwd: <CONFIG_DIR>
+  "campa:3300":
+    shell: ./start.sh campa-client
+    cwd: <CONFIG_DIR>
+  "ngrok:4040":
+    shell: ./start.sh tunnel
+    cwd: <CONFIG_DIR>
+  "email:8025":
+    shell: ./start.sh smtp
+    cwd: <CONFIG_DIR>
+
+

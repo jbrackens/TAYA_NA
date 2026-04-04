@@ -1,0 +1,125 @@
+$column_width = 320px
+
+#content-holder
+  display none
+  user-select text
+  background-color $kalevala_content_bg
+  position fixed
+  top 0
+  left 0
+  right 0
+  bottom 0
+  z-index 10000
+  &.visible
+    display block
+  iframe
+    position absolute
+    width 100%
+    top $header_height
+    height calc(100vh - 80px)
+
+#content-holder .close-button, #content-wrapper .close-button
+  position fixed
+  display inline
+  top $header_height
+  @media only screen and (max-width:768px)
+    top $header_height_phone
+  right 0
+  z-index 10003
+  closebutton()
+
+#footer
+  box-shadow inset 0 20px 20px -20px rgba(0,0,0,0.75)
+  font-size 10px
+  color #ffffff
+  position relative
+  z-index 9900
+  width 100%
+  background-color $kalevala_dark_bg
+  padding 0 15px 0 15px
+  display flex
+  justify-content space-between
+  align-items flex-end
+  @media only screen and (max-width:991px)
+    flex-direction column
+  @media only screen and (max-width:767px)
+    padding-bottom $mobile_menu_height
+  a
+    color $kalevala_light_blue
+  p
+    margin 0 0 10px
+
+.footer-nav
+  padding 60px 10px 10px 10px
+  height 100%
+  margin 0 0 0 180px
+  list-style none
+  position relative
+  min-width 320px
+  @media only screen and (max-width:991px)
+    margin 0 auto
+    text-align center
+  &:before
+    content ''
+    position absolute
+    top 10px
+    left 10px
+    @media only screen and (max-width:991px)
+      right 10px
+    width 185px
+    height 45px
+    cdn_image '/images/logo.png' 185px 45px
+    margin 0 auto
+  &:after
+    content ''
+    position absolute
+    cdn-background-image2x '/images/birdie.png'  '/images/birdie@2x.png' 176px 174px
+    width 176px
+    height 174px
+    left -180px
+    bottom 0
+    @media only screen and (max-width:991px)
+      display none
+  li
+    padding 3px 0
+    a
+      color $kalevala_light_blue
+      font-size 16px
+      padding-left 16px
+      &:before
+        content "» "
+
+.footer-text-holder
+  flex 1 1 auto
+  padding 30px 0
+  margin 0 auto
+  max-width 80%
+  align-self start
+
+.disclaimer-images
+  display flex
+  justify-content space-around
+  align-self flex-start
+  width 100%
+  @media only screen and (min-width:991px)
+    flex-direction column
+    height 200px
+  max-width 360px
+  align-items center
+  margin 20px auto
+  .agelimit
+    display block
+    sprite2x($agelimit, $agelimit_2x)
+
+  .lga-logo
+    display block
+    sprite2x($mga_logo, $mga_logo_2x)
+
+@media only screen and (max-width:991px)
+  #livechat-compact-container
+    margin-right -90px
+
+@media only screen and (max-width:767px)
+  #livechat-compact-container
+   margin-bottom 0
+   margin-right 0

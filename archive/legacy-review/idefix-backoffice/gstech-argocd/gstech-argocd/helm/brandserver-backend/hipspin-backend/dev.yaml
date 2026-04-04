@@ -1,0 +1,69 @@
+nameOverride: "dev-hipspin-backend-service"
+fullnameOverride: "dev-hipspin-backend-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3000
+
+command: >-
+  yarn workspace brandserver-backend init:fiksu &&
+  yarn workspace brandserver-backend prod
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-hipspin-backend-service
+  hosts:
+  - host: hipspin.dev.eeg.viegg.net
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: dev-hipspin-backend-service
+      servicePort: 3000
+    - path: /admin
+      pathType: Prefix
+      serviceName: dev-hipspin-backend-service
+      servicePort: 3000
+    - path: /ws
+      pathType: Prefix
+      serviceName: dev-hipspin-backend-service
+      servicePort: 3000
+    - path: /
+      pathType: Prefix
+      serviceName: dev-hipspin-client-service
+      servicePort: 3000
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+env:
+  SITE_NAME: fiksu
+  URL: https://hipspin.dev.eeg.viegg.net
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  API_URL: http://dev-gstech-backend-service:3001/api/FK/v1/
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  SESSION_REDIS_URL: redis://redis.dev.eeg.viegg.net:6379
+  PORT: 3000
+  REWARD_SERVER_URL: http://dev-gstech-rewardserver-service:3012/api/v1
+  CAMPAIGN_SERVER_PRIVATE_URL: http://dev-gstech-campaignserver-backend-service:3014/api/v1
+  COMPLIANCE_SERVER_URL: http://dev-gstech-compliance-service:3009/api/v1
+  PAYMENT_URL: http://dev-gstech-paymentserver-service:3007/api/v1
+  NODE_ENV: development

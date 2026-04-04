@@ -1,0 +1,9210 @@
+[
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "摖Ș꺼ள፤尤"
+    },
+    "marketName" : "蟾종㞓",
+    "marketType" : {
+      "TotalGoalsParity" : {
+        
+      }
+    },
+    "marketCategory" : "₵喛杠멍ﬢ埖芭烆仅䛁",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "孟ꟾꁿ誀縦ꚹ챚" : "㊹་㈈㐪♽驃樳秥쳩恴뇺룜",
+      "현毤ㇴ㶌蚏鸓" : "",
+      "믲ぬꘂ㼟￳׻햣謍円룗७蜑" : "",
+      "블䐠" : "誡墏",
+      "돹ほᤕ뗆详" : "",
+      "" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "﷌쪾﮲᪏",
+        "selectionName" : "᝘럣",
+        "odds" : {
+          "value" : 983.4367
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "▊",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "삳踎윃",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㰚あ൑",
+        "odds" : {
+          "value" : 514.1934
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꃮ",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "俎꾠",
+        "selectionName" : "頉",
+        "odds" : {
+          "value" : 154.0500
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 949.1756
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "勉綐阤",
+        "selectionName" : "验",
+        "odds" : {
+          "value" : 430.2382
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "坐㸐",
+        "selectionName" : "뉒蚋昁",
+        "odds" : {
+          "value" : 48.9961
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᖚ䞉",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "睔ᗬ餑",
+        "selectionName" : "疎㷕ꇌ",
+        "odds" : {
+          "value" : 756.6364
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꔱ",
+        "selectionName" : "⨋흓ꁏ밻",
+        "odds" : {
+          "value" : 134.8653
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㾿缀",
+        "selectionName" : "믠餃",
+        "odds" : {
+          "value" : 759.7357
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "梷ቸ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 871.3718
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "櫜䦶禪쮁枪靂",
+    "marketType" : {
+      "TotalKillsParity" : {
+        
+      }
+    },
+    "marketCategory" : "軯丹",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "쓥ﲱᾧ뜡꺹૳ꪤ밠㋣雂Ꞑ"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "৤ꔈ훟츍뺫ᮯ퀟㸝ᑹ溭",
+      "붟缻렑ﱁ肽겡ኄ꯺ֲ" : "Қ᬴逌ᯰᯬ㜥ᑐŏ",
+      "鐗낕鍫搣蠸딵涻彬位᢭筶" : "䊋征娪厚톉ꌞ",
+      "୏✘킚勞" : "⋉灂",
+      "夼罞穤ख़睬⛚笘鱺" : "ᗶ㉄薡㩖滑ꩪ師⑨욋",
+      "褜捀ꞓ儇" : "㓁燠颞鎬俦뚴",
+      "龑暓쬌" : "忖㉌쇚섆蔍聏ﱆ䎒엘닷렏↌",
+      "뀐" : "셓얐莆㊲",
+      "䉭讟ᬀ헻" : "㥍잀ﾆ",
+      "ྂ᤭鮯ƙݢ" : "磘箠勗",
+      "㶖競뽐䇚朥非媴⹀힉씤踦免뾼" : "䔚绹",
+      "䎆癁䌷榵ᶽ紨ę퇭㍥" : "鉘"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ꠜ恂",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 839.3119
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䘔苌诼",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ҁ",
+        "selectionName" : "焯핸",
+        "odds" : {
+          "value" : 726.6409
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "瞈",
+        "selectionName" : "摊",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䴓坛",
+        "selectionName" : "灎潅",
+        "odds" : {
+          "value" : 128.6551
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꀘ鼏柌",
+        "selectionName" : "業ᄍ",
+        "odds" : {
+          "value" : 155.7403
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "쪴躄츯筏",
+        "odds" : {
+          "value" : 639.7946
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꄖ戞",
+        "odds" : {
+          "value" : 397.2239
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "年⣥",
+        "selectionName" : "爼뙧",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⪄맪",
+        "selectionName" : "ꕈ᩽",
+        "odds" : {
+          "value" : 348.7118
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "뙪䝾鮊晹錿芼輟"
+    },
+    "marketName" : "᥇졊꾓٤L煓⼀쯍焎▵",
+    "marketType" : {
+      "SecondHalfWinner" : {
+        
+      }
+    },
+    "marketCategory" : "뻍齮꣗䴰遦鎢淀ࣝᔐ",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "〶퉫騩ȁ",
+      "➃ｂﲩ⫫퓸왩핈쏼精긽訬㘌慇氓余" : "홭탺謖䦘嫾씅뷆䩏鿐僣⹔ꠄ숿挪",
+      "鵨礻崾뇜繮엶꺶⣸章ˁᯒꓞ" : "┍꠷篁轳㷳᪢蹱"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "랬풁纼",
+        "selectionName" : "逯欽훉Έ",
+        "odds" : {
+          "value" : 157.3985
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⮬겣ꔗ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "࣎ᙉ",
+        "selectionName" : "笖㰔",
+        "odds" : {
+          "value" : 819.2599
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꃗ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 463.3188
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "럡",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "忕ҟ뗀",
+        "selectionName" : "∋鐤㮁",
+        "odds" : {
+          "value" : 7.6575
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᥖ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "堫컯ᴋ",
+        "selectionName" : "攼箶",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ϋ⎢",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 786.1543
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "烛絕잡彆"
+    },
+    "marketName" : "㳐硥틛狛ꜭ䆂ㄦ廬洣畢ᆶ",
+    "marketType" : {
+      "Megacreeps" : {
+        
+      }
+    },
+    "marketCategory" : "속濽羐",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "䒊쀲瓆"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "퉡蒷" : "搛퉙㒊繵",
+      "ࠛઝᙻ絏놠뫘门" : "酑",
+      "짬஡듾쟊" : "⌣戼묲蠢룲䀮 赺",
+      "泎阋뎓앥살" : "㴏⋈蓧饴手ߥ枉薕",
+      "귌ᵁꅭ崘릹폗◕셙喠茝" : "뢥뭀暩Οඊ흠",
+      "䓿戨搑됸떒齚ﴣ飍" : "⾐㿙ᥓి蛒주ಸ餁異罃輬"
+    },
+    "selectionOdds" : [
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "층杨༡഑"
+    },
+    "marketName" : "ꀇ뱨観",
+    "marketType" : {
+      "FirstTurret" : {
+        
+      }
+    },
+    "marketCategory" : "릯唏ᦶ첄랍",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "\u0095갃痨룣"
+      }
+    },
+    "specifiers" : {
+      "ؼ옝뇵ᒽ侥唖㤧" : "运(蝑"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "䫫ꚬ",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "낫샅",
+        "selectionName" : "鿻׏",
+        "odds" : {
+          "value" : 505.6044
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 838.1300
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⠥",
+        "odds" : {
+          "value" : 268.7929
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "샻數磴頳",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 970.1087
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "카",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "轴",
+        "selectionName" : "⟳",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㙝槖",
+        "selectionName" : "譩",
+        "odds" : {
+          "value" : 886.9253
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "彬맖誄ꋩ",
+        "odds" : {
+          "value" : 460.3598
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "껉뫱",
+        "selectionName" : "噽᧐껗",
+        "odds" : {
+          "value" : 98.1825
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "쨦爻ꔘ"
+    },
+    "marketName" : "邢㊜ﺵꨘ￺",
+    "marketType" : {
+      "PentaKill" : {
+        
+      }
+    },
+    "marketCategory" : "鱕뽫䒔杍蒋皚ꕶ",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierCancellation" : {
+            "reason" : "搽揆킠⺕⋴珁ꋻ蝭"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ᕃ夕뒱懲塘㲲妊" : "☓䐧鑔놊잗汑鶝﫣뵶ꮙ閐",
+      "訑랦见ꗚ輺蚪枃䓖" : "怊鈜쭮羯凒牮≪ﯗ㭵绵슉ꉥ",
+      "ﻜ梟惚ᜪ묕懜듪㙁둈ۃ" : "䫐됀",
+      "㑓刴杦셐㓢셳栨" : "썭ꑇ䒒ᗄ떽ݚ爽枧쪫듷䦍ノ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ᎊ",
+        "selectionName" : "醜",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᤈ퇥喉",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 430.5313
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ጥ",
+        "selectionName" : "Ȇ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䁨躱",
+        "selectionName" : "醐",
+        "odds" : {
+          "value" : 244.0463
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쉨겾䀫",
+        "selectionName" : "䋕眖攰",
+        "odds" : {
+          "value" : 566.8426
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "듎鎼",
+        "selectionName" : "㸸뭷",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "䗑",
+        "selectionName" : "ᣭ隈䛣",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "䇤걦侙ᓑᓚ"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "TotalTowers" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : ""
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "컹㲮汥됊噑쭳霬൬偍〈꘢" : "ꯥڍጔ洯筿둔ᕋ䷝",
+      "茴돂匣Ţ銷ꪁ딿娪英ז" : "",
+      "Უ熃⮿ᗾ윴皘帶널⦅鴍" : "咰㵯ꘛ⠠㜳⺕傃䓚肟搅풸ꈼ保",
+      "扏쭍" : "痖Ⅶ鼓鶍豨߯䩇洞ᵩ쎊謮鿰豈呧䲞",
+      "셰菫쯝黳瘖ㆨꡥ믦㟠꡽ͻᙈ" : "ӯ铺띸ᑣ꼲ℤ꘡⬱죚㬔䕻ᄡ",
+      "청" : "䢞ቧ餖䷝埯▹䑔꾅쾔垻낮橯⾧驦",
+      "筃" : "߭ᡮ",
+      "櫽䀃聀" : "㤬蠟⣽뀳䀒黈쫅㸩太",
+      "䀘촥㏒ଳꕾ샙啂晵⊔" : "潡䧕Ⲹ吷硊搊ꐒ嬨乂",
+      "û鰩腟銾股ڤ䖪쮮ꢣꕌ" : "畋ꡉ秽䧙",
+      "ាٕ◶" : "⿪㫯"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "൶窓",
+        "selectionName" : "ḃ❔",
+        "odds" : {
+          "value" : 975.4526
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᮑꮭ߫Ő",
+        "selectionName" : "쓃",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "∂",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "隅杙ጽ",
+        "selectionName" : "뽙❴ۋ",
+        "odds" : {
+          "value" : 517.4324
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "翤꿶",
+        "selectionName" : "䵒Ὓ",
+        "odds" : {
+          "value" : 377.8127
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䨟",
+        "selectionName" : "〉",
+        "odds" : {
+          "value" : 329.5841
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "燫",
+        "selectionName" : "冕䌴",
+        "odds" : {
+          "value" : 532.2721
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "憑菠膾",
+        "selectionName" : "붼몮鞸",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "ᩪ≏",
+        "selectionName" : "ￜ켒陁",
+        "odds" : {
+          "value" : 830.0096
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "瑰",
+        "selectionName" : "뫞먧",
+        "odds" : {
+          "value" : 404.8960
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "좈㎞蝟척",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 90.5943
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "ک"
+    },
+    "marketName" : "뢊⼍뽢有ⱴገ㉊鐊锼ퟐ",
+    "marketType" : {
+      "TotalTurrets" : {
+        
+      }
+    },
+    "marketCategory" : "戞",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "ʓ୤ா뗄剕꣙㌆ܞ鉅"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "㠏",
+      "ⶫ㍑갟嚮얩䭿칢ﮆ暹瘓" : "왅裹럲ꍷ",
+      "ฎ襍罆ﶴ뾻ꝲ馨Ṏ" : "ᆴ",
+      "䃄Ꮬ쬬텥뒈鶃⑁擦௙麚傠ی␐" : "뚮撙䈧덇꾬",
+      "㍀" : "䢊图觗詋ᷔ뼰廯鋐鼩ꣵ㘫",
+      "군酘" : "㭜子ﾹ⋓䕪꠩࠹",
+      "ꨓꞈ蒘漡撀礧搁" : "↩쟮袗벱툉栗䈔瓎姮",
+      "蓇仓졥ﯵ틾㖪櫁ᓲ차浨毜駂" : "逧⛒꺶䅣灌䓘嶪쐁耍ﯞ⧤㝱둰",
+      "ꐦɄꯆ㱇鼻㤄븊枴૩䕞듩釠ቦꃬ" : "墹魼⪇虲",
+      "텂୿໖꧄ᶣﲢ" : "댉㮔￸䗑䳖ꦾڽ荍⯉Ꟍ",
+      "ྏᘗ⺣偍農餪︈柇" : "翛茴"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "쬐梬ꑫ愱",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "≢鍺",
+        "selectionName" : "㱟㼆",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "讹绮ﷷ",
+        "selectionName" : "鏲踚",
+        "odds" : {
+          "value" : 47.1847
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "닋",
+        "selectionName" : "ꤏ搧Ἣ씍",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "ꊱ輡",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 213.4255
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "俌",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "追",
+        "selectionName" : "ｩ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⪞鿺ᇇ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꅋꅔ⺂",
+        "odds" : {
+          "value" : 827.1461
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "슔圝鸗",
+        "selectionName" : "쯺",
+        "odds" : {
+          "value" : 945.3389
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "简",
+        "selectionName" : "姢隧ҙ끋",
+        "odds" : {
+          "value" : 128.0695
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ﴳ",
+        "selectionName" : "༕",
+        "odds" : {
+          "value" : 39.0929
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "쇎ꈩﲟ"
+    },
+    "marketName" : "㼳",
+    "marketType" : {
+      "FirstHalfWinnerMap" : {
+        
+      }
+    },
+    "marketCategory" : "⧕冫户ӭ쑗刂饱柜搞ꁩ퓾䝆ꐮ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "郠⹡鋘ⲍꇦ檔" : "",
+      "ཕὂ៎" : "憛韕ㇹ䙠苫餿",
+      "땛㆘鲢急屭弹箫푰" : "詉ၺ茕熶磟傢᯷뀷㉮猤Ŏ㍡",
+      "큏ᖤ搴㏦셠" : "톀",
+      "✥㠦쎭奙곙领ǘྸ" : "Ծ˨渟王ﯫ㞕ᬤ⺼ߛ",
+      "昘뤤㎾쯺뽪궱⒃度캫" : "ꌉ꼢톂觝䮉몤꫑ᄎ㐃",
+      "߅" : "᚜ﴑ燱룯䢘䚄칏笭ኰ뮜ᔙ",
+      "㻓⦔는㣕뾩霡㗑" : "ờᄕꞭ髝䗯昉"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "쁊푄ޡ",
+        "selectionName" : "쎋磤类",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 626.0982
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "෰ͧ⪏뒾",
+        "selectionName" : "ཿ䜘",
+        "odds" : {
+          "value" : 277.5790
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㫉䝦",
+        "selectionName" : "딉駟賬",
+        "odds" : {
+          "value" : 261.8753
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㌰",
+        "selectionName" : "撥",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㷢攺ﰨ",
+        "selectionName" : "ꁑ晙",
+        "odds" : {
+          "value" : 6.5265
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "苞꽎",
+        "odds" : {
+          "value" : 873.4936
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "遊箋"
+    },
+    "marketName" : "璜斣Ǻ㷤㨎쇂㤳凋ﴇ",
+    "marketType" : {
+      "DragonType" : {
+        
+      }
+    },
+    "marketCategory" : "엮긭᫁堛㶋援纩",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "ẛ昂漑ꭩ",
+      "諥圎䖶蝋㖱ꉈ멁훐齘깡塓" : "⛲톲┗㋞",
+      "켩Ꚓ⿽ꊚꨍ쪉礭" : "㝧蔫蘵腢絛㑩˄兔䲓",
+      "ί嘕斯ᗢ確꺠Ⰻ쵷섇䚑鲺" : "ٔ嚘䧫賯柜۷鿋ῃ",
+      "" : "ﺔ銑絜鞁댘ꗭ魸㍰퓒蹳",
+      "薽⧷颿ᆑ圑苬㿷ﰮ穆" : "୓んⰌ籡"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ｖꆛ",
+        "selectionName" : "롱᜛É慇",
+        "odds" : {
+          "value" : 435.6132
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "履倆擄",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 72.5583
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "熠煹䆺졃",
+        "selectionName" : "ဪ跡",
+        "odds" : {
+          "value" : 80.2616
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⸄齢庘⚸",
+        "selectionName" : "׻涽眆",
+        "odds" : {
+          "value" : 515.8237
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䤒ƫ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᚏ쳿궓",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "໋쑽",
+        "odds" : {
+          "value" : 999.0928
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "凘",
+        "selectionName" : "㑽",
+        "odds" : {
+          "value" : 641.8286
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "Ⳑﶫ",
+        "selectionName" : "鍣ꯣ",
+        "odds" : {
+          "value" : 256.9594
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "淍攩",
+        "selectionName" : "톓",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "슽핶ʍ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 202.2773
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "尐刪",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 538.4545
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⼋霊",
+        "selectionName" : "崰ꎧ鞪",
+        "odds" : null,
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "᷐潡퐻᠍"
+    },
+    "marketName" : "쮽筟葯υ栲祡释㬍뼄䇁ꏹ",
+    "marketType" : {
+      "Unknown" : {
+        
+      }
+    },
+    "marketCategory" : "ொﶀ庛뮁풡ⅵゝ⎪㚲丌頣",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "墔౾"
+      }
+    },
+    "specifiers" : {
+      "鸌聿툵쏁ᬷ" : "ꊼᐇ⠙眼䞑",
+      "⢘륻嚏嚓闅䬕೏兓荑坂竃" : "㓫ᤙ犈赧༧謹ꕦ댍⼜"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "㻔贋ꃜ",
+        "selectionName" : "➶诩〞",
+        "odds" : {
+          "value" : 962.7202
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "馶焧⿩",
+        "selectionName" : "⾑垊鮃",
+        "odds" : {
+          "value" : 561.1238
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㐻乮溓",
+        "odds" : {
+          "value" : 7.7222
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꮁ仔ร",
+        "selectionName" : "겘",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䪄ᇎ䯖謘",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 126.7316
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "＠",
+        "odds" : {
+          "value" : 109.9233
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "痆ꛦ᫝",
+        "odds" : {
+          "value" : 626.6189
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "욉毈빴",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "刯ⱈ",
+        "selectionName" : "扩",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "轞葆₃씳",
+        "selectionName" : "ʣ￾",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "晌鰅",
+        "odds" : {
+          "value" : 420.3230
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᶕ",
+        "selectionName" : "傉荎⋾",
+        "odds" : {
+          "value" : 84.6957
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꃼॐ⠪",
+        "odds" : {
+          "value" : 530.7949
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : ""
+    },
+    "marketName" : "ٟ琑긦횯헁⃘᦭齺鴞",
+    "marketType" : {
+      "Rampage" : {
+        
+      }
+    },
+    "marketCategory" : "簺",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierCancellation" : {
+            "reason" : ""
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "잺ꆪ",
+      "ꥣ掳눌赻덓錈逜괦濈კ讧濎" : "뗄솏Ｅᰅ酪",
+      "㏄뾓騙ḯ㾀ឤﴩ" : "뮩",
+      "ꨐ墛턵饀孻⯼෹룫彘陻뜖" : "ᨗ䟙ꕸ",
+      "耚迏瓋" : "胯⦴娧⡌뀍귗륟槁ꓲ",
+      "㴡ᆟꮒ䣌繋赱" : "藚ꇢ",
+      "ጚ" : "훅邀놯ᦹ倯賔",
+      "레跀笶᣷륊뜿椕゛眰ℭ몒輮ᾗ魊" : "덫賨骚",
+      "麨┲莊䬭" : "鑨뒟⫵ꈑ뭓ﰹ겹",
+      "稔譪粺꟦ᡚ愁稠䧵" : "퍊䖕퀦ኯ彋뮣ቷᚂ峗ퟷേ",
+      "醦⨼氭橴풑ᱎ뗢跂ᑋ" : "ࠓზ窮ᙕ୨趇ꎔ㼉ꠉ",
+      "茻耉䄚佥卌༥耱殮藃로暷骬஛᷎" : "",
+      "᡼쬟" : "觤迋馲ꟁ垔",
+      "⁉逤稳䥞曤↖첂ฌ㧧닷탦⌥ꢶ" : "㑶ﱀꁤ럳恳笎",
+      "〙햙" : "史ꙝ崤愌㟱韁⎦⹧踙굡㙹"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "駊",
+        "selectionName" : "俽行࢟",
+        "odds" : {
+          "value" : 515.0112
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "늤",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "薏᫢癋",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 95.4363
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "꒿",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䐨㛽",
+        "odds" : {
+          "value" : 169.3554
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "烜ᄌ",
+        "selectionName" : "淢瑪",
+        "odds" : {
+          "value" : 307.7909
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "ⴐ㴖᳕"
+    },
+    "marketName" : "ꌊꭺⲃ蚲북䯺㾬ⵚḺ竁솽",
+    "marketType" : {
+      "PistolRoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "䶬"
+      }
+    },
+    "specifiers" : {
+      "ﺦ膸ﶺ⹅ᬾ惟ﱃ縁" : "躹됋܅㖤焁짾⟀댸ₚ뽴떵跈",
+      "㻥障⦙⨷͘줏⏺酢ャ㯔ꘪ" : "䩧",
+      "批≕孠" : "𢡄ﻱ羦䅰",
+      "༮풶徭탬漇䜿⃻䆓橒﹋묓쯪屘柾ꋅ" : "猳礳쉩핌㖮醆ᆥ彣꤫ꬳᷙ봼",
+      "㼞洚Ḓࡉ쾦" : "뱍楚⺌떘䳥ﳣ眙᷸酝쏠䕷",
+      "麋黽龮肒蠀濨논寮舒" : "혢삸但㗷耹઺谔鑏",
+      "Ғ" : "뗞郿椹ᝅＨ鰖俷檭깏䖈ޕⱌ낒ۖ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "烩",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 571.6932
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꍜ쯒貮絀",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "猾",
+        "selectionName" : "坢؇礯컵",
+        "odds" : {
+          "value" : 698.5331
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꊏ⻚",
+        "odds" : {
+          "value" : 436.7789
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "꼕",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 771.1076
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㺮빜",
+        "selectionName" : "ᔎﭮ́",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "槉ꕽꙺ䇵",
+        "selectionName" : "釓㉠",
+        "odds" : {
+          "value" : 500.4849
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ỏ",
+        "selectionName" : "≦",
+        "odds" : {
+          "value" : 636.3782
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "Ⱬ퉶觬殠",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "멃ᴧ喾",
+        "selectionName" : "蟢⟦펒",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "谈䜪㕅积"
+    },
+    "marketName" : "궳㗦㰡幦룵",
+    "marketType" : {
+      "FirstBlood" : {
+        
+      }
+    },
+    "marketCategory" : "拾",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "袵坝"
+      }
+    },
+    "specifiers" : {
+      "" : "颾晐灙",
+      "霔မ櫼搄⸑틖싉Ϸ" : "᥉桤䟁ꑠ骾雼螢瀴뀋Ᏹ",
+      "鏲鮝鱱颶緰图㔺ꥴ헆泀䨳ᄻ" : "퍬鲮ඝㆯ㵗ꁬ",
+      "䐵쮓樲㩊Ʞ톔讗￀" : "뵠Ꙡ佖㶫㘅皮",
+      "ꨦ₍쉻롬가蚸" : "엻ሥ㋼",
+      "橦㗳﮳〡튩댵뮻" : "",
+      "︵ǀ䚮㺂テ⹴瞘ۀ툎" : "쐤좊盧ᾒ槯䴧뛴퐥뀽㣾㨩顂섽",
+      "꽁럗倪拗請楖ꅖ큀욟𧻓" : "悁＃펿堼뮴戯剡ॶዻ泛℅",
+      "᳦烷鋀꧐ꝶ窘粚䍺踂胠" : "䌧旂ꑟ䂛ᔽ샷䒴吇颫᥀꓊",
+      "ৱ䠅㚣ㆄ" : "",
+      "ⵚ｛놚枀" : "撀껡嗿ꅸ꒱ꘄ",
+      "졨틙ᑷଟ" : "硽掗ⅻ쫥"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "ᤰ",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "泠鳭䪃",
+        "selectionName" : "ꛟ",
+        "odds" : {
+          "value" : 410.6741
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㨈⼸",
+        "selectionName" : "ᨿΥ",
+        "odds" : {
+          "value" : 668.8214
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쐡",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "㐥ׁҧ츃",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "읻㽄ც",
+        "selectionName" : "寴ࡆ붿",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쉩亿",
+        "selectionName" : "쇆ꨮ쉪塌",
+        "odds" : {
+          "value" : 757.6610
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "洃餿죷",
+        "selectionName" : "ᝀ綧ᛏ",
+        "odds" : {
+          "value" : 733.6150
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "裃곐",
+        "selectionName" : "鈙藄",
+        "odds" : {
+          "value" : 188.2131
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "䏯㇙"
+    },
+    "marketName" : "囔䅩埽࿕钡ﴀ릑橑썸丑倃囒",
+    "marketType" : {
+      "WinAtLeastOneMap" : {
+        
+      }
+    },
+    "marketCategory" : "埄襆孶",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "ᕓ眡좐遼꼕"
+          }
+        },
+        "newWinningSelection" : "髝떀뜾ὸ灒"
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "澉衯ﻚ",
+        "selectionName" : "黪ꭟ飰",
+        "odds" : {
+          "value" : 202.6617
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꘇ࿬蓽",
+        "selectionName" : "摜윗",
+        "odds" : {
+          "value" : 876.5488
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "鏎",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "斀曚苲",
+        "selectionName" : "㷺睷",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "Ⓒ",
+        "selectionName" : "䀖",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "얒",
+        "selectionName" : "໬굆鞩",
+        "odds" : {
+          "value" : 60.2411
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⥹",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 210.3533
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "᷏娈",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "淄鲝걄叭好㵽뿒"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "BeyondGodlike" : {
+        
+      }
+    },
+    "marketCategory" : "긮ꑬ阏㱓ߵↆ쉰䊷孔㵫",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "阷⮗"
+      }
+    },
+    "specifiers" : {
+      "ಧ딑쒍㣚" : "蕝铁莨蟂↼嗈ᚤ",
+      "堓⸫扉" : "薓",
+      "诮헙孛Z跫" : "䩟俱鲕鿥䈫憼ﺳ꨺鯈ꐷ棳",
+      "盭鏈䴾" : "니룚⋱쉐",
+      "誛ꩩ丕ൔ봒㝚" : "嵿⛱梎㶮揫쌛摅瑜฾襷㬥",
+      "邑䞺곸뗊鑮ꜻ࿯⎉" : "៘ཻ橢ཊ箞薁䝇佨䃫秭",
+      "鳡澢톋⋨⬙ゴ膻ॹ" : "慮脻ﴒ⾂ﻪ쎒䱉뵬",
+      "Ⅼ훶吝녆帻숴鏲" : "尅쨎蝂⥕䟠㝒䐕멂㹢ಮ⇔",
+      "汬໣뺍쉚" : "❵ⱔ퍆盶聿㎳",
+      "췻劊왉멀漳" : "ﵝ쉛絖꜠볥뉊",
+      "" : "ឞ퉆蚍엂桘襩蚍壀艢옎㫍"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "ᾊ",
+        "odds" : {
+          "value" : 206.4198
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䒽攩㧧",
+        "selectionName" : "녁꿒",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䦢㵆룤",
+        "selectionName" : "ᜠ밧",
+        "odds" : {
+          "value" : 410.3546
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "鷇繡굻",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "昐",
+        "selectionName" : "鍾孔綛",
+        "odds" : {
+          "value" : 632.2998
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䣊쉪ꃶ",
+        "selectionName" : "㿊톳",
+        "odds" : {
+          "value" : 539.2366
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "焷케",
+        "selectionName" : "⎑",
+        "odds" : {
+          "value" : 140.2301
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "폥랙켷",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 418.3127
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "궍鷜",
+        "selectionName" : "ӿ",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "눝疣",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 782.7907
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᗼ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 173.0332
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⇭",
+        "odds" : {
+          "value" : 180.1069
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "擊",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "왅㔀찗↵变"
+    },
+    "marketName" : "䚐첤㢈쬧ꎱꡊ䤧鏐㞸",
+    "marketType" : {
+      "FirstToReachXKills" : {
+        
+      }
+    },
+    "marketCategory" : "鄗媘峞嶄⢲ﴺ컥ㄆಛ㻻",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "濨ⷵ䨪뛫"
+      }
+    },
+    "specifiers" : {
+      "㽹湂" : "禅ꪻ镛ȷ塑ꖋ᮸襵⹮ⴀמ孜",
+      "ᨈࠒ葈⚈" : "ឫ",
+      "抶栁ᐎ삸祛⢣톖䊐토⊺멲◂" : "⨪䖹䚴遬䜣梔쯏➄㘇頻᱃殻",
+      "둗㱨㯹Ꝼₖ묺쌀膇" : "䭞ﬂ",
+      "" : "໦陸㾚칥辘쿳ቖ窪"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "숰萃⪬",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "諂",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "悂Ԙ髧珎",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "辔",
+        "selectionName" : "✲",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꙩ黰膏",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "｟嘾",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 681.1137
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "玍ᑜ谟",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "쇭벅",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "뀦㝅⃸",
+        "selectionName" : "蕠䎍췪",
+        "odds" : {
+          "value" : 475.1098
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ᷖ뱅",
+        "selectionName" : "矫ݝ鱦",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "薏誂"
+    },
+    "marketName" : "넨⋯鉯즡ꖦ몺幤\\鎨㱛",
+    "marketType" : {
+      "NumberOfMaps" : {
+        
+      }
+    },
+    "marketCategory" : "匥ሬ苽뜖荒ఋ岿顦猬ﳖ",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "袍璵맣拓"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "駶",
+        "selectionName" : "ܻ",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "谨냼抒",
+        "selectionName" : "倕ﮋ",
+        "odds" : {
+          "value" : 116.5450
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "젤冩ꌈʺ",
+        "selectionName" : "맃若䐣",
+        "odds" : {
+          "value" : 954.0035
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "泅",
+        "selectionName" : "ꕻ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꞔㆻ",
+        "selectionName" : "꩎燓뱭",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "꿈齴",
+        "selectionName" : "鄟ᨔ",
+        "odds" : {
+          "value" : 768.7217
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "즽꣤",
+        "odds" : {
+          "value" : 980.5172
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "퀏。",
+        "selectionName" : "ꃍ菴",
+        "odds" : {
+          "value" : 324.3226
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "浣",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "里ꁮ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⒤揄嫡䶁",
+        "selectionName" : "ﬃ㠈Ꞌ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "똾ሦ震",
+        "selectionName" : "뺧",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꘊﲦ",
+        "selectionName" : "霖运뺭",
+        "odds" : {
+          "value" : 739.5065
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ڨ",
+        "selectionName" : "Ᏼ㢦㍎陊",
+        "odds" : {
+          "value" : 201.0071
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "뙧框૔"
+    },
+    "marketName" : "덵姡뭡싛",
+    "marketType" : {
+      "TotalKills" : {
+        
+      }
+    },
+    "marketCategory" : "뿟셤鏅㲇骎뤓쨂␰筚蜡眰孄㠼",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "吹ྜ噄炤歬浝錶ᐨ只⤔绘ᙘ" : "ﲥᜭ樶ꦺႴ璢",
+      "ﾲ꒣嶮䘺⴫姴掟曍誣埃" : "⮜㙷ᾇ㍭섮䮷쬵龜",
+      "酳攴雐ኯ" : "囔缭砥돛蝾ᳩ㤨፲殳",
+      "緹" : "哼㣬塇ⓟ",
+      "ྙ" : "蒤︬",
+      "栕횎窿吓౟" : "涪Ṳ録茙",
+      "韔⌫犔ﺦꩪ캔祥ꂛ丈" : "㻻ꚑ٤뀓홣勀郿揤",
+      "✷袿㤶➞" : "뢇粒尔",
+      "" : "⣲㫯摓䲮䞙茮ɭ",
+      "窰辙쨆홓석ﮤ깅硐㽕猈" : "㯮碲শ",
+      "䀄" : "䧊鞭帕霋쫿莁Ჿ픉廻틅㞹"
+    },
+    "selectionOdds" : [
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "瑩憎醳䶛䕬챒"
+    },
+    "marketName" : "ꊅ㵹꓅莋⩶ᾪꗦ淒褬㸲",
+    "marketType" : {
+      "QuadraKill" : {
+        
+      }
+    },
+    "marketCategory" : "銠⻭䯤樽ࡂ敭䁰䓮",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : ""
+          }
+        },
+        "winningSelection" : "净눶嶶"
+      }
+    },
+    "specifiers" : {
+      "" : "℻⺀쭥㱹褾ፙ仭᫲ﬦ︣랹Գ㗦",
+      "界ᵳ䷀췋溄＃팮䱝জ怱" : "",
+      "倵齄" : "",
+      "쐏䎧퀁" : "谮झ忝⅊툠",
+      "ႉ렗ŭ堗ߤ鸿閉堷፽｝斏㯌䜐" : "蜻鰴Ʞ臧✛ᜆ",
+      "黜韦ᙃ嫃ﰫ⌝ᴵ᪀ࢄ屑껗켦藵䨡" : "ﺴ",
+      "醰豈攚뗷﯍譍뚂摾̗㍟䫭횢⚒" : "댓管軄膌",
+      "滚贔欣皩嘃䫟౬זּ못뼏床ῡ" : "ở瞦؉⻐",
+      "릗鉧깷᣶愺䯪" : "盱꧔ꀕᶻ鱃삃⅒칰쨳ꣀ⓳돈",
+      "ѿ醭ⶃᵩ䦋⏉䨮畺虞" : "貓ﱣ륅鶣豎된驼т淙鲈",
+      "ꋇ" : "",
+      "ᢠ䕵꺞侀⟤Ⳣ驟" : "ﬠ쥭졡Ზ逺",
+      "뼯迖" : "畊圷ྲ腷霛㾍㪫⍻妵"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "듮꫐",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 268.1713
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "쵪"
+    },
+    "marketName" : "澩㲍䥵",
+    "marketType" : {
+      "TotalGoals" : {
+        
+      }
+    },
+    "marketCategory" : "汼㻜瓆",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "ॗ䍳㉘"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "鋄轕톱⾊楹꙾豲" : "͡海ﱾ換䐰꣇ㄭ稝뛽叢ﰽ큈",
+      "⮨뚉䌕瀦㗔息媣왹ꠋ避" : "瞵薄",
+      "宭鉲鋣웂堳ꩆ퀝誱綪䬻贃" : "쭏䩈休協ࢳ",
+      "⭴Ս槪ಥ핎ꀡ璙ᬱ떉３" : "僘Ǉ꾖훕䮘폇ܠ",
+      "褫阹꩏㄁䃦댢ᇈ" : "獞﫭䆕濦涼哘㴬哙",
+      "꼦ࡨ" : "၀廙㦚칋᮹鱵翛",
+      "痣흴쏆曅왜" : "䩿獉늪⯊圼瓮캲痚䂞Ṏ",
+      "命⽆儥ྶમ㟾犉ᐤ" : "儅匒섗䎉覦"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "⇥",
+        "selectionName" : "爻㸎쬖ꎻ",
+        "odds" : {
+          "value" : 229.7336
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "奔",
+        "selectionName" : "똝",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "띗냸",
+        "selectionName" : "㷗솄",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "葃",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 231.2707
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䢾怯ॹ爾",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "௜ﮮ",
+        "selectionName" : "䴵࿯⡃ბ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "렸᫅",
+        "selectionName" : "陰ꅿ⸕",
+        "odds" : {
+          "value" : 499.8335
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "鴋",
+        "selectionName" : "֚訵拝혰",
+        "odds" : {
+          "value" : 725.2268
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "䩉",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "⁜掌䂳슟"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "FirstTower" : {
+        
+      }
+    },
+    "marketCategory" : "ﻋ枱룲䄛떶嗈鰷횳뷕摮鄹",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "정⃅" : "垃倆㸆⾋蘍킫༝笫狻䢏",
+      "쥰棛姢줨譜ڌ" : "泎舻뺷狪浠匯흄贆䔝",
+      "謴簸벬⌘윓뵭갅䀾\u008cꗡ䇗䡵㯲" : "ᯌ꯱뭍޹",
+      "穼⅞᣾璒㽄ǣ㾟索立鈷" : "酈昱ଡ଼釣쁒",
+      "缷i 齹" : "ᰤ詺꧒炑",
+      "笿띠䔟㠴ﶨꊢ۪큸曌篥饪" : "狐ꆤﮀ",
+      "骑ᵌ⿪鷲鬼ྂ۱⿐ꠅ" : "郈ᦤ䶝ょ✿윯丸괄䛼╌죣ảᲾ䖄㉬"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "둸땔푾",
+        "selectionName" : "䪁",
+        "odds" : {
+          "value" : 292.0414
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "핔鶚",
+        "selectionName" : "돥힗",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 724.4775
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "硦",
+        "odds" : {
+          "value" : 829.2216
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "켟",
+        "selectionName" : "堽柔",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "鉦珪",
+        "selectionName" : "‣搏",
+        "odds" : {
+          "value" : 838.2703
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "煀",
+        "selectionName" : "螬蓉⦋",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "耇偓",
+        "selectionName" : "孧垩蘙",
+        "odds" : null,
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "唃灲ㆻ䣦뎙苲쥿"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "RoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "楂逓"
+          }
+        },
+        "newWinningSelection" : "⺯砐"
+      }
+    },
+    "specifiers" : {
+      "" : "৴繒",
+      "軅鄳ﶄ⍠⩷碏附" : "⭕㾦킊賄᳽",
+      "햾" : "ꪵ⟦ꍇ锶섂",
+      "心཭┢懛" : "挜혂둠좍⩔坏躟挕렼㘚唆",
+      "⛶ܙ쮱츎憰포⦽霨" : "ᶚ쵥깲羢죿દ暉厲﨟勽",
+      "혐廣乐쫊" : "䊐✦Ậ绡肆롮",
+      "뙔祈" : "",
+      "㻃⧎髹ꩮ淠" : "좈毕莪啬븊槼䰼愅镞",
+      "ଳ疏䟜㉑數ڌ笻ꉎ䓊諜޼尺륜" : "䶎",
+      "펬ܦ䁄賽➱曨嫐遽儦圀㬆俔" : "窨聮珍ᯖ⥾鍰",
+      "潺" : "筊靤 룥앑ㄽḃ穟饣㗇듽캧壐謲"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "嶜",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 321.1227
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㡿쀢హ⃟",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "뙶竡",
+        "selectionName" : "퀐昢",
+        "odds" : {
+          "value" : 166.6369
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "꣊",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "ୗ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 789.8490
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "휒",
+        "odds" : {
+          "value" : 811.6722
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "퉏Ē඙掃",
+        "selectionName" : "뵰쭜",
+        "odds" : {
+          "value" : 421.4854
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⮞",
+        "selectionName" : "폪",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㕫",
+        "odds" : {
+          "value" : 821.3532
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "숻ᔦ",
+        "selectionName" : "믫懔䋃",
+        "odds" : {
+          "value" : 337.9850
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ߛ窄큩",
+        "odds" : {
+          "value" : 101.9071
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "맕梛",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ᇥꖰ",
+        "selectionName" : "銞䃐\u0004굞",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "鴫᠍",
+        "odds" : null,
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "⭪귓"
+    },
+    "marketName" : "⢽＞岰왗∨絒",
+    "marketType" : {
+      "NthKill" : {
+        
+      }
+    },
+    "marketCategory" : "揌僡폀蒀ࣼ刎談砺窼䒑",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "盦⪿뚄㢧ﲎቷ迭螩ㄩ䗊"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "텣羈⋻ꊡ蚑㪗∡྘ᩲ鰒" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "㢽",
+        "selectionName" : "䯁鶫㾻",
+        "odds" : {
+          "value" : 703.0156
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "輑",
+        "selectionName" : "浯",
+        "odds" : {
+          "value" : 660.2122
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "綸",
+        "selectionName" : "拾㨎驿",
+        "odds" : {
+          "value" : 227.8432
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "▤",
+        "selectionName" : "䙆",
+        "odds" : {
+          "value" : 856.9057
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "襈",
+        "selectionName" : "竓蚼",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "娱ꡊ彃"
+    },
+    "marketName" : "뙏鿗내溎䖪梫榓ᇽ驲",
+    "marketType" : {
+      "BeyondGodlike" : {
+        
+      }
+    },
+    "marketCategory" : "엮渺∺䠡赦ⲓ",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "焬㥫"
+          }
+        },
+        "winningSelection" : "븮"
+      }
+    },
+    "specifiers" : {
+      "嚴飸胗瞫㱌倏ڟ㹽" : "쵾ᓈᛌ蠼쁐덊㟷腁萭혏",
+      "ੋ꺻ۋ⼈" : "昋늃晱Ḧ",
+      "䳵㛗䩍砈끿䷀둼떫쮲담贕憮鋧颡" : "綛௾ꔕ悵渘䗦槯ީ",
+      "㚡舒과೰沿晑Ἤ䇷㘥૩鄍ᱛ픧" : "坒컄",
+      "瞏贔걠犢㏄ṯ끃槅" : "翺뿲﬎㤷䲻ề",
+      "퀣죕䃁夔㼠矔鱿茂ﹴ" : "鴨迤䫙ﳑⲸ퇴ꇪ糊쁔",
+      "ℶ턤ྒ䰾畱繠늨" : "᫛뵷ꀛ䳺帵㈪"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "翪",
+        "selectionName" : "偕",
+        "odds" : {
+          "value" : 789.0117
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "὞딞Ȉ",
+        "selectionName" : "Ꝯ༿",
+        "odds" : {
+          "value" : 21.2037
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 201.0066
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "Ꟃ謨",
+        "selectionName" : "Ʒ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "蓟쭈띔",
+        "selectionName" : "㰡봍",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "Ճﭗ",
+        "selectionName" : "슬",
+        "odds" : {
+          "value" : 793.1057
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "蒺ᖮ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 263.3799
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "懩Ᶎ",
+        "selectionName" : "ꅪ쳚끵",
+        "odds" : {
+          "value" : 397.0224
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꤗ",
+        "selectionName" : "㢟槟⇕",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⛾᢬",
+        "selectionName" : "僙ۯ",
+        "odds" : {
+          "value" : 350.0564
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "㞻鎘졅"
+    },
+    "marketName" : "囻ం鏗鍁",
+    "marketType" : {
+      "MapDuration" : {
+        
+      }
+    },
+    "marketCategory" : "﫢ₖ㟃␐",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "₟䣲擆ᠫ灸閂⋨붊뚗᫻"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "苷ⰽ睾쫴킺" : "슍ᨳḉ",
+      "稇⟈ᠬ훎齶" : "呠䙝閈儝扑蹂츥당᪍䛥",
+      "㥘疑鑤㨐磴ᙗ쀭혇瓏熈竽㙋荜" : "⨮퐭๴乽㈁㵆䛝굦‪㚺",
+      "愩滒฻趜Ằྡྷ塑樥" : "렮ﺆฯꤣ穱練┏球僁瞘",
+      "礯搟֣Ɠ皬⚛耋ﱉ涄弙龴" : "蝯ﺬ㣨뗫",
+      "濸䷀" : "毷",
+      "졤粭처ꏡ싑⸒训䆗簯⊍" : "䵯䃨뒘垓ɵ亲Ẇ└",
+      "則뿙糚㊍工氪긴ꁼᯎ둵⑦开" : "䧩䏳",
+      "襣み⑀⡶ᗨ荭߈፲⵫뿚Ӭ餗" : "젱허빋殆ᚭ⬼귲붢",
+      "埽왐咆㭡ᘪ⽞ꕕ" : "鿡ᴈ",
+      "䶹떁ᬿ펛֢" : "䞰侥짡韙荑ໟ௬깙Ἰᰣ湇ￋЭ稴",
+      "뭯ꊶ胮슫䂿￵艤拽⟁" : "뢛簽ᔯ阡쑴燠膲⬊n䓬頨鴴",
+      "啤ꮍ鷚" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "襴",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 191.5188
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䘼",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 674.4667
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쯽瞌Ġ",
+        "selectionName" : "峒",
+        "odds" : {
+          "value" : 507.6776
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "載",
+        "odds" : {
+          "value" : 15.2304
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "溿롖Õ",
+        "selectionName" : "睗",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "蘇爟",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "䵳鹜"
+    },
+    "marketName" : "綯萅ﭲ⛍嶺㓨쓯㣕늪",
+    "marketType" : {
+      "SecondHalfWinnerMap" : {
+        
+      }
+    },
+    "marketCategory" : "ꗠꚴꡏ鲮欴鍩瑨䝁㦼筣ဎ嗘궔",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "뿃▉"
+      }
+    },
+    "specifiers" : {
+      "ۋꌯ絤衰䕮㻽熮㚮⸇㞊䗨Ꮵ昐" : "ု홙쳉磌尒銿峪Ꮆ渞ܨ縬㤧狎",
+      "勓㿯흗툳ᴶ樂齩℀㉳쫛໤" : "",
+      "傧婮卾쏕ꡜ" : "絈ǌ馻䂄୳ᙯᒑ⳰ᲁែﴤ洤鰲",
+      "楸냻៛溕" : "袿迀尞䱅᯴쐘⩒᝻个",
+      "Ү䩹㵄毷Ȧ䊨⣙픗ֆ" : "Ⰳ좘됓཰䒷왁",
+      "鮋绮誘쑟ﯽ羏" : "✓븧쭡鱨毿蘪ᾓ㾒열堼䷙䴳ৱ",
+      "펮㽐錠槭䬀儔栕埔ℼ츰浍٤㛢" : "겟吕ﶁﻄⰞ袜렓㻑䌩㫺ᱦ캰䅢铂",
+      "嗚ꐓ䄈渿煨ૡ砮痫䕿櫖" : "ꡫ⧘볦踂챈",
+      "⠙邨궡싂씾ﱰᘳ聼髦䊘拥ᱯ❮" : "",
+      "鶆嚿" : "뺇䟜꣣竎☞햘ﾶ檧앣ᱥↇ輛"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "䬗ူ",
+        "selectionName" : "♈",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꬡ",
+        "selectionName" : "蔶",
+        "odds" : {
+          "value" : 611.3543
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㨋붦",
+        "selectionName" : "ᔓ",
+        "odds" : {
+          "value" : 18.5761
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꗸ븀瀞궄",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 911.7339
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "₸利",
+        "selectionName" : "겊섃䶒",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "턏",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "欧괵Ú",
+        "selectionName" : "䕍䗲",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "賅国桗",
+        "odds" : null,
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "⟈详ዻ䩆畅꙲",
+    "marketType" : {
+      "TotalKills" : {
+        
+      }
+    },
+    "marketCategory" : "쿧쪁끍ツ曶",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ௌ侶됝뻀" : "๞櫌䳉旷瓰痧",
+      "氥䞨늴꟢迶羸㱳臑爛" : "韦ꑟ뮅冠ᅀ裨",
+      "ឌ" : "ݒ䌴Ҁ",
+      "襭" : "൰乔訇簌⨛ዀ尮㍏艊愪",
+      "훕ﲯ콱ܲ鈶팃ᇮ" : "ⶾ锝틲퇲㵇帙謈뽣㾿",
+      "똉亗" : "⹀ₗᅇꐬ婅அٌ阪仐靥쯕ꢦ헍",
+      "﷈ᩘ逅鱋ࡌ䛵" : "ꛛ䨇",
+      "觜" : "ө䄠槌葓芕꽺斧ϵ鈤뽄꺷",
+      "僄儿ﷳ儻녶ー嵔⹎" : "Ⓢ",
+      "鐄礷揺廈ṇ䮯胇륎ᾼᱞ竿␧맅" : "귟ᶇἰ丑⪗賚蜚뙪䓼"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "樷",
+        "selectionName" : "乘",
+        "odds" : {
+          "value" : 982.4634
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꅆ뉰훱",
+        "selectionName" : "奔젂镟‥",
+        "odds" : {
+          "value" : 865.0919
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ㅈ쎡⺣",
+        "selectionName" : "沰⮆꣄",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "༊ሡ屑詖憊揸ⅺ"
+    },
+    "marketName" : "빫",
+    "marketType" : {
+      "FirstDragon" : {
+        
+      }
+    },
+    "marketCategory" : "딫葾ਅ䣍ͥ㇫㝤뭵쾟",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "ၧ魓䠨"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ຖ݌ਈ츼" : "ﬄኗꗖẮઔ",
+      "༣䟄귍䨆崷⠠ꁕ佤ꤺ杭沞ꄷ勄" : "볢䊞ꍟ澰诩처䤯틉廊쉱",
+      "쨁벺" : "ӌ靴",
+      "㵉" : "Ό",
+      "ﮚᰃᇌ먠奍颞솗勤" : "᷻偃䕫哛몰驘"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "昗풵",
+        "odds" : {
+          "value" : 364.3555
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "육虿",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "嵝ᠾ",
+        "selectionName" : "貔ڂ",
+        "odds" : {
+          "value" : 765.9760
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "➥㸒"
+    },
+    "marketName" : "⠰ퟵꟍ렡",
+    "marketType" : {
+      "NthKill" : {
+        
+      }
+    },
+    "marketCategory" : "׍륛ൂ瑩এ⼓뱰흘",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ﾴ쯩ꏘ兊沈뗇㾸謅⁲" : "㑅쫐쨲汖쬒㉢霣衚䝮탬તⳂ瓊",
+      "ꕪ㑱覃㸅鋅ꃥ킉⿎" : "ኮ鄵됳鎯ⴡ",
+      "뛃庥柜괤镭煨⊍㒴․슛믊ꋛꨇ" : "鮇",
+      "퐍ᦶ뛵" : "੹ﰨ莙眽佌ꄷ㘻씤ꎅ",
+      "랏髯荪黜랄䨪䛹៓渔Ø뱋" : "ᾍ硱믙풯养唯놠鍙㋝籐",
+      "뒩爵ꯤ扠둕Ｔ즷灐돠" : "⣀겅㍾ﻰᱏ潎뒔돐蒱ⓤ㵻覚밡"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "帾",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "阤\u0093샺",
+        "selectionName" : "쒀",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "턫룔",
+        "selectionName" : "獚鲞",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 668.0487
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "糉",
+        "selectionName" : "傋",
+        "odds" : {
+          "value" : 833.9441
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "줋䇵뵲"
+    },
+    "marketName" : "킆ச娪º",
+    "marketType" : {
+      "Overtime" : {
+        
+      }
+    },
+    "marketCategory" : "꟭▬檪",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "↦钼"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "굖㔙ᠷ挩ᡙ痛룁㜗ꪗؠ뺥떖筗" : "䛼놶㰰ᗍ닼攮䡪ꨘ樍⋁",
+      "勛띋ꕧ癍檓穭࿋䗯뙄襖핥࿐" : "ζ㼛ꙩຏ㵢痼䗳᧖姥ࣤ䄲餫",
+      "哵㰺Û깄鰹" : "㏽逥厃㺊钅䞴〰",
+      "踋䡟ׂ䙋" : "⛄ŀ⚘ṯ鷝ጰ⏶巂ڒ✻⃳",
+      "脆嬊" : "辢땅Ǉ授쯥ꘔ䥀熪㲆ᄾ⢣ᇫ",
+      "辏軖Ḽ偛촟" : "斝ꋇ╏엋亣詡싾့▎",
+      "ު踦貐籙" : "䥴ⵠﳭ昜魬ﺼ䵺놩",
+      "갍む┩뷿浔毳㴾Ď" : "؎ú艿餚"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "壑헢ߖ䥅",
+        "selectionName" : "᝕",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "黠␋",
+        "selectionName" : "ꬑ㰦쎈",
+        "odds" : {
+          "value" : 286.7927
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "봃ↁ幗",
+        "selectionName" : "镨࣓",
+        "odds" : {
+          "value" : 863.6293
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "驮๜",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 27.8880
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "႓쒢",
+        "selectionName" : "㨻욄찫",
+        "odds" : {
+          "value" : 198.9236
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꎬ",
+        "selectionName" : "8⏡⡀粫",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "桸",
+        "selectionName" : "鱏ၨ",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "짞",
+        "odds" : null,
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "詎뒱判痠"
+    },
+    "marketName" : "쯠밐ᐂ竑挒픚㩃掃߻㿎☒",
+    "marketType" : {
+      "CorrectMatchScore" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "ᓤ"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "闡줽␢㳉㼭匉䬈˹랑쫞",
+      "Ὧ⿎뜘" : "뉜纟西",
+      "ᙆ丟" : "",
+      "ꎅ䖅" : "肜⑉摿챒ꙮ䖨탌ⅾ병Ꟍ휔주ଁ",
+      "⫅㨯䪈ϖ" : "",
+      "䠑⦁絹柱ⸯ챟㴵♐⾇" : "鲇猉䕇椒שּ鉴뵞",
+      "뙖᧠ꫤ෤桑" : "য়嚣ഌ耞ꐪ",
+      "ﳻ" : "",
+      "銪鷓쳤ら멥潺릙鷀଀짚㓎" : "폀딞㞁懡✮ꮒ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "׮",
+        "selectionName" : "㴼嗄콖⧜",
+        "odds" : {
+          "value" : 108.1987
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "Ɒ떓",
+        "selectionName" : "茿牡ﻺ",
+        "odds" : {
+          "value" : 656.8576
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쫘۰襏",
+        "selectionName" : "嫮",
+        "odds" : {
+          "value" : 227.9620
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "姸",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "៼ﺫ膥",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "蕲泧",
+        "selectionName" : "㯮냩环퍭",
+        "odds" : {
+          "value" : 383.1754
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "叐ꒁ凫宒㈁\u0097"
+    },
+    "marketName" : "▒坂拿蚐梓沾͗༾",
+    "marketType" : {
+      "DragonType" : {
+        
+      }
+    },
+    "marketCategory" : "菭ᰤ㒰柱徒耸酵棔᫳屯⏬",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "튻౱䗗㜴樋ᡤ簊ِ郁작ɝ㓴忌" : "핖ㆲ厞ꛝ꡴",
+      "霠坘ƀ⫲졾殑ཥۦ걩㷈篖抎䃷鶘禋" : "뛋썞",
+      "ꚱ財ꫨ맃ᤓ딽䜎駂옄뾙Ị덎㿌" : "荐疠ᘰ쐙띉阗刱ੴ뙃Ր뭢ܰ㟨顣",
+      "ￕ퐻쩃侧펨ᵎ" : "◟",
+      "쀈ﯰ갠놬᳑ㆢ茟鮣೩쫉뉗ᦥ㫦" : "",
+      "暫" : "鸔珆ᣍ띁⦭쯬訶斑",
+      "﷘俫춰鍋䘏쭍㓟" : "",
+      "㸒彊岑ﳃꀓ狴桵" : "驍ᯪ锣⟽䩕ޚ",
+      "轍ᴆ뽛ﶇ縁" : "䳥눍퍦萔䧚㆛捭ሁ鄡ᡭ7菌"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "糥嚔",
+        "selectionName" : "刢땫⯿",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "쁅薈",
+        "selectionName" : "莇",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "⻮",
+        "selectionName" : "谍헫",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "칝↓熉",
+        "selectionName" : "㉁狊",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "躱",
+        "selectionName" : "ퟃ",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ેৠ",
+        "odds" : {
+          "value" : 744.8733
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ﰜ",
+        "selectionName" : "⓬莦ﶢ",
+        "odds" : {
+          "value" : 742.2523
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "馚ۼ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 509.3773
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "냛絞沂ゆஉ"
+    },
+    "marketName" : "ౄ",
+    "marketType" : {
+      "FirstBaron" : {
+        
+      }
+    },
+    "marketCategory" : "੠滳뀔Ğ⒇濚맡㈒",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "牎"
+          }
+        },
+        "newWinningSelection" : "䙙"
+      }
+    },
+    "specifiers" : {
+      "" : "橊ムᦍ㮔厘﹑傖ꆐ줓ॾ衆ฮ︺",
+      "ᖝ" : "广㊊",
+      "庸甚ጓᮯ揁촱䆱㔑ឈ﷘칳" : "午恋鎣䀭쐿೸⯅뺝弔㑃",
+      "硕郦㚖ጋ⽁妊ࠧ쮌떫" : "骱⠝㮉昶激㏓쭺鱼ʵ䬷",
+      "샎㬐쮟朸" : "䞸澩닚",
+      "䀍" : "챤ꆋ㮇憩ꋯ錤",
+      "殎ষ㼜환ᯙ⇞䩶" : "䒴㘛",
+      "槊ᨹົ燹鷩孿被뭀쑍蚪⻼臾" : "쿭ᮅ㬤✫ᑐ⣄ք䃛"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ω鱢",
+        "selectionName" : "剫",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "鹺㝆",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 330.2236
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ń",
+        "selectionName" : "륥쾏",
+        "odds" : {
+          "value" : 556.5311
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쎸眬",
+        "selectionName" : "류쎇묎",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "泙嫪Ⳮ",
+        "selectionName" : "ⶢ檳ݻ擞",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "꜐袼",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "呣茼",
+        "selectionName" : "鏩킡",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "຅",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "᜖፻剙휭",
+        "selectionName" : "窑屹伉",
+        "odds" : {
+          "value" : 803.6302
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "〪",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 27.9256
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "붍敁╘",
+        "selectionName" : "ể",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "긏㕗"
+    },
+    "marketName" : "䵁㄃㎢ኾ퀴Ꟗꬅﶝ",
+    "marketType" : {
+      "TotalGoals" : {
+        
+      }
+    },
+    "marketCategory" : "ﯟ챧䴅䝴",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "㚾㳇楃ส숊螿鏊짨"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "帒潒㋥䙹촸ﻖ浇圛縫棊툈ꬆ뮃㗎" : "⢒쵺㯃㭉浊벷竑ﴮ鞈ۘ떗",
+      "⒣䛰፟㶥햬螜〕핔" : "戽ދ劖ᥭ",
+      "ｫ낵愄思簀㑜楪外ﳯᨔﲥ⺃" : "똙周ﰙ鶬忓ﵤ䛦↴䥅ꁵ",
+      "嘁ॱ⻥▁⧌䠕떹싃삿禂♪" : "饾뷭궀厦㤭",
+      "뗩栰緿蜁浃" : "ᣉ驩ꉙ靈ᔚ췍ഄ覍叽㪹ᡝ岖僂",
+      "⁤ᝍꑇ뽑랬豨⻁剃酠鼫" : "ⵦ",
+      "⺶銕㙡ⷆ橳厪" : "퓠冴﬉쥝㿐写⨮宀ద",
+      "ᚩﻜㅪ䨷ោ蓯⾹䓇鿨댶" : "鼺鬵㥇놶뎆⟥쾩섖耂㋙妱拾㽺ꮒ",
+      "ʇ딍鿾䱆谬㳾Ñ蔓᱈셺驰꾯⮀" : "迿资좇堦铡",
+      "菒谪앰眊" : "砟請擰掁쳅",
+      "宜黷ꏃ䅍ﴰ" : "箿㨔쨈㢜྘똔ⅻ裎傃",
+      "䴡䋺㩰︰ݓ猜遟긆췵樷骲៦㻶" : "⦝훟顋僳渍早ࡩꌨ땼鮂ꏊ憉䅫䏄",
+      "ꨩ⢑鼀֫ᤝ㸵" : "闥쿔夁勩듄ⷘ蝇ꛖ㎰"
+    },
+    "selectionOdds" : [
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "謎㔀窓豀"
+    },
+    "marketName" : "㘩ᖁ틙㙷훶",
+    "marketType" : {
+      "WillDragonBeSlayed" : {
+        
+      }
+    },
+    "marketCategory" : "伟㍭뽌ᑌれꐊ嘍蒴꣱⭬",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : ""
+          }
+        },
+        "winningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "ᰁ૵䓎ⴁ瘯쏪ޡ䒪葋뉦" : "肐",
+      "쒎騷" : "햇",
+      "폙ꝡ렕㗯᭐῎翇⺮暀籐鏛蹭" : "㻎ẚ﷡歔퐆",
+      "∷揭" : "～",
+      "Ѣ톡蹴됖἗㲖ꑷⶭ໾" : "䂊栗株䟊䮴ல엗",
+      "ﭠ뭗" : "헓⃝ᔼ뻇罰",
+      "웧" : "濙꛻ꛤ丙肅觮꧎鉥鐽橃"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "Ἁ",
+        "odds" : {
+          "value" : 772.7594
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "鴐쇸啝ዜ"
+    },
+    "marketName" : "틬⣿⋲Պｦ㲥덩ᴕሩ",
+    "marketType" : {
+      "FirstBaron" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "塀摒"
+          }
+        },
+        "winningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "쾪飠" : "浴㙢〣만䶹ꗜ纅",
+      "纟깪Ζྨ" : "⪦⌻ꕂ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "郰㌓",
+        "selectionName" : "沍뙣慊",
+        "odds" : {
+          "value" : 872.7762
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "펉",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 752.0920
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䗄",
+        "odds" : {
+          "value" : 853.6627
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "坟躪︱",
+        "selectionName" : "蹎᷁⎧",
+        "odds" : {
+          "value" : 100.9974
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "Ⱟ",
+        "selectionName" : "箩",
+        "odds" : {
+          "value" : 389.6330
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "駐࿅",
+        "selectionName" : "鲏",
+        "odds" : {
+          "value" : 895.7635
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "뛚",
+        "selectionName" : "殉桌",
+        "odds" : {
+          "value" : 915.6882
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "郫剃",
+        "selectionName" : "瘏⨃딮",
+        "odds" : {
+          "value" : 767.2571
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䰷",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 928.8177
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "庪践连႐㊴㝭"
+    },
+    "marketName" : "傩魵羺횗ᰘ",
+    "marketType" : {
+      "FirstBlood" : {
+        
+      }
+    },
+    "marketCategory" : "籀̀哸ꤕ㊩Ἶ㓉卫Ι넼㏋ฆ",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "腯첳ਖ਼ډỀ닸볫" : "३㗢㯽",
+      "ﰚ挙" : "⏀ꆹ⚖ݴ斂唶껆齠㱲⮕韹乌⥑",
+      "덬ᥛﱑ臩䖳꺼᨜ﰁ蟔鵯䩓" : "",
+      "ꁗ艽엮ꐥ婭唥寗咾妟䰀臸῏㯿" : "럾Ḯ᠛웈晰ⓒ괰铿Ꙡ縣䅗",
+      "Ր掃" : "ꏎ搃ᱍ뛴拰쥢몑䤬",
+      "췗" : "瑃蒾拙箶裥佡",
+      "䷼ࢭ춌㖕뵼" : "▩瞒꾫㩼Ṽጬ쇟齭겖䡡숮_",
+      "ᆡၗஅ툼䲆ꏑ륩ߙ鈡ĳམJᜅ" : "ᶕ蜌柚",
+      "뚔ꕤ嶕鴫哲ꓩ싮똭뿫緰" : "鷝쩞ỵ힡졦蠈轓女ዐ諵ꄵ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "瞷",
+        "selectionName" : "￬쬗嘙",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ﳪ贋낞錰",
+        "odds" : {
+          "value" : 844.1440
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ଫ瑧᪚",
+        "selectionName" : "㺧",
+        "odds" : {
+          "value" : 48.2024
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쇓",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 322.6842
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꒂ",
+        "selectionName" : "됑鳚攼",
+        "odds" : {
+          "value" : 290.5029
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "寿푱瀇",
+        "odds" : {
+          "value" : 473.2979
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ㅌ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "泡腷밐",
+        "selectionName" : "ኪ砸鋋",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "૲",
+        "selectionName" : "䒞",
+        "odds" : {
+          "value" : 488.5786
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ტ쬛ڤ",
+        "odds" : {
+          "value" : 469.4149
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ﷄ懘嶇",
+        "selectionName" : "‽",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "瑇",
+        "selectionName" : "㣰",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "⺅瓁樐鯜읹헤ඣ"
+    },
+    "marketName" : "浇足",
+    "marketType" : {
+      "NumberOfRounds" : {
+        
+      }
+    },
+    "marketCategory" : "穷뤻뜅櫼爱奵酜綇㻾ꫤఖ굑",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "闭殁昱襴"
+      }
+    },
+    "specifiers" : {
+      "" : "άࣼꃳᅬ玽多Ư٩唁畔붰",
+      "妩睁ꍞ㎏䮒∢鯒唝" : "烝㱀压㳢꥓뜑ᗈ瀆鹭緢萸甀픳앮ꈊ",
+      "ⱃ퇹䏟㈣躂蜇⹟䷖澿" : "ᔚ⁙ᘅԭ騊읅䩜אּ胘殺",
+      "䥌⭢覰ːǢ㥑图ᡘ䉶" : "烫",
+      "币䣺遁娢Ꚍᵦ꧱嘺ှ" : "慔闝赦㎅⩭薪",
+      "ﭷ铬කꤌ腝漣鋹툲鳃︭" : "삡藛",
+      "䎹㠵웾见뺪짼軴靯" : "䌟ἐᶞ褳﹅鋽ࣧ헾㏇㍔䚐",
+      "챝䨊탗揟瞶큆賠諺픜ｿꛪ뙕" : "柠",
+      "誃ꝺ︼꺖蔹" : "㆙폥ꕺ⦺㔖蕔ㄮ贩涻",
+      "琍" : "븳",
+      "ꐕ" : "噌筟᱂≈Ȧឨ巣",
+      "㈾㸥꒔䊿ュ㵖攝" : "窅ཛ⒍쿌Ⲟ䋎᤿寚ᤫꞔ鰍",
+      "⼙橵⭔蕘坰啕唌뙎㻹俥柘장⶜" : "캓簣跜郷옟쓥맣",
+      "夳肩䬨ᤲ虊膉雝퀙࿅纲薻扔뱦" : "鑰浈굓ꎴ돦袓⼞"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 890.6273
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "祝",
+        "selectionName" : "ᵗ唋㲐ኋ",
+        "odds" : {
+          "value" : 137.5230
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䗃駋",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 205.2810
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "ʋᛏ",
+    "marketType" : {
+      "FirstToReachXKillsMap" : {
+        
+      }
+    },
+    "marketCategory" : "寞",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "ﯚ㟼"
+      }
+    },
+    "specifiers" : {
+      "圢㥲䋇䷉놱臫ﳿ퐊갹᠂揇쁴" : "太",
+      "➾" : "팛ꛩ䰒",
+      "엣芲穻ᒆඩ姤솀쎯꾕颠" : "Կ膹ⲯ涃퍌轋龎넆㑪菜",
+      "栘" : "╤㿬Ἴ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "쳞䬌",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "汙涎됑",
+        "selectionName" : "ởꠏ鮀䆀",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "誧",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "發",
+        "selectionName" : "仵",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쀁",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 667.4774
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "癛ⱽ일瑮",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꉲЃ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "蜅睓",
+        "selectionName" : "롋",
+        "odds" : {
+          "value" : 104.7127
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⦜᧵錶",
+        "selectionName" : "湘쁂",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "沁ൟⵧ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㌮㪑픀",
+        "selectionName" : "쮌",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "듀",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 954.9073
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "췢",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ỏⓉ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "怋"
+    },
+    "marketName" : "ൺ힩놔奟륊埁",
+    "marketType" : {
+      "Unknown" : {
+        
+      }
+    },
+    "marketCategory" : "ᷛ丅ꁙ指摸␺⎶뷳ዞ漚肺柒ꅔ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "툒息頛⛹ᆇ㧘凂⇉鐿糎",
+      "憯" : "㲱⋑஘໓쿃",
+      "㐚幗䧞➮૶᪪듃" : "氧읲쏨ꠕ직氅፴讕粿曹䘍",
+      "씫黽꺃옌糍䵮樿凕ꪾ⤸綧◸" : "翝仁闖泐쁍Ҟ췞",
+      "﬏䵦랸䴝뀢" : "뗿表릇Ӝ马溣盭ꫩ냱脅"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "큦̌",
+        "odds" : {
+          "value" : 915.6738
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "﷒㴤ꪇ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 547.3252
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "艈愿蓩홂",
+        "selectionName" : "㍾ଓ",
+        "odds" : {
+          "value" : 69.3131
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ޔᙫ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 604.1868
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "툳ﯸ",
+        "selectionName" : "沞⯪",
+        "odds" : {
+          "value" : 321.2691
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "̽⭚涒硆",
+        "selectionName" : "᜞䉴",
+        "odds" : {
+          "value" : 77.0369
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ﲢ꜓棆",
+        "selectionName" : "좐",
+        "odds" : {
+          "value" : 314.4124
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ǩ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 980.0516
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쯤㇠㸺钋",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 991.4865
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "⨿ጿ㼧石֎㼦"
+    },
+    "marketName" : "饜늆ꢠᶋ⾃ﴽ芄禡풣",
+    "marketType" : {
+      "TotalGoals" : {
+        
+      }
+    },
+    "marketCategory" : "洺ԭ⧟㮪鄎샚ﰾ",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "滐쉄楜"
+          }
+        },
+        "winningSelection" : "䩐"
+      }
+    },
+    "specifiers" : {
+      "" : "ﰣ频䜳绪䪆읢｣判혝",
+      "챨" : "닑俾熃獷࡞鰁촁ᇰꔣᐥ奰읈",
+      "㻄麟驆⫨娦甪" : "䖐ꑁる휓緾㲬⒞磊",
+      "촢嬣턧᭏ᰪ瓄ꪴ嚒縙ｷ" : "잹괉傀",
+      "萟䧆笏㣐⨼癫쮖于嘨㸷" : "ᰩ娂Ⴛﰏ蛐膁Ξ龓窱힬䝡땧靽ጯ",
+      "絷ퟣᯰࡴ滖頚잮" : "垏櫻울氞獍櫊✶ꮟ",
+      "﷐욡И偆蹢ꮵン贉" : "묲",
+      "赀鐎枽䭯ᕃ㦆ᡮ浭ꆰ赀偵㝪" : "濓管辬參඗ꇺ뾫",
+      "㡓叁䂘" : "䟪᧞᳉န懼",
+      "✷㠴扛넻竘亶㥹뫷᳸" : "伢싶"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "몱㊭",
+        "selectionName" : "ऄ뗶⛑",
+        "odds" : {
+          "value" : 292.1648
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "櫣",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 493.1969
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "桓",
+        "selectionName" : "ﱦ",
+        "odds" : {
+          "value" : 106.8147
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䖼｣頔訢",
+        "odds" : {
+          "value" : 496.4650
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "⾝"
+    },
+    "marketName" : "睛駰䧘ᛮ発ꟷ駞뀳챵풘硈⧄驉཭",
+    "marketType" : {
+      "FirstAegis" : {
+        
+      }
+    },
+    "marketCategory" : "蒵擔钂ブῧ╈橿㤊샙鍹",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "䢀ꙏꊜ"
+      }
+    },
+    "specifiers" : {
+      "" : "伜遉뭌몪䆎亠",
+      "僴钱뼨晳塃⇗ॏ뤮罋ຼ䔂鷫엘" : "ⱕ르멓ꚾ倒Ꮕ㲩嫟ぁ",
+      "鶷臵㻉㬝꥿음ꁝ뢈⃌┻嬲惘ᡧ" : "驃孅愧䪰ᥨ컓嚒ﺹ᳉咧⦌뱒藛",
+      "฻텯贂蒂퐩" : "㜛⏀㛡拾珱飕៹㢭볨",
+      "⢬쫤伞杠耎䟌①먃歿锫覲䘱" : "쐢ꮠꭲ枵嫸䟋溉⡊",
+      "濢쒑뜹ˮ皃㼹덚鱥궊䠋쭵" : "찈驼귤涮",
+      "앇犅㘎䱳" : "陸嘦팽",
+      "㲶ⷭ냈" : "Ῐ䉧嵎퇽쒥䬣ꞥ鵷䎆绋觢⁸疤麧ˠ",
+      "䝏吧ꐑ풲냮콥௎鳼벸㏊驠" : "泮群",
+      "왖ꧩໍＢ᏶塞赛꯻ᅥ욜䏫" : "ʊꯠ㠖䨰祈്ꃐꣀ",
+      "ើ趚캵" : "⢖住",
+      "꿂⢖矘戟湌㼅ಈ烎痏ꮽ浆" : "ɲ轠㣂ﶦⱽ覷搥⯢ᜱ퀷流",
+      "昑試ﲙ炜纽לּዦᷓ읈밒셨鿈" : "觕䨞托臾ꀴ毯⢶"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ᡲ맔",
+        "selectionName" : "湏霢퍪",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "耼",
+        "selectionName" : "ἅ",
+        "odds" : {
+          "value" : 407.0991
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "൷䮯긓ᩪ",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "슘䟣",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "᫟㊟",
+        "odds" : {
+          "value" : 296.3271
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "裻痀㲉",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "蚲鬒╞ற싟"
+    },
+    "marketName" : "ⷺ쉲㢪戒䠝䯮",
+    "marketType" : {
+      "PlaceWithinTop" : {
+        
+      }
+    },
+    "marketCategory" : "ꆯﻸ䞖썟ç놡꒙晲",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "힪咞璇瞉"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "史顖簡䃕跗⛜" : "쮾笾狚鍽⎀헜咶๫⑟ຜ痼"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "㐴仩뒅쇫",
+        "selectionName" : "艀",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ޔ掸⌈",
+        "selectionName" : "邅",
+        "odds" : {
+          "value" : 728.6930
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "뙪嬈节ᔝ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 174.5144
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "鱻",
+        "selectionName" : "腼凝詸ꊅ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "艻⛼",
+        "selectionName" : "굉悳",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ƌ蘅",
+        "selectionName" : "ㄕლ뿒",
+        "odds" : {
+          "value" : 89.0281
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "偣",
+        "odds" : {
+          "value" : 242.9632
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "酁",
+        "selectionName" : "酋",
+        "odds" : {
+          "value" : 673.8523
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⭘㷿஋ϖ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "遷Յ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 399.3634
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ﲠ",
+        "selectionName" : "⃨",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "嘚붅湼箫鱙",
+    "marketType" : {
+      "PentaKill" : {
+        
+      }
+    },
+    "marketCategory" : "증",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "萌扵"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ꬼ囒鼉ᔐ뵶ﵰ辅枙ढ菸摔飄" : "琗跂哲㬼㵤낈쒮阁춫",
+      "丬ℴ돁뾋ற鞯" : "ᤤኋ砣蓣麺霼",
+      "三䐴㌅蚰悢ᇌ笟絤㋆䈨妱촭٩" : "狳㐹",
+      "쥷뤹䥕畑" : "颱╄훟堛῿챩噰続ꭼ侦澈",
+      "࠙赃ⵡᐷᴄ" : "샅좓鍚鎤㨴㝐ꅒ됏Դ",
+      "箴ṽ蓇虊좰⺀" : "雫঵쪇쫡耥炋ӑ㒀",
+      "ᡊ攙裸↪৿⥼" : "♤ᖦ᪛拫ឈ硿שּׂ㪓븄尷༊䷐粯"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "耭◪",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䥚ꔆ",
+        "selectionName" : "ර遀",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "寠",
+        "selectionName" : "꧿妥",
+        "odds" : {
+          "value" : 102.7928
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㕀軖㋥",
+        "selectionName" : "ﲕ듸썥",
+        "odds" : {
+          "value" : 835.4649
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 593.5299
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "添ᵅየ磏",
+        "selectionName" : "䣂",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "㏞꙾縉낲㦱ᓩ"
+    },
+    "marketName" : "뽾솢균ꈌ칃᧟足͖뉂踉焭陼",
+    "marketType" : {
+      "RoundHandicap" : {
+        
+      }
+    },
+    "marketCategory" : "蚱ぉ⑁䡮藝怡郸",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "차꜍Ⱬꜫﱢ漼犷"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "㒍꒫闾滎咯韗㢶佈풢䉺ᵓ掂殼",
+      "ΰₕ" : "⺙Ⳣ覃툪뵠畺兂宰",
+      "ⷆ뼷꿛픖킔巺" : "욨㸻眻⦅䶂몺ซ",
+      "걄烼雕ᮁ䤅삔⨉럕⣡℺롊" : "ꄮ쏿턎驞팵¥伕Ɛ䀞",
+      "眹ধꚩ舾ᦡ" : "偀",
+      "經꓉㺻ꕢ㷓鲖蒋﹐叆" : "潃",
+      "ⴻ홭ᛜⰻ᮷" : "据蔒眺ឍ㎲뎩ራḋ朔툷ﲻ",
+      "ᙘ腄歓贍㝐׬듬辱麫䞕⊁" : "",
+      "뚍₝풋䉟♺窝늿詛鴸卜" : "ꂃὕ蘗؉뜉蒧ᐲ糕Ί㢎㹝",
+      "ꋟ肭멿☶뼏㰲਻ｏ宂ﵚ牤糫믓艱" : "쟛漆햞桋㞼对",
+      "ﵝѠ䁝㲙鼩뽂䫚媛皀狙靨쭼" : "㻪摉꓆",
+      "䲉텀삍ݗ찱鋔ꢔ犗嘦" : "롵੗틧御꤫釴鑑쪘咁鏑濤"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "䁁",
+        "selectionName" : "䚗歈묘",
+        "odds" : {
+          "value" : 692.2242
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "඙⣶鱐埣똚"
+    },
+    "marketName" : "㦪㕲朝᥈相Ɠȯ鐰ﴙ牲궜",
+    "marketType" : {
+      "QuadraKill" : {
+        
+      }
+    },
+    "marketCategory" : "굒Ė",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ຢ㧹" : "傰蒦덏㝨㗯䂌⍜睄៚",
+      "၃亓䠳⺟" : "ᩈ癷೴㜤≚",
+      "ᓲ໠둧攛෪됳醕ច탦椧ᶚ˴" : "",
+      "됑쓻눞" : "❡̗",
+      "ᰜ轊偋怈蒩螓" : "Ｑ㣺¤㧛㯏燹䛳湇鬙",
+      "桺ሾ㐖蠵闈鑥ﭡ衵㖾ꢟ鿲淀빑" : "梐큁铴祰꓃㒞쀍럶ꀺ硙",
+      "ᄫ哔祏ᅶ颓；⫋许䢨圃螸甲ኧ" : "᜞礣༪帚䬽ኼﶞ籔㻝",
+      "鼸⺤꧲ﰼ殧ે碏輚" : "㊒盒楘鱉䤈㎱㯐ｕ䢎䁗",
+      "喬譎" : "䄏⼵鄡湎팧溅",
+      "" : "䤨빸룬淶屼᱒꘢",
+      "⺱꯬䏉缄躲ꕀ槇첇婋ង" : "蚖頿㜡뻗▝㰯賚",
+      "鉓녾묭﵎ꋪ칲塦쥶ҋ쓇洷" : "἗罊Ꚓ뵑"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ᥐ瑾ⷘ岁",
+        "selectionName" : "殎",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ﷴ믏ꈕ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䌁㺪",
+        "selectionName" : "༔怷",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "ぺ"
+    },
+    "marketName" : "뭒輼ꬖꡗ쉰؛ᱲ嘈᧺ᝢ戨",
+    "marketType" : {
+      "TotalKills" : {
+        
+      }
+    },
+    "marketCategory" : "쮵",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "⪐ӣ"
+          }
+        },
+        "newWinningSelection" : "헖莽"
+      }
+    },
+    "specifiers" : {
+      "諨莐뭢ᰴ홻⥪䪫" : "቎Ԏ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "麷薙䡲ᡈ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 915.0263
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "樑菱",
+        "selectionName" : "⦱",
+        "odds" : {
+          "value" : 906.5030
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᯗ먽鉱缟",
+        "selectionName" : "復ઋᴾ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "頷ᇤ癅ꬠ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 376.2560
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "앟",
+        "selectionName" : "鑼鯭槼",
+        "odds" : {
+          "value" : 27.2276
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "혺",
+        "selectionName" : "뛃᪁",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ۂ",
+        "selectionName" : "⽉",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "玗괅斠",
+        "selectionName" : "뒼섖",
+        "odds" : {
+          "value" : 573.0576
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "頇",
+        "selectionName" : "≶ꏄ邲ﴃ",
+        "odds" : {
+          "value" : 301.5154
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⦧﮻꺲",
+        "selectionName" : "舒",
+        "odds" : {
+          "value" : 229.9050
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "큷ꕫ갖ꑇ嵓ᥜ",
+    "marketType" : {
+      "PistolRoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "ᑪ쪋⾖順떟昊䎺",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "礿嵨㳈㷊➱"
+      }
+    },
+    "specifiers" : {
+      "栣냩" : "鱖⼭꒤餰耬",
+      "몦挣" : "膪",
+      "胊斺뵅" : "엚᧭᜾亓⮩쾩鑂솅",
+      "炶響琩⽢ɩᛳ䣣鳁竍锾" : "⩶⇡贮厺襤㢉ฎ跓ᠭ",
+      "⒂㡍" : "⬮䬧馥勇㾘㬪੨쎺䂘粕",
+      "셺縰կ්⏝췸褷ॡ鼗" : "ۖ䡶⋢⊯풼䏤䘀鹸",
+      "珿ᙣ⫎ต诎১" : "㇖ᦒ魂컵䚍둦月๹㶹睛輻ꗣ",
+      "ꊓ" : "㞤蜲画윴짷䖱ꇽꉫ⽙媅쫹",
+      "뙣ꛔ滈쿓㸏" : "⸷㜒西㮓震觥ℶ",
+      "㺗꼑껫" : "",
+      "⇗澒䲬ᒝ쮦卨嘃" : "방䌦騴﶑஭﵍",
+      "䑆" : "駮࿏파૏",
+      "廾䶝覣꯸ㅔ쓶뤡⡨䲬䧝" : "㳌ﾵ没漱蔗뚽㡢污ᡶ⾍",
+      "ꏐ风渑랛㙺黧턍" : "뗉"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "鱯뫱",
+        "odds" : {
+          "value" : 422.8076
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "Ǥྐྵ瞧",
+        "odds" : {
+          "value" : 994.6841
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "꘲",
+        "selectionName" : "䥶",
+        "odds" : {
+          "value" : 222.4009
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ᔁ泻",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 485.0458
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "짰䚒鍬",
+        "selectionName" : "즻솜",
+        "odds" : {
+          "value" : 931.4856
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䞘妤",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 145.2858
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "―တ庈",
+        "selectionName" : "쵓օ訬",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "㕳웛"
+    },
+    "marketName" : "ￊ嫍㝉뚍椁ီ充",
+    "marketType" : {
+      "FirstToReachXRounds" : {
+        
+      }
+    },
+    "marketCategory" : "凲ઈ獐‮ᜑ귅⿊ࠥꐒힹ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "杹ﶎ蠑歷䄷좇칃" : "⛸課",
+      "䯢觥ꄄࣖ귔솊戁솪力눦缅疊" : "泏輨",
+      "㏔" : "⽵",
+      "ﺆ" : "鱮淲Ꭵ೛寉秂䣣૥"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "鴉謹",
+        "selectionName" : "类ᒡ",
+        "odds" : {
+          "value" : 390.4400
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "짥⦋撚"
+    },
+    "marketName" : "Ḝ䝻ᾳ御ᖭ",
+    "marketType" : {
+      "FirstTurret" : {
+        
+      }
+    },
+    "marketCategory" : "鵟≋ꙍ疧",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "䘈䫔劊畧㪊⳵㝟봽" : "滲䔀荵馘鬶欴弒《㽒騄",
+      "ᶰ짹㻿튋頌㡛껑蝢⬩䃼䱁" : "醑㽿倖鯉",
+      "" : "䳆尅੪䋧됃핣ڶ쀤",
+      "㳭窈ⷻ̃䬂ሮㆆ⟯" : "㋎䤗΄᧿㤒"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "Ⲝ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "돁䗨킧顂",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꋼ柬",
+        "selectionName" : "薒ﭳ喛",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㴡冁婋厢",
+        "selectionName" : "籢猵똃",
+        "odds" : {
+          "value" : 573.5887
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "苐",
+        "selectionName" : "宄㬡붻퍸",
+        "odds" : {
+          "value" : 67.5702
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㈃",
+        "selectionName" : "嘌듲",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 328.2648
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "Ĝ颟饑",
+        "selectionName" : "䃘充",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "₞ꉓӋ싉႘"
+    },
+    "marketName" : "ꀹ䁙ᖢ",
+    "marketType" : {
+      "WinAtLeastOneMap" : {
+        
+      }
+    },
+    "marketCategory" : "㢽䄿ᶆ鹴닦ጀ靅鞶뽏㛿͟皖磤",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "喹ীḐᾣ"
+      }
+    },
+    "specifiers" : {
+      "쮅뢮䒎㌮ᬋ䎡㾅잠" : "鵪ᆶ筺὜贡듇",
+      "껻" : "뜌￐ᡴ藆ⸯ璷祛鎼컜瘿㳹⥋"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "렊㙸",
+        "selectionName" : "쒝",
+        "odds" : {
+          "value" : 533.3815
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쁣ౝ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 585.0144
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⨺얌ဴ",
+        "selectionName" : "밉郡뗔⡭",
+        "odds" : {
+          "value" : 877.3793
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "헰䲊쑭",
+        "selectionName" : "픵",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "릠⢼",
+        "selectionName" : "솔",
+        "odds" : {
+          "value" : 235.3362
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "휃",
+        "selectionName" : "ᦁള統",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䢼ﯾ畐",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "뿹ᙻ鈁ဲ",
+        "selectionName" : "☗",
+        "odds" : {
+          "value" : 691.7648
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "뇟軨",
+        "selectionName" : "ꑺ",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "٧",
+        "selectionName" : "锆描뙡",
+        "odds" : {
+          "value" : 396.0617
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⒖퀫",
+        "selectionName" : "搟뺲⌛潈",
+        "odds" : {
+          "value" : 517.9578
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ٌꋸ",
+        "selectionName" : "໓隆",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "鶱䣡믿쌛",
+        "selectionName" : "붙鶻퐦",
+        "odds" : {
+          "value" : 498.7596
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "︕揲쓴✄쓹"
+    },
+    "marketName" : "鿃᾽⧍栗䚿ꑒ鹒즽ꛠ촒骀㭒캘",
+    "marketType" : {
+      "PentaKill" : {
+        
+      }
+    },
+    "marketCategory" : "编⟏い뇍踢紿㐚突ᄝ᭻",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "㩕ᵧ⅝"
+          }
+        },
+        "winningSelection" : "쥇"
+      }
+    },
+    "specifiers" : {
+      "涯︢앖䂡ᩙು다ㆄᔟ쪔劎ᜌ㾖" : "",
+      "ŏ" : "둏౜즻䃷➋䷖뛭䠣丷࿷ᙘ",
+      "눌䍮꤅㾐綐☺뺷䐲੅思\u0002쇶遰女" : "봛ꢨ䡻䶭炂⃁詯鍖૶ꀀ쑭㝲",
+      "삚㰒笪" : "늹錅",
+      "૊챣ꂘ䣴㾳" : "꨸軦ⴸ柈몮긤軏颻馳ョ㘾嗢",
+      "潜붸즮곣碣ꦱ䳰뼅⿄氽" : "㖗翊鉝扣苪硶抃ℂ䭊䖻",
+      "듋" : "ﲑ稫祌⩙쵭颈⒵ꛢ펓",
+      "" : "७纎뢁૕ꯗ",
+      "蜍늉捦읬㯳樅⥟" : "鋒쒀᡾",
+      "礿ශ煊ꇳ" : "ѯ㬐ఀ콡៨칬絿횟ෝאּ꯵ᩬ᷁"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "ꡤ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 922.6065
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "팞",
+        "selectionName" : "ꑳ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "僌ⶺﻴ襟",
+    "marketType" : {
+      "Overtime" : {
+        
+      }
+    },
+    "marketCategory" : "䢂夫",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "⫱ꉫ켴"
+      }
+    },
+    "specifiers" : {
+      "豏•➑碗闺뉳馭ƶ㕽잝㳠ن暖諧" : "辂橵ܯ笗㥝篕",
+      "耞跕県" : "움릟맆ߩ倫⑎ギ",
+      "ų" : "ꐊ࿻ꛗ嶏뛤琥䌂蝘",
+      "骆" : "읬",
+      "䬨퐧ｎ벯Ђ㯍푑壽" : "鼘篚哾ꋍ輑즶ࠢ䗪ꉑ",
+      "秙ឹ謱띫" : "捭踒帖䮸遦囋囻",
+      "䐴봖" : "昲欱赂䥓㷒玟헎刮飛",
+      "鑣짧닝頸燭饦⁃땾ꥻ㷗쐜Ⱇ" : "욹種뉏羴Ṳ⃴鈍픃⾵ꥀ໌콺",
+      "ִꁳ褭ᒤΣ" : "셞肩踲",
+      "쒫闣" : "婲Ἂ㲖ᮂ︹홐ק厼瘦ྟ챓쌔",
+      "꽦ာ" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "㺠",
+        "selectionName" : "徇혶䋕",
+        "odds" : {
+          "value" : 755.7852
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "᣷趪턼순",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ံ啹䖕",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "玝",
+        "selectionName" : "枃☵",
+        "odds" : {
+          "value" : 126.8812
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㕉ﴝ⧼",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : ""
+    },
+    "marketName" : "踹悾",
+    "marketType" : {
+      "FirstInhibitor" : {
+        
+      }
+    },
+    "marketCategory" : "榈밚爻凉ꑜ걗羴몘綞횾觮桜ꝇ쎗",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "풗⾳犏낉묜퇵쐁奎⸥쎮琔≷",
+      "榄ﰋ☨ᑭ씝紥" : "뵧Ո䪃ᘨ룱频쎐묻᝾㭬",
+      "購^禉㑅ꗯℏ" : "꫰얨衲妗᷏蓝㈠륃慥",
+      "䱽烟摌鎟䤞脡蹉᯦⤿暇" : "♷傞묬",
+      "徂ݢ弸텔쨾룅덆ﳧ" : "炧䒐缴䠊늁ᚿﴈ쩕塵狨籷",
+      "鸀ඣ" : "꒏娃瞘⣹㖑䵟",
+      "䍣恸ư" : "扔윊린瘇痓㨊좋ｒ藏⣶᷁㧷"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "呲㗔嘓⭫",
+        "selectionName" : "賔",
+        "odds" : {
+          "value" : 662.3773
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "雩䎋紶",
+        "selectionName" : "热",
+        "odds" : {
+          "value" : 395.4188
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ઃ",
+        "selectionName" : "䲕篮䆃",
+        "odds" : {
+          "value" : 972.6057
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "❆",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 188.9761
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "凄끡",
+        "selectionName" : "ꤕ",
+        "odds" : {
+          "value" : 708.9461
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "澓㽇",
+        "selectionName" : "埽횬콉",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "뽌",
+        "selectionName" : "達篲ﬕ",
+        "odds" : {
+          "value" : 170.2446
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䮐",
+        "selectionName" : "蟺▍ﰉ",
+        "odds" : {
+          "value" : 508.3315
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쎥짛㐼",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "仓䐭貉",
+        "selectionName" : "稅",
+        "odds" : {
+          "value" : 432.0553
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ፖ⢹",
+        "selectionName" : "࢝탛",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⪬ኲ踗",
+        "selectionName" : "鉾牶쯺",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "뫓삀ᠡ띿ླ"
+    },
+    "marketName" : "눚织눧줇ጔ惇㍨",
+    "marketType" : {
+      "SecondHalfWinner" : {
+        
+      }
+    },
+    "marketCategory" : "稀ᷲބᖧ咆",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "␝若絀㏺"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "팫⧗䄐ᬄ텊鈲늛᳡⃮敌老㘊" : "",
+      "悾즂" : "짦㍩ᴹ䏃蚅",
+      "븘躠閮붝瘝핇軍쫖믏擱ᐝ싍쪩啠" : "",
+      "팭౨㍤욑蟌챴᫛" : "㨇댠",
+      "넭瓨လ恠〄䰔姆飸뢋" : "⁅缜沭绽挰镜"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "텴巠ኤ",
+        "selectionName" : "觪塀",
+        "odds" : {
+          "value" : 34.3516
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "たન",
+        "selectionName" : "⒵",
+        "odds" : {
+          "value" : 542.7323
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "녛",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꌮᜉ",
+        "odds" : {
+          "value" : 482.6824
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "踗",
+        "selectionName" : "먂",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "㗘캤꾺黨",
+        "selectionName" : "ꏅ",
+        "odds" : {
+          "value" : 340.8886
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "巏",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 49.6582
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "딁ᯀƗ",
+        "selectionName" : "젟",
+        "odds" : {
+          "value" : 420.7638
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㙬뾏꧒ᩧ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 990.2877
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "볈"
+    },
+    "marketName" : "喀閏ꥤ㚦ਪ瞪˦뼙∃摲⮩鰧豻",
+    "marketType" : {
+      "FirstBarracks" : {
+        
+      }
+    },
+    "marketCategory" : "恣鮎ᇚ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "튃챴ꮃ퐤∱뒵邨脕쇀娙쌠㓝"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "す膔݆鋛﷍妲씒쾖ᄼ" : "榎凐눺裔᳡坰",
+      "맦亾发" : "",
+      "罞聄᥹앑見今" : "ڤ慈䰽䜤ꮪ솮爚䯮ﳔ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "߈೻몈",
+        "odds" : {
+          "value" : 202.2759
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "鲋̛㽬",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 947.6898
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "塵\u0002洓훸ꢲ"
+    },
+    "marketName" : "哚貲㫦쥰蠤缾傖᰹珥檋",
+    "marketType" : {
+      "FirstToReachXKillsMap" : {
+        
+      }
+    },
+    "marketCategory" : "⎟謤뷐ែ",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "몐妆秚"
+          }
+        },
+        "winningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "" : "鄪",
+      "뱍泱맬鰌慠" : "ꧧ褑಄ꞟ恾穐",
+      "妚䌷襓" : "觬揋ꖀ듲ᔅ꾴菷彯醤濚꧎",
+      "★챪豀卐쒵彴좑倞" : "䦛孑陸쓙᮴ᵈ立䜁ꀶ",
+      "쑅쁚䷧횽" : "俨ꃦ⮎즖ﻉ硼适",
+      "ᖇ툰ꐀ讱앮" : "蓛吖ꌕ㫤䰔",
+      "撾쟲" : "흆ࢴ䲧䅃䠟蟄",
+      "酞䁩봛삐戙჆딜ᵦ륶﨡䃤ᵉ" : "招㓡堦竹凡⌈闡讫",
+      "넾緸ሎ륣ೌ삌떎宍" : "좮汫䇣Ỉ뚧လഉ張⏤㕠꺝",
+      "ᫎ侬ꍬ쓜儛澐霁ݧୁ匃灵" : "鲋ﵦ韘㏱ᕖꋽ",
+      "ﵢ詵쌋웋≯帛ᰤ﫞꙼ﭬ" : "ৌ䉪ࣩ绅馩䕙樀蔄裡럲",
+      "Ǔ鈠秏麤셨ㇹ欺" : "褉㹍"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "宩",
+        "selectionName" : "ꄂ",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "纁",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㦄㪈燙",
+        "odds" : {
+          "value" : 791.7615
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "斲ﱉ魡",
+        "selectionName" : "밂Ⱜ囯ᔽ",
+        "odds" : {
+          "value" : 60.1621
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "鉌师ᦤ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "Ჳ",
+        "selectionName" : "㼊譊浻",
+        "odds" : {
+          "value" : 388.1364
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "晢퐟ඃ"
+    },
+    "marketName" : "閬Ⱈ涃ꩴ⍪ᙬ᧱馇",
+    "marketType" : {
+      "NumberOfRounds" : {
+        
+      }
+    },
+    "marketCategory" : "┉",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "ₐ完흏䞨焣ꎉຝ鎴황㙶" : "ὦ䛬폐㊡",
+      "⠛䋀◪ꀎ䲘箲邇꘷웧ⅶ" : "抖씏ꂚ穢᳤彉⓼껎毘蝳ҽኝ㪬",
+      "톽郮芿臭" : "ᯥИഘ׌㋓",
+      "火姲郰笳М랑憂甠ℶ鰵鰣脻" : "쬚糞匘뎍ꬎ粦胦沚㴻︜",
+      "䟎ᪿꀼ枪䥇Ɇƪ䵵ප穣杤耐膒" : "뎃὿죐毥帤害",
+      "⬚圁㴎뼙" : "ᝄ㷋罛㴫ꠇ躣ځꀪᢏ졥漬䌗",
+      "⭲躤큞隱ꓟ" : "ｳ雽䵵႘ỉ",
+      "窰쫀쏧德쉜" : "幩佷",
+      "箞멸㲉찳㢃歙壮垛" : "䦥喼"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ꝡ⪎",
+        "selectionName" : "쎅",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "抠呱",
+        "selectionName" : "輾灪",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ჰ骂䓶",
+        "selectionName" : "돂㲺",
+        "odds" : {
+          "value" : 735.0615
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "욐昱",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 78.6494
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "棒ⴤ",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "祀閶",
+        "selectionName" : "謄",
+        "odds" : {
+          "value" : 750.5856
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "钰귊",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "難",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "屪곊",
+        "selectionName" : "뫍썚▜",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "蕣목",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "팈䜕党",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "睵",
+        "odds" : {
+          "value" : 363.4061
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "诡勷脛벌",
+        "selectionName" : "ゞ༹",
+        "odds" : {
+          "value" : 547.5810
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⵼",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "℩褹᩷䣩ꍹ"
+    },
+    "marketName" : "䗮昇ﮈᤄ⾊朴佖䡶﹟踧翞",
+    "marketType" : {
+      "PentaKill" : {
+        
+      }
+    },
+    "marketCategory" : "蒷渫랎鐽搸㫳",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "皭ⶼ" : "ᜰꪁ礴帼ᔃᗲ๰ᦦ",
+      "ఇ탇銀끡ﳆ퐔턣훥闾⑍ꁱ돕᷐" : "ꑠ꺒疲็쾵離１瘤咶蓗皤쓦촺禎",
+      "⩯⫏" : "쟂읢ȁኜ朋",
+      "苈❮" : "綶脷ᦅ밖",
+      "䬂厛㗆덜" : "؀氀윲鬣ꢸ蠼夋ꨏ䌝网",
+      "振㢎釚⩋䴎髆샕汧呎聗ൌ" : "쥯퓦铅톗",
+      "氈븭셽헅덬ꖈ蝉ﴮუ鯚웨偅" : "쪙䍗譂선ꀳ솇㯯訳ꤥ砽釯鷋",
+      "줁쥙ഛ꥛戩仢馪ᮻ䟣㴷Ⴅ頻" : "贄넿Ꜹ蹪ᡆ톑韡",
+      "ퟰ彏耥꼗㚄浺" : "㕣",
+      "鱛⦟⏮⋱" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ﳵছ륝",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᒖ",
+        "selectionName" : "榼㡦",
+        "odds" : {
+          "value" : 329.0278
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "嶑",
+        "selectionName" : "誟ᇭ瑏",
+        "odds" : {
+          "value" : 555.5020
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䁪뉘",
+        "selectionName" : "杋꟭",
+        "odds" : {
+          "value" : 117.7732
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ﳚ砇裤",
+        "odds" : {
+          "value" : 753.2584
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "幗ꥭ牽",
+        "selectionName" : "䔌ﻷǹ",
+        "odds" : {
+          "value" : 367.4888
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "랯",
+        "selectionName" : "䱞",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "续埗",
+        "selectionName" : "哳轻",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㩉",
+        "selectionName" : "Ⴑ䰞骟",
+        "odds" : null,
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "᧔秃륥從ꍩﬡ"
+    },
+    "marketName" : "菇췃趑",
+    "marketType" : {
+      "Rampage" : {
+        
+      }
+    },
+    "marketCategory" : "ᱩ홺翵ᡩﺜ飸",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "忀⌧ⵓӷ匾"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "ᜥᏯ븯㈐",
+        "odds" : {
+          "value" : 214.7581
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "粯",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "앾〹꯾",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 65.9301
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : ""
+    },
+    "marketName" : "⑋쎥괎偁帤炬㣯ⶽ糁",
+    "marketType" : {
+      "MapWinner" : {
+        
+      }
+    },
+    "marketCategory" : "舔≿ໟឰ슱軒쌗睓ﲂ",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "בֿ佧"
+      }
+    },
+    "specifiers" : {
+      "" : "了ፎ憩ꛬꌧ稢▵ⶱ穗",
+      "㴷꘦≯" : "㣓髒墉雷怬죈㪔乧",
+      "䟫" : "饴ᯞ每曣\u0091ꖱ煏狿붲㐸",
+      "톛⚹ꇸ雘标慹훃ꂈ瘃ࢱ" : "躷퉯똏龜ﮭ砏ᬼၳ띦杮큆",
+      "ꨝၱ费걠߇ᇕ〣" : "㴄「ᜓ뵯谅忚✴烋찓⹱းꔮ",
+      "몢茒㥫猴ݷ鲋㻱㾒磷蒜㼟혯" : "瘎ﱛᚉ캚習怛",
+      "좽تﷸ㘴騇뇋" : "䷌鱆쒝翾牁㢟담丒",
+      "㜻ⷧἒᷡ⳵瞛꿿켑" : "䧤專讉솘ʪ⾋Ｊ",
+      "ⷓ䋼똜控造繤ऽ즶푽᳛" : "뛭ᣡ즺櫩쐟黄ꁂ캎⤉㣿䫷笸擂",
+      "鯴홟↤૘᜕綹駾⇼" : "྄ᦐ恖劈骗폶ِ꿧",
+      "荂﫣끬璉" : "꒒⩞擲▜緅荛"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "뿇ｯ舄뗷",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "걶⺪㗸",
+        "odds" : {
+          "value" : 423.7376
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "䓟ᯬ鞏㹗﨟"
+    },
+    "marketName" : "瘴⎥ﴃय़亴틜͸䘞莂堋絵諌",
+    "marketType" : {
+      "MatchHandicap" : {
+        
+      }
+    },
+    "marketCategory" : "\u0011胈໯旽聯",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "濅֎ଭ춯㲵驁攋럝䷠蟽讱膝꿤谟" : "ʚ뒵笽",
+      "瓤蘁ၒ芑湇⠙ꆣ楈㻣킠㢒䰨" : "藭蟋뭽뀣艮",
+      "듔ꜰ" : "㋛",
+      "뫌" : "텊屴㔠䳵뷊囃窼嬧屸",
+      "脘聪圇纺꟥抻熆ﶦ甙" : "塪",
+      "㒅ු᩽㯖흠隘뗺ᗲ뛵꒻" : "ۺሉ쮟켤ꂢ⺛È孀ඓ吜뺮襦紀",
+      "⒎錄" : "씐澭꣱齐۴鎪ٵ⼮㍪ब㤠",
+      "⨥싌" : "❱妱瓌쿖裵ァᏂ茇鉂㥺偊鼐",
+      "臽" : "⚞",
+      "賨捷蛲╢暈陹넲쿌䒞" : "曌ొ",
+      "㞎뛥㠘䂬䙐" : "",
+      "䄭Ὶ巉瘺꣑ꭺꨃ澪፝ﶁཝ⺻懻" : "ꨇꀘ묯⤷퉊悑녌ឲ",
+      "揾弄䳢靾즄" : "㌗ᇁꧧ㰼嬨ⓢ",
+      "蠃뽲站᤭♦ᑺퟦ耇䡅⢙Ὴ疫軥" : "쭡橹덑좒찖"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "㣱཯",
+        "odds" : {
+          "value" : 973.6630
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "簑뿲"
+    },
+    "marketName" : "Ȃ׽⩀齇懴䂚槝둑檇",
+    "marketType" : {
+      "FirstToReachXRounds" : {
+        
+      }
+    },
+    "marketCategory" : "갥",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "涙됾昻"
+      }
+    },
+    "specifiers" : {
+      "䥔뾴" : "繸쑤쎠竝",
+      "浞ᱥ౾퐲ಃ舧ᏻ蒁ᙠ暌嶌耏" : "驮왚퇏䋖氵早쟒싀\u0080蓶쫸",
+      "ႆ" : "궶꼩耴澏Ẫ䬕掊",
+      "ᒖ" : "뙝禁脊掩璄쟆␈郸鍥瞧쳇",
+      "랕䁻ꄎ具" : "캖秝뻊緁네ꧫ䤬⳧䝮ᒟ⽺╟",
+      "㺎麎䚇䌙諒컄娑焂ﱨ‚濋孱捘겿" : "㉙뽾溿ﰑ뵪⧰빿",
+      "㽦" : "嬇ꍜ㈝뤊䦣Ҵ㾪覽樉",
+      "䚯ぎꡙ婜ꈄᓜ˴᭶" : "준旘측အ宓࿆풹짭춯炋吲蘓᱉ឹ",
+      "⷏" : "揬",
+      "㤉碑㬢" : "퍣魊⧉૤ਮ䉨ꓑ뼵",
+      "즂" : "캝"
+    },
+    "selectionOdds" : [
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "믱"
+    },
+    "marketName" : "빅늀䢠",
+    "marketType" : {
+      "NumberOfRoundsParity" : {
+        
+      }
+    },
+    "marketCategory" : "ýﴶ뭮ᡋ䢙旡",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "鱩"
+      }
+    },
+    "specifiers" : {
+      "ڲ쩪幈" : "Ვ㕾ݘ吗橺엃戠༻",
+      "い좲ꨕ" : "跗썹揵ᖷ脞蛆䟖ݬ",
+      "헲︌ϕ嫼㻵" : "鱐戣ഘ爸榱됭ⴰঞ",
+      "幄헮䎲薿" : "",
+      "䯪핬셼긟" : "ꪴᒈꎐ줈쳜嶹䕕௳騱﫨慑㒶睶",
+      "㙮಑硫ꋀ仏驚" : "ᖣ⌸쌎㋲弟ꥼ㽖⁫麧ꇎ箺皽똽",
+      "౜혰⏳痏" : "狔蛾띉ꃂ暔⃤䫧뀯",
+      "냊㴔킘ṅ" : "⋂왁邯ꁂʦ逸媛澀조漂",
+      "㞋ࢽ䞪駮鼅棵ḃ䉴⿧ૣ膑溣" : "쨱덩赭⹗۹",
+      "쐋봔" : "纚氄࡛픏"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "횳엃",
+        "odds" : {
+          "value" : 679.4125
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "嶁㌌ḝ勀",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 280.9546
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쪑",
+        "selectionName" : "範",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "律낷䭩",
+        "selectionName" : "궨ܧ䏧",
+        "odds" : {
+          "value" : 214.5248
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ᗚ",
+        "selectionName" : "蠳룂",
+        "odds" : {
+          "value" : 305.7244
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "₼攗Ṳ塪",
+        "selectionName" : "⁖",
+        "odds" : {
+          "value" : 98.8942
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "늍轋࠵",
+        "selectionName" : "䄱",
+        "odds" : {
+          "value" : 206.7359
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᛋ",
+        "selectionName" : "覈檸渡",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "䊧棰",
+        "selectionName" : "뎕",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "鑓ᭊ䠸飹"
+    },
+    "marketName" : "泈䧹⏜࣒",
+    "marketType" : {
+      "FirstDragon" : {
+        
+      }
+    },
+    "marketCategory" : "裍냹䴃㗔ꓰ镾偨런岪모彮强",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "ﾊ旧䕃"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "亭⡓",
+        "selectionName" : "⃡墒",
+        "odds" : {
+          "value" : 348.4253
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㎚轨썪",
+        "odds" : {
+          "value" : 252.2783
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䥕㰔",
+        "selectionName" : "커",
+        "odds" : {
+          "value" : 667.1580
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㇕䐤㋒",
+        "selectionName" : "ដ",
+        "odds" : {
+          "value" : 122.5973
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "夯",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⋱芍鐚",
+        "odds" : {
+          "value" : 895.0174
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㈗睦",
+        "selectionName" : "㲅烈",
+        "odds" : {
+          "value" : 82.0671
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "홵څ㺅",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "꾧",
+        "selectionName" : "뀻㦡휾ಋ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "\u008b婇",
+        "selectionName" : "䮙婋잀",
+        "odds" : {
+          "value" : 422.6023
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꇏ",
+        "selectionName" : "䔧킃",
+        "odds" : {
+          "value" : 599.6810
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "噢",
+        "selectionName" : "峉쩤",
+        "odds" : {
+          "value" : 991.7337
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䩯",
+        "selectionName" : "煤袗ꐾ",
+        "odds" : {
+          "value" : 394.9889
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "﹗긻핻"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "BeyondGodlike" : {
+        
+      }
+    },
+    "marketCategory" : "䛬佌셰荃㧐ꬁᗞ쫕람삅怉䑼瑘",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : ""
+          }
+        },
+        "newWinningSelection" : "䏭㙐䳫舙뾏"
+      }
+    },
+    "specifiers" : {
+      "䘔℄캘갬猢왔ᮯ픴" : "►瞁蕽㗳扯폢",
+      "냕젧ﮘ䨋찢넽ᆜꔲτ" : "㺋ᶑ瘃岵鬊廯끮昰ᡒ浴ᩴጷ䗳縑",
+      "༠轛鞀㒮㾙䥭뤗ퟐ톀궵" : "冘鮇碗훻↔",
+      "웵蕩" : "ꩺ",
+      "࡮᩾ℍ㖠" : "",
+      "냡썓⮓谖뢒쮯ꏷ녏⸙" : "鐘英얖",
+      "䈎좶쓙畅昑㔄쓓㥃" : "㛀灅깻Ʊ诅۽⩱銙熱嬂勥",
+      "ꄚ긊尴䞿" : "ᴜ젱繺흡ሳ㻘妤￷缪傀⦃탂",
+      "골ﴅ諨ޚẊ" : "筒黇",
+      "퍄㮲⻠챤◹ቩﷲ" : "༎╛棹薑鱆",
+      "㴓嘃㮷皔ᐣྋ颡㰅ꭥ㨹맄게" : "飽=ᨣᬈ€꘦᳃",
+      "冽優以㗽屙뼷肹" : "蹙칒圢"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ⷱ",
+        "selectionName" : "瓇",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "敳⾙⽗⢜",
+        "selectionName" : "᷊䋘",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "춅",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "혆ꌥ鶯",
+        "odds" : {
+          "value" : 868.2962
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "➮뗭䑳",
+        "odds" : {
+          "value" : 899.9037
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "삷똁⣄",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "ꧩﯭட"
+    },
+    "marketName" : "늒擟럄뇡",
+    "marketType" : {
+      "WillDragonBeSlayed" : {
+        
+      }
+    },
+    "marketCategory" : "⺚앻",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "튨"
+          }
+        },
+        "newWinningSelection" : "찘쯛"
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "睯镋촠",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 950.2649
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "场羪",
+        "odds" : {
+          "value" : 898.9905
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "੃挨感",
+        "selectionName" : "誾슨结",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ঋउ⪤",
+        "selectionName" : "쀠瑳",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "腾",
+        "selectionName" : "계ᩉ쏉",
+        "odds" : {
+          "value" : 308.0204
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쬋ⷾ框쁘",
+        "selectionName" : "斠窑",
+        "odds" : {
+          "value" : 766.2017
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "塏",
+        "selectionName" : "첰빞⎆⡄",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㻃⣲ⅽ",
+        "selectionName" : "ￚ䴱꣫",
+        "odds" : {
+          "value" : 97.0723
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "葭嶏颢",
+        "selectionName" : "ﵭ",
+        "odds" : {
+          "value" : 10.0327
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "챖",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 511.8936
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䒂钌⮜",
+        "odds" : {
+          "value" : 849.0334
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 257.9699
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "돍",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 667.7156
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᰄ蕰",
+        "odds" : {
+          "value" : 999.3184
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "䑦ឝ"
+    },
+    "marketName" : "쓩䀘▆졼ྺ",
+    "marketType" : {
+      "TotalKills" : {
+        
+      }
+    },
+    "marketCategory" : "黁仚䶀૱ꆴྦ毡솕∜",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ﻛ➡ᅈ괂",
+        "selectionName" : "聼픎",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㙳",
+        "selectionName" : "焤葻",
+        "odds" : {
+          "value" : 695.4708
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "魉筶",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "➶",
+        "selectionName" : "潨蛤",
+        "odds" : {
+          "value" : 271.7301
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꖐ㥶鍬",
+        "odds" : {
+          "value" : 258.5858
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "䳤녿祅硨ᨾ"
+    },
+    "marketName" : "路ﳬ쇣൘퍨",
+    "marketType" : {
+      "MatchHandicap" : {
+        
+      }
+    },
+    "marketCategory" : "瀫੆뭯鶓",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "꒻攓ㅡ"
+      }
+    },
+    "specifiers" : {
+      "" : "電큌噳ꂢᬗ",
+      "꫱猪㍋豈꡻쭆" : "鍙辝퉈걗㯆␰",
+      "舴辽玥ͮꯊ砊⺸䉀储" : "ﻦﴤ貀舍꒯ઐ葐儹녍ᕧ췱",
+      "ᰵ糐陗" : "䃸Ә릖틄淹ರݞ᡿ﻌ쇁֪獵쩍崨",
+      "쇣ռ녹ᖏ벍쎣" : "ঌုꦋ",
+      "ﻎ泗ѩᲘḹꪩз" : "䯶鱾",
+      "䢉㒵唈애ꮡ摒쿘괕" : "ዒ蛒폪൉롛묵⪱㜯",
+      "齌꼋蕳蛭ꁖ" : "쒬",
+      "ꊅ㿔軤ƨ찓똹絰컩" : "簨⨥὿䯤Ɖ눉좛"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "氕",
+        "selectionName" : "哹",
+        "odds" : {
+          "value" : 99.2519
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "੷籐ኸ",
+        "selectionName" : "馉꧌骔",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "됣",
+        "odds" : {
+          "value" : 516.5910
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "行需첅",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 340.5382
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "勹≆䡥ꦻ⎖쳘"
+    },
+    "marketName" : "枋픎ꅸǄ",
+    "marketType" : {
+      "MatchWinner" : {
+        
+      }
+    },
+    "marketCategory" : "骑℥⹁ဲ",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "ഗ귑ﮥ⫋芴䨽譣騛삆㣈"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "摧鏺㣁" : "넔ڋ힔쬙զ閤ぽ✢廚響㵒꺎藭",
+      "ぁ텳༁" : "쾃Մ䙛㔛䨵礢",
+      "㋢귪⑀졄葱꼀︤羊嵚퓸䌝簮" : "懹ꁷ",
+      "㭍讯쉌撑䏣䴽甔" : "媆\u0088",
+      "䘶" : "ꉆ⟚焕",
+      "॓出⁋뎶⶯" : "㲎챾멒瑭릠혿薩쮗"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "磅ᑺ헣",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꐙꔆ",
+        "selectionName" : "纂쥸㳣",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᠾ䶝뷃",
+        "selectionName" : "ꊭ稏풣",
+        "odds" : {
+          "value" : 75.9830
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "홡ꃂ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 660.3183
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "괽ﭼ",
+        "selectionName" : "䚬᭳䄥",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᆟ㚙ﵲዛ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "뾿ᠴ",
+        "selectionName" : "倧靪",
+        "odds" : {
+          "value" : 270.9992
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㷐",
+        "selectionName" : "ᗑ蓆",
+        "odds" : {
+          "value" : 647.0633
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "ꭼ噁ݸ₄ধ"
+    },
+    "marketName" : "꼅㧲疱",
+    "marketType" : {
+      "FirstToReachXKillsMap" : {
+        
+      }
+    },
+    "marketCategory" : "鰈ꪀ䌚ᇎ휐乿曚ꍐꉠ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "옽꿍뇲鰫튁ㄋ낚ꏶ﫮罻訫㟞"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "㙋肬ޔ׽⺊겖ᖽ",
+      "ᄑӛ단뙂ක䏿旮" : "䲪岓",
+      "礒╻␃㲹鶜宪䭶㩣㕾" : "馍ꆁ갫",
+      "젫ꁃퟋ礥詪亖욼淬䲚ꀐ⍴唨须" : "涄郺皡㓑ᰰ존嘔㢏",
+      "射ଗ哤픘䎪˷꫺" : "㛒Ŝ䊒꠫뱜灓ꊓ迃咊ᯧ랚",
+      "⸧㶦吙㉾纗䶙⵨ꏴ꿓䜵꟭屩" : "棴偛착㇩놸",
+      "뽳頡紐솆曡減貇न褛" : "췢ﴺ㎝ỹ狰붛",
+      "ﳔ䙏ᭁ롮멮媒햩ꠓ䉻⾯" : "뇫鐺躯伡㮜坙앏♗蔁䍀熩䈭",
+      "툿止곡攪憴胨駜밭녧栨裬盕緍" : "악⨞꫿㜁굃엯㖻"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "儱",
+        "selectionName" : "匯",
+        "odds" : {
+          "value" : 773.7817
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "곺",
+        "selectionName" : "ꔬ",
+        "odds" : {
+          "value" : 864.7835
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쌎",
+        "selectionName" : "ৱ◝",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⻢",
+        "selectionName" : "㗆≁",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "鳾䓇",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 278.0681
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "頱",
+        "selectionName" : "ଊ꘠瞮",
+        "odds" : {
+          "value" : 491.1500
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䒣淗筱",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 824.4413
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "訵",
+        "selectionName" : "胙瓇",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꖮ뮥अ",
+        "selectionName" : "㙳",
+        "odds" : {
+          "value" : 189.4534
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᓳ곔鐃",
+        "selectionName" : "鱛ᒖ탿",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "貳停",
+        "odds" : {
+          "value" : 231.5722
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "餋荚",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 197.4964
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "跘鵢",
+        "selectionName" : "純雝",
+        "odds" : {
+          "value" : 868.9317
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "䘛≐！sᇧ"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "MapWinner" : {
+        
+      }
+    },
+    "marketCategory" : "瞹",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "즰톝졆࿝⫂胺憌署"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "怩ꗀ괁✇儈⥥社Ɪ랁㨖䈋" : "攨路筑쪭碦ᡰ㈀︣짺",
+      "᠟颥蠯ꃝꗺ囂" : "㖫",
+      "ﺏ" : "ࢬ݋蠴",
+      "렿" : "鷑∄ӵ딃䈯赥ꉩ醴䟊恪ⱆ皰",
+      "꽽빭" : "莆ꊙĂ뽽쭊纐Ꝙ헁㴝",
+      "渎䞌䦃䮮ம葱咶⥾䣛詻" : "",
+      "횬缸⣉঴숻ᶗ訾獝驳鳴嬹" : "作諚ⷝ臰妇",
+      "兖㰦" : "苶蓩獖齘᱅ꒆㅌ䔫枓谛㘤",
+      "粑Ϗ" : "",
+      "췏፟낊錘噡︺镱" : "䎟菠戀웤镓썞ꚦୂ覕勤㋦",
+      "礑쭐旄梀畉㝚罙蜨쬑㪖酻㣙얶" : "歴⏔㩻랗蒱"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "생枞愮፽",
+        "selectionName" : "ඉ얲빠",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꗺ滀",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 118.8657
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⺟",
+        "selectionName" : "⺢",
+        "odds" : {
+          "value" : 420.4646
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䡴",
+        "selectionName" : "惦脒",
+        "odds" : {
+          "value" : 388.6486
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "넄쨢醭ꭊ葌"
+    },
+    "marketName" : "္꿴ᨻ逤",
+    "marketType" : {
+      "UltraKill" : {
+        
+      }
+    },
+    "marketCategory" : "付싱囌ᷛ캐",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "ᮢ詺"
+      }
+    },
+    "specifiers" : {
+      "䢞ླྀ‶☕㘩翠䱴ꔎ" : "႘䆟䆳곲檻쐱۝ꭜ",
+      "拐䗄ᾃ슷" : "҆￺⨦旲콱쑁誫ꌭ㡝",
+      "ᶈ쫼냞ఆ梛弱䦿컽" : "까궳セ噺ꄧ獸⋟梷鱧硻蓴",
+      "ᅰ錸磯ਗ਼⸼" : "芄燱컽坰䱠惮",
+      "㷮຃쳀ꏯ갇㍇习ﻄ國㕷થᴇ渇㲜" : "⮮젅䮈흪팣쯔推㢑゜ꏱ",
+      "鷆噗抗瀔녝Ế켄" : "說吕㕾㦖㖴缷",
+      "" : "✙笚쒣ऌƗ툿悏踍ᨶ䎾"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "܋烡",
+        "selectionName" : "៓",
+        "odds" : {
+          "value" : 652.9586
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "悄",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 919.3797
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "绬痊",
+        "selectionName" : "㷅㞍",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "ᄡ饃떅"
+    },
+    "marketName" : "僲",
+    "marketType" : {
+      "TotalKillsParity" : {
+        
+      }
+    },
+    "marketCategory" : "⽧聵",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : ""
+          }
+        },
+        "winningSelection" : "ﮜ"
+      }
+    },
+    "specifiers" : {
+      "ᴣ" : "ފဂ閁킫Ɖ഼藬䥹卸䈏ೇई痨㹫",
+      "刢韐ﺔ鄏⋧睼첔❪" : "윗ᦳ宽뿤떽᳽鼄峄❥묦药ꌯ䓁괊툀",
+      "ऄᡨ掖䬧⡧㲧㭖⨣৻㢖๨⻎佨" : "㶜᭖硬⫼듬Ꙩ뼁",
+      "爧ꁒύ⾍渄픈⟰묷櫚䗷տ߹" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "️ꯁ",
+        "selectionName" : "΂ඛٸ",
+        "odds" : {
+          "value" : 889.8127
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ެ吻᧙",
+        "selectionName" : "◊腦鬗ᓘ",
+        "odds" : {
+          "value" : 187.2699
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "짗㕗룆",
+        "selectionName" : "钮땼",
+        "odds" : {
+          "value" : 855.5691
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "紈",
+        "selectionName" : "蔊갑懿",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 937.0703
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "疥懠텋",
+        "selectionName" : "͹",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⏭",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 895.8054
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "ᠴᱧ忌╠"
+    },
+    "marketName" : "욋ᤵﱙ怒妠ꇷ禉៵",
+    "marketType" : {
+      "TotalKills" : {
+        
+      }
+    },
+    "marketCategory" : "岥ݩ覿ࢉ䚵鮯灁簥盪㳂蚺ᔨ",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "靋龉꨹"
+          }
+        },
+        "winningSelection" : "돁"
+      }
+    },
+    "specifiers" : {
+      "ᄱ넴๑⮤⮩ἇ辆ꂒ瑨ኂ﯁" : "틛狡㗥㺶抾㱄圈㋌丧挸",
+      "쏌⍦啖" : "硺羝겠犮㋞噣庢᝹봔Ỏ컷ꢊ",
+      "㭬挈䑖雷霳ꧧ䣈饊⚾" : "ꀼ罝辶⫂됀ꦠ⧕啽㼁퀥臉",
+      "䨼" : "鳋䇂꯮铠⣗䶄훅뉄ꎩ",
+      "޽㯮ﶡ" : "",
+      "퉷筊ꥅꈻᰢ㾗쩶︍" : "ꛦ궡셟륈讽",
+      "⹜쾨魛搌뿛" : "",
+      "ᑨ泌뢔䌣넰睑䊴禃ॴὨ" : "眇蟧୧ၚ鮶鏗䷒ힹ㬷垤粨臯",
+      "䗆䣠㰔㤿袒Һ௼砢" : "ꔁ侉ະ疣中",
+      "婄せ⋤！鹡櫭ဴҳ못䐥ᔮ猧摄" : "毓뢼鸯详扸",
+      "鏧ꗺ␔㮞壀왬焍ﱔ罄藃혨矻" : "淏଼驧↦粛⤄粺三",
+      "穀듂験鹐埨ꘗ૆⦔" : "혏φ䓓蟒泋檽",
+      "飤Ი묘볎杲굤ꆄ" : "紎牀鳠",
+      "찄ᓈ" : "다쬳騬"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "䕕",
+        "selectionName" : "땃陝オ",
+        "odds" : {
+          "value" : 305.0567
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ఌᰧ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 228.5266
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "茂ꆎꉒ鮞",
+        "selectionName" : "諀浍",
+        "odds" : {
+          "value" : 238.6081
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "뙍㑺깓恮廛"
+    },
+    "marketName" : "跩旤⩞읣⨩",
+    "marketType" : {
+      "TotalGoalsParity" : {
+        
+      }
+    },
+    "marketCategory" : "㷕袴",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "犦៪ꏐ逝鉗펜䊌鷼嶾ᴾ낓",
+      "䃝毸壱昉輭䍗逝懓䂊" : "ᵊ鸕簂ꋎ盧숓啞॑ᔳ",
+      "蒽ꢳ䠇톇萼ᓹᖶ秎軪㮔蝅妢" : "媍✢揗✞",
+      "縇舖횭ቛ骻㑋Ἦ俐諼眪ᓻ㱴" : "媑⎶ﳖ֣例턯ꗭ㢾鉇옥",
+      "彔❞" : "晹弹ǰꚃ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "滙썝",
+        "selectionName" : "շ䕂쓕",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "뻪땜８",
+        "selectionName" : "䬭軒枱",
+        "odds" : {
+          "value" : 231.9141
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "锼읎",
+        "selectionName" : "๨⊳",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᴎ",
+        "odds" : {
+          "value" : 46.1778
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䷒燓料",
+        "selectionName" : "恻맆",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "랩끵穧虍謒⋸貗ꀟ",
+    "marketType" : {
+      "UltraKill" : {
+        
+      }
+    },
+    "marketCategory" : "嘟䷄ל䊔",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "홒奜㤕鞨얐藴歙㏓䗈㬩겚" : "ꏥ뫭킑ぱ♲馗ඤ孔",
+      "䫓洼ۡ๞" : "賀䋾≇⼣톻㩷蒇酯䙶㹣㊥侹嚳댢𣏕",
+      "谶㺶㱒훾" : "㉃Ӻꉂ㽧ࠈ᪑줌",
+      "럌치䌎鯊섔悂⃵쩩ޘ" : "麍굳⦃冑쌛쳲䰿낗ᗷꐈ댗싎",
+      "戵㍂哂탥밹ꗘ셆२" : "琞都뷫愆峷ﰍꦄ꣱∵뢓ᬙ琦愁",
+      "ᩗ" : "힣濬ﭣ",
+      "躉⃒᷂髡ᙱ㌓䑘㎚뛜鱪徎粭" : "犍⸠觺훨ﰌ䐶鍢밺轙열ꤓᐻ燹",
+      "ഩ垈鵬⥠誉" : "ꨨ碣቟༼⊮䅠ꢍ㾑",
+      "ὠ쵋〄᣽" : "력歓莴䌲ⷌ纶릨쀳ﰗ⊈",
+      "楧̀倘軳첐먾擭碰䄇᭨殿䚄夁옆" : "䜇쫁獡낖",
+      "⃷怇䊁넝" : "\u0080壮㣮莤Ꚙ薴ᵃ㻎㊬૱坏",
+      "ꆹ빸ǐ퀑۪皝ᣭĘ翆⤤" : "Л㍄裩 ѫ",
+      "ᤤ" : "㐅꡼覵"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "䷦",
+        "selectionName" : "妳鐃",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⏏쌽攊",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 551.9849
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "옏핔⎛岌",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 906.8647
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "凧",
+        "selectionName" : "逭",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "췓舣宜",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 539.3742
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쪧慽ݿ",
+        "selectionName" : "䧟﹥",
+        "odds" : {
+          "value" : 306.7146
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "痺",
+        "selectionName" : "⡓⢐",
+        "odds" : {
+          "value" : 318.9553
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "毢猇㤴峰",
+        "odds" : {
+          "value" : 59.5244
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쵶",
+        "selectionName" : "ẟ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "뼃",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "蝰貓ѫ",
+        "selectionName" : "옉牭⮦⩄",
+        "odds" : {
+          "value" : 716.0143
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "ᣍˉ噙Ꝺ✐龨눟",
+    "marketType" : {
+      "TotalKillsParity" : {
+        
+      }
+    },
+    "marketCategory" : "䆅",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "BackofficeCancellation" : {
+            "reason" : "੒Ꜧ䚴"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "ꢴ쳮鋙䯆碶쓽ᖽ쓺",
+      "ꇼ群梩ሚ簯男" : "湾ൈ⻿祸븙檀뜰䙂荚䮨挽艒蛆",
+      "驢빃磬뇚" : "帨〕䃊컴繚㲷",
+      "ప㏜⨕큀炙擄ߩ" : "⫝̸哉䆡朖襱엳ᦔ뛺碨鮺",
+      "狇뾲䴒扪㵩퉀훗廝띢ᛇ" : "顳቞伯ੁ킱総",
+      "䯦o깷⌢䟢읯ᒀ" : "敷䃀왞",
+      "琲཰木곐뫙뫻䔚ꭁ贼蚋ᚌ≤戜" : "ᧃ稀圳祝쪼",
+      "ᵯ邬ᕹኢ뻷䀶쁵" : "Ꝕ혥ꄤ䎝⸐蓠舵⪛ሕ",
+      "쉾棪嗫镤褵ꯨ춰" : "千䡕曐켼ﳞ䡷ẳ毭忢"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "˚퍫",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ꫯẻ",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "揀",
+        "selectionName" : "붃",
+        "odds" : null,
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : ""
+    },
+    "marketName" : "衕ꄭ䛡㢍⷟",
+    "marketType" : {
+      "SecondHalfWinnerMap" : {
+        
+      }
+    },
+    "marketCategory" : "䩾쑭ᷖ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "ピ䮗즌卅ꌪẻ᮵"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "肱ꌎ᳃﯉䕛㰉麖㏊썦",
+      "閵菟㫪湧" : "啸Ⴥ",
+      "ቬ膟㫳蜁襚艨榻ᝎಜ醆펿옔" : "綁፥鎧웲⹴醠⢁볨"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "椰ഠ꜉싾",
+        "selectionName" : "걤玭災پ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "螣",
+        "selectionName" : "狑ᇬ꼙",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ഔ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 291.7679
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "ὗ"
+    },
+    "marketName" : "q퐔讄匓㟉庋藔퀀㙡흥ᄯ칩ꦇﴇ",
+    "marketType" : {
+      "FirstHalfWinner" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "ﮌ舺ﲝ"
+      }
+    },
+    "specifiers" : {
+      "댯二䨧⚨䱇㼟违꟟" : "ᛪꬼㅼ拗㛰ʤ⑻",
+      "ڈ᥿" : "⨡܊퓒쪟",
+      "楠᧷궜鷂䦦⠚䛥餩" : "⤟⿂",
+      "筹멽盭⒤襤氫揗䫟ꕜ廭깡躱쒴" : "䂅沾竤焰愍̸眦拵놶縀뫎㾲褩",
+      "郤巰跁翷疂㲷ᣇ䫯" : "퇴爔沽喦֣읮䛩"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "衺￭≋ଐ",
+        "selectionName" : "啇",
+        "odds" : {
+          "value" : 742.7954
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "㹛⅜뇔礮"
+    },
+    "marketName" : "౉貿弁龤䎸潻ԡ췴⿺쒯漏⮎",
+    "marketType" : {
+      "NumberOfMaps" : {
+        
+      }
+    },
+    "marketCategory" : "觜ᖹܨ぀챥缤⊾",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "ꦄ駻殢믫吙ᒉᠺ螰",
+      "옛颀⟁⦉况" : "섈Ąﲴ",
+      "፿算꿑樱蟝ꕠꛟ庼▇謗䢋" : "㿄Ῑ㸱",
+      "鰈ⴆ泝휂뵝쮅䵷" : "ꡁꬁ梨色㿥ନ᧣",
+      "瀈嘮랅祐䥇ᄎꁩ撅" : "꺴ꊀ鼳㥭Ὂ㮎",
+      "䂆꾲똎퓻惁㼷ᅭ끳狮潔" : "",
+      "ꏮ掟Ỽ" : "㗄젃梭˯눹匮퀶꺎촚Ꙓ",
+      "湥" : "",
+      "㦤聾껢►騫䍝㴱添⇪ḍ䝛ꦎﷶ쨸" : "響뾦淄ꘝ矛䯋",
+      "۬宋귇" : "Ȁ䇤ዼ趓捌⳥꒠妇剋㑅㋲"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "᧊",
+        "selectionName" : "試仱",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "ʧⲨ㉪",
+        "selectionName" : "岑僿",
+        "odds" : {
+          "value" : 137.3615
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "떈믌",
+        "selectionName" : "挐",
+        "odds" : {
+          "value" : 105.0263
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ᓢ퓯똥冾",
+        "selectionName" : "솛鹠✞",
+        "odds" : {
+          "value" : 666.2891
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 6.4952
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⃩",
+        "selectionName" : "ⓑ䏣降",
+        "odds" : {
+          "value" : 33.3141
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "秅⛠찁",
+        "selectionName" : "雪",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䁀蒖",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 92.7506
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 597.4631
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "抚궢톚",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꪹ",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 116.3851
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᔘހ",
+        "odds" : {
+          "value" : 226.5015
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "抈릵諡Ḵṯ"
+    },
+    "marketName" : "纁줍",
+    "marketType" : {
+      "FirstTower" : {
+        
+      }
+    },
+    "marketCategory" : "㵙Ợ競챎ࢥ㹨坕砯㋌鵑ᾑ♢",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "ࣻꨔ䕻"
+          }
+        },
+        "winningSelection" : "੅穯"
+      }
+    },
+    "specifiers" : {
+      "㫛◓" : "몗窏",
+      "" : "儂熕뢲ੰ닜",
+      "訬ᤕ嫩觏" : "꼄碕뉠Ԇ瘂騟",
+      "ם庪掝㳊" : "价澈捃ꄏ擹鉣뻳⚱୹",
+      "路穃ꋻ룜犅䡷㏉ᠬ" : "둚ފ",
+      "㑶ᴒ緉碻㾁⵵Ҽ럾쪜" : "쒌빔磐顄㚁峱ꃭ",
+      "䵐" : "ᤶ懚Č",
+      "붰⥜☂" : "툐䝈䨲䬤焛΢⿥瑑⃾䫜"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "꛱⎜䞑蓂",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꔥ㥄",
+        "selectionName" : "㢗뤃쎎",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "᳿䭇㘓ڕན"
+    },
+    "marketName" : "ᲁ苳킄贵逿쐖鵣⽿쎝嫖甄뀷",
+    "marketType" : {
+      "RoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "䬯",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "귃ꃤ䌓摊㗳淯舣䞀윬"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "潒蟱謚뀑怯备࢖屲䦅蒁눺" : "륖낏턇쌘熜",
+      "䦶鑱ꔄ麟洫諫ⴺ籔暰寢⟻" : "ㄘ튥䧗᧨䵪嘘괈豛ໍ慭絤솅",
+      "⣐禇" : "픖饵왖呌鞈坟瘃䎲䲙薄慮",
+      "좜夀" : "蹧넖另꾠Ꮕ냎⥂暧틏뱔",
+      "혩쭍祱᳜猦笒獆姄" : "ꊉ裂者ॱ磉骧椒齂␤嫣楉奰靖ֵ",
+      "蛀" : "禲蒤㼣䰋㍣ﱿ邌㯹"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "笔鯠኿",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "\u0099蟼뮣",
+        "odds" : {
+          "value" : 172.7953
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "즂黰﯆",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "쉿烊",
+        "selectionName" : "刜",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㟹",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "鈷",
+        "selectionName" : "䪷춡",
+        "odds" : {
+          "value" : 588.9818
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "귘蚵䓨",
+        "selectionName" : "잊錽졾၂",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "脆આ",
+        "odds" : {
+          "value" : 365.8701
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "斲墤儮",
+        "selectionName" : "슗",
+        "odds" : {
+          "value" : 829.7136
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "૪",
+        "selectionName" : "ﰀﻻ",
+        "odds" : {
+          "value" : 99.0801
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "缦뤅",
+        "odds" : {
+          "value" : 552.9077
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ꤓ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "蚣꠺粚ᩞ",
+        "selectionName" : "쫡",
+        "odds" : {
+          "value" : 29.3463
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "Ⅱ糮",
+        "selectionName" : "魆랛",
+        "odds" : {
+          "value" : 776.1522
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : ""
+    },
+    "marketName" : "귊┻·靖걛噙㫩⡛",
+    "marketType" : {
+      "UltraKill" : {
+        
+      }
+    },
+    "marketCategory" : "맓㾠⋟䁋倁⃿从鋥盓藔굖뎊먰",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierPush" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "곘ඌĢ뿘",
+      "嚹烻" : "",
+      "ﱧᄘ釜縦襐湸蓗" : "퉫樄팰⥐鬦楗ᦜ梓ꐛ\u0094浀脩䠐疉",
+      "刖谬୻缼愰㖻讃伤৫붞েỜ" : "잷搉㩩⣕暭渤ᩕ苢ⰴ菴¡ꢨ",
+      "Ḳ᠘븤곫⵴" : "撃꜌⌧퓆雜់ᘸ≸꣛ꨃ",
+      "嗪塟御䐼悪" : "ょ",
+      "䙰뿳Ц" : "䇱证３♛ࡤ峇擘쭹괁ꬑ⫦ᑳ",
+      "" : "첮퉑飗",
+      "੪ఘ頜睻ꞵ౻殳" : "胠嵍䀉嘼ꁧ쎢剫⩤缷櫬ꡊ䤻엙ḵ",
+      "丹츻榊夎㼑ദ馆䟅㾌" : "閌⍘菄㽮⿯",
+      "踣ꊯ" : "慡쨋뺄᧢휑",
+      "꟞氿⥡ꆟ뾽銿婅䕢峬" : "立銗緶ꄀ줨細䠔钝ੰ솵꼉"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ᛟ嵢ᩚ伝",
+        "selectionName" : "簣屸",
+        "odds" : {
+          "value" : 166.3302
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "㓗싱銈",
+        "odds" : {
+          "value" : 819.8509
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "흣⭞",
+        "selectionName" : "늘",
+        "odds" : {
+          "value" : 543.7315
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ሮ",
+        "selectionName" : "ꐣ",
+        "odds" : {
+          "value" : 385.0963
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "굕债胪队",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 106.1817
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "揾뢋앸",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 512.0413
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䌏滹軬",
+        "selectionName" : "甮㤸",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "꟧",
+        "selectionName" : "媋",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "訉㒌",
+        "selectionName" : "羇哦",
+        "odds" : {
+          "value" : 674.9348
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "嶣瑃㼗ﶋᤰ칊"
+    },
+    "marketName" : "但쀈䚄ୂƠ载㽪븖䩒",
+    "marketType" : {
+      "PistolRoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "ꔨ奰腴냘뷽덥",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "ё돧宯יּ䲅鸖ພ⨮䕍",
+      "ⶺȋꉿ囦빚訖" : "㇀ᴳ∓╴੧弉请ꑣ㚁⟁䯶蛒",
+      "簌巨畵쵼邎瞈痋⳷ᨺ㝂魶" : "髞",
+      "댢蚰" : "㝐⟼Ⲿ㺄㰶憗詡斏즭⻕",
+      "答矿ꌈ荹釚ﶉ胇스㖹雪픂浛虲" : "⦁庩蕍㑭키䑹ၹꎙ霆䗙䚘⫌盌",
+      "餙☴ⷭࡑ눓铐馰ᦍ" : "稸㕈㭣឴Ǹ⇀皎桺ػ壾ᨡ믌遛了",
+      "荐眢၁㚳ꏈ㫈ᕗ፼" : "穞䪪",
+      "ݕ냴勰" : "坝ॆ烂휭",
+      "嚐腤଴ⅉ伫囚돳팙䞒ඨ" : "갭工ﾰ΅멆ᇜ㿹帒␋⣗ͨ삛ﺣ",
+      "鶃ꖱ麩訐" : "ᵥ뺬檿ꏱ꠩㛵泻"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ִ㚴솔Ʈ",
+        "selectionName" : "鿼ޒ⩢",
+        "odds" : {
+          "value" : 441.1898
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "噻ꑇ틸",
+        "selectionName" : "嫺줣ⶶ",
+        "odds" : {
+          "value" : 269.1696
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "쥫૓",
+        "selectionName" : "뷌䈦",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "楿",
+        "odds" : {
+          "value" : 596.5488
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "昈ᡙ",
+        "selectionName" : "⍕ﶲ",
+        "odds" : {
+          "value" : 737.4312
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㑋",
+        "selectionName" : "ᩲ붷搖",
+        "odds" : {
+          "value" : 944.7869
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ﲧ",
+        "selectionName" : "Ί",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䌱酸虪",
+        "selectionName" : "ꃼ䠋鑼",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䑙ꭗ큷",
+        "selectionName" : "䂳Ⲅ챳ꪘ",
+        "odds" : {
+          "value" : 13.3284
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "᪇戸",
+        "selectionName" : "땵ዖ妬",
+        "odds" : {
+          "value" : 651.1534
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "邛䟈靑蚘",
+        "selectionName" : "땨淁",
+        "odds" : {
+          "value" : 388.0233
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "풥",
+        "selectionName" : "뙘관ﾅ",
+        "odds" : {
+          "value" : 541.4185
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "狊",
+        "odds" : {
+          "value" : 154.9753
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "圫",
+        "selectionName" : "燸﫹ᐱ",
+        "odds" : {
+          "value" : 992.3759
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "㋜福穀"
+    },
+    "marketName" : "箜",
+    "marketType" : {
+      "TotalTurrets" : {
+        
+      }
+    },
+    "marketCategory" : "죧脭능✥⊂↪",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierCancellation" : {
+            "reason" : "㚞䃒텔䴱矕껰朿㍰䮻"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "" : "롅઼㟖즔木鬋Ą",
+      "ॄ䇍죰ⓨ虁旌Ꞗ龿춚⍟옩ၵ" : "獓Ⰳԡﺄ홄Ф뱿琌䌭쫑挆ꅢ⣰",
+      "넸\u001f娫 ಊ" : "又",
+      "錀봎俐郑" : "紽㝥꛶ラ彝͝",
+      "煠ꓰສ酳槼渒깁謲昇懂" : "䰒䟲㠜ഛ嘙껥裠㔤߱轝绵"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "㍎ਸ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 981.2707
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᚼ",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "ᩢ픳䝱",
+        "selectionName" : "ز҇윌",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "쑑",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "⬥",
+        "selectionName" : "떀먍ࢭ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "붑降",
+        "selectionName" : "䣦",
+        "odds" : {
+          "value" : 629.3873
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "爛끿講뫏"
+    },
+    "marketName" : "㲁썈袡ᐝऻ﷔㠻訖窼夘",
+    "marketType" : {
+      "CorrectRoundScore" : {
+        
+      }
+    },
+    "marketCategory" : "䉺৾铍Ώၜܣ鴩믆蒩랗陔",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "㶲协"
+      }
+    },
+    "specifiers" : {
+      "榰疋奈" : "ᔩ惊篑⛊莿䎅㢣䞤훔",
+      "鹙즰滔덃그ජ꼨" : "⥮茮廧㟻郲䲍냦단䙢豪",
+      "↰⢙럎憼鮕ㅝ༽뮀䀬" : ""
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ቜ鐳쵐✭",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 867.6915
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "ᙯ彮砦",
+        "odds" : {
+          "value" : 388.4528
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "狾",
+        "selectionName" : "蹊",
+        "odds" : {
+          "value" : 747.6385
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "霓ὀ﹂",
+        "selectionName" : "␶ᇴ⣓셡",
+        "odds" : {
+          "value" : 129.7718
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "垛ƫ柘",
+        "selectionName" : "湣灢熻",
+        "odds" : {
+          "value" : 481.4149
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ᖼ媗",
+        "selectionName" : "쀮拀⪅툪",
+        "odds" : {
+          "value" : 934.0749
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "᳸",
+        "selectionName" : "᳉",
+        "odds" : {
+          "value" : 89.2074
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "ਗ਼氱"
+    },
+    "marketName" : "䑞汃鿮秮馳",
+    "marketType" : {
+      "FirstHalfWinnerMap" : {
+        
+      }
+    },
+    "marketCategory" : "¬ِ㧊⸿퓎限賏",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "ꏿ劕鳁瓡얮⓶ྩ젾㇘㝭" : "虖甀쏊⩰춬꙰绥ⴹ溔銹衰"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "﫥꣧",
+        "selectionName" : "磶",
+        "odds" : {
+          "value" : 406.2401
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⠘淇砃",
+        "selectionName" : "똛",
+        "odds" : {
+          "value" : 241.6481
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "鷿Ǩ鞅볛",
+        "selectionName" : "嶝",
+        "odds" : {
+          "value" : 807.1903
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "檮髞",
+        "selectionName" : "猝彴",
+        "odds" : {
+          "value" : 454.8164
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "먎",
+        "selectionName" : "䁾",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㮊ื",
+        "selectionName" : "ഩ",
+        "odds" : {
+          "value" : 560.1012
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "⬁鳸춣ᨻꨶ"
+    },
+    "marketName" : "㩕ᒃ摧얼᳣Ḧ좃馟ኦᕷ䁷멇",
+    "marketType" : {
+      "FirstHalfWinner" : {
+        
+      }
+    },
+    "marketCategory" : "濴줊ꊢ䵆",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "ꅂک坁涵뚠᫜⧯纛飡夕嗭㑯" : "ᾗᤞ훣揷擽ꖒ叵░䅻㤁鋻牱",
+      "져ᴍⷞ긐麐䀱ⱱ" : "஺਄哴착ܹ䩉삿芯䁱",
+      "尿ℰৄ멺ࣨแ䴟⟭" : "毽≌闘",
+      "ᗼ" : "뇮",
+      "纭簅ೝ멜ꤼ䰲椚졓䯒" : "陈쩈쏽ᵬᩒ䰩陛ᱷ쥯摼莠켥抨"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ⁱ",
+        "selectionName" : "ƾ쨖",
+        "odds" : {
+          "value" : 591.1781
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "誁郹",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "ষ肌鄤",
+        "selectionName" : "戹",
+        "odds" : {
+          "value" : 757.3164
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "崅늜슳",
+        "selectionName" : "歈詚",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ԡ뽹",
+        "selectionName" : "鑚㇮⦣",
+        "odds" : null,
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "聢횯瓢"
+    },
+    "marketName" : "窠ﮥ肦ⴷ輦荴껙瀖幝",
+    "marketType" : {
+      "DragonType" : {
+        
+      }
+    },
+    "marketCategory" : "캷ࢉႴ",
+    "marketStatus" : {
+      "Settled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "winningSelection" : "ￒ"
+      }
+    },
+    "specifiers" : {
+      "崔栩ᬺ䮽撰̕啶면䌽" : "놊歴",
+      "艘ሂΚ톡楉紅켾踰뱰༔졁" : "찌ŧꓸነ谉픽ᛰ摒",
+      "邓潁昷捪" : "ꉨ换굙椉",
+      "爣远䪠䃥廤勛㏉ꋪ盿" : "⫛加",
+      "◱䛬顧셤ᰱ晓答쯭ꡁ㡒㽿⓹Ⓖ" : "㺠㖷䡅쵒㋟炁볭댄",
+      "颶ỻ흚䠈鮄馯셳꒳鈾梯" : "브៮됝峢쮷橙栱叢",
+      "⥡衝鈾蟒" : "谀肊㖰秝ก؈係",
+      "䋯海ৗỚ脱챮" : "₌呤ڗ␨⼘⒓",
+      "컝생匏집鉔욙龚" : "琩邰鋃ᘋ⑄➑",
+      "常勾꘍⽾柖肪쇦褅ૠ냱ద젌" : "橵蛌≞",
+      "蕺돛넼ﶾ䬉ⶱ땇勒⻶" : "鲆꤁曎ꤊ겓䆟⑝",
+      "㺊貛죜訦᫸꺸∛" : "ℾி傱熜곂늞ᐓʬ鲮Ǻ⤄",
+      "뛒㉀၎닂鷟녑⩚" : "໩猐俪拏籡醠᜹"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "ꈫ藲⧞",
+        "odds" : {
+          "value" : 484.3334
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "纬爍뢶渳",
+        "selectionName" : "墝⠜㨌",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㱞⣯ℸ",
+        "selectionName" : "烎揎",
+        "odds" : {
+          "value" : 520.2266
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 957.0083
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㨿",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 685.8961
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䐪혎",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 989.3464
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䝉傸귱",
+        "selectionName" : "ᘂԪ䰙",
+        "odds" : {
+          "value" : 91.9718
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "ಿ",
+        "selectionName" : "ﱕ岤",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "඄⫝",
+        "selectionName" : "댩",
+        "odds" : {
+          "value" : 20.5918
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䭎喝",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 217.9729
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "껶崍皚䏯"
+    },
+    "marketName" : "癟꼲屆૽㟒꧅厤ః翔⷇錬ⱒ掯ቫ",
+    "marketType" : {
+      "ActivatedRuneTypeSpawnedAt" : {
+        
+      }
+    },
+    "marketCategory" : "쪱艿緎㟿ﲿ",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "용髼覣㏱૷䯆褒㞹"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "㤶霎Ǥ鞆ꓫ笃컨謚秎铛꼢繦ꏷ" : "Ί䖱掚矕᧒",
+      "䘌뼉" : "仆뼏㭹"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "磏趚૽",
+        "selectionName" : "唊",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䀀굖⤈",
+        "selectionName" : "ꞵ艣缴①",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "產㻃",
+        "selectionName" : "預铣",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "얭㹟",
+        "selectionName" : "堄",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "冖;௙",
+        "selectionName" : "憀⦛",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "䲂껛᭻",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 529.5522
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "巯窻假热",
+        "selectionName" : "䥮䝱荻",
+        "odds" : {
+          "value" : 921.3755
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "篖ऋ",
+        "selectionName" : "暸",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "⽁᷺륉",
+        "odds" : {
+          "value" : 133.0408
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "Ὑ",
+        "selectionName" : "慂",
+        "odds" : {
+          "value" : 640.7343
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "Ἦ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 663.2471
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "췎࿺",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 915.8551
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "긷"
+    },
+    "marketName" : "΄氽汤땫炙",
+    "marketType" : {
+      "QuadraKill" : {
+        
+      }
+    },
+    "marketCategory" : "嫻৏⟜삩굹⵪걦쯽揄䏡፹",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "" : "ꌡ쉚⭪",
+      "弎壅ﮋ㽵辊즄攑᪲趴৹끿" : "瓤尙叺꺎樤㠶詩엒㼧엑┦",
+      "硨ꝧ鬭㲃检泊妳磚嶦贗ሆ⯶鐮쒯" : "↧훴鑁뻶砗齾嗲Ｏ",
+      "拻芫즷➙ꡞƑ" : "㈖♷萖炌휱霽银奨頉",
+      "㏨䴐錑퐜毤" : "奸",
+      "娐挵찑驐" : "ʼ畠ꐼ稬்",
+      "춌" : "䊰簥袺䂓ꈌ㷚䬘὾驫흯켮￼",
+      "翍븝햓蜤솬䅺㹃ᅖ薲턦뫴肓" : "탢Ꟍ㓓粸瓯度禯씲豈ꎕ郈嵜㎎",
+      "더ĵ绔旭厧产絎㜥鍠簀青" : "큛鵰♪᳟鲪㢈縐틳",
+      "ᤙ쾄㢙穓ޣꔶ瀃૔" : "║鵚籊ज蛣펲楓䰳ཏ◄",
+      "㡇㖄⹵쓺" : "毥줤뽒䝻隯퉾꿒饐",
+      "䪨Şⵈ囁蟾" : "쐎冐塊뙼쨩⍪ᦔ",
+      "ᣝ" : "ﺆᴈꡣ蕌ȧ햯弆"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "ึ♘㚣",
+        "selectionName" : "根쇈ܷ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "呰凞㗅",
+        "selectionName" : "졌썌",
+        "odds" : {
+          "value" : 975.5195
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꏆ",
+        "selectionName" : "㤃",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ꛥ",
+        "selectionName" : "ꈩ茶씶ᨆ",
+        "odds" : null,
+        "active" : true
+      },
+      {
+        "selectionId" : "뻠",
+        "selectionName" : "㿣픘ꏘ",
+        "odds" : {
+          "value" : 821.9572
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "獹྅秤",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "헣",
+        "selectionName" : "剎阸柝",
+        "odds" : {
+          "value" : 727.3477
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "झᰐ䁬曡",
+        "selectionName" : "밊␒繰ⴃ",
+        "odds" : {
+          "value" : 673.5621
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "豚",
+        "selectionName" : "ꩁ泌黒",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "駀",
+        "selectionName" : "兂禷",
+        "odds" : {
+          "value" : 702.3901
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "‖녮",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 3.8787
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "뛤｝⚄혥㍿"
+    },
+    "marketName" : "ੳ摞姍ꦞﴩ䤄ᐇ殂彾䍎쬜",
+    "marketType" : {
+      "NumberOfMaps" : {
+        
+      }
+    },
+    "marketCategory" : "识䧷鲵폈䳛㈄ė鲟蜂⥾",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "搋ᣨ䈥蚞"
+      }
+    },
+    "specifiers" : {
+      "" : "䊎憔븻ƿ崞Ǖ䛆",
+      "摢뺝켃ᵴ톈歙䲷" : "䭜",
+      "饩툏ᅫ卂큾ꡂ甚俪" : "뗫賊⃧釮",
+      "吼뜋ၘ뷰礻즪ғ죴" : "콏",
+      "쨖焏᥅㓱⇬㲥쟮☻䭿" : "",
+      "㪊㊽㵄艶" : "銐烇蟘쿌奷쎑郤逛",
+      "靦嚀" : "똷➺᭱ဟ៯",
+      "쌀氱禀" : "濭䝅눰⭋춱뢅ร钬뷙ꎖᨤ暿"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "爊",
+        "odds" : {
+          "value" : 596.6535
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "脠ᆹȊ"
+    },
+    "marketName" : "唎咀䐺ያෑ",
+    "marketType" : {
+      "PistolRoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "ݽ",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "" : "샅꟤峿丱笆㫿牵ୀ꥛첾튣勧뾚",
+      "涌ﴱ賫줱侣㥂ퟧ" : "諭鬁捥ᰃ淙玟筰ꆒ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "쥚",
+        "odds" : {
+          "value" : 280.7076
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䌼",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "踼ﷺ",
+        "selectionName" : "坚愳韓",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㚹墟",
+        "selectionName" : "堃",
+        "odds" : {
+          "value" : 995.3069
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "뵓",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䒎",
+        "selectionName" : "歋⧷鞰",
+        "odds" : {
+          "value" : 258.8574
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㦱別",
+        "selectionName" : "䒍軥ㇾᵔ",
+        "odds" : {
+          "value" : 958.4516
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "똒",
+        "selectionName" : "颃竲티튵",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "『靔",
+        "selectionName" : "掜擡",
+        "odds" : {
+          "value" : 146.2850
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "녋꯲슍拭",
+        "selectionName" : "냇",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "ᚏ맶㽧פ엊녮㷠"
+    },
+    "marketName" : "俌Ⴏ㖰줡ꏉ纍邲⤣",
+    "marketType" : {
+      "Overtime" : {
+        
+      }
+    },
+    "marketCategory" : "낋ﾭ溑稯ᓳ䚟䱬ﮤ⇚ᔄ宁＀",
+    "marketStatus" : {
+      "Bettable" : {
+        "changeReason" : {
+          "BackofficeChange" : {
+            "reason" : "덕ᯉൈ"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "葄틘횊ꪇ⳺ꑆ簖ႇ" : "벱튑㶃歩៍㔠년풒槤ᨾ",
+      "ᑛ阃Ꭸ" : "골멟戗䆓\u0097Ґ뮰",
+      "᤿ᬐᾟ븟疞" : "퟈눳링㕄ﶹ耻᫹",
+      "㴃鹁䊻崐" : "Ā䶫窚渞巃꼒",
+      "ꯓ祘惤㳋黫ꏾ牦鈠컧" : "鵍蟑涧୭볲ଢ涎￞",
+      "온탊뻱鏌ၗ베큪㑧" : "颿࣠",
+      "诿㚛磮տᇬ⋵꼌㙔ꯗ禞㶆἞" : "ฦ숲"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "㻇㥎嫏",
+        "selectionName" : "⦸",
+        "odds" : {
+          "value" : 952.1527
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "蛗",
+        "selectionName" : "䠒醮랈",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "땵኱",
+        "selectionName" : "س",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "즘䛨",
+        "odds" : {
+          "value" : 335.1740
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "蔹ᚋ",
+        "selectionName" : "ᆉ〫",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "柱",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "䎆",
+        "odds" : {
+          "value" : 992.4798
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 623.6510
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : ""
+    },
+    "marketName" : "騛睡湥Ɠ樳隽",
+    "marketType" : {
+      "Rampage" : {
+        
+      }
+    },
+    "marketCategory" : "듀ﲽ颏ꎞꇺ࠘잂櫦騦聈ǂꔽ䢳",
+    "marketStatus" : {
+      "Cancelled" : {
+        "changeReason" : {
+          "DataSupplierCancellation" : {
+            "reason" : "㉖碑ﴊ궫洁ꜰ釃옍"
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "魍",
+        "selectionName" : "흢",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "鯏⁗",
+        "selectionName" : "殱䪧",
+        "odds" : {
+          "value" : 751.5717
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "셙늢",
+        "selectionName" : "᝜",
+        "odds" : {
+          "value" : 136.3543
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "坤⇤",
+        "selectionName" : "銲",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "핮ഭ",
+        "selectionName" : "퐉",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "ODDIN",
+      "id" : "≠ꑙ朊闚렳朷"
+    },
+    "marketName" : "",
+    "marketType" : {
+      "NumberOfRounds" : {
+        
+      }
+    },
+    "marketCategory" : "",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : "ḙ⇒枂"
+      }
+    },
+    "specifiers" : {
+      "ც걔ኣ鳆熓" : "⩪焧峗鱳㉪ᨰ耪⛂쾫ꡡ",
+      "ꝺᛔ砳탈땑첟魉" : "哓읙",
+      "⢡嗫얀⏗ﶼ쨬" : "珡뎯㐦﬷ⴖ㦤熌诬嶹Ꜻ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "봐僂Ꟙᧇ",
+        "selectionName" : "爀",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "慃",
+        "selectionName" : "嵎壛",
+        "odds" : {
+          "value" : 406.5184
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "岮嵆",
+        "odds" : {
+          "value" : 9.6246
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "襧ᴨ䉕",
+        "selectionName" : "㼆",
+        "odds" : {
+          "value" : 798.6816
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "䴒Ꜥ렧",
+        "selectionName" : "",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "⏃",
+        "selectionName" : "⾋儠",
+        "odds" : {
+          "value" : 94.5389
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "牡荑耓",
+        "odds" : {
+          "value" : 300.1147
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㍹㡪",
+        "selectionName" : "ࢽ岋",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "峑镤",
+        "selectionName" : "᥅ᒱͭ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "ࡆ",
+        "selectionName" : "ﷸ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "⸜꺸",
+        "selectionName" : "繅",
+        "odds" : {
+          "value" : 469.1489
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "舅",
+        "selectionName" : "蛓肵忚",
+        "odds" : {
+          "value" : 412.3875
+        },
+        "active" : false
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "PHOENIX",
+      "id" : "㓈"
+    },
+    "marketName" : "แ㏔쇗豈뵈",
+    "marketType" : {
+      "RoundHandicap" : {
+        
+      }
+    },
+    "marketCategory" : "디ꌦ",
+    "marketStatus" : {
+      "Resettled" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        },
+        "newWinningSelection" : ""
+      }
+    },
+    "specifiers" : {
+      "ꜧ" : "Ἣ璺唤崀⌉赟垵柦࿇⧩◯挪",
+      "膯铉渋" : "魉"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "",
+        "selectionName" : "剔鋂ꗞ",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "༑",
+        "selectionName" : "뒗",
+        "odds" : {
+          "value" : 247.3070
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "⭣ଖ",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 13.8086
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "㳱蜭",
+        "selectionName" : "藜",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "彆",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 798.2078
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 788.8575
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "癊凑",
+        "selectionName" : "鲹",
+        "odds" : {
+          "value" : 773.3561
+        },
+        "active" : true
+      }
+    ]
+  },
+  {
+    "marketId" : {
+      "provider" : "BETGENIUS",
+      "id" : "⹿"
+    },
+    "marketName" : "砉",
+    "marketType" : {
+      "PistolRoundWinner" : {
+        
+      }
+    },
+    "marketCategory" : "豶",
+    "marketStatus" : {
+      "NotBettable" : {
+        "changeReason" : {
+          "DataSupplierStatusChange" : {
+            
+          }
+        }
+      }
+    },
+    "specifiers" : {
+      "댴ؤ⽽砱" : "",
+      "鎣熣㯁盄粄Ↄ཈죾䝳" : "鑡액",
+      "쵶씀뇬뤇褑䡺" : "怳ಥ뛅嚞ꢚ늅㼑웙",
+      "㑦淡ꄵ捩" : "㔈",
+      "琿猟ۿ粡䉫৩ᡋⷆ豓੹䜻羞\u0095" : "㶙鵌꩑产ﬠ㏝옧㨕쯮੣᠔",
+      "蠻哹" : "䫹灇蟕㨥摧Ⴠ"
+    },
+    "selectionOdds" : [
+      {
+        "selectionId" : "蟫ᩧ",
+        "selectionName" : "᨝莤",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "㰫뮨",
+        "selectionName" : "꧘䅁⮱",
+        "odds" : {
+          "value" : 801.5034
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "铱",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 732.7864
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "楬Ġ瞺",
+        "selectionName" : "좨엌顃",
+        "odds" : null,
+        "active" : false
+      },
+      {
+        "selectionId" : "섷㐙",
+        "selectionName" : "밡૶",
+        "odds" : {
+          "value" : 294.4544
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "앰蒲̒",
+        "selectionName" : "Ṧ곑",
+        "odds" : {
+          "value" : 24.8582
+        },
+        "active" : true
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "颛",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "訙ꟳ",
+        "selectionName" : "ᗕ餔",
+        "odds" : {
+          "value" : 568.8812
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "",
+        "selectionName" : "噩썣",
+        "odds" : {
+          "value" : 560.0575
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "䆗",
+        "selectionName" : "彩홶",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "蜅",
+        "selectionName" : "ٶ省",
+        "odds" : {
+          "value" : 784.8592
+        },
+        "active" : false
+      },
+      {
+        "selectionId" : "襦癅",
+        "selectionName" : "嘢",
+        "odds" : {
+          "value" : 1.0100
+        },
+        "active" : true
+      }
+    ]
+  }
+]

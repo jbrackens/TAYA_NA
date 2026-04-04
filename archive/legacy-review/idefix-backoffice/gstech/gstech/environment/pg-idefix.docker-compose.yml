@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  gstech-postgres:
+    image: public.ecr.aws/x1y4u7f1/gstech-postgres:idefix
+    platform: linux/amd64
+    container_name: gstech-postgres-idefix
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: root
+    command: postgres -c fsync=off -c full_page_writes=off -c synchronous_commit=OFF
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

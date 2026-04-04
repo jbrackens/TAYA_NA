@@ -1,0 +1,4 @@
+<tournament id=" od:tournament:862 " name=" Asian DOTA2 Gold Occupation Competition S19 " scheduled=" 2020-10-28T23:00:00 ">
+    <tournament_length start_date="2020-10-29"></tournament_length>
+    <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+</tournament>

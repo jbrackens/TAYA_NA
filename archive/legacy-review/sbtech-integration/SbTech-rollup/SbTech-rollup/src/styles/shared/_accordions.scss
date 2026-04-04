@@ -1,0 +1,38 @@
+
+$acc-bg: $main-bg;
+.content-title, .content-box {
+    border: 1px solid #ffffff;
+    background: $brand-base;
+    padding: 10px;
+}
+
+.content-title{
+  color:white;
+  h3{
+   margin:0;
+   padding:0;
+  }
+  &:hover {
+    cursor: pointer;
+    background: $brand-base-light;
+  }
+}
+
+.content-box {
+    color:$brand-base;
+    background:$acc-bg;
+    display: none;
+    a{
+      color:$brand-primary;
+    }
+}
+
+.section-title {
+    padding: 0;
+    background: none;
+    margin-top: 30px;
+    color: $brand-primary;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    font-size: 14px;
+}

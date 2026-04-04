@@ -1,0 +1,23 @@
+nameOverride: "prod-gstech-backoffice-service"
+fullnameOverride: "prod-gstech-backoffice-service"
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 5000
+
+ingress:
+  enabled: false
+
+env:
+  NODE_ENV: production

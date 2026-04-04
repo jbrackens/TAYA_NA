@@ -1,0 +1,139 @@
+{
+  "type": "record",
+  "name": "StateChange",
+  "namespace": "net.flipsports.gmx.dataapi.internal.customers.operations",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "createdDateUTC",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "companyId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "logicalType": "UUID"
+    },
+    {
+      "name": "externalUserId",
+      "type": "string"
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "action",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "ActionType",
+          "symbols": [
+            "TAG",
+            "FLAG",
+            "STATUS",
+            "NOTE",
+            "JIRA"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "operationTrigger",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "type": "record",
+          "name": "StraightValue",
+          "fields": [
+            {
+              "name": "value",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "operationKind",
+              "type": [
+                "null",
+                {
+                  "type": "enum",
+                  "name": "OperationKind",
+                  "symbols": [
+                    "add",
+                    "remove",
+                    "freeze",
+                    "removeSE",
+                    "removeTO",
+                    "selfExclude",
+                    "terminate",
+                    "timeOut",
+                    "unFreeze"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "ComplexValue",
+          "fields": [
+            {
+              "name": "value",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            },
+            {
+              "name": "operationKind",
+              "type": "OperationKind"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "operationTarget",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

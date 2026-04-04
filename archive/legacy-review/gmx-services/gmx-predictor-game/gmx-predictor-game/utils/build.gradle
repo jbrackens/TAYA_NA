@@ -1,0 +1,16 @@
+plugins {
+}
+
+description = "GMX Platform :: Predictor Game :: Tools"
+
+dependencies {
+    implementation project(':common')
+    implementation project(':domain')
+    implementation project(':gameengine')
+
+    implementation "org.scala-lang:scala-library:${scalaVersion}"
+    implementation "org.scala-lang.modules:scala-xml_${scalaDepVersion}:1.1.0"
+
+    implementation "com.softwaremill.sttp:core_${scalaDepVersion}:1.3.0"
+    implementation "com.typesafe.play:play-json_${scalaDepVersion}:2.6.9"
+}

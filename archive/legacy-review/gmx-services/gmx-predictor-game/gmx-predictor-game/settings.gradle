@@ -1,0 +1,10 @@
+include 'common'
+include 'domain'
+include 'security'
+include 'gameengine'
+include 'webgateway'
+include 'eventprocessor'
+include 'admin'
+include 'utils'
+
+rootProject.name = 'gmx-predictor-game'

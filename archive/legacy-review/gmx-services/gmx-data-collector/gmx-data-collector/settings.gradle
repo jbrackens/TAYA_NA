@@ -1,0 +1,8 @@
+include "pa-data-feed"
+include "pa-data-feed-model"
+include "pa-data-feed-tools"
+
+rootProject.name = "gmx-data-collector"
+rootProject.children.each {project ->
+	project.buildFileName = "${project.name}.gradle"
+}

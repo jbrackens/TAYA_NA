@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="logback-test-shared.xml"/>
+
+  <!-- Uncomment for debugging slick -->
+  <!-- <logger name="slick.jdbc.JdbcBackend.statement" level="DEBUG" /> -->
+  <!-- <logger name="slick.jdbc.JdbcBackend.statementAndParameter" level="DEBUG" /> -->
+  <!-- <logger name="slick.jdbc.JdbcBackend.parameter" level="DEBUG" /> -->
+  <!-- <logger name="slick.jdbc.JdbcBackend.benchmark" level="DEBUG" /> -->
+</configuration>

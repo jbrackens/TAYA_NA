@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sports generated_at="2020-09-03T12:24:18">
+    <sport id="od:sport:1" name="   League of Legends " abbreviation="LoL"></sport>
+    <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+    <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+    <sport id="od:sport:4" name="Fortnite" abbreviation="Fortnite"></sport>
+    <sport id="od:sport:5" name="Playerunknown’s Battlegrounds" abbreviation="PUBG"></sport>
+    <sport id="od:sport:6" name="FIFA" abbreviation="FIFA"></sport>
+    <sport id="od:sport:7" name="NBA2K" abbreviation="NBA2K"></sport>
+    <sport id="od:sport:8" name="Overwatch" abbreviation="Overwatch"></sport>
+    <sport id="od:sport:9" name="Hearthstone" abbreviation="Hearthstone"></sport>
+    <sport id="od:sport:10" name="Kings of Glory" abbreviation="KoG"></sport>
+    <sport id="od:sport:11" name="Starcraft 2" abbreviation="SC2"></sport>
+    <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+    <sport id="od:sport:13" name="Valorant" abbreviation="Valorant"></sport>
+    <sport id="od:sport:14" name="Starcraft 1" abbreviation="SC1"></sport>
+    <sport id="od:sport:15" name="Call of Duty" abbreviation="CoD"></sport>
+    <sport id="od:sport:16" name="Rainbow Six" abbreviation="R6"></sport>
+    <sport id="od:sport:17" name="NHL" abbreviation="NHL"></sport>
+</sports>

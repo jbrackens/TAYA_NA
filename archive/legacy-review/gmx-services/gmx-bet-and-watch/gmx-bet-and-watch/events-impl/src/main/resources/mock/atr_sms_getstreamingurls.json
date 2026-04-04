@@ -1,0 +1,57 @@
+{
+  "IsOK": true,
+  "EventInfo": {
+    "ID": 595752,
+    "ContentTypeID": 1009,
+    "EventNumber": 4,
+    "EventType": "Live",
+    "StartDateTime": "/Date(1580324400000)/",
+    "EndDateTime": "/Date(1580325300000)/",
+    "Description": "Race 4 - Maiden Claiming",
+    "Location": "Gulfstream",
+    "VenueCode": "GU",
+    "Country": "US",
+    "LiveEventStatus": "Available",
+    "VOD": false,
+    "GeoRule": {
+      "RuleType": "Allow",
+      "Countries": [
+        "JE",
+        "IE",
+        "IM",
+        "GB",
+        "GG"
+      ]
+    },
+    "Streams": [
+      {
+        "StreamID": 8276950,
+        "Bitrate": 450,
+        "BitrateLevel": "Medium",
+        "MediaFormat": "HLS",
+        "Url": "http://c167-live-geo501-atr-hls.secure.footprint.net/hls-live/livepkgr_e112/_definst_/200129_USGU_1900_WgfKVH_hds/200129_USGU_1900_WgfKVH_450_hds.m3u8?uh=9c341a2a913d749578260c620e16ec7a&grs=g111&etime=20200129200800&token=0a2479c829548c8a5a01b"
+      },
+      {
+        "StreamID": 8276951,
+        "Bitrate": 280,
+        "BitrateLevel": "Low",
+        "MediaFormat": "HLS",
+        "Url": "http://c167-live-geo501-atr-hls.secure.footprint.net/hls-live/livepkgr_e112/_definst_/200129_USGU_1900_WgfKVH_hds/200129_USGU_1900_WgfKVH_280_hds.m3u8?uh=9c341a2a913d749578260c620e16ec7a&grs=g111&etime=20200129200800&token=0c19917dab65366b4338a"
+      },
+      {
+        "StreamID": 8276952,
+        "Bitrate": 825,
+        "BitrateLevel": "High",
+        "MediaFormat": "HLS",
+        "Url": "http://c167-live-geo501-atr-hls.secure.footprint.net/hls-live/livepkgr_e112/_definst_/200129_USGU_1900_WgfKVH_hds/200129_USGU_1900_WgfKVH_825_hds.m3u8?uh=9c341a2a913d749578260c620e16ec7a&grs=g111&etime=20200129200800&token=0ccba1db071003f10df88"
+      },
+      {
+        "StreamID": 8276950,
+        "Bitrate": 825,
+        "BitrateLevel": "Adaptive",
+        "MediaFormat": "HLS",
+        "Url": "http://bw167.attheraces.com/hls/event/595752/1/0/livepkgr_e112/200129_USGU_1900_WgfKVH/280-450-825/pl.m3u8?pcode=c167&uh=9c341a2a913d749578260c620e16ec7a&base=c167-live-geo501-atr-hls.secure.footprint.net%2fhls-live&etime=20200129200800&grs=g111&key=IU64b4JAhxL%2bSmOTVV6%2fNKK3NfY"
+      }
+    ]
+  }
+}

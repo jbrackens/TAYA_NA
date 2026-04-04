@@ -1,0 +1,265 @@
+
+.overlay-verification{
+  display:none;
+  white-space:normal;
+  *{box-sizing:border-box;}
+  #verification-heading{
+    color:white;
+    font-size: 14px;
+    font-family:$brand-font--header;
+    color:$brand-base;
+    padding:20px;
+    background-position:98% 90%;
+    background-repeat:no-repeat;
+    margin-bottom:10px;
+    h2{
+      @include branded-heading;
+      font-size:18px;
+    }
+    h3{
+      margin-top:10px;
+    }
+    p{
+      margin-right:50px;
+      margin-top:10px;
+    }
+  }
+  &[data-status="passed"] #verification-heading{
+    background-color:#00b000;
+    background-image:url('/img/41955');
+  }
+  &[data-status="irepassed"] #verification-heading{
+    background-color:#00b000;
+    background-image:url('/img/41955');
+  }
+  &[data-status="failed"] #verification-heading{
+    background-color:#ffd11d;
+    background-image:url('/img/41957');
+  }
+  &[data-status="sfailed"] #verification-heading{
+    background-color:#ffd11d;
+    background-image:url('/img/41957');
+  }
+  &[data-status="pending"] #verification-heading{
+    background-color:#ffd11d;
+    background-image:url('/img/41957');
+  }
+  &[data-status="logged-out"] #verification-heading{
+    background-color:#ff521d;
+    background-image:url('/img/41957');
+  }
+  #verification-content{
+    color:white;
+    display:flex;
+    flex-direction:column;
+  }
+  .info-link{
+    text-decoration:none;
+    margin-bottom:10px;
+    display:block;
+  }
+  .info-box{
+    display:block;
+    position:relative;
+    height:100%;
+    padding:10px 10px 40px 10px;
+    font-size:14px;
+    background-repeat:no-repeat;
+    white-space:normal;
+    p{
+      line-height:1.6;
+      padding-right:100px;
+      margin-bottom:1em;
+    }
+    h2{
+      @include branded-heading;
+    }
+    &--fb{
+      background-color:#2757a4;
+      color:white;
+      padding-bottom:80px;
+      background-image:url('/img/41953');
+      background-size:auto 100px;
+      background-position:calc(100% - 20px) center;
+      .IsMobile &{
+        background-size:auto 80px;
+      }
+      h2{
+        @include branded-heading($brand-base, white, 18);
+      }
+    }
+    &--docs{
+      background-color:#353535;
+      color:white;
+      background-image:url('/img/41949');
+      background-position:calc(100% - 20px) calc(100% - 40px);
+      background-size:auto 80px;
+      h2{
+        @include branded-heading($brand-base, #ffbc1d, 18);
+      }
+    }
+    &--message{
+      background:#ffd11f;
+      color:$brand-base;
+      padding-bottom:10px;
+    }
+    .box-button{
+      @include brand-button(15, true);
+      position:absolute;
+      bottom:0;
+      left:0;
+      right:0;
+    }
+    &:hover .box-button{
+      background:$brand-primary--hover;
+    }
+    .key-terms{
+      position:absolute;
+      bottom:30px;
+      left:0;
+      right:0;
+      font-size:11px;
+      padding: 5px;
+      z-index:2;
+      background:#24385e;
+    }
+    ul{
+      list-style-type:disc;
+      margin-left:2em;
+      b{
+        font-size:1.2em;
+        line-height:1.8em;
+        text-transform:uppercase;
+      }
+    }
+    a{color:$brand-primary;}
+    .overlay-link{
+      position:absolute;
+      left:0;
+      right:0;
+      top:0;
+      bottom:0;
+      z-index:1;
+      display:block;
+    }
+    .small-text{
+      font-size:11px;
+      a{color:$brand-primary;}
+    }
+  }
+  #spinner-container{
+    padding:1em;
+  }
+  #spinner-container .spinner {
+    margin: 0 auto;
+    width: 150px;
+    & > div {
+      margin: 0 10px;
+      background-color: $brand-base;
+    }
+  }
+}
+
+.IsDesktop .account-check-status__wrap .facility-upload__text-value{
+  white-space: normal;
+  padding:0px;
+}
+.facility-upload__btn-input{
+  @include brand-button(15);
+}
+
+.account-check-doc-btn[data-uat="make-deposit-btn"]{
+  @include brand-button(15);
+}
+
+// pending - show p message, hide doc upload.
+.account-block div[data-uat="my-acc-resp-block-content"][data-rstatus="pending"],
+#my-account-pop-up[data-rstatus="pending"]{
+  .overlay-verification.pending-verification{
+    display:flex;
+    flex-direction:column;
+  }
+  .account-check-doc-btn[data-uat="make-deposit-btn"]{
+    display:none;
+  }
+  .account-doc-upload__wrap,
+  .account-check-doc-upload__wrap{
+    display:none;
+  }
+}
+// failed - show f message, show doc upload.
+.account-block div[data-uat="my-acc-resp-block-content"][data-rstatus="failed"],
+#my-account-pop-up[data-rstatus="failed"]{
+  .overlay-verification.failed-verification{
+    display:block;
+  }
+  .account-doc-upload__wrap,
+  .account-check-doc-upload__wrap{
+    display:none;
+  }
+  .account-check-doc-btn[data-uat="make-deposit-btn"]{
+    display:none;
+  }
+  .doc-upload__btn-wrap{
+    @include brand-header();
+  }
+}
+// passed - show p message, hide doc upload.
+.account-block div[data-uat="my-acc-resp-block-content"][data-rstatus="passed"],
+#my-account-pop-up[data-rstatus="passed"]{
+  .overlay-verification.passed-verification{
+    display:block;
+  }
+  //.account-doc-upload__wrap,
+  .account-check-doc-upload__wrap{
+    display:none;
+  }
+}
+// pending - show ire p message, hide doc upload.
+.account-block div[data-uat="my-acc-resp-block-content"][data-rstatus="irepassed"],
+#my-account-pop-up[data-rstatus="irepassed"]{
+  .overlay-verification.ire-passed-verification{
+    display:block;
+  }
+  .account-doc-upload__wrap,
+  .account-check-doc-upload__wrap{
+    display:none;
+  }
+}
+.ire-reg-button{
+  display:none;
+}
+// failed f - show s message, show doc upload.
+.account-block div[data-uat="my-acc-resp-block-content"][data-rstatus="sfailed"],
+#my-account-pop-up[data-rstatus="sfailed"]{
+  .overlay-verification.sfailed-verification{
+    display:block;
+  }
+  .account-doc-upload__wrap,
+  .account-check-doc-upload__wrap{
+    display:none;
+  }
+  .account-check-doc-btn[data-uat="make-deposit-btn"]{
+    display:none;
+  }
+  .doc-upload__btn-wrap{
+    @include brand-header();
+  }
+}
+
+.account-check-doc-upload__wrap{
+  display:none;
+}
+
+.IsMobile .account-check-status__wrap .facility-upload__text-value,
+.IsTablet .account-check-status__wrap .facility-upload__text-value{
+  padding:0px;
+}
+.IsMobile .account-check-doc-btn__wrap .redirect-button, .IsTablet .account-check-doc-btn__wrap .redirect-button{
+  @include brand-button(20, true);
+  width:calc(100% - 48px)
+}
+
+.myacc-block-content-inner a.ag-button{
+  color:white;
+}

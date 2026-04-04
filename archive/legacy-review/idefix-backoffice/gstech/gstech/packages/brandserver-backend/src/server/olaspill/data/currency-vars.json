@@ -1,0 +1,42 @@
+{
+  "NOK": {
+    "bonusvaluemultiplier": 10,
+    "depletion": 20,
+    "minimumdeposit": 200,
+    "maxbonusbet": 50,
+    "minimumdeposit25": 250,
+    "towageringcentsdivider": 1000,
+    "withdrawalfee": 3,
+    "freewithdrawalspermonth": 1,
+    "withdrawalfeemin": 2500,
+    "withdrawalfeemax": 25000,
+    "withdrawalmin": 30000,
+    "realmoney2eur": 20,
+    "realmoney5eur": 50,
+    "realmoney10eur": 100,
+    "realmoney20eur": 200,
+    "realmoney35eur": 350,
+    "realmoney50eur": 500,
+    "realmoney75eur": 750
+  },
+  "EUR": {
+    "bonusvaluemultiplier": 1,
+    "depletion": 2,
+    "minimumdeposit": 20,
+    "maxbonusbet": 5,
+    "minimumdeposit25": 25,
+    "towageringcentsdivider": 100,
+    "withdrawalfee": 3,
+    "freewithdrawalspermonth": 1,
+    "withdrawalfeemin": 250,
+    "withdrawalfeemax": 2500,
+    "withdrawalmin": 3000,
+    "realmoney2eur": 2,
+    "realmoney5eur": 5,
+    "realmoney10eur": 10,
+    "realmoney20eur": 20,
+    "realmoney35eur": 35,
+    "realmoney50eur": 50,
+    "realmoney75eur": 75
+  }
+}

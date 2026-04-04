@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: common
+  namespace: streaming
+data:
+  KAFKA_CLUSTER_HOST_PORT: kafka.streaming.svc.cluster.local:9092
+  ZOOKEEPER_CLUSTER_HOST_PORT: zookeeper.streaming.svc.cluster.local:2181
+  SCHEMA_REGISTRY_HOST: cp-schema-registry.streaming.svc.cluster.local
+  SCHEMA_REGISTRY_HOST_PORT: cp-schema-registry.streaming.svc.cluster.local:8081
+  KAFKA_REST_HOST: cp-kafka-rest.streaming.svc.cluster.local
+  KAFKA_REST_HOST_PORT: cp-kafka-rest.streaming.svc.cluster.local:8082
+  KAFKA_REST_URL: http://cp-kafka-rest.streaming.svc.cluster.local:8082

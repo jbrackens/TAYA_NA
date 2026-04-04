@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "SportEventUpdateKey",
+  "namespace": "gmx.dataapi.internal.siteextensions",
+  "fields": [
+    {
+      "name": "type",
+      "type": {
+        "type": "enum",
+        "name": "SportEventUpdateType",
+        "symbols": [
+          "Event",
+          "Market",
+          "Selection"
+        ]
+      }
+    },
+    {
+      "name": "id",
+      "type": "string"
+    }
+  ]
+}

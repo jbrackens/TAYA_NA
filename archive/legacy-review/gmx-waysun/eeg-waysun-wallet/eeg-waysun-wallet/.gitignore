@@ -1,0 +1,7 @@
+.bsp
+.idea
+*.log
+target
+
+/.java-version
+.DS_Store

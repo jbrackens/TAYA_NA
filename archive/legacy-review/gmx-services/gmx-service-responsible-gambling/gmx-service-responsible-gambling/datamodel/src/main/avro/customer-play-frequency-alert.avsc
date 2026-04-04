@@ -1,0 +1,11 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "CustomerPlayFrequencyAlert",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    }
+  ]
+}

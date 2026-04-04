@@ -1,0 +1,37 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: keycloak-config-setup
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "60"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  serviceAccountName: keycloak-config-setup
+  volumes:
+    - name: scripts
+      configMap:
+        name: keycloak-config-setup-scripts
+  containers:
+    - name: keycloak-config-setup
+      image: bitnami/kubectl:1.21
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts/
+          readOnly: true
+      securityContext:
+        # User and group 1001 are readily available in `bitnami/kubectl` image.
+        allowPrivilegeEscalation: false
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+      command: ["/bin/bash"]
+      args:
+        - /scripts/setup_keycloak_oidc_json_secret.sh
+        - "{{ .Release.Namespace }}"
+        - "{{ .Values.keycloak.namespace }}"
+        - "https://keycloak.{{ .Values.keycloak.namespace }}:8443"
+        - "{{ .Values.keycloak.realm }}"
+        - "phoenix-backend"  # Keycloak OIDC client

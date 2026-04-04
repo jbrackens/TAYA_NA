@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+  <gc_transaction>0e2764f99f2b04f6</gc_transaction>
+  <error_code>1</error_code>
+  <error_message>boundary</error_message>
+  <error_details>
+    <boundary type="no_data" description="No coordinates were provided"/>
+  </error_details>
+  <error_summary>
+    <unconfirm_boundary>1</unconfirm_boundary>
+    <out_of_boundary>1</out_of_boundary>
+    <blocked_service>1</blocked_service>
+    <blocked_software>1</blocked_software>
+    <unconfirm_user>1</unconfirm_user>
+  </error_summary>
+  <sdk solution="Browser Plugin" os="Mac"/>
+  <geolocate_in>0</geolocate_in>
+  <conn_type>mobile</conn_type>
+  <mac_address>38:F9:D3:8C:E2:42</mac_address>
+  <device_uuid>C02Y842KJGH6</device_uuid>
+  <ip ipaddress="82.11.149.37" proxyscore="0.00" lat="" lon="" acc="" country_code="" country="" region_code="" region="" city=""
+    err="203"/>
+  <wifi lat="" lon="" acc="" country_code="" country="" region_code="" region="" city="" street="" err="201"/>
+  <gsm lat="" lon="" acc="" country_code="" country="" region_code="" region="" city="" street="" err="202"/>
+  <gps lat="" lon="" acc="" country_code="" country="" region_code="" region="" city="" street="" err="202"/>
+  <user_id>1234</user_id>
+  <reason>LOGIN</reason>
+  <custom_fields>
+    <custom_field id="session_key">Your SessionKey</custom_field>
+  </custom_fields>
+  <timestamp>2021-05-17T09:14:47.847Z</timestamp>
+  <troubleshooter>
+    <message rule="boundary" retry="1" help="https://youtu.be/l0iOQmx1qpo">More location data is needed to confirm you're in a permitted area. Make sure location services are enabled or your device is in range of multiple wireless connections. Please address the items above, then try again.</message>
+    <message rule="boundary" retry="0" optin="http://domain.com/some-article.html">Your browser doesn't support geolocation. Please try again with a modern browser.</message>
+  </troubleshooter>
+</nodes>

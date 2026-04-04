@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "CustomerOperationId",
+  "namespace": "net.flipsports.gmx.dataapi.internal.customers.operations",
+  "fields": [
+    {
+      "name": "externalUserId",
+      "type": "string"
+    }
+  ]
+}

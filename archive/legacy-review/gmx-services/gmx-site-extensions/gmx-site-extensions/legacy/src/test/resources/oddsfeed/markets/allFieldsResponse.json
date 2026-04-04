@@ -1,0 +1,41 @@
+{
+  "code": 0,
+  "Sports": [
+    {
+      "SportID": 1,
+      "SportName": "Soccer",
+      "Leagues": [
+        {
+          "LeagueID": 39853,
+          "LeagueName": "Sweden Cup",
+          "RankID": 1191,
+          "CountryID": 192,
+          "Games": [
+            {
+              "GameID": 9431240,
+              "Home": "Sirius",
+              "Away": "IFK Goteborg",
+              "GameDate": "2018-03-04T16:00:00",
+              "IsLive": 0,
+              "GameType": 0,
+              "HasLiveStreaming": 0,
+              "Markets": [
+                {
+                  "MarketTypeID": 1570002,
+                  "Lines": [
+                    {
+                      "LineID": "R346331458",
+                      "LineIntID": 346331458,
+                      "LineGroupID": 49502957,
+                      "LineName": "Home"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

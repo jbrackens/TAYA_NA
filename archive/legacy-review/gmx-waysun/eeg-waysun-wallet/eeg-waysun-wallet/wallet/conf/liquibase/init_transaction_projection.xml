@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="init_transaction_projection">
+        <createTable tableName="wallet_transactions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="transaction_type" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="decimal">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exchange_to_currency_id" type="uuid">
+                <constraints nullable="true"/>
+            </column>
+            <column name="exchange_rate" type="decimal">
+                <constraints nullable="true"/>
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wallet_owner_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="requester_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_transaction_id" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_date" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="wallet_transactions" indexName="idx_search">
+            <column name="wallet_owner_id"/>
+            <column name="transaction_type"/>
+            <column name="transaction_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

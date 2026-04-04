@@ -1,0 +1,11 @@
+apiVersion: v2
+name: eeg-lenses-io
+description: A Helm chart for Kubernetes to deploy Lenses
+type: application
+version: 0.1.0
+appVersion: "4.3.19"
+
+dependencies:
+- name: lenses
+  version: "4.3.19"
+  repository: "https://helm.repo.lenses.io"

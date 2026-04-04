@@ -1,0 +1,129 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$jurassicpark_common_copy_name = 'jurassicpark_common_copy';
+$jurassicpark_common_copy_x = 239px;
+$jurassicpark_common_copy_y = 304px;
+$jurassicpark_common_copy_offset_x = -239px;
+$jurassicpark_common_copy_offset_y = -304px;
+$jurassicpark_common_copy_width = 150px;
+$jurassicpark_common_copy_height = 7px;
+$jurassicpark_common_copy_total_width = 962px;
+$jurassicpark_common_copy_total_height = 490px;
+$jurassicpark_common_copy_image = 'jurassicpark_common_b.png';
+$jurassicpark_common_copy = 239px 304px -239px -304px 150px 7px 962px 490px 'jurassicpark_common_b.png' 'jurassicpark_common_copy';
+$jurassicpark_common_dino02_name = 'jurassicpark_common_dino02';
+$jurassicpark_common_dino02_x = 0px;
+$jurassicpark_common_dino02_y = 0px;
+$jurassicpark_common_dino02_offset_x = 0px;
+$jurassicpark_common_dino02_offset_y = 0px;
+$jurassicpark_common_dino02_width = 483px;
+$jurassicpark_common_dino02_height = 300px;
+$jurassicpark_common_dino02_total_width = 962px;
+$jurassicpark_common_dino02_total_height = 490px;
+$jurassicpark_common_dino02_image = 'jurassicpark_common_b.png';
+$jurassicpark_common_dino02 = 0px 0px 0px 0px 483px 300px 962px 490px 'jurassicpark_common_b.png' 'jurassicpark_common_dino02';
+$jurassicpark_common_dino1_name = 'jurassicpark_common_dino1';
+$jurassicpark_common_dino1_x = 487px;
+$jurassicpark_common_dino1_y = 0px;
+$jurassicpark_common_dino1_offset_x = -487px;
+$jurassicpark_common_dino1_offset_y = 0px;
+$jurassicpark_common_dino1_width = 475px;
+$jurassicpark_common_dino1_height = 300px;
+$jurassicpark_common_dino1_total_width = 962px;
+$jurassicpark_common_dino1_total_height = 490px;
+$jurassicpark_common_dino1_image = 'jurassicpark_common_b.png';
+$jurassicpark_common_dino1 = 487px 0px -487px 0px 475px 300px 962px 490px 'jurassicpark_common_b.png' 'jurassicpark_common_dino1';
+$jurassicpark_common_logo_name = 'jurassicpark_common_logo';
+$jurassicpark_common_logo_x = 0px;
+$jurassicpark_common_logo_y = 304px;
+$jurassicpark_common_logo_offset_x = 0px;
+$jurassicpark_common_logo_offset_y = -304px;
+$jurassicpark_common_logo_width = 235px;
+$jurassicpark_common_logo_height = 186px;
+$jurassicpark_common_logo_total_width = 962px;
+$jurassicpark_common_logo_total_height = 490px;
+$jurassicpark_common_logo_image = 'jurassicpark_common_b.png';
+$jurassicpark_common_logo = 0px 304px 0px -304px 235px 186px 962px 490px 'jurassicpark_common_b.png' 'jurassicpark_common_logo';
+$spritesheet_width = 962px;
+$spritesheet_height = 490px;
+$spritesheet_image = 'jurassicpark_common_b.png';
+$spritesheet_sprites = $jurassicpark_common_copy $jurassicpark_common_dino02 $jurassicpark_common_dino1 $jurassicpark_common_logo;
+$spritesheet = 962px 490px 'jurassicpark_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

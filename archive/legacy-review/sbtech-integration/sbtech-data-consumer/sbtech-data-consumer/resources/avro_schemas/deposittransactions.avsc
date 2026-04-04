@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "CustomerDepositDetails",
+  "namespace": "SBTech.Microservices.Regulations.RabbitMQProducers.Models",
+  "fields": [
+    {
+      "name": "CustomerID",
+      "type": "int"
+    },
+    {
+      "name": "FD_Date",
+      "type": "long"
+    },
+    {
+      "name": "FD_Amount",
+      "type": "double"
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "long"
+    }
+  ]
+}

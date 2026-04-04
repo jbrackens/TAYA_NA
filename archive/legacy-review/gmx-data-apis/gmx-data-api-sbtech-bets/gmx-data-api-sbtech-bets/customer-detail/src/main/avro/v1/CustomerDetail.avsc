@@ -1,0 +1,435 @@
+{
+  "type": "record",
+  "name": "CustomerDetail",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.CustomerDetails.v1",
+  "fields": [
+    {
+      "name": "MessageCreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CustomerName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "LoginName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "RegistrationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "RegistrationProduct",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "FirstDepositDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "FirstDepositAmount",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "FirstAccessDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "FirstAccessProduct",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "DateOfBirth",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "Gender",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CustomerStatus",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CustomerLevelID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CurrencyCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CountryCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "City",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Address",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "ZipCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "IsExceptionCustomer",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "Email",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "NationalityCode",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "Pesel",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "MarketingSubscription",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "DocumentTypeCode",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "DocumentID",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "DocumentExpirationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "OddStyleCode",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "DepositLimitTypeCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "DepositLimit",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "IsNon3DDepositVerified",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "VerificationStatus",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "NationalityISOCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "MerchantCustomerCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "AffiliateTag",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "IsSelfexcluded",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "SelfExclutionStartDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "SelfExclutionEndDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "CustomerTags",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CustomerFirstName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CustomerLastName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "TimeOutRequestID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "IsOnTimeOut",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "TimeoutStartDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "TimeoutEndDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "MediaTag",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CustomerMiddleName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CustomerAlias",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "OperatorIpAddress",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "DepartmentOfBirth",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "FixedLinePhoneNumber",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "MobilePhoneNumber",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CountryId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CountryOfBirthId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CountryOfBirthName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "TownOfBirth",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "EmpoyeeID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "DepartmentOfBirthCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "ClosingBalance",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "DisabledReason",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "DefaultLanguage",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

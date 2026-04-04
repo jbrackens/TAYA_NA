@@ -1,0 +1,33 @@
+plugins {
+    id 'application'
+    id "com.palantir.docker"
+}
+
+description = "GMX Platform :: Predictor Game :: Event Processor"
+
+ext {
+    dockerName = "${dockerRegistry}/${dockerRegistryGroup}/${project.name}"
+}
+
+dependencies {
+    implementation project(':common')
+    implementation project(':domain')
+    implementation project(':gameengine')
+    
+    compile "org.scala-lang:scala-library:${scalaVersion}"
+
+    compile "org.apache.kafka:kafka_${scalaDepVersion}:${kafkaVersion}"
+    compile "org.apache.kafka:kafka-clients:${kafkaVersion}"
+
+    compile "net.flipsports.gmx.intake.internal.datacollector:pa-data-feed-model:1.1.0"
+}
+
+docker {
+    dependsOn build
+    name "${dockerName}:${project.version}"
+    tag 'latest', "${dockerName}:latest"
+    files tasks.distTar.outputs
+    buildArgs(['JAR_FILE': "${project.name}-${project.version}", 'APP_NAME': "${project.name}", 'VCS_REF': "${System.getenv('VCS_REF')}"])
+}
+
+mainClassName = "tech.argyll.gmx.predictorgame.eventprocessor.KafkaEventConsumer"

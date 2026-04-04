@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "CustomerMessageKey",
+  "namespace": "gmx.dataapi.internal.customer",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string",
+      "doc": "Identifier of the customer"
+    }
+  ]
+}

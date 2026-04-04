@@ -1,0 +1,69 @@
+{
+  "type": "record",
+  "name": "LoginData",
+  "namespace": "net.flipsports.gmx.rewardcalculator.api",
+  "fields": [
+    {
+      "name": "login_id",
+      "type": "string"
+    },
+    {
+      "name": "customer_id",
+      "type": "int"
+    },
+    {
+      "name": "login_name",
+      "type": "string"
+    },
+    {
+      "name": "site_name",
+      "type": "string"
+    },
+    {
+      "name": "country",
+      "type": "string"
+    },
+    {
+      "name": "login_date",
+      "type": "int",
+      "logicalType": "date"
+    },
+    {
+      "name": "logout_date",
+      "type": "int",
+      "logicalType": "date"
+    },
+    {
+      "name": "login_ip",
+      "type": "string"
+    },
+    {
+      "name": "login_proxy_ip",
+      "type": "string"
+    },
+    {
+      "name": "ua_family",
+      "type": "string"
+    },
+    {
+      "name": "ua_name",
+      "type": "string"
+    },
+    {
+      "name": "os_company",
+      "type": "string"
+    },
+    {
+      "name": "os_name",
+      "type": "string"
+    },
+    {
+      "name": "device_type",
+      "type": "string"
+    },
+    {
+      "name": "loading_update_date",
+      "type": "long"
+    }
+  ]
+}

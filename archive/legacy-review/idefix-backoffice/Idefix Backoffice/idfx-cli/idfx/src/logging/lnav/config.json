@@ -1,0 +1,45 @@
+{
+  "$schema": "https://lnav.org/schemas/config-v1.schema.json",
+  "ui": {
+    "keymap-defs": {
+      "default": {
+        "x01": {
+          "command": ":toggle-filtering",
+          "alt-msg": "(C-A) :toggle-filtering"
+        },
+        "x13": {
+          "command": ":toggle-filtering",
+          "alt-msg": "(C-S) :toggle-filtering"
+        },
+        "x14": {
+          "command": "|filterTrace",
+          "alt-msg": "(C-T) Show only logs from this trace"
+        },
+        "x18": {
+          "command": "|expandLog",
+          "alt-msg": "(C-X) Expand JSON with jless"
+        },
+        "x1e": {
+          "command": ":disable-word-wrap",
+          "alt-msg": "(C-^)(S-C-6) :disable-word-wrap"
+        },
+        "x1f": {
+          "command": ":enable-word-wrap",
+          "alt-msg": "(C-7) :enable-word-wrap"
+        },
+        "x2c": {
+          "command": "|goToPrevTrace",
+          "alt-msg": "(,) Previous Trace"
+        },
+        "x2e": {
+          "command": "|goToNextTrace",
+          "alt-msg": "(.) Next Trace"
+        },
+        "x05": {
+          "command": ":redraw",
+          "alt-msg": "(C-e) Redraw"
+        }
+      }
+    }
+  }
+}

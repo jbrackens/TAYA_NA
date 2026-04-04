@@ -1,0 +1,64 @@
+name: EEG CD PROD CASINOJEFE
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  ecr:
+    permissions:
+      id-token: write
+      contents: read
+
+    runs-on: ubuntu-latest
+    name: Push to ECR
+    steps:
+      - name: Checkout
+        uses: actions/checkout@e2f20e631ae6d7dd3b768f56a5d2af784dd54791
+        with:
+          fetch-depth: 2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        with:
+          role-to-assume: arn:aws:iam::743851384875:role/luckydino-dev-ecr-push
+          aws-region: eu-central-1
+      - run: aws sts get-caller-identity
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@261a7de32bda11ba01f4d75c4ed6caf3739e54be
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@8c0edbc76e98fa90f69d9a2c020dcb50019dc325
+
+      - name: Cache docker layers
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx
+
+      - name: Docker build and push
+        uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5
+        with:
+          context: .
+          push: true
+          file: Dockerfile
+          tags: ${{ steps.login-ecr.outputs.registry }}/casinojefe-strapi-cms:${{ github.ref_name }}-${{ github.sha }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+       # This is necessary if you don't want your cache to grow forever until it hits GitHub's limit of 10GB.
+       # https://github.com/docker/build-push-action/issues/252
+       # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Log out of Amazon ECR
+        if: always()
+        run: docker logout ${{ steps.login-ecr.outputs.registry }}

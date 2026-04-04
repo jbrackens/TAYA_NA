@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "CustomerId",
+  "namespace": "net.flipsports.gmx.rewardcalculator.api",
+  "fields": [
+    {
+      "name": "externalUserId",
+      "type": "string"
+    }
+  ]
+}

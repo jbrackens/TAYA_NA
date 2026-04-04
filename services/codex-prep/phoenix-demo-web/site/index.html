@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phoenix Demo Sportsbook</title>
+    <meta name="description" content="Player-facing demo for the Phoenix Go platform." />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Phoenix Platform</p>
+          <h1>Sportsbook Demo</h1>
+        </div>
+        <nav class="topnav">
+          <a href="#sportsbook">Sportsbook</a>
+          <a href="#wallet">Wallet</a>
+          <a href="#bets">Bets</a>
+          <a href="#rewards">Rewards</a>
+          <a href="#account">Account</a>
+        </nav>
+        <div class="session-panel" id="session-panel"></div>
+      </header>
+
+      <main class="layout">
+        <section class="hero card card-hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Live Demo</p>
+            <h2>Real player flow on the Go platform</h2>
+            <p class="hero-text">
+              This frontend talks directly to the Phoenix Go services. Register, fund the wallet, browse markets,
+              place bets, and inspect the wider platform surfaces without the old Scala contract in the middle.
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary" id="scroll-markets">Browse markets</button>
+              <button class="btn btn-secondary" id="scroll-auth">Use demo login</button>
+            </div>
+          </div>
+          <div class="hero-aside" id="hero-aside"></div>
+        </section>
+
+        <section class="content-grid">
+          <div class="main-column">
+            <section class="card section-card" id="sportsbook">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Markets</p>
+                  <h3>Featured sportsbook board</h3>
+                </div>
+                <div class="sport-filters" id="sport-filters"></div>
+              </div>
+              <div class="market-board" id="market-board"></div>
+            </section>
+
+            <section class="card section-card" id="wallet">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Wallet</p>
+                  <h3>Balance, deposits, and transaction trail</h3>
+                </div>
+                <button class="btn btn-secondary" id="refresh-wallet">Refresh</button>
+              </div>
+              <div class="wallet-grid">
+                <div class="wallet-summary" id="wallet-summary"></div>
+                <div class="wallet-actions">
+                  <div class="action-block">
+                    <h4>Create wallet</h4>
+                    <p class="muted">Initialise the player wallet if it does not exist yet.</p>
+                    <button class="btn btn-secondary" id="create-wallet">Create wallet</button>
+                  </div>
+                  <form class="action-block" id="deposit-form">
+                    <h4>Simulated deposit</h4>
+                    <label>
+                      <span>Amount (USD)</span>
+                      <input name="amount" type="number" min="10" step="10" value="100" />
+                    </label>
+                    <button class="btn btn-primary" type="submit">Deposit funds</button>
+                  </form>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Type</th>
+                      <th>Amount</th>
+                      <th>Balance after</th>
+                      <th>Reference</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transactions-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="card section-card" id="bets">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Open and recent bets</p>
+                  <h3>Player activity</h3>
+                </div>
+                <button class="btn btn-secondary" id="refresh-bets">Refresh</button>
+              </div>
+              <div class="bets-grid" id="bets-grid"></div>
+            </section>
+
+            <section class="card section-card" id="rewards">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Retention</p>
+                  <h3>Loyalty and leaderboard snapshot</h3>
+                </div>
+              </div>
+              <div class="split-grid">
+                <div class="subcard" id="loyalty-card"></div>
+                <div class="subcard" id="achievements-card"></div>
+              </div>
+              <div class="subcard" id="leaderboard-card"></div>
+            </section>
+
+            <section class="card section-card" id="account">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Account</p>
+                  <h3>Profile, notifications, and safer-play controls</h3>
+                </div>
+              </div>
+              <div class="split-grid">
+                <div class="subcard" id="profile-card"></div>
+                <div class="subcard" id="notification-card"></div>
+              </div>
+              <div class="split-grid">
+                <div class="subcard" id="limits-card"></div>
+                <div class="subcard" id="restrictions-card"></div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="rail-column">
+            <section class="card rail-card" id="auth-rail">
+              <div class="rail-header">
+                <p class="eyebrow">Access</p>
+                <h3>Login / register</h3>
+              </div>
+              <div class="demo-creds">
+                <p>Seeded player credentials:</p>
+                <code>demoplayer / Password123!</code>
+              </div>
+              <form class="stack-form" id="login-form">
+                <label>
+                  <span>Email or username</span>
+                  <input name="identifier" value="demoplayer" required />
+                </label>
+                <label>
+                  <span>Password</span>
+                  <input name="password" type="password" value="Password123!" required />
+                </label>
+                <button class="btn btn-primary" type="submit">Login</button>
+              </form>
+              <hr />
+              <form class="stack-form" id="register-form">
+                <label><span>Email</span><input name="email" type="email" required /></label>
+                <label><span>Username</span><input name="username" required /></label>
+                <label><span>Password</span><input name="password" type="password" value="Password123!" required /></label>
+                <label><span>First name</span><input name="first_name" value="Demo" required /></label>
+                <label><span>Last name</span><input name="last_name" value="Player" required /></label>
+                <label><span>Date of birth</span><input name="date_of_birth" type="date" value="1990-01-01" required /></label>
+                <label><span>Country</span><input name="country" value="MT" required /></label>
+                <button class="btn btn-secondary" type="submit">Create account</button>
+              </form>
+            </section>
+
+            <section class="card rail-card" id="betslip-card">
+              <div class="rail-header">
+                <p class="eyebrow">Betslip</p>
+                <h3>Place a wager</h3>
+              </div>
+              <div id="betslip-empty" class="empty-state">Choose a market outcome to start a bet.</div>
+              <div id="betslip-content" class="hidden">
+                <div id="selected-bet"></div>
+                <form class="stack-form" id="bet-form">
+                  <label>
+                    <span>Stake</span>
+                    <input name="stake" type="number" min="1" step="1" value="10" />
+                  </label>
+                  <button class="btn btn-primary" type="submit">Place bet</button>
+                </form>
+              </div>
+            </section>
+
+            <section class="card rail-card">
+              <div class="rail-header">
+                <p class="eyebrow">Content</p>
+                <h3>Promotions and guidance</h3>
+              </div>
+              <div id="banner-rail"></div>
+              <div id="promotion-rail"></div>
+              <div id="pages-rail"></div>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

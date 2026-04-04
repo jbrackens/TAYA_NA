@@ -1,0 +1,12 @@
+
+# files
+.env
+.DS_Store
+.pyc
+
+# directories
+temp
+.idea
+venv
+__pycache__/
+output/

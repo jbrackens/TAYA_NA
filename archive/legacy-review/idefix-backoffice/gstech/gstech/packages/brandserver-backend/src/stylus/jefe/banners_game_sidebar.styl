@@ -1,0 +1,37 @@
+#game-slider .sidebar
+  position relative
+  z-index 200
+  max-height 680px
+  height 100%
+  float right
+  width 240px
+  overflow hidden
+
+  .banners
+    width 100%
+    height 100%
+
+  .buttons
+    height 40px
+    position absolute
+    top 0
+    right 0
+    left 0
+    z-index 200
+    white-space nowrap
+    a
+      background-color $header-color
+      &.selected
+        background-color transparent
+      display inline-block
+    .level-button
+      sprite2x($button_level, $button_level_2x)
+    .bounty-button
+      sprite2x($button_bounty, $button_bounty_2x)
+    .wheel-button
+      sprite2x($button_wheel, $button_wheel_2x)
+    .hide-info-button
+      sprite2x($button_hide, $button_hide_2x)
+    .close-button
+      closebutton()
+      background-color $jefe-blue

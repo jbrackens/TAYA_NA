@@ -1,0 +1,1 @@
+ALTER TABLE reporting_punters ADD COLUMN activation_path varchar NOT NULL DEFAULT 'UNKNOWN';

@@ -1,0 +1,38 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: setup-realm-and-client
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "940"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  serviceAccountName: setup-realm-and-client
+  restartPolicy: Never
+  volumes:
+    - name: scripts
+      configMap:
+        name: setup-realm-and-client
+  containers:
+    - name: setup-realm-and-client
+      image: bitnami/kubectl:1.21
+      command: ["/bin/bash"]
+      args:
+        - "/scripts/setup-realm-and-client.sh"
+        - "{{ .Release.Namespace }}"
+        - "{{ .Values.realm.name }}"
+        - "{{ .Values.client.name }}"
+      volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+      securityContext:
+        # User and group 1001 are readily available in `bitnami/kubectl` image.
+        allowPrivilegeEscalation: false
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001

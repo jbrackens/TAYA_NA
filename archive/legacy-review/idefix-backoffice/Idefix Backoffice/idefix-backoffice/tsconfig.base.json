@@ -1,0 +1,34 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "useUnknownInCatchVariables": false,
+    "noImplicitReturns": false,
+    "baseUrl": ".",
+    "paths": {
+      "@idefix-backoffice/idefix/api": ["libs/idefix/api/src/index.ts"],
+      "@idefix-backoffice/idefix/components": ["libs/idefix/components/src/index.ts"],
+      "@idefix-backoffice/idefix/dialogs": ["libs/idefix/dialogs/src/index.ts"],
+      "@idefix-backoffice/idefix/forms": ["libs/idefix/forms/src/index.ts"],
+      "@idefix-backoffice/idefix/store": ["libs/idefix/store/src/index.ts"],
+      "@idefix-backoffice/idefix/types": ["libs/idefix/types/src/index.ts"],
+      "@idefix-backoffice/idefix/utils": ["libs/idefix/utils/src/index.ts"],
+      "@idefix-backoffice/shared/hooks": ["libs/shared/hooks/src/index.ts"],
+      "@idefix-backoffice/shared/ui": ["libs/shared/ui/src/index.ts"],
+      "@idefix-backoffice/shared/utils": ["libs/shared/utils/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

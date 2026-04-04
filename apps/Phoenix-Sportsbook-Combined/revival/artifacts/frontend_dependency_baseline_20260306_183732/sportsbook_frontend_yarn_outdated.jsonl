@@ -1,0 +1,2 @@
+{"type":"error","data":"Outdated lockfile. Please run `yarn install` and try again."}
+{"type":"info","data":"Visit https://yarnpkg.com/en/docs/cli/outdated for documentation about this command."}

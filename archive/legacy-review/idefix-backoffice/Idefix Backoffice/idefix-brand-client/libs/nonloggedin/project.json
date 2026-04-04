@@ -1,0 +1,42 @@
+{
+  "root": "libs/nonloggedin",
+  "sourceRoot": "libs/nonloggedin/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nrwl/web:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/nonloggedin",
+        "tsConfig": "libs/nonloggedin/tsconfig.lib.json",
+        "project": "libs/nonloggedin/package.json",
+        "entryFile": "libs/nonloggedin/src/index.ts",
+        "external": ["react/jsx-runtime"],
+        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+        "assets": [
+          {
+            "glob": "libs/nonloggedin/README.md",
+            "input": ".",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/nonloggedin/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/nonloggedin"],
+      "options": {
+        "jestConfig": "libs/nonloggedin/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

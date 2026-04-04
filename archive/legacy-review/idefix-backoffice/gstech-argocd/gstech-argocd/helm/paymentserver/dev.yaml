@@ -1,0 +1,46 @@
+nameOverride: "dev-gstech-paymentserver-service"
+fullnameOverride: "dev-gstech-paymentserver-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3006
+
+extraTCPPorts:
+  private-api: 3007
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-gstech-paymentserver-service
+  hosts:
+  - host: papi-luckydino.dev.eeg.viegg.net
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: dev-gstech-paymentserver-service
+      servicePort: 3006
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+  tls: []
+
+env:
+  NODE_ENV: development
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  PUBLIC_URL: https://beta-papi.luckydino.com

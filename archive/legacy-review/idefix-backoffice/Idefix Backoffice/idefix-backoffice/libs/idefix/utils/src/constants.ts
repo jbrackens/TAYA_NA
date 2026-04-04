@@ -1,0 +1,87 @@
+export const PLAYER_RISK_PROFILE = [
+  { value: "low", label: "Low" },
+  { value: "medium_low", label: "Medium low" },
+  { value: "medium", label: "Medium" },
+  { value: "medium_high", label: "Medium high" },
+  { value: "high", label: "High" }
+];
+
+export const ROW_HEIGHT = 56;
+
+export const MAX_SIZE_OF_DATA = 10000000;
+
+export const DIRECTA24_WD_PAYMENT_METHODS = ["BrazilBankWD", "PeruBankWD", "ChileBankWD"];
+
+export const ACCOUNT_IDENTIFIER_LABEL = {
+  CreditCard: "Card number",
+  Moneta: "Moneta number",
+  EcoCard: "Email",
+  Zimpler: "Phone number",
+  MuchBetter: "Phone number",
+  BankTransfer: "IBAN / Bank Account",
+  Skrill: "Email",
+  Neteller: "Neteller Account or Email",
+  COMMUNITYBANK: "IBAN / Bank Account",
+  BrazilBankWD: "IBAN / Bank Account",
+  PeruBankWD: "IBAN / Bank Account",
+  ChileBankWD: "IBAN / Bank Account"
+};
+
+export const SOW_QUESTIONNAIRE_ANSWERS = {
+  food: "Accommodation and Food Service",
+  audit: "Accounting & Auditing",
+  agricultural: "Agricultural Services",
+  animal: "Animal & Wildlife Trade",
+  architect: "Architectural activities",
+  auction: "Art & Auction House",
+  automotive: "Automotive & Mechanical Engineering",
+  aviation: "Aviation & Aeronautical Engineering",
+  beauty: "Beauty & Salon Services",
+  carWash: "Car Wash Industry",
+  charity: "Charity & Non-profit foundations",
+  cleaning: "Cleaning Services",
+  development: "Computer & Software Development",
+  construction: "Construction",
+  consultancy: "Consultancy Services",
+  crypto: "Cryptocurrency, Digital Currency Technology",
+  currency: "Currency Exchanges",
+  eCommerce: "E-commerce",
+  cosmetics: "Cosmetics Manufacturing",
+  energy: "Energy & Utilities (Oil, Gas, Electric, Hydroelectric, Coal, Solar)",
+  forestry: "Forestry",
+  gambling: "Gambling & Entertainment",
+  finances: "Financial Services (Commercial, Retail & Investment Banking)",
+  health: "Healthcare Services",
+  insurance: "Insurance",
+  hr: "HR & Recruitment",
+  luxury: "Luxury Trade",
+  information: "Information & Communication",
+  legal: "Legal services",
+  mining: "Mining",
+  payment: "Payment Processing Services",
+  manufacture: "Manufacturing",
+  metals: "Precious Metals Trade",
+  privateEducation: "Private Education Sector",
+  marketing: "Marketing & Advertising",
+  realEstate: "Real Estate",
+  military: "Military",
+  shipping: "Shipping & Freight",
+  taxi: "Taxi services",
+  travel: "Travel & Hospitality Agencies",
+  warehouse: "Warehousing & Storage",
+  pharmacy: "Pharmaceutical",
+  plumbing: "Plumbing, Heating, Electrician & Air Conditioning",
+  yachting: "Yachting & Maritime Trade",
+  publicEducation: "Public Education Sector",
+  publicTransport: "Public Transportation",
+  publishing: "Publishing",
+  recreation: "Recreation Services",
+  waste: "Waste Management",
+  wholesale: "Wholesale & Retail Trade",
+  other: "Other",
+  "<1k": "below €1,000",
+  "1-2k": "€1,000 to €1,999",
+  "2-3k": "€2,000 to €2,999",
+  "3-5k": "€3,000 to €4,999",
+  ">5k": "above €5,000"
+};

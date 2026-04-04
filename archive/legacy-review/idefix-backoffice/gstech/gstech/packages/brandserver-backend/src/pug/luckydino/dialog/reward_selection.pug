@@ -1,0 +1,72 @@
+.freespins-dialog
+  .freespins-dialog__dialog
+    h1!=localize('affliatefs.popup.text', {}, {format: 'markdown'}).replace('<p>','').replace('</p>', '')
+    h2=localize('affliatefs.popup.text2')
+    .freespins-dialog__dialog_games
+      a.freespins-dialog__dialog_games_game(href='/loggedin/game/gonzosquest/')
+        img(src='https://static.luckydino.com/thumbs/NETENT/gonzosquest.jpg')
+      a.freespins-dialog__dialog_games_game(href='/loggedin/game/stickers/')
+        img(src='https://static.luckydino.com/thumbs/NETENT/stickers.jpg')
+      a.freespins-dialog__dialog_games_game(href='/loggedin/game/starburst/')
+        img(src='https://static.luckydino.com/thumbs/NETENT/starburst.jpg')
+      a.freespins-dialog__dialog_games_game(href='/loggedin/game/spinatagrande/')
+        img(src='https://static.luckydino.com/thumbs/NETENT/spinata.jpg')
+
+style.
+  .freespins-dialog {
+    min-height: 350px;
+    height: 348px;
+  rgba(0,0,0,0.2)
+    position: relative;
+    border-radius: 4px;
+  }
+  .freespins-dialog__dialog {
+    width: 560px;
+    height: 350px;
+    background: linear-gradient(95deg, #257ca4 0%, #3598ba 71%);
+    border-radius: 4px;
+  }
+  @media only screen and (max-width: 767px) {
+    .freespins-dialog__dialog {
+      width: auto;
+      height: 100vh;
+    }
+  }
+  .freespins-dialog__dialog h1 {
+    text-align: center;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 30px;
+    font-family: "Titillium Web";
+    font-weight: 700;
+    padding: 20px 0 5px 0;
+    margin: 0;
+  }
+  .freespins-dialog__dialog h1 em {
+    font-style: normal;
+    color: #fce725;
+    font-size: 30px;
+    font-family: "Titillium Web";
+    font-weight: 700;
+  }
+  .freespins-dialog__dialog h2 {
+    margin: 0 0 5px 0;
+    text-align: center;
+    color: #fff;
+    font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .freespins-dialog__dialog_games {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: center;
+  }
+  .freespins-dialog__dialog_games_game {
+    width: 165px;
+    height: 110px;
+    margin: 10px;
+  rgba(0,0,0,0.35)
+  }

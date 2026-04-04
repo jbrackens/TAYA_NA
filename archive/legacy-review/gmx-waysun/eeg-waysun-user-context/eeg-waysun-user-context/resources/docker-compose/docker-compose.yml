@@ -1,0 +1,51 @@
+version: '3.8'
+
+x-images:
+  - &liquibase-image liquibase/liquibase:4.10.0
+  - &stella-user-context-image stella-user-context:latest
+
+services:
+
+  stella-user-context-liquibase:
+    image: *liquibase-image
+    restart: on-failure
+    volumes: [ ../../user-context/conf/liquibase:/liquibase/changelog]
+    command: [
+        '--changeLogFile=changelog/changelog.xml',
+        '--url=jdbc:postgresql://postgres/user_context',
+        '--username=user_context_liquibase',
+        '--password=user_context_liquibase',
+        'update'
+    ]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  stella-user-context:
+    image: *stella-user-context-image
+    depends_on:
+      stella-user-context-liquibase:
+        condition: service_completed_successfully
+    env_file:
+      - local.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user_context.rule=PathPrefix(`/user_context/`, `/user_context_docs/`)"
+      - "traefik.http.services.user_context.loadbalancer.server.port=${USER_CONTEXT_PORT:-14000}"
+
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 200M
+
+networks:
+  default:
+    external:
+      name: gmx-internal # a network used in gmx-traefik

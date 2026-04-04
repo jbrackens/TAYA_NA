@@ -1,0 +1,90 @@
+
+// for highlights to match sidebar
+.center-panel .side-menu-card-list-heading{
+  background: $brand-base;
+}
+
+// sidebars
+.IsDesktop .panel-right,
+.IsDesktop .panel-left
+{
+  border-radius: 0;
+}
+
+// using borders for spacing
+.rj-ev-list__main-heading{
+  border-bottom:1px solid $brand-grey;
+}
+.side-menu-card-list-heading {
+  border-bottom:1px solid $brand-grey;
+}
+
+.sports-list > .side-menu-card-list-heading{
+  margin-top: 0;
+}
+
+.bet-search-results,
+.side-menu-card-section{
+  // side bars - menu cards
+  // Full width and square
+  padding: 0;
+  .side-menu-card-list
+  {
+      padding: 0;
+  }
+  .side-menu-card{
+    border-top:1px solid $brand-grey;
+    border-radius:0px;
+    margin:0;
+    &:first-child
+    {
+        margin-top: 0;
+        border-top:0px;
+    }
+  }
+  .side-menu-card-sport{
+    font-weight:300;
+  }
+}
+
+// bet search overrides
+.bet-search-title{
+  display:none;
+}
+.bet-search-container{
+  .bet-search-form{
+    padding-top:7px;
+    padding-bottom:7px;
+  }
+  .bet-search-results{
+    &:not(:empty){
+      padding-bottom: 0px;
+    }
+    .side-menu-card{
+      background-color:$search-results-bg;
+    }
+  }
+}
+html.IsMobile .bet-search-container,
+html.IsTablet .bet-search-container{
+  border:none;
+  //background:$brand-base;
+}
+
+// spacing
+.IsDesktop .panel-left .lbetting-tabs{
+  margin-bottom:1px;
+}
+// widgets sidebar
+.widget-container-side-header{
+  border-bottom:1px solid $main-bg;
+}
+
+.IsMobile #mainNavigation,
+.IsMobile .main-nav-right{
+  max-width:calc(100% - 40px);
+}
+// hidden in racing panel, but overrides sidebar too.
+.horse-racing #mainNavigation sb-tabs{
+  display:block !important;
+}

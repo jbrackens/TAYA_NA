@@ -1,0 +1,22 @@
+{
+  "namespace": "stella.dataapi.achievement.event",
+  "type": "record",
+  "name": "AchievementEventKey",
+  "fields": [
+    {
+      "name": "achievementEventId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "achievementRuleId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "projectId",
+      "type": "string",
+      "logicalType": "uuid"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{% load oidc_social_buttons %}
+<div class="row">
+    <div class="col-xs-12">
+        {% oidc_social_fb_url client_id=client_id next_param=next as social_fb_url %}
+        {% oidc_social_gp_url client_id=client_id next_param=next as social_gp_url %}
+        {% oidc_social_tw_url client_id=client_id next_param=next as social_tw_url %}
+        {% if social_fb_url %}
+            <a href="{{ social_fb_url }}" class="btn btn-primary btn-block btn-sm" target="_top" title="Log in using Facebook">Log in using Facebook</a>
+        {% endif %}
+        {% if social_gp_url %}
+            <a href="{{ social_gp_url }}" class="btn btn-success btn-block btn-sm" target="_top" title="Log in using Google+">Log in using Google+</a>
+        {% endif %}
+        {% if social_tw_url %}
+            <a href="{{ social_tw_url }}" class="btn btn-info btn-block btn-sm" target="_top" title="Log in using Twitter">Log in using Twitter</a>
+        {% endif %}
+    </div>
+</div>

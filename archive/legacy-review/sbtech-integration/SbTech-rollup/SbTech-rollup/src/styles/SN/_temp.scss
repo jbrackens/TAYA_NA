@@ -1,0 +1,43 @@
+
+// rewards-about
+.ag-page.page-about-rewards{
+  .ag-col{
+    background:$center-bg;
+    color:$brand-base;
+  }
+}
+
+// refer and earn
+.page-section-title{
+  margin:1px auto 0px;
+}
+.section-container{
+  margin:1px auto 0px;
+  background:white;
+  color:$brand-base;
+  a{
+    color:$brand-primary;
+  }
+  .stats-table{
+    color:inherit;
+  }
+}
+
+// may have been removed from app.css?
+.self-exclusion-rblock p a, .myacc-block-content-inner p a{
+  color:$brand-primary;
+}
+html.IsDesktop .mobile-only-link{
+  display:none;
+}
+.desktop-only-link{
+  display:none;
+}
+html.IsDesktop .desktop-only-link{
+  display:inline-block;
+}
+
+// bug in highlighting pages in second nav
+.page-header-wrapper-bottom .page-header-left .page-header-custom-link:hover, .page-header-wrapper-bottom .page-header-left .page-header-custom-link.page-header-custom-link-selected{
+    color:white;
+}

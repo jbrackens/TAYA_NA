@@ -1,0 +1,25 @@
+nameOverride: "prod-casinojefe-cronjob"
+fullnameOverride: "prod-casinojefe-cronjob"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+schedule: "*/5 * * * *"
+
+podSecurityContext: {}
+
+securityContext: {}
+
+rbac:
+  create: false
+
+podSecurityPolicy:
+  create: false
+
+prometheus:
+  enabled: true
+  interval: 30s
+  path: "/metrics"
+  port: metrics

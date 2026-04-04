@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+coverage
+*.log
+.vscode
+.idea
+.git
+.cache
+.DS_Store
+report.*.json
+nvm-installer
+target/prepared-helm-charts/

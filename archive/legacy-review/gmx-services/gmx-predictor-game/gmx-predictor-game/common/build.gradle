@@ -1,0 +1,15 @@
+plugins {
+}
+
+description = "GMX Platform :: Predictor Game :: Commons"
+
+dependencies {
+    implementation "org.scala-lang:scala-library:${scalaVersion}"
+
+    implementation "commons-codec:commons-codec:1.11"
+
+    compile "com.github.cb372:scalacache-core_${scalaDepVersion}:0.24.2"
+    compile "com.github.cb372:scalacache-cache2k_${scalaDepVersion}:0.24.2"
+
+    compile "com.typesafe.play:play_${scalaDepVersion}:${playVersion}"
+}

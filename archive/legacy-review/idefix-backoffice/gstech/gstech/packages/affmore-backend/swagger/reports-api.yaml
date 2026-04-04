@@ -1,0 +1,199 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Affmore Reports API"
+basePath: "/api"
+tags:
+- name: "reports api"
+schemes:
+- "https"
+- "http"
+securityDefinitions:
+paths:
+  /reports/{brandNumber}/combined/{year}/{month}:
+    post:
+      tags:
+      - "reports api"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "brandNumber"
+        type: "number"
+        required: true
+      - in: "path"
+        name: "year"
+        type: "number"
+        required: true
+      - in: "path"
+        name: "month"
+        type: "number"
+        description: "Month (1-12)"
+        required: true
+      - in: "query"
+        name: "token"
+        type: "string"
+        required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CombinedReportResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+definitions:
+  CombinedReportResponse:
+    type: "array"
+    items:
+      type: "object"
+      required:
+      - id
+      - name
+      - tags
+      - report
+      properties:
+        id:
+          type: "string"
+          format: "uuid"
+        name:
+          type: "string"
+        tags:
+          type: "array"
+          items:
+            type: "string"
+        report:
+          type: "object"
+          required:
+          - dates
+          - totals
+          properties:
+            dates:
+              type: "array"
+              items:
+                type: "object"
+                required:
+                - activityDate
+                - tags
+                - deposits
+                - turnover
+                - grossRevenue
+                - bonuses
+                - adjustments
+                - fees
+                - tax
+                - netRevenue
+                - commission
+                - cpa
+                - cpaCount
+                - clicks
+                - registrations
+                - firstDeposits
+                properties:
+                  activityDate:
+                    type: "string"
+                    format: "date"
+                  tags:
+                    type: "array"
+                    items:
+                      type: "string"
+                  deposits:
+                    type: "string"
+                    format: "euros"
+                  turnover:
+                    type: "string"
+                    format: "euros"
+                  grossRevenue:
+                    type: "string"
+                    format: "euros"
+                  bonuses:
+                    type: "string"
+                    format: "euros"
+                  adjustments:
+                    type: "string"
+                    format: "euros"
+                  fees:
+                    type: "string"
+                    format: "euros"
+                  tax:
+                    type: "string"
+                    format: "euros"
+                  netRevenue:
+                    type: "string"
+                    format: "euros"
+                  commission:
+                    type: "string"
+                    format: "euros"
+                  cpa:
+                    type: "string"
+                    format: "euros"
+                  cpaCount:
+                    type: "number"
+                  clicks:
+                    type: "number"
+                  registrations:
+                    type: "number"
+                  firstDeposits:
+                    type: "number"
+            totals:
+              type: "object"
+              required:
+              - fees
+              - tax
+              - netRevenue
+              - commission
+              - commissionAfterTax
+              - cpa
+              - cpaCount
+              - clicks
+              - registrations
+              - firstDeposits
+              - total
+              properties:
+                fees:
+                  type: "string"
+                  format: "euros"
+                tax:
+                  type: "string"
+                  format: "euros"
+                netRevenue:
+                  type: "string"
+                  format: "euros"
+                commission:
+                  type: "string"
+                  format: "euros"
+                commissionAfterTax:
+                  type: "string"
+                  format: "euros"
+                cpa:
+                  type: "string"
+                  format: "euros"
+                cpaCount:
+                  type: "number"
+                clicks:
+                  type: "number"
+                registrations:
+                  type: "number"
+                firstDeposits:
+                  type: "number"
+                total:
+                  type: "string"
+                  format: "euros"
+  ErrorResponse:
+    type: "object"
+    properties:
+      error:
+        type: "object"
+        required:
+        - "message"
+        properties:
+          message:
+            type: "string"

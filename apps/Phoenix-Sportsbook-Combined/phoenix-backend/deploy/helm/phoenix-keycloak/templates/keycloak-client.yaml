@@ -1,0 +1,31 @@
+kind: KeycloakClient
+apiVersion: keycloak.org/v1alpha1
+metadata:
+  name: {{ .Values.client.name }}
+  labels:
+    app: {{ .Values.client.realm }}-{{ .Values.client.name }}-client
+spec:
+  realmSelector:
+    matchLabels:
+      app: {{ .Values.client.realm }}-realm
+  client:
+    clientId: {{ .Values.client.name }}
+    standardFlowEnabled: false
+    implicitFlowEnabled: false
+    directAccessGrantsEnabled: true
+    serviceAccountsEnabled: true
+    authorizationServicesEnabled: true
+    defaultClientScopes: [roles]
+    # `roles` client scope adds the following protocol mappers:
+    # 1. client roles
+    #    Built-in protocol mapper that makes sure that 'resource_access' section
+    #    is included in the Claims part of the access tokens.
+    #    This is strictly necessary for the actions that require permissions in 'realm-management' to work (creating users etc.).
+    # 2. realm roles
+    #    Built-in protocol mapper that makes sure that 'realm_access' section
+    #    is included in the Claims part of the access tokens.
+    #    This is strictly necessary for the admin users to log in.
+    # 3. audience resolve
+    #    Built-in protocol mapper that makes sure that 'aud' section
+    #    is included in the Claims part of the access tokens.
+    #    Not needed by us since we've turned off audience verification in Keycloak adapter.

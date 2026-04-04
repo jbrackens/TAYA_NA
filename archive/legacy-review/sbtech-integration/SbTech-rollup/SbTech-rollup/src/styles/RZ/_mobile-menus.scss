@@ -1,0 +1,31 @@
+.rj-account-block__menu-item{
+  background:white;
+  padding:0 1em;
+  line-height: 3;
+  & + .rj-account-block__menu-item{
+    border-top:1px solid $brand-base;
+  }
+  &-title{
+    color:black;
+  }
+}
+.rj-account-block__menu-section-title{
+  background:$brand-base;
+  color:white;
+}
+
+.rj-hamburger-tabs-01-link{
+  background:white;
+  color:$brand-base;
+}
+.rj-hamburger-button-settings{
+  background:$brand-base;
+}
+.rj-hamburger-casino-block__item,
+.rj-hamburger-casino-block__casino-item-title{
+  color:$brand-base;
+}
+.rj-hamburger-tabs-container .rj-hamburger-casino-block{
+  background-color:white;
+  padding-bottom:0px;
+}

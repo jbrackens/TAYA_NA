@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "fixtureId": "f:local:001",
+      "id": "m:local:001",
+      "name": "Match Winner",
+      "startsAt": "2026-04-10T20:00:00Z",
+      "status": "open"
+    }
+  ],
+  "pagination": {
+    "hasNext": true,
+    "page": 1,
+    "pageSize": 1,
+    "total": 2
+  }
+}

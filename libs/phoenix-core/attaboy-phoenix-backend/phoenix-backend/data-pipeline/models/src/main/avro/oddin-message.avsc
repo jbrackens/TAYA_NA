@@ -1,0 +1,19 @@
+{
+  "namespace": "phoenix.dataapi.internal.oddin",
+  "type": "record",
+  "name": "OddinMessage",
+  "fields":[
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "receivedAtUtc",
+      "type": "long"
+    },
+    {
+      "name": "xml",
+      "type": "string"
+    }
+  ]
+}

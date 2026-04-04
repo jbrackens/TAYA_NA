@@ -1,0 +1,140 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$gnr_common_1_name = 'gnr_common_1';
+$gnr_common_1_x = 0px;
+$gnr_common_1_y = 0px;
+$gnr_common_1_offset_x = 0px;
+$gnr_common_1_offset_y = 0px;
+$gnr_common_1_width = 220px;
+$gnr_common_1_height = 323px;
+$gnr_common_1_total_width = 729px;
+$gnr_common_1_total_height = 505px;
+$gnr_common_1_image = 'gnr_common_b.png';
+$gnr_common_1 = 0px 0px 0px 0px 220px 323px 729px 505px 'gnr_common_b.png' 'gnr_common_1';
+$gnr_common_2_name = 'gnr_common_2';
+$gnr_common_2_x = 224px;
+$gnr_common_2_y = 0px;
+$gnr_common_2_offset_x = -224px;
+$gnr_common_2_offset_y = 0px;
+$gnr_common_2_width = 281px;
+$gnr_common_2_height = 252px;
+$gnr_common_2_total_width = 729px;
+$gnr_common_2_total_height = 505px;
+$gnr_common_2_image = 'gnr_common_b.png';
+$gnr_common_2 = 224px 0px -224px 0px 281px 252px 729px 505px 'gnr_common_b.png' 'gnr_common_2';
+$gnr_common_3_name = 'gnr_common_3';
+$gnr_common_3_x = 509px;
+$gnr_common_3_y = 0px;
+$gnr_common_3_offset_x = -509px;
+$gnr_common_3_offset_y = 0px;
+$gnr_common_3_width = 220px;
+$gnr_common_3_height = 318px;
+$gnr_common_3_total_width = 729px;
+$gnr_common_3_total_height = 505px;
+$gnr_common_3_image = 'gnr_common_b.png';
+$gnr_common_3 = 509px 0px -509px 0px 220px 318px 729px 505px 'gnr_common_b.png' 'gnr_common_3';
+$gnr_common_copyright_name = 'gnr_common_copyright';
+$gnr_common_copyright_x = 0px;
+$gnr_common_copyright_y = 470px;
+$gnr_common_copyright_offset_x = 0px;
+$gnr_common_copyright_offset_y = -470px;
+$gnr_common_copyright_width = 493px;
+$gnr_common_copyright_height = 35px;
+$gnr_common_copyright_total_width = 729px;
+$gnr_common_copyright_total_height = 505px;
+$gnr_common_copyright_image = 'gnr_common_b.png';
+$gnr_common_copyright = 0px 470px 0px -470px 493px 35px 729px 505px 'gnr_common_b.png' 'gnr_common_copyright';
+$gnr_common_logo_name = 'gnr_common_logo';
+$gnr_common_logo_x = 0px;
+$gnr_common_logo_y = 327px;
+$gnr_common_logo_offset_x = 0px;
+$gnr_common_logo_offset_y = -327px;
+$gnr_common_logo_width = 284px;
+$gnr_common_logo_height = 139px;
+$gnr_common_logo_total_width = 729px;
+$gnr_common_logo_total_height = 505px;
+$gnr_common_logo_image = 'gnr_common_b.png';
+$gnr_common_logo = 0px 327px 0px -327px 284px 139px 729px 505px 'gnr_common_b.png' 'gnr_common_logo';
+$spritesheet_width = 729px;
+$spritesheet_height = 505px;
+$spritesheet_image = 'gnr_common_b.png';
+$spritesheet_sprites = $gnr_common_1 $gnr_common_2 $gnr_common_3 $gnr_common_copyright $gnr_common_logo;
+$spritesheet = 729px 505px 'gnr_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

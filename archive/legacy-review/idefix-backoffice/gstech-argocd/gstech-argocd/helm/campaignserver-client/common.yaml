@@ -1,0 +1,53 @@
+livenessProbe:
+  path: /
+  port: 3051
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  path: /
+  port: 3051
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/gstech-campaignserver-client
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3051
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1024Mi"
+    cpu: "1"
+

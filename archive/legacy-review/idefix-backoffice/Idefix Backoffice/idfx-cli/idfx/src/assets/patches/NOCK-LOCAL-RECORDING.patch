@@ -1,0 +1,247 @@
+diff --git a/packages/gstech-paymentserver/record.txt b/packages/gstech-paymentserver/record.txt
+new file mode 100644
+index 0000000000..1d63a613ce
+--- /dev/null
++++ b/packages/gstech-paymentserver/record.txt
+@@ -0,0 +1,217 @@
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"5555d270d13eb332258fd53d52e337bfa6c22b91","expires":1652384440,"refresh_token":"386da6feb6f41e6af0cb65ef56da828a47e0fd81"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.create_deposit', {"customer_firstname":"Tech123","customer_lastname":"Foo","country_id":"FI","amount":"10.00","merchant_reference":"LD_Tech.Foo_3000001|1c577bc0-d1f9-11ec-89d7-c1577cae9499","callbacks":[{"url":"https://042e-212-250-151-149.eu.ngrok.io/api/v1/brite/std","transaction_state":2},{"url":"https://042e-212-250-151-149.eu.ngrok.io/api/v1/brite/std","transaction_state":3},{"url":"https://042e-212-250-151-149.eu.ngrok.io/api/v1/brite/std","transaction_state":5}]})
++  .reply(200, {"url":"https://sandbox.britepaymentgroup.com/eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0RzZnUW9NIiwgImRpZ2VzdCI6ICIxZGIxMjUzZTllYWQ2YzU4OTk5ZmRiZmY0NDczODhiMiJ9","token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0RzZnUW9NIiwgImRpZ2VzdCI6ICIxZGIxMjUzZTllYWQ2YzU4OTk5ZmRiZmY0NDczODhiMiJ9","id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitG6gQoM"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get_by_token', {"token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0RzZnUW9NIiwgImRpZ2VzdCI6ICIxZGIxMjUzZTllYWQ2YzU4OTk5ZmRiZmY0NDczODhiMiJ9"})
++  .reply(200, {"brite_customer_id":"ag9ofmFib25lYS0xNzYyMTNyGgsSDUJyaXRlQ3VzdG9tZXIYgICAipHnnwkM","bank_integration_id":"fi_op_04","translations_enabled":false,"reference":5635912209793024,"to_holder":"Brite AB","merchant_reference":"LD_Tech.Foo_3000001|1c577bc0-d1f9-11ec-89d7-c1577cae9499","created":1652362840,"country_id":"fi","show_client_instructions":false,"bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLKcqcAIDA","currency_id":"eur","amount":10,"state":12,"step":"TRANSACTION_APPROVAL_COMPLETED","output":{"mobileCode":"5AS1"},"message":"RF259998033202567421","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":2,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitG6gQoM","transaction_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqI3s4LDA","bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAvKDAmgkM"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"9d747eb322aa7f1c83d3f24e8f0e4252f4af3c14","expires":1652384488,"refresh_token":"069dcb8aa29756b244b943708b17fe2f39ad7542"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/transaction.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqI3s4LDA"})
++  .reply(200, {"from_bank_account":{"bank_name":"OP","country_id":"fi","iban":"FI**********000785"},"to_bank_account":{"bank_name":"Nordea","country_id":"fi","iban":"45*******456456"},"created":1652362883,"type":0,"to_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgJzU0KoLDA","from_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLKcqcAIDA","country_id":"fi","amount":10,"session_id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitG6gQoM","approved":1652362883,"currency_id":"eur","state":4,"completed":1652362887,"message":"RF259998033202567421","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","merchant_reference":"LD_Tech.Foo_3000001|1c577bc0-d1f9-11ec-89d7-c1577cae9499","id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqI3s4LDA"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"462abce32a8a9dcaf5b2f7f3704501790188282d","expires":1652384491,"refresh_token":"d811aadb55d282ec66045163e78813d973d16826"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/transaction.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqI3s4LDA"})
++  .reply(200, {"from_bank_account":{"bank_name":"OP","country_id":"fi","iban":"FI**********000785"},"to_bank_account":{"bank_name":"Nordea","country_id":"fi","iban":"45*******456456"},"created":1652362883,"type":0,"to_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgJzU0KoLDA","from_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLKcqcAIDA","country_id":"fi","amount":10,"session_id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitG6gQoM","approved":1652362883,"currency_id":"eur","state":6,"completed":1652362887,"settled":1652362890,"message":"RF259998033202567421","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","merchant_reference":"LD_Tech.Foo_3000001|1c577bc0-d1f9-11ec-89d7-c1577cae9499","id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqI3s4LDA"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"a8b03fb5ecfb4d43b0d089852b0f191ec64e9462","expires":1652401622,"refresh_token":"97bc3bc14380fad9dfda6c09c0dda715e6d372d0"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/transaction.create_withdrawal', {"amount":"30.00","bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLKcqcAIDA","merchant_reference":"LD_Tech.Foo_3000001|11f55fd0-d221-11ec-bca0-1da33e6c54cd","callbacks":[{"url":"https://b04b-212-250-151-149.eu.ngrok.io/api/v1/brite/std","transaction_state":2},{"url":"https://b04b-212-250-151-149.eu.ngrok.io/api/v1/brite/std","transaction_state":3},{"url":"https://b04b-212-250-151-149.eu.ngrok.io/api/v1/brite/std","transaction_state":5}]})
++  .reply(200, {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqKq6kJDA"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"23a8f43fd90f7602071af2c25c55f636125dfc91","expires":1652401640,"refresh_token":"80fd795fbdd73dd9ffc668facb6aa6da074b6298"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/transaction.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqKq6kJDA"})
++  .reply(200, {"from_bank_account":{"bank_name":"Nordea","country_id":"fi","iban":"45*******456456"},"created":1652380023,"type":1,"to_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLKcqcAIDA","from_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgJzU0KoLDA","country_id":"fi","amount":30,"to_bank_account":{"bank_name":"OP","country_id":"fi","iban":"FI**********000785"},"approved":1652380023,"currency_id":"eur","state":6,"completed":1652380028,"settled":1652380039,"message":"RF874499913270342250","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","merchant_reference":"LD_Tech.Foo_3000001|11f55fd0-d221-11ec-bca0-1da33e6c54cd","id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgIqKq6kJDA"});
++
++- May 16th -
++-- Identify
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"44aca126e9076f2073b860a9ecc2f4d849692a70","expires":1652731604,"refresh_token":"7d6fb739658a2bd20ec6f6956d5c220069337814"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.create_authentication', {"country_id":"FI","merchant_reference":"LD_Tech.Foo_3000001|","callbacks":[{"url":"https://3b98-212-250-151-149.eu.ngrok.io/api/v1/brite/std","session_state":2},{"url":"https://3b98-212-250-151-149.eu.ngrok.io/api/v1/brite/std","session_state":10},{"url":"https://3b98-212-250-151-149.eu.ngrok.io/api/v1/brite/std","session_state":11}]})
++  .reply(200, {"url":"https://sandbox.britepaymentgroup.com/eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0SFYxZ29NIiwgImRpZ2VzdCI6ICI3M2YzYjM0MmU5ODYwMzhmMTVkNTkwMTNlZTliYTQ2NiJ9","token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0SFYxZ29NIiwgImRpZ2VzdCI6ICI3M2YzYjM0MmU5ODYwMzhmMTVkNTkwMTNlZTliYTQ2NiJ9","id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitHV1goM"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"83d1f607ecf2c5b60302ef6c56cb3bbd1edcc571","expires":1652731637,"refresh_token":"4a9ab01c3c992da06373d91065e28b7117b12d30"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitHV1goM"})
++  .reply(200, {"currency_id":"eur","reference":6010673876172800,"created":1652710004,"ip":"212.250.151.149","completed":1652710036,"merchant_reference":"LD_Tech.Foo_3000001|","country_id":"fi","bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","bank_integration_id":"fi_test_bank_03","state":12,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":0,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitHV1goM","bank":{"id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","name":"Test Bank"}});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"604ec4768867b125675bee3323c8322ac6a81b09","expires":1652731637,"refresh_token":"4ed9d49c186e4d387c67a2b9335ab25ba319256f"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/kyc.get_latest', {"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA"})
++  .reply(200, {"firstname":"Anders","created":1652633706,"dob":"1940-09-12","lastname":"Andersson","completed":1652633706,"country_id":"fi","state":3,"ssn":"120940-608X","address":{"city":"Helsinki","postal_code":"11246","street_address":"Testgatan 1","country":"Finland"},"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgICKiqutCAw"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get_by_token', {"token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0SFYxZ29NIiwgImRpZ2VzdCI6ICI3M2YzYjM0MmU5ODYwMzhmMTVkNTkwMTNlZTliYTQ2NiJ9"})
++  .reply(200, {"brite_customer_id":"ag9ofmFib25lYS0xNzYyMTNyGgsSDUJyaXRlQ3VzdG9tZXIYgICAipHnnwkM","bank_integration_id":"fi_test_bank_03","translations_enabled":false,"reference":6010673876172800,"created":1652710004,"merchant_reference":"LD_Tech.Foo_3000001|","completed":1652710036,"country_id":"fi","show_client_instructions":false,"bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","currency_id":"eur","state":12,"step":"AUTHENTICATION_COMPLETED","output":{},"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":0,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitHV1goM"});
++
++- Tue May 17 08:33:17 CEST 2022 -
++-- Register
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"24038bc87ec5ff6e0451344820810b63aad589d7","expires":1652796209,"refresh_token":"5bc80fefa0916a0389b5a0fa01ad11d7dac1322e"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.create_deposit', {"amount":"25.00","country_id":"FI","merchant_reference":"FK|d5e6ffe0-d5b7-11ec-b28c-3da368224548","callbacks":[{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","session_state":2},{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","transaction_state":2},{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","transaction_state":3},{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","transaction_state":5}]})
++  .reply(200, {"url":"https://sandbox.britepaymentgroup.com/eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0R0xod29NIiwgImRpZ2VzdCI6ICJhZjkwMDZhYmI2MzI0MWE5ZjRjNTcwZDE5NjZkMzNiZSJ9","token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0R0xod29NIiwgImRpZ2VzdCI6ICJhZjkwMDZhYmI2MzI0MWE5ZjRjNTcwZDE5NjZkMzNiZSJ9","id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitGLhwoM"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"d49b1d078c9de6ae8007d3f4e29b318346efb47a","expires":1652796243,"refresh_token":"4ea1044fe2ec40c1819961fa6932bb834a485b1e"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitGLhwoM"})
++  .reply(200, {"currency_id":"eur","reference":5660685581156352,"created":1652774610,"ip":"212.250.151.149","merchant_reference":"FK|d5e6ffe0-d5b7-11ec-b28c-3da368224548","country_id":"fi","bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","bank_integration_id":"fi_test_bank_03","state":2,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36","amount":25,"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":2,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitGLhwoM","bank":{"id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","name":"Test Bank"}});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"90f7d57a929e57edf485ac41007683bba9d926c2","expires":1652796244,"refresh_token":"f51691deac1aee4318f9bba5e97cf522a27f88d1"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/kyc.create', {"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA"})
++  .reply(200, {"id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgIDyxpXQCQw"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/kyc.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgIDyxpXQCQw"})
++  .reply(200, {"firstname":"Anders","created":1652774644,"dob":"1940-09-12","lastname":"Andersson","completed":1652774645,"country_id":"fi","state":3,"ssn":"120940-608X","address":{"city":"Helsinki","postal_code":"11246","street_address":"Testgatan 1","country":"Finland"},"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgIDyxpXQCQw"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get_by_token', {"token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQWl0R0xod29NIiwgImRpZ2VzdCI6ICJhZjkwMDZhYmI2MzI0MWE5ZjRjNTcwZDE5NjZkMzNiZSJ9"})
++  .reply(200, {"brite_customer_id":"ag9ofmFib25lYS0xNzYyMTNyGgsSDUJyaXRlQ3VzdG9tZXIYgICAipHnnwkM","bank_integration_id":"fi_test_bank_03","translations_enabled":false,"reference":5660685581156352,"to_holder":"Brite AB","merchant_reference":"FK|d5e6ffe0-d5b7-11ec-b28c-3da368224548","created":1652774610,"country_id":"fi","show_client_instructions":false,"bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLLcjKQKDA","currency_id":"eur","amount":25,"state":12,"step":"TRANSACTION_APPROVAL_COMPLETED","output":{},"message":"RF377943556672848518","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":2,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitGLhwoM","transaction_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgPLGldALDA","bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"d3d479447e9c95bc4cd8bf34245e0e805a7e3411","expires":1652796274,"refresh_token":"2e1015dcb03ae4ae8880220da3e2b915b4e45b27"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/transaction.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgPLGldALDA"})
++  .reply(200, {"from_bank_account":{"bank_name":"Test Bank","country_id":"fi","bban":"********016286","iban":"NL**********456789"},"to_bank_account":{"bank_name":"Nordea","country_id":"fi","iban":"45*******456456"},"created":1652774655,"type":0,"to_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgJzU0KoLDA","from_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLLcjKQKDA","country_id":"fi","amount":25,"session_id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitGLhwoM","approved":1652774655,"currency_id":"eur","state":4,"completed":1652774671,"message":"RF377943556672848518","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","merchant_reference":"FK|d5e6ffe0-d5b7-11ec-b28c-3da368224548","id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgPLGldALDA"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"6fafaa1aedfc62f6aa632329ad665b352c8fe30b","expires":1652796276,"refresh_token":"8e10da304a56bf753f53531675c9893838f419d3"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/transaction.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgPLGldALDA"})
++  .reply(200, {"from_bank_account":{"bank_name":"Test Bank","country_id":"fi","bban":"********016286","iban":"NL**********456789"},"to_bank_account":{"bank_name":"Nordea","country_id":"fi","iban":"45*******456456"},"created":1652774655,"type":0,"to_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgJzU0KoLDA","from_bank_account_id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLLcjKQKDA","country_id":"fi","amount":25,"session_id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICAitGLhwoM","approved":1652774655,"currency_id":"eur","state":6,"completed":1652774671,"settled":1652774675,"message":"RF377943556672848518","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","merchant_reference":"FK|d5e6ffe0-d5b7-11ec-b28c-3da368224548","id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC1RyYW5zYWN0aW9uGICAgPLGldALDA"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"e65a7809a25f03d6308fcad740b470c380ba37c7","expires":1652796277,"refresh_token":"5b9a514cad56fa68c2867858b243301683510186"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/bank_account.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLLcjKQKDA"})
++  .reply(200, {"name":"Checkings account","created":1652554832,"country_id":"fi","bban":"********016286","bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","currency_id":"eur","iban":"NL**********456789","payment_account":true,"balance":"1234.56","holder":"Amanda Tuominen","id":"ag9ofmFib25lYS0xNzYyMTNyGAsSC0JhbmtBY2NvdW50GICAgLLcjKQKDA"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"5560e49acd9dcaec4398f6a11f086c96d14f0b7b","expires":1652796279,"refresh_token":"dc68e08cfba5ab66a9cd8a3846756036f9ee682c"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/kyc.get_latest', {"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA"})
++  .reply(200, {"firstname":"Anders","created":1652774644,"dob":"1940-09-12","lastname":"Andersson","completed":1652774645,"country_id":"fi","state":3,"ssn":"120940-608X","address":{"city":"Helsinki","postal_code":"11246","street_address":"Testgatan 1","country":"Finland"},"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgIDyxpXQCQw"});
++
++-- Login
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"ab652a54f2640cd6143370220b3aa0a54bf3671e","expires":1652796679,"refresh_token":"65a4ef82d2bac7f04564a86c3af1da459b213d1a"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.create_authentication', {"country_id":"FI","merchant_reference":"FK|ee42d9a0-d5b8-11ec-bb5b-5335b3a274f6","callbacks":[{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","session_state":2},{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","session_state":10},{"url":"https://e23c-212-250-151-149.eu.ngrok.io/api/v1/brite/pnp","session_state":11}]})
++  .reply(200, {"url":"https://sandbox.britepaymentgroup.com/eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQThzYVZzQWdNIiwgImRpZ2VzdCI6ICJkZDQyMDY2MWRhNDcxYjQxMmFkNjcxN2E4YzVhM2Y2ZSJ9","token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQThzYVZzQWdNIiwgImRpZ2VzdCI6ICJkZDQyMDY2MWRhNDcxYjQxMmFkNjcxN2E4YzVhM2Y2ZSJ9","id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICA8saVsAgM"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"9679694bd610cf0de98667bf205d8962a207a5c2","expires":1652796705,"refresh_token":"fc65724800c69fc100a6b268fee6bf59aae12256"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICA8saVsAgM"})
++  .reply(200, {"currency_id":"eur","reference":4715446443966464,"created":1652775080,"ip":"212.250.151.149","completed":1652775104,"merchant_reference":"FK|ee42d9a0-d5b8-11ec-bb5b-5335b3a274f6","country_id":"fi","bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","bank_integration_id":"fi_test_bank_03","state":12,"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36","customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":0,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICA8saVsAgM","bank":{"id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","name":"Test Bank"}});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/merchant.authorize', {"public_key":"sandbox-4c010ae96d72fadc13630c180bbf346a725fc8c1","secret":"7c3927766f295dd9dfe80f4fb1830419b3a1307b"})
++  .reply(200, {"access_token":"d5626072f980a9b5501a51d72dc3ce9ccb9f6c0f","expires":1652796705,"refresh_token":"e3cb8b685c30412ebbcabf94537d33c492605de1"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/kyc.create', {"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA"})
++  .reply(200, {"id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgICKiJPGCgw"});
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/kyc.get', {"id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgICKiJPGCgw"})
++  .reply(200, {"firstname":"Anders","created":1652775106,"dob":"1940-09-12","lastname":"Andersson","completed":1652775106,"country_id":"fi","state":3,"ssn":"120940-608X","address":{"city":"Helsinki","postal_code":"11246","street_address":"Testgatan 1","country":"Finland"},"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","id":"ag9ofmFib25lYS0xNzYyMTNyEAsSA0tZQxiAgICKiJPGCgw"});
++
++nock('https://sandbox.britepaymentgroup.com:443', {"encodedQueryParams":true})
++  .post('/api/session.get_by_token', {"token":"eyJob3N0IjogImh0dHBzOi8vYWJvbmVhLTE3NjIxMy5hcHBzcG90LmNvbSIsICJpZCI6ICJhZzlvZm1GaWIyNWxZUzB4TnpZeU1UTnlGQXNTQjFObGMzTnBiMjRZZ0lDQThzYVZzQWdNIiwgImRpZ2VzdCI6ICJkZDQyMDY2MWRhNDcxYjQxMmFkNjcxN2E4YzVhM2Y2ZSJ9"})
++  .reply(200, {"brite_customer_id":"ag9ofmFib25lYS0xNzYyMTNyGgsSDUJyaXRlQ3VzdG9tZXIYgICAipHnnwkM","bank_integration_id":"fi_test_bank_03","translations_enabled":false,"reference":4715446443966464,"created":1652775080,"merchant_reference":"FK|ee42d9a0-d5b8-11ec-bb5b-5335b3a274f6","completed":1652775104,"country_id":"fi","show_client_instructions":false,"bank_id":"ag9ofmFib25lYS0xNzYyMTNyEQsSBEJhbmsYgICAyvjIlwoM","currency_id":"eur","state":12,"step":"AUTHENTICATION_COMPLETED","output":{},"customer_id":"ag9ofmFib25lYS0xNzYyMTNyFQsSCEN1c3RvbWVyGICAgIrnmdEIDA","type":0,"id":"ag9ofmFib25lYS0xNzYyMTNyFAsSB1Nlc3Npb24YgICA8saVsAgM"});
++
++nock('https://api.stage.payout.isx.money:443', {"encodedQueryParams":true})
++  .post('/api/v1/batch', {"merchant_id":"esportsent_payout","sender_iban":"CY43904000010000115366301002","description":"LD_Jack.Sparrow_3000001","callback_url":"http://localhost:3006/api/v1/isx?version=1","batch_records":[{"beneficiary_name":"Jack Sparrow","beneficiary_iban":"NL78INGB4783095582","beneficiary_reference":"LuckyDino","payment_amount":"100","currency":"EUR","reference_id":"9630d0b0-ec4a-11ed-be19-738834daf7ec","payment_details":"LD_Jack.Sparrow_3000001"}]})
++  .reply(200, {"batch_id":"98549176-5c63-45a8-8c3b-91247093dda7"});
++nock('https://api.stage.payout.isx.money:443', {"encodedQueryParams":true})
++  .post('/api/v1/batch', {"merchant_id":"esportsent_payout","sender_iban":"CY43904000010000115366301002","description":"LD_Jack.Sparrow_3000002","callback_url":"http://localhost:3006/api/v1/isx?version=1","batch_records":[{"beneficiary_name":"Jack Sparrow","beneficiary_iban":"NL78INGB4783095582","beneficiary_reference":"LuckyDino","payment_amount":"80","currency":"EUR","reference_id":"9630d0b0-ec4a-11ed-be19-738834daf7ec","payment_details":"LD_Jack.Sparrow_3000002"}]})
++  .reply(400, {"error_id":"COULD_NOT_MERGE_REQUEST","message":"A 'reference_id' provided in the current request is present in an existing PENDING_APPROVAL batch. ","information_link":null,"batch_error_records":null});
++
++nock('https://api.stage.payout.isx.money:443', {"encodedQueryParams":true})
++  .post('/api/v1/batch', {"merchant_id":"esportsent_payout","sender_iban":"CY43904000010000115366301002","description":"LD_Jack.Sparrow_3000003","callback_url":"http://localhost:3006/api/v1/isx?version=1","batch_records":[{"beneficiary_name":"Jack Sparrow","beneficiary_iban":"NL78INGB4783095582","beneficiary_reference":"LuckyDino","payment_amount":"100","currency":"EUR","reference_id":"29375d70-ec4b-11ed-b044-cb2fcc757832","payment_details":"LD_Jack.Sparrow_3000003"}]})
++  .reply(200, {"batch_id":"98549176-5c63-45a8-8c3b-91247093dda7"}, [
++  'Date',
++  'Sat, 06 May 2023 20:18:28 GMT',
++  'Content-Type',
++  'application/json;charset=utf-8',
++  'Transfer-Encoding',
++  'chunked',
++  'Connection',
++  'close',
++  'Set-Cookie',
++  'AWSALB=4rRl7OC8PWiuui59JmOSbnKXKggEfr/dlyiu4h97RcdYL409n2WKanepeT6l2xBwOnQFpRV9TqX+SKXG0+YH5BTqXikJcGmnIN7/F0Yb7uSDbfjacQtlbEHmdbDn; Expires=Sat, 13 May 2023 20:18:28 GMT; Path=/',
++  'Set-Cookie',
++  'AWSALBCORS=4rRl7OC8PWiuui59JmOSbnKXKggEfr/dlyiu4h97RcdYL409n2WKanepeT6l2xBwOnQFpRV9TqX+SKXG0+YH5BTqXikJcGmnIN7/F0Yb7uSDbfjacQtlbEHmdbDn; Expires=Sat, 13 May 2023 20:18:28 GMT; Path=/; SameSite=None; Secure',
++  'Set-Cookie',
++  'JSESSIONID=boc82obu1lt71ui30mducu4f8;Path=/;Secure',
++  'Expires',
++  'Thu, 01 Jan 1970 00:00:00 GMT'
++]);
++nock('https://api.stage.payout.isx.money:443', {"encodedQueryParams":true})
++  .post('/api/v1/batch', {"merchant_id":"esportsent_payout","sender_iban":"CY43904000010000115366301002","description":"LD_Jack.Sparrow_3000004","callback_url":"http://localhost:3006/api/v1/isx?version=1","batch_records":[{"beneficiary_name":"Jack Sparrow","beneficiary_iban":"NL78INGB4783095582","beneficiary_reference":"LuckyDino","payment_amount":"80","currency":"EUR","reference_id":"29e6b040-ec4b-11ed-b044-cb2fcc757832","payment_details":"LD_Jack.Sparrow_3000004"}]})
++  .reply(200, {"batch_id":"98549176-5c63-45a8-8c3b-91247093dda7"}, [
++  'Date',
++  'Sat, 06 May 2023 20:18:29 GMT',
++  'Content-Type',
++  'application/json;charset=utf-8',
++  'Transfer-Encoding',
++  'chunked',
++  'Connection',
++  'close',
++  'Set-Cookie',
++  'AWSALB=dn4pEBGYhn/AryU8vAppiR6Eb7ZOUrMQViPirEeL4RB+1GOgeCK0l55rY2fm3aB/idwknsOUkYBtRvnqDWZ9JAfel1Mm2JXr1XpEvAWFBgedItBDJqtbqgfUyYYd; Expires=Sat, 13 May 2023 20:18:29 GMT; Path=/',
++  'Set-Cookie',
++  'AWSALBCORS=dn4pEBGYhn/AryU8vAppiR6Eb7ZOUrMQViPirEeL4RB+1GOgeCK0l55rY2fm3aB/idwknsOUkYBtRvnqDWZ9JAfel1Mm2JXr1XpEvAWFBgedItBDJqtbqgfUyYYd; Expires=Sat, 13 May 2023 20:18:29 GMT; Path=/; SameSite=None; Secure',
++  'Set-Cookie',
++  'JSESSIONID=r6okwkl6egqnxotqd6ksfmxk;Path=/;Secure',
++  'Expires',
++  'Thu, 01 Jan 1970 00:00:00 GMT'
++]);
++
++nock('https://api.stage.payout.isx.money:443', {"encodedQueryParams":true})
++  .post('/api/v1/batch', {"merchant_id":"esportsent_payout","sender_iban":"CY43904000010000115366301002","description":"LD_Jack.Sparrow_3000005","callback_url":"http://localhost:3006/api/v1/isx?version=1","batch_records":[{"beneficiary_name":"Jack Sparrow","beneficiary_iban":"NL78INGB4783095582","beneficiary_reference":"LuckyDino","payment_amount":"100","currency":"EUR","reference_id":"0163c9e0-ec4c-11ed-b4a7-490c1ceadbd1","payment_details":"LD_Jack.Sparrow_3000005"}]})
++  .matchHeader("accept", "application/json, text/plain, */*")
++  .matchHeader("content-type", "application/json; charset=utf-8")
++  .matchHeader("domain", "stage.esportsentertainment.payout")
++  .matchHeader("subdomain", "stage.esportsentertainment.payout-apiKey-esportsentertainment")
++  .matchHeader("x-content-signature", "v=1; k=IN; n=JIiA3ojhf0U=; d=1683404670535; s=XrjbPFBkJv9QbmD12ejlMsaZA14ftYpMguohXSHqyLdYpaawRagsIMjBB7xCfJIQ5gD+y7L4tU0gRda796PkspyVgoiejZDrgqJsfrqmlCNYJ+GHuOiRRZe12Br4zYwSLBE4Vx/4nVvL5n/MS9xBQmJ3QakdGCyy4+CEBbWAkDnwE1TWXISP+f2PEQDNPkDJRcXzOTcTDc/zlm1qjDeSXoN/AdYdvBeX7z1MXY1OV7yCgR7cXZUuasgJDtdbztAkZY4eE7mXnvWrY1bILowDgh7tRLV+jSo9MRX44NWOvZfEUPFS51BUJXscjIJwmoJXlh+DWl9EnKv3vOLjC/FZgbz++brqG073+5mf/8/UvZNPgMUk9yfqjPxe7GaUqhKJe0OfsxGC5xPxfrhWpDHFGNbr2ZbFAqkPDBVCPTGcha0D915UdCcDMu06BPjg00GTJ49OCcw9IFs2VTX85N5XsWThse8B+zXo4uUpTbbw8kizjywjfz1sAPR7QpGlTHDMnqzW0jEiApqCQ4ynoMS7/Qlyr/Ql4RI/DxKLZ2+OMAroSLt2uuG0a1C1bmpSsgRGE/6yJaU7mi4o3HPyRfOFPdBb8Ezd3wlyGiU9v2sHJTVPze6mjQwK+nCZZ1fdJ5ioXIoVVgzcJcjrCB/vYjkv4V12GdD9NXdYM40YLTH6RTc=")
++  .matchHeader("content-length", "448")
++  .matchHeader("accept-encoding", "gzip, compress, deflate, br")
++  .matchHeader("host", "api.stage.payout.isx.money")
++  .reply(200, {"batch_id":"98549176-5c63-45a8-8c3b-91247093dda7"});
++nock('https://api.stage.payout.isx.money:443', {"encodedQueryParams":true})
++  .post('/api/v1/batch', {"merchant_id":"esportsent_payout","sender_iban":"CY43904000010000115366301002","description":"LD_Jack.Sparrow_3000006","callback_url":"http://localhost:3006/api/v1/isx?version=1","batch_records":[{"beneficiary_name":"Jack Sparrow","beneficiary_iban":"NL78INGB4783095582","beneficiary_reference":"LuckyDino","payment_amount":"100","currency":"EUR","reference_id":"01fde700-ec4c-11ed-b4a7-490c1ceadbd1","payment_details":"LD_Jack.Sparrow_3000006"}]})
++  .matchHeader("accept", "application/json, text/plain, */*")
++  .matchHeader("content-type", "application/json; charset=utf-8")
++  .matchHeader("domain", "stage.esportsentertainment.payout")
++  .matchHeader("subdomain", "stage.esportsentertainment.payout-apiKey-esportsentertainment")
++  .matchHeader("x-content-signature", "v=1; k=IN; n=3T7JHJpwVF8=; d=1683404671458; s=Mw9kVtq5tH0g1r8lffSoOKj4DddV7cudoJOtbHnmn/K8Xeu6t/M5msmQVANwLp3Q3BIIeqyqGpDxDIYLOU393bE2Zq4dgE7exMDj8tw1Z/L4nVbRXYpOxej9Ffu4V5w+ip8aSscMbiIKRusmQh9Yj7IeAxvDPqg7cTmxKT8qlK4wzh63r6BVRRqu0KcwHTUmdQYGDJTlxm1bUUjzP0YpAjhvxixwwWWTHtvK17nWmqEG3mcIqlA0yCnKIr2SpzrxgypmPd34qTi6NnzwqPkRfiIwD1OPZV3RbsYIPXc2f8xefJtP/kI4EDn9PwYuFhVoHvhHivcH0Zniv9ujOevQuKrN0n5mTpRLWxNeu1Kq2b+PoOcRuQKgSQp5EV5IXlGFcXugAf+THiXZ8zT8/D/Fr01uoGIB6eXaIQjVz1knF+HSzjiCdqm4nA1q6MTrXQyrjD52fWo+RlfBdKhcnWnAf1vJInQx8RRtC7TQDdFvVX4nJidiIS711xwzCacgrfmIcQ21q9IN5PsOjhh3STFt0BdRCVOkZJ+MqVCYeZafWBsh30h8MIlvXFtBhaVs0KB1jdBzypMTrix183Wjum9Iqzlycy6D7DiyHEHm6/RBZVVa43J01+hILlIy/UlWBGERv9zCj4cTLGAcfMU9k+uwY0guK6sQdg6Y0YZkG1kb5nI=")
++  .matchHeader("content-length", "448")
++  .matchHeader("accept-encoding", "gzip, compress, deflate, br")
++  .matchHeader("host", "api.stage.payout.isx.money")
++  .reply(200, {"batch_id":"98549176-5c63-45a8-8c3b-91247093dda7"});
+\ No newline at end of file
+diff --git a/packages/gstech-paymentserver/server/index.js b/packages/gstech-paymentserver/server/index.js
+index b9928acbc8..8c49166125 100644
+--- a/packages/gstech-paymentserver/server/index.js
++++ b/packages/gstech-paymentserver/server/index.js
+@@ -1,4 +1,18 @@
+ /* @flow */
++// const fs = require('fs'); // eslint-disable-line
++// const nock = require('nock'); // eslint-disable-line
++// const _ = require('lodash'); // eslint-disable-line
++// nock.recorder.rec({
++//   use_separator: false,
++//   enable_reqheaders_recording: true,
++//   logging: (c) => {
++//     if (c.match(new RegExp(process.env.NOCKFILTER || 'api.stage.payout.isx.money'))) {
++//       const hdrs = _.last(Array.from(c.matchAll(/,\s\[(.|\n)*?\]/g)));
++//       fs.appendFileSync('record.txt', c.replace(hdrs[0], ''));
++//     }
++//   },
++// });
++
+ const express = require('express');
+ const middleware = require('gstech-core/modules/express-middleware');
+ const prometheus = require('gstech-core/modules/prometheus');

@@ -1,0 +1,56 @@
+
+button.webpush-swal2-confirm.webpush-swal2-styled{
+ display:inline-block;
+ background:$brand-primary !important;
+ border-left-color:$brand-primary !important;
+ border-right-color:$brand-primary !important;
+}
+button.webpush-swal2-confirm.webpush-swal2-styled:hover{
+ background:$brand-primary--hover !important;
+ border-left-color:$brand-primary--hover !important;
+ border-right-color:$brand-primary--hover !important;
+}
+
+.webpush-swal2-popup.webpush-swal2-modal.webpush-swal2-show {
+    padding:10px 10px 0 10px !important;
+    border-radius:0;
+}
+.webpush-swal2-popup .webpush-swal2-close{
+    font-size:2em;
+    height:1em;
+    width:1em;
+    line-height:1em;
+}
+.webpush-swal2-popup .webpush-swal2-actions{
+    margin:0 -10px;
+}
+.webpush-swal2-popup .webpush-swal2-title{
+  text-transform:uppercase;
+  font-family:$brand-font--header;
+  font-weight:900;
+}
+
+.webpush-swal2-popup .webpush-swal2-styled.webpush-swal2-cancel,
+.webpush-swal2-popup button.webpush-swal2-styled{
+    flex-grow:1;
+    margin:10px 0 0 0;
+    border-radius:0px;
+    font-size:15px;
+    line-height:30px;
+    padding:0;
+    text-transform:uppercase;
+    font-family:$brand-font--header;
+    font-weight:900;
+}
+.webpush-swal2-popup .webpush-swal2-styled:focus{
+  box-shadow:unset;
+}
+
+.webpush-swal2-popup .webpush-swal2-styled.webpush-swal2-confirm{
+    margin:10px 0 0 0;
+    border-radius:0px;
+    padding:0;
+}
+.swal2-modal .swal2-content{
+  color:white;
+}

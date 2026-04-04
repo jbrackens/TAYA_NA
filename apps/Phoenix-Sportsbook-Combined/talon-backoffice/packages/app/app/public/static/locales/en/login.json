@@ -1,0 +1,12 @@
+{
+  "USERNAME": "Username",
+  "PASSWORD": "Password",
+  "REMEMBER_ME": "Remember me",
+  "SIGN_IN": "Sign In",
+  "ENTER_CREDENTIALS": "Please enter both username and password",
+  "PASSWORD_MIN_LENGTH": "Password must be at least 6 characters",
+  "LOGIN_FAILED": "Login failed. Please try again.",
+  "USERNAME_PLACEHOLDER": "Enter your username or email",
+  "PASSWORD_PLACEHOLDER": "Enter your password",
+  "SIGNING_IN": "Signing In..."
+}

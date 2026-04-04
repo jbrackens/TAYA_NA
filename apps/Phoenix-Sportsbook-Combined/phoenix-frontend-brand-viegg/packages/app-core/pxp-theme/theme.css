@@ -1,0 +1,87 @@
+@import "../styles/tokens.css";
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+
+:root {
+  /* === VIE Sportsbook Tokens === */
+
+  /* Backgrounds */
+  --sb-bg-base: #080e1a;
+  --sb-bg-surface: #0f1e33;
+  --sb-bg-elevated: #162338;
+  --sb-bg-raised: #1a4fa0;
+
+  /* Brand Accents */
+  --sb-accent-cyan: #1daadc;
+  --sb-accent-cyan-muted: #0d2a3d;
+  --sb-accent-green: #00c44f;
+  --sb-accent-green-muted: #0a2b1a;
+  --sb-accent-gold: #d4a843;
+  --sb-accent-red: #e03b3b;
+
+  /* Odds Button States */
+  --sb-odds-rest: #132030;
+  --sb-odds-hover: #1a3047;
+  --sb-odds-selected-bg: #0d2a3d;
+  --sb-odds-selected-border: #1daadc;
+  --sb-odds-selected-text: #1daadc;
+
+  /* Text */
+  --sb-text-primary: #ffffff;
+  --sb-text-secondary: #8fa8c4;
+  --sb-text-tertiary: #4a6480;
+
+  /* Borders */
+  --sb-border: #1a3050;
+
+  /* Tailwind-compatible aliases (used as plain vars in this stack) */
+  --color-sb-bg-base: var(--sb-bg-base);
+  --color-sb-bg-surface: var(--sb-bg-surface);
+  --color-sb-bg-elevated: var(--sb-bg-elevated);
+  --color-sb-bg-raised: var(--sb-bg-raised);
+  --color-sb-accent-cyan: var(--sb-accent-cyan);
+  --color-sb-accent-cyan-muted: var(--sb-accent-cyan-muted);
+  --color-sb-accent-green: var(--sb-accent-green);
+  --color-sb-accent-green-muted: var(--sb-accent-green-muted);
+  --color-sb-accent-gold: var(--sb-accent-gold);
+  --color-sb-accent-red: var(--sb-accent-red);
+  --color-sb-odds-rest: var(--sb-odds-rest);
+  --color-sb-odds-hover: var(--sb-odds-hover);
+  --color-sb-odds-selected-bg: var(--sb-odds-selected-bg);
+  --color-sb-text-primary: var(--sb-text-primary);
+  --color-sb-text-secondary: var(--sb-text-secondary);
+  --color-sb-text-tertiary: var(--sb-text-tertiary);
+  --color-sb-border: var(--sb-border);
+}
+
+html,
+body {
+  background: var(--sb-bg-base);
+  color: var(--sb-text-primary);
+  font-family: var(--font-primary);
+  font-size: var(--font-size-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--sb-accent-cyan);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sb-bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sb-border);
+  border-radius: 2px;
+}

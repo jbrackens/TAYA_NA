@@ -1,0 +1,15 @@
+<fixtures_fixture generated_at="2020-11-08T19:23:22">
+    <fixture id="od:match:19816" name="Team Aspirations vs Future.club" scheduled="2020-11-09T11:30:00" status="not_started">
+        <tournament id="od:tournament:862" name="Asian DOTA2 Gold Occupation Competition S19" scheduled="2020-10-28T23:00:00">
+            <tournament_length start_date="2020-10-29"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:699" name="Team Aspirations" abbreviation="TA" qualifier="home"></competitor>
+            <competitor id="od:competitor:704" name="Future.club" abbreviation="FC" qualifier="away"></competitor>
+        </competitors>
+        <extra_info>
+            <info key="best_of" value="3"></info>
+        </extra_info>
+    </fixture>
+</fixtures_fixture>

@@ -1,0 +1,111 @@
+version: '3.1'
+networks:
+  gmx_local:
+    external: true
+  internal:
+    external: false
+services:
+  postgres:
+    image: postgres:9-alpine
+    environment:
+        - POSTGRES_PASSWORD=wallet
+        - POSTGRES_USER=wallet
+        - POSTGRES_DB=wallet
+    volumes:
+        - ./persistence/db:/var/lib/postgresql/data
+    ports:
+        - "15434:5432"
+    networks:
+      - internal
+  redis:
+    image: redis:alpine
+    networks:
+      - internal
+  sftp_server:
+    image: atmoz/sftp
+    volumes:
+      - ./persistence/static:/home/microservice/static
+    command: microservice:microservice:1001
+    networks:
+      - internal
+  static_http_server:
+    image: nginx
+    volumes:
+      - ./persistence/static:/usr/share/nginx/html
+    ports:
+      - "8012:80"
+    labels:
+      - traefik.backend=wallet_static_http_server
+      - traefik.frontend.rule=PathPrefix:/
+      - traefik.docker.network=gmx_local
+      - traefik.port=80
+    networks:
+      - gmx_local
+  wallet:
+    build: .
+    extra_hosts:
+      - "kafka.local:192.168.1.200"
+    volumes:
+      - ./src:/app
+      - ./persistence/env.local:/app/.env
+    labels:
+      - traefik.backend=wallet
+      - traefik.frontend.rule=PathPrefix:/wallet
+      - traefik.docker.network=gmx_local
+      - traefik.port=8080
+    networks:
+      - internal
+      - gmx_local
+    depends_on:
+      - postgres
+      - redis
+      - sftp_server
+    command: 'wait-for postgres:5432 -t 200 -- python3 manage.py runserver 0.0.0.0:8080'
+
+#version: '3.1'
+#
+#services:
+#  postgres:
+#    image: postgres:9-alpine
+#    environment:
+#        - POSTGRES_PASSWORD=wallet
+#        - POSTGRES_USER=wallet
+#        - POSTGRES_DB=wallet
+#    volumes:
+##       - /var/lib/postgresql/data
+#        - ./persistence/db:/var/lib/postgresql/data
+#    ports:
+#        - "15434:5432"
+#
+#  redis:
+#    image: redis:alpine
+#
+#  sftp_server:
+#    image: atmoz/sftp
+#    volumes:
+#      - ./persistence/static:/home/microservice/static
+#    command: microservice:microservice:1001
+#
+#  static_http_server:
+#    image: nginx
+#    volumes:
+#      - ./persistence/static:/usr/share/nginx/html
+#    ports:
+#      - "8012:80"
+#
+#  wallet:
+#    build: .
+#    extra_hosts:
+#      - "kafka.local:192.168.1.200"
+#    volumes:
+#      - ./src:/app
+#      - ./persistence/env.local:/app/.env
+#    ports:
+#      - "8011:8080"
+#    depends_on:
+#      - postgres
+#      - redis
+#      - sftp_server
+#    environment:
+#      - SKIP_KAFKA_CONNECT=TRUE
+#    command: 'wait-for postgres:5432 -t 200 -- python3 manage.py runserver 0.0.0.0:8080'

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cp-schema-registry
+  namespace: streaming
+spec:
+  ports:
+  - name: 8081-8081-tcp
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  selector:
+    k8s-app: cp-schema-registry
+    qcloud-app: cp-schema-registry
+  sessionAffinity: None
+  type: ClusterIP

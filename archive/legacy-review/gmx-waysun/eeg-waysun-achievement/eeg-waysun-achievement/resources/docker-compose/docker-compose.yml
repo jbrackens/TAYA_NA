@@ -1,0 +1,50 @@
+version: '3.8'
+
+x-images:
+  - &stella-achievement stella-achievement:latest
+
+services:
+  achievement-liquibase:
+    image: liquibase/liquibase:4.9.0
+
+    restart: on-failure
+    volumes: [ ../../achievement/conf/liquibase:/liquibase/changelog ]
+    command: [
+        '--changeLogFile=changelog/changelog.xml',
+        '--url=jdbc:postgresql://postgres/achievement',
+        '--username=achievement_liquibase',
+        '--password=achievement_liquibase',
+        'update'
+    ]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  stella-achievement:
+    image: *stella-achievement
+    depends_on:
+      achievement-liquibase:
+        condition: service_completed_successfully
+    env_file:
+      - local.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.achievement.rule=PathPrefix(`/achievement/`, `/achievement_docs/`)"
+      - "traefik.http.services.achievement.loadbalancer.server.port=${ACHIEVEMENT_PORT:-12000}"
+
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 200M
+
+networks:
+  default:
+    external:
+      name: gmx-internal # a network used in gmx-traefik

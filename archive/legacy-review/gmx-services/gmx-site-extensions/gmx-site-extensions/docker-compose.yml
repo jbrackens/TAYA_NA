@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  # forwards to host via 'dockerhost' name
+  dockerhost:
+    image: qoomon/docker-host
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    restart: on-failure
+
+  # apps
+  datafeed:
+    depends_on:
+      - dockerhost
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/site-extensions/data-feed:latest'
+    deploy:
+      resources:
+        limits:
+          memory: 896M
+    env_file:
+      - .local.env

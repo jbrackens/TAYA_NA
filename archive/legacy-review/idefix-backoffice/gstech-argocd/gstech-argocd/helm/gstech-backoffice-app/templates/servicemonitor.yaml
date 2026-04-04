@@ -1,0 +1,27 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "gstech-backoffice-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "gstech-backoffice-app.name" . }}
+    chart: {{ include "gstech-backoffice-app.chart" . }}
+    release: prometheus-operator
+    heritage: {{ .Release.Service }}
+spec:
+  endpoints:
+  - interval: {{ .Values.prometheus.interval }}
+    path: {{ .Values.prometheus.path }}
+    port: {{ .Values.prometheus.portname }}
+{{- if .Values.prometheus.relabelings }}
+    relabelings:
+{{ toYaml .Values.prometheus.relabelings | indent 6 }}
+{{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace | quote }}
+  selector:
+    matchLabels:
+      {{- include "gstech-backoffice-app.labels" . | nindent 6 }}
+{{- end }}

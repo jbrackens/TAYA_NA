@@ -1,0 +1,7 @@
+import * as Yup from "yup";
+
+const accountStatusValidationSchema = Yup.object().shape({
+  reason: Yup.string().required("Field is required")
+});
+
+export { accountStatusValidationSchema };

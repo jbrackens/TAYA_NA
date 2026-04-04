@@ -1,0 +1,23 @@
+- username:   justin-egbert-admin
+  email:      accounts.ballys+darkstormlabs-jegbert-admin@ext.darkstormlabs.tech
+  firstName:  Justin
+  lastName:   Egbert
+  admin:      true
+
+- username:   rosalie-lopez-admin
+  email:      accounts.ballys+darkstormlabs-rlopez-admin@ext.darkstormlabs.tech
+  firstName:  Rosalie
+  lastName:   Lopez
+  admin:      true
+
+- username:   sahir-mckinney-admin
+  email:      accounts.ballys+darkstormlabs-smckinney-admin@ext.darkstormlabs.tech
+  firstName:  Sahir
+  lastName:   McKinney
+  admin:      true
+
+- username:   susan-ottepka-admin
+  email:      accounts.ballys+darkstormlabs-sottepka-admin@ext.darkstormlabs.tech
+  firstName:  Susan
+  lastName:   Ottepka
+  admin:      true

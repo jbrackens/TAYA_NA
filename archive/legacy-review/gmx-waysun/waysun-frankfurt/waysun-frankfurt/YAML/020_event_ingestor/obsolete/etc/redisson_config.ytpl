@@ -1,0 +1,8 @@
+singleServerConfig:
+  address: "redis://${REDIS_EVENT_INGESTOR_HOSTNAME}:${REDIS_EVENT_INGESTOR_PORT}"
+  retryAttempts: 5
+  database: "${CFG_REDIS_EVENT_INGESTOR_DATABASE}"
+  password: "${REDIS_EVENT_INGESTOR_PASSWORD}"
+lockWatchdogTimeout: 10000
+codec:
+  class: org.redisson.codec.KryoCodec

@@ -1,0 +1,98 @@
+{
+  "type": "record",
+  "name": "UserBet",
+  "namespace": "net.flipsports.gmx.dataapi.internal.betandwatch.userbets",
+  "fields": [
+    {
+      "name": "messageUuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "messageOriginDateUTC",
+      "type": "long"
+    },
+    {
+      "name": "messageProcessingDateUTC",
+      "type": "long"
+    },
+
+    {
+      "name": "externalUserId",
+      "type": "string"
+    },
+
+    {
+      "name": "purchaseId",
+      "type": "long"
+    },
+    {
+      "name": "betId",
+      "type": "long"
+    },
+    {
+      "name": "betTypeId",
+      "type": "int"
+    },
+    {
+      "name": "betStatus",
+      "type": "int"
+    },
+    {
+      "name": "betStake",
+      "type": "double"
+    },
+    {
+      "name": "betCurrencyCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "betCreatedDateUTC",
+      "type": "long"
+    },
+    {
+      "name": "sportId",
+      "type": "int"
+    },
+    {
+      "name": "eventId",
+      "type": "long"
+    },
+    {
+      "name": "eventName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "eventDateUTC",
+      "type": "long"
+    },
+    {
+      "name": "lineId",
+      "type": "long"
+    },
+    {
+      "name": "lineIdEncoded",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "lineTypeId",
+      "type": "int"
+    },
+    {
+      "name": "lineOdds",
+      "type": "int"
+    }
+  ]
+}

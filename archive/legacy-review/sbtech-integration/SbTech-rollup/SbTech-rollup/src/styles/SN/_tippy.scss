@@ -1,0 +1,24 @@
+.tippy-tooltip.default-theme {
+  background-color: #ffbc1d;
+  color: #282828;
+}
+.tippy-tooltip.default-theme[data-placement^='top'] .tippy-arrow {
+  border-top-color: #ffbc1d;
+}
+.tippy-tooltip.default-theme[data-placement^='bottom'] .tippy-arrow {
+  border-bottom-color: #ffbc1d;
+}
+.tippy-tooltip.default-theme[data-placement^='left'] .tippy-arrow {
+  border-left-color: #ffbc1d;
+}
+.tippy-tooltip.default-theme[data-placement^='right'] .tippy-arrow {
+  border-right-color: #ffbc1d;
+}
+.tippy-tooltip.default-theme[data-placement*='end'] .tippy-arrow {
+  left:unset !important;
+  right:20px;
+}
+.tippy-tooltip.grey-theme {
+  background-color: #282828;
+  color: white;
+}

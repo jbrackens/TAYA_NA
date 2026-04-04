@@ -1,0 +1,10 @@
+Hi {{ user.display_name }},
+
+    This is requested email reset link: {{scheme}}://{{site.domain}}{% url 'frontend:profile__password_reset'%}.
+
+    It is valid until {{exp_date}}.
+
+    You KEY is: {{ key }}
+
+    Regards,
+    RMX

@@ -1,0 +1,107 @@
+{
+  "type": "record",
+  "name": "CasinoBet",
+  "namespace": "SBTech.Microservices.Regulations.DBProducers.Models",
+  "fields": [
+    {
+      "name": "BetID",
+      "type": "int"
+    },
+    {
+      "name": "CustomerID",
+      "type": "int"
+    },
+    {
+      "name": "CustomerName",
+      "type": "string"
+    },
+    {
+      "name": "LoginName",
+      "type": "string"
+    },
+    {
+      "name": "SiteName",
+      "type": "string"
+    },
+    {
+      "name": "Country",
+      "type": "string"
+    },
+    {
+      "name": "WebProvider",
+      "type": "string"
+    },
+    {
+      "name": "CreationDate",
+      "type": "string"
+    },
+    {
+      "name": "LastUpdateDate",
+      "type": "string"
+    },
+    {
+      "name": "BetType",
+      "type": "string"
+    },
+    {
+      "name": "BetStatus",
+      "type": "string"
+    },
+    {
+      "name": "CurrencyCode",
+      "type": "string"
+    },
+    {
+      "name": "Rate",
+      "type": "string"
+    },
+    {
+      "name": "Stake",
+      "type": "string"
+    },
+    {
+      "name": "Gain",
+      "type": "string"
+    },
+    {
+      "name": "BonusAmountUsed",
+      "type": "string"
+    },
+    {
+      "name": "Stake_GBP",
+      "type": "string"
+    },
+    {
+      "name": "Gain_GBP",
+      "type": "string"
+    },
+    {
+      "name": "BonusAmountUsed_GBP",
+      "type": "string"
+    },
+    {
+      "name": "GameProvider",
+      "type": "string"
+    },
+    {
+      "name": "GameType",
+      "type": "string"
+    },
+    {
+      "name": "GameTypeName",
+      "type": "string"
+    },
+    {
+      "name": "GameName",
+      "type": "string"
+    },
+    {
+      "name": "IsLive",
+      "type": "int"
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "string"
+    }
+  ]
+}

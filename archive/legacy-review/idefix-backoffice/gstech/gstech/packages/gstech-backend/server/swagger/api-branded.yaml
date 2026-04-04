@@ -1,0 +1,672 @@
+openapi: 3.0.1
+info:
+  title: Gstech-backend Branded API
+  description: Gstech-backend Branded API
+  version: 0.0.1
+servers:
+  - url: http://localhost:3001/api/KK/v1
+  - url: https://localhost:3001/api/KK/v1
+  - url: http://localhost:3001/api/CJ/v1
+  - url: https://localhost:3001/api/CJ/v1
+  - url: http://localhost:3001/api/LD/v1
+  - url: https://localhost:3001/api/LD/v1
+  - url: http://localhost:3001/api/OS/v1
+  - url: https://localhost:3001/api/OS/v1
+paths:
+  /languages:
+    get:
+      summary: languagesHandler
+      description: languagesHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /countries:
+    get:
+      summary: countriesHandler
+      description: countriesHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /currencies:
+    get:
+      summary: currenciesHandler
+      description: currenciesHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /players:
+    get:
+      summary: playerQueryHandler
+      description: playerQueryHandler
+      security:
+        - ApiXTokenAuth: [ ]
+    post:
+      summary: registerPlayerHandler
+      description: registerPlayerHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /players/partial:
+    post:
+      summary: registerPartialPlayerHandler
+      description: registerPartialPlayerHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /players/partial/{playerId}:
+    put:
+      summary: updatePartialPlayerHandler
+      description: updatePartialPlayerHandler
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+  /players/complete/{playerId}:
+    put:
+      summary: completePartialPlayerRegistrationHandler
+      description: completePartialPlayerRegistrationHandler
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+  /login:
+    post:
+      summary: loginHandler
+      description: loginHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /login/mobile:
+    post:
+      summary: mobileLoginHandler
+      description: mobileLoginHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /login/request:
+    post:
+      summary: requestLoginHandler
+      description: requestLoginHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /login/complete:
+    post:
+      summary: completeLoginHandler
+      description: completeLoginHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /deposit/{transactionKey}:
+    get:
+      summary: getDepositHandler
+      description: getDepositHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+    put:
+      summary: updateDepositHandler
+      description: updateDepositHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+    post:
+      summary: processDepositHandler
+      description: processDepositHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /deposit/{transactionKey}/wager:
+    put:
+      summary: createDepositWageringRequirementHandler
+      description: createDepositWageringRequirementHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+    post:
+      summary: adjustDepositWageringRequirementHandler
+      description: adjustDepositWageringRequirementHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /deposit/{transactionKey}/{status}:
+    post:
+      summary: setDepositStatusHandler
+      description: setDepositStatusHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /withdrawal/{transactionKey}/details:
+    get:
+      summary: getWithdrawalDetailsHandler
+      description: getWithdrawalDetailsHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /exclusions/:exclusionKey:
+    delete:
+      summary: cancelExclusionHandler
+      description: cancelExclusionHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /activate/{activationCode}:
+    post:
+      summary: activateAccountHandler
+      description: activateAccountHandler
+      parameters:
+        - name: activationCode
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /reset-password:
+    post:
+      summary: requestPasswordResetCodeHandler
+      description: requestPasswordResetCodeHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /reset-password/{passwordResetCode}:
+    post:
+      summary: resetPasswordHandler
+      description: resetPasswordHandler
+      parameters:
+        - name: passwordResetCode
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /password/reset/request:
+    post:
+      summary: requestPasswordResetHandler
+      description: requestPasswordResetHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /password/reset/complete:
+    post:
+      summary: completePasswordResetHandler
+      description: completePasswordResetHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /register/request:
+    post:
+      summary: requestPlayerRegistrationHandler
+      description: requestPlayerRegistrationHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /register/complete:
+    post:
+      summary: completePlayerRegistrationHandler
+      description: completePlayerRegistrationHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /game:
+    get:
+      summary: returnGamesHandler
+      description: returnGamesHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /game/{gameId}/demo:
+    post:
+      summary: launchDemoGameHandler
+      description: launchDemoGameHandler
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+  /report-fraud:
+    post:
+      summary: addPlayerFraudByUsernameHandler
+      description: addPlayerFraudByUsernameHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /promotions/{id}:
+    get:
+      summary: getPromotionLeaderboardHandler
+      description: getPromotionLeaderboardHandler
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+    post:
+      summary: activatePromotionHandler
+      description: activatePromotionHandler
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiAuthorizationKey: [ ]
+  /getjackpots:
+    get:
+      summary: getJackpotsHandler
+      description: getJackpotsHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /getleaderboard/{manufacturerId}/{achievement}:
+    get:
+      summary: getLeaderBoardHandler
+      description: getLeaderBoardHandler
+      parameters:
+        - name: manufacturerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: achievement
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /ping/{manufacturerId}:
+    post:
+      summary: pingHandler
+      description: pingHandler
+      parameters:
+        - name: manufacturerId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+  /accounts/{accountId}/holder:
+    post:
+      summary: updateAccountHolderHandler
+      description: updateAccountHolderHandler
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+  /accounts/{accountId}/parameters:
+    put:
+      summary: updateAccountParametersHandler
+      description: updateAccountParametersHandler
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+  /player/{playerId}/accounts:
+    post:
+      summary: addAccountHandler
+      description: addAccountHandler
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiXTokenAuth: [ ]
+  /reports/registrations/:
+    put:
+      summary: getAffiliateRegistrationsReportHandler
+      description: getAffiliateRegistrationsReportHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /reports/activities/:
+    put:
+      summary: getAffiliateActivitiesReportHandler
+      description: getAffiliateActivitiesReportHandler
+      security:
+        - ApiXTokenAuth: [ ]
+  /logout:
+    post:
+      summary: logoutHandler
+      description: logoutHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /password:
+    post:
+      summary: changePasswordHandler
+      description: changePasswordHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /password/set:
+    post:
+      summary: setPasswordHandler
+      description: setPasswordHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /session:
+    get:
+      summary: sessionStatisticsHandler
+      description: sessionStatisticsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /details:
+    get:
+      summary: getPlayerDetailsHandler
+      description: getPlayerDetailsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+    post:
+      summary: updatePlayerDetailsHandler
+      description: updatePlayerDetailsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /details/full:
+    get:
+      summary: getFullPlayerDetailsHandler
+      description: getFullPlayerDetailsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /balance:
+    get:
+      summary: balanceHandler
+      description: balanceHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /statement:
+    get:
+      summary: accountStatementHandler
+      description: accountStatementHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /statement/{month}:
+    get:
+      summary: accountMonthlyStatementHandler
+      description: accountMonthlyStatementHandler
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiAuthorizationKey: [ ]
+  /deposits:
+    get:
+      summary: accountDepositsHandler
+      description: accountDepositsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /deposit:
+    get:
+      summary: getDepositInfoHandler
+      description: getDepositInfoHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+    post:
+      summary: startDepositHandler
+      description: startDepositHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /executedeposit:
+    post:
+      summary: executeDepositHandler
+      description: executeDepositHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /identify:
+    post:
+      summary: identifyHandler
+      description: identifyHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /withdrawal:
+    get:
+      summary: getWithdrawalInfoHandler
+      description: getWithdrawalInfoHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+    post:
+      summary: requestWithdrawalHandler
+      description: requestWithdrawalHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /withdrawal/pending:
+    get:
+      summary: getPendingWithdrawalsHandler
+      description: getPendingWithdrawalsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /withdrawal/{transactionKey}:
+    get:
+      summary: getWithdrawalStatusHandler
+      description: getWithdrawalStatusHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiAuthorizationKey: [ ]
+  /withdrawal/{transactionKey}/{status}:
+    post:
+      summary: setWithdrawalStatusHandler
+      description: setWithdrawalStatusHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiAuthorizationKey: [ ]
+  /withdrawal/pending/{transactionKey}:
+    delete:
+      summary: cancelPendingWithdrawalHandler
+      description: cancelPendingWithdrawalHandler
+      parameters:
+        - name: transactionKey
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiAuthorizationKey: [ ]
+  /exclusions:
+    get:
+      summary: getExclusionsHandler
+      description: getExclusionsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+    post:
+      summary: createExclusionHandler
+      description: createExclusionHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /promotions:
+    get:
+      summary: getPromotionsHandler
+      description: getPromotionsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /questionnaires:
+    get:
+      summary: getUnansweredQuestionnairesHandler
+      description: getUnansweredQuestionnairesHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /questionnaires/required:
+    get:
+      summary: getRequiredQuestionnairesHandler
+      description: getRequiredQuestionnairesHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /questionnaires/{id}:
+    post:
+      summary: answerQuestionnaireHandler
+      description: answerQuestionnaireHandler
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiAuthorizationKey: [ ]
+  /accounts/{accountId}:
+    get:
+      summary: getAccountHandler
+      description: getAccountHandler
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiAuthorizationKey: [ ]
+  /upload:
+    post:
+      summary: uploadDocumentHandler
+      description: uploadDocumentHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /documents:
+    post:
+      summary: createDocumentHandler
+      description: createDocumentHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /transaction:
+    post:
+      summary: createTransactionHandler
+      description: createTransactionHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /game/{gameId}:
+    get:
+      summary: getGameByGameIdHandler
+      description: getGameByGameIdHandler
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - ApiXTokenAuth: [ ]
+    post:
+      summary: launchGameHandler
+      description: launchGameHandler
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: number
+      security:
+        - ApiAuthorizationKey: [ ]
+  /fraud:
+    post:
+      summary: addPlayerFraudHandler
+      description: addPlayerFraudHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /bonuses/:bonusCode/credit:
+    post:
+      summary: creditBonusHandler
+      description: creditBonusHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /bonuses/:bonusCode/give:
+    post:
+      summary: giveBonusHandler
+      description: giveBonusHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /games/top:
+    get:
+      summary: getTopGamesHandler
+      description: getTopGamesHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /notes:
+    post:
+      summary: addPlayerNoteHandler
+      description: addPlayerNoteHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /activate:
+    get:
+      summary: requestActivationTokenHandler
+      description: requestActivationTokenHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+  /creditfreespins:
+    post:
+      summary: creditGameFreeSpinsHandler
+      description: creditGameFreeSpinsHandler
+      security:
+        - ApiAuthorizationKey: [ ]
+components:
+  securitySchemes:
+    ApiXTokenAuth:
+      type: apiKey
+      name: x-token
+      in: header
+    ApiAuthorizationKey:
+      type: apiKey
+      name: Authorization
+      in: header

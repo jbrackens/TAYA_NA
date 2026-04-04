@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+ name: lenses-ingress-certificate
+data:
+ qcloud_cert_id: {{ .Values.ingress.qcloud_cert_id | b64enc | quote }}
+
+---
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.cloud.tencent.com/auto-rewrite: "true"
+    ingress.cloud.tencent.com/direct-access: "false"
+    ingress.cloud.tencent.com/rewrite-support: "true"
+    kubernetes.io/ingress.class: qcloud
+    kubernetes.io/ingress.existLbId: {{ .Values.ingress.clb_id | quote }}
+    kubernetes.io/ingress.extensiveParameters: '{"AddressIPVersion":"IPV4"}'
+    kubernetes.io/ingress.http-rules: "null"
+    kubernetes.io/ingress.https-rules: '[{"host":"{{ .Values.ingress.domain }}","path":"/","backend":{"serviceName":"{{ .Values.nameOverride }}","servicePort":{{ .Values.lenses.servicePort }}}}]'
+    kubernetes.io/ingress.qcloud-loadbalance-id: {{ .Values.ingress.clb_id | quote }}
+    kubernetes.io/ingress.rule-mix: "true"
+    qcloud_cert_id: {{ .Values.ingress.qcloud_cert_id | quote }}
+  name: {{ .Values.nameOverride | quote }}
+spec:
+  tls:
+  - hosts:
+    - {{ .Values.ingress.domain }}
+    secretName: lenses-ingress-certificate
+  rules:
+  - host: {{ .Values.ingress.domain }}
+    http:
+      paths:
+      - backend:
+          serviceName: {{ .Values.nameOverride }}
+          servicePort: {{ .Values.lenses.servicePort }}
+        path: /

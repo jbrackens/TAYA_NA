@@ -1,0 +1,50 @@
+[
+  {
+    "type": "record",
+    "name": "DepositLimitSet",
+    "namespace": "gmx.dataapi.internal.customer",
+    "fields": [
+      {
+        "name": "messageId",
+        "type": "string",
+        "doc": "Unique identifier of given message"
+      },
+      {
+        "name": "messageOriginDateUTC",
+        "type": "long",
+        "doc": "Message creation date in origin"
+      },
+      {
+        "name": "messageProcessingDateUTC",
+        "type": "long",
+        "doc": "Message processing date in GMX platform"
+      },
+
+      {
+        "name": "brandId",
+        "type": "string",
+        "doc": "Identifier of brand the customer information relates to"
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "doc": "Identifier of the customer"
+      },
+
+      {
+        "name": "scope",
+        "type": "string",
+        "doc": "How to evaluate given limit, e.g. Daily, One-time, etc. Enumerated values extracted to code for cleaner validation"
+      },
+      {
+        "name": "limit",
+        "type": "string",
+        "doc": "Requested limit. Value in specified currency, with scale 4 and precision 11."
+      },
+      {
+        "name": "currencyCode",
+        "type": "string"
+      }
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+name: CI
+on:
+  push:
+    branches: [master, dev, feature/*]
+  pull_request:
+    branches: [master, dev]
+env:
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_BUILDKIT: 1
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: restore cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+          key: ${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build all brands in parallel
+        run: yarn nx run-many --all --target build --parallel
+
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Init docker
+        run: docker network create gstech
+
+      - name: Build docker
+        run: yarn docker:start

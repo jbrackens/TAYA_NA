@@ -1,0 +1,11 @@
+apiVersion: v2
+name: eeg-nifi
+description: A Helm chart for Kubernetes to deploy Apache Nifi
+type: application
+version: 0.1.0
+appVersion: "1.16.0"
+
+dependencies:
+  - name: nifi-registry
+    repository: https://dysnix.github.io/charts/
+    version: 0.3.8

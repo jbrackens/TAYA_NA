@@ -1,0 +1,293 @@
+{
+  "total": 3,
+  "_links": {
+    "self": {
+      "href": "/v1/INT/sports/10915624/fixtures"
+    }
+  },
+  "_embedded": {
+    "fixtures": [
+      {
+        "id": 8705439,
+        "sportId": 10915624,
+        "name": "[Test] League of Legends Competitor A v [Test] League of Legends Competitor B (1638144000)",
+        "sportName": "eSports",
+        "competitionId": "6793",
+        "competitionName": "[Test] League of Legends Competition",
+        "seasonId": 46589,
+        "seasonName": "2015/2020 [Test] League of Legends Competition",
+        "roundId": 776442,
+        "roundName": "Fixture Generator run at 11/27/2021 02:13:15",
+        "startDate": "2021-11-29 00:00:00",
+        "statusType": "scheduled",
+        "type": "Match",
+        "fixturecompetitors": [
+          {
+            "id": 20349467,
+            "number": 1,
+            "fixturecompetitorproperty": {},
+            "updates": 0,
+            "deleted": false,
+            "lastUpdate": "2021-11-27 02:13:28",
+            "_links": {
+              "self": {
+                "href": "/v1/INT/fixtures/8705439"
+              }
+            },
+            "competitor": {
+              "id": 826645,
+              "name": "[Test] League of Legends Competitor A",
+              "sportId": 10915624,
+              "gender": "male",
+              "updates": 1,
+              "deleted": false,
+              "lastUpdate": "2017-07-05 13:23:03",
+              "_links": {
+                "self": {
+                  "href": "/v1/INT/competitors/826645"
+                }
+              },
+              "type": "team",
+              "teamproperty": {
+                "isProtected": "yes",
+                "shortName": "[Test] League of Legends Competitor A"
+              },
+              "playerproperty": {}
+            }
+          },
+          {
+            "id": 20349468,
+            "number": 2,
+            "fixturecompetitorproperty": {},
+            "updates": 0,
+            "deleted": false,
+            "lastUpdate": "2021-11-27 02:13:28",
+            "_links": {
+              "self": {
+                "href": "/v1/INT/fixtures/8705439"
+              }
+            },
+            "competitor": {
+              "id": 826646,
+              "name": "[Test] League of Legends Competitor B",
+              "sportId": 10915624,
+              "gender": "male",
+              "updates": 1,
+              "deleted": false,
+              "lastUpdate": "2017-07-05 13:23:06",
+              "_links": {
+                "self": {
+                  "href": "/v1/INT/competitors/826646"
+                }
+              },
+              "type": "team",
+              "teamproperty": {
+                "isProtected": "yes",
+                "shortName": "[Test] League of Legends Competitor B"
+              },
+              "playerproperty": {}
+            }
+          }
+        ],
+        "venue": {},
+        "fixtureproperty": {},
+        "updates": 1,
+        "deleted": false,
+        "lastUpdate": "2021-11-29 04:00:07",
+        "_links": {
+          "self": {
+            "href": "/v1/INT/fixtures/8705439"
+          }
+        }
+      },
+      {
+        "id": 8705453,
+        "sportId": 10915624,
+        "name": "[Test] CSGO Competitor A v [Test] CSGO Competitor B (1638144000)",
+        "sportName": "eSports",
+        "competitionId": "6794",
+        "competitionName": "[Test] CSGO Competition",
+        "seasonId": 46590,
+        "seasonName": "2015/2020 [Test] CSGO Competition",
+        "roundId": 776444,
+        "roundName": "Fixture Generator run at 11/27/2021 02:13:53",
+        "startDate": "2021-11-29 00:00:00",
+        "statusType": "scheduled",
+        "type": "Match",
+        "fixturecompetitors": [
+          {
+            "id": 20349475,
+            "number": 1,
+            "fixturecompetitorproperty": {},
+            "updates": 0,
+            "deleted": false,
+            "lastUpdate": "2021-11-27 02:14:01",
+            "_links": {
+              "self": {
+                "href": "/v1/INT/fixtures/8705453"
+              }
+            },
+            "competitor": {
+              "id": 826647,
+              "name": "[Test] CSGO Competitor A",
+              "sportId": 10915624,
+              "gender": "male",
+              "updates": 1,
+              "deleted": false,
+              "lastUpdate": "2017-07-05 13:22:42",
+              "_links": {
+                "self": {
+                  "href": "/v1/INT/competitors/826647"
+                }
+              },
+              "type": "team",
+              "teamproperty": {
+                "isProtected": "yes",
+                "shortName": "[Test] CSGO Competitor A"
+              },
+              "playerproperty": {}
+            }
+          },
+          {
+            "id": 20349476,
+            "number": 2,
+            "fixturecompetitorproperty": {},
+            "updates": 0,
+            "deleted": false,
+            "lastUpdate": "2021-11-27 02:14:01",
+            "_links": {
+              "self": {
+                "href": "/v1/INT/fixtures/8705453"
+              }
+            },
+            "competitor": {
+              "id": 826648,
+              "name": "[Test] CSGO Competitor B",
+              "sportId": 10915624,
+              "gender": "male",
+              "updates": 1,
+              "deleted": false,
+              "lastUpdate": "2017-07-05 13:22:47",
+              "_links": {
+                "self": {
+                  "href": "/v1/INT/competitors/826648"
+                }
+              },
+              "type": "team",
+              "teamproperty": {
+                "isProtected": "yes",
+                "shortName": "[Test] CSGO Competitor B"
+              },
+              "playerproperty": {}
+            }
+          }
+        ],
+        "venue": {},
+        "fixtureproperty": {
+          "sets": 30
+        },
+        "updates": 1,
+        "deleted": false,
+        "lastUpdate": "2021-11-29 04:00:07",
+        "_links": {
+          "self": {
+            "href": "/v1/INT/fixtures/8705453"
+          }
+        }
+      },
+      {
+        "id": 8705461,
+        "sportId": 10915624,
+        "name": "[Test] DotA Competitor A v [Test] DotA Competitor B (1638144000)",
+        "sportName": "eSports",
+        "competitionId": "6795",
+        "competitionName": "[Test] DotA Competition",
+        "seasonId": 46591,
+        "seasonName": "2017/2021 [Test] DotA Competition",
+        "roundId": 776449,
+        "roundName": "Fixture Generator run at 11/27/2021 02:14:22",
+        "startDate": "2021-11-29 00:00:00",
+        "statusType": "scheduled",
+        "type": "Match",
+        "fixturecompetitors": [
+          {
+            "id": 20349481,
+            "number": 1,
+            "fixturecompetitorproperty": {},
+            "updates": 0,
+            "deleted": false,
+            "lastUpdate": "2021-11-27 02:14:26",
+            "_links": {
+              "self": {
+                "href": "/v1/INT/fixtures/8705461"
+              }
+            },
+            "competitor": {
+              "id": 826649,
+              "name": "[Test] DotA Competitor A",
+              "sportId": 10915624,
+              "gender": "male",
+              "updates": 1,
+              "deleted": false,
+              "lastUpdate": "2017-07-05 13:22:51",
+              "_links": {
+                "self": {
+                  "href": "/v1/INT/competitors/826649"
+                }
+              },
+              "type": "team",
+              "teamproperty": {
+                "isProtected": "yes",
+                "shortName": "[Test] DotA Competitor A"
+              },
+              "playerproperty": {}
+            }
+          },
+          {
+            "id": 20349482,
+            "number": 2,
+            "fixturecompetitorproperty": {},
+            "updates": 0,
+            "deleted": false,
+            "lastUpdate": "2021-11-27 02:14:27",
+            "_links": {
+              "self": {
+                "href": "/v1/INT/fixtures/8705461"
+              }
+            },
+            "competitor": {
+              "id": 826650,
+              "name": "[Test] DotA Competitor B",
+              "sportId": 10915624,
+              "gender": "male",
+              "updates": 1,
+              "deleted": false,
+              "lastUpdate": "2017-07-05 13:22:55",
+              "_links": {
+                "self": {
+                  "href": "/v1/INT/competitors/826650"
+                }
+              },
+              "type": "team",
+              "teamproperty": {
+                "isProtected": "yes",
+                "shortName": "[Test] DotA Competitor B"
+              },
+              "playerproperty": {}
+            }
+          }
+        ],
+        "venue": {},
+        "fixtureproperty": {},
+        "updates": 1,
+        "deleted": false,
+        "lastUpdate": "2021-11-29 04:00:07",
+        "_links": {
+          "self": {
+            "href": "/v1/INT/fixtures/8705461"
+          }
+        }
+      }
+    ]
+  }
+}

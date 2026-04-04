@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  brand-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: idefix-brand-client
+    container_name: brand-client
+    ports:
+      - "3046:3000"
+    networks:
+      - gstech
+    restart: always
+    command: yarn start
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      SITE_NAME: brand
+      NODE_ENV: production
+      PORT: 3000
+      API: http://brand-backend:3000/
+
+networks:
+  gstech:
+    external: true

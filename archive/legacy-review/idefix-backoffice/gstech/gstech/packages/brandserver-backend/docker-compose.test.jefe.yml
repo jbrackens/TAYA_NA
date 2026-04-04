@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  jefe-backend.test:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend.test
+    container_name: jefe-backend.test
+    command: >
+      sh -c 'yarn workspace brandserver-backend init:jefe && yarn workspace brandserver-backend spec:jefe'
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      SITE_NAME: jefe
+      API_URL: http://gstech-backend:3001/api/CJ/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      REWARD_SERVER_URL: http://gstech-rewardserver:3012/api/v1
+      CAMPAIGN_SERVER_PRIVATE_URL: http://gstech-campaignserver:3014/api/v1
+      COMPLIANCE_SERVER_URL: http://gstech-complianceserver:3009/api/v1
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.casinojefe.com
+      PAYMENT_URL: https://beta-api-cj.luckydino.com
+      tokens_CJ: tokens_CJ
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    release: prometheus-operator
+  name: {{ include "phoenix-backend.fullname" . }}
+spec:
+  endpoints:
+    - targetPort: prometheus
+      path: /metrics
+      interval: 15s
+  # Note that this selector applies to Services, not to Pods,
+  # as per https://github.com/prometheus-operator/prometheus-operator/blob/v0.52.1/Documentation/user-guides/getting-started.md:
+  # > The ServiceMonitor has a label selector to select Services and their underlying Endpoint objects.
+  selector:
+    matchLabels:
+      {{- include "phoenix-backend.selectorLabels" . | nindent 6 }}
+      role: active

@@ -1,0 +1,2 @@
+# https://www.shellcheck.net/wiki/SC2155
+disable=SC2155

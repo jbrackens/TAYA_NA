@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/affmore-client
+    forcestring: true
+  - name: image.tag
+    value: v79-f231d6297806067c720c6bbe54883d4b3da982eb
+    forcestring: true

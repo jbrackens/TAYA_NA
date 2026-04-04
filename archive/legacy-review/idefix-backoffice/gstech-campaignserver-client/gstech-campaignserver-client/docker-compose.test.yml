@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  gstech-campaignserver-client.test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-campaignserver-client.test
+    container_name: gstech-campaignserver-client.test
+    command: yarn test
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      PORT: 3051
+      ENDPOINT: http://gstech-campaignserver:3013/api/v1
+
+networks:
+  gstech:
+    external: true

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cp-schema-registry
+  namespace: streaming
+data:
+  SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081

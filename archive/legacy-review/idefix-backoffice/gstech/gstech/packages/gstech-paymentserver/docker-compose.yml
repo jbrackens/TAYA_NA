@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  gstech-paymentserver:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-paymentserver/Dockerfile
+    image: gstech-paymentserver
+    container_name: gstech-paymentserver
+    ports:
+      - "4006:3006"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+      BACKEND_URL: http://gstech-backend:3001
+      PUBLIC_URL: http://localhost:3006
+
+networks:
+  gstech:
+    external: true

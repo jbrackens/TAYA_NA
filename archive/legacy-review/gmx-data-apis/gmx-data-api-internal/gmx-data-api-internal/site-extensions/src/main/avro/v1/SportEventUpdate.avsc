@@ -1,0 +1,464 @@
+{
+  "type": "record",
+  "name": "SportEventUpdate",
+  "namespace": "gmx.dataapi.internal.siteextensions",
+  "fields": [
+    {
+      "name": "messageId",
+      "type": "string",
+      "doc": "Unique identifier of the message"
+    },
+    {
+      "name": "messageOriginDateUTC",
+      "type": "long",
+      "doc": "Creation date of the message in origin"
+    },
+    {
+      "name": "messageProcessingDateUTC",
+      "type": "long",
+      "doc": "Processing date of the message in GMX platform"
+    },
+    {
+      "name": "payload",
+      "doc": "Content of the update",
+      "type": [
+        {
+          "type": "record",
+          "name": "Event",
+          "namespace": "gmx.dataapi.internal.siteextensions.event",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "Identifier of the event - should match value used in Key; e.g. 63868275"
+            },
+            {
+              "name": "sportId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the sport; e.g. 61"
+            },
+            {
+              "name": "sportName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the sport; e.g. Horse Racing"
+            },
+            {
+              "name": "countryId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the country; e.g. 225"
+            },
+            {
+              "name": "countryCode",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "ISO 3166-1 alpha-2 code of the country; e.g. GB"
+            },
+            {
+              "name": "countryName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the country; e.g. United Kingdom"
+            },
+            {
+              "name": "leagueId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the league; e.g. 196440"
+            },
+            {
+              "name": "leagueName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the league; e.g. Kempton"
+            },
+            {
+              "name": "eventType",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Type of the event - enumerated in gmx.dataapi.internal.siteextensions.event.EventTypeEnum"
+            },
+            {
+              "name": "eventName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the event; e.g. Celtic Contracts Handicap"
+            },
+            {
+              "name": "startTime",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null,
+              "doc": "Start time of the event; e.g. 1565811600"
+            },
+            {
+              "name": "status",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Status of the event - enumerated in gmx.dataapi.internal.siteextensions.event.EventStatusEnum"
+            },
+            {
+              "name": "isDisabled",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null,
+              "doc": "Specifies if the event is disabled for betting"
+            },
+            {
+              "name": "isLive",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null,
+              "doc": "Specifies if the event is currently traded live"
+            },
+            {
+              "name": "participants",
+              "doc": "Participants of the event",
+              "type": [
+                "null",
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "record",
+                    "name": "Participant",
+                    "namespace": "gmx.dataapi.internal.siteextensions.event",
+                    "fields": [
+                      {
+                        "name": "id",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null,
+                        "doc": "Identifier of the participant; e.g. 205008"
+                      },
+                      {
+                        "name": "name",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null,
+                        "doc": "Name of the participant; e.g. Jalingo"
+                      },
+                      {
+                        "name": "details",
+                        "doc": "Details of the participant - depends on sport",
+                        "type": [
+                          {
+                            "type": "record",
+                            "name": "MatchParticipantDetails",
+                            "namespace": "gmx.dataapi.internal.siteextensions.event",
+                            "doc": "Participant of the match between two parties (peoples, teams, ...)",
+                            "fields": [
+                              {
+                                "name": "venueRole",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "Relation of the participant to the venue - enumerated in gmx.dataapi.internal.siteextensions.event.ParticipantVenueRoleEnum"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "record",
+                            "name": "CompetitionParticipantDetails",
+                            "namespace": "gmx.dataapi.internal.siteextensions.event",
+                            "doc": "Participant of the competition between multiple parties (peoples, teams, ...)",
+                            "fields": [
+                            ]
+                          },
+                          {
+                            "type": "record",
+                            "name": "HorseRacingParticipantDetails",
+                            "namespace": "gmx.dataapi.internal.siteextensions.event",
+                            "doc": "Participant of the horse racing event",
+                            "fields": [
+                              {
+                                "name": "runnerStatus",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "Status of the horse runner - enumerated in gmx.dataapi.internal.siteextensions.event.ParticipantRunnerStatusEnum"
+                              },
+                              {
+                                "name": "clothNumber",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "Number of the horse runner; e.g. 7"
+                              },
+                              {
+                                "name": "stallNumber",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "Number of the stall from which the horse will start the race; e.g. 8"
+                              },
+                              {
+                                "name": "jockeyName",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "Name of the jockey; e.g. Tom Marquand"
+                              },
+                              {
+                                "name": "trainerName",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "Name of the trainer; e.g. Ali Stronge"
+                              },
+                              {
+                                "name": "jockeySilkURL",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null,
+                                "doc": "URL from which to fetch the silk icon for a horse; e.g. https://cdn.sbtech.com/silks/673308-4"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "Market",
+          "namespace": "gmx.dataapi.internal.siteextensions.market",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "Identifier of the market - should match value used in Key; e.g. 63868275"
+            },
+            {
+              "name": "eventId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the event - should match gmx.dataapi.internal.siteextensions.event.Event.id; e.g. 63868275"
+            },
+            {
+              "name": "marketTypeId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the market type; e.g. 341"
+            },
+            {
+              "name": "marketTypeName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the market type; e.g. RaceCard"
+            },
+            {
+              "name": "marketName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the market; e.g. RaceCard"
+            },
+            {
+              "name": "isDisabled",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null,
+              "doc": "Specifies if the market is disabled for betting"
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "Selection",
+          "namespace": "gmx.dataapi.internal.siteextensions.selection",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "doc": "Identifier of the selection - should match value used in Key; e.g. 0QA63868275#745924644_22L196440Q1512386Q2-1"
+            },
+            {
+              "name": "eventId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the event - should match gmx.dataapi.internal.siteextensions.event.Event.id; e.g. 63868275"
+            },
+            {
+              "name": "marketId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the market - should match gmx.dataapi.internal.siteextensions.market.Market.id; e.g. 63868275"
+            },
+            {
+              "name": "selectionIntId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Numeric identifier of the selection - subset of id; e.g. 745924644"
+            },
+            {
+              "name": "selectionTypeId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the selection type; e.g. 22"
+            },
+            {
+              "name": "participantId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Identifier of the participant - should match gmx.dataapi.internal.siteextensions.event.Participant.id; e.g. 512386"
+            },
+            {
+              "name": "selectionName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "doc": "Name of the selection; e.g. Ace Cheetah"
+            },
+            {
+              "name": "isDisabled",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null,
+              "doc": "Specifies if the selection is disabled for betting"
+            },
+            {
+              "name": "trueOdds",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null,
+              "doc": "Mathematically correct odds for the selection; e.g. 81.0"
+            },
+            {
+              "name": "displayOdds",
+              "type": [
+                "null",
+                {
+                  "type": "map",
+                  "values": [
+                    "null",
+                    "string"
+                  ]
+                }
+              ],
+              "default": null,
+              "doc": "Specifies the odds as they should be displayed in all different styles (map keyed by type) - enumerated in gmx.dataapi.internal.siteextensions.selection.SelectionOddsTypeEnum"
+            },
+            {
+              "name": "details",
+              "doc": "Details of the selection - depends on sport",
+              "type": [
+                {
+                  "type": "record",
+                  "name": "HorseRacingSelectionDetails",
+                  "namespace": "gmx.dataapi.internal.siteextensions.selection",
+                  "doc": "Selection of the horse racing event",
+                  "fields": [
+                    {
+                      "name": "runnerStatus",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null,
+                      "doc": "Status of the horse runner - enumerated in gmx.dataapi.internal.siteextensions.event.SelectionRunnerStatusEnum"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+nameOverride: "prod-gstech-paymentserver-service"
+fullnameOverride: "prod-gstech-paymentserver-service"
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3006
+
+extraTCPPorts:
+  private-api: 3007
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-gstech-paymentserver-service
+  hosts:
+  - host: papi.luckydino.com
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: prod-gstech-paymentserver-service
+      servicePort: 3006
+
+  annotations: {}
+
+  tls: []
+
+env:
+  NODE_ENV: production
+  BACKEND_URL: http://prod-gstech-backend-service:3001
+  PUBLIC_URL: https://papi.luckydino.com
+secretEnv:
+  PRIVATE_KEY:
+    prod-common-secrets: private-key

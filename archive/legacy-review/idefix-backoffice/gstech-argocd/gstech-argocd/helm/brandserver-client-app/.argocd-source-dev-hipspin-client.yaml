@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/brandserver-client
+    forcestring: true
+  - name: image.tag
+    value: beta-53f90c4fa3c620230668b9e14edb02e3cfb796aa
+    forcestring: true

@@ -1,0 +1,116 @@
+global:
+  storageClass: &storageClass nifi-cbs
+  affinity: &nodes-affinity
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - processing-nodes
+          weight: 1
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - processing-nodes
+  resources:
+    nifiRegistry: &resources-registry
+     limits:
+       cpu: 1000m
+       memory: 2048Mi
+     requests:
+       cpu: 1000m
+       memory: 2048Mi
+    nifi: &resources-nifi
+     limits:
+       cpu: 1000m
+       memory: 2048Mi
+     requests:
+       cpu: 1000m
+       memory: 2048Mi
+    logs: &resources-logs
+      requests:
+        cpu: 10m
+        memory: 10Mi
+      limits:
+        cpu: 100m
+        memory: 50Mi
+
+
+nifi-registry:
+  replicaCount: 1
+  persistence:
+    enabled: true
+    database:
+      storageClass: *storageClass
+      size: 10Gi
+    flowStorage:
+      storageClass: *storageClass
+      size: 10Gi
+  extraEnvs:
+    - name: NIFI_REGISTRY_WEB_HTTP_HOST
+      value: 0.0.0.0
+  resources: *resources-registry
+  affinity: *nodes-affinity
+
+
+replicaCount: 2
+
+
+properties:
+  # https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#nifi_sensitive_props_key
+  sensitiveKey: changeMechangeMe # Must have at least 12 characters
+  provenanceStorage: "8 GB"
+  isNode: true
+
+auth:
+  SSL:
+    keystorePasswd: changeMe
+    truststorePasswd: changeMe
+
+  # Automaticaly disabled if OIDC or LDAP enabled
+  singleUser:
+    username: username
+    password: changemechangeme # Must to have at least 12 characters
+
+jvmMemory: 2g
+
+persistence:
+  enabled: true
+  storageClass: *storageClass
+  accessModes:  [ReadWriteOnce]
+  configStorage:
+    size: 10Gi
+  authconfStorage:
+    size: 10Gi
+  dataStorage:
+    size: 10Gi
+  flowfileRepoStorage:
+    size: 10Gi
+  contentRepoStorage:
+    size: 10Gi
+  provenanceRepoStorage:
+    size: 10Gi
+  logStorage:
+    size: 10Gi
+
+resources: *resources-nifi
+logresources: *resources-logs
+affinity: *nodes-affinity
+
+zookeeper:
+  url: "zookeeper.streaming"
+  port: 2181
+
+registry:
+  url: "nifi-registry.processing"
+  port: 18080
+
+metrics:
+  prometheus:
+    enabled: true
+    port: 9092

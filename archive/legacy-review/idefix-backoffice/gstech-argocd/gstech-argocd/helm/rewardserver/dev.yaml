@@ -1,0 +1,52 @@
+nameOverride: "dev-gstech-rewardserver-service"
+fullnameOverride: "dev-gstech-rewardserver-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-dev-fasttrack-csv-s3
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3011
+
+extraTCPPorts:
+  private-api: 3012
+
+ingressClassName: nginx
+
+ingress:
+  enabled: false
+
+env:
+  POSTGRES_HOST: rds.dev.eeg.viegg.net
+  POSTGRES_USER: gstech
+  REDIS_HOST: redis.dev.eeg.viegg.net
+  REDIS_PORT: 6379
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  GAME_SERVER_URL: http://dev-gstech-walletserver-service:3004/api/v1
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  NODE_ENV: development
+  POSTGRES_POOL_SIZE: 40
+  #REWARD_SERVER_AUTH_TOKEN: "GS[fPcXPQo5QKmJmzfcAbL1eqz6JZJwnT94otkZ5CP6EBWwqRBhB0r9TgMVRpRttQnV/dEE+L2MAbfulWpy2OmaEKZnqB/RTmvQ2ZNbaZWlfwFgGLMlUCo=]"
+  #CAMPAIGN_SERVER_AUTH_TOKEN: "GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]"
+  FT_MIGRATION_S3: dev-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: eu-central-1
+secretEnv:
+  POSTGRES_PASSWORD:
+    dev-gstech-rewardserver-service: postgres-password

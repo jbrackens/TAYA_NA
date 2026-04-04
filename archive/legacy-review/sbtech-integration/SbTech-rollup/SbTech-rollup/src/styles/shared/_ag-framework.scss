@@ -1,0 +1,71 @@
+.ag-page{
+  max-width:1688px;
+  margin:0 auto;
+  *{
+    box-sizing: border-box;
+  }
+  .ag-row{
+    display:flex;
+    flex-direction:row;
+  }
+  .ag-row-container{
+    max-width:1000px;
+    margin:0 auto;
+    display:flex;
+  }
+  .ag-col{
+    display:flex;
+    flex-direction:column;
+    flex-basis:0;
+    flex-grow:1;
+  }
+  .ag-heading{
+    background:$brand-base;
+    color:white;
+    height:32px;
+    line-height:32px;
+    width:100%;
+    margin:1px auto;
+    h2{
+      margin:0;
+      padding-left:10px;
+      margin-left:12px;
+      border-left:3px solid $brand-primary;
+      font-size:16px;
+      line-height: 18px;
+      display:inline-block;
+      font-family:$brand-font--header;
+      text-transform:uppercase;
+    }
+  }
+}
+.agHidden, .ag-hidden{
+  display:none !important;
+}
+.IsMobile .ag-mob-col{
+  flex-direction:column;
+  width:100%;
+}
+
+.ag-button{
+  @include brand-button(16, true);
+  &--grey{
+    background:$brand-grey;
+    &:hover{
+      background:$brand-grey-btn;
+    }
+  }
+}
+
+.ag-panel-heading{
+  @include brand-header();
+}
+
+.panel-center-inner{
+  .ag-panel-heading{
+    margin:1px 0px 1px;
+  }
+  & > .ag-panel-heading{
+    margin-top:0px;
+  }
+}

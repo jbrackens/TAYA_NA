@@ -1,0 +1,144 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$2cloud_name = '2cloud';
+$2cloud_x = 0px;
+$2cloud_y = 169px;
+$2cloud_offset_x = 0px;
+$2cloud_offset_y = -169px;
+$2cloud_width = 206px;
+$2cloud_height = 81px;
+$2cloud_total_width = 243px;
+$2cloud_total_height = 839px;
+$2cloud_image = 'sprite_lander.png';
+$2cloud = 0px 169px 0px -169px 206px 81px 243px 839px 'sprite_lander.png' '2cloud';
+$amount20_name = 'amount20';
+$amount20_x = 0px;
+$amount20_y = 353px;
+$amount20_offset_x = 0px;
+$amount20_offset_y = -353px;
+$amount20_width = 200px;
+$amount20_height = 148px;
+$amount20_total_width = 243px;
+$amount20_total_height = 839px;
+$amount20_image = 'sprite_lander.png';
+$amount20 = 0px 353px 0px -353px 200px 148px 243px 839px 'sprite_lander.png' 'amount20';
+$amount325_name = 'amount325';
+$amount325_x = 0px;
+$amount325_y = 254px;
+$amount325_offset_x = 0px;
+$amount325_offset_y = -254px;
+$amount325_width = 243px;
+$amount325_height = 95px;
+$amount325_total_width = 243px;
+$amount325_total_height = 839px;
+$amount325_image = 'sprite_lander.png';
+$amount325 = 0px 254px 0px -254px 243px 95px 243px 839px 'sprite_lander.png' 'amount325';
+$birdy_name = 'birdy';
+$birdy_x = 0px;
+$birdy_y = 100px;
+$birdy_offset_x = 0px;
+$birdy_offset_y = -100px;
+$birdy_width = 74px;
+$birdy_height = 65px;
+$birdy_total_width = 243px;
+$birdy_total_height = 839px;
+$birdy_image = 'sprite_lander.png';
+$birdy = 0px 100px 0px -100px 74px 65px 243px 839px 'sprite_lander.png' 'birdy';
+$cloud_name = 'cloud';
+$cloud_x = 0px;
+$cloud_y = 34px;
+$cloud_offset_x = 0px;
+$cloud_offset_y = -34px;
+$cloud_width = 177px;
+$cloud_height = 62px;
+$cloud_total_width = 243px;
+$cloud_total_height = 839px;
+$cloud_image = 'sprite_lander.png';
+$cloud = 0px 34px 0px -34px 177px 62px 243px 839px 'sprite_lander.png' 'cloud';
+$meter_name = 'meter';
+$meter_x = 0px;
+$meter_y = 505px;
+$meter_offset_x = 0px;
+$meter_offset_y = -505px;
+$meter_width = 60px;
+$meter_height = 334px;
+$meter_total_width = 243px;
+$meter_total_height = 839px;
+$meter_image = 'sprite_lander.png';
+$meter = 0px 505px 0px -505px 60px 334px 243px 839px 'sprite_lander.png' 'meter';
+$more_name = 'more';
+$more_x = 0px;
+$more_y = 0px;
+$more_offset_x = 0px;
+$more_offset_y = 0px;
+$more_width = 40px;
+$more_height = 30px;
+$more_total_width = 243px;
+$more_total_height = 839px;
+$more_image = 'sprite_lander.png';
+$more = 0px 0px 0px 0px 40px 30px 243px 839px 'sprite_lander.png' 'more';
+$spritesheet_width = 243px;
+$spritesheet_height = 839px;
+$spritesheet_image = 'sprite_lander.png';
+$spritesheet_sprites = $2cloud $amount20 $amount325 $birdy $cloud $meter $more;
+$spritesheet = 243px 839px 'sprite_lander.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

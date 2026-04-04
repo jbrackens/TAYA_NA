@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<market_descriptions response_code="OK">
+    <market id="1" name="Match winner - {way}way" variant="way:two">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="1" name="Match winner - {way}way" variant="way:three">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+            <outcome id="3" name="draw"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="22" name="Second half winner - {way}way" variant="way:three">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+            <outcome id="3" name="draw"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+</market_descriptions>

@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_banners_floating_banners",
+  "info": {
+    "displayName": "Floating Banner",
+    "icon": "filter",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "banner": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::banner.banner"
+    }
+  }
+}

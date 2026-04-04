@@ -1,0 +1,46 @@
+.page-content{
+  margin:0 10px;
+  padding:10px 20px;
+  &.page-grey{
+    color:white;
+  }
+  & + .page-content{
+    margin-top:2px;
+  }
+}
+.page-heading{
+  margin:0 10px 0px;
+  h2{
+    color:$brand-primary;
+    font-size:1.4em;
+  }
+  & + .page-content{
+    margin-top:2px;
+  }
+}
+.account-page .mobile-only{
+  display:none;
+}
+.IsTablet .account-page,
+.IsMobile .account-page{
+  padding:10px;
+  .mobile-only{
+    display:initial;
+  }
+}
+//doc upload
+.page.current .facility-upload__wrap{
+  background:#212329;
+  padding:20px 10px;
+  color:white;
+  .account-text-with-paragraphs{
+    color:white;
+  }
+  a, a:hover, a:visited{
+    color: #57a348;
+  }
+}
+
+.page-heading + .page-content{
+  margin-top:2px;
+}

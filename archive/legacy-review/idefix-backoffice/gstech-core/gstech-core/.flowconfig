@@ -1,0 +1,11 @@
+[ignore]
+.*/node_modules/nock/node_modules/changelog/examples/node.json
+.*/node_modules/boxen/node_modules/chalk/index.js.flow
+.*/node_modules/update-notifier/node_modules/chalk/index.js.flow
+[include]
+
+[libs]
+./flow-typed/
+
+[options]
+module.ignore_non_literal_requires=true

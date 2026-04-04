@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_banners_fullwidth_banners",
+  "info": {
+    "displayName": "Fullwidth Banner",
+    "icon": "expand",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "banner": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::banner.banner"
+    }
+  }
+}

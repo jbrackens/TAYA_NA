@@ -1,0 +1,66 @@
+
+// making scaurasell look like tab switch
+.game_block{
+  .scarousel-list-wrapper{
+    background:$center-bg;
+  }
+  .scarousel.group-view-carousel{
+    .group-view-list-item-link{
+      color: $brand-base;
+    }
+    .group-view-list-item-inner{
+      border-bottom:3px inset transparent;
+    }
+    .scarousel-active{
+      .group-view-list-item-link{
+        color: $brand-base;
+      }
+      .group-view-list-item-inner{
+        border-color: $brand-primary;
+      }
+      &.scarousel-item:hover .group-view-list-item-inner{
+        border-color: $brand-primary--hover;
+      }
+    }
+    .scarousel-item:hover{
+      .group-view-list-item-link{
+        color: $brand-primary;
+      }
+      .group-view-list-item-inner{
+        border-color: transparent;
+      }
+    }
+  }
+}
+
+.virtual-tab-switcher .tab-switch-btns-holder{
+  background:$center-bg;
+  margin:1px 0;
+}
+
+.IsDesktop .market-groups-btns-wrap{
+  margin:0;
+  background:white;
+}
+
+html.IsDesktop .isHome .panel-center ul.tab-switch-btns > li:not(.tab-switch-active):hover{
+  border-color:white;
+}
+
+// outright icon
+.league-view-responsive-block .tab-switch-btns li:nth-of-type(2){
+  padding-right:30px;
+  position:relative;
+}
+.league-view-responsive-block .tab-switch-btns li:nth-of-type(2):after{
+  content:'';
+  position:absolute;
+  right:0;
+  background-image:url('/img/48709');
+  background-size:100%;
+  background-repeat:no-repeat;
+  height:20px;
+  width:20px;
+  top: 50%;
+  transform: translateY(-50%);
+}

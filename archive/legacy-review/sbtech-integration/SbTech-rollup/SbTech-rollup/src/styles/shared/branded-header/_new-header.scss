@@ -1,0 +1,248 @@
+.page-header-wrapper-top{
+  font-family:$brand-font--body;
+  border-bottom:0px solid transparent;
+  display:flex;
+  .page-header-top{
+    display:flex;
+    width:100%;
+  }
+  .page-header-center{
+    overflow:visible;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center;
+    flex: 1 1 800px;
+    order:1;
+    flex-wrap:wrap;
+  }
+  .page-header-left,
+  .page-header-right{
+    display:flex;
+    flex:0 1 350px;
+    order:0;
+  }
+  .page-header-right{
+    justify-content: flex-end;
+    order:2;
+  }
+  .page-header-dropdown-item{
+    padding:0 24px 0 0;
+    border:0px;
+  }
+  .page-header-link{
+    line-height:30px;
+    margin:0;
+    border:0px;
+  }
+  .page-header-dropdown-placeholder{
+    padding-left:0;
+  }
+  .page-header-open-bets-link span:not(.page-header-custom-link-emphasis){
+    color:$brand-primary;
+  }
+  .page-header-dropdown-placeholder{
+    color:$brand-primary;
+  }
+  .page-header-dropdown-inner{
+    border-radius:0px;
+    right:auto;
+    left:0;
+  }
+}
+
+.IsDesktop .notlogged{
+  .page-header-wrapper-top{
+    .page-header-right{
+      flex-grow:1;
+    }
+  }
+}
+
+.page-header-custom-dropdown-item{
+  margin-left:1em;
+}
+.page-header-dropdown-wrap{
+  padding:0;
+}
+
+.page-header-dropdown-inner .page-header-custom-dropdown-section-wrap .page-header-custom-dropdown-item .page-header-custom-link{
+  padding:13px 16px;
+}
+
+.page-header-dropdown-text, .page-header-custom-link-emphasis{
+  color:white;
+  padding:0;
+  margin:0 10px;
+  line-height:30px;
+}
+
+html.IsDesktop .loggedin .page-header-top .page-header-link,
+html.IsDesktop .loggedin .page-header-top .page-header-dropdown-wrap{
+  padding:0;
+  margin:0;
+}
+
+.branded-header__button{
+  @include brand-button(10);
+  border:none;
+  width:60px;
+  padding:0;
+}
+
+.page-header-link{
+  margin:2px;
+}
+
+.page-header-custom-link-text{
+  margin:0;
+}
+
+.page-header-middle{
+  display:flex;
+  flex-direction:column;
+  font-family:$brand-font--header;
+  font-weight:bold;
+}
+
+.navigation-in-center .page-header-left{
+  position:relative;
+  top:0;
+  transform:none;
+  margin:0;
+}
+
+html.IsDesktop .page-header-main-logo{
+  width: 250px;
+  height: 30px;
+  margin:15px 0 25px;
+}
+
+.page-header-main-navi-link{
+  padding: 0px 24px;
+  margin: 0;
+  color:white;
+  font-size:16px;
+  line-height:32px;
+  text-transform:uppercase;
+  &-selected{
+    background:$brand-primary;
+    color:white;
+    border:none;
+  }
+}
+
+.page-header-wrapper-bottom{
+  background:$brand-primary;
+  color:white;
+  font-weight:600;
+  font-family:$brand-font--header;
+  text-transform: uppercase;
+  font-size:13px;
+  .page-header-left{
+    .page-header-link, .page-header-text {
+      border: none;
+      margin:0px 4px;
+      line-height:26px;
+      @media (max-width: 1380px) {
+          margin:0px 8px;
+      }
+    }
+    .page-header-custom-link{
+      color:white;
+      &--text{
+        margin:0;
+      }
+    }
+  }
+}
+
+//space before arrow
+.page-header-dropdown-my-account .page-header-dropdown-text{
+  margin-right:0;
+}
+
+.IsDesktop .page-header-wrapper-bottom .page-header-left{
+  margin:0 auto;
+  float:none;
+  text-align:center;
+}
+
+.page-header-dropdown-item{
+  white-space: nowrap;
+}
+
+
+.page-header-wrapper-top {
+  .page-header-join-button{
+    @include brand-button(15, false, top);
+    margin:0 10px;
+  }
+  .branded-header__button--join{
+    @include brand-button(14, false, top);
+  }
+  .branded-header__button--login{
+    font-size:14px;
+    line-height:28px;
+  }
+  .page-header-login-button{
+    padding: 0;
+    margin:0 10px;
+  }
+}
+
+.page-header-wrapper-top .page-header-link{
+  line-height:30px;
+}
+
+.page-header-cell.page-header-left .page-header-dropdown-wrap{
+  padding:0;
+}
+
+
+@media all and (min-width: 1688px) {
+  .page-header-element:last-child .page-header-link:not(.page-header-big-button-link,.page-header-deposit-button),
+    .page-header-element:last-child .page-header-link {
+        padding-right:20px;
+    }
+    .page-header-element:last-child .page-header-link {
+      padding: 0 15px;
+    }
+}
+
+.IsMobile .page-header-deposit-button,
+.IsTablet .page-header-deposit-button{
+  display:inline-block;
+}
+.IsDesktop .loggedin .page-header-top .page-header-link.page-header-deposit-button{
+  @include brand-button(15, false, top);
+}
+
+//readding margin for first element
+.IsDesktop .page-header-wrapper-bottom .page-header-element:first-child .page-header-link .page-header-custom-link-text{
+  margin-left:12px;
+}
+
+#panels-right-holder, #panels-left-holder {
+  margin-top:10px;
+}
+
+
+
+// weird safari fix?
+@media all and (min-width: 1688px) {
+  .page-header-element:last-child .page-header-link.branded-header__button > .page-header-custom-link-text {
+    margin-right: 0;
+    padding-right: 0;
+  }
+}
+
+//small desktops
+@media all and (max-width:1351px){
+  html.IsDesktop{
+    #header-reward-element .header-reward-points,
+    .page-header-dropdown-text, .page-header-custom-link-emphasis{
+      margin:0 5px;
+    }
+  }
+}

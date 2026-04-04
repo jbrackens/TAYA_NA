@@ -1,0 +1,10 @@
+.vscode
+.env
+.direnv
+.envrc
+bak
+pids
+debug.log
+_*
+idfx/completion/*.(state|trace)
+!idfx/completion/_idfx

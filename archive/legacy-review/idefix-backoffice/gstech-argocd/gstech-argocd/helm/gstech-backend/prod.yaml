@@ -1,0 +1,103 @@
+nameOverride: "prod-gstech-backend-service"
+fullnameOverride: "prod-gstech-backend-service"
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "300m"
+  limits:
+    memory: "2Gi"
+
+service:
+  enabled: true
+  port: 3001
+
+extraTCPPorts:
+  private-api: 3005
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-prod-fasttrack-csv-s3
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-gstech-backend-service
+  hosts:
+  - host: idefix.luckydino.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-gstech-backend-service
+      servicePort: 3001
+    - path: /socket.io/
+      pathType: Prefix
+      serviceName: prod-gstech-backend-service
+      servicePort: 3001
+    - path: /
+      pathType: Prefix
+      serviceName: prod-gstech-backoffice-service
+      servicePort: 5000
+
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 50m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"  # 5 minutes
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"  # 5 minutes
+
+  tls: []
+
+env:
+  NODE_ENV: production
+  MINIO_HOST: s3.eu-west-1.amazonaws.com
+  NODE_OPTIONS: "--max-old-space-size=1024"
+  MINIO_PORT: 443
+  MINIO_USE_SSL: "true"
+  MINIO_BUCKET_NAME: bucket-backend.prod.eeg
+  MINIO_REGION: eu-west-1
+  REDIS_HOST: redis-backend.prod.eeg.viegg.net
+  REDIS_PORT: 6379
+  POSTGRES_POOL_SIZE: 50
+  POSTGRES_HOST: db-1.prod.eeg.viegg.net
+  POSTGRES_USER: gstech
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-3.luckydino-prod-kafka.pofjr3.c3.kafka.eu-west-1.amazonaws.com,b-2.luckydino-prod-kafka.pofjr3.c3.kafka.eu-west-1.amazonaws.com,b-1.luckydino-prod-kafka.pofjr3.c3.kafka.eu-west-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  PORT: 3001
+  WALLET_PORT: 3005
+  GAME_SERVER_URL: http://prod-gstech-walletserver-service:3004/api/v1
+  COMPLIANCE_SERVER_URL: http://prod-gstech-compliance-service:3009/api/v1
+  PAYMENT_SERVER_URL: http://prod-gstech-paymentserver-service:3007/api/v1
+  CF_CERTS_URL: https://idefix.luckydino.com/cdn-cgi/access/certs
+  CAMPAIGN_SERVER_PRIVATE_URL: http://prod-gstech-campaignserver-backend-service:3014/api/v1
+  REWARD_SERVER_URL: http://prod-gstech-rewardserver-service:3012/api/v1
+  AFFILIATE_SYSTEM_URL: http://prod-affmore-backend-service:3034
+  REWARD_SERVER_AUTH_TOKEN: 'GS[fPcXPQo5QKmJmzfcAbL1eqz6JZJwnT94otkZ5CP6EBWwqRBhB0r9TgMVRpRttQnV/dEE+L2MAbfulWpy2OmaEKZnqB/RTmvQ2ZNbaZWlfwFgGLMlUCo=]'
+  CAMPAIGN_SERVER_AUTH_TOKEN: 'GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]'
+  CONTENT_SERVER_AUTH_TOKEN: 'GS[uHZY3vWFfrH7htZK3YQ1JgIxfHGr3qIqdo4n71LGPvXShG34oI4Ea+ttRBnvEnt6rL+VqTHDlMf00xcnlf/vrzYWlo89ukHbdZYGRQ==]'
+  CONTENT_SERVER_URL: http://prod-gstech-contentserver-service:3017/api/v1
+  FT_MIGRATION_S3: prod-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: eu-west-1
+secretEnv:
+  POSTGRES_PASSWORD:
+    prod-gstech-backend-service: postgres-password
+  MINIO_ACCESS_KEY:
+    prod-gstech-backend-service: minio-access-key
+  MINIO_SECRET_KEY:
+    prod-gstech-backend-service: minio-secret-key
+  PRIVATE_KEY:
+    prod-common-secrets: private-key

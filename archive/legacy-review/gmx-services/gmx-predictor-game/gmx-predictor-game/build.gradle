@@ -1,0 +1,61 @@
+plugins {
+    id 'idea'
+    id 'com.palantir.docker-compose' version "0.21.0"
+}
+
+ext {
+    javaVersion = '1.8'
+    scalaVersion = '2.12.6'
+    scalaDepVersion = '2.12'
+
+    playVersion = '2.6.17'
+    slickVersion = '3.2.2'
+
+    kafkaVersion = '2.1.1'
+
+    dockerRegistry = '259420793117.dkr.ecr.eu-west-1.amazonaws.com'
+    dockerRegistryGroup = 'gmx-predictor-game'
+}
+
+configure(allprojects) { project ->
+    group = "net.flipsports.gmx.game.argyll.predictor"
+
+    apply plugin: "scala"
+
+    dependencies{
+        implementation "org.slf4j:slf4j-api:1.7.22"
+        implementation "org.slf4j:jul-to-slf4j:1.7.22"
+        implementation "org.slf4j:jcl-over-slf4j:1.7.22"
+        implementation "ch.qos.logback:logback-classic:1.0.13"
+        implementation "ch.qos.logback:logback-core:1.0.13"
+        implementation "org.codehaus.janino:janino:3.0.8"
+        implementation "net.logstash.logback:logstash-logback-encoder:6.0"
+        implementation "com.typesafe.scala-logging:scala-logging_${scalaDepVersion}:3.9.0"
+
+        testImplementation "junit:junit:4.12"
+        testImplementation "org.scalatest:scalatest_${scalaDepVersion}:3.0.5"
+        testImplementation "org.mockito:mockito-scala_${scalaDepVersion}:0.3.1"
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        maven{
+            name = "typesafe-maven-release"
+            url = "https://repo.typesafe.com/typesafe/maven-releases"
+        }
+        maven{
+            name = "FS Maven Repository"
+            url = "https://lena-srv01.flipsports.net:4566/repository/maven-group/"
+        }
+    }
+}
+
+configure(rootProject) {
+    description = "GMX Platform :: Predictor Game :: Parent"
+
+    apply plugin: "groovy"
+
+    configurations.archives.artifacts.clear()
+}

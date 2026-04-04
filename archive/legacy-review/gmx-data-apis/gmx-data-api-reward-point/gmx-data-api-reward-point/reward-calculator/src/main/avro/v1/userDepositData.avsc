@@ -1,0 +1,25 @@
+{
+  "type": "record",
+  "name": "UserDepositData",
+  "namespace": "net.flipsports.gmx.rewardcalculator.api",
+  "fields": [
+{
+      "name": "customer_id",
+      "type": "int"
+    },
+    {
+      "name": "fd_date",
+      "type": "int",
+      "logicalType": "date"
+    },
+    {
+      "name": "fd_amount",
+      "type": "double"
+    },
+    {
+      "name": "loading_update_date",
+      "type": "int",
+      "logicalType": "date"
+    }
+  ]
+}

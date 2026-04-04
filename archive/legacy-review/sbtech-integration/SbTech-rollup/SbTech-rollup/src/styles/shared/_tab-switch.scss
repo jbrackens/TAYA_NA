@@ -1,0 +1,71 @@
+
+// making scaurasell look like tab switch
+.game_block{
+  .scarousel-list-wrapper{
+    background:$brand-base;
+    margin-bottom:1px;
+  }
+  .scarousel.group-view-carousel{
+    .scarousel-item:after{
+      display:none;
+    }
+    .group-view-list-item-link{
+      color: white;
+      font-size: 15px;
+    }
+    .group-view-list-item-inner{
+      border-bottom:3px inset transparent;
+    }
+    .scarousel-active{
+      .group-view-list-item-link{
+        color: white;
+      }
+      .group-view-list-item-inner{
+        border-color: $brand-primary;
+      }
+    }
+    .scarousel-item:hover{
+      .group-view-list-item-link{
+        color: white;
+      }
+      .group-view-list-item-inner{
+        border-color:  white;
+      }
+    }
+  }
+}
+
+// making virtuals tab switch look normal
+.virtual-tab-switcher .tab-switch-btns-holder{
+  background:$brand-base;
+  margin:1px 0;
+}
+.virtual-tab-switcher ul.tab-switch-btns > li{
+  border-bottom:3px solid transparent;
+  &.tab-switch-active{
+    border-bottom-color: $brand-primary;
+  }
+  &:hover{
+    border-bottom-color:white;
+  }
+}
+
+.virtual-tab-switcher ul.tab-switch-btns > li:after{
+  display:none;
+}
+
+// generic generated tabs
+.rj-generic-tabs-01{
+  border-radius: 0px;
+}
+.rj-carousel{
+  background:white;
+}
+.IsDesktop .filters-container .rj-carousel,
+.IsDesktop .todays-events .rj-carousel,
+.IsDesktop .lbetting-block .rj-carousel{
+  margin:0;
+}
+.scarousel-btn.scarousel-btn-prev:before{
+  display:none;
+}

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Note that there should be only one logback-test.xml on the classpath of any module.
+    Otherwise, if there's more than one logback-test.xml:
+    1) logback will report `Resource [logback-test.xml] occurs multiple times on the classpath`,
+       unless <contextListener> is set to `ch.qos.logback.core.status.NopStatusListener`,
+    2) which logback-test.xml will actually be selected by logback, depends on the underlying classloader implementation,
+       see `ch.qos.logback.classic.util.ContextInitializer` for details.
+
+    To simplify things and avoid non-deterministic logging configuration,
+    let's just provide a single logback-test-shared.xml (NOT recognized by logback)
+    at the very base module in the project, and let every other module add it to its test classpath
+    through a dependency on `phoenix-core` % "test->test".
+    Note that this way phoenix-core doesn't have its logback-test.xml configured...
+    but that's a very minor problem since the logs from those few tests in phoenix-core aren't particularly relevant anyway.
+-->
+
+<included>
+    <include resource="logback-shared.xml"/>
+
+    <!-- Silence Logback's own status messages about config parsing -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- This appender is added for debugging SQL (used only in tests),
+             when Slick SQLs loggers are enabled we are not interested in Akka persistence operations -->
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>return message.contains("event_journal");</expression>
+            </evaluator>
+            <OnMismatch>NEUTRAL</OnMismatch>
+            <OnMatch>DENY</OnMatch>
+        </filter>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>${defaultPattern}</Pattern>
+        </encoder>
+    </appender>
+
+    <root level="${logback.root.level:-WARN}">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</included>

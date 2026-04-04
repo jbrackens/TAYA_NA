@@ -1,0 +1,50 @@
+{
+  "Fixture": {
+    "Competition": {
+      "Id": 13745,
+      "Name": "[FIFA] eSports Battle",
+      "Region": {
+        "Id": 3795074,
+        "Name": "FIFA"
+      }
+    },
+    "Competitors": [
+      {
+        "CompetitorType": "Team",
+        "Competitors": [],
+        "HomeAway": "Home",
+        "Id": 1288944,
+        "Name": "Atletico Madrid (NicolasRage)"
+      },
+      {
+        "CompetitorType": "Team",
+        "Competitors": [],
+        "HomeAway": "Away",
+        "Id": 1301010,
+        "Name": "Borussia Dortmund (YoungDaddy)"
+      }
+    ],
+    "FixtureType": "Match",
+    "Id": 8571627,
+    "Name": "Atletico Madrid (NicolasRage) v Borussia Dortmund (YoungDaddy) (Bo1)",
+    "Round": {
+      "Id": 757684,
+      "Name": "Regular Season"
+    },
+    "Season": {
+      "Id": 117073,
+      "Name": "2021 [FIFA] eSports Battle October"
+    },
+    "Sport": {
+      "Id": 10915624,
+      "Name": "eSports"
+    },
+    "StartTimeUtc": "2021-10-08T14:12:00Z",
+    "Status": "Scheduled"
+  },
+  "Header": {
+    "MessageGuid": "e373b43c-4649-46e1-a317-970759cfdcc6",
+    "Retry": 0,
+    "TimeStampUtc": "2021-10-08T14:13:44.7671916Z"
+  }
+}

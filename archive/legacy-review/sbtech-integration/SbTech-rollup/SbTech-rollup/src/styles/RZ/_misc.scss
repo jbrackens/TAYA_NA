@@ -1,0 +1,119 @@
+.IsTablet .mobile-break,
+.IsDesktop .mobile-break{
+display:none;
+}
+
+.c-reality-check .rj-popup-message__header{
+  background:#eeeeee;
+}
+
+.bet-search-container{
+  background:$brand-base;
+}
+
+// mobile betslip count
+#betslipNotificationWrap #footerlink_bs #footerlink_bs_count{
+  background:$brand-base;
+  color:white;
+}
+
+// fast markets
+.action-betting-buttons-wrapper{
+  background:$brand-primary;
+  color:white;
+}
+.timer-counter{
+  color:white;
+}
+.action-betting-incident-wrapper{
+  color:$brand-base;
+}
+
+
+// stops last iframe causing 10px gap under footer
+body iframe:last-child{
+    display:block;
+}
+
+.main-content table{
+  border-collapse:separate;
+  border-spacing: 1px;
+}
+.main-content td, .main-content th{
+  margin:0 1em;
+  line-height:2em;
+}
+.main-content th{
+  text-align:center;
+  text-transform:uppercase;
+}
+.main-container .col-content{
+  padding:50px;
+}
+
+// buttons in event list - should be white as they have no container
+.rj-ev-list__prelive-outright__button-holder{
+  button.rj-ev-list__bet-btn {
+    background: white;
+  }
+}
+
+// cashout
+.my-bets-block .cashout-only-filter,
+.my-bets-block .filter-wrapper{
+  background-color:$brand-base;
+}
+
+.betting-slip.unislip #idBetsSelections .betSlip-checkbox .i-o-controls-checkmark{
+  background-color:white;
+}
+
+// icons in bottom right of event list block
+.IsMobile .rj-ev-list__ev-card .rj-ev-list__ev-card-icon--tooltip,
+.IsTablet .rj-ev-list__ev-card .rj-ev-list__ev-card-icon--tooltip{
+  padding-top:1px;
+}
+
+// my bet title bad bg
+.panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns>li{
+  text-transform:uppercase;
+}
+.my-bets-block .message{
+  background:$brand-base;
+}
+
+//casino tournament button $color
+.sb-src-components-sbtech-cas-widget-tournament-components-common-Header-_index__tournament-history-button{
+  color:white;
+}
+//casino tournament results dropdown
+.sb-src-components-sbtech-cas-widget-tournament-components-views-Desktop-Tournament-DropDown-_index__dropdown-options{
+  border-radius:0px;
+  background:white;
+}
+
+// new search
+.rj-bet-search-container{
+  padding:5px;
+  border-bottom:1px solid $main-bg;
+}
+
+.IsDesktop input.rj-bet-search-field{
+  padding-top:5px;
+  padding-bottom:5px;
+  background:$brand-base;
+  color:white;
+  border:none;
+  &::placeholder{
+    color: white;
+    font-weight:normal;
+  }
+  &:focus{
+    background:$brand-base;
+    color:white;
+    border:none;
+  }
+}
+.rj-bet-search__icon .i-c-search{
+  background-image: url("/imgs/i-v2/c/generic/search.svg");
+}

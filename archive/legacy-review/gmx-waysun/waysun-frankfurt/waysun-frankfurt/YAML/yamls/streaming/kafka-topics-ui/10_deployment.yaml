@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: kafka-topics-ui
+    qcloud-app: kafka-topics-ui
+  name: kafka-topics-ui
+  namespace: streaming
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: kafka-topics-ui
+      qcloud-app: kafka-topics-ui
+  template:
+    metadata:
+      labels:
+        k8s-app: kafka-topics-ui
+        qcloud-app: kafka-topics-ui
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - streaming-nodes
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - streaming-nodes
+      containers:
+      - env:
+        - name: KAFKA_REST_PROXY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: KAFKA_REST_URL
+              name: common
+              optional: false
+        image: landoop/kafka-topics-ui:latest
+        imagePullPolicy: Always
+        name: kafka-topics-ui
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          privileged: false
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

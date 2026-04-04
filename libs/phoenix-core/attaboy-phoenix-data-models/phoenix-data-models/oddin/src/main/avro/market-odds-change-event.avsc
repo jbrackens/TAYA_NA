@@ -1,0 +1,75 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "MarketOddsChange",
+  "fields": [
+    {
+      "name": "sportId",
+      "type": "string"
+    },
+    {
+      "name": "fixtureId",
+      "type": "string"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "marketName",
+      "type": "string"
+    },
+    {
+      "name": "marketStatus",
+      "type": "string"
+    },
+    {
+      "name": "marketSpecifiers",
+      "type": {
+        "type": "map",
+        "values": "string"
+      }
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "selectionOdds",
+      "type": {
+        "type": "array",
+        "items": {
+          "namespace": "phoenix.oddin.data",
+          "type": "record",
+          "name": "SelectionOdds",
+          "fields": [
+            {
+              "name": "sportId",
+              "type": "string"
+            },
+            {
+              "name": "fixtureId",
+              "type": "string"
+            },
+            {
+              "name": "marketId",
+              "type": "string"
+            },
+            {
+              "name": "selectionId",
+              "type": "string"
+            },
+            {
+              "name": "selectionName",
+              "type": "string"
+            },
+            {
+              "name": "odds",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

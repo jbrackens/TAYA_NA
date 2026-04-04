@@ -1,0 +1,726 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Rewardserver Management API"
+basePath: "/api/v1/"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /games:
+    get:
+      summary: Get games
+      description: Get games
+      tags:
+        - games
+      parameters:
+        - in: query
+          name: "brandId"
+          type: string
+          required: true
+          enum: ['KK', 'LD', 'CJ', 'OS']
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetGamesResponse'
+    post:
+      summary: Create game
+      description: Create game
+      tags:
+        - games
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreateGame'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateGameResponse'
+        409:
+          description: 'Duplicated reward'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /games/{gameId}:
+    put:
+      summary: Update game
+      description: Update game
+      tags:
+        - games
+      parameters:
+        - in: path
+          name: gameId
+          type: number
+          required: true
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreateGame'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/OKResponse'
+        404:
+          description: Reward not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      summary: Delete game
+      description: Delete game
+      tags:
+        - games
+      parameters:
+        - in: path
+          name: gameId
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/OKResponse'
+        404:
+          description: Reward not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /games/permalinks:
+    get:
+      summary: Get backend games permalinks
+      description: Get backend games permalinks
+      tags:
+        - games
+      parameters:
+        - in: query
+          name: "brandId"
+          type: string
+          required: true
+          enum: ['KK', 'LD', 'CJ', 'OS']
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetGamesPermalinksResponse'
+  /games/game-manufacturers:
+    get:
+      summary: Get games manufacturers list
+      description: Get games manufacturers list
+      parameters:
+        - in: query
+          name: countryId
+          type: string
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetGameManufacturers'
+  /rewards/init:
+    get:
+      summary: Get initial configuration of reward definitions
+      description: Get initial configuration of reward definitions
+      tags:
+        - rewards
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/InitResponse'
+  /rewards/init-groups:
+    get:
+      summary: Get configuration of reward groups
+      description: Get configuration of reward groups
+      tags:
+        - rewards
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/InitGroupsResponse'
+  /rewards:
+    get:
+      summary: Get rewards
+      description: Get rewards
+      tags:
+        - rewards
+      parameters:
+        - in: query
+          name: "brandId"
+          type: string
+          required: true
+          enum: ['KK', 'LD', 'CJ', 'OS']
+        - in: query
+          name: "type"
+          type: string
+          required: false
+        - in: query
+          name: "group"
+          type: string
+          required: false
+        - in: query
+          name: removed
+          type: boolean
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetRewardsResponse'
+    post:
+      summary: Create new reward
+      description: Create new reward
+      tags:
+        - rewards
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateReward"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreateRewardResponse'
+        409:
+          description: Could not create a reward
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /rewards/{rewardId}:
+    get:
+      summary: Get reward with game
+      description: Get reward with game
+      tags:
+        - rewards
+      parameters:
+        - in: path
+          name: rewardId
+          required: true
+          type: number
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetRewardResponse'
+        404:
+          description: Reward not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      summary: Remove reward
+      description: Remove reward
+      tags:
+        - rewards
+      parameters:
+        - in: path
+          name: rewardId
+          required: true
+          type: number
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/OKResponse'
+        404:
+          description: 'Reward not found'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        409:
+          description: 'Reward already removed'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      summary: Update reward
+      description: Update reward
+      tags:
+        - rewards
+      parameters:
+        - in: path
+          name: rewardId
+          required: true
+          type: number
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreateReward"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/OKResponse'
+        404:
+          description: 'Reward not found'
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /rewards/{rewardId}/credit:
+    post:
+      tags:
+        - rewards
+      summary: Credit reward to a player
+      description: Credit reward to a player
+      parameters:
+        - in: path
+          name: rewardId
+          required: true
+          type: number
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/CreditReward'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/CreditRewardResponse'
+        404:
+          description: Reward not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /rewards/{rewardId}/duplicate:
+    post:
+      tags:
+        - rewards
+      summary: Duplicate a reward
+      description: Duplicate a reward
+      parameters:
+        - in: path
+          name: rewardId
+          required: true
+          type: number
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetRewardResponse'
+        404:
+          description: Reward not found
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+#  /players/{playerId}/ledgers:
+#    get:
+#      tags:
+#        - ledgers
+#      summary: Get all player ledgers
+#      description: Get all player ledgers
+#      parameters:
+#        - in: path
+#          name: playerId
+#          type: number
+#          required: true
+#        - in: query
+#          name: brandId
+#          type: string
+#          enum: ['KK', 'LD', 'CJ', 'OS']
+#          required: true
+#        - in: query
+#          name: pageSize
+#          type: number
+#          required: false
+#        - in: query
+#          name: pageIndex
+#          type: number
+#          required: false
+#        - in: query
+#          name: rewardType
+#          type: string
+#          required: false
+#        - in: query
+#          name: group
+#          type: string
+#          required: false
+#      responses:
+#        200:
+#          description: OK
+#          schema:
+#            $ref: '#/definitions/GetAllPlayerLedgersResponse'
+#  /players/{playerId}/ledgers/{ledgerId}/mark-used:
+#    put:
+#      tags:
+#        - ledgers
+#      summary: Mark player reward as used
+#      description: Mark player reward as used
+#      parameters:
+#        - in: path
+#          name: playerId
+#          type: number
+#          required: true
+#        - in: path
+#          name: ledgerId
+#          type: number
+#          required: true
+#      responses:
+#        200:
+#          description: OK
+#          schema:
+#            $ref: '#/definitions/OKResponse'
+#        409:
+#          description: 'Ledger not found or already used'
+#          schema:
+#            $ref: '#/definitions/ErrorResponse'
+definitions:
+  GetGamesResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: number
+            order:
+              type: number
+            brandId:
+              type: string
+            permalink:
+              type: string
+            name:
+              type: string
+            manufacturer:
+              type: string
+            primaryCategory:
+              type: string
+            aspectRatio:
+              type: string
+            viewMode:
+              type: string
+            newGame:
+              type: boolean
+            jackpot:
+              type: boolean
+            thumbnail:
+              type: string
+            searchOnly:
+              type: boolean
+            active:
+              type: boolean
+            keywords:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+  GetGamesPermalinksResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: string
+  CreateGame:
+    type: object
+    required:
+      - brandId
+      - permalink
+      - name
+      - primaryCategory
+      - aspectRatio
+      - viewMode
+      - newGame
+      - jackpot
+      - thumbnail
+      - searchOnly
+      - active
+    properties:
+      brandId:
+        type: string
+      permalink:
+        type: string
+      name:
+        type: string
+      manufacturer:
+        type: string
+      primaryCategory:
+        type: string
+      aspectRatio:
+        type: string
+        enum: [16x9', '4:3', '3x2', 'wms-wide']
+      viewMode:
+        type: string
+        enum: ['single', 'max']
+      newGame:
+        type: boolean
+      jackpot:
+        type: boolean
+      thumbnail:
+        type: string
+      searchOnly:
+        type: boolean
+      active:
+        type: boolean
+      order:
+        type: number
+      keywords:
+        type: string
+      tags:
+        type: array
+        items:
+          type: string
+      parameters:
+        type: object
+  CreateGameResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          gameId:
+            type: number
+  GetGameManufacturers:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            parentId:
+              type: string
+            license:
+              type: string
+            active:
+              type: boolean
+  InitFields:
+    type: array
+    items:
+      type: object
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [ 'number', 'string', 'money', 'boolean' ]
+        values:
+          type: array
+          items:
+            type: string
+        preview:
+          type: string
+  InitTable:
+    type: array
+    items:
+      type: object
+      properties:
+        title:
+          type: string
+        property:
+          type: string
+  InitResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          thumbnails:
+            type: object
+            properties:
+              BrandId:
+                type: object
+          rewardDefinitions:
+            type: object
+            properties:
+              BrandId:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    type:
+                      type: string
+                    promotion:
+                      type: string
+                    fields:
+                      $ref: '#/definitions/InitFields'
+                    table:
+                      $ref: '#/definitions/InitTable'
+  InitGroupsResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          BrandId:
+            type: array
+            items:
+              type: object
+              properties:
+                groupId:
+                  type: string
+                groupName:
+                  type: string
+                rewardTypes:
+                  type: array
+                  items:
+                    type: string
+                balanceGroup:
+                  type: boolean
+                fields:
+                  $ref: '#/definitions/InitFields'
+                table:
+                  $ref: '#/definitions/InitTable'
+  GetRewardsResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/CreateReward'
+  GetRewardResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/CreateReward'
+  CreateReward:
+    type: object
+    required:
+      - rewardDefinitionId
+      - creditType
+      - bonusCode
+      - externalId
+    properties:
+      rewardDefinitionId:
+        type: number
+      creditType:
+        type: string
+        example: freeSpins
+      bonusCode:
+        type: string
+      externalId:
+        type: string
+      description:
+        type: string
+      validity:
+        type: string
+        format: date-time
+        example: null
+      price:
+        type: number
+        example: null
+      cost:
+        type: number
+        example: null
+      spins:
+        type: number
+        example: null
+      spinValue:
+        type: number
+        example: null
+      spinType:
+        type: string
+        example: null
+      gameId:
+        type: number
+        example: null
+      currency:
+        type: string
+        example: null
+      metadata:
+        type: object
+        example: null
+      active:
+        type: boolean
+  CreateRewardResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          rewardId:
+            type: number
+  CreditReward:
+    type: object
+    required:
+      - playerId
+    properties:
+      playerId:
+        type: number
+      externalLedgerId:
+        type: string
+      count:
+        type: number
+        example: 1
+  CreditRewardResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          ledgers:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                rewardId:
+                  type: number
+  GetAllPlayerLedgersResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          ledgers:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                creditDate:
+                  type: string
+                  format: 'date-time'
+                useDate:
+                  type: string
+                  format: 'date-time'
+                expires:
+                  type: string
+                  format: 'date-time'
+                externalId:
+                  type: string
+                result:
+                  type: string
+                groupId:
+                  type: number
+                quantity:
+                  type: number
+                game:
+                  $ref: '#/definitions/CreateGame'
+                reward:
+                  $ref: '#/definitions/CreateReward'
+  OKResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "ok"
+        properties:
+          ok:
+            type: "boolean"
+  ErrorResponse:
+    type: "object"
+    properties:
+      error:
+        type: "object"
+        required:
+          - "message"
+        properties:
+          message:
+            type: "string"

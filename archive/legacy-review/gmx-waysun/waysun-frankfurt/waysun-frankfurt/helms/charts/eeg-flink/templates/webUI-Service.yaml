@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-jobmanager-webui
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: web-rest
+    port: 8081
+    protocol: TCP
+    targetPort: 8081
+  - name: web-history
+    port: 8082
+    protocol: TCP
+    targetPort: 8082
+  selector:
+    app: flink-jobmanager
+    k8s-app: flink-jobmanager
+    qcloud-app: flink-jobmanager
+  sessionAffinity: None
+  type: NodePort

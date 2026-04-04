@@ -1,0 +1,29 @@
+.rj-hamburger-tabs-01-icon.rj-hamburger-icon{
+  width:32px;
+  height:32px;
+  margin-bottom:4px;
+}
+.rj-hamburger-tabs-01-title{
+  color:$brand-light;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+
+.rj-account-block__menu-item{
+  padding:0 1em;
+  line-height:3;
+  border-bottom:1px solid $brand-base-light;
+}
+.rj-account-block__menu-section-title{
+  padding:0 1em;
+  line-height:3;
+}
+.rj-account-block__user-stats{
+  padding-top:0px;
+}
+.rj-account-block__user-info{
+  padding:15px 0;
+}
+.rj-account-block__deposit-link{
+  @include brand-button(14);
+}

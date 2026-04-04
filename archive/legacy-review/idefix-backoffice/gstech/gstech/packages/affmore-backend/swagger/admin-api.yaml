@@ -1,0 +1,6203 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Affmore Backend API"
+basePath: "/api/v1"
+tags:
+  - name: "authentication api"
+  - name: "affiliate api"
+  - name: "admin api"
+  - name: "plans api"
+  - name: "deals api"
+  - name: "players api"
+  - name: "payments api"
+  - name: "invoices api"
+  - name: "links api"
+  - name: "landings api"
+  - name: "callbacks api"
+  - name: "sub affiliates api"
+  - name: "logs api"
+  - name: "users api"
+schemes:
+  - "https"
+  - "http"
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: x-auth-token
+    in: header
+paths:
+  /auth/affiliate/register:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "referral"
+          type: "number"
+          format: "Id"
+          required: false
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/AffiliateRegisterRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/AffiliateRegisterResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /auth/affiliate/login:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/AffiliateLoginResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /auth/affiliate/accept-tc:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /auth/affiliate/password/change:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/PasswordChangeRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /auth/affiliate/password/forgot:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/PasswordForgotRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/PasswordForgotResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /auth/affiliate/password/update:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/PasswordUpdateRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/PasswordUpdateResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /auth/user/login:
+    post:
+      tags:
+        - "authentication api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+
+  /affiliate:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateAffiliateRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateAffiliateResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/overview/{year}/{month}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateOverviewResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/revenues/{year}/{month}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayersRevenuesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/deals:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateDealsResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/links:
+    post:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateAffiliateLinkRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateAffiliateLinkResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLinksResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/links/{linkId}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "linkId"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "from"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+        - in: "query"
+          name: "to"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLinkClicksResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "linkId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateAffiliateLinkRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateAffiliateLinkResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "linkId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/landings:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLandingsResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/landings/{brandId}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "brandId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLandingsResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/players:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayersRevenuesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/players/{playerId}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "playerId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayerActivitiesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/players/{playerId}/{year}/{month}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "playerId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayerActivitiesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/payments:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePaymentsResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/sub-affiliates/{year}/{month}:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetSubAffiliatesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/children:
+    post:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateChildAffiliateRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetChildrenAffiliatesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/activities:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "from"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+        - in: "query"
+          name: "to"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateActivitiesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /affiliate/api-token:
+    get:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateAPITokenResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+        - "affiliate api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/RefreshAffiliateAPITokenResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/profile:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetUserResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/overview/{year}/{month}:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+          required: false
+        - in: "query"
+          name: "includeInternals"
+          type: "boolean"
+          required: false
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatesOverviewResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/close-month:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OkResult"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OkResult"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatesResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateAdminResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateAffiliateAdminRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateAffiliateAdminResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/overview/{year}/{month}:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateOverviewResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/revenues/{year}/{month}:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayersRevenuesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/plans:
+    post:
+      tags:
+        - "plans api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreatePlanRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreatePlanResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "plans api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetPlansResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/plans/{planId}:
+    get:
+      tags:
+        - "plans api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "planId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetPlanResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "plans api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "planId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdatePlanRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdatePlanResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - "plans api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "planId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/deals:
+    get:
+      tags:
+        - "deals api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateDealsResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "deals api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpsertAffiliateDealRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpsertAffiliateDealResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/deals/{brandId}:
+    delete:
+      tags:
+        - "deals api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "brandId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/players:
+    get:
+      tags:
+        - "players api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayersRevenuesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/players/{playerId}:
+    get:
+      tags:
+        - "players api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "playerId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayerActivitiesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "players api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "playerId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateAffiliatePlayerRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/players/{playerId}/{year}/{month}:
+    get:
+      tags:
+        - "players api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "playerId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePlayerActivitiesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/invoice-draft:
+    get:
+      tags:
+        - "invoices api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateInvoiceDraftResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+        - "invoices api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateAffiliatePaymentRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/invoice-attachment/{invoiceId}:
+    post:
+      tags:
+        - "invoices api"
+      consumes:
+        - "application/json"
+        - "multipart/form-data"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "invoiceId"
+          type: "number"
+          required: true
+        - in: "formData"
+          name: "file"
+          required: false
+          type: "file"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateAffiliateLogResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/payments:
+    get:
+      tags:
+        - "payments api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePaymentBalancesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/payments/{affiliateId}:
+    get:
+      tags:
+        - "payments api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliatePaymentBalanceResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/invoices:
+    get:
+      tags:
+        - "invoices api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateInvoicesAdminResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+        - "invoices api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/ConfirmAffiliateInvoiceResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/invoices/${invoiceId}:
+    get:
+      tags:
+        - "invoices api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "invoiceId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateInvoiceResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+        - "invoices api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "invoiceId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/links:
+    post:
+      tags:
+        - "links api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateAffiliateLinkRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateAffiliateLinkResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "links api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLinksResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/links/{linkId}:
+    get:
+      tags:
+        - "links api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "linkId"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "from"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+        - in: "query"
+          name: "to"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLinkClicksResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "links api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "linkId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateAffiliateLinkRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateAffiliateLinkResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - "links api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "linkId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/landings:
+    post:
+      tags:
+        - "landings api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateLandingRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateLandingResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "landings api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetLandingsResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/landings/{brandId}:
+    get:
+      tags:
+        - "landings api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "brandId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetLandingsResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/landings/{landingId}:
+    put:
+      tags:
+        - "landings api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "landingId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateLandingRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateLandingResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - "landings api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "landingId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/callbacks:
+    post:
+      tags:
+        - "callbacks api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateCallbackRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateCallbackResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "callbacks api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetCallbacksResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/callbacks/{callbackId}:
+    put:
+      tags:
+        - "callbacks api"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "callbackId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateCallbackRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateCallbackResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - "callbacks api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "callbackId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        409:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/logs:
+    post:
+      tags:
+        - "logs api"
+      consumes:
+        - "application/json"
+        - "multipart/form-data"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateAffiliateLogRequest"
+        - in: "formData"
+          name: "file"
+          required: false
+          type: "file"
+        - in: "formData"
+          name: "note"
+          required: true
+          type: "string"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateAffiliateLogResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - "logs api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateLogsResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/sub-affiliates/{year}/{month}:
+    get:
+      tags:
+        - "sub affiliates api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "year"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "month"
+          type: "number"
+          description: "Month (1-12)"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetSubAffiliatesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/sub-affiliates/{subAffiliateId}:
+    post:
+      tags:
+        - "sub affiliates api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "subAffiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateSubAffiliateRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/CreateSubAffiliateResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      tags:
+        - "sub affiliates api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "subAffiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateSubAffiliateRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/UpdateSubAffiliateResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      tags:
+        - "sub affiliates api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "path"
+          name: "subAffiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/children:
+    get:
+      tags:
+        - "children affiliates api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetChildrenAffiliatesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      tags:
+        - "children affiliates api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateChildAffiliateRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/OKResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/affiliates/{affiliateId}/activities:
+    get:
+      tags:
+        - "admin api"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "affiliateId"
+          type: "number"
+          required: true
+        - in: "query"
+          name: "from"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+        - in: "query"
+          name: "to"
+          type: "string"
+          format: "yyyy-MM-dd"
+          required: true
+        - in: "query"
+          name: "brandId"
+          type: "string"
+          enum:
+            - CJ
+            - FK
+            - KK
+            - LD
+            - OS
+            - SN
+            - VB
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetAffiliateActivitiesResponse"
+        400:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        404:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /admin/users:
+    get:
+      tags:
+        - "users api"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GetUsersResponse"
+        401:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        403:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        500:
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+definitions:
+  AffiliateRegisterRequest:
+    type: "object"
+    required:
+      - "email"
+      - "password"
+      - "name"
+      - "contactName"
+      - "countryId"
+      - "address"
+      - "paymentMethod"
+      - "paymentMethodDetails"
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+      name:
+        type: "string"
+      contactName:
+        type: "string"
+      countryId:
+        type: "string"
+        format: "ISO 3166-1 alpha-2"
+      address:
+        type: "string"
+      phone:
+        type: "string"
+      skype:
+        type: "string"
+      vatNumber:
+        type: "string"
+      info:
+        type: "string"
+      allowEmails:
+        type: "boolean"
+      paymentMethod:
+        type: "string"
+      paymentMethodDetails:
+        type: "object"
+        properties:
+          bankAccountHolder:
+            type: "string"
+          bankIban:
+            type: "string"
+          bankBic:
+            type: "string"
+          bankClearingNumber:
+            type: "string"
+          bankName:
+            type: "string"
+          bankAddress:
+            type: "string"
+          bankPostCode:
+            type: "string"
+          bankCountry:
+            type: "string"
+          skrillAccount:
+            type: "string"
+          casinoAccountEmail:
+            type: "string"
+  AffiliateRegisterResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliateId"
+        properties:
+          affiliateId:
+            type: "number"
+            format: "Id"
+  LoginRequest:
+    type: "object"
+    required:
+      - "email"
+      - "password"
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+  LoginResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "email"
+          - "roles"
+        properties:
+          email:
+            type: "string"
+          roles:
+            type: array
+            items:
+              type: string
+  AffiliateLoginResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliateId"
+          - "tcAccepted"
+        properties:
+          affiliateId:
+            type: "number"
+            format: "Id"
+          tcAccepted:
+            type: "boolean"
+  PasswordChangeRequest:
+    type: "object"
+    required:
+      - "email"
+      - "oldPassword"
+      - "newPassword"
+    properties:
+      email:
+        type: "string"
+      oldPassword:
+        type: "string"
+      newPassword:
+        type: "string"
+  PasswordForgotRequest:
+    type: "object"
+    required:
+      - "email"
+    properties:
+      email:
+        type: "string"
+  PasswordForgotResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "ok"
+        properties:
+          ok:
+            type: "boolean"
+  PasswordUpdateRequest:
+    type: "object"
+    required:
+      - "email"
+      - "pinCode"
+      - "newPassword"
+    properties:
+      email:
+        type: "string"
+      pinCode:
+        type: "string"
+      newPassword:
+        type: "string"
+  PasswordUpdateResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "ok"
+        properties:
+          ok:
+            type: "boolean"
+  GetUsersResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "users"
+        properties:
+          users:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "userId"
+                - "email"
+                - "roles"
+              properties:
+                userId:
+                  type: "number"
+                  format: "Id"
+                email:
+                  type: "string"
+                roles:
+                  type: array
+                  items:
+                    type: string
+  GetUserResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "userId"
+          - "email"
+          - "roles"
+        properties:
+          userId:
+            type: "number"
+            format: "Id"
+          email:
+            type: "string"
+          roles:
+            type: array
+            items:
+              type: string
+  GetAffiliatesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliates"
+        properties:
+          affiliates:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "affiliateId"
+                - "affiliateName"
+                - "affiliateEmail"
+              properties:
+                affiliateId:
+                  type: "number"
+                  format: "Id"
+                affiliateName:
+                  type: "string"
+                affiliateEmail:
+                  type: "string"
+  GetAffiliateResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliateId"
+          - "affiliateName"
+          - "contactName"
+          - "email"
+          - "allowEmails"
+          - "paymentMinAmount"
+          - "paymentMethod"
+          - "paymentMethodDetails"
+          - "accountBalance"
+          - "createdAt"
+          - "updatedAt"
+        properties:
+          affiliateId:
+            type: "number"
+            format: "Id"
+          affiliateName:
+            type: "string"
+          contactName:
+            type: "string"
+          email:
+            type: "string"
+          countryId:
+            type: "string"
+            format: "ISO 3166-1 alpha-2"
+          address:
+            type: "string"
+          skype:
+            type: "string"
+          phone:
+            type: "string"
+          vatNumber:
+            type: "string"
+          info:
+            type: "string"
+          allowEmails:
+            type: "boolean"
+          paymentMinAmount:
+            type: "number"
+            format: "cents"
+          paymentMethod:
+            type: "string"
+          paymentMethodDetails:
+            type: "object"
+            properties:
+              bankAccountHolder:
+                type: "string"
+              bankIban:
+                type: "string"
+              bankBic:
+                type: "string"
+              bankClearingNumber:
+                type: "string"
+              bankName:
+                type: "string"
+              bankAddress:
+                type: "string"
+              bankPostCode:
+                type: "string"
+              bankCountry:
+                type: "string"
+              skrillAccount:
+                type: "string"
+              casinoAccountEmail:
+                type: "string"
+          accountBalance:
+            type: "number"
+            format: "cents"
+          createdAt:
+            type: "string"
+            format: "datetime"
+          updatedAt:
+            type: "string"
+            format: "datetime"
+          lastLoginDate:
+            type: "string"
+            format: "datetime"
+  GetAffiliateAdminResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliateId"
+          - "affiliateName"
+          - "contactName"
+          - "email"
+          - "allowEmails"
+          - "paymentMinAmount"
+          - "paymentMethod"
+          - "paymentMethodDetails"
+          - "accountBalance"
+          - "floorBrandCommission"
+          - "allowNegativeFee"
+          - "allowPayments"
+          - "isInternal"
+          - "isClosed"
+          - "createdAt"
+          - "updatedAt"
+        properties:
+          affiliateId:
+            type: "number"
+            format: "Id"
+          affiliateName:
+            type: "string"
+          contactName:
+            type: "string"
+          email:
+            type: "string"
+          countryId:
+            type: "string"
+            format: "ISO 3166-1 alpha-2"
+          address:
+            type: "string"
+          skype:
+            type: "string"
+          phone:
+            type: "string"
+          vatNumber:
+            type: "string"
+          info:
+            type: "string"
+          allowEmails:
+            type: "boolean"
+          paymentMinAmount:
+            type: "number"
+            format: "cents"
+          paymentMethod:
+            type: "string"
+          paymentMethodDetails:
+            type: "object"
+            properties:
+              bankAccountHolder:
+                type: "string"
+              bankIban:
+                type: "string"
+              bankBic:
+                type: "string"
+              bankClearingNumber:
+                type: "string"
+              bankName:
+                type: "string"
+              bankAddress:
+                type: "string"
+              bankPostCode:
+                type: "string"
+              bankCountry:
+                type: "string"
+              skrillAccount:
+                type: "string"
+              casinoAccountEmail:
+                type: "string"
+          accountBalance:
+            type: "number"
+            format: "Id"
+          floorBrandCommission:
+            type: "boolean"
+          allowNegativeFee:
+            type: "boolean"
+          allowPayments:
+            type: "boolean"
+          isInternal:
+            type: "boolean"
+          isClosed:
+            type: "boolean"
+          userId:
+            type: "number"
+            format: "Id"
+          masterId:
+            type: "number"
+            format: "Id"
+          createdAt:
+            type: "string"
+            format: "datetime"
+          updatedAt:
+            type: "string"
+            format: "datetime"
+          lastLoginDate:
+            type: "string"
+            format: "datetime"
+  UpdateAffiliateRequest:
+    type: "object"
+    required:
+      - "name"
+      - "contactName"
+      - "email"
+      - "allowEmails"
+      - "paymentMinAmount"
+      - "paymentMethod"
+      - "paymentMethodDetails"
+    properties:
+      name:
+        type: "string"
+      contactName:
+        type: "string"
+      email:
+        type: "string"
+      countryId:
+        type: "string"
+        format: "ISO 3166-1 alpha-2"
+      address:
+        type: "string"
+      phone:
+        type: "string"
+      skype:
+        type: "string"
+      vatNumber:
+        type: "string"
+      info:
+        type: "string"
+      allowEmails:
+        type: "boolean"
+      paymentMinAmount:
+        type: "number"
+        format: "cents"
+      paymentMethod:
+        type: "string"
+      paymentMethodDetails:
+        type: "object"
+        properties:
+          bankAccountHolder:
+            type: "string"
+          bankIban:
+            type: "string"
+          bankBic:
+            type: "string"
+          bankClearingNumber:
+            type: "string"
+          bankName:
+            type: "string"
+          bankAddress:
+            type: "string"
+          bankPostCode:
+            type: "string"
+          bankCountry:
+            type: "string"
+          skrillAccount:
+            type: "string"
+          casinoAccountEmail:
+            type: "string"
+  UpdateAffiliateAdminRequest:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      contactName:
+        type: "string"
+      email:
+        type: "string"
+      countryId:
+        type: "string"
+        format: "ISO 3166-1 alpha-2"
+      address:
+        type: "string"
+      phone:
+        type: "string"
+      skype:
+        type: "string"
+      vatNumber:
+        type: "string"
+      info:
+        type: "string"
+      allowEmails:
+        type: "boolean"
+      paymentMinAmount:
+        type: "number"
+        format: "cents"
+      paymentMethod:
+        type: "string"
+      paymentMethodDetails:
+        type: "object"
+        properties:
+          bankAccountHolder:
+            type: "string"
+          bankIban:
+            type: "string"
+          bankBic:
+            type: "string"
+          bankClearingNumber:
+            type: "string"
+          bankName:
+            type: "string"
+          bankAddress:
+            type: "string"
+          bankPostCode:
+            type: "string"
+          bankCountry:
+            type: "string"
+          skrillAccount:
+            type: "string"
+          casinoAccountEmail:
+            type: "string"
+      floorBrandCommission:
+        type: "boolean"
+      allowNegativeFee:
+        type: "boolean"
+      allowPayments:
+        type: "boolean"
+      isInternal:
+        type: "boolean"
+      isClosed:
+        type: "boolean"
+      userId:
+        type: "number"
+        format: "Id"
+  UpdateAffiliateAdminResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliateId"
+          - "affiliateName"
+          - "contactName"
+          - "email"
+          - "allowEmails"
+          - "paymentMinAmount"
+          - "paymentMethod"
+          - "paymentMethodDetails"
+          - "accountBalance"
+          - "floorBrandCommission"
+          - "allowNegativeFee"
+          - "allowPayments"
+          - "isInternal"
+          - "isClosed"
+          - "createdAt"
+          - "updatedAt"
+        properties:
+          affiliateId:
+            type: "number"
+            format: "Id"
+          affiliateName:
+            type: "string"
+          contactName:
+            type: "string"
+          email:
+            type: "string"
+          countryId:
+            type: "string"
+            format: "ISO 3166-1 alpha-2"
+          address:
+            type: "string"
+          skype:
+            type: "string"
+          phone:
+            type: "string"
+          vatNumber:
+            type: "string"
+          info:
+            type: "string"
+          allowEmails:
+            type: "boolean"
+          paymentMinAmount:
+            type: "number"
+            format: "cents"
+          paymentMethod:
+            type: "string"
+          paymentMethodDetails:
+            type: "object"
+            properties:
+              bankAccountHolder:
+                type: "string"
+              bankIban:
+                type: "string"
+              bankBic:
+                type: "string"
+              bankClearingNumber:
+                type: "string"
+              bankName:
+                type: "string"
+              bankAddress:
+                type: "string"
+              bankPostCode:
+                type: "string"
+              bankCountry:
+                type: "string"
+              skrillAccount:
+                type: "string"
+              casinoAccountEmail:
+                type: "string"
+          accountBalance:
+            type: "number"
+            format: "cents"
+          floorBrandCommission:
+            type: "boolean"
+          allowNegativeFee:
+            type: "boolean"
+          allowPayments:
+            type: "boolean"
+          isInternal:
+            type: "boolean"
+          isClosed:
+            type: "boolean"
+          userId:
+            type: "number"
+            format: "Id"
+          masterId:
+            type: "number"
+            format: "Id"
+          createdAt:
+            type: "string"
+            format: "datetime"
+          updatedAt:
+            type: "string"
+            format: "datetime"
+          lastLoginDate:
+            type: "string"
+            format: "datetime"
+  UpdateAffiliateResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliateId"
+          - "affiliateName"
+          - "contactName"
+          - "email"
+          - "allowEmails"
+          - "paymentMinAmount"
+          - "paymentMethod"
+          - "paymentMethodDetails"
+          - "accountBalance"
+          - "createdAt"
+          - "updatedAt"
+        properties:
+          affiliateId:
+            type: "number"
+            format: "Id"
+          affiliateName:
+            type: "string"
+          contactName:
+            type: "string"
+          email:
+            type: "string"
+          countryId:
+            type: "string"
+            format: "ISO 3166-1 alpha-2"
+          address:
+            type: "string"
+          skype:
+            type: "string"
+          phone:
+            type: "string"
+          vatNumber:
+            type: "string"
+          info:
+            type: "string"
+          allowEmails:
+            type: "boolean"
+          paymentMinAmount:
+            type: "number"
+            format: "cents"
+          paymentMethod:
+            type: "string"
+          paymentMethodDetails:
+            type: "object"
+            properties:
+              bankAccountHolder:
+                type: "string"
+              bankIban:
+                type: "string"
+              bankBic:
+                type: "string"
+              bankClearingNumber:
+                type: "string"
+              bankName:
+                type: "string"
+              bankAddress:
+                type: "string"
+              bankPostCode:
+                type: "string"
+              bankCountry:
+                type: "string"
+              skrillAccount:
+                type: "string"
+              casinoAccountEmail:
+                type: "string"
+          accountBalance:
+            type: "number"
+            format: "cents"
+          createdAt:
+            type: "string"
+            format: "datetime"
+          updatedAt:
+            type: "string"
+            format: "datetime"
+          lastLoginDate:
+            type: "string"
+            format: "datetime"
+  GetAffiliatesOverviewResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliates"
+          - "totals"
+          - "total"
+        properties:
+          affiliates:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "affiliateId"
+                - "activePlayers"
+                - "registeredPlayers"
+                - "depositingPlayers"
+                - "newRegisteredPlayers"
+                - "newDepositingPlayers"
+                - "conversionRate"
+                - "netRevenue"
+                - "deposits"
+                - "commission"
+                - "cpa"
+                - "balance"
+              properties:
+                affiliateId:
+                  type: "number"
+                  format: "Id"
+                activePlayers:
+                  type: "number"
+                registeredPlayers:
+                  type: "number"
+                depositingPlayers:
+                  type: "number"
+                newRegisteredPlayers:
+                  type: "number"
+                newDepositingPlayers:
+                  type: "number"
+                conversionRate:
+                  type: "number"
+                  format: "percent"
+                netRevenue:
+                  type: "number"
+                  format: "cents"
+                deposits:
+                  type: "number"
+                  format: "cents"
+                commission:
+                  type: "number"
+                  format: "cents"
+                cpa:
+                  type: "number"
+                  format: "cents"
+                balance:
+                  type: "number"
+                  format: "cents"
+          totals:
+            type: "object"
+            required:
+              - "activePlayers"
+              - "registeredPlayers"
+              - "depositingPlayers"
+              - "newRegisteredPlayers"
+              - "newDepositingPlayers"
+              - "netRevenue"
+              - "deposits"
+              - "commission"
+              - "cpa"
+              - "balance"
+            properties:
+              activePlayers:
+                type: "number"
+              registeredPlayers:
+                type: "number"
+              depositingPlayers:
+                type: "number"
+              newRegisteredPlayers:
+                type: "number"
+              newDepositingPlayers:
+                type: "number"
+              netRevenue:
+                type: "number"
+                format: "cents"
+              deposits:
+                type: "number"
+                format: "cents"
+              commission:
+                type: "number"
+                format: "cents"
+              cpa:
+                type: "number"
+                format: "cents"
+              balance:
+                type: "number"
+                format: "cents"
+          total:
+            type: "number"
+            format: "cents"
+  GetAffiliateOverviewResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "nrc"
+          - "ndc"
+          - "conversionRate"
+          - "monthlyCommission"
+          - "registeredCustomers"
+          - "depositingCustomers"
+          - "activePlayers"
+          - "netRevenue"
+          - "cpa"
+          - "commission"
+          - "accountBalance"
+        properties:
+          nrc:
+            type: "object"
+            required:
+              - "current"
+            properties:
+              current:
+                type: "number"
+          ndc:
+            type: "object"
+            required:
+              - "current"
+            properties:
+              current:
+                type: "number"
+          conversionRate:
+            type: "object"
+            required:
+              - "current"
+            properties:
+              current:
+                type: "number"
+                format: "percent"
+          monthlyCommission:
+            type: "object"
+            required:
+              - "current"
+            properties:
+              current:
+                type: "number"
+                format: "cents"
+          registeredCustomers:
+            type: "number"
+          depositingCustomers:
+            type: "number"
+          activePlayers:
+            type: "number"
+          netRevenue:
+            type: "number"
+            format: "cents"
+          cpa:
+            type: "number"
+            format: "cents"
+          commission:
+            type: "number"
+            format: "cents"
+          accountBalance:
+            type: "number"
+            format: "cents"
+  GetAffiliatePlayersRevenuesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "revenues"
+        properties:
+          revenues:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "playerId"
+                    - "planId"
+                    - "countryId"
+                    - "brandId"
+                    - "deal"
+                    - "link"
+                    - "registrationDate"
+                    - "deposits"
+                    - "turnover"
+                    - "grossRevenue"
+                    - "bonuses"
+                    - "adjustments"
+                    - "fees"
+                    - "tax"
+                    - "netRevenue"
+                    - "commission"
+                    - "cpa"
+                  properties:
+                    playerId:
+                      type: "number"
+                      format: "Id"
+                    planId:
+                      type: "number"
+                      format: "Id"
+                    countryId:
+                      type: "string"
+                      format: "ISO 3166-1 alpha-2"
+                    brandId:
+                      type: "string"
+                      enum:
+                        - CJ
+                        - FK
+                        - KK
+                        - LD
+                        - OS
+                        - SN
+                        - VB
+                    deal:
+                      type: "string"
+                    link:
+                      type: "string"
+                    clickDate:
+                      type: "string"
+                      format: "datetime"
+                    referralId:
+                      type: "string"
+                    segment:
+                      type: "string"
+                    registrationDate:
+                      type: "string"
+                      format: "datetime"
+                    deposits:
+                      type: "number"
+                      format: "cents"
+                    turnover:
+                      type: "number"
+                      format: "cents"
+                    grossRevenue:
+                      type: "number"
+                      format: "cents"
+                    bonuses:
+                      type: "number"
+                      format: "cents"
+                    adjustments:
+                      type: "number"
+                      format: "cents"
+                    fees:
+                      type: "number"
+                      format: "cents"
+                    tax:
+                      type: "number"
+                      format: "cents"
+                    netRevenue:
+                      type: "number"
+                      format: "cents"
+                    commission:
+                      type: "number"
+                      format: "cents"
+                    cpa:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "deposits"
+                  - "turnover"
+                  - "grossRevenue"
+                  - "bonuses"
+                  - "adjustments"
+                  - "fees"
+                  - "tax"
+                  - "netRevenue"
+                  - "commission"
+                  - "cpa"
+                properties:
+                  deposits:
+                    type: "number"
+                    format: "cents"
+                  turnover:
+                    type: "number"
+                    format: "cents"
+                  grossRevenue:
+                    type: "number"
+                    format: "cents"
+                  bonuses:
+                    type: "number"
+                    format: "cents"
+                  adjustments:
+                    type: "number"
+                    format: "cents"
+                  fees:
+                    type: "number"
+                    format: "cents"
+                  tax:
+                    type: "number"
+                    format: "cents"
+                  netRevenue:
+                    type: "number"
+                    format: "cents"
+                  commission:
+                    type: "number"
+                    format: "cents"
+                  cpa:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  GetAffiliateDealsResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "deals"
+        properties:
+          deals:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "planId"
+                - "createdBy"
+                - "createdAt"
+                - "updatedAt"
+                - "brandId"
+                - "name"
+                - 'isLadder'
+                - "cpa"
+                - "rules"
+              properties:
+                planId:
+                  type: "number"
+                  format: "Id"
+                createdBy:
+                  type: "number"
+                  format: "Id"
+                createdAt:
+                  type: "string"
+                  format: "datetime"
+                updatedAt:
+                  type: "string"
+                  format: "datetime"
+                brandId:
+                  type: "string"
+                  enum:
+                    - CJ
+                    - FK
+                    - KK
+                    - LD
+                    - OS
+                    - SN
+                    - VB
+                name:
+                  type: "string"
+                nrs:
+                  type: "number"
+                  format: "percent"
+                isLadder:
+                  type: "boolean"
+                cpa:
+                  type: "number"
+                  format: "cents"
+                rules:
+                  type: "array"
+                  items:
+                    type: "object"
+                    required:
+                      - "ruleId"
+                      - "nrs"
+                      - "cpa"
+                      - "deposit"
+                      - "deposit_cpa"
+                    properties:
+                      ruleId:
+                        type: "number"
+                        format: "Id"
+                      countryId:
+                        type: "string"
+                        format: "ISO 3166-1 alpha-2"
+                      nrs:
+                        type: "number"
+                        format: "percent"
+                      cpa:
+                        type: "number"
+                        format: "cents"
+                      deposit:
+                        type: "number"
+                        format: "cents"
+                      deposit_cpa:
+                        type: "number"
+                        format: "cents"
+  UpsertAffiliateDealRequest:
+    type: "object"
+    required:
+      - "affiliateId"
+      - "planId"
+      - "brandId"
+    properties:
+      affiliateId:
+        type: "number"
+        format: "Id"
+      planId:
+        type: "number"
+        format: "Id"
+      brandId:
+        type: "string"
+        enum:
+          - CJ
+          - FK
+          - KK
+          - LD
+          - OS
+          - SN
+          - VB
+  UpsertAffiliateDealResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "deal"
+        properties:
+          deal:
+            type: "object"
+            required:
+              - "planId"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+              - "brandId"
+              - "name"
+              - 'isLadder'
+              - "cpa"
+              - "rules"
+            properties:
+              planId:
+                type: "number"
+                format: "Id"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              name:
+                type: "string"
+              nrs:
+                type: "number"
+                format: "percent"
+              isLadder:
+                type: "boolean"
+              cpa:
+                type: "number"
+                format: "cents"
+              rules:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "ruleId"
+                    - "nrs"
+                    - "cpa"
+                    - "deposit"
+                    - "deposit_cpa"
+                  properties:
+                    ruleId:
+                      type: "number"
+                      format: "Id"
+                    countryId:
+                      type: "string"
+                      format: "ISO 3166-1 alpha-2"
+                    nrs:
+                      type: "number"
+                      format: "percent"
+                    cpa:
+                      type: "number"
+                      format: "cents"
+                    deposit:
+                      type: "number"
+                      format: "cents"
+                    deposit_cpa:
+                      type: "number"
+                      format: "cents"
+  GetAffiliateLinksResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "links"
+        properties:
+          links:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "linkId"
+                - "brandId"
+                - "code"
+                - "name"
+                - "landingPage"
+              properties:
+                linkId:
+                  type: "number"
+                  format: "Id"
+                planId:
+                  type: "number"
+                  format: "Id"
+                brandId:
+                  type: "string"
+                  enum:
+                    - CJ
+                    - FK
+                    - KK
+                    - LD
+                    - OS
+                    - SN
+                    - VB
+                code:
+                  type: "string"
+                name:
+                  type: "string"
+                landingPage:
+                  type: "string"
+                  format: "url"
+                deal:
+                  type: "string"
+  CreateAffiliateLinkRequest:
+    type: "object"
+    required:
+      - "brandId"
+      - "name"
+      - "landingPage"
+    properties:
+      planId:
+        type: "number"
+        format: "Id"
+      brandId:
+        type: "string"
+        enum:
+          - CJ
+          - FK
+          - KK
+          - LD
+          - OS
+          - SN
+          - VB
+      name:
+        type: "string"
+      landingPage:
+        type: "string"
+        format: "url"
+  CreateAffiliateLinkResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "link"
+        properties:
+          links:
+            type: "object"
+            required:
+              - "linkId"
+              - "brandId"
+              - "code"
+              - "name"
+              - "landingPage"
+            properties:
+              linkId:
+                type: "number"
+                format: "Id"
+              planId:
+                type: "number"
+                format: "Id"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              code:
+                type: "string"
+              name:
+                type: "string"
+              landingPage:
+                type: "string"
+                format: "url"
+              deal:
+                type: "string"
+  UpdateAffiliateLinkRequest:
+    type: "object"
+    required:
+      - "name"
+      - "landingPage"
+    properties:
+      planId:
+        type: "number"
+        format: "Id"
+      name:
+        type: "string"
+      landingPage:
+        type: "string"
+        format: "url"
+  UpdateAffiliateLinkResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "link"
+        properties:
+          links:
+            type: "object"
+            required:
+              - "linkId"
+              - "brandId"
+              - "code"
+              - "name"
+              - "landingPage"
+            properties:
+              linkId:
+                type: "number"
+                format: "Id"
+              planId:
+                type: "number"
+                format: "Id"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              code:
+                type: "string"
+              name:
+                type: "string"
+              landingPage:
+                type: "string"
+                format: "url"
+              deal:
+                type: "string"
+  GetAffiliateLinkClicksResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "clicks"
+        properties:
+          clicks:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "date"
+                    - "segment"
+                    - "clicks"
+                    - "nrc"
+                    - "ndc"
+                    - "deposits"
+                    - "turnover"
+                    - "grossRevenue"
+                    - "netRevenue"
+                    - "commission"
+                    - "cpa"
+                  properties:
+                    date:
+                      type: "string"
+                      format: "datetime"
+                    segment:
+                      type: "string"
+                    clicks:
+                      type: "number"
+                    nrc:
+                      type: "number"
+                    ndc:
+                      type: "number"
+                    deposits:
+                      type: "number"
+                      format: "cents"
+                    turnover:
+                      type: "number"
+                      format: "cents"
+                    grossRevenue:
+                      type: "number"
+                      format: "cents"
+                    netRevenue:
+                      type: "number"
+                      format: "cents"
+                    commission:
+                      type: "number"
+                      format: "cents"
+                    cpa:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "clicks"
+                  - "nrc"
+                  - "ndc"
+                  - "deposits"
+                  - "turnover"
+                  - "grossRevenue"
+                  - "netRevenue"
+                  - "cpa"
+                  - "commission"
+                properties:
+                  clicks:
+                    type: "number"
+                  nrc:
+                    type: "number"
+                  ndc:
+                    type: "number"
+                  deposits:
+                    type: "number"
+                    format: "cents"
+                  turnover:
+                    type: "number"
+                    format: "cents"
+                  grossRevenue:
+                    type: "number"
+                    format: "cents"
+                  netRevenue:
+                    type: "number"
+                    format: "cents"
+                  cpa:
+                    type: "number"
+                    format: "cents"
+                  commission:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  GetAffiliatePlayerActivitiesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "activities"
+        properties:
+          activities:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "activityId"
+                    - "activityDate"
+                    - "deposits"
+                    - "turnover"
+                    - "grossRevenue"
+                    - "bonuses"
+                    - "adjustments"
+                    - "fees"
+                    - "tax"
+                    - "netRevenue"
+                    - "commission"
+                    - "cpa"
+                  properties:
+                    activityId:
+                      type: "number"
+                      format: "Id"
+                    activityDate:
+                      type: "string"
+                      format: "date"
+                    deposits:
+                      type: "number"
+                      format: "cents"
+                    turnover:
+                      type: "number"
+                      format: "cents"
+                    grossRevenue:
+                      type: "number"
+                      format: "cents"
+                    bonuses:
+                      type: "number"
+                      format: "cents"
+                    adjustments:
+                      type: "number"
+                      format: "cents"
+                    fees:
+                      type: "number"
+                      format: "cents"
+                    tax:
+                      type: "number"
+                      format: "cents"
+                    netRevenue:
+                      type: "number"
+                      format: "cents"
+                    commission:
+                      type: "number"
+                      format: "cents"
+                    cpa:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "deposits"
+                  - "turnover"
+                  - "grossRevenue"
+                  - "bonuses"
+                  - "adjustments"
+                  - "fees"
+                  - "tax"
+                  - "netRevenue"
+                  - "commission"
+                  - "cpa"
+                properties:
+                  deposits:
+                    type: "number"
+                    format: "cents"
+                  turnover:
+                    type: "number"
+                    format: "cents"
+                  grossRevenue:
+                    type: "number"
+                    format: "cents"
+                  bonuses:
+                    type: "number"
+                    format: "cents"
+                  adjustments:
+                    type: "number"
+                    format: "cents"
+                  fees:
+                    type: "number"
+                    format: "cents"
+                  tax:
+                    type: "number"
+                    format: "cents"
+                  netRevenue:
+                    type: "number"
+                    format: "cents"
+                  commission:
+                    type: "number"
+                    format: "cents"
+                  cpa:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  UpdateAffiliatePlayerRequest:
+    type: "object"
+    properties:
+      affiliateId:
+        type: "number"
+        format: "Id"
+      planId:
+        type: "number"
+        format: "Id"
+      linkId:
+        type: "number"
+        format: "Id"
+  CreateAffiliatePaymentRequest:
+    type: "object"
+    required:
+      - "type"
+      - "description"
+      - "amount"
+    properties:
+      type:
+        type: "string"
+        enum:
+          - Commission
+          - Extra Commission
+          - Fixed fee
+          - CPA
+          - Manual
+      description:
+        type: "string"
+      amount:
+        type: "number"
+        format: "cents"
+  GetAffiliatePaymentsResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "payments"
+        properties:
+          payments:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "paymentId"
+                    - "transactionDate"
+                    - "type"
+                    - "description"
+                    - "amount"
+                  properties:
+                    paymentId:
+                      type: "number"
+                      format: "Id"
+                    transactionDate:
+                      type: "string"
+                      format: "datetime"
+                    type:
+                      type: "string"
+                      enum:
+                        - Commission
+                        - Extra Commission
+                        - Fixed fee
+                        - CPA
+                        - Manual
+                        - Payment
+                        - Tax
+                    description:
+                      type: "string"
+                    amount:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "amount"
+                properties:
+                  amount:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  GetAffiliateInvoicesAdminResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "draft"
+        properties:
+          draft:
+            type: "object"
+            required:
+              - "payments"
+              - "canConfirm"
+            properties:
+              payments:
+                type: "object"
+                required:
+                  - "items"
+                  - "totals"
+                  - "total"
+                properties:
+                  items:
+                    type: "array"
+                    items:
+                      type: "object"
+                      required:
+                        - "paymentId"
+                        - "transactionDate"
+                        - "type"
+                        - "description"
+                        - "amount"
+                        - "createdBy"
+                      properties:
+                        paymentId:
+                          type: "number"
+                          format: "Id"
+                        transactionDate:
+                          type: "string"
+                          format: "datetime"
+                        type:
+                          type: "string"
+                          enum:
+                            - Commission
+                            - Extra Commission
+                            - Fixed fee
+                            - CPA
+                            - Manual
+                            - Payment
+                            - Tax
+                        description:
+                          type: "string"
+                        amount:
+                          type: "number"
+                          format: "cents"
+                        createdBy:
+                          type: "string"
+                  totals:
+                    type: "object"
+                    required:
+                      - "amount"
+                    properties:
+                      amount:
+                        type: "number"
+                        format: "cents"
+                  total:
+                    type: "number"
+                    format: "cents"
+              canConfirm:
+                type: "boolean"
+          invoices:
+            type: "object"
+            required:
+              - "items"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "invoiceId"
+                    - "invoiceDate"
+                    - "invoiceNumber"
+                    - "creditedAmount"
+                    - "paidAmount"
+                    - "createdBy"
+                    - "status"
+                    - "canMarkAsPaid"
+                  properties:
+                    invoiceId:
+                      type: "number"
+                      format: "Id"
+                    invoiceDate:
+                      type: "string"
+                      format: "datetime"
+                    invoiceNumber:
+                      type: "string"
+                    creditedAmount:
+                      type: "number"
+                      format: "cents"
+                    paidAmount:
+                      type: "number"
+                      format: "cents"
+                    createdBy:
+                      type: "string"
+                    status:
+                      type: "string"
+                      enum:
+                        - Unconfirmed
+                        - Confirmed
+                        - Paid
+                    canMarkAsPaid:
+                      type: "boolean"
+  CreateAffiliateLogRequest:
+    type: "object"
+    required:
+      - "note"
+    properties:
+      note:
+        type: "string"
+  CreateAffiliateLogResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "log"
+        properties:
+          log:
+            type: "object"
+            required:
+              - "logId"
+              - "note"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              logId:
+                type: "number"
+                format: "Id"
+              note:
+                type: "string"
+              attachments:
+                type: "array"
+                items:
+                  type: "string"
+                  format: "URL"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+  GetAffiliateLogsResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "logs"
+        properties:
+          logs:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "logId"
+                - "note"
+                - "createdBy"
+                - "createdAt"
+                - "updatedAt"
+              properties:
+                logId:
+                  type: "number"
+                  format: "Id"
+                note:
+                  type: "string"
+                attachments:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "URL"
+                createdBy:
+                  type: "number"
+                  format: "Id"
+                createdAt:
+                  type: "string"
+                  format: "datetime"
+                updatedAt:
+                  type: "string"
+                  format: "datetime"
+  GetSubAffiliatesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliates"
+        properties:
+          affiliates:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "affiliateId"
+                    - "affiliateName"
+                    - "commissionShare"
+                    - "nrc"
+                    - "ndc"
+                    - "registeredCustomers"
+                    - "depositingCustomers"
+                    - "netRevenue"
+                    - "commission"
+                  properties:
+                    affiliateId:
+                      type: "number"
+                      format: "Id"
+                    affiliateName:
+                      type: "string"
+                    commissionShare:
+                      type: "number"
+                      format: "percent"
+                    nrc:
+                      type: "number"
+                    ndc:
+                      type: "number"
+                    registeredCustomers:
+                      type: "number"
+                    depositingCustomers:
+                      type: "number"
+                    netRevenue:
+                      type: "number"
+                      format: "cents"
+                    commission:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "nrc"
+                  - "ndc"
+                  - "registeredCustomers"
+                  - "depositingCustomers"
+                  - "netRevenue"
+                  - "commission"
+                properties:
+                  nrc:
+                    type: "number"
+                  ndc:
+                    type: "number"
+                  registeredCustomers:
+                    type: "number"
+                  depositingCustomers:
+                    type: "number"
+                  netRevenue:
+                    type: "number"
+                    format: "cents"
+                  commission:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  CreateSubAffiliateRequest:
+    type: "object"
+    required:
+      - "commissionShare"
+    properties:
+      commissionShare:
+        type: "number"
+        format: "percent"
+  UpdateSubAffiliateRequest:
+    type: "object"
+    required:
+      - "commissionShare"
+    properties:
+      commissionShare:
+        type: "number"
+        format: "percent"
+  GetPlansResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "plans"
+        properties:
+          plans:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "planId"
+                - "name"
+                - "isLadder"
+                - "cpa"
+                - "archived"
+                - "createdBy"
+                - "createdAt"
+                - "updatedAt"
+                - "rules"
+                - "usages"
+              properties:
+                planId:
+                  type: "number"
+                  format: "Id"
+                name:
+                  type: "string"
+                nrs:
+                  type: "number"
+                  format: "percent"
+                isLadder:
+                  type: "boolean"
+                cpa:
+                  type: "number"
+                  format: "cents"
+                archived:
+                  type: "boolean"
+                createdBy:
+                  type: "number"
+                  format: "Id"
+                createdAt:
+                  type: "string"
+                  format: "datetime"
+                updatedAt:
+                  type: "string"
+                  format: "datetime"
+                rules:
+                  type: "number"
+                usages:
+                  type: "number"
+  GetChildrenAffiliatesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        properties:
+          affiliates:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "affiliateId"
+                - "affiliateName"
+                - "affiliateEmail"
+              properties:
+                affiliateId:
+                  type: "number"
+                affiliateName:
+                  type: "string"
+                affiliateEmail:
+                  type: "string"
+  CreateChildAffiliateRequest:
+    type: "object"
+    required:
+      - "email"
+      - "name"
+    properties:
+      email:
+        type: "string"
+      name:
+        type: "string"
+      info:
+        type: "string"
+  GetPlanResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "plan"
+          - "rules"
+          - "affiliates"
+        properties:
+          plan:
+            type: "object"
+            required:
+              - "planId"
+              - "name"
+              - "isLadder"
+              - "cpa"
+              - "archived"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              planId:
+                type: "number"
+                format: "Id"
+              name:
+                type: "string"
+              nrs:
+                type: "number"
+                format: "percent"
+              isLadder:
+                type: "boolean"
+              cpa:
+                type: "number"
+                format: "cents"
+              archived:
+                type: "boolean"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+          rules:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "ruleId"
+                - "nrs"
+                - "cpa"
+                - "deposit"
+                - "deposit_cpa"
+              properties:
+                ruleId:
+                  type: "number"
+                  format: "Id"
+                countryId:
+                  type: "string"
+                  format: "ISO 3166-1 alpha-2"
+                nrs:
+                  type: "number"
+                  format: "percent"
+                cpa:
+                  type: "number"
+                  format: "cents"
+                deposit:
+                  type: "number"
+                  format: "cents"
+                deposit_cpa:
+                  type: "number"
+                  format: "cents"
+          affiliates:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "affiliateId"
+                - "affiliateName"
+                - "affiliateEmail"
+              properties:
+                affiliateId:
+                  type: "number"
+                affiliateName:
+                  type: "string"
+                affiliateEmail:
+                  type: "string"
+  CreateCallbackRequest:
+    type: "object"
+    required:
+      - "callback"
+    properties:
+      callback:
+        type: "object"
+        required:
+          - "brandId"
+          - "method"
+          - "trigger"
+          - "url"
+          - "enabled"
+        properties:
+          linkId:
+            type: "number"
+            format: "Id"
+          brandId:
+            type: "string"
+            enum:
+              - CJ
+              - FK
+              - KK
+              - LD
+              - OS
+              - SN
+              - VB
+          method:
+            type: "string"
+            enum:
+              - GET
+              - POST
+          trigger:
+            type: "string"
+            enum:
+              - NRC
+              - NDC
+          url:
+            type: "string"
+            format: "url"
+          enabled:
+            type: "boolean"
+  CreateCallbackResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "callback"
+        properties:
+          callback:
+            type: "object"
+            required:
+              - "callbackId"
+              - "brandId"
+              - "method"
+              - "trigger"
+              - "url"
+              - "enabled"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              callbackId:
+                type: "number"
+                format: "Id"
+              linkId:
+                type: "number"
+                format: "Id"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              method:
+                type: "string"
+                enum:
+                  - GET
+                  - POST
+              trigger:
+                type: "string"
+                enum:
+                  - NRC
+                  - NDC
+              url:
+                type: "string"
+                format: "url"
+              enabled:
+                type: "boolean"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+  GetCallbacksResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "callbacks"
+        properties:
+          callbacks:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "callbackId"
+                - "code"
+                - "name"
+                - "brandId"
+                - "method"
+                - "trigger"
+                - "url"
+                - "enabled"
+                - "createdBy"
+                - "createdAt"
+                - "updatedAt"
+              properties:
+                callbackId:
+                  type: "number"
+                  format: "Id"
+                linkId:
+                  type: "number"
+                  format: "Id"
+                code:
+                  type: "string"
+                name:
+                  type: "string"
+                brandId:
+                  type: "string"
+                  enum:
+                    - CJ
+                    - FK
+                    - KK
+                    - LD
+                    - OS
+                    - SN
+                    - VB
+                method:
+                  type: "string"
+                  enum:
+                    - GET
+                    - POST
+                trigger:
+                  type: "string"
+                  enum:
+                    - NRC
+                    - NDC
+                enabled:
+                  type: "boolean"
+                url:
+                  type: "string"
+                  format: "url"
+                createdBy:
+                  type: "number"
+                  format: "Id"
+                createdAt:
+                  type: "string"
+                  format: "datetime"
+                updatedAt:
+                  type: "string"
+                  format: "datetime"
+  UpdateCallbackRequest:
+    type: "object"
+    required:
+      - "callback"
+    properties:
+      callback:
+        type: "object"
+        required:
+          - "brandId"
+          - "method"
+          - "trigger"
+          - "url"
+          - "enabled"
+        properties:
+          linkId:
+            type: "number"
+            format: "Id"
+          brandId:
+            type: "string"
+            enum:
+              - CJ
+              - FK
+              - KK
+              - LD
+              - OS
+              - SN
+              - VB
+          method:
+            type: "string"
+            enum:
+              - GET
+              - POST
+          trigger:
+            type: "string"
+            enum:
+              - NRC
+              - NDC
+          url:
+            type: "string"
+            format: "url"
+          enabled:
+            type: "boolean"
+  UpdateCallbackResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "callback"
+        properties:
+          callback:
+            type: "object"
+            required:
+              - "callbackId"
+              - "brandId"
+              - "method"
+              - "trigger"
+              - "url"
+              - "enabled"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              callbackId:
+                type: "number"
+                format: "Id"
+              linkId:
+                type: "number"
+                format: "Id"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              method:
+                type: "string"
+                enum:
+                  - GET
+                  - POST
+              trigger:
+                type: "string"
+                enum:
+                  - NRC
+                  - NDC
+              url:
+                type: "string"
+                format: "url"
+              enabled:
+                type: "boolean"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+  CreatePlanRequest:
+    type: "object"
+    required:
+      - "plan"
+      - "rules"
+    properties:
+      plan:
+        type: "object"
+        required:
+          - "name"
+          - "cpa"
+          - "archived"
+        properties:
+          name:
+            type: "string"
+          nrs:
+            type: "number"
+            format: "percent"
+          cpa:
+            type: "number"
+            format: "cents"
+          archived:
+            type: "boolean"
+      rules:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "nrs"
+            - "cpa"
+            - "deposit"
+            - "deposit_cpa"
+          properties:
+            countryId:
+              type: "string"
+              format: "ISO 3166-1 alpha-2"
+            nrs:
+              type: "number"
+              format: "percent"
+            cpa:
+              type: "number"
+              format: "cents"
+            deposit:
+              type: "number"
+              format: "cents"
+            deposit_cpa:
+              type: "number"
+              format: "cents"
+  CreatePlanResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "plan"
+          - "rules"
+        properties:
+          plan:
+            type: "object"
+            required:
+              - "planId"
+              - "name"
+              - "isLadder"
+              - "cpa"
+              - "archived"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              planId:
+                type: "number"
+                format: "Id"
+              name:
+                type: "string"
+              nrs:
+                type: "number"
+                format: "percent"
+              isLadder:
+                type: "boolean"
+              cpa:
+                type: "number"
+                format: "cents"
+              archived:
+                type: "boolean"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+          rules:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "ruleId"
+                - "nrs"
+                - "cpa"
+                - "deposit"
+                - "deposit_cpa"
+              properties:
+                ruleId:
+                  type: "number"
+                  format: "Id"
+                countryId:
+                  type: "string"
+                  format: "ISO 3166-1 alpha-2"
+                nrs:
+                  type: "number"
+                  format: "percent"
+                cpa:
+                  type: "number"
+                  format: "cents"
+                deposit:
+                  type: "number"
+                  format: "cents"
+                deposit_cpa:
+                  type: "number"
+                  format: "cents"
+  UpdatePlanRequest:
+    type: "object"
+    required:
+      - "plan"
+      - "rules"
+    properties:
+      plan:
+        type: "object"
+        required:
+          - "name"
+          - "cpa"
+          - "archived"
+        properties:
+          name:
+            type: "string"
+          nrs:
+            type: "number"
+            format: "percent"
+          cpa:
+            type: "number"
+            format: "cents"
+          archived:
+            type: "boolean"
+      rules:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "nrs"
+            - "cpa"
+            - "deposit"
+            - "deposit_cpa"
+          properties:
+            countryId:
+              type: "string"
+              format: "ISO 3166-1 alpha-2"
+            nrs:
+              type: "number"
+              format: "percent"
+            cpa:
+              type: "number"
+              format: "cents"
+            deposit:
+              type: "number"
+              format: "cents"
+            deposit_cpa:
+              type: "number"
+              format: "cents"
+  UpdatePlanResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "plan"
+          - "rules"
+        properties:
+          plan:
+            type: "object"
+            required:
+              - "planId"
+              - "name"
+              - "isLadder"
+              - "cpa"
+              - "archived"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              planId:
+                type: "number"
+                format: "Id"
+              name:
+                type: "string"
+              nrs:
+                type: "number"
+                format: "percent"
+              isLadder:
+                type: "boolean"
+              cpa:
+                type: "number"
+                format: "cents"
+              archived:
+                type: "boolean"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+          rules:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "ruleId"
+                - "nrs"
+                - "cpa"
+                - "deposit"
+                - "deposit_cpa"
+              properties:
+                ruleId:
+                  type: "number"
+                  format: "Id"
+                countryId:
+                  type: "string"
+                  format: "ISO 3166-1 alpha-2"
+                nrs:
+                  type: "number"
+                  format: "percent"
+                cpa:
+                  type: "number"
+                  format: "cents"
+                deposit:
+                  type: "number"
+                  format: "cents"
+                deposit_cpa:
+                  type: "number"
+                  format: "cents"
+  CreateLandingRequest:
+    type: "object"
+    required:
+      - "brandId"
+      - "landingPage"
+    properties:
+      brandId:
+        type: "string"
+        enum:
+          - CJ
+          - FK
+          - KK
+          - LD
+          - OS
+          - SN
+          - VB
+      landingPage:
+        type: "string"
+        format: "url"
+  GetLandingsResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "landings"
+        properties:
+          landings:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "landingId"
+                - "brandId"
+                - "landingPage"
+                - "createdBy"
+                - "createdAt"
+                - "updatedAt"
+                - "usages"
+              properties:
+                landingId:
+                  type: "number"
+                brandId:
+                  type: "string"
+                  enum:
+                    - CJ
+                    - FK
+                    - KK
+                    - LD
+                    - OS
+                    - SN
+                    - VB
+                landingPage:
+                  type: "string"
+                  format: "url"
+                createdBy:
+                  type: "number"
+                  format: "Id"
+                createdAt:
+                  type: "string"
+                  format: "datetime"
+                updatedAt:
+                  type: "string"
+                  format: "datetime"
+                usages:
+                  type: "number"
+  CreateLandingResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "landing"
+        properties:
+          landing:
+            type: "object"
+            required:
+              - "landingId"
+              - "brandId"
+              - "landingPage"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              landingId:
+                type: "number"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              landingPage:
+                type: "string"
+                format: "url"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+  UpdateLandingRequest:
+    type: "object"
+    required:
+      - "brandId"
+      - "landingPage"
+    properties:
+      brandId:
+        type: "string"
+        enum:
+          - CJ
+          - FK
+          - KK
+          - LD
+          - OS
+          - SN
+          - VB
+      landingPage:
+        type: "string"
+        format: "url"
+  UpdateLandingResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "landing"
+        properties:
+          landing:
+            type: "object"
+            required:
+              - "landingId"
+              - "brandId"
+              - "landingPage"
+              - "createdBy"
+              - "createdAt"
+              - "updatedAt"
+            properties:
+              landingId:
+                type: "number"
+              brandId:
+                type: "string"
+                enum:
+                  - CJ
+                  - FK
+                  - KK
+                  - LD
+                  - OS
+                  - SN
+                  - VB
+              landingPage:
+                type: "string"
+                format: "url"
+              createdBy:
+                type: "number"
+                format: "Id"
+              createdAt:
+                type: "string"
+                format: "datetime"
+              updatedAt:
+                type: "string"
+                format: "datetime"
+  GetAffiliateLandingsResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "landings"
+        properties:
+          landings:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "brandId"
+                - "landingPage"
+              properties:
+                brandId:
+                  type: "string"
+                  enum:
+                    - CJ
+                    - FK
+                    - KK
+                    - LD
+                    - OS
+                    - SN
+                    - VB
+                landingPage:
+                  type: "string"
+                  format: "url"
+  GetAffiliatePaymentBalancesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "affiliates"
+        properties:
+          affiliates:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "affiliateId"
+                    - "name"
+                    - "contactName"
+                    - "countryId"
+                    - "status"
+                    - "paymentMethod"
+                    - "paymentMethodDetails"
+                    - "taxRate"
+                    - "openingBalance"
+                    - "creditedAmount"
+                    - "paidAmount"
+                    - "closingBalance"
+                    - "allowPayments"
+                    - "canConfirm"
+                    - "canMarkAsPaid"
+                  properties:
+                    affiliateId:
+                      type: "number"
+                      format: "Id"
+                    invoiceId:
+                      type: "number"
+                      format: "Id"
+                    invoiceNumber:
+                      type: "string"
+                    name:
+                      type: "string"
+                    contactName:
+                      type: "string"
+                    countryId:
+                      type: "string"
+                      format: "ISO 3166-1 alpha-2"
+                    status:
+                      type: "string"
+                      enum:
+                        - Unconfirmed
+                        - Confirmed
+                        - Paid
+                    paymentMethod:
+                      type: "string"
+                    paymentMethodDetails:
+                      type: "object"
+                      properties:
+                        bankAccountHolder:
+                          type: "string"
+                        bankIban:
+                          type: "string"
+                        bankBic:
+                          type: "string"
+                        bankClearingNumber:
+                          type: "string"
+                        bankName:
+                          type: "string"
+                        bankAddress:
+                          type: "string"
+                        bankPostCode:
+                          type: "string"
+                        bankCountry:
+                          type: "string"
+                        skrillAccount:
+                          type: "string"
+                        casinoAccountEmail:
+                          type: "string"
+                    taxRate:
+                      type: "number"
+                      format: "percent"
+                    openingBalance:
+                      type: "number"
+                      format: "cents"
+                    creditedAmount:
+                      type: "number"
+                      format: "cents"
+                    paidAmount:
+                      type: "number"
+                      format: "cents"
+                    closingBalance:
+                      type: "number"
+                      format: "cents"
+                    allowPayments:
+                      type: "boolean"
+                    canConfirm:
+                      type: "boolean"
+                    canMarkAsPaid:
+                      type: "boolean"
+                    userId:
+                      type: "number"
+                      format: "Id"
+                    manager:
+                      type: "string"
+              totals:
+                type: "object"
+                required:
+                  - "closingBalance"
+                properties:
+                  closingBalance:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  GetAffiliatePaymentBalanceResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "payments"
+        properties:
+          payments:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "description"
+                    - "type"
+                    - "amount"
+                    - "tax"
+                    - "taxRate"
+                    - "total"
+                  properties:
+                    description:
+                      type: "string"
+                    type:
+                      type: "string"
+                      enum:
+                        - Commission
+                        - Extra Commission
+                        - Fixed fee
+                        - CPA
+                        - Manual
+                        - Payment
+                        - Tax
+                    amount:
+                      type: "number"
+                      format: "cents"
+                    tax:
+                      type: "number"
+                      format: "cents"
+                    taxRate:
+                      type: "number"
+                      format: "percent"
+                    total:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "amount"
+                  - "tax"
+                  - "total"
+                properties:
+                  amount:
+                    type: "number"
+                    format: "cents"
+                  tax:
+                    type: "number"
+                    format: "cents"
+                  total:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  GetAffiliateActivitiesResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "activities"
+        properties:
+          activities:
+            type: "object"
+            required:
+              - "items"
+              - "totals"
+              - "total"
+            properties:
+              items:
+                type: "array"
+                items:
+                  type: "object"
+                  required:
+                    - "link"
+                    - "linkId"
+                    - "brandId"
+                    - "clicks"
+                    - "nrc"
+                    - "ndc"
+                    - "deposits"
+                    - "turnover"
+                    - "grossRevenue"
+                    - "netRevenue"
+                    - "commission"
+                    - "cpa"
+                  properties:
+                    link:
+                      type: "string"
+                    linkId:
+                      type: "number"
+                      format: "Id"
+                    segment:
+                      type: "string"
+                    brandId:
+                      type: "string"
+                      enum:
+                        - CJ
+                        - FK
+                        - KK
+                        - LD
+                        - OS
+                        - SN
+                        - VB
+                    clicks:
+                      type: "number"
+                    nrc:
+                      type: "number"
+                    ndc:
+                      type: "number"
+                    deposits:
+                      type: "number"
+                      format: "cents"
+                    turnover:
+                      type: "number"
+                      format: "cents"
+                    grossRevenue:
+                      type: "number"
+                      format: "cents"
+                    netRevenue:
+                      type: "number"
+                      format: "cents"
+                    commission:
+                      type: "number"
+                      format: "cents"
+                    cpa:
+                      type: "number"
+                      format: "cents"
+              totals:
+                type: "object"
+                required:
+                  - "clicks"
+                  - "nrc"
+                  - "ndc"
+                  - "deposits"
+                  - "turnover"
+                  - "grossRevenue"
+                  - "netRevenue"
+                  - "cpa"
+                  - "commission"
+                properties:
+                  clicks:
+                    type: "number"
+                  nrc:
+                    type: "number"
+                  ndc:
+                    type: "number"
+                  deposits:
+                    type: "number"
+                    format: "cents"
+                  turnover:
+                    type: "number"
+                    format: "cents"
+                  grossRevenue:
+                    type: "number"
+                    format: "cents"
+                  netRevenue:
+                    type: "number"
+                    format: "cents"
+                  cpa:
+                    type: "number"
+                    format: "cents"
+                  commission:
+                    type: "number"
+                    format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+  ConfirmAffiliateInvoiceResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "invoiceId"
+          - "canConfirm"
+          - "canMarkAsPaid"
+        properties:
+          invoiceId:
+            type: "number"
+            format: "Id"
+          canConfirm:
+            type: "boolean"
+          canMarkAsPaid:
+            type: "boolean"
+  GetAffiliateAPITokenResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+        properties:
+          apiToken:
+            type: "string"
+  RefreshAffiliateAPITokenResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "apiToken"
+        properties:
+          apiToken:
+            type: "string"
+  GetAffiliateInvoiceDraftResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "company"
+          - "affiliate"
+          - "payments"
+          - "total"
+          - "note"
+        properties:
+          company:
+            type: "object"
+            required:
+              - "name"
+              - "address1"
+              - "address2"
+              - "vatNumber"
+            properties:
+              name:
+                type: "string"
+              address1:
+                type: "string"
+              address2:
+                type: "string"
+              vatNumber:
+                type: "string"
+          affiliate:
+            type: "object"
+            required:
+              - "name"
+              - "paymentMethod"
+              - "paymentMethodDetails"
+            properties:
+              name:
+                type: "string"
+              address:
+                type: "string"
+              vatNumber:
+                type: "string"
+              paymentMethod:
+                type: "string"
+              paymentMethodDetails:
+                type: "object"
+                properties:
+                  bankAccountHolder:
+                    type: "string"
+                  bankIban:
+                    type: "string"
+                  bankBic:
+                    type: "string"
+                  bankClearingNumber:
+                    type: "string"
+                  bankName:
+                    type: "string"
+                  bankAddress:
+                    type: "string"
+                  bankPostCode:
+                    type: "string"
+                  bankCountry:
+                    type: "string"
+                  skrillAccount:
+                    type: "string"
+                  casinoAccountEmail:
+                    type: "string"
+          payments:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "paymentId"
+                - "transactionDate"
+                - "createdBy"
+                - "type"
+                - "description"
+                - "amount"
+                - "tax"
+                - "taxRate"
+                - "total"
+              properties:
+                paymentId:
+                  type: "number"
+                  format: "Id"
+                transactionDate:
+                  type: "string"
+                  format: "datetime"
+                createdBy:
+                  type: "string"
+                type:
+                  type: "string"
+                  enum:
+                    - Commission
+                    - Extra Commission
+                    - Fixed fee
+                    - CPA
+                    - Manual
+                    - Payment
+                    - Tax
+                description:
+                  type: "string"
+                amount:
+                  type: "number"
+                  format: "cents"
+                tax:
+                  type: "number"
+                  format: "cents"
+                taxRate:
+                  type: "number"
+                  format: "percent"
+                total:
+                  type: "number"
+                  format: "cents"
+          totals:
+            type: "object"
+            required:
+              - "creditAmount"
+              - "debitAmount"
+              - "amount"
+              - "tax"
+              - "total"
+            properties:
+              creditAmount:
+                type: "number"
+                format: "cents"
+              debitAmount:
+                type: "number"
+                format: "cents"
+              amount:
+                type: "number"
+                format: "cents"
+              tax:
+                type: "number"
+                format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+          note:
+            type: "string"
+  GetAffiliateInvoiceResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "invoiceDate"
+          - "invoiceNumber"
+          - "company"
+          - "affiliate"
+          - "payments"
+          - "totals"
+          - "note"
+        properties:
+          invoiceDate:
+            type: "string"
+            format: "datetime"
+          invoiceNumber:
+            type: "string"
+          company:
+            type: "object"
+            required:
+              - "name"
+              - "address1"
+              - "address2"
+              - "vatNumber"
+            properties:
+              name:
+                type: "string"
+              address1:
+                type: "string"
+              address2:
+                type: "string"
+              vatNumber:
+                type: "string"
+          affiliate:
+            type: "object"
+            required:
+              - "name"
+              - "paymentMethod"
+              - "paymentMethodDetails"
+            properties:
+              name:
+                type: "string"
+              address:
+                type: "string"
+              vatNumber:
+                type: "string"
+              paymentMethod:
+                type: "string"
+              paymentMethodDetails:
+                type: "object"
+                properties:
+                  bankAccountHolder:
+                    type: "string"
+                  bankIban:
+                    type: "string"
+                  bankBic:
+                    type: "string"
+                  bankClearingNumber:
+                    type: "string"
+                  bankName:
+                    type: "string"
+                  bankAddress:
+                    type: "string"
+                  bankPostCode:
+                    type: "string"
+                  bankCountry:
+                    type: "string"
+                  skrillAccount:
+                    type: "string"
+                  casinoAccountEmail:
+                    type: "string"
+          payments:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "paymentId"
+                - "transactionDate"
+                - "createdBy"
+                - "type"
+                - "description"
+                - "amount"
+                - "tax"
+                - "taxRate"
+                - "total"
+              properties:
+                paymentId:
+                  type: "number"
+                  format: "Id"
+                transactionDate:
+                  type: "string"
+                  format: "datetime"
+                createdBy:
+                  type: "string"
+                type:
+                  type: "string"
+                  enum:
+                    - Commission
+                    - Extra Commission
+                    - Fixed fee
+                    - CPA
+                    - Manual
+                    - Payment
+                    - Tax
+                description:
+                  type: "string"
+                amount:
+                  type: "number"
+                  format: "cents"
+                tax:
+                  type: "number"
+                  format: "cents"
+                taxRate:
+                  type: "number"
+                  format: "percent"
+                total:
+                  type: "number"
+                  format: "cents"
+          totals:
+            type: "object"
+            required:
+              - "creditAmount"
+              - "debitAmount"
+              - "amount"
+              - "tax"
+              - "total"
+            properties:
+              creditAmount:
+                type: "number"
+                format: "cents"
+              debitAmount:
+                type: "number"
+                format: "cents"
+              amount:
+                type: "number"
+                format: "cents"
+              tax:
+                type: "number"
+                format: "cents"
+              total:
+                type: "number"
+                format: "cents"
+          note:
+            type: "string"
+          attachments:
+            type: "array"
+            items:
+              type: "string"
+              format: "URL"
+  OKResponse:
+    type: "object"
+    properties:
+      data:
+        type: "object"
+        required:
+          - "ok"
+        properties:
+          ok:
+            type: "boolean"
+  ErrorResponse:
+    type: "object"
+    properties:
+      error:
+        type: "object"
+        required:
+          - "message"
+        properties:
+          message:
+            type: "string"

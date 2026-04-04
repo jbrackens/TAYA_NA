@@ -1,0 +1,89 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$decembersaurus_common_felix_name = 'decembersaurus_common_felix';
+$decembersaurus_common_felix_x = 0px;
+$decembersaurus_common_felix_y = 0px;
+$decembersaurus_common_felix_offset_x = 0px;
+$decembersaurus_common_felix_offset_y = 0px;
+$decembersaurus_common_felix_width = 313px;
+$decembersaurus_common_felix_height = 297px;
+$decembersaurus_common_felix_total_width = 313px;
+$decembersaurus_common_felix_total_height = 588px;
+$decembersaurus_common_felix_image = 'decembersaurus_common_a.png';
+$decembersaurus_common_felix = 0px 0px 0px 0px 313px 297px 313px 588px 'decembersaurus_common_a.png' 'decembersaurus_common_felix';
+$decembersaurus_common_presents_name = 'decembersaurus_common_presents';
+$decembersaurus_common_presents_x = 0px;
+$decembersaurus_common_presents_y = 301px;
+$decembersaurus_common_presents_offset_x = 0px;
+$decembersaurus_common_presents_offset_y = -301px;
+$decembersaurus_common_presents_width = 234px;
+$decembersaurus_common_presents_height = 287px;
+$decembersaurus_common_presents_total_width = 313px;
+$decembersaurus_common_presents_total_height = 588px;
+$decembersaurus_common_presents_image = 'decembersaurus_common_a.png';
+$decembersaurus_common_presents = 0px 301px 0px -301px 234px 287px 313px 588px 'decembersaurus_common_a.png' 'decembersaurus_common_presents';
+$spritesheet_width = 313px;
+$spritesheet_height = 588px;
+$spritesheet_image = 'decembersaurus_common_a.png';
+$spritesheet_sprites = $decembersaurus_common_felix $decembersaurus_common_presents;
+$spritesheet = 313px 588px 'decembersaurus_common_a.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

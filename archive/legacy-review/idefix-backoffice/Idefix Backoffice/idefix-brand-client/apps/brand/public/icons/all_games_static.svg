@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg"  width="1080px" height="1080px" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1080 1080"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .fil1 {fill:none}
+    .fil0 {fill:#3F3F3F}
+	
+	
+	
+   ]]>
+  </style>
+  
+    
+ </defs>
+ <g id="wrpAllAnm">
+<rect fill-opacity="0" width="1080" height="1080"></rect>
+
+	  <path id="rct1" class="rct1_mv fil0" d="M532 506c0,14 -11,25 -25,25 0,0 -133,0 -133,0 -14,0 -25,-11 -25,-25 0,0 0,-133 0,-133 0,-14 11,-25 25,-25 0,0 133,0 133,0 14,0 25,11 25,25 0,0 0,133 0,133z"/>
+	  <path id="rct2" class="rct2_mv fil0" d="M731 506c0,14 -11,25 -25,25 0,0 -134,0 -134,0 -13,0 -25,-11 -25,-25 0,0 0,-133 0,-133 0,-14 12,-25 25,-25 0,0 134,0 134,0 14,0 25,11 25,25 0,0 0,133 0,133z"/>
+	  <path id="rct3" class="rct3_mv fil0" d="M532 707c0,14 -11,25 -25,25 0,0 -133,0 -133,0 -14,0 -25,-11 -25,-25 0,0 0,-133 0,-133 0,-14 11,-25 25,-25 0,0 134,0 134,0 13,0 25,11 25,25 0,0 -1,133 -1,133z"/>
+	  <path id="rct4" class="rct4_mv fil0" d="M731 707c0,14 -11,25 -25,25 0,0 -134,0 -134,0 -13,0 -25,-11 -25,-25 0,0 1,-133 1,-133 0,-14 11,-25 25,-25 0,0 133,0 133,0 14,0 25,11 25,25 0,0 0,133 0,133z"/>
+</g>
+
+</svg>

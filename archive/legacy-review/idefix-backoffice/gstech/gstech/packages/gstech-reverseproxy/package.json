@@ -1,0 +1,9 @@
+{
+  "name": "gstech-reverseproxy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from gstech-reverseproxy.test",
+    "docker:start": "docker compose up --build -d"
+  }
+}

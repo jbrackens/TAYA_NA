@@ -1,0 +1,73 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: phoenix-platform
+resources:
+  - ../../base
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: production
+patches:
+  - path: config.patch.yaml
+replicas:
+  - name: phoenix-gateway
+    count: 3
+  - name: phoenix-user
+    count: 3
+  - name: phoenix-wallet
+    count: 3
+  - name: phoenix-market-engine
+    count: 3
+  - name: phoenix-betting-engine
+    count: 3
+  - name: phoenix-events
+    count: 2
+  - name: phoenix-retention
+    count: 2
+  - name: phoenix-social
+    count: 2
+  - name: phoenix-compliance
+    count: 2
+  - name: phoenix-analytics
+    count: 2
+  - name: phoenix-settlement
+    count: 2
+  - name: phoenix-notification
+    count: 2
+  - name: phoenix-cms
+    count: 2
+  - name: stella-engagement
+    count: 2
+  - name: phoenix-outbox-worker
+    count: 2
+images:
+  - name: ghcr.io/philcali-phoenix/phoenix-gateway
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-user
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-wallet
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-market-engine
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-betting-engine
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-events
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-retention
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-social
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-compliance
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-analytics
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-settlement
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-notification
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-cms
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/stella-engagement
+    newTag: 2026.03.10
+  - name: ghcr.io/philcali-phoenix/phoenix-outbox-worker
+    newTag: 2026.03.10

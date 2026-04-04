@@ -1,0 +1,48 @@
+#banner_nonloggedin_nonloggedin
+  frontpageBanner()
+  background #802d6a
+  position relative
+  &:after,&:before
+    content ''
+    position absolute
+    cdn-background '/images/banners/halftones.png'
+    height 345px
+    width 470px
+    top 0
+  &:after
+    right 0
+    transform scaleX(-1)
+  &:before
+    left 0
+  &_wrapper
+    max-width 1400px
+    margin 0 auto
+    display flex
+    justify-content space-around
+  &_image
+    background-repeat no-repeat
+    cdn-background-image2x '/images/banners/notloggedin/common/20.png' '/images/banners/notloggedin/common/20@2x.png' 200px 148px
+    width 200px
+    height 148px
+    margin 20px auto 0 auto
+  &_campaign
+    text-align left
+    font-size 24px
+    &_title
+      font-size 40px
+      font-weight bold
+      line-height 0.75
+      text-align center
+      color #ffffff
+      text-transform uppercase
+      font-family 'Passion One', 'Arial Black', Arial, Helvetica, sans-serif
+      max-width 300px
+  &_item1
+    @media only screen and (min-width:550px)
+      display inline !important
+      cdn-background-image2x '/images/banners/notloggedin/common/ola.png' '/images/banners/notloggedin/common/ola@2x.png' 588px 347px
+      background-repeat no-repeat
+      width 588px
+      height 345px
+      margin-left -200px
+      margin-right -200px

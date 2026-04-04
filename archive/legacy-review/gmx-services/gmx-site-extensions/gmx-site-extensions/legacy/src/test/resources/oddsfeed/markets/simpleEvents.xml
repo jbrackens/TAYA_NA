@@ -1,0 +1,11 @@
+<Events>
+    <Event DateTimeGMT="04/03/2018 16:00:00" Branch="Soccer" Sport="Soccer" BranchID="1" League="Sweden Cup"
+           LeagueID="39853" ID="24912147" IsOption="0" EventType="157" MEID="9431240">
+        <Participants>
+            <Participant1 Name="Sirius" Home_Visiting="Home"/>
+            <Participant2 Name="IFK Goteborg" Home_Visiting="Visiting"/>
+        </Participants>
+        <Spread Home_Odds="5/11" Home_Points="0" Away_Points="0" Away_Odds="33/20" Home_LineID="R346331458"
+                Away_LineID="R346331459"/>
+    </Event>
+</Events>

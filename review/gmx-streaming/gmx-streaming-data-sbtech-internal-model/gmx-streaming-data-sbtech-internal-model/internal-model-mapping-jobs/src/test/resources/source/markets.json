@@ -1,0 +1,204 @@
+[
+  {
+    "id": "63868275",
+    "name": "RaceCard",
+    "namePattern": null,
+    "marketType": {
+      "id": "341",
+      "name": "RaceCard",
+      "namePattern": null,
+      "isCastMarket": false
+    },
+    "eventId": "63868275",
+    "isLive": false,
+    "startDate": 1565811600,
+    "participantMapping": null,
+    "liveData": null,
+    "tags": [
+      "Cashout",
+      "Default"
+    ],
+    "metadata": {
+      "oddsTermsId": "4",
+      "placeTermsId": "3"
+    },
+    "inMarketGroups": [],
+    "castMarkets": [],
+    "leagueId": "196440",
+    "sportId": "61",
+    "isSuspended": false,
+    "lastUpdateDateTime": 1565638815,
+    "betslipLine": "RaceCard",
+    "betslipLinePattern": {
+      "pattern": "{0}",
+      "type": 0,
+      "parameters": {
+        "{0}": "RaceCard",
+        "PhraseClass{0}": "3,8,10"
+      }
+    }
+  },
+  {
+    "id": "5_63868275",
+    "name": "Tricast",
+    "namePattern": null,
+    "marketType": {
+      "id": "5_341",
+      "name": "Tricast",
+      "namePattern": null,
+      "isCastMarket": true
+    },
+    "eventId": "63868275",
+    "isLive": false,
+    "startDate": 1565811600,
+    "participantMapping": null,
+    "liveData": null,
+    "tags": [
+      "Cashout"
+    ],
+    "metadata": {
+      "oddsTermsId": "4",
+      "placeTermsId": "3"
+    },
+    "inMarketGroups": [],
+    "castMarkets": [
+      63868275,
+      63868275,
+      63868275
+    ],
+    "leagueId": "196440",
+    "sportId": "61",
+    "isSuspended": false,
+    "lastUpdateDateTime": 1565762460,
+    "betslipLine": "Tricast",
+    "betslipLinePattern": {
+      "pattern": "{0}",
+      "type": 0,
+      "parameters": {
+        "{0}": "Tricast",
+        "PhraseClass{0}": "3,8,10"
+      }
+    }
+  },
+  {
+    "id": "4_63868275",
+    "name": "Forecast",
+    "namePattern": null,
+    "marketType": {
+      "id": "4_341",
+      "name": "Forecast",
+      "namePattern": null,
+      "isCastMarket": true
+    },
+    "eventId": "63868275",
+    "isLive": false,
+    "startDate": 1565811600,
+    "participantMapping": null,
+    "liveData": null,
+    "tags": [
+      "Cashout"
+    ],
+    "metadata": {
+      "oddsTermsId": "4",
+      "placeTermsId": "3"
+    },
+    "inMarketGroups": [],
+    "castMarkets": [
+      63868275,
+      63868275
+    ],
+    "leagueId": "196440",
+    "sportId": "61",
+    "isSuspended": false,
+    "lastUpdateDateTime": 1565762670,
+    "betslipLine": "Forecast",
+    "betslipLinePattern": {
+      "pattern": "{0}",
+      "type": 0,
+      "parameters": {
+        "{0}": "Forecast",
+        "PhraseClass{0}": "3,8,10"
+      }
+    }
+  },
+  {
+    "id": "4_64152060",
+    "name": "Forecast",
+    "namePattern": null,
+    "marketType": {
+      "id": "4_341",
+      "name": "Forecast",
+      "namePattern": null,
+      "isCastMarket": true
+    },
+    "eventId": "64152060",
+    "isLive": false,
+    "startDate": 1566304800,
+    "participantMapping": null,
+    "liveData": null,
+    "tags": [
+      "Cashout"
+    ],
+    "metadata": {
+      "oddsTermsId": "4",
+      "placeTermsId": "2"
+    },
+    "inMarketGroups": [],
+    "castMarkets": [
+      64152060,
+      64152060
+    ],
+    "leagueId": "196750",
+    "sportId": "61",
+    "isSuspended": false,
+    "lastUpdateDateTime": 1566132942,
+    "betslipLine": "Forecast",
+    "betslipLinePattern": {
+      "pattern": "{0}",
+      "type": 0,
+      "parameters": {
+        "{0}": "Forecast",
+        "PhraseClass{0}": "3,8,10"
+      }
+    }
+  },
+  {
+    "id": "64152060",
+    "name": "RaceCard",
+    "namePattern": null,
+    "marketType": {
+      "id": "341",
+      "name": "RaceCard",
+      "namePattern": null,
+      "isCastMarket": false
+    },
+    "eventId": "64152060",
+    "isLive": false,
+    "startDate": 1566304800,
+    "participantMapping": null,
+    "liveData": null,
+    "tags": [
+      "Cashout",
+      "Default"
+    ],
+    "metadata": {
+      "oddsTermsId": "4",
+      "placeTermsId": "2"
+    },
+    "inMarketGroups": [],
+    "castMarkets": [],
+    "leagueId": "196750",
+    "sportId": "61",
+    "isSuspended": false,
+    "lastUpdateDateTime": 1566132942,
+    "betslipLine": "RaceCard",
+    "betslipLinePattern": {
+      "pattern": "{0}",
+      "type": 0,
+      "parameters": {
+        "{0}": "RaceCard",
+        "PhraseClass{0}": "3,8,10"
+      }
+    }
+  }
+]

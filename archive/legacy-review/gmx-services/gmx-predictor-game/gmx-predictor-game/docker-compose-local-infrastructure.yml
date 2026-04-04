@@ -1,0 +1,15 @@
+version: "3"
+services:
+# infrastructure
+  db:
+    image: postgres:10
+    restart: always
+    volumes:
+    - ./out/docker/db:/var/lib/postgresql/data
+    ports:
+    - "5432:5432"
+    environment:
+      POSTGRES_DB: predictor
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+

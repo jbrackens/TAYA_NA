@@ -1,0 +1,18 @@
+module.exports = {
+  HEADER: "Users",
+  HEADER_USERNAME: "Username",
+  HEADER_FIRSTNAME: "First name",
+  HEADER_LASTNAME: "Last name",
+  HEADER_DOB: "Date of birth",
+  HEADER_EMAIL: "E-mail address",
+  HEADER_STATUS: "Status",
+  HEADER_LAST_SIGN_IN: "Last sign-in",
+  HEADER_ACTIONS: "Actions",
+  HEADER_RECENT_ACTIVITIES: "Recent activities",
+  ACTION_ACTIVITY: "Recent activity",
+  ACTION_DETAILS: "Details",
+  CELL_STATUS_PENDING: "Pending",
+  CELL_STATUS_ACTIVE: "Active",
+  CELL_STATUS_SUSPENDED: "Suspended",
+  CELL_TEST_ACCOUNT: "TEST ACCOUNT",
+};

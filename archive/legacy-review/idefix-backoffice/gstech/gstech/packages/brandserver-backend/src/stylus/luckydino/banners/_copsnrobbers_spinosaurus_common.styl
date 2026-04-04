@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$copsnrobbers_spinosaurus_common_car_name = 'copsnrobbers_spinosaurus_common_car';
+$copsnrobbers_spinosaurus_common_car_x = 0px;
+$copsnrobbers_spinosaurus_common_car_y = 274px;
+$copsnrobbers_spinosaurus_common_car_offset_x = 0px;
+$copsnrobbers_spinosaurus_common_car_offset_y = -274px;
+$copsnrobbers_spinosaurus_common_car_width = 304px;
+$copsnrobbers_spinosaurus_common_car_height = 213px;
+$copsnrobbers_spinosaurus_common_car_total_width = 751px;
+$copsnrobbers_spinosaurus_common_car_total_height = 487px;
+$copsnrobbers_spinosaurus_common_car_image = 'copsnrobbers_spinosaurus_common_b.png';
+$copsnrobbers_spinosaurus_common_car = 0px 274px 0px -274px 304px 213px 751px 487px 'copsnrobbers_spinosaurus_common_b.png' 'copsnrobbers_spinosaurus_common_car';
+$copsnrobbers_spinosaurus_common_logo_name = 'copsnrobbers_spinosaurus_common_logo';
+$copsnrobbers_spinosaurus_common_logo_x = 271px;
+$copsnrobbers_spinosaurus_common_logo_y = 0px;
+$copsnrobbers_spinosaurus_common_logo_offset_x = -271px;
+$copsnrobbers_spinosaurus_common_logo_offset_y = 0px;
+$copsnrobbers_spinosaurus_common_logo_width = 480px;
+$copsnrobbers_spinosaurus_common_logo_height = 140px;
+$copsnrobbers_spinosaurus_common_logo_total_width = 751px;
+$copsnrobbers_spinosaurus_common_logo_total_height = 487px;
+$copsnrobbers_spinosaurus_common_logo_image = 'copsnrobbers_spinosaurus_common_b.png';
+$copsnrobbers_spinosaurus_common_logo = 271px 0px -271px 0px 480px 140px 751px 487px 'copsnrobbers_spinosaurus_common_b.png' 'copsnrobbers_spinosaurus_common_logo';
+$copsnrobbers_spinosaurus_common_police_name = 'copsnrobbers_spinosaurus_common_police';
+$copsnrobbers_spinosaurus_common_police_x = 0px;
+$copsnrobbers_spinosaurus_common_police_y = 0px;
+$copsnrobbers_spinosaurus_common_police_offset_x = 0px;
+$copsnrobbers_spinosaurus_common_police_offset_y = 0px;
+$copsnrobbers_spinosaurus_common_police_width = 267px;
+$copsnrobbers_spinosaurus_common_police_height = 270px;
+$copsnrobbers_spinosaurus_common_police_total_width = 751px;
+$copsnrobbers_spinosaurus_common_police_total_height = 487px;
+$copsnrobbers_spinosaurus_common_police_image = 'copsnrobbers_spinosaurus_common_b.png';
+$copsnrobbers_spinosaurus_common_police = 0px 0px 0px 0px 267px 270px 751px 487px 'copsnrobbers_spinosaurus_common_b.png' 'copsnrobbers_spinosaurus_common_police';
+$spritesheet_width = 751px;
+$spritesheet_height = 487px;
+$spritesheet_image = 'copsnrobbers_spinosaurus_common_b.png';
+$spritesheet_sprites = $copsnrobbers_spinosaurus_common_car $copsnrobbers_spinosaurus_common_logo $copsnrobbers_spinosaurus_common_police;
+$spritesheet = 751px 487px 'copsnrobbers_spinosaurus_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

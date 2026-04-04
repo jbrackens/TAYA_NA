@@ -1,0 +1,68 @@
+livenessProbe:
+  exec:
+    command:
+      - ps
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+readinessProbe:
+  exec:
+    command:
+      - ps
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/brandserver-backend
+  pullPolicy: Always
+  tag: "latest"
+
+command: yarn workspace brandserver-backend prod
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+ingress:
+  enabled: false
+  annotations: {}
+
+  hosts:
+    - host: olaspill-worker-service.local
+      paths: []
+  tls: []
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1024Mi"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3000
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+env:
+  LD_ENV: worker
+  METRICS_PORT: 4001
+  LOGGER_HOST: http://loki-write.monitoring.svc.cluster.local:3100
+  LOGGER_SERVICE: olaspill-worker

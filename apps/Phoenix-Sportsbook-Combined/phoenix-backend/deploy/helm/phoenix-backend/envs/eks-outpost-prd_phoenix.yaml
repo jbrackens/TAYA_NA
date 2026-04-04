@@ -1,0 +1,171 @@
+# Infrastructure
+
+argocd:
+  awaitRolloutComplete: false
+  rollouts:
+    enabled: true
+    autoPromotionEnabled: false
+    autoPromotionSeconds: 30
+
+externalSecrets:
+  remoteRefPathPrefix: prd/phoenix
+  secretStore: main
+
+flyway:
+  outOfOrder: false
+
+imagePullSecrets: [ecr-docker-credentials]
+
+ingress:
+  baseDNS: vie.gg
+  # Use port-forward to access Swagger docs or test user creation endpoint.
+  exposeDevApi: false
+
+  alb:
+    # We're combining the APIs into a single ALB.
+    group: phoenix-apis
+
+    customerOwnedIP:
+      enabled: true
+      ipv4poolCoip: ipv4pool-coip-01cdf968d7c5e4718
+      outpostPublicSubnetID: subnet-08587941113502451
+
+  whitelistedIps:
+    main: []
+    betgenius: []
+    pxp: []
+
+keycloak:
+  namespace: keycloak
+  realm: phoenix
+
+podDisruptionBudget:
+  enabled: true
+
+postgresOperator:
+  dbName: phoenix
+  dbHost: phoenix-cluster.postgres-operator.svc.cluster.local
+  dbWriterSecretName: phoenix-writer-user.phoenix-cluster.credentials.postgresql
+  dbOwnerSecretName: phoenix-owner-user.phoenix-cluster.credentials.postgresql
+
+prometheusRules:
+  cluster: phoenix-prd-cluster
+  env: prd
+
+replicaCount: 3
+
+resources:
+  memory: "3Gi"
+
+
+# Application
+
+akka:
+  persistence:
+    jdbcPoolSize: 30
+    recoveryTimeout: 600s
+
+corsAllowedOrigins:
+  - https://dev-api.vie.gg  # Swagger
+  - https://www.vie.gg
+  - https://office.vie.gg
+
+db:
+  maxConnections: 30
+  minConnections: 30
+  slickThreadsNum: 30
+
+markets:
+  selectionOddsUpperBoundInclusive: 101
+  marketTypesDisplayedToPunters: "MATCH_WINNER, MAP_WINNER"
+  sportsDisplayedToPuntersByDefault: "s:p:1, s:p:2, s:p:3, s:p:10, s:p:11, s:p:12, s:p:13, s:p:15, s:p:16"
+  tournamentsDisplayedToPuntersFilterEnabled: true
+
+notifications:
+  baseUrl: "https://www.vie.gg"
+  customerSupportEmailAddress: "notifications.phoenix.darkstormlabs.cs@darkstormlabs.tech"
+  email:
+    enabled: true
+    fromAddress: "no-reply@darkstormlabs.net"
+
+openapi:
+  docsRelativeUrl: "/docs"
+  apiBaseUrl: "https://api.vie.gg"
+
+punters:
+  maximumAmountOfPunters: 5000
+  mfa:
+    enabledByDefault: true
+    changeAllowed: false
+    mandatoryForRegistration: true
+
+reports:
+  dge:
+    dailyReportsSchedule: >-
+      mode=daily,start-time=\"01:00\"
+  aml:
+    reportsRecipientEmailAddress: "notifications.phoenix.darkstormlabs.aml@darkstormlabs.tech"
+    dailyReportsSchedule: >-
+      mode=daily,start-time=\"06:00\"
+    weeklyReportsSchedule: >-
+      mode=weekly,day-of-week=MONDAY,start-time=\"06:00\"
+    monthlyReportsSchedule: >-
+      mode=monthly,day-of-month=1,start-time=\"06:00\"
+    deceasedReportsSchedule: >-
+      mode=weekly,day-of-week=WEDNESDAY,start-time=\"06:00\"
+    manuallyUnsuspendedReportsSchedule: >-
+      mode=weekly,day-of-week=TUESDAY,start-time=\"09:00\"
+    multiDeviceActivityReportsSchedule: >-
+      mode=daily,start-time=\"06:00\"
+
+talon:
+  talonAppBaseUrl: "https://office.vie.gg"
+
+
+# 3rd party integrations
+
+betgenius:
+  dataIngestionEnabled: "no"
+  apiEnvironment: "PRODPRM"
+
+dge:
+  sftp:
+    host: sftp-2a2n.prd.phoenix.darkstormlabs.net.internal
+    port: 22
+    rootDirectory: /phoenix
+  exclusion:
+    ingestion:
+      schedule: >-
+        mode=daily,start-time=\"12:00\"
+      timeRestriction: 5.minutes
+      maxRetries: 0
+
+geoComply:
+  licenseService:
+    baseUrl: "https://auth.geocomply.com"
+
+idComply:
+  baseUrl: "https://api.idcomply.com/v1"
+  photoVerificationBaseUrl: "https://verifyid.idcomply.com/"
+  frontEndRedirectionEndpoint: "https://www.vie.gg/esports-bets/idpv-result"
+  idPhotoVerificationEndpoint: "kyc-esports-nj-ocr"
+  endpointPaths:
+    knowYourCustomer: "/kyc-esports-nj"
+    knowledgeBasedAuthentication: "/kyc-esports-nj-kba"
+
+oddin:
+  dataIngestionEnabled: "yes"
+  useCommonDataApiModel: false
+  environment: PRODUCTION
+  restBaseUrl: "https://api-mq.oddin.gg"
+  nodeId: "4"
+  kafka:
+    enabled: "no"
+    consumer:
+      bootstrapServers: "phoenix-strimzi-kafka-bootstrap.cloudflow:9092"
+
+payments:
+  baseUrl: "https://backend.cqrpayments.com"
+
+twilio:
+  verifyApiBaseUrl: "https://verify.twilio.com"

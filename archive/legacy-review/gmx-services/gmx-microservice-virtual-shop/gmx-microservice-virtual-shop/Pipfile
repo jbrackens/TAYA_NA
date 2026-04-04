@@ -1,0 +1,41 @@
+[[source]]
+name = "pypi"
+url = 'https://lena-srv01.flipsports.net:4566/repository/pypi-group/simple'
+verify_ssl = true
+
+[packages]
+aws-rest-default = "==6.1.2"
+django-polymorphic = "==2.0.3"
+django-filter = "==2.1.0"
+fakeredis = "==1.0.1"
+coverage = "==4.5.2"
+freezegun = "==0.3.11"
+avro-python3 = "==1.9.0"
+django-cors-headers = "==2.4.1"
+djangorestframework = "==3.9.3"
+boto3 = "==1.9.138"
+psycopg2-binary = "==2.8.1"
+python-schema-registry-client = {extras = ["faust"],version = "~=1.6.0"}
+aioredis = "~=1.3.1"
+aioredlock = "~=0.3.0"
+requests-futures = "~=1.0.0"
+pydantic = "~=1.5.1"
+kafka-python = "~=1.4.7"
+ujson = "~=2.0.3"
+
+[dev-packages]
+autoflake = "*"
+isort = "*"
+vulture = "*"
+black = "*"
+ipython = "*"
+bandit = "==1.6.2"
+safety = "*"
+typed-ast = "*"
+importlib-metadata = "*"
+
+[pipenv]
+allow_prereleases = true
+
+[requires]
+python_version = "3.7"

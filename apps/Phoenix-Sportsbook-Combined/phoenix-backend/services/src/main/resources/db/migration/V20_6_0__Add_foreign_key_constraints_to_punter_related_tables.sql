@@ -1,0 +1,2 @@
+ALTER TABLE punter_personal_details ADD CONSTRAINT punter_personal_details_punter_id_fk FOREIGN KEY (punter_id) REFERENCES punter_registration_data(punter_id) ON DELETE CASCADE;
+ALTER TABLE punter_ssns ADD CONSTRAINT punter_ssns_punter_id_fk FOREIGN KEY (punter_id) REFERENCES punter_registration_data(punter_id) ON DELETE CASCADE;

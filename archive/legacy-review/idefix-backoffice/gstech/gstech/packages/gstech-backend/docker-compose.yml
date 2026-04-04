@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  gstech-backend:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-backend/Dockerfile
+      args:
+        NODE_ENV: development
+    image: gstech-backend
+    container_name: gstech-backend
+    command: sh -c "yarn migrate && yarn workspace gstech-backend serve"
+    ports:
+      - '3001:3001'
+      - '3005:3005'
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+      MINIO_HOST: gstech-minio
+      REDIS_HOST: gstech-redis
+      POSTGRES_HOST: gstech-postgres
+      KAFKA_HOST: gstech-kafka
+      KAFKA_PORT: 19092
+      KAFKA_AVRO_REGISTRY_HOST: gstech-schema-registry
+      PORT: 3001
+      WALLET_PORT: 3005
+      GAME_SERVER_URL: http://gstech-walletserver:3003/api/v1
+      CI_DEP: ${CI_DEP:-false} # disable slack messaging when starting as a CI dependency
+    healthcheck:
+      test: wget http://localhost:$$PORT/api/v1/status -q -O - > /dev/null 2>&1
+      interval: 10s
+      timeout: 10s
+      start_period: 10s
+      retries: 10
+
+networks:
+  gstech:
+    external: true

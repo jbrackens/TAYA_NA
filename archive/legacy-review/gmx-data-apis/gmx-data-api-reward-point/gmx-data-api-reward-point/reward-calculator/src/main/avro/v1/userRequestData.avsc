@@ -1,0 +1,20 @@
+{
+  "type": "record",
+  "name": "UserRequestData",
+  "namespace": "net.flipsports.gmx.rewardcalculator.api",
+  "fields": [
+    {
+      "name": "external_user_id",
+      "type": "string"
+    },
+    {
+      "name": "company_id",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "email",
+      "type": "string"
+    }
+  ]
+}

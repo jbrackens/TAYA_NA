@@ -1,0 +1,13 @@
+$breadcrumb-last-color: white !default;
+.breadcrumb.breadcrumb-last{
+  color:$breadcrumb-last-color;
+}
+html.IsDesktop .panel-center {
+  .breadcrumbs-holder{
+    padding:0px 0px 1px;
+  }
+}
+
+a.lnk_btn.back_btn{
+  background:$brand-base;
+}

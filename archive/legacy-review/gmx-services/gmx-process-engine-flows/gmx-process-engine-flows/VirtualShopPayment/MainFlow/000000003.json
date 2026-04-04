@@ -1,0 +1,3510 @@
+{
+    "bucket": {
+        "createdTimestamp": 1574854464548,
+        "identifier": "e63c9b2a-51bb-5e1f-910e-04d236a621b9",
+        "name": "VirtualShopPayment",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "e63c9b2a-51bb-5e1f-910e-04d236a621b9",
+        "bucketName": "VirtualShopPayment",
+        "createdTimestamp": 1574857507329,
+        "description": "",
+        "identifier": "d72a4671-6b38-5de5-9fa6-d4aee05ac980",
+        "modifiedTimestamp": 1579030601333,
+        "name": "MainFlow",
+        "type": "Flow",
+        "versionCount": 4
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1065.0572413305738,
+                        "y": 1303.4737342336105
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "65b22c11-b948-3d76-904c-4186cff533a5",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "842abe7e-a9a2-33a8-b8f6-70b7fa05f446",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38693938-45d4-3f19-be85-44b24efbf48c",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "a07a1638-fe1e-3817-b383-2ef377469e55",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "2345f9d0-fd04-3b12-b5f6-82fe98d5023c",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "8b43449f-0c7c-3cf6-90d2-0f3928847dfd",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "be2df51a-0861-36e9-b590-c92df6f913de",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "eb468336-2053-38a3-88a5-d73f5f080007",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "67701828-f090-3da8-8150-1a963d34d49e",
+                    "id": "651aa499-132c-3600-91fd-6b4ec704b711",
+                    "name": "no_retry (651aa499-132c-3600-91fd-6b4ec704b711) (651aa499-132c-3600-91fd-6b4ec704b711)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "82b8024c-430d-3dcd-aa3d-678f7f2a1f27",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "e28ddc42-e6d3-37c0-9c0c-93641a71ba42",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "c585c4d5-d112-3346-b390-5fa0779feb23",
+                    "id": "651aa499-132c-3600-91fd-6b4ec704b711",
+                    "name": "no_retry (651aa499-132c-3600-91fd-6b4ec704b711) (651aa499-132c-3600-91fd-6b4ec704b711)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "8b43449f-0c7c-3cf6-90d2-0f3928847dfd",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "4f14b467-c37a-348c-8d99-02cfa7fd9d0b",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "a867f8cd-0265-3bff-ba10-dabf79044bbc",
+                    "name": "PrepareWalletCharge",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1100.6015746227267,
+                        "y": 2250.529883994216
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "36f351ec-4850-3476-bcdd-7adb54f9de33",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "98f40872-5c2e-390c-8f84-b470a4738614",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "59a833d0-6865-31c8-8ca0-1681349d7d4b",
+                    "id": "e8ef325b-997d-31d2-9e40-29141ad68938",
+                    "name": "retries_exceeded (e8ef325b-997d-31d2-9e40-29141ad68938) (e8ef325b-997d-31d2-9e40-29141ad68938)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "f3ed1f9a-ed64-38cb-b561-5d9740ad8855",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "ff0c90fa-2c1a-3f40-a04b-963ffe52bacb",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "cbe526b9-34ee-3bec-a16b-ebd370d9407b",
+                    "name": "PrepareUpdateStatus",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "8caadabb-ece9-37a1-835c-8ca4e8d909c6",
+                    "name": "PrepareUpdateStatus",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "83c6bc6a-501e-3b57-ac6b-eb2702d85b70",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "matched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "acc73469-858b-3ac4-ba42-668129842de4",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "78e944bc-774d-35e0-bd2e-c0961c70b4a0",
+                    "name": "LogMessage(ERROR)",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "89b3b55a-1d26-323c-8641-511168e97e85",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "467df232-3ff6-3303-b7b0-422e65fbf411",
+                    "name": "Parse ARVO nifi_rest.VirtualShopPayment",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1077.3665892711642,
+                        "y": 1052.0309826270286
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "c585c4d5-d112-3346-b390-5fa0779feb23",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "b201b1d9-7a58-3a83-8887-0466dea4a8f4",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "82b8024c-430d-3dcd-aa3d-678f7f2a1f27",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "67701828-f090-3da8-8150-1a963d34d49e",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "b1d60d08-737d-38a2-856f-78fdaf832583",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "7bac5c62-5f53-3ede-80a9-4075a2b254ca",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "09c758e6-8a2d-3c88-a3e5-aee71ed26331",
+                    "name": "PrepareUpdateStatus",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "658c3131-61fd-3caa-b5d8-72a7f5175edd",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "59a833d0-6865-31c8-8ca0-1681349d7d4b",
+                    "id": "cb4ab65d-5b77-3bcb-bcde-85c299b5f36c",
+                    "name": "success (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c) (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "5598239e-03d4-3157-b586-48da8c40ccf6",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "c2a15792-0a5c-3e1c-aee5-9012e106d24d",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38a93923-7696-3332-8df5-7ae98df2652d",
+                    "name": "RouteOnAttribute(check balance)",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 495.24671622428923,
+                        "y": 2740.066016806716
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "9f90fdb9-de20-38da-99ab-3d5155275cb9",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "9c2cb9a6-3bd7-3ab4-86cc-eac1696b55b3",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "1d802023-b742-38e6-9348-67c4f7185a06",
+                    "id": "e8ef325b-997d-31d2-9e40-29141ad68938",
+                    "name": "retries_exceeded (e8ef325b-997d-31d2-9e40-29141ad68938) (e8ef325b-997d-31d2-9e40-29141ad68938)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "467df232-3ff6-3303-b7b0-422e65fbf411",
+                    "name": "Parse ARVO nifi_rest.VirtualShopPayment",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "a7c24d99-454f-3e05-995e-5a3c8aaf3334",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "990abd44-f018-3ca4-8e90-45a06afa675d",
+                    "name": "gmx-messaging.virtual-shop-purchase",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "bc13109d-dbaf-3175-9089-ca1bc93e2f2c",
+                    "name": "Log incoming data",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "ef89097c-aa57-32cf-8d14-0704dac5a6b8",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "467df232-3ff6-3303-b7b0-422e65fbf411",
+                    "name": "Parse ARVO nifi_rest.VirtualShopPayment",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 495.24671622428923,
+                        "y": 2890.066016806716
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "1d802023-b742-38e6-9348-67c4f7185a06",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "f910370e-1844-3c57-bfb8-0a66de0bb479",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "9f90fdb9-de20-38da-99ab-3d5155275cb9",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38693938-45d4-3f19-be85-44b24efbf48c",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "f6083f81-7be6-3902-89b6-1a75c7049f5a",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure",
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "65b22c11-b948-3d76-904c-4186cff533a5",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "dbed7998-1c2d-31c3-ac08-2d5b27dcd65b",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "0023c3b3-0586-3779-bb0c-002570df1454",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "f3ed1f9a-ed64-38cb-b561-5d9740ad8855",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 395.51488028130893,
+                        "y": 325.42575200362626
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "7bac5c62-5f53-3ede-80a9-4075a2b254ca",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "c7dad7f9-4ca6-3f64-975e-a6a0ffacdd21",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "73435536-c95f-3b3d-82fb-43f91f692471",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "a867f8cd-0265-3bff-ba10-dabf79044bbc",
+                    "name": "PrepareWalletCharge",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "13465871-a0ec-3db0-a08e-adddfe1d7ccf",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "good"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38a93923-7696-3332-8df5-7ae98df2652d",
+                    "name": "RouteOnAttribute(check balance)",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "7bac5c62-5f53-3ede-80a9-4075a2b254ca",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "c0a19a7f-57bf-30da-ac0e-c1eedb9d4518",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "8caadabb-ece9-37a1-835c-8ca4e8d909c6",
+                    "name": "PrepareUpdateStatus",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38a93923-7696-3332-8df5-7ae98df2652d",
+                    "name": "RouteOnAttribute(check balance)",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "ce35864f-2c5d-3019-8690-953514303bbd",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "matched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "65b22c11-b948-3d76-904c-4186cff533a5",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1105.544995032883,
+                        "y": 565.332036759964
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "be2df51a-0861-36e9-b590-c92df6f913de",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "2f644ea5-a093-36d4-a895-e4baf3f2b616",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "67701828-f090-3da8-8150-1a963d34d49e",
+                    "id": "e8ef325b-997d-31d2-9e40-29141ad68938",
+                    "name": "retries_exceeded (e8ef325b-997d-31d2-9e40-29141ad68938) (e8ef325b-997d-31d2-9e40-29141ad68938)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1082.1427123180392,
+                        "y": 1226.635108603591
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "82b8024c-430d-3dcd-aa3d-678f7f2a1f27",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "98f80082-97e4-3d19-afb9-f75692d4bd1b",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "c585c4d5-d112-3346-b390-5fa0779feb23",
+                    "id": "e8ef325b-997d-31d2-9e40-29141ad68938",
+                    "name": "retries_exceeded (e8ef325b-997d-31d2-9e40-29141ad68938) (e8ef325b-997d-31d2-9e40-29141ad68938)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "cbe526b9-34ee-3bec-a16b-ebd370d9407b",
+                    "name": "PrepareUpdateStatus",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "9ff9a6a6-92b8-3959-adcf-886d73655fcc",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "insufficient_founds"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38a93923-7696-3332-8df5-7ae98df2652d",
+                    "name": "RouteOnAttribute(check balance)",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "acc73469-858b-3ac4-ba42-668129842de4",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "33672f72-b799-3d2e-8487-821c652084b5",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "bc13109d-dbaf-3175-9089-ca1bc93e2f2c",
+                    "name": "Log incoming data",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1100.6015746227267,
+                        "y": 2400.529883994216
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "59a833d0-6865-31c8-8ca0-1681349d7d4b",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "ac93c2fb-a169-3841-a72f-edb695dca63a",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "36f351ec-4850-3476-bcdd-7adb54f9de33",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 388.0735293358951,
+                        "y": -578.5799208539438
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "467df232-3ff6-3303-b7b0-422e65fbf411",
+                    "name": "Parse ARVO nifi_rest.VirtualShopPayment",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "7ac47358-2380-366e-bf3d-ee06f373f068",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "78e944bc-774d-35e0-bd2e-c0961c70b4a0",
+                    "name": "LogMessage(ERROR)",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "ad7f2af9-998b-3de2-8bfd-6a7ae271f824",
+                    "name": "PrepareGetOrCreateWallet",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "7a928512-e396-3d3d-aaea-466feccdeb7e",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "67701828-f090-3da8-8150-1a963d34d49e",
+                    "id": "cb4ab65d-5b77-3bcb-bcde-85c299b5f36c",
+                    "name": "success (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c) (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": -214.78339852728482,
+                        "y": 2500.1597320503784
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "f3ed1f9a-ed64-38cb-b561-5d9740ad8855",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "1c7bd4c0-8799-38c6-8d05-1745316ca23d",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "dbed7998-1c2d-31c3-ac08-2d5b27dcd65b",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 391.6365193037089,
+                        "y": -140.06452653698045
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "acc73469-858b-3ac4-ba42-668129842de4",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "d2c21989-8238-3cda-9205-057ff1c2b80f",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "be420099-f3e5-3787-9032-0198aca9e868",
+                    "name": "LogMessage(ERROR)",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "1d802023-b742-38e6-9348-67c4f7185a06",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "1c55d5d9-7be2-3c92-a1aa-de04152b1289",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "f3ed1f9a-ed64-38cb-b561-5d9740ad8855",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "36f351ec-4850-3476-bcdd-7adb54f9de33",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "9e84fdec-3cda-30e7-9cde-14a7781b9a89",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "59a833d0-6865-31c8-8ca0-1681349d7d4b",
+                    "id": "651aa499-132c-3600-91fd-6b4ec704b711",
+                    "name": "no_retry (651aa499-132c-3600-91fd-6b4ec704b711) (651aa499-132c-3600-91fd-6b4ec704b711)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1105.544995032883,
+                        "y": 715.332036759964
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "67701828-f090-3da8-8150-1a963d34d49e",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "c2cf5209-2990-3a29-9efb-535b45798bb5",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "be2df51a-0861-36e9-b590-c92df6f913de",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "73435536-c95f-3b3d-82fb-43f91f692471",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "438bc9b0-7e6e-3587-a208-19d0e47cfcde",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "7bac5c62-5f53-3ede-80a9-4075a2b254ca",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "9f90fdb9-de20-38da-99ab-3d5155275cb9",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "0c66f714-9d1c-33e8-a844-9e7b2585bad9",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "1d802023-b742-38e6-9348-67c4f7185a06",
+                    "id": "651aa499-132c-3600-91fd-6b4ec704b711",
+                    "name": "no_retry (651aa499-132c-3600-91fd-6b4ec704b711) (651aa499-132c-3600-91fd-6b4ec704b711)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "be420099-f3e5-3787-9032-0198aca9e868",
+                    "name": "LogMessage(ERROR)",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "37066f1b-e61d-3eaf-92f4-9ae7f258d721",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure",
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "acc73469-858b-3ac4-ba42-668129842de4",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "a9f12a81-64d6-3372-b19f-05ac556d53c7",
+                    "name": "[INFO]LogMessage - SUCCESS",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "7c2a6ff0-8ea5-3feb-bc64-9abdded22df2",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "1d802023-b742-38e6-9348-67c4f7185a06",
+                    "id": "cb4ab65d-5b77-3bcb-bcde-85c299b5f36c",
+                    "name": "success (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c) (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1064.358465354223,
+                        "y": 1542.3260089767114
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "38a93923-7696-3332-8df5-7ae98df2652d",
+                    "name": "RouteOnAttribute(check balance)",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "86f2cf92-a8fa-3006-b85c-a20afc2d1641",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "5598239e-03d4-3157-b586-48da8c40ccf6",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1101.1772032793556,
+                        "y": 2013.3344146675659
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "8b43449f-0c7c-3cf6-90d2-0f3928847dfd",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "209face7-0e02-33fe-9db6-130603f570f1",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "a07a1638-fe1e-3817-b383-2ef377469e55",
+                    "name": "[ERROR]LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "59a833d0-6865-31c8-8ca0-1681349d7d4b",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "2de4cf41-d6c5-3178-99d3-24e6dc71b9f9",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "8b43449f-0c7c-3cf6-90d2-0f3928847dfd",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "65b22c11-b948-3d76-904c-4186cff533a5",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "df66a5f7-d717-3896-b2e2-9703322f14ff",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "c585c4d5-d112-3346-b390-5fa0779feb23",
+                    "id": "cb4ab65d-5b77-3bcb-bcde-85c299b5f36c",
+                    "name": "success (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c) (cb4ab65d-5b77-3bcb-bcde-85c299b5f36c)",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "f3ed1f9a-ed64-38cb-b561-5d9740ad8855",
+                    "name": "AttributesToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "b859127f-c9dc-3891-b775-0be4eb79de43",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "09c758e6-8a2d-3c88-a3e5-aee71ed26331",
+                    "name": "PrepareUpdateStatus",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "c585c4d5-d112-3346-b390-5fa0779feb23",
+                    "id": "818ad834-7fba-33fe-8281-d0d289a803d9",
+                    "name": "input (818ad834-7fba-33fe-8281-d0d289a803d9) (818ad834-7fba-33fe-8281-d0d289a803d9)",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "4ba6f739-1021-3f73-9b5c-10d12647d24e",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                    "id": "ad7f2af9-998b-3de2-8bfd-6a7ae271f824",
+                    "name": "PrepareGetOrCreateWallet",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+        "inputPorts": [],
+        "labels": [],
+        "name": "VirtualShopPayment",
+        "outputPorts": [],
+        "position": {
+            "x": 873.6021307718343,
+            "y": 771.8093635381601
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "67701828-f090-3da8-8150-1a963d34d49e",
+                "inputPorts": [],
+                "labels": [],
+                "name": "InvokeHTTP(PatchPaymentStatus)",
+                "outputPorts": [],
+                "position": {
+                    "x": 539.8798482878183,
+                    "y": 555.3553311653236
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "28fb1156-039e-5d10-a8e9-a1c7dbdb4117",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 5
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "59a833d0-6865-31c8-8ca0-1681349d7d4b",
+                "inputPorts": [],
+                "labels": [],
+                "name": "InvokeHTTP(CreateWalletLine)",
+                "outputPorts": [],
+                "position": {
+                    "x": 534.936427877662,
+                    "y": 2240.5531783995757
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "28fb1156-039e-5d10-a8e9-a1c7dbdb4117",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 5
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "1d802023-b742-38e6-9348-67c4f7185a06",
+                "inputPorts": [],
+                "labels": [],
+                "name": "InvokeHTTP(PatchPaymentStatus)",
+                "outputPorts": [],
+                "position": {
+                    "x": -70.41843052077547,
+                    "y": 2730.0893112120757
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "28fb1156-039e-5d10-a8e9-a1c7dbdb4117",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 5
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "c585c4d5-d112-3346-b390-5fa0779feb23",
+                "inputPorts": [],
+                "labels": [],
+                "name": "InvokeHTTP(GetOrCreateWallet)",
+                "outputPorts": [],
+                "position": {
+                    "x": 554.6537740690683,
+                    "y": 1050.420671075357
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "28fb1156-039e-5d10-a8e9-a1c7dbdb4117",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 5
+                }
+            }
+        ],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "be2df51a-0861-36e9-b590-c92df6f913de",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1306.2101417779477,
+                    "y": 574.3087423546044
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to call PatchPaymentStatus",
+                    "log-prefix": "[ProcessController][ReferralBonus][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "bc13109d-dbaf-3175-9089-ca1bc93e2f2c",
+                "name": "Log incoming data",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 534.7076303730264,
+                    "y": -348.5916986837359
+                },
+                "properties": {
+                    "Attributes to Log": "uuid",
+                    "Log Level": "info",
+                    "Log Payload": "true",
+                    "Log prefix": "[ProcessController][VirtualShopPayment] ",
+                    "attributes-to-log-regex": ".*",
+                    "character-set": "UTF-8"
+                },
+                "propertyDescriptors": {
+                    "Attributes to Ignore": {
+                        "displayName": "Attributes to Ignore",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Ignore",
+                        "sensitive": false
+                    },
+                    "Attributes to Log": {
+                        "displayName": "Attributes to Log",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Log",
+                        "sensitive": false
+                    },
+                    "Log Level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "Log Level",
+                        "sensitive": false
+                    },
+                    "Log Payload": {
+                        "displayName": "Log Payload",
+                        "identifiesControllerService": false,
+                        "name": "Log Payload",
+                        "sensitive": false
+                    },
+                    "Log prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "Log prefix",
+                        "sensitive": false
+                    },
+                    "attributes-to-ignore-regex": {
+                        "displayName": "Attributes to Ignore by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-ignore-regex",
+                        "sensitive": false
+                    },
+                    "attributes-to-log-regex": {
+                        "displayName": "Attributes to Log by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-log-regex",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-update-attribute-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "a867f8cd-0265-3bff-ba10-dabf79044bbc",
+                "name": "PrepareWalletCharge",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 556.1324329699451,
+                    "y": 1808.4574813600339
+                },
+                "properties": {
+                    "ID_TOKEN_KEY": "VIRTUAL_SHOP_PAYMENT",
+                    "Store State": "Do not store state",
+                    "canonical-value-lookup-cache-size": "100",
+                    "for_user": "${user_sub}",
+                    "http_invoke.method": "POST",
+                    "http_invoke.target_url": "${API_ENDPOINT}/wallet/bpr/create/from_company",
+                    "operation_subtype": "VSP"
+                },
+                "propertyDescriptors": {
+                    "Delete Attributes Expression": {
+                        "displayName": "Delete Attributes Expression",
+                        "identifiesControllerService": false,
+                        "name": "Delete Attributes Expression",
+                        "sensitive": false
+                    },
+                    "ID_TOKEN_KEY": {
+                        "displayName": "ID_TOKEN_KEY",
+                        "identifiesControllerService": false,
+                        "name": "ID_TOKEN_KEY",
+                        "sensitive": false
+                    },
+                    "Stateful Variables Initial Value": {
+                        "displayName": "Stateful Variables Initial Value",
+                        "identifiesControllerService": false,
+                        "name": "Stateful Variables Initial Value",
+                        "sensitive": false
+                    },
+                    "Store State": {
+                        "displayName": "Store State",
+                        "identifiesControllerService": false,
+                        "name": "Store State",
+                        "sensitive": false
+                    },
+                    "canonical-value-lookup-cache-size": {
+                        "displayName": "Cache Value Lookup Cache Size",
+                        "identifiesControllerService": false,
+                        "name": "canonical-value-lookup-cache-size",
+                        "sensitive": false
+                    },
+                    "for_user": {
+                        "displayName": "for_user",
+                        "identifiesControllerService": false,
+                        "name": "for_user",
+                        "sensitive": false
+                    },
+                    "http_invoke.method": {
+                        "displayName": "http_invoke.method",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.method",
+                        "sensitive": false
+                    },
+                    "http_invoke.target_url": {
+                        "displayName": "http_invoke.target_url",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.target_url",
+                        "sensitive": false
+                    },
+                    "operation_subtype": {
+                        "displayName": "operation_subtype",
+                        "identifiesControllerService": false,
+                        "name": "operation_subtype",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.attributes.UpdateAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-update-attribute-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "8caadabb-ece9-37a1-835c-8ca4e8d909c6",
+                "name": "PrepareUpdateStatus",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 545.8839893664294,
+                    "y": 114.90340243632863
+                },
+                "properties": {
+                    "ID_TOKEN_KEY": "VIRTUAL_SHOP_PAYMENT",
+                    "Store State": "Do not store state",
+                    "canonical-value-lookup-cache-size": "100",
+                    "http_invoke.method": "PATCH",
+                    "http_invoke.target_url": "${API_ENDPOINT}/virtual_shop/pc/order/${PROCESS_ID}",
+                    "status": "PROCESSING",
+                    "status_message": "Processing"
+                },
+                "propertyDescriptors": {
+                    "Delete Attributes Expression": {
+                        "displayName": "Delete Attributes Expression",
+                        "identifiesControllerService": false,
+                        "name": "Delete Attributes Expression",
+                        "sensitive": false
+                    },
+                    "ID_TOKEN_KEY": {
+                        "displayName": "ID_TOKEN_KEY",
+                        "identifiesControllerService": false,
+                        "name": "ID_TOKEN_KEY",
+                        "sensitive": false
+                    },
+                    "Stateful Variables Initial Value": {
+                        "displayName": "Stateful Variables Initial Value",
+                        "identifiesControllerService": false,
+                        "name": "Stateful Variables Initial Value",
+                        "sensitive": false
+                    },
+                    "Store State": {
+                        "displayName": "Store State",
+                        "identifiesControllerService": false,
+                        "name": "Store State",
+                        "sensitive": false
+                    },
+                    "canonical-value-lookup-cache-size": {
+                        "displayName": "Cache Value Lookup Cache Size",
+                        "identifiesControllerService": false,
+                        "name": "canonical-value-lookup-cache-size",
+                        "sensitive": false
+                    },
+                    "http_invoke.method": {
+                        "displayName": "http_invoke.method",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.method",
+                        "sensitive": false
+                    },
+                    "http_invoke.target_url": {
+                        "displayName": "http_invoke.target_url",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.target_url",
+                        "sensitive": false
+                    },
+                    "status": {
+                        "displayName": "status",
+                        "identifiesControllerService": false,
+                        "name": "status",
+                        "sensitive": false
+                    },
+                    "status_message": {
+                        "displayName": "status_message",
+                        "identifiesControllerService": false,
+                        "name": "status_message",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.attributes.UpdateAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "38a93923-7696-3332-8df5-7ae98df2652d",
+                "name": "RouteOnAttribute(check balance)",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 559.553541860186,
+                    "y": 1551.8636290481602
+                },
+                "properties": {
+                    "Routing Strategy": "Route to Property name",
+                    "good": "${current_balance:ge(${price})}",
+                    "insufficient_founds": "${current_balance:lt(${price})}"
+                },
+                "propertyDescriptors": {
+                    "Routing Strategy": {
+                        "displayName": "Routing Strategy",
+                        "identifiesControllerService": false,
+                        "name": "Routing Strategy",
+                        "sensitive": false
+                    },
+                    "good": {
+                        "displayName": "good",
+                        "identifiesControllerService": false,
+                        "name": "good",
+                        "sensitive": false
+                    },
+                    "insufficient_founds": {
+                        "displayName": "insufficient_founds",
+                        "identifiesControllerService": false,
+                        "name": "insufficient_founds",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.RouteOnAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "82b8024c-430d-3dcd-aa3d-678f7f2a1f27",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1219.1528908013852,
+                    "y": 1067.5143410537003
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to call GetOrCreateWallet",
+                    "log-prefix": "[ProcessController][VirtualShopPayment][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "be420099-f3e5-3787-9032-0198aca9e868",
+                "name": "LogMessage(ERROR)",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -101.71092558625048,
+                    "y": -132.22719887812252
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to extract JSON params from ${kafka.topic} at ${kafka.offset}",
+                    "log-prefix": "[ProcessController][VirtualShopPayment][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "36f351ec-4850-3476-bcdd-7adb54f9de33",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1301.2667213677914,
+                    "y": 2259.5065895888565
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to call CreateWalletLine",
+                    "log-prefix": "[ProcessController][ReferralBonus][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-avro-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "467df232-3ff6-3303-b7b0-422e65fbf411",
+                "name": "Parse ARVO nifi_rest.VirtualShopPayment",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 537.5684334767907,
+                    "y": -571.8702038649213
+                },
+                "properties": {
+                    "Avro schema": "{\n    \"type\": \"record\",\n    \"name\": \"VirtualShopPayment\",\n    \"namespace\": \"net.flipsports.gmx.nifi\",\n    \"fields\": [\n        {\n            \"name\": \"price\",\n            \"type\": \"string\"\n        },\n        {\n            \"name\": \"title\",\n            \"type\": \"string\"\n        },\n        {\n            \"name\": \"transaction_id\",\n            \"type\": \"string\"\n        },\n        {\n            \"name\": \"process_id\",\n            \"type\": \"string\"\n        },\n        {\n            \"name\": \"originator_id\",\n            \"type\": \"string\"\n        },\n        {\n            \"name\": \"user_sub\",\n            \"type\": \"string\"\n        },\n        {\n            \"name\": \"company_id\",\n            \"type\": \"string\"\n        }\n    ]\n}",
+                    "JSON container options": "none",
+                    "Wrap Single Record": "false"
+                },
+                "propertyDescriptors": {
+                    "Avro schema": {
+                        "displayName": "Avro schema",
+                        "identifiesControllerService": false,
+                        "name": "Avro schema",
+                        "sensitive": false
+                    },
+                    "JSON container options": {
+                        "displayName": "JSON container options",
+                        "identifiesControllerService": false,
+                        "name": "JSON container options",
+                        "sensitive": false
+                    },
+                    "Wrap Single Record": {
+                        "displayName": "Wrap Single Record",
+                        "identifiesControllerService": false,
+                        "name": "Wrap Single Record",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.avro.ConvertAvroToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "38693938-45d4-3f19-be85-44b24efbf48c",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1218.5486427545102,
+                    "y": 1311.9802834365128
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to retreive current balance",
+                    "log-prefix": "[ProcessController][VirtualShopPayment][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [
+                    "success"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "a9f12a81-64d6-3372-b19f-05ac556d53c7",
+                "name": "[INFO]LogMessage - SUCCESS",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -56.63153302673982,
+                    "y": 3018.8911110732315
+                },
+                "properties": {
+                    "log-level": "info",
+                    "log-message": "Message success",
+                    "log-prefix": "[ProcessController][ReferralBonus][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-update-attribute-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "09c758e6-8a2d-3c88-a3e5-aee71ed26331",
+                "name": "PrepareUpdateStatus",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 552.4850025500232,
+                    "y": 2511.978233313159
+                },
+                "properties": {
+                    "ID_TOKEN_KEY": "VIRTUAL_SHOP_PAYMENT",
+                    "Store State": "Do not store state",
+                    "canonical-value-lookup-cache-size": "100",
+                    "http_invoke.method": "PATCH",
+                    "http_invoke.target_url": "${API_ENDPOINT}/virtual_shop/pc/order/${PROCESS_ID}",
+                    "status": "SUCCESS",
+                    "status_message": "OK"
+                },
+                "propertyDescriptors": {
+                    "Delete Attributes Expression": {
+                        "displayName": "Delete Attributes Expression",
+                        "identifiesControllerService": false,
+                        "name": "Delete Attributes Expression",
+                        "sensitive": false
+                    },
+                    "ID_TOKEN_KEY": {
+                        "displayName": "ID_TOKEN_KEY",
+                        "identifiesControllerService": false,
+                        "name": "ID_TOKEN_KEY",
+                        "sensitive": false
+                    },
+                    "Stateful Variables Initial Value": {
+                        "displayName": "Stateful Variables Initial Value",
+                        "identifiesControllerService": false,
+                        "name": "Stateful Variables Initial Value",
+                        "sensitive": false
+                    },
+                    "Store State": {
+                        "displayName": "Store State",
+                        "identifiesControllerService": false,
+                        "name": "Store State",
+                        "sensitive": false
+                    },
+                    "canonical-value-lookup-cache-size": {
+                        "displayName": "Cache Value Lookup Cache Size",
+                        "identifiesControllerService": false,
+                        "name": "canonical-value-lookup-cache-size",
+                        "sensitive": false
+                    },
+                    "http_invoke.method": {
+                        "displayName": "http_invoke.method",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.method",
+                        "sensitive": false
+                    },
+                    "http_invoke.target_url": {
+                        "displayName": "http_invoke.target_url",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.target_url",
+                        "sensitive": false
+                    },
+                    "status": {
+                        "displayName": "status",
+                        "identifiesControllerService": false,
+                        "name": "status",
+                        "sensitive": false
+                    },
+                    "status_message": {
+                        "displayName": "status_message",
+                        "identifiesControllerService": false,
+                        "name": "status_message",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.attributes.UpdateAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "7bac5c62-5f53-3ede-80a9-4075a2b254ca",
+                "name": "AttributesToJSON",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 549.1161917828244,
+                    "y": 335.816378778894
+                },
+                "properties": {
+                    "Attributes List": "status,status_message",
+                    "Destination": "flowfile-content",
+                    "Include Core Attributes": "false",
+                    "Null Value": "false"
+                },
+                "propertyDescriptors": {
+                    "Attributes List": {
+                        "displayName": "Attributes List",
+                        "identifiesControllerService": false,
+                        "name": "Attributes List",
+                        "sensitive": false
+                    },
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Include Core Attributes": {
+                        "displayName": "Include Core Attributes",
+                        "identifiesControllerService": false,
+                        "name": "Include Core Attributes",
+                        "sensitive": false
+                    },
+                    "Null Value": {
+                        "displayName": "Null Value",
+                        "identifiesControllerService": false,
+                        "name": "Null Value",
+                        "sensitive": false
+                    },
+                    "attributes-to-json-regex": {
+                        "displayName": "Attributes Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-json-regex",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.AttributesToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "78e944bc-774d-35e0-bd2e-c0961c70b4a0",
+                "name": "LogMessage(ERROR)",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -111.42137480500048,
+                    "y": -565.2896378429663
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to parse AVRO message from ${kafka.topic} at ${kafka.offset}",
+                    "log-prefix": "[ProcessController][VirtualShopPayment] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-update-attribute-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "ad7f2af9-998b-3de2-8bfd-6a7ae271f824",
+                "name": "PrepareGetOrCreateWallet",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 556.0933661050522,
+                    "y": 830.004767846443
+                },
+                "properties": {
+                    "ID_TOKEN_KEY": "VIRTUAL_SHOP_PAYMENT",
+                    "Store State": "Do not store state",
+                    "canonical-value-lookup-cache-size": "0",
+                    "http_invoke.method": "GET",
+                    "http_invoke.target_url": "${API_ENDPOINT}/wallet/balance/${user_sub}/${originator_id}"
+                },
+                "propertyDescriptors": {
+                    "Delete Attributes Expression": {
+                        "displayName": "Delete Attributes Expression",
+                        "identifiesControllerService": false,
+                        "name": "Delete Attributes Expression",
+                        "sensitive": false
+                    },
+                    "ID_TOKEN_KEY": {
+                        "displayName": "ID_TOKEN_KEY",
+                        "identifiesControllerService": false,
+                        "name": "ID_TOKEN_KEY",
+                        "sensitive": false
+                    },
+                    "Stateful Variables Initial Value": {
+                        "displayName": "Stateful Variables Initial Value",
+                        "identifiesControllerService": false,
+                        "name": "Stateful Variables Initial Value",
+                        "sensitive": false
+                    },
+                    "Store State": {
+                        "displayName": "Store State",
+                        "identifiesControllerService": false,
+                        "name": "Store State",
+                        "sensitive": false
+                    },
+                    "canonical-value-lookup-cache-size": {
+                        "displayName": "Cache Value Lookup Cache Size",
+                        "identifiesControllerService": false,
+                        "name": "canonical-value-lookup-cache-size",
+                        "sensitive": false
+                    },
+                    "http_invoke.method": {
+                        "displayName": "http_invoke.method",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.method",
+                        "sensitive": false
+                    },
+                    "http_invoke.target_url": {
+                        "displayName": "http_invoke.target_url",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.target_url",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.attributes.UpdateAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "dbed7998-1c2d-31c3-ac08-2d5b27dcd65b",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -719.3736016303628,
+                    "y": 2509.7691052751106
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to prepare payment process update",
+                    "log-prefix": "[ProcessController][VirtualShop][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "a07a1638-fe1e-3817-b383-2ef377469e55",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1302.8771918266684,
+                    "y": 2023.9971326188606
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to Create Waleet create BPR line Payload",
+                    "log-prefix": "[ProcessController][VirtualShop][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "8b43449f-0c7c-3cf6-90d2-0f3928847dfd",
+                "name": "AttributesToJSON",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 552.4772147320432,
+                    "y": 2024.671696716271
+                },
+                "properties": {
+                    "Attributes List": "company_id,for_user,price,transaction_id,title,operation_subtype",
+                    "Destination": "flowfile-content",
+                    "Include Core Attributes": "false",
+                    "Null Value": "false"
+                },
+                "propertyDescriptors": {
+                    "Attributes List": {
+                        "displayName": "Attributes List",
+                        "identifiesControllerService": false,
+                        "name": "Attributes List",
+                        "sensitive": false
+                    },
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Include Core Attributes": {
+                        "displayName": "Include Core Attributes",
+                        "identifiesControllerService": false,
+                        "name": "Include Core Attributes",
+                        "sensitive": false
+                    },
+                    "Null Value": {
+                        "displayName": "Null Value",
+                        "identifiesControllerService": false,
+                        "name": "Null Value",
+                        "sensitive": false
+                    },
+                    "attributes-to-json-regex": {
+                        "displayName": "Attributes Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-json-regex",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.AttributesToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "9f90fdb9-de20-38da-99ab-3d5155275cb9",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 695.9118629693539,
+                    "y": 2749.0427224013565
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to call PatchPaymentStatus",
+                    "log-prefix": "[ProcessController][ReferralBonus][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-update-attribute-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "cbe526b9-34ee-3bec-a16b-ebd370d9407b",
+                "name": "PrepareUpdateStatus",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -58.97657581911744,
+                    "y": 1550.5902938600339
+                },
+                "properties": {
+                    "ID_TOKEN_KEY": "VIRTUAL_SHOP_PAYMENT",
+                    "Store State": "Do not store state",
+                    "canonical-value-lookup-cache-size": "100",
+                    "http_invoke.method": "PATCH",
+                    "http_invoke.target_url": "${API_ENDPOINT}/virtual_shop/pc/order/${PROCESS_ID}",
+                    "status": "ERROR",
+                    "status_message": "Insufficient funds"
+                },
+                "propertyDescriptors": {
+                    "Delete Attributes Expression": {
+                        "displayName": "Delete Attributes Expression",
+                        "identifiesControllerService": false,
+                        "name": "Delete Attributes Expression",
+                        "sensitive": false
+                    },
+                    "ID_TOKEN_KEY": {
+                        "displayName": "ID_TOKEN_KEY",
+                        "identifiesControllerService": false,
+                        "name": "ID_TOKEN_KEY",
+                        "sensitive": false
+                    },
+                    "Stateful Variables Initial Value": {
+                        "displayName": "Stateful Variables Initial Value",
+                        "identifiesControllerService": false,
+                        "name": "Stateful Variables Initial Value",
+                        "sensitive": false
+                    },
+                    "Store State": {
+                        "displayName": "Store State",
+                        "identifiesControllerService": false,
+                        "name": "Store State",
+                        "sensitive": false
+                    },
+                    "canonical-value-lookup-cache-size": {
+                        "displayName": "Cache Value Lookup Cache Size",
+                        "identifiesControllerService": false,
+                        "name": "canonical-value-lookup-cache-size",
+                        "sensitive": false
+                    },
+                    "http_invoke.method": {
+                        "displayName": "http_invoke.method",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.method",
+                        "sensitive": false
+                    },
+                    "http_invoke.target_url": {
+                        "displayName": "http_invoke.target_url",
+                        "identifiesControllerService": false,
+                        "name": "http_invoke.target_url",
+                        "sensitive": false
+                    },
+                    "status": {
+                        "displayName": "status",
+                        "identifiesControllerService": false,
+                        "name": "status",
+                        "sensitive": false
+                    },
+                    "status_message": {
+                        "displayName": "status_message",
+                        "identifiesControllerService": false,
+                        "name": "status_message",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.attributes.UpdateAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "5598239e-03d4-3157-b586-48da8c40ccf6",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1219.1633888482602,
+                    "y": 1552.7883889052628
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to calculate route ${current_balance} and ${price}",
+                    "log-prefix": "[ProcessController][VirtualShopPayment][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "990abd44-f018-3ca4-8e90-45a06afa675d",
+                "name": "gmx-messaging.virtual-shop-purchase",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 536.4502083791344,
+                    "y": -821.6885022047651
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "none",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "gmx-messaging.virtual-shop-purchase.process-engine",
+                    "honor-transactions": "true",
+                    "key-attribute-encoding": "utf-8",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "1",
+                    "message-header-encoding": "UTF-8",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "gmx-messaging.virtual-shop-purchase",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "f3ed1f9a-ed64-38cb-b561-5d9740ad8855",
+                "name": "AttributesToJSON",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -60.193195424206806,
+                    "y": 2510.550358825646
+                },
+                "properties": {
+                    "Attributes List": "status,status_message",
+                    "Destination": "flowfile-content",
+                    "Include Core Attributes": "false",
+                    "Null Value": "false"
+                },
+                "propertyDescriptors": {
+                    "Attributes List": {
+                        "displayName": "Attributes List",
+                        "identifiesControllerService": false,
+                        "name": "Attributes List",
+                        "sensitive": false
+                    },
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Include Core Attributes": {
+                        "displayName": "Include Core Attributes",
+                        "identifiesControllerService": false,
+                        "name": "Include Core Attributes",
+                        "sensitive": false
+                    },
+                    "Null Value": {
+                        "displayName": "Null Value",
+                        "identifiesControllerService": false,
+                        "name": "Null Value",
+                        "sensitive": false
+                    },
+                    "attributes-to-json-regex": {
+                        "displayName": "Attributes Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-json-regex",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.AttributesToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "65b22c11-b948-3d76-904c-4186cff533a5",
+                "name": "EvaluateJsonPath",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 561.5658399066374,
+                    "y": 1314.9671850307082
+                },
+                "properties": {
+                    "Destination": "flowfile-attribute",
+                    "Null Value Representation": "empty string",
+                    "Path Not Found Behavior": "ignore",
+                    "Return Type": "scalar",
+                    "current_balance": "$.current_balance"
+                },
+                "propertyDescriptors": {
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Null Value Representation": {
+                        "displayName": "Null Value Representation",
+                        "identifiesControllerService": false,
+                        "name": "Null Value Representation",
+                        "sensitive": false
+                    },
+                    "Path Not Found Behavior": {
+                        "displayName": "Path Not Found Behavior",
+                        "identifiesControllerService": false,
+                        "name": "Path Not Found Behavior",
+                        "sensitive": false
+                    },
+                    "Return Type": {
+                        "displayName": "Return Type",
+                        "identifiesControllerService": false,
+                        "name": "Return Type",
+                        "sensitive": false
+                    },
+                    "current_balance": {
+                        "displayName": "current_balance",
+                        "identifiesControllerService": false,
+                        "name": "current_balance",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.EvaluateJsonPath",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "acc73469-858b-3ac4-ba42-668129842de4",
+                "name": "EvaluateJsonPath",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 534.9839641936683,
+                    "y": -127.90185419583838
+                },
+                "properties": {
+                    "Destination": "flowfile-attribute",
+                    "Null Value Representation": "empty string",
+                    "PROCESS_ID": "$.process_id",
+                    "Path Not Found Behavior": "warn",
+                    "Return Type": "scalar",
+                    "company_id": "$.company_id",
+                    "originator_id": "$.originator_id",
+                    "price": "$.price",
+                    "title": "$.title",
+                    "transaction_id": "$.transaction_id",
+                    "user_sub": "$.user_sub"
+                },
+                "propertyDescriptors": {
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Null Value Representation": {
+                        "displayName": "Null Value Representation",
+                        "identifiesControllerService": false,
+                        "name": "Null Value Representation",
+                        "sensitive": false
+                    },
+                    "PROCESS_ID": {
+                        "displayName": "PROCESS_ID",
+                        "identifiesControllerService": false,
+                        "name": "PROCESS_ID",
+                        "sensitive": false
+                    },
+                    "Path Not Found Behavior": {
+                        "displayName": "Path Not Found Behavior",
+                        "identifiesControllerService": false,
+                        "name": "Path Not Found Behavior",
+                        "sensitive": false
+                    },
+                    "Return Type": {
+                        "displayName": "Return Type",
+                        "identifiesControllerService": false,
+                        "name": "Return Type",
+                        "sensitive": false
+                    },
+                    "company_id": {
+                        "displayName": "company_id",
+                        "identifiesControllerService": false,
+                        "name": "company_id",
+                        "sensitive": false
+                    },
+                    "originator_id": {
+                        "displayName": "originator_id",
+                        "identifiesControllerService": false,
+                        "name": "originator_id",
+                        "sensitive": false
+                    },
+                    "price": {
+                        "displayName": "price",
+                        "identifiesControllerService": false,
+                        "name": "price",
+                        "sensitive": false
+                    },
+                    "title": {
+                        "displayName": "title",
+                        "identifiesControllerService": false,
+                        "name": "title",
+                        "sensitive": false
+                    },
+                    "transaction_id": {
+                        "displayName": "transaction_id",
+                        "identifiesControllerService": false,
+                        "name": "transaction_id",
+                        "sensitive": false
+                    },
+                    "user_sub": {
+                        "displayName": "user_sub",
+                        "identifiesControllerService": false,
+                        "name": "user_sub",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.EvaluateJsonPath",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "be5a5c12-bfd9-30ee-83c8-d7e0be791868",
+                "identifier": "73435536-c95f-3b3d-82fb-43f91f692471",
+                "name": "[ERROR]LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -109.07532282176908,
+                    "y": 335.03512522835854
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to prepare payment process update",
+                    "log-prefix": "[ProcessController][VirtualShop][${PROCESS_ID}] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "e63c9b2a-51bb-5e1f-910e-04d236a621b9",
+        "comments": "changed consumer group",
+        "flowIdentifier": "d72a4671-6b38-5de5-9fa6-d4aee05ac980",
+        "timestamp": 1579017049861,
+        "version": 3
+    }
+}

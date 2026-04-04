@@ -1,0 +1,16 @@
+module.exports = {
+  TITLE: "User Profile",
+  PERSONAL_DETAILS: "Personal Details",
+  WALLET_AND_INVENTORY: "Wallet and Inventory",
+  SECURITY: "Security",
+  LANGUAGE_AND_TIME_ZONE: "Language and Time Zone",
+  SELF_EXCLUSION: "Self Exclusion",
+  EMAIL_SETTINGS: "Email Settings",
+  DEPOSIT_LIMITS: "Deposit Limits",
+  PROMO_AVAILABILITY: "Promo Availability",
+  ACTIVE_FREEBETS: "Active Freebets",
+  AVAILABLE_ODDS_BOOSTS: "Available Odds Boosts",
+  NEXT_PROMO_EXPIRY: "Next Promo Expiry",
+  NO_ACTIVE_PROMO_EXPIRY: "No active promo expiry",
+  FREEBET_BALANCE_CENTS: "Freebet balance (cents): {{value}}",
+};

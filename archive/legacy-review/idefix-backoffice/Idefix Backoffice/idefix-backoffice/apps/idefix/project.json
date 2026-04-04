@@ -1,0 +1,85 @@
+{
+  "name": "idefix",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/idefix/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "compiler": "babel",
+        "outputPath": "dist/apps/idefix",
+        "index": "apps/idefix/src/index.html",
+        "baseHref": "/",
+        "main": "apps/idefix/src/main.tsx",
+        "polyfills": "apps/idefix/src/polyfills.ts",
+        "tsConfig": "apps/idefix/tsconfig.app.json",
+        "assets": ["apps/idefix/src/favicon.ico", "apps/idefix/src/assets"],
+        "styles": [],
+        "scripts": [],
+        "webpackConfig": "apps/idefix/webpack.config.js",
+        "isolatedConfig": true
+      },
+      "configurations": {
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        },
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/idefix/src/environments/environment.ts",
+              "with": "apps/idefix/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/webpack:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "idefix:build",
+        "hmr": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "idefix:build:development",
+          "proxyConfig": "apps/idefix/proxy.conf.json",
+          "port": 3000
+        },
+        "production": {
+          "buildTarget": "idefix:build:production",
+          "hmr": false,
+          "port": 3000
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/idefix/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/idefix"],
+      "options": {
+        "jestConfig": "apps/idefix/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

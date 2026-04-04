@@ -1,0 +1,148 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "OddsChange",
+  "fields":[
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "eventId",
+      "type": "string"
+    },
+    {
+      "name": "product",
+      "type": "long"
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "sportEventStatus",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "SportEventStatus",
+          "fields":[
+            {
+              "name": "homeScore",
+              "type": "int"
+            },
+            {
+              "name": "awayScore",
+              "type": "int"
+            },
+            {
+              "name": "status",
+              "type": "int"
+            },
+            {
+              "name": "scoreboardAvailable",
+              "type": "boolean"
+            },
+            {
+              "name": "matchStatus",
+              "type": "int"
+            },
+            {
+              "name": "periodScores",
+              "type": {
+                "type": "array",
+                "items": {
+                  "name": "PeriodScore",
+                  "type": "record",
+                  "fields":[
+                    {
+                      "name": "type",
+                      "type": "string"
+                    },
+                    {
+                      "name": "number",
+                      "type": "int"
+                    },
+                    {
+                      "name": "matchStatusCode",
+                      "type": "int"
+                    },
+                    {
+                      "name": "homeScore",
+                      "type": "int"
+                    },
+                    {
+                      "name": "awayScore",
+                      "type": "int"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "odds",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "Market",
+          "fields":[
+            {
+              "name": "id",
+              "type": "int"
+            },
+            {
+              "name": "specifiers",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            },
+            {
+              "name": "status",
+              "type": "int"
+            },
+            {
+              "name": "outcomes",
+              "type": {
+                "type": "array",
+                "items": {
+                  "name": "Outcome",
+                  "type": "record",
+                  "fields":[
+                    {
+                      "name": "id",
+                      "type": "int"
+                    },
+                    {
+                      "name": "active",
+                      "type": "int"
+                    },
+                    {
+                      "name": "odds",
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

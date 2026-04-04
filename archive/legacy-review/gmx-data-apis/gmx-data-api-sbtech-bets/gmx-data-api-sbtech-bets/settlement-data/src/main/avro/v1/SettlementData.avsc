@@ -1,0 +1,1166 @@
+{
+  "type": "record",
+  "name": "SettlementData",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.SportBets.v1",
+  "fields": [
+    {
+      "name": "MessageCreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "AccOperation",
+      "type": [
+        "null",
+        {
+          "type": "record",
+          "name": "AccountOperation",
+          "fields": [
+            {
+              "name": "AmountToPay",
+              "type": "long",
+              "default": 0
+            },
+            {
+              "name": "Rate",
+              "type": "double",
+              "default": 0.0
+            },
+            {
+              "name": "SiteId",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "name": "CustomerId",
+              "type": "int",
+              "default": 0
+            },
+            {
+              "name": "SQLTicketID",
+              "type": "long",
+              "default": 0
+            },
+            {
+              "name": "Bets",
+              "type": [
+                "null",
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "record",
+                    "name": "BetMoneyOperation",
+                    "fields": [
+                      {
+                        "name": "BetID",
+                        "type": "int",
+                        "default": 0
+                      },
+                      {
+                        "name": "BetTypeID",
+                        "type": "int",
+                        "default": 0
+                      },
+                      {
+                        "name": "BetStake",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "Deposit",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "Gain",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "OveralDeduction",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "PreviousBalance",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "AffectedNumberOfBets",
+                        "type": "int",
+                        "default": 0
+                      },
+                      {
+                        "name": "AmountToPay",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "NewBetStatus",
+                        "type": "int",
+                        "default": 0
+                      },
+                      {
+                        "name": "OldBetStatus",
+                        "type": "int",
+                        "default": 0
+                      },
+                      {
+                        "name": "FreeBetID",
+                        "type": [
+                          "null",
+                          "int"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "Rule4PercDeduction",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "ComboBonusPercent",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "PromotionID",
+                        "type": [
+                          "null",
+                          "int"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "CalulatedOdds",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "TotalCalulatedOdds",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "SQLTicketID",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "EmployeeID",
+                        "type": "int",
+                        "default": 0
+                      },
+                      {
+                        "name": "TaxPercent",
+                        "type": "double",
+                        "default": 0.0
+                      },
+                      {
+                        "name": "IsPartialCashOut",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      {
+                        "name": "HasWinningSelections",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      {
+                        "name": "RealBetSQLTicketID",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "TaxesInformation",
+                        "type": [
+                          "null",
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "record",
+                              "name": "BetTaxInfo",
+                              "namespace": "SBTech.Microservices.DataStreaming.DTO.SportBets.v1.Purchase",
+                              "fields": [
+                                {
+                                  "name": "TaxType",
+                                  "type": "int",
+                                  "default": 0
+                                },
+                                {
+                                  "name": "Rate",
+                                  "type": "double",
+                                  "default": 0.0
+                                },
+                                {
+                                  "name": "GeneratedId",
+                                  "type": "int",
+                                  "default": 0
+                                },
+                                {
+                                  "name": "Amount",
+                                  "type": "double",
+                                  "default": 0.0
+                                },
+                                {
+                                  "name": "ExtendTax",
+                                  "type": [
+                                    "null",
+                                    "string"
+                                  ],
+                                  "default": null
+                                },
+                                {
+                                  "name": "UniqueId",
+                                  "type": [
+                                    "null",
+                                    "string"
+                                  ],
+                                  "default": null
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "CashOutFee",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "Fold",
+                        "type": [
+                          "null",
+                          "int"
+                        ],
+                        "default": null
+                      }
+                    ]
+                  }
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "BetToAcccountCollection",
+              "type": [
+                "null",
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "record",
+                    "name": "BetsMapping",
+                    "fields": [
+                      {
+                        "name": "AccountOperationID",
+                        "type": "long",
+                        "default": 0
+                      },
+                      {
+                        "name": "BetID",
+                        "type": "long",
+                        "default": 0
+                      }
+                    ]
+                  }
+                }
+              ],
+              "default": null
+            }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "Purchase",
+      "type": {
+        "type": "record",
+        "name": "BetPurchase",
+        "namespace": "SBTech.Microservices.DataStreaming.DTO.SportBets.v1.Purchase",
+        "fields": [
+          {
+            "name": "Rate",
+            "type": "double",
+            "default": 0.0
+          },
+          {
+            "name": "OpenedBetsAccountID",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "CurrencyID",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "CurrencyCode",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "SiteID",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "ReserveID",
+            "type": [
+              "null",
+              "int"
+            ],
+            "default": null
+          },
+          {
+            "name": "SessionID",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "WebProviderID",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "EmployeeID",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "Bets",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": {
+                  "type": "record",
+                  "name": "BetInfo",
+                  "fields": [
+                    {
+                      "name": "BetID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Odds",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "DBOdds",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "ClientOdds",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "IsLive",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    {
+                      "name": "NumberOfLines",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "NumberOfBets",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "ComboSize",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "BetTypeID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "BetSubTypeID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "SelectionsMapped",
+                      "type": [
+                        "null",
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "record",
+                            "name": "BetSelectionMapping",
+                            "fields": [
+                              {
+                                "name": "SelectionID",
+                                "type": "int",
+                                "default": 0
+                              },
+                              {
+                                "name": "OrderID",
+                                "type": [
+                                  "null",
+                                  "int"
+                                ],
+                                "default": null
+                              },
+                              {
+                                "name": "ViewKey",
+                                "type": "int",
+                                "default": 0
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "IsEachWay",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    {
+                      "name": "FreeBetID",
+                      "type": [
+                        "null",
+                        "int"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "IsRiskFreeBet",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    {
+                      "name": "BetStatus",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "CurrentBetBalance",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "Stake",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "Gain",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "SQLTicketID",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "HasComboBonus",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    {
+                      "name": "IsPartialCashOut",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "OriginalSQLTicketID",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "BetName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "Selections",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": {
+                  "type": "record",
+                  "name": "BetSelectionInfo",
+                  "fields": [
+                    {
+                      "name": "EncodedLineID",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "SelectionID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "LineID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "LineGroupID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "LineTypeID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "EventID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "IsRegular",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    {
+                      "name": "IsLive",
+                      "type": "boolean",
+                      "default": false
+                    },
+                    {
+                      "name": "Points",
+                      "type": [
+                        "null",
+                        "float"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "DBPoints",
+                      "type": [
+                        "null",
+                        "float"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "Odds",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "DBOdds",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "ClientOdds",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "MasterEventID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "BranchID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Score1",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Score2",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "QATypeParameter1",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "QATypeParameter2",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Team1ID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Team2ID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "LeagueID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "MasterLeagueID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Team1Name",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "Team2Name",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "BranchName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "LeagueName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "LineTypeName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "LineName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "EventName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "EventTypeName",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "EventDate",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "RowTypeID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "EventTypeID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "LiveMasterLeagueID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "YourBet",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "SelectionStatus",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Result",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "SplitTypeID",
+                      "type": "int",
+                      "default": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "Customer",
+            "type": {
+              "type": "record",
+              "name": "PurchaseCustomerInfo",
+              "fields": [
+                {
+                  "name": "CustomerID",
+                  "type": "int",
+                  "default": 0
+                },
+                {
+                  "name": "LoginName",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "LastName",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "FirstName",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "ActiveBalance",
+                  "type": "double",
+                  "default": 0.0
+                },
+                {
+                  "name": "OpenBalance",
+                  "type": [
+                    "null",
+                    "string"
+                  ],
+                  "default": null
+                },
+                {
+                  "name": "OpenedBetsAccountID",
+                  "type": "long",
+                  "default": 0
+                },
+                {
+                  "name": "TestCustomer",
+                  "type": "boolean",
+                  "default": false
+                }
+              ]
+            }
+          },
+          {
+            "name": "CombinationPromotions",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": {
+                  "type": "record",
+                  "name": "BetCombinationPromotion",
+                  "fields": [
+                    {
+                      "name": "BonusPercent",
+                      "type": "double",
+                      "default": 0.0
+                    },
+                    {
+                      "name": "AdditionalBonusInPercent",
+                      "type": "double",
+                      "default": 0.0
+                    },
+                    {
+                      "name": "Fold",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Promotion",
+                      "type": {
+                        "type": "record",
+                        "name": "BetComboPromotion",
+                        "fields": [
+                          {
+                            "name": "ID",
+                            "type": "int",
+                            "default": 0
+                          },
+                          {
+                            "name": "BranchIDs",
+                            "type": [
+                              "null",
+                              {
+                                "type": "array",
+                                "items": "int"
+                              }
+                            ],
+                            "default": null
+                          },
+                          {
+                            "name": "IncludingSystemBets",
+                            "type": "boolean",
+                            "default": false
+                          },
+                          {
+                            "name": "Rules",
+                            "type": [
+                              "null",
+                              {
+                                "type": "array",
+                                "items": {
+                                  "type": "record",
+                                  "name": "ComboRules",
+                                  "fields": [
+                                    {
+                                      "name": "Fold",
+                                      "type": "int",
+                                      "default": 0
+                                    },
+                                    {
+                                      "name": "BonusPercent",
+                                      "type": "double",
+                                      "default": 0.0
+                                    },
+                                    {
+                                      "name": "AdditionalTimeBonus",
+                                      "type": "int",
+                                      "default": 0
+                                    },
+                                    {
+                                      "name": "AdditionalBonusPercent",
+                                      "type": "double",
+                                      "default": 0.0
+                                    }
+                                  ]
+                                }
+                              }
+                            ],
+                            "default": null
+                          },
+                          {
+                            "name": "MinimumComboOdds",
+                            "type": "int",
+                            "default": 0
+                          },
+                          {
+                            "name": "HasAdditionalBonus",
+                            "type": "boolean",
+                            "default": false
+                          },
+                          {
+                            "name": "PromotionStartTime",
+                            "type": "int",
+                            "default": 0
+                          },
+                          {
+                            "name": "PromotionTimeType",
+                            "type": "int",
+                            "default": 0
+                          },
+                          {
+                            "name": "MinimumSelectionOdds",
+                            "type": "int",
+                            "default": 0
+                          },
+                          {
+                            "name": "Name",
+                            "type": [
+                              "null",
+                              "string"
+                            ],
+                            "default": null
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "name": "Combination",
+                      "type": [
+                        "null",
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "record",
+                            "name": "BetBonusSelectionInfo",
+                            "fields": [
+                              {
+                                "name": "StartingTime",
+                                "type": "long",
+                                "default": 0
+                              },
+                              {
+                                "name": "Id",
+                                "type": "int",
+                                "default": 0
+                              },
+                              {
+                                "name": "BranchId",
+                                "type": "int",
+                                "default": 0
+                              },
+                              {
+                                "name": "Odds",
+                                "type": "int",
+                                "default": 0
+                              },
+                              {
+                                "name": "LeagueId",
+                                "type": "int",
+                                "default": 0
+                              },
+                              {
+                                "name": "ComboGroupKey",
+                                "type": [
+                                  "null",
+                                  "string"
+                                ],
+                                "default": null
+                              },
+                              {
+                                "name": "BetTypeId",
+                                "type": "int",
+                                "default": 0
+                              },
+                              {
+                                "name": "IsLive",
+                                "type": "boolean",
+                                "default": false
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "default": null
+                    }
+                  ]
+                }
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "PurchaseStatus",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "CreationDate",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "UpdateDate",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "SQLTicketID",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "Deposit",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "AdditionalData",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "Gain",
+            "type": "long",
+            "default": 0
+          },
+          {
+            "name": "FreeBetAmount",
+            "type": [
+              "null",
+              "long"
+            ],
+            "default": null
+          },
+          {
+            "name": "OriginalBets",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": "BetInfo"
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "OriginalSelections",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": "BetSelectionInfo"
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "SettlementHistory",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": {
+                  "type": "record",
+                  "name": "SettlementLogEntity",
+                  "fields": [
+                    {
+                      "name": "DateUpdated",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "BetID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "BetTicketID",
+                      "type": "long",
+                      "default": 0
+                    },
+                    {
+                      "name": "EmployeeID",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "Message",
+                      "type": [
+                        "null",
+                        "string"
+                      ],
+                      "default": null
+                    },
+                    {
+                      "name": "NewBetStatus",
+                      "type": "int",
+                      "default": 0
+                    },
+                    {
+                      "name": "OldBetStatus",
+                      "type": "int",
+                      "default": 0
+                    }
+                  ]
+                }
+              }
+            ],
+            "default": null
+          },
+          {
+            "name": "Taxes",
+            "type": [
+              "null",
+              {
+                "type": "array",
+                "items": "BetTaxInfo"
+              }
+            ],
+            "default": null
+          }
+        ]
+      }
+    }
+  ]
+}

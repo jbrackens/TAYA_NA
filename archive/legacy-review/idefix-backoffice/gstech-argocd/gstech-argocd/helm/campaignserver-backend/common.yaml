@@ -1,0 +1,58 @@
+livenessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: 3013
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: 3013
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/gstech-campaignserver
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "50m"
+  limits:
+    memory: "512Mi"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3013
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+env:
+  METRICS_PORT: 4001
+  LOGGER_HOST: http://loki-write.monitoring.svc.cluster.local:3100
+  LOGGER_SERVICE: campaignserver

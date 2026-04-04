@@ -1,0 +1,5 @@
+FROM quay.io/keycloak/keycloak:17.0.1
+
+ARG JAR_FILE
+COPY target/${JAR_FILE} /opt/keycloak/providers/stella-module.jar
+COPY docker/libsodium.so /opt/libsodium.so

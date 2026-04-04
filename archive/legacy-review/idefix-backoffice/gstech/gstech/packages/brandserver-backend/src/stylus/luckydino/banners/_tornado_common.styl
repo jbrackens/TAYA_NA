@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$tornado_common_chick_name = 'tornado_common_chick';
+$tornado_common_chick_x = 504px;
+$tornado_common_chick_y = 0px;
+$tornado_common_chick_offset_x = -504px;
+$tornado_common_chick_offset_y = 0px;
+$tornado_common_chick_width = 203px;
+$tornado_common_chick_height = 214px;
+$tornado_common_chick_total_width = 707px;
+$tornado_common_chick_total_height = 347px;
+$tornado_common_chick_image = 'tornado_common_b.png';
+$tornado_common_chick = 504px 0px -504px 0px 203px 214px 707px 347px 'tornado_common_b.png' 'tornado_common_chick';
+$tornado_common_logo_name = 'tornado_common_logo';
+$tornado_common_logo_x = 0px;
+$tornado_common_logo_y = 0px;
+$tornado_common_logo_offset_x = 0px;
+$tornado_common_logo_offset_y = 0px;
+$tornado_common_logo_width = 500px;
+$tornado_common_logo_height = 139px;
+$tornado_common_logo_total_width = 707px;
+$tornado_common_logo_total_height = 347px;
+$tornado_common_logo_image = 'tornado_common_b.png';
+$tornado_common_logo = 0px 0px 0px 0px 500px 139px 707px 347px 'tornado_common_b.png' 'tornado_common_logo';
+$tornado_common_pig_name = 'tornado_common_pig';
+$tornado_common_pig_x = 0px;
+$tornado_common_pig_y = 143px;
+$tornado_common_pig_offset_x = 0px;
+$tornado_common_pig_offset_y = -143px;
+$tornado_common_pig_width = 218px;
+$tornado_common_pig_height = 204px;
+$tornado_common_pig_total_width = 707px;
+$tornado_common_pig_total_height = 347px;
+$tornado_common_pig_image = 'tornado_common_b.png';
+$tornado_common_pig = 0px 143px 0px -143px 218px 204px 707px 347px 'tornado_common_b.png' 'tornado_common_pig';
+$spritesheet_width = 707px;
+$spritesheet_height = 347px;
+$spritesheet_image = 'tornado_common_b.png';
+$spritesheet_sprites = $tornado_common_chick $tornado_common_logo $tornado_common_pig;
+$spritesheet = 707px 347px 'tornado_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

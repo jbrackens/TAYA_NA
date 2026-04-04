@@ -1,0 +1,82 @@
+#banner_frontpage_deposit-2
+  frontpageBanner()
+  cdn-background-image '/images/banners/2nddeposit/bg.jpg'
+  background-position center top
+  @media only screen and (max-width:767px)
+    cdn-background-image '/images/banners/2nddeposit/bg_mobile.jpg'
+  &__promo_button_holder
+    @media only screen and (max-width:767px)
+      bottom 5px
+  &_campaign
+    width 590px
+    text-align left
+    padding-right 350px
+    margin-top 30px
+    font-size 18px
+    line-height 22px
+    @media only screen and (max-width:767px)
+      width 320px
+      margin 0 auto
+      text-align center
+      padding 145px 0 0 0
+      font-size 16px
+      line-height 18px
+    &_title
+      color $kalevala_blue
+      headerFont()
+      text-transform uppercase
+      font-size 84px
+      line-height 62px
+      margin 0
+      @media only screen and (max-width:767px)
+        font-size 54px
+        line-height 38px
+    &_content
+      h1
+        color #4cc2fb
+        font-size 28px
+        line-height 28px
+        margin 0
+      strong
+        color #4cc2fb
+    &:after
+      content ''
+      position absolute
+      background-repeat no-repeat
+      cdn-background-image '/images/banners/2nddeposit/common/bonusamounts.png'
+      width 284px
+      height 178px
+      right 0
+      top 10px
+      @media only screen and (max-width:799px)
+        width 320px
+        height 130px
+        right 0
+        left 0
+        margin 0 auto
+        background-position top center
+        background-size contain
+  &_item1
+    position absolute
+    cdn-background-image '/images/banners/2nddeposit/common/wayne.png'
+    background-repeat no-repeat
+    width 328px
+    height 280px
+    right 5%
+    bottom 0
+    @media only screen and (max-width:1099px)
+      right 0
+    @media only screen and (max-width:991px)
+      display none
+  &_item2
+    position absolute
+    background-repeat no-repeat
+    cdn-background-image '/images/banners/2nddeposit/common/birdy.png'
+    width 102px
+    height 90px
+    left 10%
+    top 30px
+    @media only screen and (max-width:1099px)
+      left 2%
+    @media only screen and (max-width:767px)
+      display none

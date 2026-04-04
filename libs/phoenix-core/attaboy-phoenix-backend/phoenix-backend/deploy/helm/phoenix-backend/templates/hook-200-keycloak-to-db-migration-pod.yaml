@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: phoenix-keycloak-to-db-migration
+  # We've decided to use Helm hooks rather than init containers
+  # since the latter would heavily restrict the allowed values for
+  # `maxUnavailable` and `maxSurge` of phoenix-backend's Deployment
+  # if we want to prevent two or more pods from running migrations at the same time.
+  labels:
+    app: phoenix-keycloak-to-db-migration
+  annotations:
+    # Note that we need to run this hook both when *installing* the chart (i.e. creating a new Helm release),
+    # and when *upgrading* it (i.e. updating an existing Helm release - the typical case)
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "200"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  {{- if .Values.imagePullSecrets }}
+  imagePullSecrets:
+  {{- range $secretName := .Values.imagePullSecrets }}
+    - name: {{ $secretName }}
+  {{- end }}
+  {{- end }}
+  volumes:
+    - name: keycloak
+      secret:
+        secretName: keycloak-config-backend
+  containers:
+    - name: phoenix-keycloak-to-db-migration
+      image: "{{ .Values.image.registry }}/phoenix-keycloak-to-db-migration:{{ .Values.image.tag }}"
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: "/var/keycloak"
+          name: keycloak
+          readOnly: true
+      resources:
+        limits:
+          memory: "{{ .Values.resources.memory }}"
+        # For JVM ergonomics to work correctly we should start POD with max available memory, also GC works the best with static size of memory:
+        # https://www.oracle.com/java/technologies/javase/gc-tuning-6.html#ergonomics
+        requests:
+          memory: "{{ .Values.resources.memory }}"
+      securityContext:
+        # User and group 1001 are baked into the image by sbt-native-packager.
+        allowPrivilegeEscalation: false
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+      env:
+        # postgres + keycloak from deployments
+        - name: KEYCLOAK_CLIENT_CONF_LOCATION
+          value: "/var/keycloak/keycloak.json"
+        - name: PHOENIX_LOGGING_JSON_FORMAT_ENABLED
+          value: "true"
+        - name: POSTGRES_DB
+          value: {{ .Values.postgresOperator.dbName }}
+        - name: POSTGRES_HOST
+          value: {{ .Values.postgresOperator.dbHost }}
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresOperator.dbWriterSecretName }}
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresOperator.dbWriterSecretName }}
+              key: password

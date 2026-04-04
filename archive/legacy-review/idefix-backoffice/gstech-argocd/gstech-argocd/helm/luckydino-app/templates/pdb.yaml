@@ -1,0 +1,17 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: {{ include "luckydino-app.name" . }}
+    chart: {{ include "luckydino-app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ include "luckydino-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  minAvailable: {{ .Values.minAvailable }}
+  selector:
+    matchLabels:
+      name: {{ include "luckydino-app.fullname" . }}
+      release: {{ .Release.Name }}

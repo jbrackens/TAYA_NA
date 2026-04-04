@@ -1,0 +1,37 @@
+.frontpage-content
+	height 100%
+	width 100%
+	cdn-background '/bg/town.jpg' no-repeat center center fixed
+	background-size cover
+	osition relative
+	.content-box
+		position absolute
+		left 50%
+		top 50%
+		margin-left -370px
+		margin-top -260px
+		width 740px
+		height 520px
+		background-color #3b3b3b
+		opacity 0.95
+		&:after
+			position absolute
+			content ""
+			left -275px
+			top -60px
+			bottom 0
+			cdn-background '/images/alfredo_point.png'
+			width 457px
+			height 598px
+			@media only screen and (max-width:767px)
+				display none
+		@media only screen and (max-width:767px)
+			left 0
+			top 0
+			margin-left 0
+			margin-top 0
+			width 100%
+			height auto
+			min-height 100%
+.sidebar-active
+	height 100%

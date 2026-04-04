@@ -1,0 +1,21 @@
+.quick-bets{
+  padding:0;
+  border-bottom:1px solid $sidebar-bg;
+}
+.quick-bets-content{
+  padding:0;
+}
+.quick-bets-element{
+  padding-bottom:0px;
+}
+.quick-bets-slider .custom-slider-wrap {
+  border-radius:0px;
+}
+.quick-bets-buttons{
+  padding-top:5px;
+}
+.quick-bets-stake-label, .quick-bets-add-button{
+  font-family:$brand-font--header;
+  font-weight:bold;
+  text-transform: uppercase;
+}

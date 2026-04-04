@@ -1,0 +1,67 @@
+
+//resizing the subheader on sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container
+// casino subheader
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item-text, .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__more-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item-text{
+  margin:0;
+  padding:0 8px;
+  font-size:13px;
+  line-height:26px;
+}
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu,
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-inner-container,
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container,
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__more-menu-item,
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item,
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item{
+  height:auto;
+}
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="TopMenuSearch"]{
+  width:30px;
+  height:26px;
+}
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-wrapper{
+  height:26px;
+}
+
+.IsMobile .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-wrapper{
+  height:26px;
+}
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container{
+  background:$brand-primary;
+}
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__more-menu-item, [data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item, [data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item{
+  color:white;
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  font-weight:bold;
+}
+
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item,
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item,
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__more-menu-item,
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item,
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__more-menu-item,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item{
+  color:white;
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  font-weight:bold;
+}
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item{
+  color:white;
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  font-weight:bold;
+}
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__selected, .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__sub-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__selected{
+  color:white;
+}
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="TopMenuSearch"],
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="TopMenuSearch"],
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="TopMenuSearch"]{
+  background-color:$brand-primary--hover;
+}

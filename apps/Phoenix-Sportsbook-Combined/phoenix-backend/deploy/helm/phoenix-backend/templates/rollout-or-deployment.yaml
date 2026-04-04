@@ -1,0 +1,452 @@
+# The ArgoCD Rollout CRD allows us to perform blue/green deployments.
+# Reference: https://argoproj.github.io/argo-rollouts/features/bluegreen/
+{{ if .Values.argocd.rollouts.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+{{- else }}
+apiVersion: apps/v1
+# IntelliJ thinks that it's `argoproj.io/v1alpha1/Deployment`, not `apps/v1/Deployment` :(
+# It obviously doesn't recognize such resource, and hence `type` and `rollingUpdate` keys in `strategy` below are considered erroneous.
+kind: Deployment
+{{- end }}
+
+metadata:
+  name: {{ include "phoenix-backend.fullname" . }}
+  labels:
+    {{- include "phoenix-backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  # We don't use `kubectl rollout` anyway, the history of all the resources is kept within ArgoCD git repo history.
+  revisionHistoryLimit: 1
+{{- if .Values.argocd.rollouts.enabled }}
+  # Minimum number of seconds for which a newly created pod should be ready
+  # without any of its container crashing, for it to be considered available for promotion.
+  minReadySeconds: 30
+  strategy:
+    blueGreen:
+      # Specifies the service to update with the new template hash at time of promotion.
+      activeService: {{ include "phoenix-backend.fullname" . }}
+      # Specifies the service to update with the new template hash before promotion.
+      # This allows the preview stack to be reachable without serving production traffic.
+      previewService: {{ include "phoenix-backend.fullname" . }}-preview
+
+      # Disables automated promotion of the new stack by pausing the rollout immediately before the promotion.
+      {{ if .Values.argocd.rollouts.autoPromotionEnabled -}}
+      autoPromotionEnabled: true
+      {{- else }}
+      # The rollout is resumed either manually by a user, or automatically by surpassing `autoPromotionSeconds`.
+      autoPromotionSeconds: {{ .Values.argocd.rollouts.autoPromotionSeconds }}
+      {{- end }}
+
+      # When the rollout changes the selector on a service, there is a propagation delay before all the nodes
+      # update their IP tables to send traffic to the new pods instead of the old. During this delay, traffic
+      # will be directed to the old pods if the nodes have not been updated yet. In order to prevent the packets
+      # from being sent to a node that killed the old pod, the rollout uses the scaleDownDelaySeconds field to
+      # give nodes enough time to broadcast the IP table changes.
+      scaleDownDelaySeconds: 30
+{{- else }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Caveat on https://doc.akka.io/docs/akka/current/additional/rolling-updates.html#cluster-singleton
+      # Keeping maxSurge equal to 1 is necessary to make sure that the oldest Akka node corresponds to the oldest Kubernetes pod.
+      # In Akka terms, when multiple nodes are created around the same time,
+      # the first that gets to UP state becomes the oldest (and hence the place to keep all the cluster singletons).
+      # It's possible that a pod Y can start slightly AFTER another pod X
+      # and still reach UP (Akka-wise) state SOONER than X - and hence Y keeps the singletons.
+      # Nothing wrong happens while X and Y and running; the nuisance begins when pods X and Y are being terminated.
+      # Since pods in a ReplicaSet are generally terminated in the LIFO order i.e. from youngest to oldest,
+      # (although see the point about `nodes with more replicas` at
+      # https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#scaling-a-replicaset)
+      # Y is terminated first, which causes cluster singletons to move from Y to X.
+      # But X, being the part of the old ReplicaSet, is going to be terminated soon anyway, leading to yet another reallocation of cluster singletons.
+      # To avoid this, keep maxSurge to 1.
+      maxSurge: 1
+      # maxUnavailable equal to 0 makes sure one node is added (due to maxSurge = 1) before another is removed.
+      # It is recommended to change nodes one by one.
+      # maxUnavailable it can be also be set to 1, which removes a node while when another one is being added.
+      maxUnavailable: 0
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "phoenix-backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "phoenix-backend.selectorLabels" . | nindent 8 }}
+        phoenix-backend/image-tag: "{{ .Values.image.tag }}"
+    spec:
+      # Prevent pods from running on the same node.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: phoenix-backend
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+      {{- end }}
+      {{- end }}
+      serviceAccountName: {{ include "phoenix-backend.serviceAccountName" . }}
+      volumes:
+        - name: keycloak
+          secret:
+            secretName: keycloak-config-backend
+      containers:
+        - name: {{ include "phoenix-backend.fullname" . }}
+          image: "{{ .Values.image.registry }}/phoenix-backend:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - mountPath: "/var/keycloak"
+              name: keycloak
+              readOnly: true
+          resources:
+            limits:
+              memory: "{{ .Values.resources.memory }}"
+            # For JVM ergonomics to work correctly we should start POD with max available memory, also GC works the best with static size of memory:
+            # https://www.oracle.com/java/technologies/javase/gc-tuning-6.html#ergonomics
+            requests:
+              memory: "{{ .Values.resources.memory }}"
+          securityContext:
+            # User and group 1001 are baked into the image by sbt-native-packager.
+            allowPrivilegeEscalation: false
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+          env:
+            - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
+              valueFrom:
+                fieldRef:
+                  # Note that a Deployment/Rollout's Pod template does NOT have this `(rollouts-)pod-template-hash` label:
+                  # the value of the hash then would need be computed out of, among others,
+                  # this label's value, i.e. the Pod template hash itself - a chicken and egg problem.
+                  # The label is only filled up in both the subordinate Replica Set's Pod template metadata,
+                  # and, most importantly, in Pod metadata itself.
+                  # This Pod metadata (and not Pod *template*'s metadata) is what we're referring to in `fieldPath`.
+                  {{ if .Values.argocd.rollouts.enabled }}
+                  fieldPath: "metadata.labels['rollouts-pod-template-hash']"
+                  {{- else }}
+                  fieldPath: "metadata.labels['pod-template-hash']"
+                  {{- end }}
+            - name: AKKA_DISCOVERY_KUBERNETES_API_POD_LABEL_SELECTOR
+              # Akka is told to only include the pods that belong to the same Replica Set.
+              # This way, the old and new cluster are completely separate during a rollout.
+              {{ if .Values.argocd.rollouts.enabled }}
+              value: "rollouts-pod-template-hash=%s"
+              {{- else }}
+              value: "pod-template-hash=%s"
+              {{- end }}
+            - name: AKKA_HTTP_CORS_ALLOWED_ORIGINS
+              value: "{{ join " " .Values.corsAllowedOrigins }}"
+            - name: AKKA_PERSISTENCE_JDBC_POOL_SIZE
+              value: "{{ .Values.akka.persistence.jdbcPoolSize }}"
+            - name: AKKA_PERSISTENCE_RECOVERY_TIMEOUT
+              value: "{{ .Values.akka.persistence.recoveryTimeout }}"
+            - name: AML_DAILY_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.aml.dailyReportsSchedule }}"
+            - name: AML_DECEASED_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.aml.deceasedReportsSchedule }}"
+            - name: AML_EMAIL_REPORTS_RECIPIENT
+              value: "{{ .Values.reports.aml.reportsRecipientEmailAddress }}"
+            - name: AML_MANUALLY_UNSUSPENDED_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.aml.manuallyUnsuspendedReportsSchedule }}"
+            - name: AML_MULTI_DEVICE_ACTIVITY_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.aml.multiDeviceActivityReportsSchedule }}"
+            - name: AML_MONTHLY_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.aml.monthlyReportsSchedule }}"
+            - name: AML_WEEKLY_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.aml.weeklyReportsSchedule }}"
+            - name: BETGENIUS_API_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: betgenius-api-access-token
+            - name: BETGENIUS_API_ENVIRONMENT
+              value: "{{ .Values.betgenius.apiEnvironment }}"
+            - name: BETGENIUS_API_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: betgenius-api-password
+            - name: CUSTOMER_SUPPORT_EMAIL_ADDRESS
+              value: "{{ .Values.notifications.customerSupportEmailAddress }}"
+            - name: DB_MAX_CONNECTIONS
+              value: "{{ .Values.db.maxConnections }}"
+            - name: DB_MIN_CONNECTIONS
+              value: "{{ .Values.db.minConnections }}"
+            - name: DB_SLICK_THREADS_NUMBER
+              value: "{{ .Values.db.slickThreadsNum }}"
+            - name: DEV_ROUTES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: dev-routes-password
+            - name: DEV_ROUTES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: dev-routes-username
+            - name: DGE_DAILY_REPORTS_SCHEDULE
+              value: "{{ .Values.reports.dge.dailyReportsSchedule }}"
+            - name: EMAIL_NOTIFICATIONS_BASE_URL
+              value: "{{ .Values.notifications.baseUrl }}"
+            - name: EMAIL_NOTIFICATIONS_ENABLED
+              value: "{{ .Values.notifications.email.enabled }}"
+            - name: EMAIL_NOTIFICATIONS_FROM_ADDRESS
+              value: "{{ .Values.notifications.email.fromAddress }}"
+            - name: EMAIL_NOTIFICATIONS_SENDGRID_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: sendgrid-api-key
+            - name: GEOCOMPLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: geocomply-api-key
+            - name: GEOCOMPLY_DECRYPTION_INITIALIZATION_VECTOR
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: geocomply-decryption-initialization-vector
+            - name: GEOCOMPLY_DECRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: geocomply-decryption-key
+            - name: GEOCOMPLY_LICENSE_BASE_URL
+              value: "{{ .Values.geoComply.licenseService.baseUrl }}"
+            - name: GEOCOMPLY_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: geocomply-secret-key
+            - name: ID_COMPLY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: idcomply-api-key
+            - name: ID_COMPLY_BASE_URL
+              value: "{{ .Values.idComply.baseUrl }}"
+            - name: ID_COMPLY_ENDPOINT_PATH_IDPV
+              value: "{{ .Values.idComply.idPhotoVerificationEndpoint }}"
+            - name: ID_COMPLY_ENDPOINT_PATH_KBA
+              value: "{{ .Values.idComply.endpointPaths.knowledgeBasedAuthentication }}"
+            - name: ID_COMPLY_ENDPOINT_PATH_KYC
+              value: "{{ .Values.idComply.endpointPaths.knowYourCustomer }}"
+            - name: ID_COMPLY_FRONT_END_REDIRECTION_ENDPOINT
+              value: "{{ .Values.idComply.frontEndRedirectionEndpoint }}"
+            - name: ID_COMPLY_PHOTO_VERIFICATION_BASE_URL
+              value: "{{ .Values.idComply.photoVerificationBaseUrl }}"
+            - name: JAVA_OPTS
+              value: "-Dconfig.resource=application-k8s.conf"
+            - name: KEYCLOAK_CLIENT_CONF_LOCATION
+              value: "/var/keycloak/keycloak.json"
+            - name: MAXIMUM_AMOUNT_OF_PUNTERS
+              value: "{{ .Values.punters.maximumAmountOfPunters }}"
+            - name: MFA_CHANGE_ALLOWED
+              value: "{{ .Values.punters.mfa.changeAllowed }}"
+            - name: MFA_ENABLED_BY_DEFAULT
+              value: "{{ .Values.punters.mfa.enabledByDefault }}"
+            - name: MFA_MANDATORY_FOR_REGISTRATION
+              value: "{{ .Values.punters.mfa.mandatoryForRegistration }}"
+            - name: ODDIN_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: oddin-access-token
+            - name: ODDIN_ENVIRONMENT
+              value: "{{ .Values.oddin.environment }}"
+            - name: ODDIN_REST_BASE_URL
+              value: "{{ .Values.oddin.restBaseUrl }}"
+            - name: ODDIN_NODE_ID
+              value: "{{ .Values.oddin.nodeId }}"
+            - name: PHOENIX_BETGENIUS_DATA_INGESTION_ENABLED
+              value: "{{ .Values.betgenius.dataIngestionEnabled }}"
+            - name: PHOENIX_DGE_EXCLUSION_INGESTION_MAX_RETRIES
+              value: "{{ .Values.dge.exclusion.ingestion.maxRetries }}"
+            - name: PHOENIX_DGE_EXCLUSION_INGESTION_SCHEDULE
+              value: "{{ .Values.dge.exclusion.ingestion.schedule }}"
+            - name: PHOENIX_DGE_EXCLUSION_INGESTION_TIME_RESTRICTION
+              value: "{{ .Values.dge.exclusion.ingestion.timeRestriction }}"
+            - name: PHOENIX_DGE_SFTP_HOST
+              value: "{{ .Values.dge.sftp.host }}"
+            - name: PHOENIX_DGE_SFTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: sftp-password
+            - name: PHOENIX_DGE_SFTP_PORT
+              value: "{{ .Values.dge.sftp.port }}"
+            - name: PHOENIX_DGE_SFTP_ROOT_DIRECTORY
+              value: "{{ .Values.dge.sftp.rootDirectory }}"
+            - name: PHOENIX_DGE_SFTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: sftp-user
+            - name: PHOENIX_LOGGING_JSON_FORMAT_ENABLED
+              value: "true"
+            - name: PHOENIX_MARKET_TYPES_DISPLAYED_TO_PUNTERS
+              value: "{{ .Values.markets.marketTypesDisplayedToPunters }}"
+            - name: PHOENIX_ODDIN_DATA_INGESTION_ENABLED
+              value: "{{ .Values.oddin.dataIngestionEnabled }}"
+            - name: PHOENIX_ODDIN_KAFKA_CONSUMER_BOOTSTRAP_SERVERS
+              value: "{{ .Values.oddin.kafka.consumer.bootstrapServers }}"
+            - name: PHOENIX_ODDIN_KAFKA_CONSUMER_GROUPID
+              value: "phoenix-backend-consumer-group"
+            - name: PHOENIX_ODDIN_KAFKA_INGESTION_ENABLED
+              value: "{{ .Values.oddin.kafka.enabled }}"
+            - name: PHOENIX_ODDIN_USE_COMMON_DATA_API_MODEL
+              value: "{{ .Values.oddin.useCommonDataApiModel }}"
+            - name: PHOENIX_OPENAPI_API_BASE_URL
+              value: "{{ .Values.openapi.apiBaseUrl }}"
+            - name: PHOENIX_OPENAPI_DOCS_RELATIVE_URL
+              value: "{{ .Values.openapi.docsRelativeUrl }}"
+            - name: PHOENIX_SPORTS_DISPLAYED_TO_PUNTERS_BY_DEFAULT
+              value: "{{ .Values.markets.sportsDisplayedToPuntersByDefault }}"
+            - name: PHOENIX_TOURNAMENTS_DISPLAYED_TO_PUNTERS_FILTER_ENABLED
+              value: "{{ .Values.markets.tournamentsDisplayedToPuntersFilterEnabled }}"
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresOperator.dbName }}
+            - name: POSTGRES_HOST
+              value: {{ .Values.postgresOperator.dbHost }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresOperator.dbWriterSecretName }}
+                  key: password
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresOperator.dbWriterSecretName }}
+                  key: username
+            - name: PXP_BASE_URL
+              value: "{{ .Values.payments.baseUrl }}"
+            - name: PXP_MERCHANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: pxp-merchant-id
+            - name: PXP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: pxp-password
+            - name: PXP_SHOP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: pxp-shop-id
+            - name: PXP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: pxp-username
+            - name: PXP_WEBHOOK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: pxp-webhook-password
+            - name: PXP_WEBHOOK_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: pxp-webhook-username
+            - name: REQUIRED_CONTACT_POINT_NR
+              value: "1"
+            - name: SELECTION_ODDS_UPPER_BOUND_INCLUSIVE
+              value: "{{ .Values.markets.selectionOddsUpperBoundInclusive }}"
+            - name: SSN_ENCRYPTION_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: ssn-encryption-password
+            - name: TALON_APP_BASE_URL
+              value: "{{ .Values.talon.talonAppBaseUrl }}"
+            - name: TWILIO_ACCOUNT_SERVICE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: twilio-account-service-id
+            - name: TWILIO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: twilio-auth-token
+            - name: TWILIO_VERIFICATION_SERVICE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: phoenix-backend-secrets
+                  key: twilio-verification-service-id
+            - name: TWILIO_VERIFY_API_BASE_URL
+              value: "{{ .Values.twilio.verifyApiBaseUrl }}"
+          ports:
+            - name: remoting  # Akka Remoting
+              containerPort: 2552 # AKKA on T9 keyboard
+              protocol: TCP
+
+            - name: kamon  # Kamon status page
+              containerPort: 5266 # KAMO(N) on T9 keyboard
+              protocol: TCP
+
+            - name: management  # Akka Management, including Akka Discovery
+              containerPort: 8558
+              protocol: TCP
+
+            - name: public-api
+              containerPort: 9000
+              protocol: TCP
+
+            - name: dev-api
+              containerPort: 9001
+              protocol: TCP
+
+            - name: websocket
+              containerPort: 9002
+              protocol: TCP
+
+            # HTTP routes don't start unless ingestion is enabled.
+            {{ if .Values.betgenius.dataIngestionEnabled -}}
+            - name: betgenius-api
+              containerPort: 9003
+              protocol: TCP
+            {{- end }}
+
+            - name: pxp-api
+              containerPort: 9004
+              protocol: TCP
+
+            - name: prometheus
+              containerPort: 9095
+              protocol: TCP
+
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 480
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -exc
+                # language=sh
+                - |
+                  my_ip=$(hostname --ip-address)
+                  curl -f ${my_ip}:8558/ready
+                  curl -f ${my_ip}:9000/terms
+                  curl -f ${my_ip}:9001/docs/docs.yaml
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+      terminationGracePeriodSeconds: 60

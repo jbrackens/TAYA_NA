@@ -1,0 +1,141 @@
+{
+  "refreshInterval": -1,
+  "response": [
+    {
+      "name": "Marvellous Murphy",
+      "startTime": "2021-07-26T13:25+00:00",
+      "selections": [
+        {
+          "name": "Handsome (2:25), Peggoty (3:00) & Vitalline (5:10) all to win (was 7/2)",
+          "price": "9/2",
+          "betslip": {
+            "marketId": "93922233",
+            "lineIntId": "1079207869",
+            "lineGroupId": "93922233",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Odds On Ayr Double",
+      "startTime": "2021-07-26T13:50+00:00",
+      "selections": [
+        {
+          "name": "Ravenscraig Castle (2:50) & Royal Jazz (5:00) both to win (was 7/4)",
+          "price": "11/4",
+          "betslip": {
+            "marketId": "93922003",
+            "lineIntId": "1079205086",
+            "lineGroupId": "93922003",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Aidan O'Brien Galway Double",
+      "startTime": "2021-07-26T15:10+00:00",
+      "selections": [
+        {
+          "name": "Anchorage (4:10) & National Ballet (6:45) both to win (was 9/2)",
+          "price": "6/1",
+          "betslip": {
+            "marketId": "93924583",
+            "lineIntId": "1079240064",
+            "lineGroupId": "93924583",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Windsor Hotpot Double",
+      "startTime": "2021-07-26T16:55+00:00",
+      "selections": [
+        {
+          "name": "Dubai Jewel (5:55) & Lisdarragh (8:25) both to win (was 9/4)",
+          "price": "3/1",
+          "betslip": {
+            "marketId": "93924621",
+            "lineIntId": "1079240706",
+            "lineGroupId": "93924621",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dawson At The Double",
+      "startTime": "2021-07-26T18:05+00:00",
+      "selections": [
+        {
+          "name": "Frow (7:05) & Hurricane Ali (8:40) both to win (was 11/1)",
+          "price": "14/1",
+          "betslip": {
+            "marketId": "93924672",
+            "lineIntId": "1079241486",
+            "lineGroupId": "93924672",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    },
+    {
+      "name": "I'm Singing The Blues",
+      "startTime": "2021-07-27T14:00+00:00",
+      "selections": [
+        {
+          "name": "Charlie Appleby & Godolphin to win the 3:00 Goodwood (Tuesday)",
+          "price": "4/5",
+          "betslip": {
+            "marketId": "93927239",
+            "lineIntId": "1079277217",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    },
+    {
+      "name": "O'Brien Bonanza",
+      "startTime": "2021-07-27T17:15+00:00",
+      "selections": [
+        {
+          "name": "Aidan or Joseph O'Brien to train the winner of 6:15 Galway (Tuesday)",
+          "price": "5/2",
+          "betslip": {
+            "marketId": "93926795",
+            "lineIntId": "1079269032",
+            "lineGroupId": "93926795",
+            "lineTypeId": "13",
+            "qa": true,
+            "eventTypeId": "8",
+            "leagueId": "198791"
+          }
+        }
+      ]
+    }
+  ],
+  "totalResults": 7,
+  "navigation": {
+    "url": "https://www.sportnation.bet/sports/enhanced-odds/horse-racing-specials/"
+  }
+}

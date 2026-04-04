@@ -1,0 +1,140 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$spinatagrande_common_l1_name = 'spinatagrande_common_l1';
+$spinatagrande_common_l1_x = 437px;
+$spinatagrande_common_l1_y = 0px;
+$spinatagrande_common_l1_offset_x = -437px;
+$spinatagrande_common_l1_offset_y = 0px;
+$spinatagrande_common_l1_width = 214px;
+$spinatagrande_common_l1_height = 210px;
+$spinatagrande_common_l1_total_width = 651px;
+$spinatagrande_common_l1_total_height = 577px;
+$spinatagrande_common_l1_image = 'spinatagrande_common_b.png';
+$spinatagrande_common_l1 = 437px 0px -437px 0px 214px 210px 651px 577px 'spinatagrande_common_b.png' 'spinatagrande_common_l1';
+$spinatagrande_common_l2_name = 'spinatagrande_common_l2';
+$spinatagrande_common_l2_x = 0px;
+$spinatagrande_common_l2_y = 290px;
+$spinatagrande_common_l2_offset_x = 0px;
+$spinatagrande_common_l2_offset_y = -290px;
+$spinatagrande_common_l2_width = 139px;
+$spinatagrande_common_l2_height = 287px;
+$spinatagrande_common_l2_total_width = 651px;
+$spinatagrande_common_l2_total_height = 577px;
+$spinatagrande_common_l2_image = 'spinatagrande_common_b.png';
+$spinatagrande_common_l2 = 0px 290px 0px -290px 139px 287px 651px 577px 'spinatagrande_common_b.png' 'spinatagrande_common_l2';
+$spinatagrande_common_logo_name = 'spinatagrande_common_logo';
+$spinatagrande_common_logo_x = 173px;
+$spinatagrande_common_logo_y = 0px;
+$spinatagrande_common_logo_offset_x = -173px;
+$spinatagrande_common_logo_offset_y = 0px;
+$spinatagrande_common_logo_width = 260px;
+$spinatagrande_common_logo_height = 173px;
+$spinatagrande_common_logo_total_width = 651px;
+$spinatagrande_common_logo_total_height = 577px;
+$spinatagrande_common_logo_image = 'spinatagrande_common_b.png';
+$spinatagrande_common_logo = 173px 0px -173px 0px 260px 173px 651px 577px 'spinatagrande_common_b.png' 'spinatagrande_common_logo';
+$spinatagrande_common_r1_name = 'spinatagrande_common_r1';
+$spinatagrande_common_r1_x = 143px;
+$spinatagrande_common_r1_y = 290px;
+$spinatagrande_common_r1_offset_x = -143px;
+$spinatagrande_common_r1_offset_y = -290px;
+$spinatagrande_common_r1_width = 132px;
+$spinatagrande_common_r1_height = 145px;
+$spinatagrande_common_r1_total_width = 651px;
+$spinatagrande_common_r1_total_height = 577px;
+$spinatagrande_common_r1_image = 'spinatagrande_common_b.png';
+$spinatagrande_common_r1 = 143px 290px -143px -290px 132px 145px 651px 577px 'spinatagrande_common_b.png' 'spinatagrande_common_r1';
+$spinatagrande_common_r2_name = 'spinatagrande_common_r2';
+$spinatagrande_common_r2_x = 0px;
+$spinatagrande_common_r2_y = 0px;
+$spinatagrande_common_r2_offset_x = 0px;
+$spinatagrande_common_r2_offset_y = 0px;
+$spinatagrande_common_r2_width = 169px;
+$spinatagrande_common_r2_height = 286px;
+$spinatagrande_common_r2_total_width = 651px;
+$spinatagrande_common_r2_total_height = 577px;
+$spinatagrande_common_r2_image = 'spinatagrande_common_b.png';
+$spinatagrande_common_r2 = 0px 0px 0px 0px 169px 286px 651px 577px 'spinatagrande_common_b.png' 'spinatagrande_common_r2';
+$spritesheet_width = 651px;
+$spritesheet_height = 577px;
+$spritesheet_image = 'spinatagrande_common_b.png';
+$spritesheet_sprites = $spinatagrande_common_l1 $spinatagrande_common_l2 $spinatagrande_common_logo $spinatagrande_common_r1 $spinatagrande_common_r2;
+$spritesheet = 651px 577px 'spinatagrande_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

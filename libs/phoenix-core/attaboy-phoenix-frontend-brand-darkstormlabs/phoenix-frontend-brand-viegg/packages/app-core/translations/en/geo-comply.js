@@ -1,0 +1,6 @@
+module.exports = {
+  DOWNLOAD_FOR_WINDOWS: "Download from Windows",
+  DOWNLOAD_FOR_MAC: "Download from Mac",
+  I_HAVE_INSTALLED_GEOCOMPLY: "I have installed Geocomply",
+  DISMISS: "Dismiss",
+};

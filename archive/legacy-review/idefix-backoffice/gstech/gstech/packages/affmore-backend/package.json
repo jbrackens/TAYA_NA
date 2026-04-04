@@ -1,0 +1,24 @@
+{
+  "name": "affmore-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "pretty": "prettier -c '**/*.js'",
+    "start": "nodemon .",
+    "serve": "yarn migrate && node .",
+    "mocha": "NODE_ENV=test mocha --exit --timeout 15000 --require ../gstech-core/modules/setup-test",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "flow:fix": "node ./scripts/jobRunner.js run '../../gstech-core/modules/import-types.js'",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from affmore-backend.test",
+    "docker:start": "docker compose up --build -d",
+    "test": "true || yarn run mocha './server/operations.spec.js' './no-server/**/*.spec.js'",
+    "test:grep": "yarn run test -g ",
+    "migrate": "node ../gstech-core/modules/migrator.js migrate",
+    "add:migration": "node ../gstech-core/modules/migrator.js create",
+    "data:update": "node ./scripts/jobRunner.js run '../jobs/updateData.js'",
+    "data:update:masters": "node ./scripts/jobRunner.js run '../jobs/updateMasters.js'",
+    "data:fake": "POSTGRES_PORT=5433 node ./scripts/jobRunner.js run '../jobs/fakeData.js'"
+  }
+}

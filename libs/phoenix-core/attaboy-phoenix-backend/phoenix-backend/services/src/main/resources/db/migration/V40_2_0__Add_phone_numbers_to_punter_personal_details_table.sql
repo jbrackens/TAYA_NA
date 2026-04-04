@@ -1,0 +1,2 @@
+UPDATE punter_personal_details SET phone = '+447703446515' WHERE email = 'paul+admin@flipsports.com';
+UPDATE punter_personal_details SET phone = '+447703446515' WHERE email = 'paul+test@flipsports.com';

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: eeg-flink
+description: A Helm chart for Kubernetes to deploy FLINK by EEG
+type: application
+version: 0.2.0
+appVersion: "1.10.3-scala_2.12"
+
+dependencies:
+  - name: eeg-pvc-cfs
+    version: 0.2.0
+    repository: https://waysun-dev.tencentcloudcr.com/chartrepo/stella
+    alias: eeg_pvc_cfs

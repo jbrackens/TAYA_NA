@@ -1,0 +1,29 @@
+<html lang="en">
+<head>
+    <title>Payment form</title>
+</head>
+<body onload="document.forms['auto_post_form'].submit()">
+<span style="margin: 4em 10em; font-family: monospace">
+    Redirecting...
+</span>
+<form method="post" action="{{ target_url }}" name="auto_post_form">
+    <input type="hidden" name="appid" value="{{ appid }}">
+    <input type="hidden" name="timestamp" value="{{ timestamp }}">
+    <input type="hidden" name="tranid" value="{{ tranid }}">
+    <input type="hidden" name="userId" value="{{ userId }}">
+    <input type="hidden" name="productId" value="{{ productId }}">
+    <input type="hidden" name="productName" value="{{ productName }}">
+    <input type="hidden" name="amount" value="{{ amount }}">
+    <input type="hidden" name="description" value="{{ description }}">
+    <input type="hidden" name="contentId" value="{{ contentId }}">
+    <input type="hidden" name="contentName" value="{{ contentName }}">
+    <input type="hidden" name="orderType" value="{{ orderType }}">
+    <input type="hidden" name="backUrl" value="{{ backUrl }}">
+    <input type="hidden" name="commit" value="{{ commit }}">
+    <input type="hidden" name="validTime" value="{{ validTime }}">
+    <input type="hidden" name="expireTime" value="{{ expireTime }}">
+    <input type="hidden" name="autoSub" value="{{ autoSub }}">
+    <input type="hidden" name="sign" value="{{ sign }}">
+</form>
+</body>
+</html>

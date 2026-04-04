@@ -1,0 +1,63 @@
+"ld-backend:3020":
+  shell: ./start.sh brand-backend ld
+  cwd: <CONFIG_DIR>
+"cj-backend:3021":
+  shell: ./start.sh brand-backend cj
+  cwd: <CONFIG_DIR>
+"kk-backend:3022":
+  shell: ./start.sh brand-backend kk
+  cwd: <CONFIG_DIR>
+"os-backend:3023":
+  shell: ./start.sh brand-backend os
+  cwd: <CONFIG_DIR>
+"fk-backend:3024":
+  shell: ./start.sh brand-backend fk
+  cwd: <CONFIG_DIR>
+"sn-backend:3025":
+  shell: ./start.sh brand-backend sn
+  cwd: <CONFIG_DIR>
+"vb-backend:3026":
+  shell: ./start.sh brand-backend vb
+  cwd: <CONFIG_DIR>
+"ld-worker":
+  shell: ./start.sh brand-worker ld
+  cwd: <CONFIG_DIR>
+"cj-worker":
+  shell: ./start.sh brand-worker cj
+  cwd: <CONFIG_DIR>
+"kk-worker":
+  shell: ./start.sh brand-worker kk
+  cwd: <CONFIG_DIR>
+"os-worker":
+  shell: ./start.sh brand-worker os
+  cwd: <CONFIG_DIR>
+"fk-worker":
+  shell: ./start.sh brand-worker fk
+  cwd: <CONFIG_DIR>
+"sn-worker":
+  shell: ./start.sh brand-worker sn
+  cwd: <CONFIG_DIR>
+"vb-worker":
+  shell: ./start.sh brand-worker vb
+  cwd: <CONFIG_DIR>
+"ld-client:3030":
+  shell: ./start.sh brand-client ld
+  cwd: <CONFIG_DIR>
+"cj-client:3031":
+  shell: ./start.sh brand-client cj
+  cwd: <CONFIG_DIR>
+"kk-client:3032":
+  shell: ./start.sh brand-client kk
+  cwd: <CONFIG_DIR>
+"os-client:3033":
+  shell: ./start.sh brand-client os
+  cwd: <CONFIG_DIR>
+"fk-client:3034":
+  shell: ./start.sh brand-client fk
+  cwd: <CONFIG_DIR>
+"sn-client:3035":
+  shell: ./start.sh brand-client sn
+  cwd: <CONFIG_DIR>
+"vb-client:3036":
+  shell: ./start.sh brand-client vb
+  cwd: <CONFIG_DIR>

@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  oidc:
+    build: .
+    image: gmx-darkstormlabs/oidc:latest
+    volumes:
+      - ./src:/app
+      - ./Pipfile:/Pipfile:ro
+      - ./Pipfile.lock:/Pipfile.lock:ro
+    env_file:
+      - local.env
+    command: 'python3 manage.py runserver 0.0.0.0:8080'
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.oidc.rule=PathPrefix(`/static/oidc/`, `/oidc/`, `/openid/`, `/oidc_docs/`, `/oidc_admin/`)"
+      - "traefik.http.services.oidc.loadbalancer.server.port=8080"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 450M
+        reservations:
+          memory: 100M
+
+networks:
+  default:
+    external:
+      name: gmx-internal

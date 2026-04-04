@@ -1,0 +1,1 @@
+INSERT INTO risks ("type", "fraudKey", "points", "maxCumulativePoints", "title", "description", "riskProfiles") VALUES ('customer', 'pnp_player_gambling_problem', 100, 100, 'Pnp player has a gambling problem on another brand', 'Gambling problem detected after player answered the complete registration questionnaire', null);

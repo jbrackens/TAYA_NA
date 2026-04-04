@@ -1,0 +1,45 @@
+{
+  "collectionName": "components_payments_payment_methods_lists",
+  "info": {
+    "displayName": "Payment Methods List",
+    "icon": "bulletList",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    },
+    "methods": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::payment-method.payment-method"
+    },
+    "paymentType": {
+      "type": "enumeration",
+      "enum": [
+        "withdrawal",
+        "deposit"
+      ],
+      "required": true
+    },
+    "fallbackCurrency": {
+      "type": "enumeration",
+      "enum": [
+        "EUR",
+        "USD",
+        "NOK",
+        "CLP",
+        "CAD",
+        "NZD",
+        "BRL",
+        "GBP",
+        "PEN",
+        "SEK",
+        "INR"
+      ]
+    }
+  }
+}

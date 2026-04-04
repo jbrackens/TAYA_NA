@@ -1,0 +1,34 @@
+@namespace("phoenix.dataapi.shared")
+protocol FixtureChangeProtocol {
+    import idl "shared-protocol.avdl";
+
+    record Sport {
+        string namespacedId;
+        string name;
+        string abbreviation;
+    }
+
+    record Competition {
+        string namespacedId;
+        string name;
+    }
+
+    enum CompetitorSide {Home, Away}
+
+    record Competitor {
+        string namespacedId;
+        string name;
+        CompetitorSide side;
+    }
+
+    record FixtureChange {
+        phoenix.dataapi.shared.Header header;
+        string namespacedId;
+        string name;
+        FixtureStatus status;
+        long startTimeUtc;
+        Sport sport;
+        Competition competition;
+        array<Competitor> competitors;
+    }
+}

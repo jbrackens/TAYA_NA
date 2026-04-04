@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  affmore-backend:
+    build:
+      context: ../../
+      dockerfile: packages/affmore-backend/Dockerfile
+    image: affmore-backend
+    container_name: affmore-backend
+    ports:
+      - "3033:3033"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: gstech-postgres-12
+      POSTGRES_PORT: 5433
+      MINIO_HOST: gstech-minio
+      MINIO_BUCKET_NAME: affmore-log-attachments
+      BACKEND_URL: http://gstech-backend:3001
+
+networks:
+  gstech:
+    external: true

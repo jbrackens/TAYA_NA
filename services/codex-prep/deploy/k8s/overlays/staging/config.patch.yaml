@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phoenix-platform-config
+data:
+  ENVIRONMENT: staging
+  LOG_LEVEL: info
+  OUTBOX_ENABLED: "true"
+  OUTBOX_POLL_INTERVAL: 750ms
+  OUTBOX_BATCH_SIZE: "150"

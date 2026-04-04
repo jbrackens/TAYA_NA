@@ -1,0 +1,36 @@
+###############################
+# externalized ENV properties
+app:
+  env:
+    # what environment app will be running: dev/prod
+    env: MANDATORY
+    storage:
+      # what is the storage mode: file/s3
+      mode: MANDATORY
+      file:
+        # target directory for 'file' storage mode
+        dir: OPTIONAL
+    pipeline:
+      kafka:
+        # a list of brokers for producing messages: host1:port1,host2:port2
+        brokers: MANDATORY
+
+###############################
+
+# Binding Camel to different context to use with Actuator
+camel:
+  component:
+    servlet:
+      mapping:
+        context-path: /data/*
+
+# Binding Actuator to a same port - all secured (only basic health will be available)
+management:
+  port: 8080
+  security:
+    enabled: true
+
+# Disable JMX
+endpoints:
+  jmx:
+    enabled: false

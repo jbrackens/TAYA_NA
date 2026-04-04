@@ -1,0 +1,27 @@
+nameOverride: "prod-justwow-client-service"
+fullnameOverride: "prod-justwow-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3000
+
+ingress:
+  enabled: false
+
+env:
+  SITE_NAME: kalevala
+  NODE_ENV: production
+  PORT: 3000
+  API: http://prod-justwow-backend-service:3000
+  CAPTCHA_KEY: "6LeIU1clAAAAAAFDdXiF6gJ8MBT1evGWk7-Le06r"

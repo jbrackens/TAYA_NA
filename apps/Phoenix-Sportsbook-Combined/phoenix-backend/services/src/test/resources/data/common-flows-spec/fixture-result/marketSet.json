@@ -1,0 +1,56 @@
+[
+  {
+    "Header": {
+      "MessageFixtureOrder": 252775807,
+      "MessageGuid": "f0ebe7cb-7ba4-4e32-b803-4ffc1beeb5e6",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-19T18:45:01.9609209Z"
+    },
+    "MarketSet": {
+      "FixtureId": 8571627,
+      "Markets": [
+        {
+          "ExpiryUtc": "2021-10-19T16:00:00Z",
+          "Id": 100000005,
+          "InPlay": true,
+          "MarketType": {
+            "Id": 13124,
+            "IsHandicap": false,
+            "Name": "Team to Score a Quadra Kill"
+          },
+          "Name": "Match Up Winner",
+          "Selections": [
+            {
+              "CompetitorId": 863929,
+              "Decimal": 17.0,
+              "Denominator": 1,
+              "Id": 300000010,
+              "Name": "mousesports",
+              "Numerator": 16,
+              "Outcome": {
+                "Id": 1,
+                "Name": "Home"
+              },
+              "TradingStatus": "Trading"
+            },
+            {
+              "CompetitorId": 1122097,
+              "Decimal": 1.0303,
+              "Denominator": 33,
+              "Id": 300000011,
+              "Name": "Unicorns Of Love Sexy Edition",
+              "Numerator": 1,
+              "Outcome": {
+                "Id": 3,
+                "Name": "Away"
+              },
+              "TradingStatus": "Trading"
+            }
+          ],
+          "Sequence": 0,
+          "TradingStatus": "Open"
+        }
+      ]
+    }
+  }
+]

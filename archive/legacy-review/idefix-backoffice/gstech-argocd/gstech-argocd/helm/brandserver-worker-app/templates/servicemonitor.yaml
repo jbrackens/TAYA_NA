@@ -1,0 +1,27 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "brandserver-worker-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "brandserver-worker-app.name" . }}
+    chart: {{ include "brandserver-worker-app.chart" . }}
+    release: prometheus-operator
+    heritage: {{ .Release.Service }}
+spec:
+  endpoints:
+  - interval: {{ .Values.prometheus.interval }}
+    path: {{ .Values.prometheus.path }}
+    port: {{ .Values.prometheus.portname }}
+{{- if .Values.prometheus.relabelings }}
+    relabelings:
+{{ toYaml .Values.prometheus.relabelings | indent 6 }}
+{{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace | quote }}
+  selector:
+    matchLabels:
+      {{- include "brandserver-worker-app.labels" . | nindent 6 }}
+{{- end }}

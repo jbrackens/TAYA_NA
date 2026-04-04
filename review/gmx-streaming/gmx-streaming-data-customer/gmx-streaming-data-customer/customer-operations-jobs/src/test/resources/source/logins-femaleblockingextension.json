@@ -1,0 +1,38 @@
+[
+  {
+    "MessageCreationDate": 1590156179035,
+    "LoginID": 1452384660,
+    "CustomerID": 24874935,
+    "LoginName": "Mjwt2bikinmjiregb",
+    "SiteName": "Sportnation",
+    "SiteId": 154,
+    "Country": "United Kingdom",
+    "LoginDate": 1590156155783,
+    "LogoutDate": 0,
+    "LoginIP": "109.150.127.241",
+    "LoginProxyIP": "",
+    "UAFamily": "Safari mobile",
+    "UAName": "Safari mobile 13.1",
+    "OSCompany": "Apple Inc.",
+    "OSName": "iOS 13",
+    "DeviceType": "Personal Computer"
+  },
+  {
+    "MessageCreationDate": 1590156179035,
+    "LoginID": 1452384713,
+    "CustomerID": 16155768,
+    "LoginName": "GaryMull86",
+    "SiteName": "Sportnation",
+    "SiteId": 154,
+    "Country": "United Kingdom",
+    "LoginDate": 1590156158817,
+    "LogoutDate": 0,
+    "LoginIP": "176.254.239.242",
+    "LoginProxyIP": "",
+    "UAFamily": "Chrome Mobile",
+    "UAName": "Chrome Mobile 81.0.4044.138",
+    "OSCompany": "Google Inc.",
+    "OSName": "Android 10",
+    "DeviceType": "Smartphone"
+  }
+  ]

@@ -1,0 +1,35 @@
+{
+    "type": "record",
+    "name": "VirtualShopPayment",
+    "namespace": "net.flipsports.gmx.nifi",
+    "fields": [
+        {
+            "name": "price",
+            "type": "string"
+        },
+        {
+            "name": "title",
+            "type": "string"
+        },
+        {
+            "name": "transaction_id",
+            "type": "string"
+        },
+        {
+            "name": "process_id",
+            "type": "string"
+        },
+        {
+            "name": "originator_id",
+            "type": "string"
+        },
+        {
+            "name": "user_sub",
+            "type": "string"
+        },
+        {
+            "name": "company_id",
+            "type": "string"
+        }
+    ]
+}

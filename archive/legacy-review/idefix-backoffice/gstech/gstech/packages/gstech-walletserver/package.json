@@ -1,0 +1,18 @@
+{
+  "name": "gstech-walletserver",
+  "version": "2.7.1",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "pretty": "prettier -c '**/*.js'",
+    "start": "nodemon .",
+    "serve": "node .",
+    "test": "yarn run mocha 'server/**/*.spec.js'",
+    "test:grep": "yarn run mocha 'server/**/*.spec.js' -g ",
+    "mocha": "NODE_ENV=test mocha --exit --timeout 15000 --require '../gstech-core/modules/setup-test'",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from gstech-walletserver.test",
+    "docker:start": "docker compose up --build -d"
+  }
+}

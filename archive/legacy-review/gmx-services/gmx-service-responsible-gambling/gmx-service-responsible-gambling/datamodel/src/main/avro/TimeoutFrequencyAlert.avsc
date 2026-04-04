@@ -1,0 +1,11 @@
+{
+  "namespace": "gmx.dataapi.internal.responsiblegambling",
+  "type": "record",
+  "name": "TimeoutFrequencyAlert",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    }
+  ]
+}

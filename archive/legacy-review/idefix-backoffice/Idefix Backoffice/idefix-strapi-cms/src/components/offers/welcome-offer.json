@@ -1,0 +1,47 @@
+{
+  "collectionName": "components_offers_welcome_offers",
+  "info": {
+    "displayName": "Welcome Offer",
+    "icon": "puzzle",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "text": {
+      "type": "text"
+    },
+    "description": {
+      "type": "text"
+    },
+    "character": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "backgroundImage": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "buttons": {
+      "type": "component",
+      "repeatable": true,
+      "component": "common.action-button",
+      "max": 2
+    },
+    "payAndPlay": {
+      "type": "boolean",
+      "default": false,
+      "required": true
+    }
+  }
+}

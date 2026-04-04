@@ -1,0 +1,16 @@
+// for Redis intermediate storage
+{
+  "namespace": "stella.dataapi.platformevents",
+  "type": "record",
+  "name": "EventData",
+  "fields": [
+    {
+      "name": "key",
+      "type": "EventKey"
+    },
+    {
+      "name": "value",
+      "type": "EventEnvelope"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  gstech-compliance:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-compliance/Dockerfile
+    image: gstech-compliance
+    container_name: gstech-compliance
+    ports:
+      - "3009:3009"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+    healthcheck:
+      test: wget http://localhost:3009/api/v1/status -q -O - > /dev/null 2>&1
+      interval: 5s
+      timeout: 5s
+      start_period: 10s
+      retries: 10
+
+networks:
+  gstech:
+    external: true

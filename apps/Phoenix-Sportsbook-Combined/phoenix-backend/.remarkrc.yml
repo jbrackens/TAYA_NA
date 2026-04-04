@@ -1,0 +1,13 @@
+plugins:
+  lint-no-dead-urls:
+    skipUrlPatterns:
+      - github.com/flipadmin
+      - 'localhost:'
+      - phoenix.darkstormlabs.net
+      - tyne-srv01.flipsports.net:3884
+      - vie.gg
+    gotOptions:
+      concurrency: 2
+      timeout:
+        request: 30000 # ms
+  validate-links: {}

@@ -1,0 +1,284 @@
+@require 'banners_meter'
+
+$header_height = 80px
+$header_height_phone = 40px
+$header-color = #3f3f3f
+
+$jefe-blue = #27c9fc
+$jefe-blue-light = #84defd
+$jefe-blue-dark = #2297e4
+$game_sidebar = 240px
+$default-link-color = #9d9d9d
+
+$dialog_zindex = 20000
+$mobile_tabs_zindex = 20100
+$mobile_menu_height = 44px
+$default-gray = #656565
+$uniform-background = #339999
+$uniform-bg-link-background = #33cccc
+$uniform-bg-link-color = #ddffff
+$placeholder-color = #002637
+$link-green = $jefe-blue
+$bg-white = #d8f6fe
+$bg-red = #d95e26
+$logo-200 = '/images/logo/logo-200.png'
+
+image(path, w = auto, h = auto, min_pixel_ratio = 1.5)
+  background-image: url(path)
+
+  s = 'all and (-webkit-min-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(min--moz-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(-o-min-device-pixel-ratio:' + min_pixel_ratio + '/1),'
+  s = s + '(min-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(min-resolution:' + unit(min_pixel_ratio*92, dpi) + '),'
+  s = s + '(min-resolution:' + unit(min_pixel_ratio, dppx) + ')'
+
+  @media s
+    ext = extname(path)
+    path = dirname(path) + '/' + pathjoin(basename(path, ext) + '@2x' + ext)
+    background-image: url(path)
+    if w in (cover contain) and h == auto
+        h = null
+    background-size: w h
+
+force3d()
+  -webkit-transform translate3d(0,0,0)
+  -webkit-backface-visibility hidden
+  -webkit-perspective 1000
+
+cdn_image(resource, width, height)
+  image: 'https://static.casinojefe.com' + resource, width, height
+
+cdn-background(resource, a = null, b = null, c = null, d = null)
+  background: url('https://static.casinojefe.com' + resource) a b c d
+
+cdn-background-image(resource)
+  background-image: url('https://static.casinojefe.com' + resource)
+
+cdn-background-image2x(resource, resource2x, width, height)
+  cdn-background-image(resource)
+  @media all and (-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(-o-min-device-pixel-ratio:1.5/1),(min-device-pixel-ratio:1.5),(min-resolution:138dpi),(min-resolution:1.5dppx)
+    cdn-background-image(resource2x)
+    background-size width height
+
+background-linear-gradient(startPoint, startColor, startInterval, endColor, endInterval, setBg = true)
+  if setBg
+    background startColor
+  background-image linear-gradient(startPoint, startColor startInterval, endColor endInterval)
+
+spritex2(key2x)
+  spriteImage(key2x)
+  width ceil(key2x[4] / 2)
+  height ceil(key2x[5] / 2)
+  background-position ceil(key2x[2]/2) ceil(key2x[3]/2)
+  background-size ceil(image-size('../../../public/jefe/css/' + key2x[8])[0]/2) ceil(image-size('../../../public/jefe/css/' + key2x[8])[1]/2)
+
+sprite2x(key, key2x)
+  sprite(key)
+  @media all and (-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(-o-min-device-pixel-ratio:1.5/1),(min-device-pixel-ratio:1.5),(min-resolution:138dpi),(min-resolution:1.5dppx)
+    spritex2(key2x)
+
+banner_sprite($sprite)
+  cdn-background-image: '/g/' + $sprite[8]
+  background-position: $sprite[2] $sprite[3];
+  width: $sprite[4];
+  height: $sprite[5];
+
+validatorFeedback()
+  &.validation-error
+    color #ee2222
+    background-color #c3ff01
+  &.validation-empty
+    color $placeholder-color
+  &.placeholder
+    color $placeholder-color
+
+formFeedback()
+  .button-row
+    position relative
+    display block
+    text-align center
+    margin 1px 0 9px 0
+    &.spacing
+      padding-top 5px
+
+closebutton()
+  sprite2x($closebutton, $closebutton_2x)
+  cursor pointer
+  background-color $jefe-blue
+
+bannerStyles()
+  box-sizing border-box
+  *, *:after, *:before
+    box-sizing border-box
+  background-repeat no-repeat
+  text-align center
+  font-family: 'Titillium Web', sans-serif;
+  p
+    margin 0 0 10px
+  h1,h2,h3,h4
+    line-height: 1.1;
+  .button, .button:hover, .button:focus
+    display inline-block
+    vertical-align top
+    font-family 'Titillium Web', sans-serif
+    font-weight 600
+    font-size 18px
+    text-transform uppercase
+    white-space nowrap
+    color #ffffff
+    background-color #27c9fc
+    padding 4px 24px
+    text-decoration none
+    text-align center
+    &.cta
+      background-color #a2d129
+
+frontpageBanner()
+  bannerStyles()
+  position relative
+  width 100%
+  height 130px
+  > .background
+    background-color #333333
+    width 100%
+    height 100%
+  > .campaign
+    position absolute
+    top 0
+    width 100%
+    bottom 0
+    left 0
+    right 0
+    margin 0 auto
+    text-align center
+    h1
+      color #ffffff
+      text-transform uppercase
+      font-size 30px
+      margin 15px 0 5px 0
+      @media only screen and (max-width:767px)
+        font-size 22px
+    h3
+      color #d9d9d9
+      font-size 16px
+      margin 5px 0 5px 0
+      font-weight 600
+    .button-holder
+      width 100%
+      text-align center
+      position absolute
+      bottom 20px
+    .button
+      background-color #a2d129
+  .campaign
+    max-width 720px
+    margin 0 auto
+    @media only screen and (max-width:767px)
+      max-width 280px
+    &:after
+      content ''
+      position absolute
+      top 0
+      left -110px
+      width 130px
+      height 130px
+      @media only screen and (max-width:375px)
+        display none
+sidebarBanner()
+  bannerStyles()
+  .progress-meter-holder
+    display none
+  background-color #d3a47e
+  padding-top 330px
+  position relative
+  left 0
+  width 240px
+  height 640px
+  .text
+    text-align center
+    padding 2px 8px
+    h1
+      color #B85E3E
+      font-family 'Titillium Web', sans-serif
+      font-weight 700
+      font-size 10px
+      text-transform uppercase
+      margin 2px 0
+    p
+      font-family 'Titillium Web', sans-serif
+      font-weight 700
+      font-size 16px
+      text-transform uppercase
+      color #564333
+  .title
+    position absolute
+    top 40px
+    left 0
+    right 0
+    text-align center
+    color #ffffff
+    font-size 12px
+    line-height 20px
+    font-weight 600
+  p
+    color #ffffff
+  .image
+    position absolute
+    top 60px
+    left 0
+    right 0
+    width 200px
+    height 217px
+    z-index 10
+    margin 0 auto
+
+
+myjefeBanner()
+  bannerStyles()
+  padding-top 250px
+  position relative
+  left 0
+  width 240px
+  height 232px
+  overflow hidden
+  .progress-meter-holder
+    display none
+  .text
+    text-align center
+    padding 2px 8px
+    h1
+      color #B85E3E
+      font-family 'Titillium Web', sans-serif
+      font-weight 700
+      font-size 10px
+      text-transform uppercase
+      margin 2px 0
+    p
+      font-family 'Titillium Web', sans-serif
+      font-weight 700
+      font-size 16px
+      text-transform uppercase
+      color #564333
+  .title
+    position absolute
+    top 40px
+    left 0
+    right 0
+    text-align center
+    color #ffffff
+    font-size 12px
+    line-height 20px
+    font-weight 600
+  p
+    color #ffffff
+  .image
+    position absolute
+    top 60px
+    left 0
+    right 0
+    width 200px
+    height 217px
+    z-index 10
+    margin 0 auto
+

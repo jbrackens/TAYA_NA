@@ -1,0 +1,116 @@
+{
+  "name": "phoenix-ui",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:darkstormlabs/phoenix-frontend-brand-darkstormlabs.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "workspaces": [
+    "packages/**/*"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others 'yarn run-local:dev'",
+    "run-local:dev": "lerna run --scope @phoenix-ui/app-darkstormlabs --scope @phoenix-ui/mock-server --parallel run-local:dev",
+    "run-docker:dev": "yarn dockerize && docker run --rm -p 3000:3000 --env-file packages/app/.env.development phoenix-ui/app-darkstormlabs",
+    "run-docker:stage": "yarn dockerize && docker run --rm -p 3000:3000 --env-file packages/app/.env.staging     phoenix-ui/app-darkstormlabs",
+    "dist": "lerna run dist",
+    "build": "lerna run build",
+    "build:local": "lerna run build:local",
+    "build:dev": "lerna run build:dev",
+    "build:stage": "lerna run build:stage",
+    "build:prod": "lerna run build:prod",
+    "build:start": "lerna run build:start",
+    "build:export": "lerna run build:export",
+    "build:export:local": "lerna run build:export:local",
+    "build:export:dev": "lerna run build:export:dev",
+    "build:export:stage": "lerna run build:export:stage",
+    "build:export:prod": "lerna run build:export:prod",
+    "start": "yarn start:app-darkstormlabs",
+    "start:app-darkstormlabs": "lerna run --scope @phoenix-ui/app-darkstormlabs start",
+    "start:app-darkstormlabs:dev": "lerna run --scope @phoenix-ui/app-darkstormlabs start:dev",
+    "start:app-darkstormlabs:stage": "lerna run --scope @phoenix-ui/app-darkstormlabs start:stage",
+    "test": "lerna run test",
+    "bootstrap": "yarn install && lerna bootstrap && lerna run --parallel bootstrap",
+    "bootstrap:locales": "lerna run bootstrap:locales",
+    "on-pre-commit": "yarn test && lint-staged",
+    "on-post-commit": "commitlint --from=HEAD~1",
+    "on-pre-push": "commitlint --from=HEAD~1",
+    "clean-all": "lerna run --parallel clean-all && rimraf node_modules",
+    "version-and-publish:develop": "yarn dist && lerna publish prerelease --preid build --no-commit-hooks",
+    "version-and-publish:stage": "yarn dist && lerna publish minor --no-commit-hooks",
+    "version-and-publish": "yarn dist && lerna publish major --no-commit-hooks",
+    "dockerize": "./docker/dockerize.sh app-darkstormlabs"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn on-pre-commit",
+      "post-commit": "yarn on-post-commit",
+      "pre-push": "yarn on-pre-push"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.{md,css,scss,json}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "header-max-length": [
+        2,
+        "always",
+        200
+      ]
+    }
+  },
+  "dependencies": {
+    "@babel/runtime": "7.0.0",
+    "dayjs": "^1.9.1",
+    "lodash": "^4.17.20",
+    "yarn": "^1.17.3",
+    "use-http": "^1.0.16",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-redux": "^7.1.3",
+    "qs": "^6.9.4"
+  },
+  "devDependencies": {
+    "@types/enzyme": "^3.10.7",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.5",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.0.2",
+    "@testing-library/react-hooks": "^3.4.1",
+    "@testing-library/user-event": "^7.1.2",
+    "@types/jest": "24.0.23",
+    "@types/lodash": "^4.14.108",
+    "@types/node": "10.12.18",
+    "babel-plugin-module-resolver": "^4.0.0",
+    "babel-plugin-styled-components": "^1.11.1",
+    "concurrently": "^5.1.0",
+    "env-cmd": "10.1.0",
+    "husky": "^4.2.3",
+    "jest": "25.4.0",
+    "jest-fetch-mock": "^3.0.3",
+    "lerna": "^3.22.1",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "24.2.0",
+    "typescript": "4.3.2",
+    "utility-types": "^3.10.0"
+  }
+}

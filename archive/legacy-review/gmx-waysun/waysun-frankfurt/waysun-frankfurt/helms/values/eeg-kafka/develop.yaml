@@ -1,0 +1,13 @@
+kafka:
+  replicaCount: 3
+  resources:
+    limits:
+      cpu: 500m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 4Gi
+  persistence:
+    size: 100Gi
+  logPersistence:
+    size: 100Gi

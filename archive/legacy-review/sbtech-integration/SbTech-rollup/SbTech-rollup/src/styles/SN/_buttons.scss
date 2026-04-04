@@ -1,0 +1,134 @@
+
+// custom changes to buttons
+// full width center panel Buttons
+.IsDesktop .rj-ev-list__view-all-link,
+.IsDesktop .rj-ev-list__view-all-btn__link,
+.rj-ev-list__view-more-btn{
+    @include brand-button(15, true);
+}
+
+// mobile betslip buttons
+
+.accept-odds-btn.lnk_btn.green_btn,
+.betting-slip #PlaceBetButton.lnk_btn.green_btn{
+  @include brand-button(15, true);
+}
+.accept-odds-btn.lnk_btn.green_btn{
+  background:$accept;
+  &:hover{
+    background:darken($accept, 5%);
+  }
+}
+
+.responsible-gaming__btn,
+.facility-timeout__btn,
+.user-info__button{
+  @include brand-button(15, true);
+  &.user-info__button--rounded,
+  &.user-info__button--complete {
+    border-radius: 0px;
+  }
+}
+
+.self-exclusion-rblock a.user-info__button,
+.myacc-block-content-inner a.user-info__button{
+  color:white;
+}
+
+.user-info__item.password-details-submit{
+  width:100%;
+}
+
+html.IsDesktop .stepwise-registration__button{
+  @include brand-button(20, true);
+}
+
+// 'tab' buttons
+.user-info__tabs {
+  border-radius: 0px;
+}
+
+.user-info__tab, .user-info-tab-switch-overlay {
+  border-radius: 0px;
+}
+
+
+.c-reality-check__btn{
+  @include brand-button(15);
+  width:100%;
+}
+
+.responsible-gaming__btn{
+    @include brand-button(15);
+}
+
+.betSlip-btn,
+.betslip-maxbet-button a{
+  font-weight:bold;
+  text-transform: uppercase;
+}
+
+// quick bet
+.quick-bets-button-placeholder:not(:only-of-type), .quick-bets-button-placeholder:not(:only-child){
+  padding: 0 1px;
+}
+.quick-bets-stake-label, .quick-bets-add-button{
+  border-radius:0px;
+}
+
+.scarousel-btn-next .scarousel-btn-el,
+.scarousel-btn-prev .scarousel-btn-el{
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  background-color:#e8e8e8;
+}
+
+.page-header-button-link{
+  padding: 0 8px;
+  line-height:24px;
+  border-radius:0px;
+  font-weight:bold;
+  font-family:$brand-font--header;
+}
+
+.stakeboxActions .stakeboxActionsBtn.stakeboxActionsPlus,
+.stakeboxActions .stakeboxActionsBtn.stakeboxActionsMinus{
+  border-radius:0px;
+}
+
+.responsible-gaming-btns__footer-item{
+  border-radius:0px;
+  text-transform:uppercase;
+  font-weight:bold;
+  font-family:$brand-font--header;
+}
+
+.facility-upload__btn{
+    @include brand-button(15);
+}
+
+.rj-league-list__show-all-btn,
+.rj-ev-list__view-all-btn__link{
+  @include brand-button(15);
+}
+.IsMobile .rj-ev-list__view-all-btn__wrap,
+.IsTablet .rj-ev-list__view-all-btn__wrap,
+.IsTablet .rj-ev-list__prelive-outright__wrap .rj-ev-list__view-all-btn__wrap,
+.IsMobile .rj-ev-list__prelive-outright__wrap .rj-ev-list__view-all-btn__wrap{
+  padding:2px 4px;
+}
+
+.IsDesktop .rj-ev-list__prelive-outright__button-holder{
+  line-height:1em;
+}
+.IsDesktop .rj-ev-list__prelive-outright__button-holder:nth-child(2n+1){
+  padding-right:0;
+}
+.IsDesktop .rj-league-list__show-all,
+.IsDesktop .rj-league-list__show-all--more,
+.IsDesktop .rj-ev-list__view-more-btn__wrap{
+  padding:0;
+  margin:0 1px;
+}

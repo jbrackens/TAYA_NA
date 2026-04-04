@@ -1,0 +1,12 @@
+
+GET        /event/:id/status                net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.getEventStatus(id: Long)
+GET        /event/:id/video                 net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.getEventVideo(id: Long, device: Option[String])
+
+GET        /fullday/:provider/status        net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.getFullDayStatus(provider: String)
+GET        /fullday/:provider/video         net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.getFullDayVideo(provider: String, device: Option[String])
+
+GET        /event                           net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.listEvents()
+GET        /bets                            net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.listBets()
+
+# deprecated!
+GET        /stream                          net.flipsports.gmx.widget.argyll.betandwatch.webgateway.GatewayController.openStream()

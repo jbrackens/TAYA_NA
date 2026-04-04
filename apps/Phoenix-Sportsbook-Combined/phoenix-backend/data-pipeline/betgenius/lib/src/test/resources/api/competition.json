@@ -1,0 +1,37 @@
+{
+  "total": 1,
+  "_links": {
+    "self": {
+      "href": "/v1/INT/competitions/6793"
+    }
+  },
+  "_embedded": {
+    "competitions": [
+      {
+        "id": 6793,
+        "name": "[Test] League of Legends Competition",
+        "sportId": 10915624,
+        "sportName": "eSports",
+        "gender": "male",
+        "competitionproperty": {
+          "defaultTimeZone": "Europe/Tallinn",
+          "regionId": 3795068,
+          "isProtected": false,
+          "isTour": false,
+          "competitionType": "Team Cup",
+          "shortName": "[Test] League of Legends Competition",
+          "longName": "[Test] League of Legends Competition",
+          "sponsorName": "[Test] League of Legends Competition"
+        },
+        "updates": 1,
+        "deleted": false,
+        "lastUpdate": "2017-07-05 14:52:12",
+        "_links": {
+          "self": {
+            "href": "/v1/INT/competitions/6793"
+          }
+        }
+      }
+    ]
+  }
+}

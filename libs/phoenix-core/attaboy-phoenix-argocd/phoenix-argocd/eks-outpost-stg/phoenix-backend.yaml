@@ -1,0 +1,16 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: phoenix-backend
+spec:
+  destination:
+    namespace: phoenix
+  source:
+    repoURL: "259420793117.dkr.ecr.eu-west-1.amazonaws.com"
+    chart: "phoenix-backend-helm-chart"
+    targetRevision: "0.8.2-outpost-stg"
+    # TODO: remove once phoenix-backend PR #2133 makes it to outpost-stg
+    helm:
+      values: |
+        oddin:
+          useCommonDataApiModel: "yes"

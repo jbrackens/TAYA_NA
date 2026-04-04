@@ -1,0 +1,51 @@
+{{- if .Values.service.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "luckydino-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "luckydino-app.labels" . | nindent 4 }}
+{{- if .Values.service.annotations }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+      - port: {{.Values.service.port}}
+        name: http
+        {{- if .Values.service.targetPort }}
+        targetPort: {{ .Values.service.targetPort }}
+        {{- end }}
+        {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.nodePort))) }}
+        nodePort: {{.Values.service.nodePort}}
+        {{- end }}
+{{- range $key, $value := .Values.extraTCPPorts }}
+      - port: {{ $value }}
+        targetPort: {{ $key }}
+        protocol: TCP
+        name: {{ $key }}
+{{- end }}
+  selector:
+    {{- include "luckydino-app.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- if .Values.prometheus.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "luckydino-app.fullname" . }}-metrics
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "luckydino-app.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{.Values.service.metricsPort}}
+    name: metrics
+    targetPort: {{ .Values.service.metricsPort }}
+  selector:
+    {{- include "luckydino-app.selectorLabels" . | nindent 4 }}
+{{- end }}

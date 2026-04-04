@@ -1,0 +1,69 @@
+{{- define "phoenix-backend.service.spec" -}}
+# shared between active and preview Service
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "phoenix-backend.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: kamon
+      targetPort: kamon
+      port: 5266
+      protocol: TCP
+
+    - name: public-api
+      targetPort: public-api
+      port: 9000
+      protocol: TCP
+
+    - name: dev-api
+      targetPort: dev-api
+      port: 9001
+      protocol: TCP
+
+    - name: websocket
+      targetPort: websocket
+      port: 9002
+      protocol: TCP
+
+    # HTTP routes don't start unless ingestion is enabled.
+    {{ if .Values.betgenius.dataIngestionEnabled -}}
+    - name: betgenius-api
+      targetPort: betgenius-api
+      port: 9003
+      protocol: TCP
+    {{- end }}
+
+    - name: pxp-api
+      targetPort: pxp-api
+      port: 9004
+      protocol: TCP
+
+    - name: prometheus
+      targetPort: prometheus
+      port: 9095
+      protocol: TCP
+{{- end -}}
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "phoenix-backend.fullname" . }}
+  labels:
+    {{- include "phoenix-backend.labels" . | nindent 4 }}
+    # The extra role is needed for Prometheus ServiceMonitor to distinguish b/w active and preview Services.
+    role: active
+{{ include "phoenix-backend.service.spec" . }}
+
+
+{{- if .Values.argocd.rollouts.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "phoenix-backend.fullname" . }}-preview
+  labels:
+    {{- include "phoenix-backend.labels" . | nindent 4 }}
+    role: preview
+{{ include "phoenix-backend.service.spec" . }}
+{{- end }}

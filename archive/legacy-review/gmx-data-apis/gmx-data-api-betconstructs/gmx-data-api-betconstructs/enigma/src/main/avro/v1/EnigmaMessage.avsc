@@ -1,0 +1,39 @@
+{
+  "namespace": "com.betconstruct.avro.enigma",
+  "type": "record",
+  "name": "EnigmaMessage",
+  "fields": [
+    {
+      "name": "ClientId",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "ClientDetails",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "MessageType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Message",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

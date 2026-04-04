@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="achievement_configurations_webhook">
+
+        <createTable tableName="achievement_webhook_configurations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_configuration_id" type="bigint">
+                <constraints nullable="true"
+                             foreignKeyName="fk_achievement_webhook_configurations_event_configuration_id"
+                             referencedTableName="event_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="request_type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_webhook_configuration_fields">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="achievement_webhook_configuration_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_webhook_configuration_fields_achievement_webhook_configuration_id"
+                             referencedTableName="achievement_webhook_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="field_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operation_type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregation_rule_id" type="uuid"/>
+            <column name="value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="achievement_configurations">
+            <column name="achievement_webhook_configuration_id" type="bigint"
+                    afterColumn="achievement_event_configuration_id">
+                <constraints nullable="true"
+                             foreignKeyName="fk_achievement_configurations_achievement_webhook_configurations_id"
+                             referencedTableName="achievement_webhook_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

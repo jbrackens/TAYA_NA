@@ -1,0 +1,81 @@
+plugins {
+    id 'application'
+    id "com.palantir.docker"
+    id 'io.franzbecker.gradle-lombok' version '2.0'
+}
+
+description = "GMX Platform :: Data Collector :: PA Data Feed"
+
+ext {
+    camelVersion = "2.20.2"
+
+    springBootVersion = "1.5.8.RELEASE"
+
+    servletVersion = "3.0.1"
+    awsJavaSdkVersion = "1.11.122"
+    woodstoxVersion = "5.2.0"
+    commonsLang3Version = "3.5"
+    janinoVersion = "3.0.8"
+
+    junitDataproviderVersion = "1.13.1"
+    assertjVersion = "3.11.1"
+
+    dockerName = "${dockerRegistry}/${dockerRegistryGroup}/${project.name}"
+}
+
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+
+    implementation(
+            platform("org.springframework.boot:spring-boot-dependencies:$springBootVersion"),
+            platform("org.apache.camel:camel-spring-boot-dependencies:$camelVersion"),
+
+            project(":pa-data-feed-model"),
+
+            "org.apache.camel:camel-servlet-starter:$camelVersion",
+            "org.apache.camel:camel-spring-boot-starter:$camelVersion",
+
+            "org.springframework.boot:spring-boot-starter-undertow:$springBootVersion",
+            "org.springframework.boot:spring-boot-starter-actuator:$springBootVersion",
+
+            "org.apache.camel:camel-core:$camelVersion",
+            "org.apache.camel:camel-servlet:$camelVersion",
+            "org.apache.camel:camel-tarfile:$camelVersion",
+            "org.apache.camel:camel-script:$camelVersion",
+            "org.apache.camel:camel-groovy:$camelVersion",
+            "org.apache.camel:camel-aws:$camelVersion",
+            "org.apache.camel:camel-kafka:$camelVersion",
+
+            "com.amazonaws:aws-java-sdk-s3:$awsJavaSdkVersion",
+
+            "com.fasterxml.woodstox:woodstox-core:$woodstoxVersion",
+            "org.apache.commons:commons-lang3:$commonsLang3Version",
+            "org.codehaus.janino:janino:$janinoVersion",
+    )
+
+    testImplementation(
+            "org.springframework.boot:spring-boot-starter-test:$springBootVersion",
+            "org.apache.camel:camel-test-spring:$camelVersion",
+
+            "org.assertj:assertj-core:$assertjVersion",
+            "com.tngtech.java:junit-dataprovider:$junitDataproviderVersion"
+    )
+}
+
+lombok {
+    version = '1.18.4'
+    sha256 = ""
+}
+
+docker {
+    dependsOn build
+    name "${dockerName}:${project.version}"
+    tag 'latest', "${dockerName}:latest"
+    files tasks.distTar.outputs
+    buildArgs(['JAR_FILE': "${project.name}-${project.version}", 'APP_NAME': "${project.name}"])
+}
+
+mainClassName = "tech.argyll.gmx.datacollector.padatafeed.PADataFeedApplication"

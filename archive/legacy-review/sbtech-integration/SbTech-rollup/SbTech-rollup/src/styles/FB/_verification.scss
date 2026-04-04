@@ -1,0 +1,116 @@
+.verification-message{
+  width:100%;
+  background:$brand-bg;
+  color:white;
+}
+.welcome-page{
+  color:white;
+  padding:25px;
+  .IsMobile &{
+    padding:50px 25px;
+  }
+  h3{
+    margin:20px 0;
+  }
+}
+.verification-passed{
+  display:block;
+  text-align:center;
+  max-width:350px;
+  margin:0 auto;
+  img{
+    width:75px;
+  }
+  h3{
+    font-size:26px;
+  }
+  p{
+    margin-bottom:25px;
+  }
+  a.ag-button{
+    margin-bottom:10px;
+  }
+  a.blank-button{
+    background-color: none;
+    color:$grey-text;
+  }
+}
+
+.overlay-verification{
+  white-space:normal;
+  *{box-sizing:border-box;}
+  #verification-heading{
+    color:white;
+    font-size: 14px;
+    font-family:$brand-font--header;
+    color:white;
+    padding:20px;
+    background-position:98% 90%;
+    background-repeat:no-repeat;
+    margin-bottom:10px;
+    h2{
+      font-size:18px;
+      font-weight:bold;
+    }
+    p{
+      margin-right:50px;
+      margin-top:10px;
+    }
+  }
+  &[data-status="failed"] #verification-heading{
+    background-color:$brand-primary;
+    background-image:url('/img/22325');
+  }
+  #verification-content{
+    color:white;
+    display:flex;
+    flex-direction:column;
+  }
+  .info-box{
+    display:block;
+    position:relative;
+    height:100%;
+    padding:10px 10px 40px 10px;
+    font-size:14px;
+    background-repeat:no-repeat;
+    white-space:normal;
+    margin-bottom:10px;
+    p{
+      line-height:1.6;
+      padding-right:100px;
+      margin-bottom:1em;
+    }
+    &--docs{
+      background-color:$brand-bg;
+      color:white;
+      background-image:url('/img/22327');
+      background-position:calc(100% - 20px) calc(100% - 40px);
+      background-size:auto 80px;
+    }
+    ul{
+      list-style-type:disc;
+      margin-left:2em;
+      b{
+        font-size:1.2em;
+        line-height:1.8em;
+        text-transform:uppercase;
+      }
+    }
+    .small-text{
+      font-size:11px;
+      a{color:$brand-primary;}
+    }
+  }
+}
+html.IsMobile .overlay-verification .info-box--docs{
+  background-color:$brand-grey;
+}
+
+
+.IsDesktop .page.current .account-doc-upload__wrap{
+  max-width:350px;
+  margin:0 auto;
+  .filter-custom .filter-input-value{
+    color:white;
+  }
+}

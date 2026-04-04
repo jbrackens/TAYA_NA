@@ -1,0 +1,18 @@
+{% extends 'oidc_social/base.html' %}
+{% block container %}
+    <div class="row" style="margin-top: 100px">
+        <div class="col-xs-12 col-sm-10 col-sm-push-1 col-md-8 col-md-push-2 col-lg-6 col-lg-push-3">
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Possible account match.</h3>
+                </div>
+                <div class="panel-body">
+                    Please log in to your account and then add social account.
+                </div>
+                <div class="panel-footer text-right">
+                    <a href="{{ next }}" class="btn btn-danger">&leftarrow; Go back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

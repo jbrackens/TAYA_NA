@@ -1,0 +1,1184 @@
+[
+  {
+    "CountryID": "4",
+    "CountryISO": "AX",
+    "CountryName": "ALAND ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "6",
+    "CountryISO": "DZ",
+    "CountryName": "ALGERIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "11",
+    "CountryISO": "AQ",
+    "CountryName": "ANTARCTICA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "12",
+    "CountryISO": "AG",
+    "CountryName": "ANTIGUA AND BARBUDA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "13",
+    "CountryISO": "AR",
+    "CountryName": "ARGENTINA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "15",
+    "CountryISO": "AW",
+    "CountryName": "ARUBA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "17",
+    "CountryISO": "AT",
+    "CountryName": "AUSTRIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "18",
+    "CountryISO": "AZ",
+    "CountryName": "AZERBAIJAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "19",
+    "CountryISO": "BS",
+    "CountryName": "BAHAMAS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "20",
+    "CountryISO": "BH",
+    "CountryName": "BAHRAIN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "23",
+    "CountryISO": "BY",
+    "CountryName": "BELARUS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "25",
+    "CountryISO": "BZ",
+    "CountryName": "BELIZE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "26",
+    "CountryISO": "BJ",
+    "CountryName": "BENIN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "27",
+    "CountryISO": "BM",
+    "CountryName": "BERMUDA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "32",
+    "CountryISO": "BW",
+    "CountryName": "BOTSWANA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "34",
+    "CountryISO": "BR",
+    "CountryName": "BRAZIL",
+    "CurrencyISO": "BRL"
+  },
+  {
+    "CountryID": "39",
+    "CountryISO": "BI",
+    "CountryName": "BURUNDI",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "40",
+    "CountryISO": "KH",
+    "CountryName": "CAMBODIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "41",
+    "CountryISO": "CM",
+    "CountryName": "CAMEROON",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "42",
+    "CountryISO": "CA",
+    "CountryName": "CANADA",
+    "CurrencyISO": "CAD"
+  },
+  {
+    "CountryID": "43",
+    "CountryISO": "CV",
+    "CountryName": "CAPE VERDE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "44",
+    "CountryISO": "KY",
+    "CountryName": "CAYMAN ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "45",
+    "CountryISO": "CF",
+    "CountryName": "CENTRAL AFRICAN REPUBLIC",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "46",
+    "CountryISO": "TD",
+    "CountryName": "CHAD",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "47",
+    "CountryISO": "CL",
+    "CountryName": "CHILE",
+    "CurrencyISO": "CLP"
+  },
+  {
+    "CountryID": "48",
+    "CountryISO": "CN",
+    "CountryName": "CHINA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "49",
+    "CountryISO": "CX",
+    "CountryName": "CHRISTMAS ISLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "52",
+    "CountryISO": "KM",
+    "CountryName": "COMOROS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "53",
+    "CountryISO": "CG",
+    "CountryName": "CONGO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "54",
+    "CountryISO": "CD",
+    "CountryName": "CONGO, THE DEMOCRATIC REPUBLIC OF THE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "55",
+    "CountryISO": "CK",
+    "CountryName": "COOK ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "56",
+    "CountryISO": "CR",
+    "CountryName": "COSTA RICA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "58",
+    "CountryISO": "HR",
+    "CountryName": "CROATIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "59",
+    "CountryISO": "CU",
+    "CountryName": "CUBA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "60",
+    "CountryISO": "CW",
+    "CountryName": "CURACAO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "61",
+    "CountryISO": "CY",
+    "CountryName": "CYPRUS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "62",
+    "CountryISO": "CZ",
+    "CountryName": "CZECH REPUBLIC",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "65",
+    "CountryISO": "DM",
+    "CountryName": "DOMINICA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "66",
+    "CountryISO": "DO",
+    "CountryName": "DOMINICAN REPUBLIC",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "67",
+    "CountryISO": "EC",
+    "CountryName": "ECUADOR",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "68",
+    "CountryISO": "EG",
+    "CountryName": "EGYPT",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "69",
+    "CountryISO": "SV",
+    "CountryName": "EL SALVADOR",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "70",
+    "CountryISO": "GQ",
+    "CountryName": "EQUATORIAL GUINEA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "72",
+    "CountryISO": "EE",
+    "CountryName": "ESTONIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "73",
+    "CountryISO": "ET",
+    "CountryName": "ETHIOPIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "74",
+    "CountryISO": "FK",
+    "CountryName": "FALKLAND ISLANDS (MALVINAS)",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "75",
+    "CountryISO": "FO",
+    "CountryName": "FAROE ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "76",
+    "CountryISO": "FJ",
+    "CountryName": "FIJI",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "77",
+    "CountryISO": "FI",
+    "CountryName": "FINLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "82",
+    "CountryISO": "GA",
+    "CountryName": "GABON",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "83",
+    "CountryISO": "GM",
+    "CountryName": "GAMBIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "84",
+    "CountryISO": "GE",
+    "CountryName": "GEORGIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "85",
+    "CountryISO": "DE",
+    "CountryName": "GERMANY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "86",
+    "CountryISO": "GH",
+    "CountryName": "GHANA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "88",
+    "CountryISO": "GR",
+    "CountryName": "GREECE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "89",
+    "CountryISO": "GL",
+    "CountryName": "GREENLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "92",
+    "CountryISO": "GU",
+    "CountryName": "GUAM",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "93",
+    "CountryISO": "GT",
+    "CountryName": "GUATEMALA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "94",
+    "CountryISO": "GG",
+    "CountryName": "GUERNSEY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "95",
+    "CountryISO": "GN",
+    "CountryName": "GUINEA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "96",
+    "CountryISO": "GW",
+    "CountryName": "GUINEA-BISSAU",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "97",
+    "CountryISO": "GY",
+    "CountryName": "GUYANA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "98",
+    "CountryISO": "HT",
+    "CountryName": "HAITI",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "101",
+    "CountryISO": "HN",
+    "CountryName": "HONDURAS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "102",
+    "CountryISO": "HK",
+    "CountryName": "HONG KONG",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "103",
+    "CountryISO": "HU",
+    "CountryName": "HUNGARY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "104",
+    "CountryISO": "IS",
+    "CountryName": "ICELAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "105",
+    "CountryISO": "IN",
+    "CountryName": "INDIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "106",
+    "CountryISO": "ID",
+    "CountryName": "INDONESIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "107",
+    "CountryISO": "IR",
+    "CountryName": "IRAN, ISLAMIC REPUBLIC OF",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "113",
+    "CountryISO": "JM",
+    "CountryName": "JAMAICA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "114",
+    "CountryISO": "JP",
+    "CountryName": "JAPAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "117",
+    "CountryISO": "KZ",
+    "CountryName": "KAZAKHSTAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "118",
+    "CountryISO": "KE",
+    "CountryName": "KENYA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "119",
+    "CountryISO": "KI",
+    "CountryName": "KIRIBATI",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "122",
+    "CountryISO": "KW",
+    "CountryName": "KUWAIT",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "123",
+    "CountryISO": "KG",
+    "CountryName": "KYRGYZSTAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "124",
+    "CountryISO": "LA",
+    "CountryName": "LAO PEOPLE'S DEMOCRATIC REPUBLIC",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "125",
+    "CountryISO": "LV",
+    "CountryName": "LATVIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "126",
+    "CountryISO": "LB",
+    "CountryName": "LEBANON",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "127",
+    "CountryISO": "LS",
+    "CountryName": "LESOTHO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "128",
+    "CountryISO": "LR",
+    "CountryName": "LIBERIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "129",
+    "CountryISO": "LY",
+    "CountryName": "LIBYAN ARAB JAMAHIRIYA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "130",
+    "CountryISO": "LI",
+    "CountryName": "LIECHTENSTEIN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "131",
+    "CountryISO": "LT",
+    "CountryName": "LITHUANIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "132",
+    "CountryISO": "LU",
+    "CountryName": "LUXEMBOURG",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "133",
+    "CountryISO": "MO",
+    "CountryName": "MACAO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "134",
+    "CountryISO": "MK",
+    "CountryName": "MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "135",
+    "CountryISO": "MG",
+    "CountryName": "MADAGASCAR",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "136",
+    "CountryISO": "MW",
+    "CountryName": "MALAWI",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "137",
+    "CountryISO": "MY",
+    "CountryName": "MALAYSIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "138",
+    "CountryISO": "MV",
+    "CountryName": "MALDIVES",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "139",
+    "CountryISO": "ML",
+    "CountryName": "MALI",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "140",
+    "CountryISO": "MT",
+    "CountryName": "MALTA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "141",
+    "CountryISO": "MH",
+    "CountryName": "MARSHALL ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "142",
+    "CountryISO": "MQ",
+    "CountryName": "MARTINIQUE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "143",
+    "CountryISO": "MR",
+    "CountryName": "MAURITANIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "144",
+    "CountryISO": "MU",
+    "CountryName": "MAURITIUS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "145",
+    "CountryISO": "YT",
+    "CountryName": "MAYOTTE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "146",
+    "CountryISO": "MX",
+    "CountryName": "MEXICO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "147",
+    "CountryISO": "FM",
+    "CountryName": "MICRONESIA, FEDERATED STATES OF",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "148",
+    "CountryISO": "MD",
+    "CountryName": "MOLDOVA, REPUBLIC OF",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "149",
+    "CountryISO": "MC",
+    "CountryName": "MONACO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "150",
+    "CountryISO": "MN",
+    "CountryName": "MONGOLIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "151",
+    "CountryISO": "ME",
+    "CountryName": "MONTENEGRO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "152",
+    "CountryISO": "MS",
+    "CountryName": "MONTSERRAT",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "153",
+    "CountryISO": "MA",
+    "CountryName": "MOROCCO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "154",
+    "CountryISO": "MZ",
+    "CountryName": "MOZAMBIQUE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "156",
+    "CountryISO": "NA",
+    "CountryName": "NAMIBIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "157",
+    "CountryISO": "NR",
+    "CountryName": "NAURU",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "159",
+    "CountryISO": "NL",
+    "CountryName": "NETHERLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "160",
+    "CountryISO": "NC",
+    "CountryName": "NEW CALEDONIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "161",
+    "CountryISO": "NZ",
+    "CountryName": "NEW ZEALAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "162",
+    "CountryISO": "NI",
+    "CountryName": "NICARAGUA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "163",
+    "CountryISO": "NE",
+    "CountryName": "NIGER",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "164",
+    "CountryISO": "NG",
+    "CountryName": "NIGERIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "165",
+    "CountryISO": "NU",
+    "CountryName": "NIUE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "166",
+    "CountryISO": "NF",
+    "CountryName": "NORFOLK ISLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "167",
+    "CountryISO": "MP",
+    "CountryName": "NORTHERN MARIANA ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "168",
+    "CountryISO": "NO",
+    "CountryName": "NORWAY",
+    "CurrencyISO": "NOK"
+  },
+  {
+    "CountryID": "169",
+    "CountryISO": "OM",
+    "CountryName": "OMAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "170",
+    "CountryISO": "PK",
+    "CountryName": "PAKISTAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "171",
+    "CountryISO": "PW",
+    "CountryName": "PALAU",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "172",
+    "CountryISO": "PS",
+    "CountryName": "PALESTINIAN TERRITORY, OCCUPIED",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "173",
+    "CountryISO": "PA",
+    "CountryName": "PANAMA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "174",
+    "CountryISO": "PG",
+    "CountryName": "PAPUA NEW GUINEA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "175",
+    "CountryISO": "PY",
+    "CountryName": "PARAGUAY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "176",
+    "CountryISO": "PE",
+    "CountryName": "PERU",
+    "CurrencyISO": "PEN"
+  },
+  {
+    "CountryID": "177",
+    "CountryISO": "PH",
+    "CountryName": "PHILIPPINES",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "178",
+    "CountryISO": "PN",
+    "CountryName": "PITCAIRN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "179",
+    "CountryISO": "PL",
+    "CountryName": "POLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "181",
+    "CountryISO": "PR",
+    "CountryName": "PUERTO RICO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "182",
+    "CountryISO": "QA",
+    "CountryName": "QATAR",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "183",
+    "CountryISO": "RE",
+    "CountryName": "REUNION",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "185",
+    "CountryISO": "RU",
+    "CountryName": "RUSSIAN FEDERATION",
+    "CurrencyISO": "USD"
+  },
+  {
+    "CountryID": "186",
+    "CountryISO": "RW",
+    "CountryName": "RWANDA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "187",
+    "CountryISO": "BL",
+    "CountryName": "SAINT BARTHELEMY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "188",
+    "CountryISO": "SH",
+    "CountryName": "SAINT HELENA, ASCENSION AND TRISTAN DA CUNHA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "189",
+    "CountryISO": "KN",
+    "CountryName": "SAINT KITTS AND NEVIS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "190",
+    "CountryISO": "LC",
+    "CountryName": "SAINT LUCIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "191",
+    "CountryISO": "MF",
+    "CountryName": "SAINT MARTIN (FRENCH PART)",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "192",
+    "CountryISO": "PM",
+    "CountryName": "SAINT PIERRE AND MIQUELON",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "193",
+    "CountryISO": "VC",
+    "CountryName": "SAINT VINCENT AND THE GRENADINES",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "194",
+    "CountryISO": "WS",
+    "CountryName": "SAMOA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "195",
+    "CountryISO": "SM",
+    "CountryName": "SAN MARINO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "196",
+    "CountryISO": "ST",
+    "CountryName": "SAO TOME AND PRINCIPE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "197",
+    "CountryISO": "SA",
+    "CountryName": "SAUDI ARABIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "198",
+    "CountryISO": "SN",
+    "CountryName": "SENEGAL",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "199",
+    "CountryISO": "RS",
+    "CountryName": "SERBIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "200",
+    "CountryISO": "SC",
+    "CountryName": "SEYCHELLES",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "201",
+    "CountryISO": "SL",
+    "CountryName": "SIERRA LEONE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "202",
+    "CountryISO": "SG",
+    "CountryName": "SINGAPORE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "203",
+    "CountryISO": "SX",
+    "CountryName": "SINT MAARTEN (DUTCH PART)",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "204",
+    "CountryISO": "SK",
+    "CountryName": "SLOVAKIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "205",
+    "CountryISO": "SI",
+    "CountryName": "SLOVENIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "206",
+    "CountryISO": "SB",
+    "CountryName": "SOLOMON ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "207",
+    "CountryISO": "SO",
+    "CountryName": "SOMALIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "208",
+    "CountryISO": "ZA",
+    "CountryName": "SOUTH AFRICA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "209",
+    "CountryISO": "GS",
+    "CountryName": "SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "211",
+    "CountryISO": "LK",
+    "CountryName": "SRI LANKA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "212",
+    "CountryISO": "SD",
+    "CountryName": "SUDAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "213",
+    "CountryISO": "SR",
+    "CountryName": "SURINAME",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "214",
+    "CountryISO": "SJ",
+    "CountryName": "SVALBARD AND JAN MAYEN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "215",
+    "CountryISO": "SZ",
+    "CountryName": "SWAZILAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "216",
+    "CountryISO": "SE",
+    "CountryName": "SWEDEN",
+    "CurrencyISO": "SEK"
+  },
+  {
+    "CountryID": "217",
+    "CountryISO": "CH",
+    "CountryName": "SWITZERLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "218",
+    "CountryISO": "SY",
+    "CountryName": "SYRIAN ARAB REPUBLIC",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "219",
+    "CountryISO": "TW",
+    "CountryName": "TAIWAN, PROVINCE OF CHINA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "220",
+    "CountryISO": "TJ",
+    "CountryName": "TAJIKISTAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "221",
+    "CountryISO": "TZ",
+    "CountryName": "TANZANIA, UNITED REPUBLIC OF",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "222",
+    "CountryISO": "TH",
+    "CountryName": "THAILAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "223",
+    "CountryISO": "TL",
+    "CountryName": "TIMOR-LESTE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "224",
+    "CountryISO": "TG",
+    "CountryName": "TOGO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "225",
+    "CountryISO": "TK",
+    "CountryName": "TOKELAU",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "226",
+    "CountryISO": "TO",
+    "CountryName": "TONGA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "227",
+    "CountryISO": "TT",
+    "CountryName": "TRINIDAD AND TOBAGO",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "228",
+    "CountryISO": "TN",
+    "CountryName": "TUNISIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "229",
+    "CountryISO": "TR",
+    "CountryName": "TURKEY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "230",
+    "CountryISO": "TM",
+    "CountryName": "TURKMENISTAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "231",
+    "CountryISO": "TC",
+    "CountryName": "TURKS AND CAICOS ISLANDS",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "232",
+    "CountryISO": "TV",
+    "CountryName": "TUVALU",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "233",
+    "CountryISO": "UG",
+    "CountryName": "UGANDA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "234",
+    "CountryISO": "UA",
+    "CountryName": "UKRAINE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "235",
+    "CountryISO": "AE",
+    "CountryName": "UNITED ARAB EMIRATES",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "239",
+    "CountryISO": "UY",
+    "CountryName": "URUGUAY",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "240",
+    "CountryISO": "UZ",
+    "CountryName": "UZBEKISTAN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "241",
+    "CountryISO": "VU",
+    "CountryName": "VANUATU",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "242",
+    "CountryISO": "VE",
+    "CountryName": "VENEZUELA, BOLIVARIAN REPUBLIC OF",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "243",
+    "CountryISO": "VN",
+    "CountryName": "VIET NAM",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "246",
+    "CountryISO": "WF",
+    "CountryName": "WALLIS AND FUTUNA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "247",
+    "CountryISO": "EH",
+    "CountryName": "WESTERN SAHARA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "248",
+    "CountryISO": "YE",
+    "CountryName": "YEMEN",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "249",
+    "CountryISO": "ZM",
+    "CountryName": "ZAMBIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "250",
+    "CountryISO": "ZW",
+    "CountryName": "ZIMBABWE",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "251",
+    "CountryISO": "ZR",
+    "CountryName": "ZAIRE (CONGO)",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "252",
+    "CountryISO": "AN",
+    "CountryName": "NETHERLANDS ANTILLES",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "254",
+    "CountryISO": "XK",
+    "CountryName": "KOSOVO",
+    "CurrencyISO": "EUR"
+  }
+]

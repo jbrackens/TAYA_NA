@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_games_providers_lists",
+  "info": {
+    "displayName": "Providers List",
+    "icon": "filter"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    },
+    "providers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::games-provider.games-provider"
+    }
+  }
+}

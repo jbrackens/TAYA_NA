@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  # forwards to host via 'dockerhost' name
+  dockerhost:
+    image: qoomon/docker-host
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    restart: on-failure
+
+  # apps
+  webgateway:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-racing-roulette/web-gateway:latest'
+    ports:
+    - "9000:9000"
+    env_file:
+    - .env
+    volumes:
+      - ./tmp/:/Event
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+
+

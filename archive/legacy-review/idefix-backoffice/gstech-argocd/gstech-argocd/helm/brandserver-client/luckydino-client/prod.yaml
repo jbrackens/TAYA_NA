@@ -1,0 +1,27 @@
+nameOverride: "prod-luckydino-client-service"
+fullnameOverride: "prod-luckydino-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3000
+
+ingress:
+  enabled: false
+
+env:
+  SITE_NAME: luckydino
+  NODE_ENV: production
+  PORT: 3000
+  API: http://prod-luckydino-backend-service:3000
+  CAPTCHA_KEY: "6LfbzlUlAAAAAF7jDi4_qW83H-8sE2lEcYe4xF3F"

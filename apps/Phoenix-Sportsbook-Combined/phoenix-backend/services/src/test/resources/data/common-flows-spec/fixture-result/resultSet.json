@@ -1,0 +1,28 @@
+[
+  {
+    "Header": {
+      "MessageGuid": "132106a4-3913-4259-ad43-af55db0a1f6d",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-19T18:51:54.8160223Z"
+    },
+    "ResultSet": {
+      "FixtureId": 8571625,
+      "Results": [
+        {
+          "MarketId": 100000005,
+          "MarketSequence": 0,
+          "Results": [
+            {
+              "ResultStatus": "Loser",
+              "SelectionId": 300000010
+            },
+            {
+              "ResultStatus": "Winner",
+              "SelectionId": 300000011
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

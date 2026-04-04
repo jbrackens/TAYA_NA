@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_common_preset_markdowns",
+  "info": {
+    "displayName": "Preset Markdown",
+    "icon": "write"
+  },
+  "options": {},
+  "attributes": {
+    "markdown": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::markdown.markdown"
+    }
+  }
+}

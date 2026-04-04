@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "namespace": "gmx.dataapi.internal.responsiblegambling",
+  "name": "SportsBetAverageLiabilityAlert",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    },
+    {
+      "name": "changedAtUtc",
+      "type": "long"
+    }
+  ]
+}

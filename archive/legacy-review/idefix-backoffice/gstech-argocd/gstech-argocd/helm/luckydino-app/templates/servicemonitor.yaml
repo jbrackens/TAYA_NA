@@ -1,0 +1,27 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "luckydino-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "luckydino-app.name" . }}
+    chart: {{ include "luckydino-app.chart" . }}
+    release: prometheus-operator
+    heritage: {{ .Release.Service }}
+spec:
+  endpoints:
+  - interval: {{ .Values.prometheus.interval }}
+    path: {{ .Values.prometheus.path }}
+    port: {{ .Values.prometheus.portname }}
+{{- if .Values.prometheus.relabelings }}
+    relabelings:
+{{ toYaml .Values.prometheus.relabelings | indent 6 }}
+{{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace | quote }}
+  selector:
+    matchLabels:
+      {{- include "luckydino-app.labels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,21 @@
+$brand-base:#282828;
+@mixin branded-heading($color:white, $bg:$brand-base, $size:25px){
+  line-height: 1.7;
+  text-transform:uppercase;
+  font-size: $size;
+  box-decoration-break: clone;
+  padding-left:6px;
+  font-family: $brand-font--header;
+  font-weight:800;
+  & > span{
+    color:$color;
+    background:$bg;
+    padding:0;
+    -webkit-box-decoration-break: clone;
+    -ms-box-decoration-break: clone;
+    -o-box-decoration-break: clone;
+    box-decoration-break: clone;
+    box-shadow: 6px 0 0 $bg,
+        -6px 0 0 $bg;
+  }
+}

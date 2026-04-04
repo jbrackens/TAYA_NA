@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "EnigmaMessageCustomerId",
+  "namespace": "com.betconstruct.avro.enigma",
+  "fields": [
+    {
+      "name": "CustomerID",
+      "type": "long",
+      "default": 0
+    }
+  ],
+  "default": null
+}

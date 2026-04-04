@@ -1,0 +1,47 @@
+name: Release changelog
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get previous release tag
+        id: previous-release
+        uses: sammcoe/get-previous-release-action@0a3b9b522cd3876718c6c61359088191899e7747
+
+      - name: 'Get previous tag'
+        id: previoustag
+        run: |
+          PREVIOUS_TAG=$(git tag --sort "-committerdate" | sed '2p;d' | cut -d ' ' -f2)
+          echo $PREVIOUS_TAG
+          git tag --sort "-committerdate" 
+          echo "tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "username": "GitHub Releases",
+              "icon_url": "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png",
+              "blocks": [
+               	{
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 New <https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}|release> on *${{ github.repository }}*\n Full changelog: https://github.com/${{ github.repository }}/compare/${{ steps.previoustag.outputs.tag }}...${{ github.ref_name }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.GH_RELEASES_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

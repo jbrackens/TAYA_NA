@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+  gstech-rewardserver:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-rewardserver/Dockerfile
+    image: gstech-rewardserver
+    container_name: gstech-rewardserver
+    ports:
+      - "3011:3011"
+      - "3012:3012"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: gstech-postgres
+      POSTGRES_DATABASE: rewardserver
+      BACKEND_URL: http://gstech-backend:3001
+    healthcheck:
+      test: wget http://localhost:3012/api/v1/status -q -O - > /dev/null 2>&1
+      interval: 5s
+      timeout: 5s
+      start_period: 15s
+      retries: 10
+
+networks:
+  gstech:
+    external: true

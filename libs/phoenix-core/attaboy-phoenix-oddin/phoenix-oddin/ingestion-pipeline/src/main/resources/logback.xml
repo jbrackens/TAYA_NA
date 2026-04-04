@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <property name="logging.use-json" value="${PHOENIX_LOGGING_USE_JSON:-false}"/>
+  <if condition='property("logging.use-json").equals("true")'>
+    <then>
+      <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+          <providers>
+            <timestamp/>
+            <logLevel/>
+            <threadName/>
+            <loggerName/>
+            <mdc/> <!-- provides: akkaAddress, akkaSource, akkaTimestamp, correlationId, sourceActorSystem, sourceThread -->
+            <message/>
+            <arguments/>
+            <stackTrace/>
+            <stackHash/>
+          </providers>
+        </encoder>
+      </appender>
+    </then>
+    <else>
+      <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+          <Pattern>%date{"yyyy-MM-dd HH:mm:ss,SSSZZZZ"} %-5level [%-21.21thread] [%X{correlationId}] %logger{10} - %message%n%xException</Pattern>
+        </encoder>
+      </appender>
+    </else>
+  </if>
+
+  <root level="INFO">
+    <appender-ref ref="STDOUT"/>
+  </root>
+</configuration>

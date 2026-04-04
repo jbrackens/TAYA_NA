@@ -1,0 +1,159 @@
+#header-logo
+  position absolute
+  top 10px
+  left 10px
+  z-index 1
+  width 185px
+  height 45px
+  cdn_image '/images/logo.png' 185px 45px
+  line-height 0
+  font-size 0
+  color transparent
+  @media only screen and (max-width:767px)
+    background-size contain
+    max-width 110px
+    background-repeat no-repeat
+    background-position center
+
+#header
+  position fixed
+  z-index 15030
+  top 0
+  left 0
+  width 100%
+  background-color $header-color
+  height $header_height
+  &.blur
+    -webkit-filter blur(5px)
+    filter blur(5px)
+    @media only screen and (max-width:767px)
+      display none
+
+#header-container
+  padding (($header_height - 40px) / 2) 0
+  position absolute
+  max-width 950px
+  width 100%
+  margin 0 auto
+  left 0
+  right 0
+  text-align center
+  .text
+    line-height 40px
+    color $kalevala_light_blue
+    margin-right 8px
+    font-size 11px
+    font-weight 700
+    text-transform uppercase
+    @media only screen and (max-width:767px)
+      display none
+  .user-container
+    background-color $kalevala_dark_bg
+    border-radius 5px
+    float left
+    padding 2px 5px 23px 6px
+    color #fff
+    height 40px
+    width 185px
+    margin-right 10px
+    font-family $body_font
+
+  .balance-container
+    float right
+    background-color $kalevala_dark_bg
+    border-radius 5px
+    white-space nowrap
+    text-decoration none
+    text-align center
+    position relative
+    height 40px
+    font-size 20px
+    headerFont()
+    width 180px
+    padding 0 5px
+    line-height 40px
+    margin-right 10px
+    color #ffffff
+
+  .button
+    height 40px
+    line-height 32px
+    &.deposit, &.coin-balance, &.myaccount
+      float right
+      margin-right 6px
+    &.login-button
+      @media only screen and (max-width:767px)
+        float right
+        margin-right 6px
+    &.deposit
+      width 120px
+      @media only screen and (max-width:991px)
+        width 80px
+        padding-left 0
+        padding-right 0
+      @media only screen and (max-width:767px)
+        display none
+    &.coin-balance
+      width 180px
+      padding 4px
+      margin-top 4px
+      background-color $kalevala_blue
+      &:hover
+        background-color $kalevala_blue
+      @media only screen and (max-width:767px)
+        display none
+    &.myaccount
+      position relative
+      min-width 150px
+      padding 5px 30px 5px 10px
+      background-color $kalevala_cta_secondary
+      @media only screen and (max-width:767px)
+        display none
+      .badge
+        position absolute
+        top -9px
+        right 4px
+        &:before
+          width 0
+          height 0
+          margin 0 auto
+          left 0
+          right 0
+          bottom -4px
+          position absolute
+          content ''
+          border-style solid
+          border-width 4px 3.5px 0 3.5px
+          border-color $kalevala_dark_blue transparent transparent transparent
+      &:before
+        content ''
+        position absolute
+        top 13px
+        right 10px
+        sprite2x($menuicon, $menuicon_2x)
+
+.coin-balance
+  &__iron
+    color $kalevala_light_blue
+    display inline-block
+    width 90px
+    margin 0
+    position relative
+    &:after
+      position absolute
+      top 0
+      right 0
+      content ''
+      sprite2x($iron_coin, $iron_coin_2x)
+  &__gold
+    display inline-block
+    color $kalevala_light_blue
+    width 70px
+    margin 0 0 0 10px
+    position relative
+    &:after
+      position absolute
+      top 0px
+      right 0
+      content ''
+      sprite2x($gold_coin, $gold_coin_2x)

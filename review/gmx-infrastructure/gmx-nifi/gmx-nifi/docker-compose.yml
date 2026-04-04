@@ -1,0 +1,64 @@
+version: "3.3"
+services:
+  postgres:
+    image: postgres:9-alpine
+    environment:
+        - POSTGRES_PASSWORD=nifi_registry
+        - POSTGRES_USER=nifi_registry
+        - POSTGRES_DB=nifi_registry
+    volumes:
+        - ./persistence/db:/var/lib/postgresql/data
+  nifi:
+    image: apache/nifi:1.9.0
+    hostname: nifi
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./persistence/nifi/database_repository:/opt/nifi/nifi-current/database_repository"
+      - "./persistence/nifi/flowfile_repository:/opt/nifi/nifi-current/flowfile_repository"
+      - "./persistence/nifi/content_repository:/opt/nifi/nifi-current/content_repository"
+      - "./persistence/nifi/provenance_repository:/opt/nifi/nifi-current/provenance_repository"
+      - "./persistence/nifi/state:/opt/nifi/nifi-current/state"
+      - "./data/nifi:/opt/nifi/nifi-current/conf"
+      - "./persistence/nifi/conf/archive:/opt/nifi/nifi-current/conf/archive"
+    depends_on:
+      - registry
+      - redis
+
+  redis:
+    image: redis
+    expose:
+      - "6379"
+
+  registry:
+    image: apache/nifi-registry:latest
+    hostname: registry
+    depends_on:
+      - postgres
+    ports:
+      - "18080:18080"
+    environment:
+      - NIFI_REGISTRY_DB_URL=jdbc:postgresql://postgres/nifi_registry
+      - NIFI_REGISTRY_DB_CLASS=org.postgresql.Driver
+      - NIFI_REGISTRY_DB_DIR=./extra_jars
+      - NIFI_REGISTRY_DB_USER=nifi_registry
+      - NIFI_REGISTRY_DB_PASS=nifi_registry
+    volumes:
+      - "./persistence/registry:/opt/nifi-registry/nifi-registry-0.3.0/flow_storage"
+      - "./persistence/git-bare:/opt/nifi-registry/nifi-registry-0.3.0/git-bare"
+      - "./contrib/postgresql-42.2.5.jar:/opt/nifi-registry/nifi-registry-0.3.0/extra_jars"
+      - "./data/registry:/opt/nifi-registry/nifi-registry-0.3.0/conf"
+
+  zookeeper:
+    hostname: zookeeper
+    image: wurstmeister/zookeeper
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181

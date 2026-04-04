@@ -1,0 +1,37 @@
+name: API Contract Fixtures
+
+on:
+  pull_request:
+    paths:
+      - "phoenix-frontend-brand-viegg/packages/app-core/services/api/contracts.ts"
+      - "phoenix-frontend-brand-viegg/packages/app-core/services/api/**/*.ts"
+      - "phoenix-frontend-brand-viegg/packages/app-core/services/api/**/*.tsx"
+      - "phoenix-frontend-brand-viegg/packages/app-core/services/api/__tests__/response-shapes.test.ts"
+      - "phoenix-frontend-brand-viegg/packages/app-core/services/api/__tests__/fixtures/**"
+      - "scripts/frontend/verify-api-contract-fixtures.sh"
+      - "Makefile"
+      - ".github/workflows/verify-api-contract-fixtures.yml"
+  workflow_dispatch:
+
+jobs:
+  sportsbook-api-response-shapes:
+    name: sportsbook-api-response-shapes
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: |
+            phoenix-frontend-brand-viegg/yarn.lock
+
+      - name: Install Yarn Classic
+        run: npm install -g yarn@1.22.22
+
+      - name: Verify API response-shape fixtures
+        run: make verify-api-contract-fixtures

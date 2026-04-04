@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<match_summary generated_at="2020-11-23T10:09:31">
+    <sport_event id="od:match:23456" name="Team Aspirations vs Future.club" scheduled="2020-11-09T09:50:00" liveodds="not_available" status="closed">
+        <tournament id="od:tournament:862" name="Asian DOTA2 Gold Occupation Competition S19" scheduled="2020-10-28T23:00:00">
+            <tournament_length start_date="2020-10-29"></tournament_length>
+            <sport id="od:sport:6" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:699" name="Team Aspirations" abbreviation="TA" qualifier="home"></competitor>
+            <competitor id="od:competitor:704" name="Future.club" abbreviation="FC" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event_status winner_id="od:competitor:704" home_score="4" away_score="5" status="closed" match_status_code="1">
+        <period_scores>
+            <period_score type="map" number="1" match_status_code="51" home_score="1" away_score="0" home_kills="45" away_kills="48"></period_score>
+            <period_score type="map" number="2" match_status_code="52" home_score="1" away_score="1" home_kills="38" away_kills="59"></period_score>
+            <period_score type="map" number="3" match_status_code="53" home_score="3" away_score="4"></period_score>
+        </period_scores>
+    </sport_event_status>
+</match_summary>

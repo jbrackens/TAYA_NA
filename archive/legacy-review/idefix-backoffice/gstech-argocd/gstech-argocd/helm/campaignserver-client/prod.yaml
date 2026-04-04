@@ -1,0 +1,24 @@
+nameOverride: "prod-gstech-campaignserver-client-service"
+fullnameOverride: "prod-gstech-campaignserver-client-service"
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3051
+
+ingress:
+  enabled: false
+
+env:
+  NODE_ENV: production
+  ENDPOINT: http://prod-gstech-campaignserver-backend-service/api/v1

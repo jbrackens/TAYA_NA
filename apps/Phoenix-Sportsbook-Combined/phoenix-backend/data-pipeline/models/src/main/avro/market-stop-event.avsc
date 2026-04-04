@@ -1,0 +1,35 @@
+{
+  "namespace": "phoenix.dataapi.internal.oddin",
+  "type": "record",
+  "name": "MarketStopEvent",
+  "fields": [
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "receivedAtUtc",
+      "type": "long"
+    },
+    {
+      "name": "sportId",
+      "type": "string"
+    },
+    {
+      "name": "fixtureId",
+      "type": "string"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "groups",
+      "type": "string"
+    },
+    {
+      "name": "marketStatus",
+      "type": "string"
+    }
+  ]
+}

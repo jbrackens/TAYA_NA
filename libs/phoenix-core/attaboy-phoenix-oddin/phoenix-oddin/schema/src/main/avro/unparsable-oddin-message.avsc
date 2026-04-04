@@ -1,0 +1,11 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "UnparsableOddinMessage",
+  "fields":[
+    {
+      "name": "xml",
+      "type": "string"
+    }
+  ]
+}

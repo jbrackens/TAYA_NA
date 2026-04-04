@@ -1,0 +1,39 @@
+{
+  "data": [
+    {
+      "stake": {
+        "amount": 10,
+        "currency": "USD"
+      },
+      "legs": [
+        {
+          "market": {
+            "id": "m:1",
+            "name": "Match winner"
+          },
+          "fixture": {
+            "id": "f:1",
+            "name": "Team A vs Team B",
+            "status": "OPEN"
+          },
+          "sport": {
+            "id": "s:1"
+          },
+          "selection": {
+            "id": "sel:1",
+            "name": "home"
+          },
+          "displayOdds": {
+            "decimal": 1.85,
+            "american": "-118",
+            "fractional": "17/20"
+          }
+        }
+      ]
+    }
+  ],
+  "totalCount": 1,
+  "itemsPerPage": 20,
+  "currentPage": 1,
+  "hasNextPage": false
+}

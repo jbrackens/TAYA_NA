@@ -1,0 +1,86 @@
+nameOverride: "dev-gstech-campaignserver-backend-service"
+fullnameOverride: "dev-gstech-campaignserver-backend-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+resources:
+  requests:
+    memory: "768Mi"
+    cpu: "50m"
+  limits:
+    memory: "768Mi"
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3013
+
+extraTCPPorts:
+  private-api: 3014
+
+ingressClassName: nginx
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-dev-fasttrack-csv-s3
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-gstech-campaignserver-backend-service
+  hosts:
+  - host: admin-luckydino.dev.eeg.viegg.net
+    paths:
+    - path: /api/v1/
+      pathType: Prefix
+      serviceName: dev-gstech-campaignserver-backend-service
+      servicePort: 3013
+    - path: /
+      pathType: Prefix
+      serviceName: dev-gstech-campaignserver-client-service
+      servicePort: 3051
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+  tls: []
+
+env:
+  POSTGRES_HOST: rds.dev.eeg.viegg.net
+  POSTGRES_USER: gstech
+  REDIS_HOST: redis.dev.eeg.viegg.net
+  REDIS_PORT: 6379
+  CAMPAIGN_SERVER_URL: http://dev-gstech-campaignserver-backend-service
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  REWARD_SERVER_URL: http://dev-gstech-rewardserver-service:3012/api/v1
+  REWARD_SERVER_MANAGEMENT_URL: http://dev-gstech-rewardserver-service:3011/api/v1
+  POSTGRES_POOL_SIZE: 40
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  NODE_ENV: development
+  # KAFKAJS_LOG_LEVEL: 'debug'
+  #REWARD_SERVER_AUTH_TOKEN: "GS[fPcXPQo5QKmJmzfcAbL1eqz6JZJwnT94otkZ5CP6EBWwqRBhB0r9TgMVRpRttQnV/dEE+L2MAbfulWpy2OmaEKZnqB/RTmvQ2ZNbaZWlfwFgGLMlUCo=]"
+  #CAMPAIGN_SERVER_AUTH_TOKEN: "GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]"
+  CF_CERTS_URL: https://admin-luckydino.dev.eeg.viegg.net/cdn-cgi/access/certs
+  FT_MIGRATION_S3: dev-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: eu-central-1
+secretEnv:
+  POSTGRES_PASSWORD:
+    dev-gstech-campaignserver-backend-service: postgres-password
+  GOOGLE_CLIENT_ID:
+    dev-gstech-campaignserver-backend-service: google-client-id
+  GOOGLE_CLIENT_SECRET:
+    dev-gstech-campaignserver-backend-service: google-client-secret

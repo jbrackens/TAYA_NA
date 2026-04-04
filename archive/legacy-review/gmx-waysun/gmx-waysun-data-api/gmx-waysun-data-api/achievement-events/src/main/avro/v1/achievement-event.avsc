@@ -1,0 +1,147 @@
+[
+  {
+    "namespace": "stella.dataapi.achievement.event",
+    "name": "EventField",
+    "type": "record",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "valueType",
+        "type": "string"
+      },
+      {
+        "name": "value",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "namespace": "stella.dataapi.achievement.event",
+    "name": "AchievementEvent",
+    "type": "record",
+    "fields": [
+      {
+        "name": "projectId",
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      {
+        "name": "messageOriginDateUTC",
+        "type": "long"
+      },
+      {
+        "name": "groupByFieldValue",
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      {
+        "name": "actionType",
+        "type": {
+          "name": "ActionType",
+          "type": "enum",
+          "symbols": [
+            "EVENT",
+            "WEBHOOK"
+          ]
+        }
+      },
+      {
+        "name": "webhookDetails",
+        "type": [
+          "null",
+          {
+            "name": "WebhookDetails",
+            "type": "record",
+            "fields": [
+              {
+                "name": "requestType",
+                "type": {
+                  "name": "RequestType",
+                  "type": "enum",
+                  "symbols": [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "PATCH",
+                    "DELETE"
+                  ]
+                }
+              },
+              {
+                "name": "url",
+                "type": "string"
+              },
+              {
+                "name": "webhookEventDetails",
+                "type": [
+                  "null",
+                  {
+                    "name": "WebhookEventDetails",
+                    "type": "record",
+                    "fields": [
+                      {
+                        "name": "eventId",
+                        "type": "string",
+                        "logicalType": "uuid"
+                      },
+                      {
+                        "name": "fields",
+                        "type": {
+                          "type": "array",
+                          "items": "EventField"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "eventDetails",
+        "type": [
+          "null",
+          {
+            "name": "EventDetails",
+            "type": "record",
+            "fields": [
+              {
+                "name": "eventName",
+                "type": "string",
+                "logicalType": "uuid"
+              },
+              {
+                "name": "fields",
+                "type": {
+                  "type": "array",
+                  "items": "EventField"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "windowRangeStartUTC",
+        "type": [
+          "null",
+          "long"
+        ]
+      },
+      {
+        "name": "windowRangeEndUTC",
+        "type": [
+          "null",
+          "long"
+        ]
+      }
+    ]
+  }
+]

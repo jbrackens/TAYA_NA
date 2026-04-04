@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/gstech-backend
+    forcestring: true
+  - name: image.tag
+    value: beta-6afa79199eef4932dd52eba7d62f66caa9f490e9
+    forcestring: true

@@ -1,0 +1,12 @@
+<bet_settlement timestamp="1611149525569" event_id="od:match:23273" product="1" request_id="5025">
+    <outcomes>
+        <market id="7" specifiers="map=1|round=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=19" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+    </outcomes>
+</bet_settlement>

@@ -1,0 +1,39 @@
+In the event that XML feeds break and Kafka is not ready, we need to hide all blocks using the XML feeds.
+The following blocks should be set to inactive
+
+Next Race Widget / 40133
+Site modules management / Responsive Components - New / Argyll Blocks / agWidget - Next Race Row /
+
+Horse Racing Block / 43572
+Site modules management / Responsive Components - New / Argyll Blocks / agWidget - Racing Branch /
+(setting this block to inactive will show the sbtech page instead)
+
+Recommendations / 49340
+Site modules management / Responsive Components - New / Argyll Blocks / agWidget - Bet Recommendations /
+
+
+Rollup / 38998
+Site modules management / Responsive Components - New / Argyll Blocks / agScript - Rollup /
+
+And in this block, one line must be commented out (put // at the start of the line)
+
+Application.AfterNavigation.scripts = function (e) {
+  console.log('AfterNav', e);
+  hideLeagues(e);
+  initSpecials(e);
+
+
+needs to be
+
+Application.AfterNavigation.scripts = function (e) {
+  console.log('AfterNav', e);
+  hideLeagues(e);
+  // initSpecials(e);
+
+
+Copy the whole block into a text editor, comment out initSpecials, and paste back. Make sure you do it this way in case something goes wrong you ca cntrl z in the text editor to get the original block contents.
+
+
+And finally, a customer message should be shown on help pages + racing pages
+38830
+Site modules management / Responsive Components - New / Argyll Information Blocks / agBlock - Help Page Message /

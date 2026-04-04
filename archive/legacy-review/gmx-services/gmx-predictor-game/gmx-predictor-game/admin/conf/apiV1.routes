@@ -1,0 +1,6 @@
+
+GET        /health                                                                          tech.argyll.gmx.predictorgame.admin.controllers.HealthController.check()
+
+### Reports
+GET        /sports/:sport/reports/competitions/:competition/rounds/:round/selections        tech.argyll.gmx.predictorgame.admin.controllers.ReportController.downloadSelections(sport: String, competition: String, round: Int)
+

@@ -1,0 +1,112 @@
+#banner_game_wager_meter_2x
+  sidebarBanner()
+  background-color $kalevala_light_blue
+  width 150px
+  height 460px
+  padding-top 10px
+  position relative
+  cdn-background-image2x '/images/meter_bg.jpg' '/images/meter_bg@2x.jpg' 150px 162px
+  background-position bottom left
+  background-repeat no-repeat
+  &__promo_button_holder
+    bottom 5px
+  .promotion-progress-holder
+    position absolute
+    bottom 71px
+    height 245px
+    width 150px
+    left 0
+    right 0
+    margin 0 auto
+
+  &.promotion-banner
+    width 100%
+    height 460px
+
+  @media only screen and (max-width:991px)
+    cdn-background-image2x '/images/meter_m_bg.jpg' '/images/meter_m_bg@2x.jpg' 320px 490px
+    width 100%
+    box-shadow none
+    background-size cover
+  &:after
+    content ''
+    position absolute
+    bottom 20px
+    left 0
+    right 0
+    width 150px
+    height 460px
+    margin 0 auto
+    cdn-background-image2x '/images/meter.png' '/images/meter@2x.png' 150px 500px
+
+  &__title
+    margin 0 0 4px 0
+  &__progress
+    cdn-background-image2x '/images/meter_liquid.png' '/images/meter_liquid@2x.png' 150px 245px
+    background-position bottom center
+    background-repeat no-repeat
+    position absolute
+    right 0
+    left 0
+    width 150px
+    bottom 0
+    height 0
+    z-index 10
+  &__banner
+    font-weight 400 !important
+  &__coin_container
+    background-color $kalevala_blue
+    width 75px
+    height 39px
+    margin-top 2px
+    border-radius 4px
+    display inline-block
+    color #ffffff
+    headerFont()
+    text-align center
+    position relative
+    &:after
+      position absolute
+      bottom -5px
+      content ''
+      left 0
+      right 0
+      margin 0 auto
+      width 0
+      height 0
+      border-style solid
+      border-width 5px 4px 0 4px
+      border-color $kalevala_blue transparent transparent transparent
+  &__coins
+    font-size 25px
+    line-height 39px
+    margin-right 2px
+    vertical-align top
+
+  &__coin_iron
+    display inline-block
+    margin-top 5px
+    cdn-background-image2x '/images/iron_coin.png' '/images/iron_coin@2x.png' 23px 29px
+    height 29px
+    width 23px
+
+  &__coin_gold
+    margin-top 5px
+    display inline-block
+    cdn-background-image2x '/images/gold_coin.png' '/images/gold_coin@2x.png' 23px 29px
+    height 29px
+    width 23px
+
+#banner_game_wager_meter_2x__progress:after
+  content '2x'
+  background-color #ffffff
+  width 56px
+  height 56px
+  border-radius 28px
+  line-height 56px
+  headerFont()
+  color $kalevala_blue
+  position absolute
+  bottom 100px
+  left 10px
+  font-size 36px

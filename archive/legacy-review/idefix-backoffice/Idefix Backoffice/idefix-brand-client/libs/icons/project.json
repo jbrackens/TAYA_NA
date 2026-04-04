@@ -1,0 +1,42 @@
+{
+  "root": "libs/icons",
+  "sourceRoot": "libs/icons/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nrwl/web:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/icons",
+        "tsConfig": "libs/icons/tsconfig.lib.json",
+        "project": "libs/icons/package.json",
+        "entryFile": "libs/icons/src/index.ts",
+        "external": ["react/jsx-runtime"],
+        "rollupConfig": "@nrwl/react/plugins/bundle-rollup",
+        "assets": [
+          {
+            "glob": "libs/icons/README.md",
+            "input": ".",
+            "output": "."
+          }
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/icons/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/icons"],
+      "options": {
+        "jestConfig": "libs/icons/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

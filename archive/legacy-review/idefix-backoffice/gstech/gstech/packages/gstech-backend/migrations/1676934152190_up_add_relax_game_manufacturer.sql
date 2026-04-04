@@ -1,0 +1,27 @@
+insert into game_manufacturers ("id", "name", "active", "parentId") values ('RLX', 'Relax Gaming', false, null);
+
+INSERT INTO game_manufacturer_blocked_countries("gameManufacturerId", "countryId") values
+('RLX', 'AS'),
+('RLX', 'AU'),
+('RLX', 'CU'),
+('RLX', 'DK'),
+('RLX', 'FR'),
+('RLX', 'GF'),
+('RLX', 'HK'),
+('RLX', 'IQ'),
+('RLX', 'IR'),
+('RLX', 'IT'),
+('RLX', 'KP'),
+('RLX', 'LY'),
+('RLX', 'MM'),
+('RLX', 'MO'),
+('RLX', 'MP'),
+('RLX', 'NG'),
+('RLX', 'NL'),
+('RLX', 'PF'),
+('RLX', 'SD'),
+('RLX', 'TF'),
+('RLX', 'US'),
+('RLX', 'VI'),
+('RLX', 'ZW'),
+('RLX', 'TW');

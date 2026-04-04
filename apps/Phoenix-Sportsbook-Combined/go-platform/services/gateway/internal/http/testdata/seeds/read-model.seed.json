@@ -1,0 +1,252 @@
+{
+  "fixtures": [
+    {
+      "id": "f:seed:1001",
+      "sportKey": "esports",
+      "leagueKey": "lec-spring",
+      "seasonKey": "2030",
+      "eventKey": "e:seed:esports:001",
+      "status": "scheduled",
+      "tournament": "LEC Spring",
+      "homeTeam": "G2 Esports",
+      "awayTeam": "Fnatic",
+      "startsAt": "2030-03-03T15:00:00Z"
+    },
+    {
+      "id": "f:seed:1101",
+      "sportKey": "mlb",
+      "leagueKey": "mlb-regular-season",
+      "seasonKey": "2030",
+      "eventKey": "e:seed:mlb:001",
+      "status": "scheduled",
+      "tournament": "MLB Regular Season",
+      "homeTeam": "New York Yankees",
+      "awayTeam": "Boston Red Sox",
+      "startsAt": "2030-03-04T19:05:00Z"
+    },
+    {
+      "id": "f:seed:1201",
+      "sportKey": "nfl",
+      "leagueKey": "nfl-regular-season",
+      "seasonKey": "2030",
+      "eventKey": "e:seed:nfl:001",
+      "status": "scheduled",
+      "tournament": "NFL Regular Season",
+      "homeTeam": "Kansas City Chiefs",
+      "awayTeam": "Buffalo Bills",
+      "startsAt": "2030-03-05T20:25:00Z"
+    },
+    {
+      "id": "f:seed:1301",
+      "sportKey": "nba",
+      "leagueKey": "nba-regular-season",
+      "seasonKey": "2030",
+      "eventKey": "e:seed:nba:001",
+      "status": "scheduled",
+      "tournament": "NBA Regular Season",
+      "homeTeam": "Los Angeles Lakers",
+      "awayTeam": "Golden State Warriors",
+      "startsAt": "2030-03-05T03:00:00Z"
+    },
+    {
+      "id": "f:seed:1401",
+      "sportKey": "ufc",
+      "leagueKey": "ufc-fight-night",
+      "seasonKey": "2030",
+      "eventKey": "e:seed:ufc:001",
+      "status": "scheduled",
+      "tournament": "UFC Fight Night",
+      "homeTeam": "Fighter A",
+      "awayTeam": "Fighter B",
+      "startsAt": "2030-03-06T22:00:00Z"
+    },
+    {
+      "id": "f:seed:1501",
+      "sportKey": "ncaa_baseball",
+      "leagueKey": "ncaa-baseball-d1",
+      "seasonKey": "2030",
+      "eventKey": "e:seed:ncaa_baseball:001",
+      "status": "scheduled",
+      "tournament": "NCAA Baseball Division I",
+      "homeTeam": "LSU Tigers",
+      "awayTeam": "Florida Gators",
+      "startsAt": "2030-03-07T18:00:00Z"
+    }
+  ],
+  "markets": [
+    {
+      "id": "m:seed:2001",
+      "fixtureId": "f:seed:1001",
+      "sportKey": "esports",
+      "leagueKey": "lec-spring",
+      "eventKey": "e:seed:esports:001",
+      "name": "Match Winner",
+      "status": "open",
+      "startsAt": "2030-03-03T15:00:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "G2 Esports",
+          "odds": 1.83,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Fnatic",
+          "odds": 2.02,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    },
+    {
+      "id": "m:seed:2101",
+      "fixtureId": "f:seed:1101",
+      "sportKey": "mlb",
+      "leagueKey": "mlb-regular-season",
+      "eventKey": "e:seed:mlb:001",
+      "name": "Moneyline",
+      "status": "open",
+      "startsAt": "2030-03-04T19:05:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "New York Yankees",
+          "odds": 1.74,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Boston Red Sox",
+          "odds": 2.17,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    },
+    {
+      "id": "m:seed:2201",
+      "fixtureId": "f:seed:1201",
+      "sportKey": "nfl",
+      "leagueKey": "nfl-regular-season",
+      "eventKey": "e:seed:nfl:001",
+      "name": "Moneyline",
+      "status": "open",
+      "startsAt": "2030-03-05T20:25:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "Kansas City Chiefs",
+          "odds": 1.93,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Buffalo Bills",
+          "odds": 1.93,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    },
+    {
+      "id": "m:seed:2301",
+      "fixtureId": "f:seed:1301",
+      "sportKey": "nba",
+      "leagueKey": "nba-regular-season",
+      "eventKey": "e:seed:nba:001",
+      "name": "Moneyline",
+      "status": "open",
+      "startsAt": "2030-03-05T03:00:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "Los Angeles Lakers",
+          "odds": 1.88,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Golden State Warriors",
+          "odds": 1.98,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    },
+    {
+      "id": "m:seed:2401",
+      "fixtureId": "f:seed:1401",
+      "sportKey": "ufc",
+      "leagueKey": "ufc-fight-night",
+      "eventKey": "e:seed:ufc:001",
+      "name": "Fight Winner",
+      "status": "open",
+      "startsAt": "2030-03-06T22:00:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "Fighter A",
+          "odds": 1.81,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Fighter B",
+          "odds": 2.04,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    },
+    {
+      "id": "m:seed:2501",
+      "fixtureId": "f:seed:1501",
+      "sportKey": "ncaa_baseball",
+      "leagueKey": "ncaa-baseball-d1",
+      "eventKey": "e:seed:ncaa_baseball:001",
+      "name": "Moneyline",
+      "status": "open",
+      "startsAt": "2030-03-07T18:00:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "LSU Tigers",
+          "odds": 1.89,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Florida Gators",
+          "odds": 1.96,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    }
+  ],
+  "punters": [
+    {
+      "id": "u:seed:3001",
+      "email": "seed.user.one@phoenix.local",
+      "status": "active",
+      "countryCode": "US",
+      "createdAt": "2026-03-02T00:00:00Z",
+      "lastLoginAt": "2026-03-02T00:00:00Z"
+    },
+    {
+      "id": "u:seed:3002",
+      "email": "seed.user.two@phoenix.local",
+      "status": "active",
+      "countryCode": "US",
+      "createdAt": "2026-03-02T00:00:00Z",
+      "lastLoginAt": "2026-03-02T00:00:00Z"
+    }
+  ]
+}

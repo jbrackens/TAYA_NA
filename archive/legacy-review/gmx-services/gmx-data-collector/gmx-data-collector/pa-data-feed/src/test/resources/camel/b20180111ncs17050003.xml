@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE HorseRacing SYSTEM "HorseRacing.dtd">
+<HorseRacing timestamp="20180111T083620+0000">
+    <Meeting id="94736" country="England" status="Dormant" date="20180111" course="Newcastle" revision="2">
+        <Weather>Overcast</Weather>
+        <Going brief="Standard">Standard</Going>
+        <Race id="780133" date="20180111" time="1705+0000" runners="3" handicap="No" showcase="No" trifecta="Yes"
+              stewards="None" status="Dormant" revision="3">
+            <Weather>Overcast</Weather>
+            <Going brief="Standard">Standard</Going>
+            <Horse id="2324026" name="Native Appeal" bred="IRE" status="Runner">
+                <Cloth number="1"/>
+                <Weight units="lbs" value="134" text="9st 8lbs"/>
+                <Jockey id="1157192" name="Tom Marquand"/>
+                <Trainer id="118050" name="C Appleby"/>
+            </Horse>
+            <Horse id="2319846" name="Three Weeks" bred="USA" status="Runner">
+                <Cloth number="2"/>
+                <Weight units="lbs" value="134" text="9st 8lbs"/>
+                <Jockey id="27114" name="D Tudhope"/>
+                <Trainer id="1804" name="W J Haggas"/>
+            </Horse>
+            <Horse id="2298627" name="Danzay" bred="IRE" status="Runner">
+                <Cloth number="3"/>
+                <Weight units="lbs" value="128" text="9st 2lbs"/>
+                <Jockey id="16400" name="P McDonald"/>
+                <Trainer id="1883" name="M Johnston"/>
+            </Horse>
+            <Horse id="2325819" name="Holy Shambles" bred="IRE" status="NonRunner">
+                <Cloth number="4"/>
+                <Weight units="lbs" value="128" text="9st 2lbs"/>
+                <Jockey id="1140861" name="M M Monaghan">
+                    <Allowance units="lbs" value="3"/>
+                </Jockey>
+                <Trainer id="16665" name="M Botti"/>
+            </Horse>
+        </Race>
+    </Meeting>
+</HorseRacing>

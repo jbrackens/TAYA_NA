@@ -1,0 +1,1 @@
+INSERT INTO terms_and_conditions (current_terms_version, terms_content, terms_days_threshold) values (0, '<p>please add terms</p>', 365);

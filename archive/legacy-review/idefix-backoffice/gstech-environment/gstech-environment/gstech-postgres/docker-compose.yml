@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  gstech-postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-postgres
+    container_name: gstech-postgres
+    ports:
+     - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: root
+    command: "postgres -c fsync=off -c full_page_writes=off -c synchronous_commit=OFF"
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

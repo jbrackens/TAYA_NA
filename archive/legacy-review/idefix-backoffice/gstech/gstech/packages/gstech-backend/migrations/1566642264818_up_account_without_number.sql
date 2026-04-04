@@ -1,0 +1,2 @@
+alter table accounts drop constraint "accounts_playerId_paymentMethodId_account_key";
+create unique index "accounts_playerId_paymentMethodId_account_key" on accounts("playerId", "paymentMethodId", "account") where account != '';

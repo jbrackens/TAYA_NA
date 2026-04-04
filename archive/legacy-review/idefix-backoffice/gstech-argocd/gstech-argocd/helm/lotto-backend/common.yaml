@@ -1,0 +1,66 @@
+livenessProbe:
+  httpGet:
+    path: /
+    port: 3020
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 3020
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/lotto-backend
+  pullPolicy: Always
+  tag: "latest"
+
+command: "yarn migrate && yarn workspace lotto-backend serve"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1024Mi"
+    cpu: "1"
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3020
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+env:
+  LOGGER_SERVICE: lotto-backend

@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_common_gambling_problems",
+  "info": {
+    "displayName": "Gambling Problems",
+    "icon": "layer",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "gambling_helps": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::gambling-help.gambling-help"
+    },
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    }
+  }
+}

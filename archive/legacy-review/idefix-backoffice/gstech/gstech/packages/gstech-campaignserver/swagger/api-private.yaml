@@ -1,0 +1,249 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Campaignserver Private API"
+basePath: "/api/v1"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /players/{externalPlayerId}/campaigns:
+    get:
+      summary: Get list of player active campaigns
+      description: Get list of player active campaigns
+      parameters:
+        - in: path
+          name: externalPlayerId
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetPlayerCampaignsResponse'
+  /players/{externalPlayerId}/campaigns/with-rewards:
+    get:
+      summary: Get list of player active campaigns with rewards
+      description: Get list of player active campaigns with rewards
+      parameters:
+        - in: path
+          name: externalPlayerId
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetPlayerCampaignsWithRewardsResponse'
+  /players/{externalPlayerId}/notifications:
+    get:
+      summary: Get list of player notifications
+      description: Get list of player notifications
+      parameters:
+        - in: path
+          name: externalPlayerId
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetPlayerNotificationsResponse'
+  /players/{externalPlayerId}/content-sent:
+    get:
+      summary: Get list of content sent to the player
+      description: Get list of content sent to the player
+      parameters:
+        - in: path
+          name: externalPlayerId
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetPlayerContentSentResponse'
+definitions:
+  GetPlayerCampaignsResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            addedAt:
+              type: string
+              format: date-time
+            removedAt:
+              type: string
+              format: date-time
+            emailSentAt:
+              type: string
+              format: date-time
+            smsSentAt:
+              type: string
+              format: date-time
+            complete:
+              type: boolean
+  GetPlayerCampaignsWithRewardsResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            campaignName:
+              type: string
+            creditMultiple:
+              type: boolean
+            rewards:
+              type: array
+              items:
+                type: object
+                properties:
+                  minDeposit:
+                    type: number
+                  maxDeposit:
+                    type: number
+                  rewardId:
+                    type: number
+                  wager:
+                    type: number
+                  quantity:
+                    type: number
+                  titles:
+                    type: object
+                    properties:
+                      fi:
+                        type: object
+                        required:
+                          - text
+                        properties:
+                          text:
+                            type: string
+                          required:
+                            type: string
+                      en:
+                        type: object
+                        required:
+                          - text
+                        properties:
+                          text:
+                            type: string
+                          required:
+                            type: string
+                      de:
+                        type: object
+                        required:
+                          - text
+                        properties:
+                          text:
+                            type: string
+                          required:
+                            type: string
+                      no:
+                        type: object
+                        required:
+                          - text
+                        properties:
+                          text:
+                            type: string
+                          required:
+                            type: string
+                      sv:
+                        type: object
+                        required:
+                          - text
+                        properties:
+                          text:
+                            type: string
+                          required:
+                            type: string
+  GetPlayerNotificationsResponse:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            campaignId:
+              type: number
+            contentId:
+              type: number
+            name:
+              type: string
+            externalId:
+              type: string
+            content:
+              type: object
+            events:
+              type: array
+              items:
+                type: object
+                properties:
+                  text:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: "date-time"
+                  extras:
+                    type: object
+  GetPlayerContentSentResponse:
+    type: object
+    properties:
+      pagination:
+        $ref: '#/definitions/PaginateObject'
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            "type":
+              type: string
+            timestamp:
+              type: string
+              format: 'date-time'
+            previewUrl:
+              type: string
+              format: url
+            viewedAt:
+              type: string
+              format: 'date-time'
+            clickedAt:
+              type: string
+              format: 'date-time'
+  PaginateObject:
+    type: object
+    properties:
+      total:
+        type: number
+      lastPage:
+        type: number
+  # OKResponse:
+  #   type: "object"
+  #   properties:
+  #     data:
+  #       type: "object"
+  #       required:
+  #         - "ok"
+  #       properties:
+  #         ok:
+  #           type: "boolean"
+  # ErrorResponse:
+  #   type: "object"
+  #   properties:
+  #     error:
+  #       type: "object"
+  #       required:
+  #         - "message"
+  #       properties:
+  #         message:
+  #           type: "string"

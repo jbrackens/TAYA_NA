@@ -1,0 +1,413 @@
+.form-feedback
+  display none
+  &.info
+    p
+      color #00dd00
+  .feedback-content
+    p
+      font-size 14px
+      color #383838 !important
+      font-weight 700 !important
+      h2
+        text-transform none
+        font-size 13px
+.veil
+  display none
+  z-index 14000
+  background-color rgba(255,255,255,0.5)
+  position fixed
+  top 0
+  left 0
+  right 0
+  bottom 0
+  &.visible
+    display block
+
+.popup-holder
+  height 0
+  overflow hidden
+
+#free-game-sidebar
+  position absolute
+  top 0
+  right 0
+  bottom 0
+  z-index 200
+  border-radius 0 0 7px 0
+  width 300px
+  height 400px
+
+.license-notification, .bonus-notification, #mobile-game-slider .button-holder
+  background-color rgba(20, 20, 20, 0.85)
+  font-weight 600
+  color #ffffff
+  z-index 20000
+  padding 20px
+
+.mobile #free-game-slider, .mobile #game-slider
+  visibility hidden
+  .dialog
+    background-color rgba(0, 0, 0, 0.8)
+    border-radius 0 7px 7px 0
+
+#game-slider, #mobile-game-slider
+  force3d()
+  position fixed
+  z-index 13203
+  left 0
+  right 0
+  top 0
+  bottom 0
+  overflow hidden
+  background-color black
+  cdn-background-image '/images/gamebg.jpg'
+  background-repeat no-repeat
+  background-size cover !important
+  background-position center center
+  display none
+
+  .dialog
+    &.shadow
+      box-shadow(10px 0 40px 0 rgba(0,0,0,0.4))
+    position relative
+    .play-for-fun
+      z-index 205
+      position absolute
+      display inline
+      top -22px
+      height 22px
+      padding 2px 12px 2px 12px
+      text-transform uppercase
+      left 14px
+      color white
+      font-size 13px/15px
+      background-color $kalevala_dark_blue
+      border-radius 6px 6px 0 0
+      headerFont()
+    .buttons-hidden
+      position absolute
+      right -40px
+      top 0
+      z-index 200
+      background-color $header-color
+      .show-info-button
+        position absolute
+        display inline
+        top 40px
+        right 0
+        display block
+        sprite2x($button_hide, $button_hide_2x)
+        transform scaleX(-1)
+        background-color $header-color
+      .close-button
+        position absolute
+        display inline
+        top 0
+        right 0
+        z-index 10003
+        closebutton()
+    .license-notification, .bonus-notification
+      display none
+      position absolute
+    .bonus-notification
+      top 0
+      left 0
+      right $game_sidebar
+      text-align center
+    .license-notification
+      bottom 0
+      left 0
+    .game-col
+      z-index 201
+      opacity 1
+      position absolute
+      overflow hidden
+      .game-info
+        display none
+      object
+        position relative
+        height 100%
+        width 100%
+      iframe
+        position relative
+        height 100%
+        width 100%
+
+#mobile-game-slider
+  display flex
+  flex-direction column
+  justify-content center
+  align-items stretch
+  .button-holder
+    padding-top 30px
+    text-align center
+    .button
+      min-width 220px
+
+.mobile #game-slider
+  visibility hidden
+  .dialog
+    background-color rgba(0, 0, 0, 0.8)
+    border-radius 0 7px 7px 0
+
+#common-dialog
+  @media only screen and (max-width:991px)
+    margin-top 60px
+  position absolute
+  z-index $dialog_zindex
+  display none
+  &.visible
+    display block
+  .dialog-content
+    position absolute
+    height 100%
+    width 100%
+    background-color $kalevala_dark_bg
+    padding-top 30px
+    padding-bottom 20px
+    .content
+      padding 15px
+      font-size 14px
+      color white
+      text-align center
+    textarea
+      width 100%
+      min-height 100px
+      border-radius 2px
+      color #000
+    @media only screen and (max-width:767px)
+      position relative
+    .selections
+      &> .input-row
+        padding-top 16px
+      @media only screen and (min-width:768px)
+        display flex
+        flex-wrap wrap
+        &> .input-row
+          width 50%
+    .form-content
+      text-align left
+      padding 15px
+      color white
+      font-weight 400
+      font 16px/18px 'Ubuntu', Helvetica, Arial, sans-serif
+      overflow-y auto
+      height 100%
+    .button-area
+      flex-wrap wrap
+      display flex
+      justify-content space-evenly
+      .submit-button
+        font-size 13px
+        margin 10px 0
+
+#realitycheck-dialog
+  position fixed
+  z-index 15000
+  display none
+  bottom 0
+  right 0
+  left 0
+  top 0
+  @media only screen and (max-width:767px)
+    bottom $mobile_menu_height
+  &.visible
+    display flex
+    align-items: center;
+    justify-content: center;
+  .lightbox-holder
+    min-width 440px
+    width auto
+    padding-top 20px
+    padding-bottom 20px
+    .lightbox-frame
+      box-shadow(5px 0 20px 0 rgba(0,0,0,0.2))
+      min-height 200px
+      margin 0
+      padding 10px
+      position relative
+      background-color $bg-white
+      clearfix()
+      &.dialog
+        border-radius 8px
+      .button
+        margin 0 10px 0 10px
+      .content
+        text-align center
+        width 100%
+        height 100%
+        vertical-align middle
+        display table-cell
+        padding 10px
+        color $default-gray
+        .button-row
+          padding-top 20px
+          white-space nowrap
+        h2
+          font-size 20px
+          padding-bottom 10px
+        h4
+          font-size 16px
+
+.common-dialog
+  position absolute
+  z-index $dialog_zindex
+  display none
+  &.visible
+    display block
+  .lightbox-holder
+    margin-top 40px
+    padding-top 20px
+    padding-bottom 20px
+    max-width 680px
+    @media only screen and (max-width:767px)
+      width 100%
+      height 60%
+      margin-top 0
+      padding-top 0
+      padding-bottom 0
+      position relative
+    .lightbox-frame
+      min-height 200px
+      margin 0 10px 0 10px
+      padding 0
+      position relative
+      background-color $bg-dialog
+      box-shadow 5px 5px 50px 0px rgba(0,0,0,0.75)
+      border 6px double $kalevala_cta_secondary
+      border-radius 4px
+      clearfix()
+      @media only screen and (max-width:767px)
+        margin 10px
+      &:after
+        content ''
+        position absolute
+        sprite2x($alert_icon, $alert_icon_2x)
+        top 10px
+        left 10px
+        @media only screen and (max-width:767px)
+          display none
+      &:before
+        content ''
+        position absolute
+        top 10px
+        right 5px
+        cdn-background-image2x '/images/wayne_hi.png' '/images/wayne_hi@2x.png' 208px 370px
+        width 208px
+        height 370px
+        @media only screen and (max-width:767px)
+          display none
+      .content
+        text-align center
+        margin 95px 200px 35px 110px
+        position relative
+        min-height 270px
+        @media only screen and (max-width:767px)
+          margin 5px
+        .button
+          margin-top 15px
+          padding 8px 20px
+        p
+          margin-bottom 3px
+          color #000000
+        h1
+          text-transform uppercase
+          headerFont()
+          color $kalevala_blue
+
+.dialog-frame
+  min-height 750px
+  margin 8px 0
+  position relative
+  clearfix()
+  border-radius 4px
+
+#shirt-dialog .lightbox-frame
+  .content
+    margin 55px 200px 55px 110px
+    @media only screen and (max-width:767px)
+      margin 10px
+    .button
+      padding 0 20px
+      margin 36px 0 16px 0
+      background-color $kalevala_dark_blue
+  .sod_select
+    background #ffffff
+    border-radius 4px
+  &:before
+    cdn-background-image2x '/images/shirt_wayne.png' '/images/shirt_wayne@2x.png' 277px 396px
+    width 277px
+    height 396px
+  &:after
+    display none
+
+#complete-registration
+  background-color $kalevala_light_blue
+  border-radius 4px
+  align-items center
+  justify-content center
+  min-height 560px
+  padding-top 40px
+  h1
+    color #fff
+    text-transform uppercase
+    font-size 32px
+    line-height 28px
+    font-family "Titillium Web"
+    font-weight 700
+    letter-spacing -1px
+    text-align center
+  @media only screen and (max-width:767px)
+    min-height 100vh
+    .reg-block .column
+      width 268px
+      margin 0
+  .button-row
+    text-align center
+#tc-dialog
+  .lightbox-holder
+    max-width 1200px
+  .tc-content-holder
+    background-color $bg-white
+  .tc-frame
+    box-shadow(5px 0 20px 0 rgba(0,0,0,0.2))
+    @media only screen and (min-width:768px)
+      overflow hidden
+      border 6px double $kalevala_cta_secondary
+    background-color $bg-white
+    min-height 348px
+    height 348px
+    margin 0
+    padding 0
+    position relative
+    clearfix()
+    display flex
+    align-items center
+    &.dialog
+      width auto
+      border-radius 8px
+      height auto
+      max-width 100vh
+      max-height 800px
+      .content
+        margin 0 auto
+        width 100%
+        .button
+          padding 0 10px
+          display block
+          margin 5px auto 15px auto
+          width 250px
+          height 42px
+          font-size 14px
+          line-height 42px
+          text-align center
+
+
+#tc-content
+  h1
+    font-size 22px
+    text-transform uppercase
+  p
+    font-size 16px
+    margin 25px
+    text-align center

@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "SettlementDataCustomerId",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.SportBets.v1",
+  "fields": [
+            {
+              "name": "CustomerId",
+              "type": "int",
+              "default": 0
+            }
+  ]
+}

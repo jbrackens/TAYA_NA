@@ -1,0 +1,2737 @@
+[
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "觺ˁ첺顭儞⻜"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "䳃둢㽣렑囫즾㿝끰⪙瓊"
+          }
+        }
+      },
+      "errorCode" : {
+        "RegistrationInformationAdjusting" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "MaximumAmountOfPuntersCheckNotPassed" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "PunterProfileDoesNotExist" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "炓硨ኆ㦿ҁ鴥쪲풛﫜᫢"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "꒗堫儆뢑"
+          }
+        }
+      },
+      "errorCode" : {
+        "RequestDecodingFailed" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "BetUpdate" : {
+      "correlationId" : {
+        "value" : "䡹縙뜍瑹見萙魌챘쐝ﶴ줄䊜ꎣ骻㨆⃝﫚齩鬲挼㷈鐈蝆䀥钂皈㌯⇀"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      },
+      "data" : {
+        "betId" : {
+          "value" : "媃"
+        },
+        "state" : {
+          "Pushed" : {
+            
+          }
+        },
+        "betData" : {
+          "punterId" : {
+            "value" : ""
+          },
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : ""
+          },
+          "selectionId" : "",
+          "stake" : {
+            "value" : {
+              "amount" : 481863241576144287.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "odds" : {
+            "value" : 67.2197
+          }
+        },
+        "winner" : false,
+        "reason" : "쫘"
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ꐚ힃⇁媔˓ꇜ䒋ん跁㘛긃攫䄿댲罎᪓ূ隸꘧豕ꃻΡ"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "掻"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          }
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "螞"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "짎ᱯ넀⊢ᐃ芖᫹㉣妬᜹ᇇ뵵嬹ᷔ푏"
+          }
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "䉋㟸䗮穕靓撙褔㘢㿎禀ٹ⿧琚䉓턺퍆켧拓沃⢁᭦㏠庺딂ኰᎇ̹众褀䴽᪞䣚"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꠍ㹫뫚총쎴鈍륗ꢙ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "⬤鞥う"
+          }
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "PunterIsNotAllowedToWithdraw" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "UnableToOpenBet" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "忂츧㌛嬑俯䁅뭅坫苼뻊꠰꒕忇ꉮ䌕鰞⇏傣鐞밇윈峻㖙寨뎱㾊萫蝟莼ⳇ"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "GeolocationHeaderNotFound" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "䔎楘葰ꄔ狇竒⃢诱ጇꯃ㩎삪⛜全䒥㟐"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "PHOENIX",
+            "id" : "ⵐ"
+          }
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "렌쬀앲ꂠ윅Ⴁघ桒䴋鎂㶫槿"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 0.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : -8585530947476006634.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 9223.37,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 0.38,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -15.77,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "⅞㻢辡흿ꫣ얭鵖༌䥱嫟扇컟㛯蔧㋙굆䇈刺嬬ⓚ쓨႑ᎋ拣镆ঌ봆"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "䞽ﻸ㉡"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "骕䄧"
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "ODDIN",
+          "id" : ""
+        },
+        "marketName" : "輪뤿瀐㗲",
+        "marketType" : {
+          "TotalTurrets" : {
+            
+          }
+        },
+        "marketCategory" : "햩",
+        "marketStatus" : {
+          "Bettable" : {
+            "changeReason" : {
+              "BackofficeChange" : {
+                "reason" : "⏫"
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "兯",
+            "odds" : {
+              "value" : 620.3065
+            },
+            "active" : true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "昝䒪᨟ㄱ솯黪⇢፿햎"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꃮ㪭娶礗셼鋧郎鈼呉"
+          }
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "ꥇ4጑抴⇫郪宛诡뒚"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : -0.93,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+          ]
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "頃瘗\u008d㎇ⷭ伖ä飳ꣂ뾝皶꾇칧堵ྩﳅ蘞ሪ陌ዱ鞦⼟ꛪᮊᗋ噋ꅑ曓ꁠ鵢ꘖਂ"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "প埒㊀挫㺁璊⏎ꓸ⁑嗴➖硗솬끖忸㫒ᴐ導ጃ᧾"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "賛ﻔ⻳Ā酼Ɪ恐"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 0.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 6352149128382111963.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -0.46,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -1.29,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -0.34,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "劐䥘잏鄼괻觐ᡤ㻭ሑ"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "ꉌ⠦哾锾쵞"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 0.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 1.91,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -1.15,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -0.19,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "悐ꁶﲢ฻꧓页魠뎅斏ቊ萡뼬锔怐ᣅ⣘᭻艨ʋ⑌챧䊏ꇭ錁镺"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "ꁅ♩胍遐舢㑩ሷ먮鵊캍᧐⧐㽂䯺"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꆤ텳禂ⴘ勔抜鿨衲ᝣ땘ᾥ"
+          }
+        }
+      },
+      "errorCode" : {
+        "WalletAlreadyExists" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "퀱ꑵᙚ秖胚峎㭯⹧鴩闡씊繏ᡏ籩뚲Ꟶ◳喾捸䎉溕섺솸㾿"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "PunterIsNotDeleted" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "䨉擲绝祻ὸ✉賵飱⦀ꧫ＄습ٞ筲쐩뽒淎喁㩉"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "InvalidJson" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "쾃밍쟼క㻄坝㙕ᄜ풵뜊뱯濥퉒詑㒛丼坵"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "콮㎦"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "絢᳣ȋ澾횀窈"
+          }
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "黪粉ꛅ鱔濥죗ಭί⍯"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : -6244143334642475077.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : -0.96,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : ""
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "᾿賡ᭋ紎ύ盓둽ꌃ"
+          }
+        }
+      },
+      "errorCode" : {
+        "GeoLocationServiceError" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "壳┛⌲晈璷㌻附蘺ⲗ竂劣룶ᓡ￧㟾ꥵ䪕펀閰쌸赕"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "MarketNotFound" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "덨䑱캮睻"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "InvalidPhoneNumber" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "ꂶꉤ뚣鶟鐪屋醚킏嚒삾ୁ뵩"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "濋欔䤜犧勉ෙ"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 0.81,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+          ]
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : ""
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "㧾隔綖薈竬쏑얍묌篰⭄举충"
+          }
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "BETGENIUS",
+          "id" : "蘂⫅"
+        },
+        "name" : "Ⱒ讏्",
+        "startTime" : "+607938004-01-08T17:39:06.114417898-01:37:07",
+        "status" : {
+          "Postponed" : {
+            
+          }
+        },
+        "score" : {
+          "home" : 0,
+          "away" : -1128858011
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "ConflictingPunterInformation" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "놯홊֠׮"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "CannotFreezeMarket" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "서ࡇ覬盇ࣖҕꄟ槺᫵⨽엕㰊ꊦ〽⌶໕䵞ᐏ䁾"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "㛿쓢윑"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "PHOENIX",
+          "id" : "㏴㖨奕"
+        },
+        "name" : "紗좽鸙엑",
+        "startTime" : "+150924799-03-18T11:24:43.671310016-01:01:44",
+        "status" : {
+          "GameAbandoned" : {
+            
+          }
+        },
+        "score" : {
+          "home" : -2147483648,
+          "away" : 816802169
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "଄臘꒵荂䱩䍭轾㚂餬≨雈"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "鬽뎅"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 2147483648000.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : -1.35,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 1.38,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -6552403641881555000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -2.09,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "쬛솆쨑䕽ꈍ壀⺄犼繄陬臯닛"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "厁"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "BETGENIUS",
+          "id" : ""
+        },
+        "marketName" : "ĭ꺩쟴啒",
+        "marketType" : {
+          "DragonSoulType" : {
+            
+          }
+        },
+        "marketCategory" : "",
+        "marketStatus" : {
+          "Settled" : {
+            "changeReason" : {
+              "BackofficeChange" : {
+                "reason" : ""
+              }
+            },
+            "winningSelection" : ""
+          }
+        },
+        "specifiers" : {
+          "ዎ좟" : "Პ⩑ꁼ",
+          "ꮽ" : "②",
+          "" : "ￌ"
+        },
+        "selectionOdds" : [
+        ]
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ꖥ♎ᕽ㥼盎꠶ᇔ櫆॒Ἁ禗뭠䱙塡ꁏᎻ䓙ۤ흹弤䲧㡎봗뉨鍢愹㊲恜餗ộ⫄즉⧎柭ﲴ嬑⃕"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "⇇黽വ墁菫줺탫ꐻ䨥㣁푯Ϝ颩摸흡莭ᇣ鼩䰇筄퍷콦ↇ㡨닦"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "ODDIN",
+          "id" : "혵"
+        },
+        "marketName" : "⡦產",
+        "marketType" : {
+          "CorrectRoundScore" : {
+            
+          }
+        },
+        "marketCategory" : "膊Ȇ",
+        "marketStatus" : {
+          "Cancelled" : {
+            "changeReason" : {
+              "DataSupplierPush" : {
+                
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "蓼",
+            "selectionName" : "빂",
+            "odds" : {
+              "value" : 586.1413
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "쵆",
+            "odds" : {
+              "value" : 499.3661
+            },
+            "active" : false
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 874.3119
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 1.0100
+            },
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "UnsubscriptionFailure" : {
+      "correlationId" : {
+        "value" : ""
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "StakeTooHigh" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "똄耐ⵖ䂁뇋鼆﫲ꩍ뽐㠵徐驓熺粤齙⇂焰稩ꂏﰄ濙"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "釰㽭"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "띧"
+          }
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "⭚替薟Ą칙厔穊ᓥঊ就ཀྵ몠樭䫤쯀ᦞ璟픕댸怄퀇莆キ⪈Ⰾ뗋퀴釪"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "ReservationAlreadyExists" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "BetUpdate" : {
+      "correlationId" : {
+        "value" : "̖ퟭ䤘䁃ᮘ뱒쇸뜆쨉"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "ᅶ뜲鑓뻠뜗厵尒彞"
+          }
+        }
+      },
+      "data" : {
+        "betId" : {
+          "value" : "蜊䑩穷욎壯녾ﮔ"
+        },
+        "state" : {
+          "Resettled" : {
+            
+          }
+        },
+        "betData" : {
+          "punterId" : {
+            "value" : ""
+          },
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "샐"
+          },
+          "selectionId" : "狫덲",
+          "stake" : {
+            "value" : {
+              "amount" : 0.73,
+              "currency" : {
+                
+              }
+            }
+          },
+          "odds" : {
+            "value" : 982.4168
+          }
+        },
+        "winner" : true,
+        "reason" : ""
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "InvalidPassword" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "IncorrectMFAVerification" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "ReservationNotFound" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ܭ찃㌮㡁紿蝠ツ뼷䭱਱鐜丏炥ꋱ퍖︼ꖘ猠삼苵뇏䤢촫铯⬷榟郓⋚踨㬖"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ꮕ詋禤᧜矗䣏燸촸齚괭韸굱쌪㒅ᤣ成璳䬍깶창劯鞅恉"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "鞡忬ꕀỔ㙷곾⫔"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "벲訸〨㈩᠎威㸑ᒶ鴞퇨"
+          }
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "轢ퟻ몚捦䅭䂪ﵽ뒮ꝅ㻯蜂毐藆Ē苸ꉱ㹦민黋컲嵡⢟﹮筬╞❐쁎䑙卭ꎓ퐧ꗤ뒍땛ş略헔៿并ൖﶽ"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "䙁▭勩쩜뵶豈㯺㈏荫ο齘褗䨈ُ漌ꔏ"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "乻ꌮ졦b곦粛ⵒ쑐๔Ꜩ᫴襤䌇끵뻓ꎌ嬣锖칝"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "PHOENIX",
+            "id" : "᱄᪦Ⱍ鉇㍞可曼"
+          }
+        }
+      },
+      "errorCode" : {
+        "InactiveAuthToken" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "ላ☏봍뺄ꥆ㣰ぇ䊅鬇◓⨆䋼꽘ꦏ"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "PHOENIX",
+          "id" : "た"
+        },
+        "name" : "앜㽙",
+        "startTime" : "-289307252-08-07T17:43:01.849779361+07:25:11",
+        "status" : {
+          "GameAbandoned" : {
+            
+          }
+        },
+        "score" : {
+          "home" : 230573567,
+          "away" : 1010211339
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "✸捀챏헐놬ᣳ銸ﲇꭲ龪な稆돢㟮◐묕䡟ᚰꇸ㐌㥊ᓎ括戞⽔黳"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "㖄靛㜔熻"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "磆酝俣"
+          }
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "넵Ⱗ"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "깳旽锉睤肳"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "⧁뙧汵"
+          }
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "㇃哐萗佤帿拈줮㏛纒헓렜"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 3.04,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : 0.08,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -1.19,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 3.41,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "滢㋈⏂箴奉"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "盯䙽ᜢ긣ꓤꆻ犐짛⻜"
+          }
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "⺏ఌ﨧㛎ኔ숱狉ꔁⅻڄ⎿㴐촃⾘"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "䝃徻疡悉曱譇촻蟰₹ᄂ˂렍ꭄ㈖ឃ鯸拺ꅄ攘쥉膛㪶ꔵﱏ⹞민ꅌ올蓯"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "聪࡮牠鿜ﯗ蕝ͭᴋ窖扮찎卍⟞㨈秊⍺쾨㐮䎱趓㌕嫢뤾䨧俬➠"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : ""
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : -1.13,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : -0.45,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 1644500682826056348.00,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ᮬ煤嵗夘"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "ﵟꂼ⮹珧箞행鹍䰎錦痱鼆਀달妬뒄嘱橨韴⿦꠾ℂ뽨떗ᮐ课㌔舜せ"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "祋猪"
+          }
+        }
+      },
+      "errorCode" : {
+        "FailedToParseGeoPacket" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "ﴌ請蠺ﶀ蜐䏷ᙌ뙭༏䷣酵⊝놤襱砿깁柇ጴ뿫঎綨쮺云䃃߳술强ቍ厓ﴳ爿"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "PunterProfileDoesNotExist" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ᒫ躸샜끶乚갫橍ࣙⷊ瞶ꪋ翫崏嘆꺉ꗶࡔⱠ络ެ⥀魯麇嘉믽崂邺拃貛ỿ弱"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "BetUpdate" : {
+      "correlationId" : {
+        "value" : "滛ᄿꣷ俜孊ﭰ佐䃺勆칠ک둣鵂׃"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "betId" : {
+          "value" : "㗑뒟ත硸"
+        },
+        "state" : {
+          "Failed" : {
+            
+          }
+        },
+        "betData" : {
+          "punterId" : {
+            "value" : ""
+          },
+          "marketId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "selectionId" : "ᧁ",
+          "stake" : {
+            "value" : {
+              "amount" : 0.87,
+              "currency" : {
+                
+              }
+            }
+          },
+          "odds" : {
+            "value" : 250.9365
+          }
+        },
+        "winner" : true,
+        "reason" : "Ѩ㲝܃੼"
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "髖緑鱼ࢲ\u009f밡妃ᔂ揃눑䙗䨼缋"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "⭨⟵젌鏧侺榬錤蒷겔๎靖එ꫖镣罼붥眻ᅂ"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "㩁䇞"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⎮嚯"
+          }
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "ODDIN",
+          "id" : "ꬆ"
+        },
+        "name" : "",
+        "startTime" : "+867480227-05-16T06:29:07.419948914-16:56:56",
+        "status" : {
+          "Postponed" : {
+            
+          }
+        },
+        "score" : {
+          "home" : -1,
+          "away" : 635964461
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "㹎ꥱᆡȮᏸ᪠謢Ꝫ氋䍁枈鷃厊黫㉅忩夙澇⼡殹덊䴦貰氊"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "UnsubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "币멕࠾ퟡꗕ庎ࢫ"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "訤莒䙛擦ϙ쩣"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          }
+        }
+      },
+      "errorCode" : {
+        "IncorrectMFAVerification" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "땶妢熗諐め（퀝戤⨚쩎잜᭘쬪㍶侑௱쎏좶찐茜룊ᑘ"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "BETGENIUS",
+          "id" : ""
+        },
+        "marketName" : "暬Ⴌ",
+        "marketType" : {
+          "SecondHalfWinnerMap" : {
+            
+          }
+        },
+        "marketCategory" : "沉拴␐ᇋ",
+        "marketStatus" : {
+          "Cancelled" : {
+            "changeReason" : {
+              "BackofficeCancellation" : {
+                "reason" : "뱙嫱"
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          "" : "⒍",
+          "ⷤ┤" : "⎺㟦"
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 1.0100
+            },
+            "active" : false
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 74.2027
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "㾸",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 913.9869
+            },
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "SubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "ԝஂ鑫棨⭄瘟섰릣拐ሊ⽚狱㢈ሕ묡地쒜ׂ闈ﭑ좆⿞쀇᜗쵟㰪殺獪ꥁ⽚Ꮞ㜋⃞"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "綕⁌"
+          }
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "敾﫥汈坁辎䢷棷ఎ郀嚬韴鉛워髜ⳏ爐"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "渚䲽켘"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "乯ꑾ㚭"
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "ODDIN",
+          "id" : "引ꂅ"
+        },
+        "marketName" : "抲",
+        "marketType" : {
+          "FirstToReachXKills" : {
+            
+          }
+        },
+        "marketCategory" : "ꗫ塙궃䶄⚱",
+        "marketStatus" : {
+          "Bettable" : {
+            "changeReason" : {
+              "DataSupplierStatusChange" : {
+                
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 645.0715
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 1.0100
+            },
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "쨃"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "⣜爙⃴"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "췶ӵ魱"
+          }
+        }
+      },
+      "errorCode" : {
+        "MissingAuthToken" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "퀶ݏꓼ⾘ꆘ㫈갲ꫧ㴛쪠ѧᶀ㉊슶᷅꙰㐬䐝癕뗜톤즳层᧏깁撷⬴这⚒"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "懇랜"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "홫⯤"
+          }
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "鼢๡ꊿ뼺⚫Ყ䘯똾拲"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "PHOENIX",
+          "id" : "⭊츺僚"
+        },
+        "name" : "研牍ꊙ鑺זּ",
+        "startTime" : "+392014435-08-01T19:10:19.442014154-17:03:44",
+        "status" : {
+          "PreGame" : {
+            
+          }
+        },
+        "score" : {
+          "home" : -2147483648,
+          "away" : -1131368658
+        }
+      }
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "⤠鮦猪훑 癕︫瘀孠奊涭෪ᫍ"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "識ㅸ퀰ꁟ㓻떉ᩍ敄올짫"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 3828737777400293929.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : -5484549974121962676.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 374452300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 0.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : 1.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -1000000000.00,
+                "currency" : {
+                  
+                }
+              }
+            },
+            {
+              "value" : {
+                "amount" : -1.00,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "RequestDecodingFailed" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "BetUpdate" : {
+      "correlationId" : {
+        "value" : "覨Კ䶽ꔽ"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "Ȳ괈⾤奬䝔徂桾흝"
+          }
+        }
+      },
+      "data" : {
+        "betId" : {
+          "value" : "ꋠ"
+        },
+        "state" : {
+          "Opened" : {
+            
+          }
+        },
+        "betData" : {
+          "punterId" : {
+            "value" : ""
+          },
+          "marketId" : {
+            "provider" : "ODDIN",
+            "id" : "訶"
+          },
+          "selectionId" : "뭪",
+          "stake" : {
+            "value" : {
+              "amount" : 1.63,
+              "currency" : {
+                
+              }
+            }
+          },
+          "odds" : {
+            "value" : 531.7395
+          }
+        },
+        "winner" : true,
+        "reason" : "檙ꥏྩ"
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "IncorrectMFAVerification" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "拼䔸혶橓巏卋긤꧳昖퐱鷪ⳓ쿜䅧燯㼏뉗匕ю"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꉰ澫㱅⨍"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : ""
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "ODDIN",
+          "id" : "ࢥ"
+        },
+        "marketName" : "酦",
+        "marketType" : {
+          "FirstTower" : {
+            
+          }
+        },
+        "marketCategory" : "뗴ퟛ⪥",
+        "marketStatus" : {
+          "Settled" : {
+            "changeReason" : {
+              "BackofficeChange" : {
+                "reason" : ""
+              }
+            },
+            "winningSelection" : ""
+          }
+        },
+        "specifiers" : {
+          "垝" : "慩秽厗됻",
+          "ㅔ" : "䮔蘜᷼∵",
+          "綳獈" : ""
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "ㆮ",
+            "odds" : {
+              "value" : 852.0526
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "촜",
+            "odds" : null,
+            "active" : false
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "쫭",
+            "odds" : {
+              "value" : 1.0100
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : null,
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "꽈灰諸秨ᙇ㤠﫶嗆涣秠椆湓䄦掠䨙흭﷍⽼奲ᅎᲳ≲䆠伭"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ﰎ痳癗叡㥇笄鎴쩕㾲꼘"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "뮾ਘ揮㏎"
+          }
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "猈鋵닷렻뗢鏾襐ﷃ✐觷㗑뢕㎟㕒竆鮍뜜"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : "蜍䗮描ᴬో᫡뎤匡瑒"
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "BETGENIUS",
+          "id" : "뢌"
+        },
+        "marketName" : "⃟",
+        "marketType" : {
+          "FirstInhibitor" : {
+            
+          }
+        },
+        "marketCategory" : "ؗ뜧",
+        "marketStatus" : {
+          "Cancelled" : {
+            "changeReason" : {
+              "DataSupplierPush" : {
+                
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          "⣛┞" : "賵⹀⧣",
+          "饵좮" : "",
+          "" : "㰿喎"
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "指",
+            "selectionName" : "཰",
+            "odds" : null,
+            "active" : false
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 310.5034
+            },
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : ""
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "SessionNotFound" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "냱ﭰ䏐䣩瞴꿕풬졗”വጦᖼ褧餶⷇ᐇ龥㦔낣儆鉼Ọ췍攜椁自쩍"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "BETGENIUS",
+          "id" : ""
+        },
+        "marketName" : "䚿㌹嚗㷬",
+        "marketType" : {
+          "MapDuration" : {
+            
+          }
+        },
+        "marketCategory" : "㳲龜帨핣陙",
+        "marketStatus" : {
+          "Resettled" : {
+            "changeReason" : {
+              "DataSupplierStatusChange" : {
+                
+              }
+            },
+            "newWinningSelection" : ""
+          }
+        },
+        "specifiers" : {
+          "㷲" : "磌꽄ⅻ",
+          "跥ｧ" : "歑㚽ᤇ",
+          "極톽᮸" : "챁昋嵼擌"
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 56.7291
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "盤",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 413.8027
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "놌",
+            "odds" : null,
+            "active" : true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "UnsubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "ꪰ똳૏ᓓ郎⣪駱녰뷑ﰚ"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "errorCode" : {
+        "PunterHasNoActiveSession" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "芐쥱ߥ劸㗳"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "鱬ᄒ巵胳"
+          }
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "PHOENIX",
+          "id" : "譳줵"
+        },
+        "name" : "艘껔",
+        "startTime" : "+522437656-05-23T17:34:55.24919944-17:54:38",
+        "status" : {
+          "GameAbandoned" : {
+            
+          }
+        },
+        "score" : {
+          "home" : 2147483647,
+          "away" : 1
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "ᅠ䢹꯰샃㮉᪗쳞밯鰄"
+      },
+      "channel" : {
+        "WalletsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "PHOENIX",
+          "id" : ""
+        },
+        "marketName" : "赧",
+        "marketType" : {
+          "FirstHalfWinner" : {
+            
+          }
+        },
+        "marketCategory" : "߶",
+        "marketStatus" : {
+          "Settled" : {
+            "changeReason" : {
+              "DataSupplierStatusChange" : {
+                
+              }
+            },
+            "winningSelection" : ""
+          }
+        },
+        "specifiers" : {
+          "῰ᘿ緡ࡽ뫦" : "넎頌"
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 1.0100
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 783.4350
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 407.0051
+            },
+            "active" : true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "WalletUpdate" : {
+      "correlationId" : {
+        "value" : "뭊"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "൲죅"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          }
+        }
+      },
+      "data" : {
+        "walletId" : {
+          "value" : "࿟颌곪쨿믩"
+        },
+        "balance" : {
+          "realMoney" : {
+            "value" : {
+              "amount" : 0.00,
+              "currency" : {
+                
+              }
+            }
+          },
+          "bonusFunds" : [
+            {
+              "value" : {
+                "amount" : -6305447149477996907.00,
+                "currency" : {
+                  
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "影峝泻ꕳ䝕覝灪䱑੝⣇홰쪂矤굧氘ﵮ뻙뗟㨾ꂨ얌榷ᠩ엉ﺴ㩎㫕㡛뿌"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "嬥奨"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "춚狓辎☃శ챷柤"
+          }
+        }
+      },
+      "errorCode" : {
+        "AcceptedTermsVersionWasNotTheLatest" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "煯і췔尬鹮ᴄ"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㔦큫坦˃뒮➣"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "ȿ"
+          }
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "BETGENIUS",
+          "id" : ""
+        },
+        "name" : "ⶤ䫤咹ⴱ",
+        "startTime" : "+277608577-06-06T13:36:21.809990723-06:37:23",
+        "status" : {
+          "InPlay" : {
+            
+          }
+        },
+        "score" : {
+          "home" : -2147483648,
+          "away" : 0
+        }
+      }
+    }
+  },
+  {
+    "FixtureUpdate" : {
+      "correlationId" : {
+        "value" : "况Ӧ꽿⨻෎쎉杰"
+      },
+      "channel" : {
+        "HeartbeatChannel" : {
+          
+        }
+      },
+      "data" : {
+        "id" : {
+          "provider" : "PHOENIX",
+          "id" : "镺"
+        },
+        "name" : "뼕",
+        "startTime" : "+284521533-09-03T07:18:36.886152921-01:01:12",
+        "status" : {
+          "BreakInPlay" : {
+            
+          }
+        },
+        "score" : {
+          "home" : 233288570,
+          "away" : 1
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "UnexpectedBetState" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "TermsAlreadyExist" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "࿯팹秩밿Ჽྎ䌸긆ꎄ勃뾌퇺锋〛⤭㻏ᤈ∔巅松ꮆᳰ뙂탯"
+      },
+      "channel" : {
+        "MarketChannel" : {
+          "marketId" : {
+            "provider" : "BETGENIUS",
+            "id" : ""
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "ODDIN",
+          "id" : ""
+        },
+        "marketName" : "묣জ秊",
+        "marketType" : {
+          "PentaKill" : {
+            
+          }
+        },
+        "marketCategory" : "䐯",
+        "marketStatus" : {
+          "Cancelled" : {
+            "changeReason" : {
+              "DataSupplierPush" : {
+                
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : null,
+            "active" : true
+          },
+          {
+            "selectionId" : "୶",
+            "selectionName" : "↡",
+            "odds" : {
+              "value" : 402.1438
+            },
+            "active" : false
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 1.0100
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "ﰞ",
+            "selectionName" : "潳",
+            "odds" : {
+              "value" : 34.6172
+            },
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "UnsubscriptionSuccess" : {
+      "correlationId" : {
+        "value" : "鵣ꋣ羜몑弯ꗽꡍ浍芼₡봁抭뼐墓ᬜ"
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : ""
+      },
+      "channel" : {
+        "BetsChannel" : {
+          
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "BETGENIUS",
+          "id" : ""
+        },
+        "marketName" : "֑踱",
+        "marketType" : {
+          "FirstToReachXRounds" : {
+            
+          }
+        },
+        "marketCategory" : "我銘",
+        "marketStatus" : {
+          "Resettled" : {
+            "changeReason" : {
+              "BackofficeChange" : {
+                "reason" : ""
+              }
+            },
+            "newWinningSelection" : ""
+          }
+        },
+        "specifiers" : {
+          "튪生䩱嚹" : "桞鍧ⴊ"
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 362.0027
+            },
+            "active" : false
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 232.1263
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "첍",
+            "selectionName" : "",
+            "odds" : {
+              "value" : 135.6444
+            },
+            "active" : false
+          }
+        ]
+      }
+    }
+  },
+  {
+    "SubscriptionFailure" : {
+      "correlationId" : {
+        "value" : "댦룝ୁ梔ዩ툠뷿숾姮鏍ꬄ⠤"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "珓ꌝ蕘ᷡ㐹"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "Ｅ囁斵"
+          }
+        }
+      },
+      "errorCode" : {
+        "InvalidRefreshToken" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "Heartbeat" : {
+      
+    }
+  },
+  {
+    "MarketUpdate" : {
+      "correlationId" : {
+        "value" : "峊슏耳慑"
+      },
+      "channel" : {
+        "FixtureChannel" : {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᤪ"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "䈅Ẁ회鐢﵉⩆"
+          }
+        }
+      },
+      "data" : {
+        "marketId" : {
+          "provider" : "BETGENIUS",
+          "id" : "㟋"
+        },
+        "marketName" : "苝擠",
+        "marketType" : {
+          "FirstTurret" : {
+            
+          }
+        },
+        "marketCategory" : "ꡣ厦",
+        "marketStatus" : {
+          "Bettable" : {
+            "changeReason" : {
+              "BackofficeChange" : {
+                "reason" : "㔍洕萕"
+              }
+            }
+          }
+        },
+        "specifiers" : {
+          "ﻘ鯜" : "",
+          "" : "呾",
+          "纺" : "ቄ纷韂왘",
+          "⏧㮀眊" : "Ӷ曪킁枔"
+        },
+        "selectionOdds" : [
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : null,
+            "active" : false
+          },
+          {
+            "selectionId" : "꙰",
+            "selectionName" : "",
+            "odds" : null,
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "塵",
+            "odds" : {
+              "value" : 938.7866
+            },
+            "active" : true
+          },
+          {
+            "selectionId" : "",
+            "selectionName" : "",
+            "odds" : null,
+            "active" : true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "Error" : {
+      "errorCode" : {
+        "MFAVerificationFailure" : {
+          
+        }
+      }
+    }
+  }
+]

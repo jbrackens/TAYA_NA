@@ -1,0 +1,1 @@
+insert into languages ("id", "brandId") values ('no', 'KK');

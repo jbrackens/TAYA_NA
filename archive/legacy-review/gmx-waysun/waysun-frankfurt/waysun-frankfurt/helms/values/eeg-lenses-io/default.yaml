@@ -1,0 +1,104 @@
+secrets:
+  license:
+  login:
+    username:
+    password:
+  database:
+    username:
+    password:
+lenses:
+  image:
+    repository: lensesio/lenses
+    pullPolicy: Always
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - tools-nodes
+          weight: 1
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - tools-nodes
+
+  # Resource management
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 500m
+      memory: 2Gi
+
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    storageClass: "cbs"
+
+  service:
+    enabled: true
+    type: NodePort
+
+  ingress:
+    enabled: false
+
+  lenses:
+    kafka:
+      ssl:
+        enabled: false
+      sasl:
+        enabled: false
+      metrics:
+        enabled: true
+        type: "JMX"
+        port: 5555
+
+      bootstrapServers: {}
+
+    zookeepers:
+      enabled: true
+      chroot:
+      hosts: {}
+    schemaRegistries:
+      enabled: true
+      topic:
+      hosts:
+        - host:
+          protocol: http
+          port: 8081
+          path:
+          metrics:
+    connectClusters:
+      enabled: true
+      external: false
+      clusters:
+        - name: cp-kafka-connect
+          port: 8083
+          jmxPort: 5555
+          protocol: http
+          offsetsTopic: connect-offsets
+          statusTopic: connect-status
+          configTopic: connect-configs
+          hosts: {}
+
+    storage:
+      postgres:
+        enabled: true
+        host:
+        port:  5432
+        database: lenses
+        schema:  public
+
+    topics:
+      suffix: manual_lenses
+
+    licenseUrl:

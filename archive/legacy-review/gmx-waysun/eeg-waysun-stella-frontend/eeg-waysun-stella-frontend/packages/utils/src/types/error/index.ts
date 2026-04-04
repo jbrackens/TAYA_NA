@@ -1,0 +1,51 @@
+export type FetchError = {
+  statusCode: FetchErrorStatusCode;
+  statusKey: string;
+  message: string;
+  payload?: any;
+};
+
+export enum FetchErrorStatusCodeEnum {
+  BAD_REQUEST = 400,
+  AUTHORIZATION = 401,
+  FORBIDDEN = 403,
+  NOT_FOUND = 404,
+  METHOD_NOT_ALLOWED = 405,
+  NOT_ACCEPTED = 406,
+  CONFLICT = 409,
+  PAYLOAD_TOO_LARGE = 413,
+  URI_TOO_LONG = 414,
+  UNSUPPORTED_MEDIA_TYPE = 415,
+  INTERNAL_ERROR = 500,
+  BAD_GATEWAY = 502,
+  UNAVAILABLE = 503,
+  GATEWAY_TIMEOUT = 504,
+}
+
+export enum FetchErrorStatusKeyEnum {
+  BAD_REQUEST = "BAD_REQUEST",
+  AUTHORIZATION = "AUTHORIZATION",
+  FORBIDDEN = "FORBIDDEN",
+  NOT_FOUND = "NOT_FOUND",
+  METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED",
+  NOT_ACCEPTED = "NOT_ACCEPTED",
+  CONFLICT = "CONFLICT",
+  PAYLOAD_TOO_LARGE = "PAYLOAD_TOO_LARGE",
+  URI_TOO_LONG = "URI_TOO_LONG",
+  UNSUPPORTED_MEDIA_TYPE = "UNSUPPORTED_MEDIA_TYPE",
+  INTERNAL_ERROR = "INTERNAL_SERVER_ERROR",
+  BAD_GATEWAY = "BAD_GATEWAY",
+  UNAVAILABLE = "UNAVAILABLE",
+  GATEWAY_TIMEOUT = "GATEWAY_TIMEOUT",
+  UNEXPECTED = "UNEXPECTED",
+}
+
+export type FetchErrorStatusCode = {
+  [P in keyof FetchErrorStatusCodeEnum]?: FetchErrorStatusCodeEnum[P];
+};
+
+export enum ErrorsToBeHandledSpecially {
+  PUNTER_SHOULDRESET_PASSWORD = "punterShouldResetPassword",
+  INCORRECT_MFA_VERIFICATION_WITH_PASSWORDRESET = "incorrectMFAVerificationWithPasswordReset",
+  UNAUTHORISED_RESPONSE_REQUIRING_PASSWORD_RESET = "unauthorisedResponseRequiringPasswordReset",
+}

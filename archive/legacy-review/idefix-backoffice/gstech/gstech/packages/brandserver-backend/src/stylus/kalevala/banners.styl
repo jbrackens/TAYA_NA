@@ -1,0 +1,23 @@
+@require banners_game_sidebar
+
+banner-bg(resource, resource_m)
+  .background
+    background-size 1800px 300px
+    cdn-background-image: resource
+    @media only screen and (max-width:767px)
+      background-size 767px 300px
+      cdn-background-image: resource_m
+
+.promotion-banner
+  position relative
+
+.promo-button, .promo-button:hover, .promo-button:focus
+  font-size 24px
+  padding 8px 24px
+
+#banner_game_nonloggedin
+  sidebarBanner()
+  cdn_image '/images/banners/sidebar/kalevala_notloggedin.jpg' 300px 430px
+  width 300px
+  height 430px
+  margin-top 0

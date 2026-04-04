@@ -1,0 +1,5 @@
+---
+
+1. Tail the logs of the batch job by running this command
+  kubectl logs -f job.batch/{{ .Chart.Name }}
+---

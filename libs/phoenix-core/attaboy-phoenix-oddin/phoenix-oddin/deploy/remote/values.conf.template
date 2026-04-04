@@ -1,0 +1,31 @@
+cloudflow {
+  streamlets {
+    oddin-ingestor {
+      config-parameters {
+        oddin-access-token = "[changeme]"
+      }
+    }
+    create-market-commands {
+      config-parameters {
+        slick-config-location = "/mnt/slick/slick.conf"
+      }
+      kubernetes.pods.pod {
+        volumes {
+          slick-config {
+            secret {
+              name = oddin-ingestion-slick-config
+            }
+          }
+        }
+        containers.container {
+          volume-mounts {
+            slick-config {
+              mount-path = "/mnt/slick"
+              read-only = true
+            }
+          }
+        }
+      }
+    }
+  }
+}

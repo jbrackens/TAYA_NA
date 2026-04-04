@@ -1,0 +1,3 @@
+:redirect-to /dev/null
+;select metadata AS bdy, log_text as msg from idefix_log where log_line = log_top_line()
+:eval :pipe-to jlessExpand.sh \'$bdy\' \'$msg\';

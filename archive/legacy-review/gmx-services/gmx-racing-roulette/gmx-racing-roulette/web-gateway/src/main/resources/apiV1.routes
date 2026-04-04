@@ -1,0 +1,2 @@
+
+GET        /events        net.flipsports.gmx.game.argyll.racingroulette.webgateway.controller.RouletteController.openWebSocket

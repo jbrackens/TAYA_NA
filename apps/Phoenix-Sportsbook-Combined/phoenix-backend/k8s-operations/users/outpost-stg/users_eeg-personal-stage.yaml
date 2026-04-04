@@ -1,0 +1,76 @@
+- username:   brianna-timpone-admin
+  email:      brianna.timpone+phoenix-admin@darkstormlabs.bet
+  firstName:  Brianna
+  lastName:   Timpone
+  admin:      true
+- username:   brianna-timpone-patron
+  email:      brianna.timpone+darkstormlabs-nj-patron@darkstormlabs.bet
+  firstName:  Brianna
+  lastName:   Timpone
+  balance:    100
+
+- username:   craig-page-admin
+  email:      craig.page+phoenix-admin@darkstormlabs.bet
+  firstName:  Craig
+  lastName:   Page
+  admin:      true
+- username:   craig-page-patron
+  email:      craig.page+darkstormlabs-nj-patron@darkstormlabs.bet
+  firstName:  Craig
+  lastName:   Page
+  balance:    100
+
+- username:   dylan-nueces-admin
+  email:      dylan.delasnueces+phoenix-admin@darkstormlabs.bet
+  firstName:  Dylan
+  lastName:   Nueces
+  admin:      true
+- username:   dylan-nueces-patron
+  email:      dylan.delasnueces+darkstormlabs-nj-patron@darkstormlabs.bet
+  firstName:  Dylan
+  lastName:   Nueces
+  balance:    100
+
+- username:   luke-anderson-admin
+  email:      luke.anderson+admin@egg.bet
+  firstName:  Luke
+  lastName:   Anderson
+  admin:      true
+- username:   luke-anderson-patron
+  email:      luke.anderson+darkstormlabs-nj-patron@egg.bet
+  firstName:  Luke
+  lastName:   Anderson
+  balance:    100
+
+- username:   priti-waghmare-admin
+  email:      priti.waghmare+phoenix-admin@ext.darkstormlabs.tech
+  firstName:  Priti
+  lastName:   Waghmare
+  admin:      true
+- username:   priti-waghmare-patron
+  email:      priti.waghmare+darkstormlabs-nj-patron@ext.darkstormlabs.tech
+  firstName:  Priti
+  lastName:   Waghmare
+  balance:    100
+
+- username:   roma-pise-admin
+  email:      roma.pise+phoenix-admin@ext.darkstormlabs.tech
+  firstName:  Roma
+  lastName:   Pise
+  admin:      true
+- username:   roma-pise-patron
+  email:      roma.pise+darkstormlabs-nj-patron@ext.darkstormlabs.tech
+  firstName:  Roma
+  lastName:   Pise
+  balance:    100
+
+- username:   tony-blank-admin
+  email:      tony.blank+phoenix-admin@darkstormlabs.bet
+  firstName:  Tony
+  lastName:   Blank
+  admin:      true
+- username:   tony-blank-patron
+  email:      tony.blank+darkstormlabs-nj-patron@darkstormlabs.bet
+  firstName:  Tony
+  lastName:   Blank
+  balance:    100

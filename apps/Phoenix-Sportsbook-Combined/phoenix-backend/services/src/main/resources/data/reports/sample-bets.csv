@@ -1,0 +1,2 @@
+eventType,betId,punterId,marketId,stake,odds,operationTime,paidAmount,unsettledAmount,resettledAmount
+OPEN,b1,p1,,1,2.5,2021-02-20T10:11+00:00,,,

@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+arrow = "*"
+"boto3" = "*"
+openpyxl = "*"
+pyexcel = "*"
+pyexcel-io = "*"
+pyexcel-xlsx = "*"
+pyexcel-xls = "*"
+requests = "*"
+Unidecode = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"

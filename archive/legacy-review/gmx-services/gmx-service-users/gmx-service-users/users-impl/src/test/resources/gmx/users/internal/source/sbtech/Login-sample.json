@@ -1,0 +1,38 @@
+[
+  {
+    "MessageCreationDate": 1596555646882,
+    "LoginID": 1517973653,
+    "CustomerID": 13389329,
+    "LoginName": "rmxtest1",
+    "SiteName": "Sportnation",
+    "SiteId": 154,
+    "Country": "United Kingdom",
+    "LoginDate": 1596555624813,
+    "LogoutDate": 0,
+    "LoginIP": "212.250.151.149",
+    "LoginProxyIP": "",
+    "UAFamily": "Chrome",
+    "UAName": "Chrome 83.0.4103.116",
+    "OSCompany": "Apple Inc.",
+    "OSName": "macOS 10.15 Catalina",
+    "DeviceType": "Personal computer"
+  },
+  {
+    "MessageCreationDate": 1596555727722,
+    "LoginID": 1517974608,
+    "CustomerID": 13389329,
+    "LoginName": "rmxtest1",
+    "SiteName": "Sportnation",
+    "SiteId": 154,
+    "Country": "United Kingdom",
+    "LoginDate": 1596555701500,
+    "LogoutDate": 0,
+    "LoginIP": "212.250.151.149",
+    "LoginProxyIP": "",
+    "UAFamily": "Chrome",
+    "UAName": "Chrome 83.0.4103.116",
+    "OSCompany": "Apple Inc.",
+    "OSName": "macOS 10.15 Catalina",
+    "DeviceType": "Personal computer"
+  }
+]

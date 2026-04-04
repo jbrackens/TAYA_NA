@@ -1,0 +1,187 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: leaderboard
+    k8s-app: leaderboard
+    qcloud-app: leaderboard
+  name: leaderboard
+  namespace: ${CFG_K8S_NAMESPACE}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: ${CFG_REPLICAS}
+  selector:
+    matchLabels:
+      app: leaderboard
+      k8s-app: leaderboard
+      qcloud-app: leaderboard
+  strategy:
+    rollingUpdate:
+      maxSurge: ${CFG_STRATEGY_MAX_SURGE}
+      maxUnavailable: ${CFG_STRATEGY_MAX_UNAVAILABLE}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: leaderboard
+        k8s-app: leaderboard
+        qcloud-app: leaderboard
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - ${CFG_DEPLOY_ON_POOL}
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - ${CFG_DEPLOY_ON_POOL}
+      containers:
+      - env:
+        - name: LEADERBOARD_REQUIRE_JWT_AUTH
+          valueFrom:
+            configMapKeyRef:
+              key: REQUIRE_JWT_AUTH
+              name: common
+        - name: LEADERBOARD_TEST_USER_ID
+          valueFrom:
+            configMapKeyRef:
+              key: TEST_USER_ID
+              name: common
+        - name: LEADERBOARD_TEST_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              key: TEST_PROJECT_ID
+              name: common
+        - name: JWT_SERVICE_DISCOVERY_URI
+          valueFrom:
+            configMapKeyRef:
+              key: JWT_SERVICE_DISCOVERY_URI
+              name: common
+              optional: false
+        - name: JWT_INTERNAL_SERVICE_DISCOVERY_URI
+          valueFrom:
+            configMapKeyRef:
+              key: JWT_INTERNAL_SERVICE_DISCOVERY_URI
+              name: common
+              optional: false
+        - name: LEADERBOARD_ISSUER_CACHE_REFRESH_FREQUENCY
+          valueFrom:
+            configMapKeyRef:
+              key: ISSUER_CACHE_REFRESH_FREQUENCY
+              name: common
+        - name: LEADERBOARD_JWKS_CACHE_REFRESH_FREQUENCY
+          valueFrom:
+            configMapKeyRef:
+              key: JWKS_CACHE_REFRESH_FREQUENCY
+              name: common
+        - name: LEADERBOARD_SECRET_BOX_HEX_KEY
+          valueFrom:
+            secretKeyRef:
+              key: SECRET_BOX_HEX_KEY
+              name: common
+        - name: LEADERBOARD_OPEN_API_SERVER_URL
+          valueFrom:
+            configMapKeyRef:
+              key: OPEN_API_SERVER_URL
+              name: common
+        - name: LEADERBOARD_KAFKA_AGGREGATES_TOPIC_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: TOPIC_NAME_FOR_AGGREGATIONS
+              name: common
+        - name: LEADERBOARD_KAFKA_SCHEMA_REGISTRY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: KAFKA_SCHEMA_REGISTRY_URL
+              name: common
+        - name: LEADERBOARD_KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              key: KAFKA_BOOTSTRAP_SERVERS
+              name: common
+        - name: LOGGING_USE_JSON
+          valueFrom:
+            configMapKeyRef:
+              key: LOGGING_USE_JSON
+              name: common
+        envFrom:
+        - secretRef:
+            name: leaderboard
+        - configMapRef:
+            name: leaderboard
+        image: "${CFG_DEPLOY_IMAGE}:${CFG_DEPLOY_TAG}"
+        imagePullPolicy: Always
+        name: leaderboard
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /leaderboard_docs/index.html?url=/leaderboard_docs/docs.yaml
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /leaderboard_docs/index.html?url=/leaderboard_docs/docs.yaml
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+          limits:
+            cpu: ${CFG_RESOURCE_LIMIT_CPU}
+            memory: ${CFG_RESOURCE_LIMIT_MEMORY}
+          requests:
+            cpu: ${CFG_RESOURCE_REQUESTS_CPU}
+            memory: ${CFG_RESOURCE_REQUESTS_MEMORY}
+        securityContext:
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      initContainers:
+      - args:
+        - -c
+        - /liquibase/docker-entrypoint.sh --changeLogFile=changelog/changelog.xml
+          --url=jdbc:postgresql://§{LEADERBOARD_DB_ADDRESS}:§{LEADERBOARD_DB_PORT}/§{LEADERBOARD_DB_NAME}
+          --username=§{LEADERBOARD_LIQUIBASE_DB_USERNAME} --password=§{LEADERBOARD_LIQUIBASE_DB_PASSWORD}
+          update
+        command:
+        - sh
+        envFrom:
+        - secretRef:
+            name: leaderboard
+        - secretRef:
+            name: leaderboard-db-migration
+        image: "${CFG_DEPLOY_IMAGE}:${CFG_DEPLOY_DB_TAG}"
+        imagePullPolicy: Always
+        name: init
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        securityContext:
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

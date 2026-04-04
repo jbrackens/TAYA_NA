@@ -1,0 +1,43 @@
+{
+  "type": "record",
+  "name": "LineInfo",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.LineInfo.v1",
+  "fields": [
+    {
+      "name": "LineId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "EventId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "LineName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "LineTypeName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Odds",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "ChangeDate",
+      "type": "long",
+      "default": 0
+    }
+  ]
+}

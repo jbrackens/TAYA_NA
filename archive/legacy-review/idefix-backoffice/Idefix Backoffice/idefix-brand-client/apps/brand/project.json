@@ -1,0 +1,56 @@
+{
+  "root": "apps/brand",
+  "sourceRoot": "apps/brand",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "root": "apps/brand",
+        "outputPath": "dist/apps/brand"
+      },
+      "configurations": {
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/next:server",
+      "options": {
+        "buildTarget": "brand:build",
+        "dev": true,
+        "customServerPath": "../../tools/next-custom-server/main.ts"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "brand:build:production",
+          "dev": false,
+          "customServerPath": "../../tools/next-custom-server/main.ts"
+        }
+      }
+    },
+    "export": {
+      "executor": "@nrwl/next:export",
+      "options": {
+        "buildTarget": "brand:build:production"
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/brand"],
+      "options": {
+        "jestConfig": "apps/brand/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/brand/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,2 @@
+INSERT INTO risks ("type", "fraudKey", "points", "maxCumulativePoints", "name", "title", "description", "riskProfiles")
+VALUES ('customer', 'new_player_possible_linked', 0, 0, 'First Name + Last Name + DOB - possible linkage', 'First Name + Last Name + DOB - possible linkage', 'First Name, Last Name and Date of Birth are matching. Please verify the matches to evaluate if these players should be linked together.', null);

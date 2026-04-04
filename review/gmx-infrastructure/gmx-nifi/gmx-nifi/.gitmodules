@@ -1,0 +1,4 @@
+[submodule "easynipy"]
+	path = easynipy
+	url = git@github.com:flipadmin/easynipy.git
+	branch = develop

@@ -1,0 +1,27 @@
+{
+  "namespace": "stella.dataapi.eventconfigurations",
+  "name": "EventConfiguration",
+  "type": "record",
+  "fields": [
+    {
+      "name": "fields",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "EventField",
+          "type": "record",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "valueType",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

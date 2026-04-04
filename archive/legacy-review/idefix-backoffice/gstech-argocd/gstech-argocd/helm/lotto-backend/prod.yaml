@@ -1,0 +1,59 @@
+nameOverride: "prod-lotto-backend-service"
+fullnameOverride: "prod-lotto-backend-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  type: NodePort
+  port: 3020
+
+ingressClassName: alb
+
+ingress:
+  enabled: true
+  paths:
+    - path: /api/v1/*
+      pathType: ImplementationSpecific
+      backend:
+        service:
+          name: prod-lotto-backend-service
+          port:
+            number: 3020
+
+  name: alb-ingress-prod-lotto-backend-service
+  namespace: prod
+  annotations:
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-1:743851384875:certificate/d86b771d-c229-47b5-abf9-16da83f2aecd
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-2017-01
+    alb.ingress.kubernetes.io/group.name: lotto-services-public
+
+  hosts:
+    - host: lotto-backend-service.local
+      paths: []
+  tls: []
+
+env:
+  NODE_ENV: development
+  REDIS_HOST: redis-lotto-backend.prod.eeg.viegg.net
+  REDIS_PORT: 6379
+  POSTGRES_HOST: rds-lotto.prod.eeg.viegg.net
+  POSTGRES_USER: lotto
+  WALLET_URL: http://prod-gstech-backend-service:3005/api/v1/wallet
+  BACKEND_URL: http://prod-gstech-backend-service:3001
+secretEnv:
+  POSTGRES_PASSWORD:
+    prod-lotto-backend-service: postgres-password

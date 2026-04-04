@@ -1,0 +1,14 @@
+version: "2"
+region: eu
+web_addr: 127.0.0.1:${NGROK_IDFX_APP_PORT}
+tunnels:
+  walletserver:
+    addr: ${WALLETSERVER_IDFX_PORT}
+    proto: http
+    schemes:
+      - https
+  paymentserver:
+    addr: ${PAYMENTSERVER_IDFX_PORT}
+    proto: http
+    schemes:
+      - https

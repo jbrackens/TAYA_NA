@@ -1,0 +1,30 @@
+version: '3.8'
+
+x-images:
+  - &stella-event-ingestor stella-event-ingestor:latest
+
+services:
+  stella-event-ingestor:
+    image: *stella-event-ingestor
+    environment:
+      EVENT_INGESTOR_HOST: ${EVENT_INGESTOR_HOST:-0.0.0.0}
+      EVENT_INGESTOR_PORT: ${EVENT_INGESTOR_PORT:-9000} # it's okay to use env vars like that as long as we have only one instance
+      EVENT_INGESTOR_EVENT_PUBLICATION_MODE: ${EVENT_INGESTOR_EVENT_PUBLICATION_MODE:-publishDirectlyToKafka}
+      EVENT_INGESTOR_REQUIRE_JWT_AUTH: ${EVENT_INGESTOR_REQUIRE_JWT_AUTH:-true}
+      JWT_SERVICE_DISCOVERY_URI: ${JWT_SERVICE_DISCOVERY_URI:-http://stella.local:8000}
+      JWT_INTERNAL_SERVICE_DISCOVERY_URI: ${JWT_INTERNAL_SERVICE_DISCOVERY_URI:-http://stella.local:8000}
+      EVENT_INGESTOR_OPEN_API_SERVER_URL: ${EVENT_INGESTOR_OPEN_API_SERVER_URL:-http://stella.local:8000}
+      EVENT_INGESTOR_KAFKA_PLATFORM_EVENTS_TOPIC_NAME: ${EVENT_INGESTOR_KAFKA_PLATFORM_EVENTS_TOPIC_NAME:-dev-stella-intake.platform-events}
+      EVENT_INGESTOR_KAFKA_SCHEMA_REGISTRY_URL: ${EVENT_INGESTOR_KAFKA_SCHEMA_REGISTRY_URL:-http://kafka:8081}
+      EVENT_INGESTOR_KAFKA_BOOTSTRAP_SERVERS: ${EVENT_INGESTOR_KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
+      EVENT_INGESTOR_REDIS_URL: ${EVENT_INGESTOR_REDIS_URL:-redis://redis:6379}
+      LOGGING_USE_JSON: ${LOGGING_USE_JSON:-true}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.event_ingestor.rule=PathPrefix(`/event_ingestor/`,`/event_ingestor_docs/`)"
+      - "traefik.http.services.event_ingestor.loadbalancer.server.port=${EVENT_INGESTOR_PORT:-9000}"
+
+networks:
+  default:
+    external:
+      name: gmx-internal # a network used in gmx-traefik

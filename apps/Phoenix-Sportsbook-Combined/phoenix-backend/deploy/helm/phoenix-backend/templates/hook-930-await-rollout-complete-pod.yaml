@@ -1,0 +1,55 @@
+{{ if .Values.argocd.awaitRolloutComplete }}
+
+# Note that:
+# * `helm upgrade --wait` only waits (block) until the `minimum` number of replicas is ready,
+#      where `minimum` defined as `desired - maxUnavailable`.
+#      It doesn't wait until the `desired` number of replicas is ready (unless, of course, `maxUnavailable` is 0).
+# * `argocd app wait --operation` doesn't wait for readiness conditions at all... unless a post-install/post-upgrade hook is present,
+#      which will only be run once the app stops "progressing" in ArgoCD-ese (i.e. no
+
+# This means that with the current rollout strategy (`maxUnavailable = 100%`)
+# we need an extra post-install hook to actually wait for deployment/phoenix-backend to be ready
+# so that we can run contract tests.
+
+# This waiting for deployment/phoenix-backend is NOT needed unless we run contract tests.
+# If it happens that the new replica set never becomes ready, ArgoCD will emit a notification
+# about Degraded status of an Application, so we won't miss that occurrence.
+
+kind: Pod
+apiVersion: v1
+metadata:
+  name: await-rollout-complete
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "930"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  serviceAccountName: await-rollout-complete
+  containers:
+    - name: await-rollout-complete
+      image: bitnami/kubectl:1.21
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        # User and group 1001 are readily available in `bitnami/kubectl` image.
+        allowPrivilegeEscalation: false
+        runAsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+      resources:
+        limits:
+          memory: 100Mi
+          cpu: 500m
+        requests:
+          memory: 100Mi
+          cpu: 500m
+      command: ["/bin/bash", "-c"]
+      args:
+      # language=sh
+      {{ if .Values.argocd.rollouts.enabled }}
+        - exit 0
+      # language=sh
+      {{ else }}
+        - kubectl rollout status --watch=true --timeout=5m deployment/phoenix-backend
+      {{- end }}
+{{ end }}

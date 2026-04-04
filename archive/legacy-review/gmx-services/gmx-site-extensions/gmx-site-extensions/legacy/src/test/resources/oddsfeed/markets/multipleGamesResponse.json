@@ -1,0 +1,429 @@
+{
+  "code": 0,
+  "Sports": [
+    {
+      "SportID": 1,
+      "SportName": "Soccer",
+      "Leagues": [
+        {
+          "LeagueID": 39853,
+          "LeagueName": "Sweden Cup",
+          "RankID": 1191,
+          "CountryID": 192,
+          "Games": [
+            {
+              "GameID": 9431240,
+              "Home": "Sirius",
+              "Away": "IFK Goteborg",
+              "GameDate": "2018-03-04T16:00:00",
+              "IsLive": 0,
+              "GameType": 0,
+              "HasLiveStreaming": 0,
+              "Markets": [
+                {
+                  "MarketTypeID": 1570002,
+                  "Lines": [
+                    {
+                      "LineID": "R346331458",
+                      "LineIntID": 346331458,
+                      "LineGroupID": 49502957,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R346331462",
+                      "LineIntID": 346331462,
+                      "LineGroupID": 49502957,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1,
+                  "Lines": [
+                    {
+                      "LineID": "R346327418",
+                      "LineIntID": 346327418,
+                      "LineGroupID": 49502380,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R346327421",
+                      "LineIntID": 346327421,
+                      "LineGroupID": 49502380,
+                      "LineName": "Draw"
+                    },
+                    {
+                      "LineID": "R346327422",
+                      "LineIntID": 346327422,
+                      "LineGroupID": 49502380,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 610011,
+                  "Lines": [
+                    {
+                      "LineID": "Q463831930_39853",
+                      "LineIntID": 463831930,
+                      "LineName": "1 or X"
+                    },
+                    {
+                      "LineID": "Q463831931_39853",
+                      "LineIntID": 463831931,
+                      "LineName": "X or 2"
+                    },
+                    {
+                      "LineID": "Q463831932_39853",
+                      "LineIntID": 463831932,
+                      "LineName": "1 or 2"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "LeagueID": 40685,
+          "LeagueName": "Champions League",
+          "RankID": 8,
+          "CountryID": 256,
+          "Games": [
+            {
+              "GameID": 9332871,
+              "Home": "Liverpool",
+              "Away": "Porto",
+              "GameDate": "2018-03-06T19:45:00",
+              "IsLive": 0,
+              "GameType": 0,
+              "HasLiveStreaming": 0,
+              "Markets": [
+                {
+                  "MarketTypeID": 1,
+                  "Lines": [
+                    {
+                      "LineID": "R341310469",
+                      "LineIntID": 341310469,
+                      "LineGroupID": 48785596,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R341310472",
+                      "LineIntID": 341310472,
+                      "LineGroupID": 48785596,
+                      "LineName": "Draw"
+                    },
+                    {
+                      "LineID": "R341310473",
+                      "LineIntID": 341310473,
+                      "LineGroupID": 48785596,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 2,
+                  "Lines": [
+                    {
+                      "LineID": "R341310470",
+                      "LineIntID": 341310470,
+                      "LineGroupID": 48785596,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R341310474",
+                      "LineIntID": 341310474,
+                      "LineGroupID": 48785596,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 3,
+                  "Lines": [
+                    {
+                      "LineID": "R341310471",
+                      "LineIntID": 341310471,
+                      "LineGroupID": 48785596,
+                      "LineName": "Over"
+                    },
+                    {
+                      "LineID": "R341310475",
+                      "LineIntID": 341310475,
+                      "LineGroupID": 48785596,
+                      "LineName": "Under"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1570002,
+                  "Lines": [
+                    {
+                      "LineID": "R341310890",
+                      "LineIntID": 341310890,
+                      "LineGroupID": 48785656,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R341310894",
+                      "LineIntID": 341310894,
+                      "LineGroupID": 48785656,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 610011,
+                  "Lines": [
+                    {
+                      "LineID": "Q457535135_40685",
+                      "LineIntID": 457535135,
+                      "LineName": "1 or X"
+                    },
+                    {
+                      "LineID": "Q457535136_40685",
+                      "LineIntID": 457535136,
+                      "LineName": "X or 2"
+                    },
+                    {
+                      "LineID": "Q457535137_40685",
+                      "LineIntID": 457535137,
+                      "LineName": "1 or 2"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1580013,
+                  "Lines": [
+                    {
+                      "LineID": "Q457607874_40685",
+                      "LineIntID": 457607874,
+                      "LineName": "Yes"
+                    },
+                    {
+                      "LineID": "Q457607875_40685",
+                      "LineIntID": 457607875,
+                      "LineName": "No"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "GameID": 9332948,
+              "Home": "Paris St-Germain",
+              "Away": "Real Madrid",
+              "GameDate": "2018-03-06T19:45:00",
+              "IsLive": 0,
+              "GameType": 0,
+              "HasLiveStreaming": 0,
+              "Markets": [
+                {
+                  "MarketTypeID": 1570002,
+                  "Lines": [
+                    {
+                      "LineID": "R341315811",
+                      "LineIntID": 341315811,
+                      "LineGroupID": 48786359,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R341315815",
+                      "LineIntID": 341315815,
+                      "LineGroupID": 48786359,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1,
+                  "Lines": [
+                    {
+                      "LineID": "R341314774",
+                      "LineIntID": 341314774,
+                      "LineGroupID": 48786211,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R341314777",
+                      "LineIntID": 341314777,
+                      "LineGroupID": 48786211,
+                      "LineName": "Draw"
+                    },
+                    {
+                      "LineID": "R341314778",
+                      "LineIntID": 341314778,
+                      "LineGroupID": 48786211,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 2,
+                  "Lines": [
+                    {
+                      "LineID": "R341314775",
+                      "LineIntID": 341314775,
+                      "LineGroupID": 48786211,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R341314779",
+                      "LineIntID": 341314779,
+                      "LineGroupID": 48786211,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 3,
+                  "Lines": [
+                    {
+                      "LineID": "R341314776",
+                      "LineIntID": 341314776,
+                      "LineGroupID": 48786211,
+                      "LineName": "Over"
+                    },
+                    {
+                      "LineID": "R341314780",
+                      "LineIntID": 341314780,
+                      "LineGroupID": 48786211,
+                      "LineName": "Under"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 610011,
+                  "Lines": [
+                    {
+                      "LineID": "Q457539480_40685",
+                      "LineIntID": 457539480,
+                      "LineName": "1 or X"
+                    },
+                    {
+                      "LineID": "Q457539481_40685",
+                      "LineIntID": 457539481,
+                      "LineName": "X or 2"
+                    },
+                    {
+                      "LineID": "Q457539482_40685",
+                      "LineIntID": 457539482,
+                      "LineName": "1 or 2"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1580013,
+                  "Lines": [
+                    {
+                      "LineID": "Q457607586_40685",
+                      "LineIntID": 457607586,
+                      "LineName": "Yes"
+                    },
+                    {
+                      "LineID": "Q457607587_40685",
+                      "LineIntID": 457607587,
+                      "LineName": "No"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "SportID": 61,
+      "SportName": "Horse Racing",
+      "Leagues": [
+        {
+          "LeagueID": 112619,
+          "LeagueName": "Lingfield",
+          "RankID": 128,
+          "CountryID": 225,
+          "Games": [
+            {
+              "GameID": 40319029,
+              "Home": "Play Jackpot Games At sunbets.co.uk/vegas Handicap",
+              "GameDate": "2018-03-02T16:10:00",
+              "IsLive": 0,
+              "GameType": 1,
+              "HasLiveStreaming": 0,
+              "Markets": [
+                {
+                  "MarketTypeID": 3410024,
+                  "Lines": [
+                    {
+                      "LineID": "Q464205801_112619",
+                      "LineIntID": 464205801,
+                      "LineName": "Poet's Society",
+                      "Jockey": "F Norton",
+                      "Trainer": "M Johnston"
+                    },
+                    {
+                      "LineID": "Q464205811_112619",
+                      "LineIntID": 464205811,
+                      "LineName": "Constantino",
+                      "Jockey": "P Hanagan",
+                      "Trainer": "R A Fahey"
+                    },
+                    {
+                      "LineID": "Q464205819_112619",
+                      "LineIntID": 464205819,
+                      "LineName": "Mitchum Swagger",
+                      "Jockey": "R Kingscote",
+                      "Trainer": "R M Beckett"
+                    },
+                    {
+                      "LineID": "Q464205827_112619",
+                      "LineIntID": 464205827,
+                      "LineName": "Take The Helm",
+                      "Jockey": "Edward Greatrex",
+                      "Trainer": "B J Meehan"
+                    },
+                    {
+                      "LineID": "Q464205835_112619",
+                      "LineIntID": 464205835,
+                      "LineName": "Swift Approval",
+                      "Jockey": "Oisin Murphy",
+                      "Trainer": "S C Williams"
+                    },
+                    {
+                      "LineID": "Q464205843_112619",
+                      "LineIntID": 464205843,
+                      "LineName": "Shyron",
+                      "Jockey": "Jane Elliott",
+                      "Trainer": "G G Margarson"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 3410026,
+                  "Lines": [
+                    {
+                      "LineID": "Q464205806_112619",
+                      "LineIntID": 464205806,
+                      "LineName": "Favourite"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 3410028,
+                  "Lines": [
+                    {
+                      "LineID": "Q464205807_112619",
+                      "LineIntID": 464205807,
+                      "LineName": "2nd Favourite"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

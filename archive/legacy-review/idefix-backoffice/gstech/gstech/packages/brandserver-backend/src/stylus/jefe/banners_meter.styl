@@ -1,0 +1,26 @@
+@require '_sprite'
+@require '_sprite2x'
+
+meterBanner($top = 177px, $left = 16px)
+  .progress-meter-holder
+    display block
+    position absolute
+    z-index 20
+    top $top
+    left $left
+    right 14px
+    .progress-meter
+      cdn_image '/images/progress.png' 208px 23px
+      height 23px
+    .progress-meter-target
+      position absolute
+      right 0
+      top 30px
+      line-height 16px
+      padding 3px 8px
+      background-color #ab5335
+      color #ffffff
+      font-family 'Titillium Web', sans-serif
+      font-weight 700
+      font-size 10px
+      text-transform uppercase

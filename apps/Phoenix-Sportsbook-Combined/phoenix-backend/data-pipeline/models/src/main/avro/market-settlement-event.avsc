@@ -1,0 +1,40 @@
+{
+  "namespace": "phoenix.dataapi.internal.oddin",
+  "type": "record",
+  "name": "MarketSettlementEvent",
+  "fields": [
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "receivedAtUtc",
+      "type": "long"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "outcomes",
+      "type": {
+        "type": "array",
+        "items": {
+          "namespace": "phoenix.dataapi.internal.oddin",
+          "type": "record",
+          "name": "SelectionResult",
+          "fields": [
+            {
+              "name": "selectionId",
+              "type": "string"
+            },
+            {
+              "name": "result",
+              "type": "int"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

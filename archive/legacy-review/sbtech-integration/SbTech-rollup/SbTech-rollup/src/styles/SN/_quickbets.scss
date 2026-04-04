@@ -1,0 +1,86 @@
+.quick-bets .heading,
+.quick-bets-heading{
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  font-weight:bold;
+}
+//overide
+.IsDesktop .responsive-block .quick-bets .heading.sectionSubHeading{
+  padding-top:0;
+  padding-bottom:0;
+  line-height:2;
+  font-size:14px;
+  border:none;
+  margin-bottom:0;
+  &:before{
+    top:50%;
+    transform:translateY(-50%);
+    height:1.1em;
+  }
+}
+
+.quick-bets-stake-label{
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  font-weight:bold;
+  background:#e8e8e8;
+  color:#282828;
+}
+html.IsDesktop .quick-bets-stake-label:hover{
+  background:#d9d9d9;
+}
+
+.quick-bets-stake-button:checked + .quick-bets-stake-label{
+  background:#ffbc1d;
+  color:#282828;
+}
+
+html.IsDesktop .quick-bets-stake-button:checked + .quick-bets-stake-label:hover{
+  background:#ff9d2c;
+  color:#282828;
+}
+
+.quick-bets-add-button{
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  font-weight:bold;
+  font-size:15px;
+  padding:0;
+  line-height:30px;
+  color:white;
+}
+
+.filter-component-wrapper.your-bet-filter-desktop:after {
+    display: block;
+    content: '';
+    height: 40px;
+    width: 40px;
+    position: absolute;
+    right: 5px;
+    top: -5px;
+    background-image:url('/img/55379');
+    background-size:100% 100%;
+    pointer-events: none;
+}
+.your-bet--active .filter-component-wrapper.your-bet-filter-desktop:after {
+    background-image:url('/img/55378');
+}
+.IsDesktop .your-bet-switch-desktop label.switchLabel {
+    width: 40px;
+    padding-right: 45px;
+    font-size: 0;
+    height: 20px;
+}
+
+.IsMobile .your-bet-filter .switchLabel:after, .IsTablet .your-bet-filter .switchLabel:after{
+    display: block;
+    content: '';
+    height: 40px;
+    width: 40px;
+    position: absolute;
+    right: 48px;
+    top: 8px;
+    background-image: url('/img/48989');
+    background-size:100% 100%;
+    pointer-events: none;
+}

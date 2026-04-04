@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gmx-user-service.fullname" . }}
+  labels:
+    {{- include "gmx-user-service.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "gmx-user-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "gmx-user-service.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gmx-user-service.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: JAVA_OPTS
+              value: "-Xms256m -Xmx256m -Dconfig.resource={{ .Values.configResource }} -Dlagom.persistence.jdbc.create-tables.auto=false"
+            - name: REQUIRED_CONTACT_POINT_NR
+              value: "{{ .Values.replicaCount }}"
+            - name: APPLICATION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secrets
+                  key: application-secret
+            - name: DATABASE_URL
+              value: "jdbc:postgresql://{{ .Values.databaseHost }}/{{ .Values.databaseName }}"
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secrets
+                  key: database-username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secrets
+                  key: database-password
+            - name: KAFKA_SERVICE_NAME
+              value: "{{ .Values.kafkaServiceName }}"
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: remoting
+              containerPort: 2552
+              protocol: TCP
+            - name: management
+              containerPort: 8558
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

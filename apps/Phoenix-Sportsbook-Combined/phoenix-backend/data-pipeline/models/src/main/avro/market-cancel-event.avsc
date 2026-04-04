@@ -1,0 +1,23 @@
+{
+  "namespace": "phoenix.dataapi.internal.oddin",
+  "type": "record",
+  "name": "MarketCancelEvent",
+  "fields": [
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "receivedAtUtc",
+      "type": "long"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "isPush",
+      "type": "boolean"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+<h1>Hi {{ user.display_name }},</h1>
+
+
+<p>This is email verification link: <a href="{{ scheme }}://{{ site.domain }}{% url 'frontend:profile__email_verify' %}?key={{ key }}"><strong>HERE</strong></a>.<br>
+    It is valid until <strong>{{ exp_date }}</strong>.
+</p>
+<p>
+    Your <strong>KEY</strong> for manual input is: <code>{{ key }}</code>.
+</p>
+<br>
+
+Regards, <br>
+RMX

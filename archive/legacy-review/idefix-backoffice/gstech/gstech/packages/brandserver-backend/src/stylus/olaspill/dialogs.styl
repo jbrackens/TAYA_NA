@@ -1,0 +1,361 @@
+.form-feedback
+  display none
+  &.info
+    p
+      color #00dd00
+  .feedback-content
+    p
+      font-size 14px
+      color #383838
+      font-weight 700
+      h2
+        text-transform none
+        font-size 13px
+.veil
+  display none
+  z-index 15050
+  background-color rgba(59,170,255,0.5)
+  position fixed
+  top 0
+  left 0
+  right 0
+  bottom 0
+  &.visible
+    display block
+
+.popup-holder
+  height 0
+  overflow hidden
+
+#free-game-sidebar
+  position absolute
+  top 0
+  right 0
+  bottom 0
+  z-index 200
+  width 300px
+  height 100%
+  .close-button
+    right 10px
+    top 10px
+
+.license-notification, .bonus-notification, #mobile-game-slider .button-holder
+  background-color rgba(20, 20, 20, 0.85)
+  font-weight 600
+  color #ffffff
+  z-index 20000
+  padding 20px
+
+.mobile #free-game-slider, .mobile #game-slider
+  visibility hidden
+  .dialog
+    background-color rgba(0, 0, 0, 0.8)
+    border-radius 0 7px 7px 0
+
+#game-slider, #mobile-game-slider
+  force3d()
+  position fixed
+  z-index 13203
+  left 0
+  right 0
+  top 0
+  bottom 0
+  overflow hidden
+  background-color black
+  cdn-background-image '/images/gamebg.jpg'
+  background-repeat no-repeat
+  background-size cover !important
+  background-position center center
+  display none
+
+  .dialog
+    &.shadow
+      box-shadow(10px 0 40px 0 rgba(0,0,0,0.4))
+    position relative
+    .play-for-fun
+      z-index 205
+      position absolute
+      display inline
+      top -22px
+      height 22px
+      padding 2px 12px 2px 12px
+      text-transform uppercase
+      left 14px
+      color white
+      font-size 13px/15px
+      background-color $dark_blue
+      border-radius 6px 6px 0 0
+      headerFont()
+    .buttons-hidden
+      position absolute
+      right -40px
+      top 0
+      z-index 200
+      .show-info-button
+        position absolute
+        display inline
+        top 40px
+        right 0
+        display block
+        genericbutton()
+        background-color $pinky-purple
+        &:after
+          content ''
+          position absolute
+          top -5px
+          left -5px
+          sprite2x($button_hide, $button_hide_2x)
+          filter FlipH;
+          transform scaleX(-1)
+      .close-button
+        closebutton()
+        top 0
+        right 0
+
+    .license-notification, .bonus-notification
+      display none
+      position absolute
+    .bonus-notification
+      top 0
+      left 0
+      right $game_sidebar
+      text-align center
+    .license-notification
+      bottom 0
+      left 0
+    .game-col
+      z-index 201
+      opacity 1
+      position absolute
+      overflow hidden
+      .game-info
+        display none
+      object
+        position relative
+        height 100%
+        width 100%
+      iframe
+        position relative
+        height 100%
+        width 100%
+
+#mobile-game-slider
+  display flex
+  flex-direction column
+  justify-content center
+  align-items stretch
+  .button-holder
+    padding-top 30px
+    text-align center
+    .button
+      min-width 220px
+
+.mobile #game-slider
+  visibility hidden
+  .dialog
+    background-color rgba(0, 0, 0, 0.8)
+    border-radius 0 7px 7px 0
+
+.dialog-content
+  background-color $dialog-background
+  padding-top 5px
+  padding-bottom 25px
+  min-height: 280px
+  @media only screen and (min-width:768px)
+    border-radius 10px
+  @media only screen and (max-width:767px)
+    min-height 100vh
+  .content
+    padding 15px
+    font-size 14px
+    color white
+    text-align center
+    margin 15px 10px 35px 10px
+    position relative
+    min-height 300px
+    padding-top 20px
+    max-width 420px
+    @media only screen and (max-width:767px)
+      margin 5px
+  p
+    margin 15px 0
+    color #ffffff
+    font-size 14px
+    line-height 1.29
+    letter-spacing -0.3px
+    font-weight 600
+  h1
+    font-size 40px
+    font-weight bold
+    line-height 0.75
+    color #ffffff
+  h2
+    margin 24px auto
+    font-size 40px
+    max-width 320px
+    font-weight bold
+    line-height 0.75
+    text-align center
+    color #ffffff
+  textarea
+    width 100%
+    min-height 100px
+    border-radius 2px
+    color #000
+  .selections
+    &> .input-row
+      padding-top 16px
+    @media only screen and (min-width:768px)
+      display flex
+      flex-wrap wrap
+      &> .input-row
+        width 50%
+  .form-content
+    text-align left
+    padding 15px
+    color white
+    font-weight 400
+    font 16px/18px 'Ubuntu', Helvetica, Arial, sans-serif
+    overflow-y auto
+    height 100%
+  .button-area
+    flex-wrap wrap
+    display flex
+    justify-content space-evenly
+    .submit-button
+      font-size 13px
+      margin 10px 0
+
+#realitycheck-dialog
+  position fixed
+  z-index 16000
+  display none
+  bottom 0
+  right 0
+  left 0
+  top 0
+  @media only screen and (max-width:767px)
+    bottom $mobile_menu_height
+  &.visible
+    display flex
+    align-items: center;
+    justify-content: center;
+  .lightbox-holder
+    min-width 440px
+    width auto
+    padding-top 20px
+    padding-bottom 20px
+    .lightbox-frame
+      box-shadow(5px 0 20px 0 rgba(0,0,0,0.2))
+      min-height 200px
+      margin 0
+      padding 10px
+      position relative
+      background-color $bg-white
+      clearfix()
+      &.dialog
+        border-radius 8px
+      .button
+        margin 0 10px 0 10px
+      .content
+        text-align center
+        width 100%
+        height 100%
+        vertical-align middle
+        display table-cell
+        padding 10px
+        color $default-gray
+        .button-row
+          padding-top 20px
+          white-space nowrap
+        h2
+          font-size 20px
+          padding-bottom 10px
+        h4
+          font-size 16px
+
+.common-dialog
+  position absolute
+  z-index $dialog_zindex
+  display none
+  margin-top
+  padding-bottom 20px
+  min-height 300px
+  &.visible,&.active
+    display block
+
+  @media only screen and (max-width:767px)
+    width 100%
+    height 100%
+    top $header_height
+  .dialog-content
+    &:after
+      content ''
+      position absolute
+      top 40px
+      left 5px
+   &.visible
+    display block
+  .close-button
+    closebutton()
+
+#error-dialog .dialog-content:after
+  cdn-background-image2x '/images/ola_what.png' '/images/ola_what@2x.png' 152px 283px
+
+.dialog-shadow
+  box-shadow 0px 20px 40px $nice-blue
+  border-radius 70%
+  width 80%
+  position absolute
+  bottom 25px
+  z-index -1
+  left 10%
+  height 100px
+  @media only screen and (max-width:767px)
+    display none
+
+#tc-dialog
+  .lightbox-holder
+    max-width 1200px
+  .tc-content-holder
+    background-color $bg-white
+  .tc-frame
+    box-shadow(5px 0 20px 0 rgba(0,0,0,0.2))
+    @media only screen and (min-width:768px)
+      overflow hidden
+    background-color $bg-white
+    min-height 348px
+    height 348px
+    margin 0
+    padding 0
+    position relative
+    display flex
+    align-items center
+    &.dialog
+      width auto
+      border-radius 8px
+      height auto
+      max-width 100vh
+      max-height 800px
+      .content
+        margin 0 auto
+        width 100%
+        .button
+          padding 0 10px
+          display block
+          margin 5px auto 15px auto
+          width 250px
+          height 42px
+          font-size 14px
+          line-height 42px
+          text-align center
+
+
+#tc-content
+  h1
+    font-size 22px
+    text-transform uppercase
+  p
+    font-size 16px
+    margin 25px
+    text-align center

@@ -1,0 +1,1330 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1555593150462,
+        "description": "",
+        "identifier": "648fb416-62a0-5165-a8fd-5fe85818aaa7",
+        "modifiedTimestamp": 1565126904162,
+        "name": "FetchCasinoAndSportBetsTopupData",
+        "type": "Flow",
+        "versionCount": 14
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1629.8291015625,
+                        "y": 473.64776611328125
+                    },
+                    {
+                        "x": 1826.4613037109375,
+                        "y": 474.640869140625
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "0317e47f-e2d5-3e3d-a715-9d4287fc711a",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "70dd0290-1f4c-3832-a635-3a3af4983899",
+                "labelIndex": 0,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "c08aca27-cce0-31f6-ac47-babcf7d69e2f",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "2db5cb32-a9e1-3c6d-b135-6bb70d20973d",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "853125b7-323d-381b-a400-be6bd6681ca7",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "7294d0fa-60fe-36a0-93b9-fc12dc8619cc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "02d58c6a-4b5a-3f15-80d5-6577dcb705dd",
+                    "name": "fatal_errors",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "f10ddd48-846e-3536-a5d7-7471b61aed28",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "0317e47f-e2d5-3e3d-a715-9d4287fc711a",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "d3dc04c1-84b9-3e49-b78a-3ebecd6129a0",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "09c357e5-0d6d-3c56-a9cc-262a6f9e8f2b",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "4e5ba31f-a9a7-3f37-a308-3561a40f4d17",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "0317e47f-e2d5-3e3d-a715-9d4287fc711a",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "215d51c1-c5b5-3898-8427-3f675dcf4d5d",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "2db5cb32-a9e1-3c6d-b135-6bb70d20973d",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "7294d0fa-60fe-36a0-93b9-fc12dc8619cc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "41f7a7a0-88aa-3613-b247-997b5dbdccba",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "splits"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "d3dc04c1-84b9-3e49-b78a-3ebecd6129a0",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "c08aca27-cce0-31f6-ac47-babcf7d69e2f",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "df62e140-8cea-32b4-8856-1b6d47e230b6",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "d3dc04c1-84b9-3e49-b78a-3ebecd6129a0",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "01a8da0d-6b5d-34b1-9b7e-eadbc20c4e91",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "e371d60d-488a-3d40-84d6-2bbec7ec8eda",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "235c4240-dad0-30be-8057-ce9f79ee6ed2",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "01a8da0d-6b5d-34b1-9b7e-eadbc20c4e91",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "f0eeb11b-0405-3b56-aa1a-e71bc08835ad",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "0e27f6b6-ed95-394f-830e-6ab52a211259",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "0e27f6b6-ed95-394f-830e-6ab52a211259",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "0de69277-69db-3ccc-80e4-c3c1833cd016",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "parse.failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "b72a2e50-af6d-3499-ba68-d3f4ccd8a80a",
+                    "name": "Consume_sportbetsinfo",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "4e5ba31f-a9a7-3f37-a308-3561a40f4d17",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "ca145f2c-d7e9-306e-9ae3-1c064f20eb86",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "b7096fef-5dbc-338b-8ecb-14c7cb1322f9",
+                    "name": "Consume_casinobets",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "2455b8fb-c386-33fa-b478-c2db73cae72d",
+                    "name": "success",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "715ba27c-d14f-3d2f-b8c9-20241ba717c0",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "7294d0fa-60fe-36a0-93b9-fc12dc8619cc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "235c4240-dad0-30be-8057-ce9f79ee6ed2",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "f64a6e2b-eafc-3b28-a759-84c3067858d6",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "parse.failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "b7096fef-5dbc-338b-8ecb-14c7cb1322f9",
+                    "name": "Consume_casinobets",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "f18d4683-921c-393d-86a6-e0600e319252",
+                    "name": "parse_error",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "3a69b45c-91ac-3d37-a5d7-89ff42248d8c",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "01a8da0d-6b5d-34b1-9b7e-eadbc20c4e91",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "4e5ba31f-a9a7-3f37-a308-3561a40f4d17",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "77d20237-3a6f-3c02-a7c8-2a0283a0b8d0",
+                "labelIndex": 1,
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                    "id": "b72a2e50-af6d-3499-ba68-d3f4ccd8a80a",
+                    "name": "Consume_sportbetsinfo",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [
+            {
+                "componentType": "FUNNEL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "4e5ba31f-a9a7-3f37-a308-3561a40f4d17",
+                "position": {
+                    "x": 599.2253257833232,
+                    "y": 218.1145816394491
+                }
+            },
+            {
+                "componentType": "FUNNEL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "0317e47f-e2d5-3e3d-a715-9d4287fc711a",
+                "position": {
+                    "x": 1804.6133670672857,
+                    "y": 681.2040754548664
+                }
+            },
+            {
+                "componentType": "FUNNEL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "01a8da0d-6b5d-34b1-9b7e-eadbc20c4e91",
+                "position": {
+                    "x": 1927.5282842117035,
+                    "y": -30.85914083205256
+                }
+            }
+        ],
+        "identifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+        "inputPorts": [],
+        "labels": [],
+        "name": "CasinoAndSportBetsTopupData",
+        "outputPorts": [
+            {
+                "componentType": "OUTPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "02d58c6a-4b5a-3f15-80d5-6577dcb705dd",
+                "name": "fatal_errors",
+                "position": {
+                    "x": 2159.1473356176243,
+                    "y": 677.2317563953065
+                },
+                "type": "OUTPUT_PORT"
+            },
+            {
+                "componentType": "OUTPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "2455b8fb-c386-33fa-b478-c2db73cae72d",
+                "name": "success",
+                "position": {
+                    "x": 504.6885699545269,
+                    "y": 910.4733126308579
+                },
+                "type": "OUTPUT_PORT"
+            },
+            {
+                "componentType": "OUTPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "f18d4683-921c-393d-86a6-e0600e319252",
+                "name": "parse_error",
+                "position": {
+                    "x": 2257.0502519635947,
+                    "y": -32.83954031556436
+                },
+                "type": "OUTPUT_PORT"
+            }
+        ],
+        "position": {
+            "x": -3611.9492224687638,
+            "y": -599.420789409641
+        },
+        "processGroups": [],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "235c4240-dad0-30be-8057-ce9f79ee6ed2",
+                "name": "LogAttribute",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1132.8752946882041,
+                    "y": -74.8569720515568
+                },
+                "properties": {
+                    "Log Level": "error",
+                    "Log Payload": "false",
+                    "Log prefix": "[CasinoAndSportBetsTopupData][Consume_casinobets]",
+                    "attributes-to-log-regex": ".*",
+                    "character-set": "UTF-8"
+                },
+                "propertyDescriptors": {
+                    "Attributes to Ignore": {
+                        "displayName": "Attributes to Ignore",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Ignore",
+                        "sensitive": false
+                    },
+                    "Attributes to Log": {
+                        "displayName": "Attributes to Log",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Log",
+                        "sensitive": false
+                    },
+                    "Log Level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "Log Level",
+                        "sensitive": false
+                    },
+                    "Log Payload": {
+                        "displayName": "Log Payload",
+                        "identifiesControllerService": false,
+                        "name": "Log Payload",
+                        "sensitive": false
+                    },
+                    "Log prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "Log prefix",
+                        "sensitive": false
+                    },
+                    "attributes-to-ignore-regex": {
+                        "displayName": "Attributes to Ignore by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-ignore-regex",
+                        "sensitive": false
+                    },
+                    "attributes-to-log-regex": {
+                        "displayName": "Attributes to Log by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-log-regex",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "2db5cb32-a9e1-3c6d-b135-6bb70d20973d",
+                "name": "LogAttribute",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1130.3035444172122,
+                    "y": 641.4803738907906
+                },
+                "properties": {
+                    "Log Level": "error",
+                    "Log Payload": "false",
+                    "Log prefix": "[CasinoAndSportBetsTopupData][ConvertAvroToJSON]",
+                    "attributes-to-log-regex": ".*",
+                    "character-set": "UTF-8"
+                },
+                "propertyDescriptors": {
+                    "Attributes to Ignore": {
+                        "displayName": "Attributes to Ignore",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Ignore",
+                        "sensitive": false
+                    },
+                    "Attributes to Log": {
+                        "displayName": "Attributes to Log",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Log",
+                        "sensitive": false
+                    },
+                    "Log Level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "Log Level",
+                        "sensitive": false
+                    },
+                    "Log Payload": {
+                        "displayName": "Log Payload",
+                        "identifiesControllerService": false,
+                        "name": "Log Payload",
+                        "sensitive": false
+                    },
+                    "Log prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "Log prefix",
+                        "sensitive": false
+                    },
+                    "attributes-to-ignore-regex": {
+                        "displayName": "Attributes to Ignore by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-ignore-regex",
+                        "sensitive": false
+                    },
+                    "attributes-to-log-regex": {
+                        "displayName": "Attributes to Log by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-log-regex",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [
+                    "original"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "d3dc04c1-84b9-3e49-b78a-3ebecd6129a0",
+                "name": "SplitRecord",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 448.999775889376,
+                    "y": 405.99992339522055
+                },
+                "properties": {
+                    "Record Reader": "68121128-e94e-3b2e-833a-0a36ade8418c",
+                    "Record Writer": "478077e8-dfc5-3d0f-817a-c4efe12b8369",
+                    "Records Per Split": "1"
+                },
+                "propertyDescriptors": {
+                    "Record Reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "Record Reader",
+                        "sensitive": false
+                    },
+                    "Record Writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "Record Writer",
+                        "sensitive": false
+                    },
+                    "Records Per Split": {
+                        "displayName": "Records Per Split",
+                        "identifiesControllerService": false,
+                        "name": "Records Per Split",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.SplitRecord",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "c08aca27-cce0-31f6-ac47-babcf7d69e2f",
+                "name": "LogAttribute",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1129.3103255388946,
+                    "y": 406.1174249395476
+                },
+                "properties": {
+                    "Log Level": "error",
+                    "Log Payload": "false",
+                    "Log prefix": "[CasinoAndSportBetsTopupData][SplitRecord]",
+                    "attributes-to-log-regex": ".*",
+                    "character-set": "UTF-8"
+                },
+                "propertyDescriptors": {
+                    "Attributes to Ignore": {
+                        "displayName": "Attributes to Ignore",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Ignore",
+                        "sensitive": false
+                    },
+                    "Attributes to Log": {
+                        "displayName": "Attributes to Log",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Log",
+                        "sensitive": false
+                    },
+                    "Log Level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "Log Level",
+                        "sensitive": false
+                    },
+                    "Log Payload": {
+                        "displayName": "Log Payload",
+                        "identifiesControllerService": false,
+                        "name": "Log Payload",
+                        "sensitive": false
+                    },
+                    "Log prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "Log prefix",
+                        "sensitive": false
+                    },
+                    "attributes-to-ignore-regex": {
+                        "displayName": "Attributes to Ignore by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-ignore-regex",
+                        "sensitive": false
+                    },
+                    "attributes-to-log-regex": {
+                        "displayName": "Attributes to Log by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-log-regex",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "0e27f6b6-ed95-394f-830e-6ab52a211259",
+                "name": "LogAttribute",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1780.5057878522666,
+                    "y": 174.5828644505184
+                },
+                "properties": {
+                    "Log Level": "error",
+                    "Log Payload": "false",
+                    "Log prefix": "[CasinoAndSportBetsTopupData][Consume_sportbetsinfo]",
+                    "attributes-to-log-regex": ".*",
+                    "character-set": "UTF-8"
+                },
+                "propertyDescriptors": {
+                    "Attributes to Ignore": {
+                        "displayName": "Attributes to Ignore",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Ignore",
+                        "sensitive": false
+                    },
+                    "Attributes to Log": {
+                        "displayName": "Attributes to Log",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Log",
+                        "sensitive": false
+                    },
+                    "Log Level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "Log Level",
+                        "sensitive": false
+                    },
+                    "Log Payload": {
+                        "displayName": "Log Payload",
+                        "identifiesControllerService": false,
+                        "name": "Log Payload",
+                        "sensitive": false
+                    },
+                    "Log prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "Log prefix",
+                        "sensitive": false
+                    },
+                    "attributes-to-ignore-regex": {
+                        "displayName": "Attributes to Ignore by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-ignore-regex",
+                        "sensitive": false
+                    },
+                    "attributes-to-log-regex": {
+                        "displayName": "Attributes to Log by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-log-regex",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "b72a2e50-af6d-3499-ba68-d3f4ccd8a80a",
+                "name": "Consume_sportbetsinfo",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1132.3448076276572,
+                    "y": 176.34346358687094
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "latest",
+                    "bootstrap.servers": "${KAFKA_HOST}",
+                    "group.id": "nifi.sportbetsinfo",
+                    "honor-transactions": "true",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "10000",
+                    "message-header-encoding": "UTF-8",
+                    "record-reader": "68121128-e94e-3b2e-833a-0a36ade8418c",
+                    "record-writer": "478077e8-dfc5-3d0f-817a-c4efe12b8369",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "sportbetsinfo",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "record-reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "record-reader",
+                        "sensitive": false
+                    },
+                    "record-writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "record-writer",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-avro-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "7294d0fa-60fe-36a0-93b9-fc12dc8619cc",
+                "name": "ConvertAvroToJSON",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 447.96519947336037,
+                    "y": 644.0068356266659
+                },
+                "properties": {
+                    "JSON container options": "array",
+                    "Wrap Single Record": "false"
+                },
+                "propertyDescriptors": {
+                    "Avro schema": {
+                        "displayName": "Avro schema",
+                        "identifiesControllerService": false,
+                        "name": "Avro schema",
+                        "sensitive": false
+                    },
+                    "JSON container options": {
+                        "displayName": "JSON container options",
+                        "identifiesControllerService": false,
+                        "name": "JSON container options",
+                        "sensitive": false
+                    },
+                    "Wrap Single Record": {
+                        "displayName": "Wrap Single Record",
+                        "identifiesControllerService": false,
+                        "name": "Wrap Single Record",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.avro.ConvertAvroToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.0"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "baa2df93-a4b8-3f1a-9853-dae87e95f4ff",
+                "identifier": "b7096fef-5dbc-338b-8ecb-14c7cb1322f9",
+                "name": "Consume_casinobets",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 450.02986622140725,
+                    "y": -73.86387665360758
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "latest",
+                    "bootstrap.servers": "${KAFKA_HOST}",
+                    "group.id": "nifi.casinobets",
+                    "honor-transactions": "true",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "10000",
+                    "message-header-encoding": "UTF-8",
+                    "record-reader": "68121128-e94e-3b2e-833a-0a36ade8418c",
+                    "record-writer": "478077e8-dfc5-3d0f-817a-c4efe12b8369",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "casinobets",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "record-reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "record-reader",
+                        "sensitive": false
+                    },
+                    "record-writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "record-writer",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_0",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "",
+        "flowIdentifier": "648fb416-62a0-5165-a8fd-5fe85818aaa7",
+        "timestamp": 1555593155377,
+        "version": 2
+    }
+}

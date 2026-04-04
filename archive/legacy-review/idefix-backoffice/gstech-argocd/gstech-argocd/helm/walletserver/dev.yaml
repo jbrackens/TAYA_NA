@@ -1,0 +1,51 @@
+nameOverride: "dev-gstech-walletserver-service"
+fullnameOverride: "dev-gstech-walletserver-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3003
+
+extraTCPPorts:
+  private-api: 3004
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-gstech-walletserver-service
+  hosts:
+  - host: wallet-luckydino.dev.eeg.viegg.net
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: dev-gstech-walletserver-service
+      servicePort: 3003
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+  tls: []
+
+env:
+  NODE_ENV: development
+  PORT: 3003
+  REDIS_HOST: redis.dev.eeg.viegg.net
+  REDIS_PORT: 6379
+  WALLET_URL: http://dev-gstech-backend-service:3005/api/v1/wallet
+  WALLET_SERVER_URL: https://beta-wallet.luckydino.com/api/v1
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  LOTTO_BACKEND_URL: http://dev-lotto-backend-service:3040/api/v1/lottocasino

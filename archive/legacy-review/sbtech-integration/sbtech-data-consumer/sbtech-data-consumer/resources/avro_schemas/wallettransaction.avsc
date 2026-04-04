@@ -1,0 +1,91 @@
+{
+  "type": "record",
+  "name": "WalletTransaction",
+  "namespace": "SBTech.Microservices.Regulations.DBProducers.Models",
+  "fields": [
+    {
+      "name": "WalletTransactionID",
+      "type": "long"
+    },
+    {
+      "name": "CustomerID",
+      "type": "int"
+    },
+    {
+      "name": "CustomerName",
+      "type": "string"
+    },
+    {
+      "name": "Country",
+      "type": "string"
+    },
+    {
+      "name": "CreationDate",
+      "type": "string"
+    },
+    {
+      "name": "UpdateDate",
+      "type": "string"
+    },
+    {
+      "name": "SiteName",
+      "type": "string"
+    },
+    {
+      "name": "IsFirstDeposit",
+      "type": "string"
+    },
+    {
+      "name": "OperationTypeID",
+      "type": "string"
+    },
+    {
+      "name": "OperationMasterGroup",
+      "type": "string"
+    },
+    {
+      "name": "OperationGroupDescription",
+      "type": "string"
+    },
+    {
+      "name": "OperationDescription",
+      "type": "string"
+    },
+    {
+      "name": "Status",
+      "type": "string"
+    },
+    {
+      "name": "CurrencyCode",
+      "type": "string"
+    },
+    {
+      "name": "Amount_UserCurrency",
+      "type": "string"
+    },
+    {
+      "name": "Amount_GBP",
+      "type": "string"
+    },
+    {
+      "name": "Amount_EUR",
+      "type": "string"
+    },
+    {
+      "name": "Bonus",
+      "type": "string"
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "string"
+    },
+    {
+      "name": "AccountTotal",
+      "type": "string"
+    },
+    {
+      "name": "Notes",
+      "type": "string"
+    }
+  ]
+}

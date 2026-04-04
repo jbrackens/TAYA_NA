@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/gstech-campaignserver-client
+    forcestring: true
+  - name: image.tag
+    value: v86-d6df81594905dbbc8b6af16c101b4bf516fbaa20
+    forcestring: true

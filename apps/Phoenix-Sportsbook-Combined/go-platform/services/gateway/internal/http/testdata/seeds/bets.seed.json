@@ -1,0 +1,105 @@
+{
+  "betsById": {
+    "b:seed:4001": {
+      "betId": "b:seed:4001",
+      "userId": "u:seed:3001",
+      "marketId": "m:seed:2001",
+      "selectionId": "home",
+      "stakeCents": 10000,
+      "odds": 1.9,
+      "potentialPayoutCents": 19000,
+      "status": "settled_won",
+      "walletLedgerEntryId": "wl:seed:000010",
+      "walletBalanceCents": 509000,
+      "idempotencyKey": "seed-bet-4001",
+      "placedAt": "2026-03-02T00:15:00Z",
+      "settledAt": "2026-03-02T02:00:00Z",
+      "settlementLedgerEntryId": "wl:seed:000011",
+      "settlementOutcome": "won",
+      "settlementReference": "home"
+    },
+    "b:seed:4002": {
+      "betId": "b:seed:4002",
+      "userId": "u:seed:3002",
+      "marketId": "m:seed:2002",
+      "selectionId": "yes",
+      "stakeCents": 7500,
+      "odds": 1.77,
+      "potentialPayoutCents": 13275,
+      "status": "placed",
+      "walletLedgerEntryId": "wl:seed:000012",
+      "walletBalanceCents": 342500,
+      "idempotencyKey": "seed-bet-4002",
+      "placedAt": "2026-03-02T01:00:00Z"
+    }
+  },
+  "betsByIdempotent": {
+    "u:seed:3001:seed-bet-4001": {
+      "betId": "b:seed:4001",
+      "userId": "u:seed:3001",
+      "marketId": "m:seed:2001",
+      "selectionId": "home",
+      "stakeCents": 10000,
+      "odds": 1.9,
+      "potentialPayoutCents": 19000,
+      "status": "settled_won",
+      "walletLedgerEntryId": "wl:seed:000010",
+      "walletBalanceCents": 509000,
+      "idempotencyKey": "seed-bet-4001",
+      "placedAt": "2026-03-02T00:15:00Z",
+      "settledAt": "2026-03-02T02:00:00Z",
+      "settlementLedgerEntryId": "wl:seed:000011",
+      "settlementOutcome": "won",
+      "settlementReference": "home"
+    },
+    "u:seed:3002:seed-bet-4002": {
+      "betId": "b:seed:4002",
+      "userId": "u:seed:3002",
+      "marketId": "m:seed:2002",
+      "selectionId": "yes",
+      "stakeCents": 7500,
+      "odds": 1.77,
+      "potentialPayoutCents": 13275,
+      "status": "placed",
+      "walletLedgerEntryId": "wl:seed:000012",
+      "walletBalanceCents": 342500,
+      "idempotencyKey": "seed-bet-4002",
+      "placedAt": "2026-03-02T01:00:00Z"
+    }
+  },
+  "sequence": 2,
+  "events": [
+    {
+      "id": "be:seed:000001",
+      "betId": "b:seed:4001",
+      "userId": "u:seed:3001",
+      "action": "bet.placed",
+      "actorId": "u:seed:3001",
+      "status": "placed",
+      "details": "marketId=m:seed:2001 selectionId=home stakeCents=10000 odds=1.900",
+      "occurredAt": "2026-03-02T00:15:00Z"
+    },
+    {
+      "id": "be:seed:000002",
+      "betId": "b:seed:4001",
+      "userId": "u:seed:3001",
+      "action": "bet.settled",
+      "actorId": "admin",
+      "status": "settled_won",
+      "reason": "result_confirmed",
+      "details": "winningSelectionId=home winningSelectionName=Liverpool resultSource=seed",
+      "occurredAt": "2026-03-02T02:00:00Z"
+    },
+    {
+      "id": "be:seed:000003",
+      "betId": "b:seed:4002",
+      "userId": "u:seed:3002",
+      "action": "bet.placed",
+      "actorId": "u:seed:3002",
+      "status": "placed",
+      "details": "marketId=m:seed:2002 selectionId=yes stakeCents=7500 odds=1.770",
+      "occurredAt": "2026-03-02T01:00:00Z"
+    }
+  ],
+  "eventSequence": 3
+}

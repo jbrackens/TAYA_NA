@@ -1,0 +1,3283 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Idefix Backend API"
+basePath: "/api"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /login:
+    post:
+      tags:
+        - "auth"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginWithEmailDraft"
+      summary: Login via email and password
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/LoginResponse"
+  /register:
+    post:
+      tags:
+        - "auth"
+      summary: Default registration
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/DefaultRegistration"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/RegistrationResponse"
+  /register/phone:
+    post:
+      tags:
+        - "auth"
+      summary: Activate phone number
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginCompleteRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/LoginCompleteResponse"
+  /logout:
+    post:
+      tags:
+        - "auth"
+      summary: Logout
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /login/phone:
+    post:
+      tags:
+        - "auth"
+      summary: Request code
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "query"
+          type: "boolean"
+          name: "retry"
+          required: false
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SendCodeRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/SendCodeResponse"
+  /login/phone/confirm:
+    post:
+      tags:
+        - "auth"
+      summary: Confirm phone number
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginCompleteRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/LoginCompleteResponse"
+  /password/reset:
+    post:
+      tags:
+        - "auth"
+      summary: Reset password
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "query"
+          type: "boolean"
+          name: "retry"
+          required: false
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/ResetPasswordRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/ResetPasswordResponse"
+  /password/reset/confirm:
+    post:
+      tags:
+        - "auth"
+      summary: Reset password complete
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/ResetPasswordCompleteRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/LoginResponse"
+  /cms/{path}:
+    get:
+      tags:
+        - "cms"
+      summary: Get CMS content
+      parameters:
+        - in: "path"
+          name: "path"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/CmsPageOptions"
+  /selfexclusion:
+    post:
+      tags:
+        - "selfExclusion"
+      summary: Change self exclusion
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SelfExclusionRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/SelfExclusionResponse"
+  /selfexclusion/remove:
+    post:
+      tags:
+        - "selfExclusion"
+      summary: Remove self exclusion
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/RemoveSelfExclusionRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/LoginRestriction"
+  /config:
+    get:
+      tags:
+        - "config"
+      summary: Get config
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Config"
+  /profile:
+    get:
+      tags:
+        - "profile"
+      summary: Get profile
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetProfileResponse"
+    post:
+      tags:
+        - "profile"
+      summary: Update language
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateLanguageRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Profile"
+  /password:
+    post:
+      tags:
+        - "profile"
+      summary: Change password
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/ChangePasswordRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/ChangePasswordResponse"
+  /password/set:
+    post:
+      tags:
+        - "profile"
+      summary: Set password
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SetPasswordRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/ChangePasswordResponse"
+  /init:
+    get:
+      tags:
+        - "games"
+      summary: Get games
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetGamesResponse"
+  /init/nonloggedin:
+    get:
+      tags:
+        - "games"
+      summary: Get free games
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          type: "string"
+          name: "_lang"
+          required: true
+          description: Language
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetGamesResponse"
+  /start-game/${gameId}:
+    post:
+      tags:
+        - "game"
+      summary: Start game
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "gameId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/StartGameResponse"
+  /start-free-game/${gameId}:
+    post:
+      tags:
+        - "game"
+      summary: Start free game
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "gameId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/StartGameResponse"
+  /refresh-game/${gameId}:
+    post:
+      tags:
+        - "game"
+      summary: Refresh game
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "gameId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/RefreshGameUpdate"
+  /localizations:
+    get:
+      tags:
+        - "locales"
+      summary: Get available locales
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Locales"
+  /balance:
+    get:
+      tags:
+        - "balance"
+      summary: Get balance
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetBalanceResponse"
+  /statistics:
+    get:
+      tags:
+        - "realityCheck"
+      summary: Get statistics
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetStatisticsResponse"
+  /page/${locale}/${page}:
+    get:
+      tags:
+        - "campaignDialog"
+      summary: Get campaign dialog content
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "locale"
+          type: "string"
+          required: true
+        - in: "path"
+          name: "page"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetCampaignDialogContentResponse"
+  /localizations/bonusterms:
+    get:
+      tags:
+        - "termsConditions"
+      summary: Get bonus terms
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/TermsConditions"
+  /localizations/privacypolicy:
+    get:
+      tags:
+        - "termsConditions"
+      summary: Get privacy policy
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/TermsConditions"
+  /localizations/tc:
+    get:
+      tags:
+        - "termsConditions"
+      summary: Get terms conditions
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/TermsConditions"
+  /tc-accept:
+    post:
+      tags:
+        - "termsConditions"
+      summary: Confirm T&C
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /register/complete:
+    post:
+      tags:
+        - "register"
+      summary: Submit register
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/RegisterCompleteRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/RegisterCompleteResponse"
+  /questionnaire/${id}:
+    post:
+      tags:
+        - "questionnaires"
+      summary: Submit questionnaire
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "id"
+          required: true
+          type: "string"
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SubmitQuestionnaireRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/SubmitQuestionnaireResponse"
+  /statement:
+    get:
+      tags:
+        - "transactionHistory"
+      summary: Get transaction history
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetTransactionHistoryResponse"
+  /inbox:
+    get:
+      tags:
+        - "notifications"
+      summary: Get notifications
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetNotificationsResponse"
+  /inbox/{id}:
+    get:
+      tags:
+        - "notifications"
+      summary: Get notification by id
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "id"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Notification"
+# resendLink ???
+  /withdraw/pending:
+    get:
+      tags:
+        - "pendingWithdraw"
+      summary: Get pending withdraw
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/PendingWithdrawResponse"
+  /withdraw/{id}:
+    delete:
+      tags:
+        - "pendingWithdraw"
+      summary: Remove pending withdraw
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "id"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/PendingWithdrawResponse"
+  /limits:
+    get:
+      tags:
+        - "limits"
+      summary: Get list of limits
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/ApiExclusion"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+    post:
+      tags:
+        - "limits"
+      summary: Set limit
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/LimitRequest"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Exclusion"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+  /limits/{limitId}:
+    delete:
+      tags:
+        - "limits"
+      summary: Remove limit
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "limitId"
+          type: "string"
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Exclusion"
+        401:
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          description: Internal server error
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+  /subscription:
+    get:
+      tags:
+        - "subscription"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Subscription"
+    post:
+      tags:
+        - "subscription"
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "URLSearchParams"
+          required: false
+          schema:
+            type: "object"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /subscription/reset:
+    post:
+      tags:
+        - "subscription"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /subscription-v2:
+    get:
+      tags:
+        - "subscription v2"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "token"
+          type: "string"
+          required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetSubscriptionV2Response"
+    put:
+      tags:
+        - "subscription v2"
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "token"
+          type: "string"
+          required: false
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateSubscriptionV2Body"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /subscription-v2/snooze:
+    post:
+      tags:
+        - "subscription v2"
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "query"
+          name: "token"
+          type: "string"
+          required: false
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            $ref: "#/definitions/SnoozeSubscriptionV2Body"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /rewards:
+    get:
+      tags:
+        - "rewards"
+      summary: Get rewards
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetRewardsResponse"
+  /rewards/{id}:
+    post:
+      tags:
+        - "rewards"
+      summary: Get reward by id
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "id"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetRewardResponse"
+  /withdraw:
+    get:
+      tags:
+        - "withdraw"
+      summary: Get withdraw
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Withdraw"
+    post:
+      tags:
+        - "withdraw"
+      summary: Withdraw balance
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "URLSearchParams"
+          required: false
+          schema:
+            type: "object"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/WithdrawBalanceResponse"
+  /identify:
+    post:
+      tags:
+        - "withdraw"
+      summary: Check bank indentify
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "URLSearchParams"
+          required: false
+          schema:
+            type: "object"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: "object"
+  /activation/resend:
+    post:
+      tags:
+        - "withdraw"
+      summary: Send activation link
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/OKResponse"
+  /deposit:
+    get:
+      tags:
+        - "deposit"
+      summary: Get deposit
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/Deposit"
+    post:
+      tags:
+        - "deposit"
+      summary: Create deposit
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            type: "object"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/CreateDepositResponse"
+  /deposit/process/{id}:
+    get:
+      tags:
+        - "deposit"
+      summary: Get deposit process
+      produces:
+        - "application/json"
+      parameters:
+        - in: "path"
+          name: "id"
+          required: true
+          type: "string"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: "object"
+            required:
+              - "status"
+            properties:
+              status:
+                type: "string"
+                enum: ["failed", "pending", "complete"]
+  /deposit-done:
+    get:
+      tags:
+        - "deposit"
+      summary: Get deposit done
+      produces:
+        - "application/json"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: "object"
+  /deposit/pnp:
+    post:
+      tags:
+        - "deposit"
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            type: "object"
+            required:
+              - "amount"
+            properties:
+              amount:
+                type: "string"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/PnpResponse"
+  /deposit/register:
+    post:
+      tags:
+        - "deposit"
+      produces:
+        - "application/json"
+      consumes:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            type: "object"
+            required:
+              - "amount"
+            properties:
+              amount:
+                type: "string"
+              bonus:
+                type: "string"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/DepositRegisterResponse"
+definitions:
+  LoginResponse:
+    type: "object"
+    required:
+      - "ok"
+    properties:
+      ok:
+        type: "boolean"
+      code:
+        type: "string"
+      result:
+        type: "string"
+      deposits:
+        type: "boolean"
+      nextUrl:
+        type: "string"
+      restrictionActive:
+        type: "boolean"
+      content:
+        type: "string"
+      showRestrictionRequest:
+        type: "boolean"
+      expires:
+        type: "string"
+      exclusionKey:
+        type: "string"
+      permanent:
+        type: "string"
+  LoginWithEmailDraft:
+    type: "object"
+    required:
+      - "email"
+      - "password"
+      - "language"
+      - "tz"
+      - "token"
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+      language:
+        type: "string"
+      tz:
+        type: "number"
+      token:
+        type: "string"
+  DefaultRegistration:
+    type: "object"
+    required:
+      - "pinCode"
+      - "lander"
+      - "bonusCode"
+      - "firstName"
+      - "lastName"
+      - "address"
+      - "postCode"
+      - "city"
+      - "dateOfBirth"
+      - "countryISO"
+      - "currencyISO"
+      - "phone"
+      - "receivePromotional"
+      - "accept"
+      - "lang"
+      - "email"
+      - "password"
+    properties:
+      pinCode:
+        type: "string"
+      lander:
+        type: "string"
+      bonusCode:
+        type: "string"
+      firstName:
+        type: "string"
+      lastName:
+        type: "string"
+      address:
+        type: "string"
+      postCode:
+        type: "string"
+      city:
+        type: "string"
+      dateOfBirth:
+        type: "string"
+      countryISO:
+        type: "string"
+      currencyISO:
+        type: "string"
+      phone:
+        type: "string"
+      receivePromotional:
+        type: "string"
+      accept:
+        type: "string"
+      lang:
+        type: "string"
+      email:
+        type: "string"
+      password:
+        type: "string"
+  RegistrationResponse:
+    type: "object"
+    required:
+      - "ok"
+      - "activated"
+      - "register"
+      - "code"
+    properties:
+      ok:
+        type: "boolean"
+      activated:
+        type: "boolean"
+      register:
+        type: "boolean"
+      code:
+        type: "string"
+      nextUrl:
+        type: "string"
+      result:
+        type: "string"
+  PhoneValidationRequest:
+    type: "object"
+    required:
+      - "countryISO"
+      - "phone"
+    properties:
+      countryISO:
+        type: "string"
+      phone:
+        type: "string"
+  PhoneValidationResponse:
+    type: "object"
+    required:
+      - "valid"
+    properties:
+      valid:
+        type: "boolean"
+      number:
+        type: "string"
+  SendCodeRequest:
+    type: "object"
+    required:
+      - "mobilePhone"
+    properties:
+      mobilePhone:
+        type: "string"
+  SendCodeResponse:
+    type: "object"
+    properties:
+      ok:
+        type: "boolean"
+      result:
+        type: "string"
+      errorCode:
+        type: "string"
+      valid:
+        type: "boolean"
+      message:
+        type: "string"
+  LoginCompleteRequest:
+    type: "object"
+    required:
+      - "mobilePhone"
+      - "pinCode"
+    properties:
+      mobilePhone:
+        type: "string"
+      pinCode:
+        type: "string"
+  LoginCompleteResponse:
+    type: "object"
+    required:
+      - "ok"
+    properties:
+      ok:
+        type: "boolean"
+      code:
+        type: "string"
+      result:
+        type: "string"
+      deposits:
+        type: "boolean"
+      nextUrl:
+        type: "string"
+      restrictionActive:
+        type: "boolean"
+      content:
+        type: "string"
+      showRestrictionRequest:
+        type: "boolean"
+      expires:
+        type: "string"
+      exclusionKey:
+        type: "string"
+      permanent:
+        type: "boolean"
+  ResetPasswordRequest:
+    type: "object"
+    required:
+      - "email"
+    properties:
+      email:
+        type: "string"
+  ResetPasswordResponse:
+    type: "object"
+    properties:
+      ok:
+        type: "boolean"
+      number:
+        type: "string"
+      message:
+        type: "string"
+      result:
+        type: "string"
+  ResetPasswordCompleteRequest:
+    type: "object"
+    required:
+      - "email"
+      - "newPassword"
+      - "pinCode"
+    properties:
+      email:
+        type: "string"
+      newPassword:
+        type: "string"
+      pinCode:
+        type: "string"
+  CmsPageOptions:
+    type: "object"
+    required:
+      - "mobile"
+      - "body"
+      - "head"
+      - "options"
+    properties:
+      httpStatus:
+        type: "number"
+      login:
+        type: "boolean"
+      mobile:
+        type: "boolean"
+      body:
+        type: "string"
+      head:
+        type: "string"
+      location:
+        type: "string"
+      options:
+        type: "object"
+        required:
+          - "id"
+          - "location"
+          - "type"
+        properties:
+          id:
+            type: "string"
+          location:
+            type: "string"
+          type:
+            type: "string"
+          bonus:
+            type: "string"
+      formData:
+        type: "object"
+        required:
+          - "country"
+          - "countries"
+          - "currencies"
+          - "languages"
+          - "phoneRegions"
+        properties:
+          country:
+            type: "object"
+            required:
+              - "CountryISO"
+              - "CountryName"
+              - "CurrencyISO"
+              - "code"
+            properties:
+              CountryISO:
+                type: "string"
+              CountryName:
+                type: "string"
+              CurrencyISO:
+                type: "string"
+              code:
+                type: "string"
+          countries:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "CountryISO"
+                - "CountryName"
+                - "CurrencyISO"
+              properties:
+                CountryISO:
+                  type: "string"
+                CountryName:
+                  type: "string"
+                CurrencyISO:
+                  type: "string"
+          currencies:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "CurrencyISO"
+                - "CurrencySymbol"
+              properties:
+                CurrencyISO:
+                  type: "string"
+                CurrencySymbol:
+                  type: "string"
+          languages:
+            type: "array"
+            items:
+              $ref: "#/definitions/CMSDataLanguage"
+          phoneCountry:
+            type: "object"
+            required:
+              - "code"
+            properties:
+              code:
+                type: "string"
+          phoneRegions:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "code"
+              properties:
+                code:
+                  type: "string"
+      config:
+        type: "object"
+        required:
+          - "CDN"
+          - "CDNv"
+          - "clientConfig"
+          - "currencyISO"
+          - "isMobile"
+          - "lang"
+          - "liveChatToken"
+          - "liveagent"
+          - "siteName"
+          - "showPhoneLogin"
+          - "showLogin"
+        properties:
+          CDN:
+            type: "string"
+          CDNv:
+            type: "string"
+          clientConfig:
+            type: "object"
+            required:
+              - "gaAccount"
+              - "gaDomain"
+              - "liveChat"
+            properties:
+              gaAccount:
+                type: "string"
+              gaDomain:
+                type: "string"
+              liceChat:
+                type: "boolean"
+          currencyISO:
+            type: "string"
+          isMobile:
+            type: "string"
+          lang:
+            $ref: "#/definitions/LanguageObject"
+          liveChatToken:
+            type: "string"
+          liveagent:
+            # add LiveAgent Def
+            $ref: "#/definitions/LiveAgent"
+          siteName:
+            type: "string"
+          showPhoneLogin:
+            type: "boolean"
+          showLogin:
+            type: "boolean"
+      headerTags:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "tag"
+          properties:
+            tag:
+              type: "string"
+            text:
+              type: "string"
+            attr:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                text:
+                  type: "string"
+                rel:
+                  type: "string"
+                href:
+                  type: "string"
+                sizes:
+                  type: "string"
+  CMSDataLanguage:
+    type: "object"
+    required:
+      - "path"
+      - "code"
+      - "longCode"
+      - "name"
+      - "engName"
+    properties:
+      path:
+        type: "string"
+      code:
+        type: "string"
+      longCode:
+        type: "string"
+      name:
+        type: "string"
+      engName:
+        type: "string"
+  Language:
+    type: "object"
+    required:
+      - "path"
+      - "code"
+      - "engName"
+      - "longCode"
+      - "name"
+    properties:
+      path:
+        type: "string"
+      code:
+        type: "string"
+      engName:
+        type: "string"
+      longCode:
+        type: "string"
+      name:
+        type: "string"
+  LanguageObject:
+    type: "object"
+    required:
+      - "code"
+      - "engName"
+      - "longCode"
+      - "name"
+    properties:
+      code:
+        type: "string"
+      engName:
+        type: "string"
+      longCode:
+        type: "string"
+      name:
+        type: "string"
+  LiveAgent:
+    type: "object"
+    required:
+      - "id"
+      - "script"
+      - "buttonId"
+      - "params"
+    properties:
+      id:
+        type: "string"
+      script:
+        type: "string"
+      buttonId:
+        type: "string"
+      params:
+        $ref: "#/definitions/LiveAgentParam"
+      visitor:
+        type: "object"
+        required:
+          - "email"
+          - "name"
+        properties:
+          email:
+            type: "string"
+          name:
+            type: "string"
+  LiveAgentParam:
+    type: "object"
+    required:
+      - "name"
+      - "value"
+    properties:
+      name:
+        type: "string"
+      value:
+        type: "string"
+  RemoveSelfExclusionRequest:
+    type: "object"
+    required:
+      - "exclusionKey"
+      - "language"
+      - "tz"
+    properties:
+      exclusionKey:
+        type: "string"
+      language:
+        type: "string"
+      tz:
+        type: "number"
+  LoginRestriction:
+    type: "object"
+    required:
+      - "restrictionActive"
+      - "content"
+      - "showRestrictionRequest"
+      - "exclusionKey"
+      - "expires"
+      - "permanent"
+    properties:
+      restrictionActive:
+        type: "boolean"
+      content:
+        type: "string"
+      showRestrictionRequest:
+        type: "boolean"
+      exclusionKey:
+        type: "string"
+      expires:
+        type: "string"
+      permanent:
+        type: "boolean"
+  Config:
+    type: "object"
+    required:
+      - "cdn"
+      - "thumbsCdn"
+      - "bonusThumbsCdn"
+      - "css"
+      - "scripts"
+      - "languages"
+    properties:
+      cdn:
+        type: "string"
+      thumbsCdn:
+        type: "string"
+      bonusThumbsCdn:
+        type: "string"
+      css:
+        type: "string"
+      scripts:
+        type: "array"
+        items:
+          type: "string"
+      languages:
+        type: "array"
+        items:
+          $ref: "#/definitions/LanguageObject"
+  GetProfileResponse:
+    type: "object"
+    required:
+      - "profile"
+    properties:
+      profile:
+        $ref: "#/definitions/Profile"
+  Profile:
+    type: "object"
+    required:
+      - "FirstName"
+      - "Address1"
+      - "LastName"
+      - "EmailAddress"
+      - "PostCode"
+      - "City"
+      - "LanguageISO"
+      - "MobilePhone"
+      - "CountryISO"
+      - "CurrencyISO"
+      - "Country"
+      - "Pnp"
+    properties:
+      FirstName:
+        type: "string"
+      Address1:
+        type: "string"
+      LastName:
+        type: "string"
+      EmailAddress:
+        type: "string"
+      PostCode:
+        type: "string"
+      City:
+        type: "string"
+      LanguageISO:
+        type: "string"
+      MobilePhone:
+        type: "string"
+      CountryISO:
+        type: "string"
+      CurrencyISO:
+        $ref: "#/definitions/CurrencyISO"
+      Country:
+        type: "object"
+        required:
+          - "CountryID"
+          - "CountryISO"
+          - "CountryName"
+          - "CurrencyISO"
+        properties:
+          CountryID:
+            type: "string"
+          CountryISO:
+            type: "string"
+          CountryName:
+            type: "string"
+          CurrencyISO:
+            $ref: "#/definitions/CurrencyISO"
+      Pnp:
+        type: "boolean"
+  CurrencyISO:
+    type: "string"
+    enum: ["EUR", "SEK", "NOK", "CAD", "USD", "GBP", "INR"]
+  UpdateLanguageRequest:
+    type: "object"
+    required:
+      - "languageISO"
+    properties:
+      languageISO:
+        type: "string"
+  ChangePasswordRequest:
+    type: "object"
+    required:
+      - "password"
+      - "oldPassword"
+    properties:
+      password:
+        type: "string"
+      oldPassword:
+        type: "string"
+  ChangePasswordResponse:
+    type: "object"
+    required:
+      - "profile"
+    properties:
+      profile:
+        $ref: "#/definitions/Profile"
+      ok:
+        type: "boolean"
+      result:
+        type: "string"
+      code:
+        type: "string"
+  SetPasswordRequest:
+    type: object
+    required:
+      - "password"
+    properties:
+      password:
+        type: "string"
+  SelfExclusionRequest:
+    type: "object"
+    required:
+      - "duration"
+    properties:
+      duration:
+        type: "number"
+  SelfExclusionResponse:
+    type: "object"
+  GetGamesResponse:
+    type: "object"
+    required:
+      - "games"
+      - "update"
+      - "player"
+      - "requestTc"
+      - "requiredQuestionnaires"
+      - "mobile"
+      - "flags"
+      - "config"
+      - "classes"
+      - "search"
+      - "jurisdiction"
+      - "categories"
+      - "formData"
+    $ref: "#/definitions/AppDataWithGames"
+  AppData:
+    type: "object"
+    required:
+      - "player"
+      - "requestTc"
+      - "requiredQuestionnaires"
+      - "mobile"
+      - "flags"
+      - "config"
+      - "classes"
+      - "search"
+      - "jurisdiction"
+      - "categories"
+      - "formData"
+    properties:
+      player:
+        $ref: "#/definitions/Player"
+      requestTc:
+        type: "boolean"
+      requiredQuestionnaires:
+        type: "array"
+        items:
+          type: "string"
+      mobile:
+        type: "boolean"
+      flags:
+        type: "array"
+        items:
+          type: "string"
+      config:
+        $ref: "#/definitions/AppConfig"
+      classes:
+        type: "array"
+        items:
+          type: "string"
+      search:
+        $ref: "#/definitions/Search"
+      jurisdiction:
+        $ref: "#/definitions/Jurisdiction"
+      categories:
+        $ref: "#/definitions/GamesCategory"
+      formData:
+        $ref: "#/definitions/FormData"
+  AppDataWithGames:
+    type: "object"
+    required:
+      - "player"
+      - "requestTc"
+      - "requiredQuestionnaires"
+      - "mobile"
+      - "flags"
+      - "config"
+      - "classes"
+      - "search"
+      - "jurisdiction"
+      - "categories"
+      - "formData"
+    properties:
+      player:
+        $ref: "#/definitions/Player"
+      requestTc:
+        type: "boolean"
+      requiredQuestionnaires:
+        type: "array"
+        items:
+          type: "string"
+      mobile:
+        type: "boolean"
+      flags:
+        type: "array"
+        items:
+          type: "string"
+      config:
+        $ref: "#/definitions/AppConfig"
+      classes:
+        type: "array"
+        items:
+          type: "string"
+      search:
+        $ref: "#/definitions/Search"
+      jurisdiction:
+        $ref: "#/definitions/Jurisdiction"
+      categories:
+        $ref: "#/definitions/GamesCategory"
+      formData:
+        $ref: "#/definitions/FormData"
+      games:
+        type: "array"
+        items:
+          $ref: "#/definitions/Game"
+      update:
+        $ref: "#/definitions/Update"
+  Player:
+    type: "object"
+    required:
+      - "FirstName"
+      - "CountryISO"
+      - "CurrencyISO"
+      - "currencySymbol"
+      - "username"
+      - "email"
+      - "languageISO"
+    properties:
+      FirstName:
+        type: "string"
+      CountryISO:
+        type: "string"
+      CurrencyISO:
+        $ref: "#/definitions/CurrencyISO"
+      currencySymbol:
+        type: "string"
+      userName:
+        type: "string"
+      email:
+        type: "string"
+      languageISO:
+        type: "string"
+  AppConfig:
+    type: "object"
+    properties:
+      liveagent:
+        $ref: "#/definitions/LiveAgent"
+      ws:
+        type: "object"
+        properties:
+          url:
+            type: "string"
+      paymentiq:
+        type: "object"
+        required:
+          - "merchantId"
+          - "apiUrl"
+          - "frameUrl"
+        properties:
+          merchantId:
+            type: "string"
+          apiUrl:
+            type: "string"
+          frameUrl:
+            type: "string"
+  Search:
+    type: "object"
+    required:
+      - "recommendations"
+    properties:
+      recommendations:
+        type: "array"
+        items:
+          type: "string"
+  Jurisdiction:
+    type: "string"
+    enum: ["MGA", "GNRS"]
+  GamesCategory:
+    type: "object"
+    required:
+      - "name"
+      - "tag"
+    properties:
+      name:
+        type: "string"
+      tag:
+        $ref: "#/definitions/CategoryTags"
+      game:
+        type: "string"
+      path:
+        type: "string"
+  CategoryTags:
+    type: "string"
+    enum: ["all", "jackpot", "live", "new", "videoslot", "tablegame", "promo", "sports"]
+  FormData:
+    type: "object"
+    required:
+      - "countries"
+      - "currencies"
+      - "phoneRegions"
+      - "country"
+      - "languages"
+    properties:
+      countries:
+        type: "array"
+        items:
+          $ref: "#/definitions/Country"
+      currencies:
+        type: "array"
+        items:
+          $ref: "#/definitions/Currency"
+      phoneRegions:
+        type: "array"
+        items:
+          $ref: "#/definitions/PhoneRegion"
+      phoneCountry:
+        $ref: "#/definitions/PhoneRegion"
+      country:
+        $ref: "#/definitions/Country"
+      languages:
+        $ref: "#/definitions/Language"
+  Country:
+    type: "object"
+    required:
+      - "CurrencyISO"
+      - "CountryName"
+      - "CountryISO"
+    properties:
+      CurrencyISO:
+        type: "string"
+      CountryName:
+        type: "string"
+      CountryISO:
+        type: "string"
+  Currency:
+    type: "object"
+    required:
+      - "CurrencyISO"
+      - "CurrencySymbol"
+    properties:
+      CurrencyISO:
+        type: "string"
+      CurrencySymbol:
+        type: "string"
+  PhoneRegion:
+    type: "object"
+    required:
+      - "code"
+      - "countries"
+    properties:
+      code:
+        type: "string"
+      countries:
+        type: "array"
+        items:
+          type: "string"
+  Game:
+    type: "object"
+    required:
+      - "id"
+      - "keywords"
+      - "thumbnail"
+      - "name"
+      - "manufacturer"
+      - "link"
+      - "viewMode"
+      - "searchOnly"
+      - "tags"
+      - "jackpotValue"
+    properties:
+      id:
+        type: "string"
+      keywords:
+        type: "string"
+      thumbnail:
+        type: "string"
+      name:
+        type: "string"
+      manufacturer:
+        type: "string"
+      link:
+        type: "string"
+      viewMode:
+        type: "string"
+      searchOnly:
+        type: "string"
+      tags:
+        type: "string"
+      jackpotValue:
+        type: "string"
+      hash:
+        type: "string"
+      options:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "id"
+            - "name"
+            - "stake"
+            - "value"
+            - "link"
+          properties:
+            id:
+              type: "string"
+            name:
+              type: "string"
+            stake:
+              type: "string"
+            value:
+              type: "string"
+            link:
+              type: "string"
+  Update:
+    type: "object"
+    required:
+      - "details"
+      - "banners"
+      - "balance"
+      - "notificationCount"
+      - "pendingWithdraws"
+    properties:
+      details:
+        $ref: "#/definitions/Details"
+      banners:
+        $ref: "#/definitions/Banners"
+      balance:
+        $ref: "#/definitions/Balance"
+      notificationCount:
+        type: "number"
+      pendingWithdraws:
+        type: "number"
+      scripts:
+        type: "array"
+        items:
+          type: "string"
+      callbacks:
+        type: "array"
+        items:
+          type: "string"
+      executes:
+        type: "array"
+        items:
+          type: "string"
+  Details:
+    type: "object"
+    properties:
+      rewardsCount:
+        type: "number"
+      shopItems:
+        type: "boolean"
+      timestamp:
+        type: "number"
+  Banner:
+    type: "object"
+    required:
+      - "active"
+      - "banner"
+    properties:
+      active:
+        type: "boolean"
+      banner:
+        type: "string"
+      bg:
+        type: "string"
+      disclaimer:
+        type: "string"
+      progress:
+        type: "object"
+        required:
+          - "completed"
+          - "progress"
+          - "coins"
+          - "type"
+        properties:
+          completed:
+            type: "boolean"
+          progress:
+            type: "number"
+          coins:
+            type: "number"
+          type:
+            type: "string"
+      options:
+        $ref: "#/definitions/BannerOptions"
+      bonus:
+        type: "object"
+        required:
+          - "image"
+        properties:
+          image:
+            type: "object"
+            required:
+              - "image"
+            properties:
+              image:
+                type: "string"
+      freespins:
+        type: "array"
+        items:
+          $ref: "#/definitions/FreeSpin"
+  Balance:
+    type: "object"
+    properties:
+      CurrentBonusBalance:
+        type: "string"
+      CurrentRealBalance:
+        type: "string"
+      CurrentTotalBalance:
+        type: "string"
+      BareTotalBalance:
+        type: "string"
+      ActivationNeeded:
+        type: "boolean"
+      Activated:
+        type: "boolean"
+  Banners:
+    type: "object"
+    properties:
+      game:
+        $ref: "#/definitions/Banner"
+      deposit:
+        $ref: "#/definitions/Banner"
+      frontpage:
+        $ref: "#/definitions/Banner"
+      nonloggedin:
+        $ref: "#/definitions/Banner"
+      myaccount-rewards:
+        $ref: "#/definitions/Banner"
+      myaccount-shop:
+        $ref: "#/definitions/Banner"
+      myjefe-wheel:
+        $ref: "#/definitions/Banner"
+      myjefe-bounty:
+        $ref: "#/definitions/Banner"
+      game-bounty:
+        $ref: "#/definitions/Banner"
+      game-level:
+        $ref: "#/definitions/Banner"
+      game-wheel:
+        $ref: "#/definitions/Banner"
+      game-leaderboard:
+        $ref: "#/definitions/Banner"
+      myjefe-level:
+        $ref: "#/definitions/Banner"
+  BannerOptions:
+    type: "object"
+    properties:
+      show:
+        type: "boolean"
+      content:
+        type: "string"
+      subtitle:
+        type: "string"
+      title:
+        type: "string"
+      option1:
+        type: "object"
+        required:
+          - "image"
+          - "selected_image"
+          - "bonus"
+        properties:
+          image:
+            type: "string"
+          selected_image:
+            type: "string"
+          bonus:
+            $ref: "#/definitions/AvailableBonus"
+      option2:
+        type: "object"
+        required:
+          - "image"
+          - "selected_image"
+          - "bonus"
+        properties:
+          image:
+            type: "string"
+          selected_image:
+            type: "string"
+          bonus:
+            $ref: "#/definitions/AvailableBonus"
+  FreeSpin:
+    type: "object"
+    required:
+      - "spincount"
+      - "limit"
+    properties:
+      spincount:
+        type: "number"
+      spintype:
+        type: "string"
+      image:
+        type: "string"
+      limitAmount:
+        type: "string"
+      limit:
+        type: "number"
+      count:
+        type: "number"
+  AvailableBonus:
+    type: "object"
+    required:
+      - "activeBonus"
+      - "bonusMaxAmount"
+      - "bonusMaxValue"
+      - "bonusMinAmount"
+      - "bonusPercentage"
+      - "id"
+      - "maxAmount"
+      - "maxBonus"
+      - "minAmount"
+      - "percentage"
+    properties:
+      activeBonus:
+        type: "string"
+      bonusMaxAmount:
+        type: "string"
+      bonusMaxValue:
+        type: "string"
+      bonusMinAmount:
+        type: "string"
+      bonusPercentage:
+        type: "string"
+      id:
+        type: "number"
+      maxAmount:
+        type: "number"
+      maxBonus:
+        type: "number"
+      minAmount:
+        type: "number"
+      percentage:
+        type: "number"
+  StartGameResponse:
+    type: "object"
+    required:
+      - "game"
+      - "mobile"
+      - "usingbonusmoney"
+      - "update"
+    properties:
+      game:
+        $ref: "#/definitions/StartGameOptions"
+      mobile:
+        type: "boolean"
+      usingbonusmoney:
+        type: "boolean"
+      update:
+        $ref: "#/definitions/Update"
+  StartGameOptions:
+    type: "object"
+    required:
+      - "MaltaJurisdiction"
+      - "GameURL"
+      - "GameHTML"
+      - "Options"
+      - "mobile"
+      - "usingbonusmoney"
+    properties:
+      MaltaJurisdiction:
+        type: "boolean"
+      GameURL:
+        type: "string"
+      GameHTML:
+        type: "string"
+      Options:
+        type: "array"
+        items:
+          type: "string"
+      mobile:
+        type: "boolean"
+      usingbonusmoney:
+        type: "boolean"
+      ok:
+        type: "boolean"
+      result:
+        type: "string"
+      ForceFullscreen:
+        type: "boolean"
+  RefreshGameUpdate:
+    type: "object"
+    required:
+      - "details"
+      - "banners"
+      - "balance"
+    properties:
+      details:
+        $ref: "#/definitions/Details"
+      banners:
+        $ref: "#/definitions/Banner"
+      balance:
+        $ref: "#/definitions/Balance"
+      scripts:
+        type: "array"
+        items:
+          type: "string"
+      callbacks:
+        type: "array"
+        items:
+          type: "string"
+      executes:
+        type: "array"
+        items:
+          type: "string"
+  Locales:
+    type: "object"
+    properties:
+      "[key]":
+        type: "object"
+        properties:
+          "[key]":
+            type: "object"
+            properties:
+              "[key]":
+                type: "string"
+  GetBalanceResponse:
+    type: "object"
+    required:
+      - "depleted"
+      - "update"
+    properties:
+      depleted:
+        type: "boolean"
+      update:
+        $ref: "#/definitions/Update"
+  GetStatisticsResponse:
+    type: "object"
+    required:
+      - "popupFrequency"
+      - "statistics"
+    properties:
+      popupFrequency:
+        type: "number"
+      statistics:
+        type: "object"
+        properties:
+          AmountWin:
+            type: "string"
+          AmountLose:
+            type: "string"
+          PlayTimeMinutes:
+            type: "number"
+  GetCampaignDialogContentResponse:
+    type: "object"
+    required:
+      - "content"
+    properties:
+      content:
+        type: "string"
+  TermsConditions:
+    type: "object"
+    required:
+      - "content"
+    properties:
+      content:
+        type: "string"
+  RegisterCompleteRequest:
+    type: "object"
+    required:
+      - "email"
+      - "password"
+      - "receivePromotional"
+      - "accept"
+      - "mobilePhone"
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+      receivePromotional:
+        type: "string"
+      accept:
+        type: "string"
+      mobilePhone:
+        type: "string"
+  RegisterCompleteResponse:
+    type: "object"
+    required:
+      - "ok"
+      - "result"
+    properties:
+      ok:
+        type: "boolean"
+      result:
+        type: "string"
+      nextUrl:
+        type: "string"
+  SubmitQuestionnaireRequest:
+    type: "object"
+    $ref: "#/definitions/FormData"
+  SubmitQuestionnaireResponse:
+    type: "object"
+    required:
+      - "ok"
+      - "requiredQuestionnaires"
+    properties:
+      ok:
+        type: "boolean"
+      requiredQuestionnaires:
+        type: "array"
+        items:
+          type: "string"
+      code:
+        type: "string"
+      result:
+        type: "string"
+  GetTransactionHistoryResponse:
+    type: "object"
+    required:
+      - "payments"
+      - "summary"
+      - "transactions"
+    properties:
+      payments:
+        type: "array"
+        items:
+          $ref: "#/definitions/Payment"
+      summary:
+        $ref: "#/definitions/HistorySummary"
+      transactions:
+        type: "array"
+        items:
+          $ref: "#/definitions/Transaction"
+  Payment:
+    type: "object"
+    required:
+      - "Amount"
+      - "PaymentMethodName"
+      - "Timestamp"
+      - "TransactionTypeName"
+      - "UniqueTransactionID"
+    properties:
+      Amount:
+        type: "string"
+      PaymentMethodName:
+        type: "string"
+      Timestamp:
+        type: "string"
+      TransactionTypeName:
+        type: "string"
+      UniqueTransactionID:
+        type: "string"
+  HistorySummary:
+    type: "object"
+    required:
+      - "deposits"
+      - "withdrawals"
+      - "total"
+    properties:
+      deposits:
+        type: "string"
+      withdrawals:
+        type: "string"
+      total:
+        type: "string"
+  Transaction:
+    type: "object"
+    required:
+      - "month"
+      - "text"
+    properties:
+      month:
+        type: "string"
+      text:
+        type: "string"
+  GetNotificationsResponse:
+    type: "object"
+    required:
+      - "notifications"
+      - "update"
+    properties:
+      notifications:
+        type: "array"
+        items:
+          $ref: "#/definitions/Notification"
+      update:
+        $ref: "#/definitions/Update"
+  Notification:
+    type: "object"
+    required:
+      - "id"
+      - "unread"
+      - "important"
+      - "extract"
+      - "action"
+      - "image"
+      - "title"
+      - "content"
+      - "disclaimer"
+      - "actiontext"
+      - "openOnLogin"
+    properties:
+      id:
+        type: "string"
+      unread:
+        type: "boolean"
+      important:
+        type: "boolean"
+      extract:
+        type: "string"
+      action:
+        type: "string"
+      image:
+        type: "string"
+      title:
+        type: "string"
+      content:
+        type: "string"
+      disclaimer:
+        type: "string"
+      actiontext:
+        type: "string"
+      openOnLogin:
+        type: "boolean"
+  PendingWithdrawResponse:
+    type: "array"
+    items:
+      $ref: "#/definitions/PendingWithdraw"
+  PendingWithdraw:
+    type: "object"
+    required:
+      - "Amount"
+      - "CancelWithdrawal"
+      - "PaymentMethodName"
+      - "UniqueTransactionID"
+      - "Timestamp"
+      - "WithdrawalFee"
+    properties:
+      Amount:
+        type: "string"
+      CancelWithdrawal:
+        type: "boolean"
+      PaymentMethodName:
+        type: "string"
+      UniqueTransactionID:
+        type: "string"
+      Timestamp:
+        type: "string"
+      WithdrawalFee:
+        type: "string"
+  ApiExclusion:
+    type: "object"
+    required:
+      - "limits"
+      - "minDepositLimit"
+    properties:
+      minDepositLimit:
+        type: "number"
+        format: "Cents"
+      limits:
+        type: "array"
+        items:
+          $ref: "#/definitions/Exclusion"
+  Exclusion:
+    type: "object"
+    required:
+      - "limitId"
+      - "expires"
+      - "limitType"
+      - "limitLength"
+      - "isPermanent"
+      - "canBeCancelled"
+      - "isInternal"
+    properties:
+      limitId:
+        type: "string"
+        format: "Id"
+      expires:
+        type: "string"
+        format: "datetime"
+      limitLength:
+        type: "number"
+        enum:
+          - 0
+          - 1
+          - 7
+          - 30;
+      limitType:
+        type: "string"
+        enum:
+          - loss
+          - deposit
+          - play
+          - timeout
+          - pause
+      limitPeriodType:
+        type: "string"
+        enum:
+          - monthly
+          - weekly
+          - daily
+      limitValue:
+        type: "number"
+        format: "Cents or Minutes"
+      limitLeft:
+        type: "number"
+        format: "Cents or Minutes"
+      limitDate:
+        type: "string"
+        format: "DateTime"
+      isPermanent:
+        type: "boolean"
+      canBeCancelled:
+        type: "boolean"
+      isInternal:
+        type: "boolean"
+  LimitRequest:
+    type: "object"
+    required:
+      - "limitLength"
+      - "limitType"
+    properties:
+      limitLength:
+        type: "number"
+        format: "Days"
+      limitType:
+        type: "string"
+        enum:
+          - loss
+          - deposit
+          - play
+          - timeout
+          - pause
+          - bet
+      limitPeriodType:
+        type: "string"
+        enum:
+          - monthly
+          - weekly
+          - daily
+      limitValue:
+        type: "number"
+        format: "Cents or Minutes"
+  SubscriptionOptionType:
+    type: "string"
+    enum: ["all", "best_offers", "new_games", "none"]
+  Subscription:
+    type: "object"
+    required:
+      - "unsubscribed-sms"
+      - "unsubscribed-general"
+      - "unsubscribed-personal"
+      - "unsubscribed-special"
+    properties:
+      unsubscribed-sms:
+        type: "boolean"
+      unsubscribed-general:
+        type: "boolean"
+      unsubscribed-personal:
+        type: "boolean"
+      unsubscribed-special:
+        type: "boolean"
+  GetSubscriptionV2Response:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+      playerId:
+        type: "number"
+      emails:
+        $ref: "#/definitions/SubscriptionOptionType"
+      smses:
+        $ref: "#/definitions/SubscriptionOptionType"
+      emailsSnoozed:
+        type: "boolean"
+      smsesSnoozed:
+        type: "boolean"
+      ok:
+        type: "boolean"
+      result:
+        type: "string"
+  UpdateSubscriptionV2Body:
+    type: "object"
+    properties:
+      emails:
+        $ref: "#/definitions/SubscriptionOptionType"
+      smses:
+        $ref: "#/definitions/SubscriptionOptionType"
+  SnoozeSubscriptionV2Body:
+    type: "object"
+    required:
+      - "type"
+    properties:
+      type:
+        type: "string"
+        enum: ["email", "sms"]
+      revertSnooze:
+        type: "boolean"
+  GetRewardsResponse:
+    type: "object"
+    required:
+      - "rewards"
+    properties:
+      rewards:
+        type: "array"
+        items:
+          $ref: "#/definitions/Reward"
+      update:
+        $ref: "#/definitions/Update"
+  GetRewardResponse:
+    type: "object"
+    required:
+      - "reward"
+    properties:
+      reward:
+        $ref: "#/definitions/Reward"
+      update:
+        $ref: "#/definitions/Update"
+  Reward:
+    type: "object"
+    required:
+      - "action"
+      - "id"
+      - "rewardid"
+      - "thumbnail"
+      - "type"
+    properties:
+      action:
+        type: "string"
+      id:
+        type: "string"
+      rewardid:
+        type: "string"
+      thumbnail:
+        type: "string"
+      type:
+        type: "string"
+  Withdraw:
+    type: "object"
+    required:
+      - "withdrawOptions"
+      - "accessStatus"
+      - "currentBonus"
+      - "update"
+      - "withdrawalFee"
+      - "withdrawalAllowed"
+      - "currencyVars"
+      - "verificationStatus"
+    properties:
+      withdrawOptions:
+        type: "object"
+        required:
+          - "options"
+        properties:
+          options:
+            type: "array"
+            items:
+              $ref: "#/definitions/PaymentMethod"
+      accessStatus:
+        type: "object"
+        required:
+          - "KycChecked"
+        properties:
+          KycChecked:
+            type: "boolean"
+      currentBonus:
+        type: "object"
+        required:
+          - "BonusWagerRequirementRemain"
+          - "BonusWagerRequirement"
+          - "CurrentBonusBalance"
+          - "BonusWagerRequirementAchievedPercentage"
+          - "CurrentRealBalance"
+          - "CurrencySymbol"
+          - "WageringComplete"
+          - "forfeitable"
+        properties:
+          BonusWagerRequirementRemain:
+            type: "string"
+          BonusWagerRequirement:
+            type: "string"
+          CurrentBonusBalance:
+            type: "string"
+          BonusWagerRequirementAchievedPercentage:
+            type: "number"
+          CurrentRealBalance:
+            type: "string"
+          CurrencySymbol:
+            type: "string"
+          WageringComplete:
+            type: "boolean"
+          forfeitable:
+            type: "boolean"
+      update:
+        type: "object"
+        required:
+          - "balance"
+        properties:
+          balance:
+            $ref: "#/definitions/Balance"
+      withdrawalFee:
+        type: "boolean"
+      withdrawalAllowed:
+        type: "boolean"
+      withdrawalFeeConfiguration:
+        $ref: "#/definitions/WithdrawalFeeConfiguration"
+      currencyVars:
+        type: "object"
+        required:
+          - "bonusvaluemultiplier"
+          - "depletion"
+          - "minimumdeposit"
+          - "deposit50"
+          - "bonusamount100"
+          - "reloadtuesdaybonus"
+          - "bonusamount200"
+          - "withdrawalfee"
+          - "freewithdrawalspermonth"
+          - "withdrawalfeemin"
+          - "withdrawalfeemax"
+          - "withdrawalmin"
+          - "irondino25"
+          - "reloadweekend"
+          - "reelrush"
+          - "deposit300"
+          - "deposit150"
+          - "maxbonusbet"
+          - "minimumdepositforfreespins"
+          - "depositfreespinslowerlimit"
+          - "fee"
+          - "deposit40"
+          - "towageringcentsdivider"
+          - "deposit99"
+        properties:
+          bonusvaluemultiplier:
+            type: "number"
+          depletion:
+            type: "number"
+          minimumdeposit:
+            type: "number"
+          deposit50:
+            type: "number"
+          bonusamount100:
+            type: "number"
+          reloadtuesdaybonus:
+            type: "number"
+          bonusamount200:
+            type: "number"
+          withdrawalfee:
+            type: "number"
+          freewithdrawalspermonth:
+            type: "number"
+          withdrawalfeemin:
+            type: "number"
+          withdrawalfeemax:
+            type: "number"
+          withdrawalmin:
+            type: "number"
+          irondino25:
+            type: "number"
+          reloadweekend:
+            type: "number"
+          reelrush:
+            type: "number"
+          deposit300:
+            type: "number"
+          deposit150:
+            type: "number"
+          maxbonusbet:
+            type: "number"
+          minimumdepositforfreespins:
+            type: "number"
+          depositfreespinslowerlimit:
+            type: "number"
+          fee:
+            type: "number"
+          deposit40:
+            type: "number"
+          towageringcentsdivider:
+            type: "number"
+          deposit99:
+            type: "number"
+      verificationStatus:
+        type: "object"
+        required:
+          - "verifiable"
+          - "pending"
+          - "methods"
+          - "docsNeeded"
+        properties:
+          verifiable:
+            type: "boolean"
+          pending:
+            type: "boolean"
+          methods:
+            type: "array"
+            items:
+              type: "object"
+              required:
+                - "id"
+                - "clearing_house"
+                - "currency"
+                - "bank_name"
+                - "logo"
+              properties:
+                id:
+                  type: "number"
+                clearing_house:
+                  type: "string"
+                currency:
+                  type: "string"
+                bank_name:
+                  type: "string"
+                logo:
+                  type: "string"
+          docsNeeded:
+            type: "boolean"
+  PaymentMethod:
+    type: "object"
+    required:
+      - "id"
+      - "name"
+      - "account"
+      - "method"
+      - "lowerLimit"
+      - "upperLimit"
+      - "lowerLimit_formatted"
+      - "upperLimit_formatted"
+      - "paymentAccountID"
+      - "currencyISO"
+      - "currencySymbol"
+      - "title"
+      - "copyrightText"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+      account:
+        type: "string"
+      method:
+        type: "string"
+      lowerLimit:
+        type: "number"
+      upperLimit:
+        type: "number"
+      lowerLimit_formatted:
+        type: "string"
+      upperLimit_formatted:
+        type: "string"
+      paymentAccountID:
+        type: "number"
+      currencyISO:
+        type: "string"
+      currencySymbol:
+        type: "string"
+      title:
+        type: "string"
+      copyrightText:
+        type: "string"
+  WithdrawalFeeConfiguration:
+    type: "object"
+    required:
+      - "withdrawalfee"
+      - "withdrawalfeemin"
+      - "withdrawalfeemax"
+    properties:
+      withdrawalfee:
+        type: "number"
+      withdrawalfeemin:
+        type: "number"
+      withdrawalfeemax:
+        type: "number"
+  WithdrawBalanceResponse:
+    type: "object"
+    required:
+      - "update"
+    properties:
+      update:
+        $ref: "#/definitions/Update"
+      ok:
+        type: "boolean"
+  Deposit:
+    type: "object"
+    required:
+      - "numDeposits"
+      - "depositMethods"
+      - "depositOptions"
+    properties:
+      numDeposits:
+        type: "number"
+      depositMethods:
+        type: "array"
+        items:
+          $ref: "#/definitions/DepositMethod"
+      depositOptions:
+        $ref: "#/definitions/DepositOptions"
+      limit:
+        $ref: "#/definitions/DepositLimit"
+  DepositMethod:
+    type: "object"
+    required:
+      - "PlayerLowerLimit"
+      - "PlayerUpperLimit"
+      - "currencyISO"
+      - "currencySymbol"
+      - "id"
+      - "uid"
+      - "lowerLimit"
+      - "lowerLimit_formatted"
+      - "name"
+      - "priority"
+      - "title"
+      - "type"
+      - "upperLimit_formatted"
+      - "disabledWithBonus"
+      - "amounts"
+    properties:
+      PlayerLowerLimit:
+        type: "number"
+      PlayerUpperLimit:
+        type: "number"
+      currencyISO:
+        $ref: "#/definitions/CurrencyISO"
+      currencySymbol:
+        type: "string"
+      id:
+        type: "string"
+      uid:
+        type: "string"
+      lowerLimit:
+        type: "number"
+      lowerLimit_formatted:
+        type: "string"
+      name:
+        type: "string"
+      options:
+        type: "array"
+        items:
+          $ref: "#/definitions/DepositMethodOption"
+      priority:
+        type: "number"
+      title:
+        type: "string"
+      type:
+        type: "string"
+      upperLimit:
+        type: "number"
+      upperLimit_formatted:
+        type: "string"
+      disabledWithBonus:
+        type: "boolean"
+      accountId:
+        type: "number"
+      account:
+        type: "string"
+      fee:
+        type: "string"
+      copyrightText:
+        type: "string"
+      amounts:
+        type: "array"
+        items:
+          type: "number"
+  DepositOptions:
+    type: "object"
+    properties:
+      bonus:
+        $ref: "#/definitions/Bonus"
+      campaign:
+        $ref: "#/definitions/Campaign"
+      freespins:
+        type: "array"
+        items:
+          $ref: "#/definitions/FreeSpin"
+      amounts:
+        type: "array"
+        items:
+          type: "number"
+      freespinsSeparator:
+        type: "boolean"
+  DepositLimit:
+    type: "object"
+    required:
+      - "key"
+      - "description"
+      - "canBeCancelled"
+      - "expireTime"
+      - "permanent"
+      - "limitLeft"
+      - "isInternal"
+      - "expires"
+    properties:
+      key:
+        type: "string"
+      description:
+        type: "string"
+      canBeCancelled:
+        type: "boolean"
+      expireTime:
+        type: "string"
+      permanent:
+        type: "boolean"
+      limitLeft:
+        type: "number"
+      isInternal:
+        type: "boolean"
+      expires:
+        type: "string"
+  DepositMethodOption:
+    type: "object"
+    required:
+      - "bank_name"
+      - "id"
+      - "logo"
+    properties:
+      bank_name:
+        type: "string"
+      id:
+        type: "string"
+      logo:
+        type: "string"
+  Campaign:
+    type: "object"
+    required:
+      - "title"
+    properties:
+      title:
+        type: "string"
+      options:
+        type: "array"
+        items:
+          $ref: "#/definitions/DepositOption"
+  Bonus:
+    type: "object"
+    required:
+      - "title"
+      - "options"
+    properties:
+      title:
+        type: "string"
+      options:
+        type: "array"
+        items:
+          $ref: "#/definitions/BonusOption"
+  DepositOption:
+    type: "object"
+    required:
+      - "id"
+      - "toggle"
+      - "icon"
+      - "title"
+      - "fields"
+    properties:
+      id:
+        type: "string"
+      toggle:
+        type: "string"
+        enum: ["on", "off", "disabled"]
+      icon:
+        $ref: "#/definitions/DepositOptionIcon"
+      title:
+        type: "string"
+      fields:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "key"
+            - "value"
+          properties:
+            key:
+              type: "string"
+            value:
+              type: "string"
+      minAmount:
+        type: "number"
+      freespins:
+        type: "array"
+        items:
+          $ref: "#/definitions/FreeSpin"
+      amounts:
+        type: "array"
+        items:
+          type: "number"
+      freespinsSeparator:
+        type: "boolean"
+  BonusOption:
+    type: "object"
+    required:
+      - "id"
+      - "toggle"
+      - "icon"
+      - "title"
+      - "fields"
+      - "maxAmount"
+      - "percentage"
+    properties:
+      id:
+        type: "string"
+      toggle:
+        type: "string"
+        enum: [ "on", "off", "disabled" ]
+      icon:
+        $ref: "#/definitions/DepositOptionIcon"
+      title:
+        type: "string"
+      fields:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "key"
+            - "value"
+          properties:
+            key:
+              type: "string"
+            value:
+              type: "string"
+      minAmount:
+        type: "number"
+      freespins:
+        type: "array"
+        items:
+          $ref: "#/definitions/FreeSpin"
+      amounts:
+        type: "array"
+        items:
+          type: "number"
+      freespinsSeparator:
+        type: "boolean"
+      bonusId:
+        type: "number"
+      campaignId:
+        type: "number"
+      maxAmount:
+        type: "number"
+      percentage:
+        type: "number"
+  DepositOptionIcon:
+    type: "string"
+    enum: ["coins", "bounty", "reward", "freespin", "wheel"]
+  CreateDepositResponse:
+    type: "object"
+    properties:
+      ReturnURL:
+        type: "string"
+      usesThirdPartyCookie:
+        type: "boolean"
+      result:
+        type: "string"
+      ok:
+        type: "boolean"
+      iframe:
+        type: "boolean"
+      force:
+        type: "boolean"
+      options:
+        type: "array"
+        items:
+          type: "object"
+          required:
+            - "url"
+          properties:
+            url:
+              type: "string"
+  PnpResponse:
+    type: "object"
+    required:
+      - "ok"
+      - "usesThirdPartyCookie"
+    properties:
+      ok:
+        type: "boolean"
+      ReturnURL:
+        type: "string"
+      usesThirdPartyCookie:
+        type: "boolean"
+  DepositRegisterResponse:
+    type: "object"
+    required:
+      - "ok"
+      - "ReturnURL"
+      - "usesThirdPartyCookie"
+    properties:
+      ok:
+        type: "boolean"
+      ReturnURL:
+        type: "string"
+      usesThirdPartyCookie:
+        type: "boolean"
+  OKResponse:
+    type: "object"
+    required:
+      - "ok"
+    properties:
+      ok:
+        type: "boolean"
+  GeneralResponse:
+    type: "object"
+    required:
+      - "ok"
+    properties:
+      ok:
+        type: "boolean"
+      result:
+        type: "string"

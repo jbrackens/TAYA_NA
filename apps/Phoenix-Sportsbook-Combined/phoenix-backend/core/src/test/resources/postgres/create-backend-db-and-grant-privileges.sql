@@ -1,0 +1,1 @@
+../../../../../dev/postgres/docker-entrypoint-initdb.d/3-create-backend-db-and-grant-privileges.sql

@@ -1,0 +1,16 @@
+[
+  {
+    "CurrencyID": "39",
+    "CurrencyISO": "NOK",
+    "CurrencyName": "Norway Kroner",
+    "CurrencyShortName": "Kroner",
+    "CurrencySymbol": "kr"
+  },
+  {
+    "CurrencyID": "17",
+    "CurrencyISO": "EUR",
+    "CurrencyName": "Euro Member Countries Euro",
+    "CurrencyShortName": "Euro",
+    "CurrencySymbol": "€"
+  }
+]

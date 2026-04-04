@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: cp-schema-registry
+    qcloud-app: cp-schema-registry
+  name: cp-schema-registry
+  namespace: streaming
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: cp-schema-registry
+      qcloud-app: cp-schema-registry
+  template:
+    metadata:
+      labels:
+        k8s-app: cp-schema-registry
+        qcloud-app: cp-schema-registry
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - streaming-nodes
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - streaming-nodes
+      containers:
+      - env:
+        - name: SCHEMA_REGISTRY_HOST_NAME
+          valueFrom:
+            configMapKeyRef:
+              key: SCHEMA_REGISTRY_HOST
+              name: common
+              optional: false
+        - name: SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              key: KAFKA_CLUSTER_HOST_PORT
+              name: common
+              optional: false
+        envFrom:
+        - configMapRef:
+            name: cp-schema-registry
+        image: confluentinc/cp-schema-registry:7.0.0
+        imagePullPolicy: Always
+        name: cp-schema-registry
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

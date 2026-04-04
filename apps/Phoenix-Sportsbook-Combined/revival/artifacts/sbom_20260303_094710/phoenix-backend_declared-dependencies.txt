@@ -1,0 +1,10 @@
+# Declared dependency lines from build.sbt
+# Generated on 2026-03-03T08:47:32Z
+
+project/plugins.sbt:20:addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
+project/plugins.sbt:26:addSbtPlugin("au.com.onegeek" %% "sbt-dotenv" % "2.1.233")
+build.sbt:2:import Dependencies._
+build.sbt:53:    scalafixDependencies += ScalafixDependencies.organizeImports,
+build.sbt:57:    // Let's exclude commons-logging globally and instead substitute it with jcl-over-slf4j in Dependencies.scala.
+build.sbt:198:    libraryDependencies ++= scalafixRulesDependencies,
+build.sbt:212:  .settings(libraryDependencies += "com.beachape" %% "enumeratum" % Versions.enumeratum)

@@ -1,0 +1,35 @@
+.racing-card-lp__event.racing-card-lp__event--selected,
+.racing-card-lp__event.racing-card-lp__event--selected:hover{
+  background:#00b000;
+}
+.racing-card-lp__event.racing-card-lp__event--result,
+.racing-card-lp__event.racing-card-lp__event--result:hover{
+  background:#e40a0a;
+}
+.racing-card-lp__event.racing-card-lp__event--raceoff,
+.racing-card-lp__event.racing-card-lp__event--raceoff:hover{
+  background:$brand-secondary;
+  color:$brand-base;
+}
+.racing-card-lp__event.racing-card-lp__event--raceoff.racing-card-lp__event--selected,
+.racing-card-lp__event.racing-card-lp__event--raceoff.racing-card-lp__event--selected:hover{
+  background:dark($brand-secondary,7.5%);
+}
+
+
+// past races : background:#e40a0a;
+// canclled races
+.racing-card-lp__event{
+  margin-right:1px;
+  border-radius:0px;
+  background:#e8e8e8;
+  &:hover{
+    background:#d9d9d9;
+  }
+}
+.IsDesktop td.racing-tableColumn-odds a.chosenBet:hover{
+  background-color:#ff9d2c;
+}
+.IsDesktop td.racing-tableColumn-odds a:hover{
+  background-color:#d9d9d9;
+}

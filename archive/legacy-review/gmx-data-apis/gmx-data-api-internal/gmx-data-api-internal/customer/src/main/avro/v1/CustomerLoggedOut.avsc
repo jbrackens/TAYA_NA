@@ -1,0 +1,40 @@
+[
+  {
+    "type": "record",
+    "name": "CustomerLoggedOut",
+    "namespace": "gmx.dataapi.internal.customer",
+    "fields": [
+      {
+        "name": "messageId",
+        "type": "string",
+        "doc": "Unique identifier of given message"
+      },
+      {
+        "name": "messageOriginDateUTC",
+        "type": "long",
+        "doc": "Message creation date in origin"
+      },
+      {
+        "name": "messageProcessingDateUTC",
+        "type": "long",
+        "doc": "Message processing date in GMX platform"
+      },
+
+      {
+        "name": "brandId",
+        "type": "string",
+        "doc": "Identifier of brand the customer information relates to"
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "doc": "Identifier of the customer"
+      },
+
+      {
+        "name": "logoutTimeUTC",
+        "type": "long"
+      }
+    ]
+  }
+]

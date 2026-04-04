@@ -1,0 +1,62 @@
+#banner_nonloggedin_nonloggedin
+  frontpageBanner()
+  cdn-background-image '/images/banners/notloggedin/bg.jpg'
+  background-position center top
+  @media only screen and (max-width:980px)
+    cdn-background-image '/images/banners/notloggedin/bg_mobile.jpg'
+  &_image
+    @media only screen and (max-width:799px)
+      cdn-background-image2x '/images/banners/notloggedin/mobile/text.png' '/images/banners/notloggedin/mobile/text@2x.png' 271px 243px
+    width 271px
+    height 243px
+    margin 0 auto
+  &_campaign
+    width 650px
+    text-align left
+    padding-left 240px
+    margin-top 30px
+    font-size 24px
+    @media only screen and (max-width:799px)
+      display none
+    &_title
+      @media only screen and (max-width:799px)
+        display none
+    &_content
+      h1
+        color $kalevala_blue
+        font-size 84px
+        line-height 62px
+        margin 0
+    &:after
+      content ''
+      position absolute
+      background-repeat no-repeat
+      cdn-background-image '/images/banners/notloggedin/common/20.png'
+      width 230px
+      height 158px
+      left 0
+      top 10px
+  &_item1
+    position absolute
+    cdn-background-image '/images/banners/notloggedin/common/wayne.png'
+    background-repeat no-repeat
+    width 268px
+    height 341px
+    left 5%
+    bottom 0
+    @media only screen and (max-width:1199px)
+      left 0
+    @media only screen and (max-width:1099px)
+      left -50px
+    @media only screen and (max-width:980px)
+      display none
+  &_item2
+    position absolute
+    background-repeat no-repeat
+    cdn-background-image '/images/banners/notloggedin/common/birdy.png'
+    width 148px
+    height 90px
+    right 10%
+    top 30px
+    @media only screen and (max-width:767px)
+      display none

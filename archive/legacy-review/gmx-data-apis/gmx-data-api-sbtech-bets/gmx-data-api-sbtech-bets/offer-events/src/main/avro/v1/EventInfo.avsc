@@ -1,0 +1,101 @@
+{
+  "type": "record",
+  "name": "EventInfo",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.EventsInfo.v1",
+  "fields": [
+    {
+      "name": "EventID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "EventName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "HomeTeam",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "AwayTeam",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Sport",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Region",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "LeagueId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "League",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "EventDateTime",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "StartAcceptanceDateTime",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "EndAcceptanceDateTime",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "EventResultDateTime",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "ChangeDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "Events",
+      "type": [
+        "null",
+        {
+          "type": "array",
+          "items": "int"
+        }
+      ],
+      "default": null
+    }
+  ]
+}

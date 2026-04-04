@@ -1,0 +1,21 @@
+# Auth metrics
+# HELP phoenix_http_requests_total Total HTTP requests processed.
+# TYPE phoenix_http_requests_total counter
+# HELP phoenix_http_request_duration_ms_sum Total request duration in milliseconds.
+# TYPE phoenix_http_request_duration_ms_sum counter
+phoenix_http_requests_total{service="auth",method="GET",path="/api/v1/status",status="200"} 12
+phoenix_http_request_duration_ms_sum{service="auth",method="GET",path="/api/v1/status",status="200"} 1
+phoenix_http_requests_total{service="auth",method="GET",path="/healthz",status="200"} 1
+phoenix_http_request_duration_ms_sum{service="auth",method="GET",path="/healthz",status="200"} 0
+
+# Gateway metrics
+# HELP phoenix_http_requests_total Total HTTP requests processed.
+# TYPE phoenix_http_requests_total counter
+# HELP phoenix_http_request_duration_ms_sum Total request duration in milliseconds.
+# TYPE phoenix_http_request_duration_ms_sum counter
+phoenix_http_requests_total{service="gateway",method="GET",path="/api/v1/fixtures",status="200"} 12
+phoenix_http_request_duration_ms_sum{service="gateway",method="GET",path="/api/v1/fixtures",status="200"} 1
+phoenix_http_requests_total{service="gateway",method="GET",path="/api/v1/status",status="200"} 12
+phoenix_http_request_duration_ms_sum{service="gateway",method="GET",path="/api/v1/status",status="200"} 1
+phoenix_http_requests_total{service="gateway",method="GET",path="/healthz",status="200"} 1
+phoenix_http_request_duration_ms_sum{service="gateway",method="GET",path="/healthz",status="200"} 0

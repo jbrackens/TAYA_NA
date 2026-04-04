@@ -1,0 +1,10 @@
+@namespace("phoenix.dataapi.shared")
+protocol MarketCancelProtocol {
+    import idl "shared-protocol.avdl";
+
+    record MarketCancel {
+        phoenix.dataapi.shared.Header header;
+        string namespacedMarketId;
+        boolean isPush;
+    }
+}

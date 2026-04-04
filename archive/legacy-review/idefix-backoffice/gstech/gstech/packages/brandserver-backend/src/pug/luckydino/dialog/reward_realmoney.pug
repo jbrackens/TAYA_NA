@@ -1,0 +1,84 @@
+.realmoney-dialog
+  .realmoney-dialog__dialog
+    .realmoney-dialog__dialog_content
+      h1=localize('affiliate5.popup.text')
+      h2=localize('affiliate5.popup.disclaimer')
+      a.button.modern(href='/loggedin/')=localize('affiliate5.popup.button')
+
+style.
+  .realmoney-dialog {
+    min-height: 350px;
+    height: 348px;
+  rgba(0,0,0,0.2)
+    position: relative;
+    border-radius: 4px;
+  }
+  .realmoney-dialog__dialog {
+    width: 560px;
+    height: 350px;
+    background: linear-gradient(95deg, #257ca4 0%, #3598ba 71%);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  @media only screen and (max-width: 767px) {
+    .realmoney-dialog__dialog {
+      width: auto;
+      height: 100vh;
+    }
+  }
+  .realmoney-dialog__dialog:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 132px;
+    background-image: url("https://static.luckydino.com/images/dino_tail.png");
+    background-repeat: no-repeat;
+    background-position: right center;
+  }
+  .realmoney-dialog__dialog_content {
+    width: 320px;
+    margin: 0 auto;
+    text-align: center;
+    z-index: 2;
+  }
+  .realmoney-dialog__dialog_content h1 {
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 42px;
+    line-height: 38px;
+    font-family: "Titillium Web";
+    font-weight: 700;
+    letter-spacing: -2px;
+  }
+  .realmoney-dialog__dialog_content h2 {
+    margin: 0 0 5px 0;
+    color: #fff;
+    font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .realmoney-dialog__dialog_content .button {
+    margin-top: 20px;
+  }
+  .realmoney-dialog .button,
+  .realmoney-dialog .button:hover,
+  .realmoney-dialog .button:focus {
+    display: inline-block;
+    vertical-align: top;
+    font-weight: bold;
+    font-size: 18px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #000;
+    background: #aeef1f;
+    background-image: linear-gradient(top, #aeef1f 0%, #4cc300 100%);
+    border-radius: 2px;
+  rgba(0,0,0,0.65)
+    padding: 4px 24px;
+    text-decoration: none;
+  }

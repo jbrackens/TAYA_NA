@@ -1,0 +1,205 @@
+# Infrastructure
+
+argocd:
+  # Only enabled for the sake of subsequent contract tests, executed from Jenkins.
+  awaitRolloutComplete: true
+  rollouts:
+    enabled: true
+    autoPromotionEnabled: true
+
+externalSecrets:
+  remoteRefPathPrefix: dev/phoenix
+  secretStore: main
+
+flyway:
+  outOfOrder: false
+
+imagePullSecrets: [ecr-docker-credentials]
+
+ingress:
+  baseDNS: dev.phoenix.darkstormlabs.net
+  exposeDevApi: true
+
+  alb:
+    # Grouping is not enabled for DEV which is not an Outpost deployment.
+    group: null
+
+    customerOwnedIP:
+      enabled: false
+
+  whitelistedIps:
+    main:
+      - 212.250.151.148/32  # VPN: fw01-lon.argyll.tech
+      - 212.250.151.149/32  # VPN: fw02-lon.argyll.tech
+      - 178.23.129.249/32   # VPN: fw01-ghd.flipsports.net
+      - 107.22.63.253/32    # VPN: twingate-phoenix-dev-connector-13
+      - 34.206.153.88/32    # VPN: twingate-phoenix-dev-connector-14
+      - 54.194.105.187/32   # Jenkins
+      - 195.69.175.192/32   # PXP Test Env
+      - 184.69.72.190/32    # IdComply
+      - 54.173.212.103/32   # IdComply
+      - 128.0.169.65/32     # IdComply
+      - 95.69.249.156/32    # IdComply
+      - 27.65.195.158/32    # IdComply
+      - 118.69.35.205/32    # IdComply
+      - 113.161.91.174/32   # IdComply
+    betgenius:
+      - 212.250.151.148/32  # VPN: fw01-lon.argyll.tech
+      - 212.250.151.149/32  # VPN: fw02-lon.argyll.tech
+      - 178.23.129.249/32   # VPN: fw01-ghd.flipsports.net
+      - 107.22.63.253/32    # VPN: twingate-phoenix-dev-connector-13
+      - 34.206.153.88/32    # VPN: twingate-phoenix-dev-connector-14
+      - 185.107.196.0/22
+      - 54.72.77.116/32
+      - 34.242.67.155/32
+      - 34.242.6.161/32
+      - 34.241.220.64/32
+      - 52.19.163.53/32
+      - 52.213.172.249/32
+      - 52.214.86.245/32
+      - 99.80.74.200/32
+      - 54.76.226.75/32
+      - 34.240.244.24/32
+      - 34.252.158.247/32
+      - 54.77.177.22/32
+    pxp:
+      - 195.69.175.192/32   # PXP Test Env
+      - 212.250.151.148/32  # VPN: fw01-lon.argyll.tech
+      - 212.250.151.149/32  # VPN: fw02-lon.argyll.tech
+      - 107.22.63.253/32    # VPN: twingate-phoenix-dev-connector-13
+      - 34.206.153.88/32    # VPN: twingate-phoenix-dev-connector-14
+
+
+keycloak:
+  namespace: keycloak
+  realm: phoenix
+
+podDisruptionBudget:
+  enabled: true
+
+postgresOperator:
+  dbName: phoenix
+  dbHost: phoenix-cluster.postgres-operator.svc.cluster.local
+  dbWriterSecretName: phoenix-writer-user.phoenix-cluster.credentials.postgresql
+  dbOwnerSecretName: phoenix-owner-user.phoenix-cluster.credentials.postgresql
+
+prometheusRules:
+  cluster: phoenix-dev-cluster
+  env: dev
+
+replicaCount: 3
+
+resources:
+  memory: "3Gi"
+
+
+# Application
+
+akka:
+  persistence:
+    jdbcPoolSize: 30
+    recoveryTimeout: 600s
+
+corsAllowedOrigins:
+  - http://localhost:3000
+  - https://dev-api.dev.phoenix.darkstormlabs.net  # Swagger
+  - https://app.dev.phoenix.darkstormlabs.net
+  - https://office.dev.phoenix.darkstormlabs.net
+
+db:
+  maxConnections: 30
+  minConnections: 30
+  slickThreadsNum: 30
+
+markets:
+  selectionOddsUpperBoundInclusive: 101
+  # we want to show all markets on DEV - to diagnose issues
+  marketTypesDisplayedToPunters: ""
+  sportsDisplayedToPuntersByDefault: "s:p:1, s:p:2, s:p:3, s:p:10, s:p:11, s:p:12, s:p:13, s:p:15, s:p:16"
+  tournamentsDisplayedToPuntersFilterEnabled: false
+
+notifications:
+  baseUrl: "https://app.dev.phoenix.darkstormlabs.net"
+  customerSupportEmailAddress: "diana.georgieva@darkstormlabs.tech"
+  email:
+    enabled: true
+    fromAddress: "virginia-dev@darkstormlabs.net"
+
+openapi:
+  docsRelativeUrl: "/docs"
+  apiBaseUrl: "https://api.dev.phoenix.darkstormlabs.net"
+
+punters:
+  maximumAmountOfPunters: 100000
+  mfa:
+    enabledByDefault: true
+    changeAllowed: false
+    mandatoryForRegistration: true
+
+reports:
+  dge:
+    dailyReportsSchedule: "mode=recurring,every=1.hour"
+  aml:
+    reportsRecipientEmailAddress: "diana.georgieva@darkstormlabs.tech"
+    dailyReportsSchedule: "mode=recurring,every=1.hour"
+    weeklyReportsSchedule: >-
+      mode=daily,start-time=\"06:00\"
+    monthlyReportsSchedule: >-
+      mode=daily,start-time=\"06:00\"
+    deceasedReportsSchedule: >-
+      mode=weekly,day-of-week=WEDNESDAY,start-time=\"06:00\"
+    manuallyUnsuspendedReportsSchedule: >-
+      mode=weekly,day-of-week=TUESDAY,start-time=\"09:00\"
+    multiDeviceActivityReportsSchedule: >-
+      mode=daily,start-time=\"06:00\"
+
+talon:
+  talonAppBaseUrl: "https://office.dev.phoenix.darkstormlabs.net"
+
+
+# 3rd party integrations
+
+betgenius:
+  dataIngestionEnabled: "no"
+  apiEnvironment: "PRODPRM"
+
+dge:
+  sftp:
+    host: argyll-s-srv01.flipsports.net
+    port: 22
+    rootDirectory: /virginia-dev
+  exclusion:
+    ingestion:
+      schedule: "mode=recurring,every=1.hour"
+      timeRestriction: 5.minutes
+      maxRetries: 0
+
+geoComply:
+  licenseService:
+    baseUrl: "https://stg-auth.geocomply.net"
+
+idComply:
+  baseUrl: "https://api.idcomply.net/v1"
+  photoVerificationBaseUrl: "https://www.idcomply.net/demo-sdk/"
+  frontEndRedirectionEndpoint: "https://app.dev.phoenix.darkstormlabs.net/esports-bets/idpv-result"
+  idPhotoVerificationEndpoint: "kyc-esports-nj-ocr"
+  endpointPaths:
+    knowYourCustomer: "/kyc-esports-nj"
+    knowledgeBasedAuthentication: "/kyc-esports-nj-kba"
+
+oddin:
+  dataIngestionEnabled: "yes"
+  useCommonDataApiModel: "yes"
+  environment: INTEGRATION
+  restBaseUrl: "https://api-mq.integration.oddin.gg"
+  nodeId: "1"
+  kafka:
+    enabled: "no"
+    consumer:
+      bootstrapServers: "phoenix-strimzi-kafka-bootstrap.cloudflow:9092"
+
+payments:
+  baseUrl: "https://api.test.kalixa.com"
+
+twilio:
+  verifyApiBaseUrl: "https://verify.twilio.com"

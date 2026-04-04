@@ -1,0 +1,145 @@
+#!groovy
+
+void withGithubStatusUpdates(Closure<Void> block) {
+  gitStatusWrapper(
+          description: env.STAGE_NAME,
+          gitHubContext: 'Jenkins Build',
+          account: env.GITHUB_ACCOUNT,
+          repo: env.GITHUB_REPO,
+          credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+          targetUrl: env.RUN_DISPLAY_URL
+  ) {
+    block()
+  }
+}
+
+// build status constants: https://www.jenkins.io/doc/book/glossary/#build-status
+def notifySlack(String branch, String buildStatus = 'STARTED') {
+
+  if (['develop', 'master'].any { branch.contains(it) }) {
+
+    // Build status of null means success.
+    buildStatus = buildStatus ?: 'SUCCESS'
+
+    def color
+
+    if (buildStatus == 'STARTED') {
+      color = '#D4DADF'
+    } else if (buildStatus == 'SUCCESS') {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'STABLE') {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'UNSTABLE') {
+      color = '#FFFE89'
+    } else { // FAILED or ABORTED
+      color = '#FF9FA1'
+    }
+
+    def msg = "${buildStatus}: `${env.JOB_NAME}` #${env.BUILD_NUMBER}:\n${env.BUILD_URL}"
+
+    slackSend(color: color, message: msg)
+  }
+}
+
+
+pipeline {
+  agent {
+    label 'ecs-ec2-java11-helm'
+  }
+
+  environment {
+    // CI_UNIQUE_CONTAINER_ID suffix is necessary to make sure that container names are unique within the Jenkins host.
+    // See dev/docker-compose.yml for how it's used.
+    CI_UNIQUE_CONTAINER_ID = "_${env.BUILD_TAG.replaceAll('%..', '_').replaceAll(' ', '-')}"
+
+    // github status notifications
+    GITHUB_ACCOUNT = 'flipadmin'
+    GITHUB_REPO = 'phoenix-core'
+    GITHUB_API_TOKEN_CREDENTIALS_ID = 'CICD-GitHub-API-token'
+
+    // build
+    SBT_HOME = tool name: 'sbt', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
+    PATH = "${env.SBT_HOME}/bin:${env.HOME}/.local/bin:${env.PATH}"
+    LIGHTBEND_COMMERCIAL_TOKEN = credentials('lightbend-commercial-token')
+
+    // AWS (except ECR)
+    AWS_CREDENTIALS_ID = 'phoenix-build-user'
+    AWS_REGION = 'eu-central-1'
+    AWS_CLOUDFRONT_DOCS_DISTRIBUTION_ID = 'E3100JNQAWI6FZ' // corresponds to docs.dev.phoenix.flipdevs.com
+
+    // AWS ECR
+    AWS_ECR_ACCOUNT_ID = '461765575148'
+    AWS_ECR_REGION = 'eu-central-1'
+    AWS_ECR_HOST = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        notifySlack(env.BRANCH_NAME)
+
+        withGithubStatusUpdates {
+          script {
+            currentBuild.displayName = "#${env.BUILD_NUMBER} for ${env.BRANCH_NAME}"
+          }
+          checkout scm
+        }
+      }
+    }
+
+    stage('Update dependencies') {
+      steps {
+        withGithubStatusUpdates {
+          // -batch to prevent sbt from waiting on user input in case the project model is invalid
+          sh 'sbt -batch update'
+        }
+      }
+    }
+
+    stage('Check formatting & code style') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt scalafmtCheckAll scalastyle'
+        }
+      }
+    }
+
+    stage('Compile production code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "+ compile"'
+        }
+      }
+    }
+
+    stage('Compile test code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "+ test:compile"'
+        }
+      }
+    }
+
+    stage('Run unit & integration tests') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "+ test:test"'
+        }
+      }
+    }
+
+    stage('Publish to Nexus') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "+ publish"'
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      notifySlack(env.BRANCH_NAME, currentBuild.result)
+    }
+  }
+}

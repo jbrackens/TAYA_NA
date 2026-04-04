@@ -1,0 +1,14 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: phoenix-keycloak
+spec:
+  destination:
+    namespace: keycloak
+  source:
+    repoURL: 'git@github.com:flipadmin/phoenix-backend.git'
+    path: deploy/helm/phoenix-keycloak
+    targetRevision: develop
+    helm:
+      valueFiles:
+        - envs/eks-virginia-dev_keycloak.yaml

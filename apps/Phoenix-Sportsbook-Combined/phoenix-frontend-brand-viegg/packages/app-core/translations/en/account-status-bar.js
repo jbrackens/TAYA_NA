@@ -1,0 +1,14 @@
+module.exports = {
+  TITLE: "Account Status:",
+  SELF_EXCLUDED:
+    "Account is in a suspended mode, the patron can not deposit, withdraw, wager, or make any changes to their account",
+  SUSPENDED:
+    "Account is in a suspended mode, the patron can not deposit, wager, or make any changes to their account",
+  COOLING_OFF:
+    "Account is in cool off. the patron can not deposit, wager, or make any changes to their account",
+  SESSION_LIMIT_BREACH: "Session time limit has been reached",
+  UNVERIFIED: "Account is unverified, please verify it to have full access",
+  VERIFY: "Verify Now",
+  NEGATIVE_BALANCE: "Your account has a negative balance. Please deposit.",
+  DEPOSIT: "Deposit",
+};

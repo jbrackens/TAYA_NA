@@ -1,0 +1,18 @@
+###
+#  summary: get season status
+#  responses:
+#    200:
+#      description: success
+#      schema:
+#        $ref: '#/components/schemas/tech.argyll.gmx.predictorgame.services.competition.CompetitionStatus'
+###
+GET           /sports/:sport/competitions/:competition                                         tech.argyll.gmx.predictorgame.controllers.CompetitionController.status(sport: String, competition: String)
+
+
+GET           /sports/:sport/predictions/competitions/:competition/rounds/:round               tech.argyll.gmx.predictorgame.controllers.PredictionController.getRoundPrediction(sport: String, competition: String, round: Int)
+POST          /sports/:sport/predictions/competitions/:competition/rounds/:round               tech.argyll.gmx.predictorgame.controllers.PredictionController.storeRoundPrediction(sport: String, competition: String, round: Int)
+DELETE        /sports/:sport/predictions/competitions/:competition/rounds/:round               tech.argyll.gmx.predictorgame.controllers.PredictionController.removeRoundPrediction(sport: String, competition: String, round: Int)
+
+
+GET           /sports/:sport/leaderboard/competitions/:competition/rounds/:round               tech.argyll.gmx.predictorgame.controllers.LeaderboardController.getRoundStanding(sport: String, competition: String, round: Int)
+GET           /sports/:sport/leaderboard/competitions/:competition                             tech.argyll.gmx.predictorgame.controllers.LeaderboardController.getSeasonStanding(sport: String, competition: String)

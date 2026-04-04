@@ -1,0 +1,22 @@
+$casino-new: #8eb60c !default;
+$casino-jackpot: #ff521d !default;
+$casino-hot: #d21a1a !default;
+.sb-src-components-sbtech-cas-component-gamegrid-_index__labels-wrapper{
+  .sb-src-components-sbtech-cas-component-gamegrid-_index__label{
+    color:white;
+    font-family:$brand-font--header;
+    font-weight:800;
+    &[data-game-flag-new="true"]{
+      background-color:$casino-new;
+      color:white;
+    }
+    &[data-game-flag-jackpot="true"]{
+      background-color:$casino-jackpot;
+      color:white;
+    }
+    &[data-game-flag-hot="true"]{
+      background-color:$casino-hot;
+      color:white;
+    }
+  }
+}

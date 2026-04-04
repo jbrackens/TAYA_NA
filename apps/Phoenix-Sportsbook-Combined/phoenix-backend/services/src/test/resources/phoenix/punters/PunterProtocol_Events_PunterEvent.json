@@ -1,0 +1,2255 @@
+[
+  {
+    "SelfExclusionEnded" : {
+      "punterId" : {
+        "value" : "㫐㊙⚗다쮤㡟㗤딀ࡂච睪驣쬽玎홏ᥓ龫㥮牻鉀쏤鷩ꢻ侽穠⪰⦼খ鿫枋枊춚鱆㺲힄䣠挗ꌹ"
+      }
+    }
+  },
+  {
+    "DailyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "⎂䘺샦툢廫膟뇷삽섐๢招㶶ᔟ䥢枼ዥ煑䔮薇"
+      },
+      "limits" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 4277037315277908057168128121805829000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00
+              }
+            }
+          }
+        },
+        "since" : "-781574665-11-22T11:49:48.485365298-16:11:45"
+      }
+    }
+  },
+  {
+    "LoginContextGotReset" : {
+      "punterId" : {
+        "value" : "ꈄ뤌呴凱酊っᮿ"
+      }
+    }
+  },
+  {
+    "MonthlySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "ጿ옅㸌ᕖ菨⋹讖ὲ衅룲騺ਂި设囙՚㐨ᙶђ麸峍ស뵽憸賒ꪸ另珜溢ಖ䂥퉱鬎唅븨≅៍"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : 1
+            }
+          }
+        },
+        "since" : "+970716002-12-08T23:02:01.500455439+12:23:22"
+      }
+    }
+  },
+  {
+    "DailySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "啐쮰袵顐㿔椻봬ᬇ놦"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "nanos" : 4161996363387162201
+            }
+          }
+        },
+        "since" : "-684985674-04-23T09:31:00.560767854-09:54:03"
+      }
+    }
+  },
+  {
+    "WeeklyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "ꆔқ謕"
+      },
+      "limit" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 6166461162906787509.00
+              }
+            }
+          }
+        },
+        "since" : "+453094804-09-25T03:20:24.380937061-13:08:48"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "楣컼㟼앃攧☞আꕡ晍뿓뽿ꁉ珳எ鋩䑒똡嫷쮚蒳ោ"
+          },
+          "activationPath" : {
+            "IDPV" : {
+              
+            }
+          },
+          "verifiedAt" : "+346017605-09-25T15:44:32.765926934+11:21:51",
+          "phoenixVersion" : 1
+        }
+      },
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "楣컼㟼앃攧☞আꕡ晍뿓뽿ꁉ珳எ鋩䑒똡嫷쮚蒳ោ"
+          },
+          "activationPath" : {
+            "IDPV" : {
+              
+            }
+          },
+          "verifiedAt" : "+346017605-09-25T15:44:32.765926934+11:21:51"
+        }
+      }
+    ],
+    "PunterVerified" : {
+      "punterId" : {
+        "value" : "楣컼㟼앃攧☞আꕡ晍뿓뽿ꁉ珳எ鋩䑒똡嫷쮚蒳ោ"
+      },
+      "activationPath" : {
+        "IDPV" : {
+          
+        }
+      },
+      "verifiedAt" : "+346017605-09-25T15:44:32.765926934+11:21:51",
+      "verifiedBy" : null,
+      "phoenixVersion" : 1
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionStarted" : {
+          "punterId" : {
+            "value" : "쿎ﾕ﷥礢쪬碚ⲁ颎뢣䎌룮蟿䵦ዑ蒡侓֯흖枖摚塌뮤ꗬ錾댍ᩯ㻛̌⹋秳壺싔"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "﫟닊ﳝ䎼혿ᜐ猓㝑鄡梆宺Ꞅ"
+            },
+            "startedAt" : "-952635784-07-31T23:21:44.798254039-16:40:55",
+            "limitation" : {
+              "Limited" : {
+                "canBeActiveUntil" : "+272592064-02-27T13:47:12.129050247+00:41:17",
+                "coolOffUntil" : "+109016945-04-06T20:49:55.830488685-12:05"
+              }
+            },
+            "ipAddress" : null
+          },
+          "ipAddress": null
+        }
+      }
+    ],
+    "SessionStarted" : {
+      "punterId" : {
+        "value" : "쿎ﾕ﷥礢쪬碚ⲁ颎뢣䎌룮蟿䵦ዑ蒡侓֯흖枖摚塌뮤ꗬ錾댍ᩯ㻛̌⹋秳壺싔"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "﫟닊ﳝ䎼혿ᜐ猓㝑鄡梆宺Ꞅ"
+        },
+        "startedAt" : "-952635784-07-31T23:21:44.798254039-16:40:55",
+        "limitation" : {
+          "Limited" : {
+            "canBeActiveUntil" : "+272592064-02-27T13:47:12.129050247+00:41:17",
+            "coolOffUntil" : "+109016945-04-06T20:49:55.830488685-12:05",
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress" : null
+      },
+      "ipAddress": null
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionEnded" : {
+          "punterId" : {
+            "value" : "뮔ޭ篳갣㼤璿暕龠㯱ઇグ쫸붔㝙靈㻒皈㔁뙭酲溁䝒"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "촢됮燸鲿Mᗂ"
+            },
+            "startedAt" : "-703116599-09-15T21:57:49.327701463-05:29:49",
+            "endedAt" : "+706042324-02-28T21:22:04.02807198+14:44:26",
+            "limitation" : {
+              "Unlimited" : {
+                
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionEnded" : {
+      "punterId" : {
+        "value" : "뮔ޭ篳갣㼤璿暕龠㯱ઇグ쫸붔㝙靈㻒皈㔁뙭酲溁䝒"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "촢됮燸鲿Mᗂ"
+        },
+        "startedAt" : "-703116599-09-15T21:57:49.327701463-05:29:49",
+        "endedAt" : "+706042324-02-28T21:22:04.02807198+14:44:26",
+        "limitation" : {
+          "Unlimited" : {
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        }
+      }
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "懗"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : null
+          }
+        },
+        "since" : "-44045317-05-07T04:22:58.667633195+00:51:24"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffExclusionBegan" : {
+          "punterId" : {
+            "value" : "꣱遝㮦὾鱁빌껏ﴬ蔝"
+          },
+          "coolOffPeriod" : {
+            "startTime" : "-898034107-08-11T06:40:39.038247176-07:13:58",
+            "endTime" : "-356115824-06-23T14:23:52.003626571+04:16:27"
+          },
+          "cause" : {
+            "SessionLimitBreach" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffExclusionBegan" : {
+      "punterId" : {
+        "value" : "꣱遝㮦὾鱁빌껏ﴬ蔝"
+      },
+      "coolOffPeriod" : {
+        "startTime" : "-898034107-08-11T06:40:39.038247176-07:13:58",
+        "endTime" : "-356115824-06-23T14:23:52.003626571+04:16:27"
+      },
+      "cause" : {
+        "SessionLimitBreach" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "龏紧蟤珮栙㺳ࢀᠺ"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "-879857592-05-30T18:16:02.595602887+12:19:09"
+      }
+    }
+  },
+  {
+    "MonthlySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "郹㤲앐ᘈ㧘꛻莻⡔蟪헑ᶕᄶ폰祿쟐"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : -1
+            }
+          }
+        },
+        "since" : "+743825688-04-17T06:08:12.391598432+07:25:58"
+      }
+    }
+  },
+  {
+    "MonthlyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "⮃漽嗝ㅹᮕ镮䖛갽㡅獓珞飐咯䆵菸"
+      },
+      "limits" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : null
+          }
+        },
+        "since" : "+938916421-08-22T03:05:39.811564672-11:58:33"
+      }
+    }
+  },
+  {
+    "DailyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "컊噫゚쉑ᝦ⼠믈간褻硟뿇螶㡃缇ﱗ糞펳풃왏꣟㼵笠짐䮯ⶋ乌ﱰ룽뱽峠噫㮩쐖賐"
+      },
+      "limits" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "-823647398-08-16T10:12:23.370093812-11:55:37"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffEnded" : {
+          "punterId" : {
+            "value" : "ᓡ녟ዏ⬵ᄏ☣긎෬滝觌椾綛㦾懛蹈융ඏ迕粝㹶鸥壪⦴ﰏ⺐壝䰹柱黪ጂ﹚匎栭"
+          },
+          "cause" : {
+            "SessionLimitBreach" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffEnded" : {
+      "punterId" : {
+        "value" : "ᓡ녟ዏ⬵ᄏ☣긎෬滝觌椾綛㦾懛蹈융ඏ迕粝㹶鸥壪⦴ﰏ⺐壝䰹柱黪ጂ﹚匎栭"
+      },
+      "cause" : {
+        "SessionLimitBreach" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "MonthlyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "䴒̶ᕩ蛁쯧﫾낦ἵ劥醈澶☩촓︙ᆟ㌛⺮嘺霐充꧈鳾䝻Ⲥ巼紳쾳ꊠꐫ㪌ጬጿ䅒뼘̂"
+      },
+      "limits" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : 4185191484335786743.00
+              }
+            }
+          }
+        },
+        "since" : "-912383467-09-21T07:40:24.786894746-01:32:59"
+      }
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "⨭홢푃೻ᮍ蛿씤蹫ퟘ勐ᬓ࢛꬘鮨쑎퍭냎葸젏旇铱"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 4608921000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00
+              }
+            }
+          }
+        },
+        "since" : "+486809588-05-21T18:31:38.793111775-05:25:03"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffEnded" : {
+          "punterId" : {
+            "value" : "丬趀⬵ꢉ獃薷斍㴋㤡쩅蚎ꤾ᠂ì繖㏏㒔蠀셊㪞飂袳┕率"
+          },
+          "cause" : {
+            "SessionLimitBreach" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffEnded" : {
+      "punterId" : {
+        "value" : "丬趀⬵ꢉ獃薷斍㴋㤡쩅蚎ꤾ᠂ì繖㏏㒔蠀셊㪞飂袳┕率"
+      },
+      "cause" : {
+        "SessionLimitBreach" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionStarted" : {
+          "punterId" : {
+            "value" : "촦쉝ᆮ鍊叭砻䆾웗嶞炟莝꓆ᏽ旅坁໗앱㦒膬ᕺ暦ᛲ０ᡘ䯖䓡"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "䞗橦㪶풋ₔ잓쀼ꯠ뉙ʁᤥ"
+            },
+            "startedAt" : "+337885529-10-11T07:11:46.731535953+08:39:56",
+            "limitation" : {
+              "Unlimited" : {
+                
+              }
+            },
+            "ipAddress": null
+          },
+          "ipAddress": null
+        }
+      }
+    ],
+    "SessionStarted" : {
+      "punterId" : {
+        "value" : "촦쉝ᆮ鍊叭砻䆾웗嶞炟莝꓆ᏽ旅坁໗앱㦒膬ᕺ暦ᛲ０ᡘ䯖䓡"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "䞗橦㪶풋ₔ잓쀼ꯠ뉙ʁᤥ"
+        },
+        "startedAt" : "+337885529-10-11T07:11:46.731535953+08:39:56",
+        "limitation" : {
+          "Unlimited" : {
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      },
+      "ipAddress": null
+    }
+  },
+  {
+    "PunterSuspended" : {
+      "punterId" : {
+        "value" : "䨙ฑ䪌柝ᘀꛓᷔ갍碡똝䮢滘ႁꨚ"
+      },
+      "entity" : {
+        "RegistrationIssue" : {
+          "details" : "맺儛픷釤௅혽띅∴敤퇯ᛢ雋穡纅脊ᦚ䔱௷▔豣硣ﲣ"
+        }
+      },
+      "suspendedAt" : "+219012620-11-22T04:39:48.53652561+15:58:12"
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "栚욯竣"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.97
+              }
+            }
+          }
+        },
+        "since" : "-767644489-04-03T08:16:18.398597956+02:55:34"
+      }
+    }
+  },
+  {
+    "SelfExclusionEnded" : {
+      "punterId" : {
+        "value" : "᷵➬錜㵴皟⟏䗚龝揺쾭䂸짮抣䇔낾訛兘⚬᮫珳"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterUnsuspended" : {
+          "punterId" : {
+            "value" : "⇮ﳅఠ"
+          },
+          "verifiedAt" : "-410017209-08-12T13:39:41.009944471+15:18:58"
+        }
+      }
+    ],
+    "PunterUnsuspended" : {
+      "punterId" : {
+        "value" : "⇮ﳅఠ"
+      }
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "０爡᳣﹑皂喃痊迼뢳❅㜃鑛ⷞԔꋚ뗶칦굕優網㤂剖䢣﫢"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "+857524229-07-28T00:43:53.991697297+01:47:36"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffExclusionBegan" : {
+          "punterId" : {
+            "value" : "㹪ࢤ寮꺩よ媹㞟"
+          },
+          "coolOffPeriod" : {
+            "startTime" : "-798459793-04-14T02:22:37.193047767-13:45:10",
+            "endTime" : "-793393869-09-16T11:44:02.543831303-14:13:36"
+          },
+          "cause" : {
+            "SelfInitiated" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffExclusionBegan" : {
+      "punterId" : {
+        "value" : "㹪ࢤ寮꺩よ媹㞟"
+      },
+      "coolOffPeriod" : {
+        "startTime" : "-798459793-04-14T02:22:37.193047767-13:45:10",
+        "endTime" : "-793393869-09-16T11:44:02.543831303-14:13:36"
+      },
+      "cause" : {
+        "SelfInitiated" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "MonthlyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "ꠤ瘟媫䶖꒳笿刔㍇Á彨䤹"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : -10.22
+              }
+            }
+          }
+        },
+        "since" : "+71638146-12-18T10:36:08.404452086+06:13:50"
+      }
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "ᙢ볕⥀遀헝⤿뜘囕ᣏ딫铊᩾"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : -0.48
+              }
+            }
+          }
+        },
+        "since" : "+238280637-11-01T08:09:18.034519222-05:59:02"
+      }
+    }
+  },
+  {
+    "PunterProfileCreated" : {
+      "punterId" : {
+        "value" : "츊₌놧ᱯਯ蒪潠媃粮クꔗ鮛㝶"
+      },
+      "depositLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.60
+              }
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : -2.99
+              }
+            }
+          }
+        }
+      },
+      "stakeLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 9223372036854775808000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00
+              }
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 650814862753564800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00
+              }
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        }
+      },
+      "sessionLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "nanos" : -9223372036854775808
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "nanos" : 8972359613553005462
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : 1
+            }
+          }
+        }
+      },
+      "referralCode" : {
+        "value" : "⨝"
+      },
+      "isTestAccount" : false
+    }
+  },
+  {
+    "DailyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "衦꛻킒轒⒤롵᳹欷ﶊ箇䷨⅚㈉㇝黉⶧⶚街屐꤯螬⏢োî뷣狟跟偣鋫봺む醌尿"
+      },
+      "limits" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -0.99
+              }
+            }
+          }
+        },
+        "since" : "-40413504-04-04T05:30:21.683275029+04:27:03"
+      }
+    }
+  },
+  {
+    "MonthlyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "ଘ朁뗜肼㕽ᜮ欽⤥抒姶谂詚縄꓀ⶄ盖餌"
+      },
+      "limits" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : 93109180000000000000000000.00
+              }
+            }
+          }
+        },
+        "since" : "+398339482-03-31T21:18:24.881541487+01:40:40"
+      }
+    }
+  },
+  {
+    "WeeklyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "胿馡醝켽ꦀᑰ럟㵙ḹ菜៾ꥢ恶蠢蛦Ｉ㰚认⇟ḵ魦⊜뷛෍놿Ꞻ଄悱࣪꡻햀纏辰᜝ᡱ꾲땲袤"
+      },
+      "limit" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : -1.73
+              }
+            }
+          }
+        },
+        "since" : "-735583701-01-29T07:41:23.522116172-12:30:40"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionUpdated" : {
+          "punterId" : {
+            "value" : "ີ㍢짍꺪⢤ꖭꉿ剭栒ꉰꂠ뢦艓Ẫ柱퉰꯻៸⺷ി小∛䍊륀䂀"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "붽"
+            },
+            "startedAt" : "+68656331-07-24T05:17:42.521289733+13:43:07",
+            "limitation" : {
+              "Limited" : {
+                "canBeActiveUntil" : "-560505814-10-30T03:26:07.809256051+04:18:11",
+                "coolOffUntil" : "+462628790-12-14T16:00:33.869606863-00:50:28"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionUpdated" : {
+      "punterId" : {
+        "value" : "ີ㍢짍꺪⢤ꖭꉿ剭栒ꉰꂠ뢦艓Ẫ柱퉰꯻៸⺷ി小∛䍊륀䂀"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "붽"
+        },
+        "startedAt" : "+68656331-07-24T05:17:42.521289733+13:43:07",
+        "limitation" : {
+          "Limited" : {
+            "canBeActiveUntil" : "-560505814-10-30T03:26:07.809256051+04:18:11",
+            "coolOffUntil" : "+462628790-12-14T16:00:33.869606863-00:50:28",
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "婾〇峛\u009b膚"
+          },
+          "activationPath" : {
+            "KBA" : {
+              
+            }
+          },
+          "verifiedAt" : "+224512400-04-21T23:31:49.011785806+04:03:45",
+          "phoenixVersion" : 1
+        }
+      },
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "婾〇峛\u009b膚"
+          },
+          "activationPath" : {
+            "KBA" : {
+              
+            }
+          },
+          "verifiedAt" : "+224512400-04-21T23:31:49.011785806+04:03:45"
+        }
+      }
+    ],
+    "PunterVerified" : {
+      "punterId" : {
+        "value" : "婾〇峛\u009b膚"
+      },
+      "activationPath" : {
+        "KBA" : {
+          
+        }
+      },
+      "verifiedAt" : "+224512400-04-21T23:31:49.011785806+04:03:45",
+      "verifiedBy" : null,
+      "phoenixVersion" : 1
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterUnsuspended" : {
+          "punterId" : {
+            "value" : "꒢ᓹ潗襢⢰⸊ⷁ竌틩Ⴑ࠮౻쿪ჾꜥ᪐Ṍ蹙"
+          },
+          "verifiedAt" : "+189063875-04-03T22:43:52.8448548+16:16:52"
+        }
+      }
+    ],
+    "PunterUnsuspended" : {
+      "punterId" : {
+        "value" : "꒢ᓹ潗襢⢰⸊ⷁ竌틩Ⴑ࠮౻쿪ჾꜥ᪐Ṍ蹙"
+      }
+    }
+  },
+  {
+    "PunterProfileCreated" : {
+      "punterId" : {
+        "value" : "폊䐮따م"
+      },
+      "depositLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.98
+              }
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : null
+          }
+        }
+      },
+      "stakeLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -19109555762120987056324461709170200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00
+              }
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : -0.41
+              }
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : 5312735677407596790.00
+              }
+            }
+          }
+        }
+      },
+      "sessionLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "nanos" : -910978419283753090
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "nanos" : -3967559047281584294
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : -6988946070508412594
+            }
+          }
+        }
+      },
+      "referralCode" : {
+        "value" : "ف嚠媰ﹺ"
+      },
+      "isTestAccount" : true
+    }
+  },
+  {
+    "SelfExclusionEnded" : {
+      "punterId" : {
+        "value" : "䪉ౠ툛竑ጬ䊓⼼싼"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionUpdated" : {
+          "punterId" : {
+            "value" : "탞ᙎ䉈㒜᭘㺹㥎࠳뀥㣋㘎୷╧谯皬䮋Ù짅킴沦෾丏ი쭯⛹絊钂齖⸍"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "뿛໗覬"
+            },
+            "startedAt" : "+31551797-07-28T20:29:11.371867975-10:58:17",
+            "limitation" : {
+              "Unlimited" : {
+                
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionUpdated" : {
+      "punterId" : {
+        "value" : "탞ᙎ䉈㒜᭘㺹㥎࠳뀥㣋㘎୷╧谯皬䮋Ù짅킴沦෾丏ი쭯⛹絊钂齖⸍"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "뿛໗覬"
+        },
+        "startedAt" : "+31551797-07-28T20:29:11.371867975-10:58:17",
+        "limitation" : {
+          "Unlimited" : {
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      }
+    }
+  },
+  {
+    "WeeklyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "鉄즓昿福Ⴘ嗯扲"
+      },
+      "limit" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "+463381905-03-06T07:37:00.472033404-05:01:36"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "苻饏㏜"
+          },
+          "activationPath" : {
+            "IDPV" : {
+              
+            }
+          },
+          "verifiedAt" : "+690131072-09-08T08:05:22.299473913-10:54:36",
+          "phoenixVersion" : 1
+        }
+      },
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "苻饏㏜"
+          },
+          "activationPath" : {
+            "IDPV" : {
+              
+            }
+          },
+          "verifiedAt" : "+690131072-09-08T08:05:22.299473913-10:54:36"
+        }
+      }
+    ],
+    "PunterVerified" : {
+      "punterId" : {
+        "value" : "苻饏㏜"
+      },
+      "activationPath" : {
+        "IDPV" : {
+          
+        }
+      },
+      "verifiedAt" : "+690131072-09-08T08:05:22.299473913-10:54:36",
+      "verifiedBy" : null,
+      "phoenixVersion" : 1
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffExclusionBegan" : {
+          "punterId" : {
+            "value" : "㪥肚⢸쮜禇쌅׾ඕ螺岻엟娏⡌匚숧ᨃ⾷ꡘ"
+          },
+          "coolOffPeriod" : {
+            "startTime" : "-565738733-03-01T17:17:06.152293367+07:04:25",
+            "endTime" : "-244573133-08-13T05:05:57.555151086-11:40:04"
+          },
+          "cause" : {
+            "SelfInitiated" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffExclusionBegan" : {
+      "punterId" : {
+        "value" : "㪥肚⢸쮜禇쌅׾ඕ螺岻엟娏⡌匚숧ᨃ⾷ꡘ"
+      },
+      "coolOffPeriod" : {
+        "startTime" : "-565738733-03-01T17:17:06.152293367+07:04:25",
+        "endTime" : "-244573133-08-13T05:05:57.555151086-11:40:04"
+      },
+      "cause" : {
+        "SelfInitiated" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "갗᥀⋰ꔉჍ玗뜙줊婍ᲃ䮤쎮㪒㳆珲၄殹⧠모ፓ㏞鏣콾鿠鰭軰秊୵稧"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "-735972982-05-09T12:08:14.775882496+09:18:32"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionUpdated" : {
+          "punterId" : {
+            "value" : "蟔쨟ꮪ쮊驕탹▦㮬톗﴿췆枟咺㏒蝱馵২쁾혫ꕏ餶塔ྷ델넱"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "謭뱙鿊ƀ均犎꘽互韁ᓞ"
+            },
+            "startedAt" : "-428060808-12-16T02:58:22.172867238+09:23:29",
+            "limitation" : {
+              "Limited" : {
+                "canBeActiveUntil" : "-250598514-12-27T23:46:24.332455363-00:13:01",
+                "coolOffUntil" : "-790223655-04-30T19:07:38.588438354+05:41:08"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionUpdated" : {
+      "punterId" : {
+        "value" : "蟔쨟ꮪ쮊驕탹▦㮬톗﴿췆枟咺㏒蝱馵২쁾혫ꕏ餶塔ྷ델넱"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "謭뱙鿊ƀ均犎꘽互韁ᓞ"
+        },
+        "startedAt" : "-428060808-12-16T02:58:22.172867238+09:23:29",
+        "limitation" : {
+          "Limited" : {
+            "canBeActiveUntil" : "-250598514-12-27T23:46:24.332455363-00:13:01",
+            "coolOffUntil" : "-790223655-04-30T19:07:38.588438354+05:41:08",
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffExclusionBegan" : {
+          "punterId" : {
+            "value" : "ꋇ䮚芇ᴛ"
+          },
+          "coolOffPeriod" : {
+            "startTime" : "-687891555-09-22T19:51:43.586200526+11:13:16",
+            "endTime" : "+100929670-11-22T13:10:27.956503129-11:26:45"
+          },
+          "cause" : {
+            "SessionLimitBreach" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffExclusionBegan" : {
+      "punterId" : {
+        "value" : "ꋇ䮚芇ᴛ"
+      },
+      "coolOffPeriod" : {
+        "startTime" : "-687891555-09-22T19:51:43.586200526+11:13:16",
+        "endTime" : "+100929670-11-22T13:10:27.956503129-11:26:45"
+      },
+      "cause" : {
+        "SessionLimitBreach" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "SelfExclusionBegan" : {
+      "punterId" : {
+        "value" : "䵊髚炩슂ṋ⽀뚲၌㶙硡팚墬㊽ꢪ䂙䎛螟ꁋ"
+      },
+      "selfExclusionOrigin" : {
+        "External" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "MonthlySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "ᯜ搶몌ཉ띹Ⱄᆫ장嘬뢕飉靶带㦃׉希ᶌⰁ輫颈咺➨埕၉ꅗ䒝ႋ䒹敏䆍쓼蛏ࢃ칞᤭अ㐿ẍ ᭱"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : null
+          }
+        },
+        "since" : "-504381878-11-08T00:16:16.704832675-06:29:14"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffExclusionBegan" : {
+          "punterId" : {
+            "value" : "᳜⻁㩬㗧蜥৊"
+          },
+          "coolOffPeriod" : {
+            "startTime" : "+60066974-06-14T12:07:53.041397217+11:15:06",
+            "endTime" : "+318861421-12-18T08:48:49.905204616-12:20:58"
+          },
+          "cause" : {
+            "SessionLimitBreach" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffExclusionBegan" : {
+      "punterId" : {
+        "value" : "᳜⻁㩬㗧蜥৊"
+      },
+      "coolOffPeriod" : {
+        "startTime" : "+60066974-06-14T12:07:53.041397217+11:15:06",
+        "endTime" : "+318861421-12-18T08:48:49.905204616-12:20:58"
+      },
+      "cause" : {
+        "SessionLimitBreach" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -7792225635578511252.00
+              }
+            }
+          }
+        },
+        "since" : "-513731162-11-30T05:48:27.586259765+12:40:35"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffEnded" : {
+          "punterId" : {
+            "value" : "ꅇ碼䒥毭祿➰쇄蓤푔녏螻ꣅ쪴ᕽぬ萯㩲㝔ㆩ盪묉"
+          },
+          "cause" : {
+            "SessionLimitBreach" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffEnded" : {
+      "punterId" : {
+        "value" : "ꅇ碼䒥毭祿➰쇄蓤푔녏螻ꣅ쪴ᕽぬ萯㩲㝔ㆩ盪묉"
+      },
+      "cause" : {
+        "SessionLimitBreach" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "WeeklyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "㠎드䮹ﲫ᪋"
+      },
+      "limit" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "-29206366-12-06T11:21:38.815878694-09:36:57"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffEnded" : {
+          "punterId" : {
+            "value" : "㑫鍃䋻埈﻿ॴ㮃霞럓Ń辸⢔珳鞑ꭐ籨ɕ짳㉈큥玍⸬᮫ྀ鯤ꌻ狽⟃"
+          },
+          "cause" : {
+            "SelfInitiated" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffEnded" : {
+      "punterId" : {
+        "value" : "㑫鍃䋻埈﻿ॴ㮃霞럓Ń辸⢔珳鞑ꭐ籨ɕ짳㉈큥玍⸬᮫ྀ鯤ꌻ狽⟃"
+      },
+      "cause" : {
+        "SelfInitiated" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffEnded" : {
+          "punterId" : {
+            "value" : "枤䶓郀뱟䌩㾛튳ᔲ쟒혮ꏣ耘ϋ추앭璜⚴扟艥묛"
+          },
+          "cause" : {
+            "SelfInitiated" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffEnded" : {
+      "punterId" : {
+        "value" : "枤䶓郀뱟䌩㾛튳ᔲ쟒혮ꏣ耘ϋ추앭璜⚴扟艥묛"
+      },
+      "cause" : {
+        "SelfInitiated" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "䢤葚섛化뛐ግ䯩떞邪㷒檭怱挌Ɑၾ超┮观柙⁃き貗骑㩡駯"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 1.00
+              }
+            }
+          }
+        },
+        "since" : "+255142544-08-13T22:00:35.076739735-00:48:05"
+      }
+    }
+  },
+  {
+    "PunterSuspended" : {
+      "punterId" : {
+        "value" : "粧ᓥ넱計㔧룀濍ᤫ䴖︙撳ꍉꇕퟟ멊⨩"
+      },
+      "entity" : {
+        "RegistrationIssue" : {
+          "details" : ""
+        }
+      },
+      "suspendedAt" : "-759873535-08-05T00:07:50.094505489-03:11:27"
+    }
+  },
+  {
+    "SelfExclusionBegan" : {
+      "punterId" : {
+        "value" : "⑂၃㑺ᶍ✗爍苾僚ප渰ᣪ꫆셄ⰵ钚꫿䗻呂ꉀ࿮珦樝䎌긗⒬ਰ椳蒘ꗨ"
+      },
+      "selfExclusionOrigin" : {
+        "External" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionUpdated" : {
+          "punterId" : {
+            "value" : "ນꊀ썩磗廆ઘ잲䀟瑚⓺ᤸꌚ䧢잔᎚嗟闷鲼ꗄ埯࣒㷪鰲▧"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : ""
+            },
+            "startedAt" : "+441741823-04-06T11:46:47.334650723-13:59:31",
+            "limitation" : {
+              "Limited" : {
+                "canBeActiveUntil" : "-17335342-05-27T08:27:28.487044116+13:03:06",
+                "coolOffUntil" : "-897557005-07-30T23:25:40.203221386+08:05:58"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionUpdated" : {
+      "punterId" : {
+        "value" : "ນꊀ썩磗廆ઘ잲䀟瑚⓺ᤸꌚ䧢잔᎚嗟闷鲼ꗄ埯࣒㷪鰲▧"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : ""
+        },
+        "startedAt" : "+441741823-04-06T11:46:47.334650723-13:59:31",
+        "limitation" : {
+          "Limited" : {
+            "canBeActiveUntil" : "-17335342-05-27T08:27:28.487044116+13:03:06",
+            "coolOffUntil" : "-897557005-07-30T23:25:40.203221386+08:05:58",
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "礣缒胇㐴攋䄞描홑"
+          },
+          "activationPath" : {
+            "Unknown" : {
+              
+            }
+          },
+          "verifiedAt" : "-790852330-01-14T16:52:18.816211664-16:11:26",
+          "phoenixVersion" : 1
+        }
+      },
+      {
+        "PunterVerified" : {
+          "punterId" : {
+            "value" : "礣缒胇㐴攋䄞描홑"
+          },
+          "verifiedAt" : "-790852330-01-14T16:52:18.816211664-16:11:26"
+        }
+      }
+    ],
+    "PunterVerified" : {
+      "punterId" : {
+        "value" : "礣缒胇㐴攋䄞描홑"
+      },
+      "activationPath" : {
+        "Unknown" : {
+          
+        }
+      },
+      "verifiedAt" : "-790852330-01-14T16:52:18.816211664-16:11:26",
+      "verifiedBy" : null,
+      "phoenixVersion" : 1
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "锥ﺈ椵἞跽ꆨ⫂퐶㌃퀚䟯ᵝ廰윋뼞຿╁ㄬﺙ觖"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 12828453497915076115648909257635980000000000000000000000.00
+              }
+            }
+          }
+        },
+        "since" : "-312750770-04-14T13:01:35.132726529-00:06:44"
+      }
+    }
+  },
+  {
+    "FailedMFAAttemptCounterIncremented" : {
+      "punterId" : {
+        "value" : "陼璦횪፣簠ꕚ퇊訦᭻鱊ḵ㬌냴︘㏸댎䚈㪓᤮ɚ葒Ŋ츘잝╀劬ᗝ宨耀췝詞똸ᕓ噧彻頖ꋰ씞詫퇵䴂䃓⣴৛襡⋆칷활ǈ⁃焌茌ߑꊴ톉㺨Ԭ⤹掍ặ㏔餎뜷ὠ쨀㟃亂튫闙⥃છ馚⷏쉍쟁먟"
+      }
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "를䚯萲۷铽版"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 2.09
+              }
+            }
+          }
+        },
+        "since" : "-471404893-06-17T07:10:57.999567492-04:35:24"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterUnsuspended" : {
+          "punterId" : {
+            "value" : "᪄纲뷤랞咣䍕⹹屪墄铵㳤⁪䗩㣘潮୼⊄둙廒ስ뛥뤪궨뫇욿뮼撡⣢ꖼ魖凶⤴"
+          },
+          "verifiedAt" : "-985099279-08-20T14:47:30.027855014-06:39:24"
+        }
+      }
+    ],
+    "PunterUnsuspended" : {
+      "punterId" : {
+        "value" : "᪄纲뷤랞咣䍕⹹屪墄铵㳤⁪䗩㣘潮୼⊄둙廒ስ뛥뤪궨뫇욿뮼撡⣢ꖼ魖凶⤴"
+      }
+    }
+  },
+  {
+    "SelfExclusionBegan" : {
+      "punterId" : {
+        "value" : "ﳜ垎޲딼쫩秢嶑胃莬嘩쥽焄♓濯罺㻶얍"
+      },
+      "selfExclusionOrigin" : {
+        "External" : {
+          
+        }
+      }
+    }
+  },
+  {
+    "LoginFailureCounterIncremented" : {
+      "punterId" : {
+        "value" : "若㍬쇮랗皁碛酊ဉ৘ꂖ쒜癖觰歊௞뭿芄踺溫ր⼝썘⠇괯夣㖧蕯扉ꚰ㋿嘲ད䝊葤Ɵ侃ꮠꓕ↓䆓⚌㏯뻈藬δ"
+      }
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "ﲘ䃊㉊сᥤ鸬帚䑈唌뱸捪痳梭৺꾁礂"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "since" : "-812134622-02-23T17:34:13.723714193+16:40:22"
+      }
+    }
+  },
+  {
+    "MonthlySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "릃㋂ꖛ伞緊장㕑ﯵ饅ꗹృ㈜킟ꯩ蚍殆띫㞑絛癣퓍곣쩽읞輪譮䚋씞帍 뢭⎁"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : -1
+            }
+          }
+        },
+        "since" : "+491813582-03-15T01:36:36.358417433-00:55:44"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionStarted" : {
+          "punterId" : {
+            "value" : "쵢╯湧娜㋮晛㷋﷯෼䆯ㇺ懄䃄ﮱ倈禮䙭䉚幠﷋"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "쨐ݹ"
+            },
+            "startedAt" : "-442009896-02-05T04:01:43.998061198-14:15:06",
+            "limitation" : {
+              "Unlimited" : {
+                
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionStarted" : {
+      "punterId" : {
+        "value" : "쵢╯湧娜㋮晛㷋﷯෼䆯ㇺ懄䃄ﮱ倈禮䙭䉚幠﷋"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "쨐ݹ"
+        },
+        "startedAt" : "-442009896-02-05T04:01:43.998061198-14:15:06",
+        "limitation" : {
+          "Unlimited" : {
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      },
+      "ipAddress": null
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "㺼꣡饼幡␳鳻馋鿇죠勘⭛囻㠘瀜ዶ愘蠋㢠㿔✆"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -1779959625300874594.00
+              }
+            }
+          }
+        },
+        "since" : "-76807277-01-04T02:15:39.888963478-13:05:42"
+      }
+    }
+  },
+  {
+    "LoginContextGotReset" : {
+      "punterId" : {
+        "value" : "Ꮁ泳몔抶噧↹땒ﯡ뜧ㅢ昦㹷榥䍆ᬛ㖻ᦪ徳ႃ诬堥镨㯊촷뱝\u0014끲঩旰䃇婁陋ᴿ쩸⩈椠ﻓꤏ酨ݦ䦟⊤晃䵹銫妈⦗嗒ꘈ廉䀮냥⾲ࣩ祖괴鑙埝屬敱澅೽ૈ漻ﯠ幆쫸臚ٰ쏁敀ፎꇓ逮夨"
+      }
+    }
+  },
+  {
+    "SelfExclusionBegan" : {
+      "punterId" : {
+        "value" : "﯉圊Ჿ尠"
+      },
+      "selfExclusionOrigin" : {
+        "Internal" : {
+          "duration" : {
+            "FiveYears" : {
+              
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "MonthlyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "풑ጺ羪钲핦癀炶겾ݟ靡儊츱㚪癩砧蜼Ά睺죬莶拠Ⴠ沧횢ങṎᒉꙞ⅘ꐻ䞰貳ⲔÉⷫ牚ᶖ輪뤧얌쾥儆"
+      },
+      "limits" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : -2.29
+              }
+            }
+          }
+        },
+        "since" : "-206325209-12-27T10:38:24.292733286-04:16:24"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterUnsuspended" : {
+          "punterId" : {
+            "value" : "갛꺓ﻗ䅁叜⻡虤ං潺鉅ᷲ频前锂癬ﳚ냥\u0090𧻓겁㉻꤭㶻믏굋妬ꡈ꼇嗉絓터蓴"
+          },
+          "verifiedAt" : "-807815094-04-20T12:40:23.145479582-02:12:18"
+        }
+      }
+    ],
+    "PunterUnsuspended" : {
+      "punterId" : {
+        "value" : "갛꺓ﻗ䅁叜⻡虤ං潺鉅ᷲ频前锂癬ﳚ냥\u0090𧻓겁㉻꤭㶻믏굋妬ꡈ꼇嗉絓터蓴"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionUpdated" : {
+          "punterId" : {
+            "value" : "늅ꕊ떄舮現䩬ꒈ㔎ࠏ襞ꞯ蛪饉卡쬆歟⡊ច濫엵췐갨ﱗ촚ٶ국辡ұ"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "싔焐䩛눶몧"
+            },
+            "startedAt" : "-255219952-02-06T10:45:22.158153214+13:20:31",
+            "limitation" : {
+              "Limited" : {
+                "canBeActiveUntil" : "+184220862-10-18T04:18:34.493083882-12:38:02",
+                "coolOffUntil" : "-316495811-11-06T18:06:29.364469311+01:19:23"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionUpdated" : {
+      "punterId" : {
+        "value" : "늅ꕊ떄舮現䩬ꒈ㔎ࠏ襞ꞯ蛪饉卡쬆歟⡊ច濫엵췐갨ﱗ촚ٶ국辡ұ"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "싔焐䩛눶몧"
+        },
+        "startedAt" : "-255219952-02-06T10:45:22.158153214+13:20:31",
+        "limitation" : {
+          "Limited" : {
+            "canBeActiveUntil" : "+184220862-10-18T04:18:34.493083882-12:38:02",
+            "coolOffUntil" : "-316495811-11-06T18:06:29.364469311+01:19:23",
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      }
+    }
+  },
+  {
+    "SelfExclusionBegan" : {
+      "punterId" : {
+        "value" : "遛늀쌳⨔拫媄㘃棰種赝媃㢊哂ߙ籯把Ⱳꑘ"
+      },
+      "selfExclusionOrigin" : {
+        "Internal" : {
+          "duration" : {
+            "OneYear" : {
+              
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "DailyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "哈讠ሚ㏖㢷㰶垶蟩顒捽䇼愡쑭Ȏ覥퀩ᅂ沔픥캣ృ跲뵏恒ጇ普變揧갩㒧샜⋉뷄ꈑ鈑諾䣇에ꈃ폦⨆ࣣ"
+      },
+      "limits" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -21279741980708627407499616009728466540000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00
+              }
+            }
+          }
+        },
+        "since" : "+163441086-12-19T07:33:14.772228601+07:05:54"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "CoolOffExclusionBegan" : {
+          "punterId" : {
+            "value" : "쉯ꄴ瘽撲笸ׯ硎㠯缤"
+          },
+          "coolOffPeriod" : {
+            "startTime" : "-414078866-09-05T17:01:57.411155058-16:07:39",
+            "endTime" : "-420810962-02-18T16:53:30.150062251-11:35:50"
+          },
+          "cause" : {
+            "SelfInitiated" : {
+              
+            }
+          }
+        }
+      }
+    ],
+    "CoolOffExclusionBegan" : {
+      "punterId" : {
+        "value" : "쉯ꄴ瘽撲笸ׯ硎㠯缤"
+      },
+      "coolOffPeriod" : {
+        "startTime" : "-414078866-09-05T17:01:57.411155058-16:07:39",
+        "endTime" : "-420810962-02-18T16:53:30.150062251-11:35:50"
+      },
+      "cause" : {
+        "SelfInitiated" : {
+          
+        }
+      },
+      "refreshTokenTimeout" : null
+    }
+  },
+  {
+    "LoginFailureCounterIncremented" : {
+      "punterId" : {
+        "value" : "⍃銺羡瘡ዌ벷⨕梹딌呶몫ꚺᡈꂮ킘芥ԗ퇊蛑"
+      }
+    }
+  },
+  {
+    "PunterSuspended" : {
+      "punterId" : {
+        "value" : "저໏ࢁ餝턐痙ත켻꯯螽䅨䫥묈渄锳匡ꐴ紦"
+      },
+      "entity" : {
+        "OperatorSuspend" : {
+          "details" : "粑就恪䐐誐㿿軧欙陋薮욂ꘖ䆼䗶掠ᬋ帱膚ᦸ嫎粵ᬸ"
+        }
+      },
+      "suspendedAt" : "-205160157-03-17T09:59:51.899688221+05:52:32"
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "珓ຼ⇓䫣ⅸ飒覣妯ᚕ娾㧚"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -9125865759696419383.00
+              }
+            }
+          }
+        },
+        "since" : "+991477758-06-25T06:22:01.250410683-07:10:30"
+      }
+    }
+  },
+  {
+    "MonthlyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "᮪䆫煝곥\"굹蒧솺ꈊꪗ햰Ĺ쑝糋ꚝໂ뷰竆怤옗樉檣﷔뚯㦋傁灝ꭽ僦"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : -9147016629461150095.00
+              }
+            }
+          }
+        },
+        "since" : "+714296414-01-13T02:32:06.937942961+13:58:26"
+      }
+    }
+  },
+  {
+    "PunterSuspended" : {
+      "punterId" : {
+        "value" : "⛪䟲땅햩"
+      },
+      "entity" : {
+        "OperatorSuspend" : {
+          "details" : "뵌꣢亅꣯"
+        }
+      },
+      "suspendedAt" : "-425697976-08-22T15:50:54.626125886+14:44:15"
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionStarted" : {
+          "punterId" : {
+            "value" : "楟ꁒ嬙퀸黠㏭텼莮덲灎䧧Ğ褙盚⥖馣ꬔ毄쟈똃켔逗㣗뽢ÿ褋鷶饂㢡픺鿁ᙊ乪䱭檏蓅你"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "薰蜃﹃"
+            },
+            "startedAt" : "+29090373-02-12T20:48:23.795425202+00:51:44",
+            "limitation" : {
+              "Unlimited" : {
+                
+              }
+            }
+          },
+          "ipAddress" : null
+        }
+      }
+    ],
+    "SessionStarted" : {
+      "punterId" : {
+        "value" : "楟ꁒ嬙퀸黠㏭텼莮덲灎䧧Ğ褙盚⥖馣ꬔ毄쟈똃켔逗㣗뽢ÿ褋鷶饂㢡픺鿁ᙊ乪䱭檏蓅你"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "薰蜃﹃"
+        },
+        "startedAt" : "+29090373-02-12T20:48:23.795425202+00:51:44",
+        "limitation" : {
+          "Unlimited" : {
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      },
+      "ipAddress": null
+    }
+  },
+  {
+    "PunterSuspended" : {
+      "punterId" : {
+        "value" : "İ䵳嗚易㡖邀鄦鹒"
+      },
+      "entity" : {
+        "RegistrationIssue" : {
+          "details" : "蜛蔀ꮥ೩ꀄ‍똄"
+        }
+      },
+      "suspendedAt" : "-206732335-04-30T03:06:53.439411638+05:05:38"
+    }
+  },
+  {
+    "SelfExclusionBegan" : {
+      "punterId" : {
+        "value" : "榖ᎈᤞ浈骲灃鳆諒㣔襱㨹⁰ٽƟ㔝鵧"
+      },
+      "selfExclusionOrigin" : {
+        "Internal" : {
+          "duration" : {
+            "OneYear" : {
+              
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "SessionUpdated" : {
+          "punterId" : {
+            "value" : "绘韸༮誄꣗혦洗辈昰帐쩖㪸랉䌕᛻潉⃣Ỳ蓁槣﹧視䭯"
+          },
+          "session" : {
+            "sessionId" : {
+              "value" : "ዡ렓賔䡆ﭧ琪住"
+            },
+            "startedAt" : "-113723334-10-14T05:29:22.565465381-13:50:08",
+            "limitation" : {
+              "Limited" : {
+                "canBeActiveUntil" : "-962908923-02-27T16:59:35.828368876+12:54:08",
+                "coolOffUntil" : "-342814209-06-21T17:08:23.600318044-13:01:36"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "SessionUpdated" : {
+      "punterId" : {
+        "value" : "绘韸༮誄꣗혦洗辈昰帐쩖㪸랉䌕᛻潉⃣Ỳ蓁槣﹧視䭯"
+      },
+      "session" : {
+        "sessionId" : {
+          "value" : "ዡ렓賔䡆ﭧ琪住"
+        },
+        "startedAt" : "-113723334-10-14T05:29:22.565465381-13:50:08",
+        "limitation" : {
+          "Limited" : {
+            "canBeActiveUntil" : "-962908923-02-27T16:59:35.828368876+12:54:08",
+            "coolOffUntil" : "-342814209-06-21T17:08:23.600318044-13:01:36",
+            "refreshTokenTimeout" : "+999999999-12-31T23:59:59.999999999-18:00",
+            "phoenixVersion" : 1
+          }
+        },
+        "ipAddress": null
+      }
+    }
+  },
+  {
+    "WeeklySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "Ჾ䪈䤇Ỏ⌏ۨ馣㉉闆售阱᧑ׇ춽簏"
+      },
+      "limit" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "nanos" : 7468315861375186247
+            }
+          }
+        },
+        "since" : "-518271248-01-27T14:14:32.122474032+14:11:55"
+      }
+    }
+  },
+  {
+    "MonthlySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "铇ؚ鱫⤝ﲃ湜ꨉၜ鉊讛뷭洩뭰鯷픢桔ꢦ젹稆"
+      },
+      "limit" : {
+        "limit" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : 1
+            }
+          }
+        },
+        "since" : "-415996702-11-06T00:02:07.102246348+09:02:26"
+      }
+    }
+  },
+  {
+    "DailyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "ꢱࠂ큹ᡝ킎ꭋ踊ꈦ㽪౶搱舳痌㓕봱듪敺葸ꗙꝴᏆ弉쁥蹭㯡鵌䅙纊ﾻ퇊"
+      },
+      "limits" : {
+        "limit" : {
+          "Daily" : {
+            "value" : null
+          }
+        },
+        "since" : "+871853793-11-05T19:39:31.590499994+16:42:30"
+      }
+    }
+  },
+  {
+    "_old_versions_" : [
+      {
+        "PunterUnsuspended" : {
+          "punterId" : {
+            "value" : "⠋▄ﯴ詺"
+          },
+          "verifiedAt" : "-97547058-09-30T01:36:36.265798258-06:06:53"
+        }
+      }
+    ],
+    "PunterUnsuspended" : {
+      "punterId" : {
+        "value" : "⠋▄ﯴ詺"
+      }
+    }
+  },
+  {
+    "DailyDepositLimitChanged" : {
+      "punterId" : {
+        "value" : "㙅೬ሻᓋ눵썾ੵ䮍"
+      },
+      "limit" : {
+        "limit" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : -1.00
+              }
+            }
+          }
+        },
+        "since" : "-695727512-09-13T13:03:12.73062422+13:19:49"
+      }
+    }
+  },
+  {
+    "WeeklyStakeLimitChanged" : {
+      "punterId" : {
+        "value" : "ⱘ濕ܮ凳宧⧢솈뇯ꀪⅱ襋已ﮜ웫缴쬤텰슲炞"
+      },
+      "limits" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : null
+          }
+        },
+        "since" : "-173932120-12-31T17:57:38.213104592-03:26:45"
+      }
+    }
+  },
+  {
+    "WeeklySessionLimitChanged" : {
+      "punterId" : {
+        "value" : "遲惓㛩"
+      },
+      "limit" : {
+        "limit" : {
+          "Weekly" : {
+            "value" : {
+              "nanos" : -9223372036854775808
+            }
+          }
+        },
+        "since" : "-825466823-01-24T07:32:01.39725402-08:59:54"
+      }
+    }
+  },
+  {
+    "PunterProfileCreated" : {
+      "punterId" : {
+        "value" : "䵖业ꦊ伙《쪿㒡槵孥筞潗"
+      },
+      "depositLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.19
+              }
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : 0.00
+              }
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : 627355112640411279308859173536944839040000000000000000000000000.00
+              }
+            }
+          }
+        }
+      },
+      "stakeLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "value" : {
+                "amount" : 1.00
+              }
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "value" : {
+                "amount" : -0.44
+              }
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "value" : {
+                "amount" : -0.32
+              }
+            }
+          }
+        }
+      },
+      "sessionLimits" : {
+        "daily" : {
+          "Daily" : {
+            "value" : {
+              "nanos" : 0
+            }
+          }
+        },
+        "weekly" : {
+          "Weekly" : {
+            "value" : {
+              "nanos" : -957481548219555112
+            }
+          }
+        },
+        "monthly" : {
+          "Monthly" : {
+            "value" : {
+              "nanos" : -6293682135501457993
+            }
+          }
+        }
+      },
+      "referralCode" : {
+        "value" : "㴖䲝"
+      },
+      "isTestAccount" : true
+    }
+  }
+]

@@ -1,0 +1,28 @@
+
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+namespace: argocd
+resources:
+  - ecr-docker-credentials-renewer.yaml
+  - phoenix-backend.yaml
+  - phoenix-ui-office.yaml
+  - phoenix-ui-app-darkstormlabs.yaml
+  - phoenix-keycloak.yaml
+patches:
+  - path: common.yaml
+    target:
+      kind: Application
+  - path: success-notifications-prod.yaml
+    target:
+      kind: Application
+      name: phoenix-ui-office
+  - path: success-notifications-prod.yaml
+    target:
+      kind: Application
+      name: phoenix-ui-app-darkstormlabs
+  - path: success-notifications-prod.yaml
+    target:
+      kind: Application
+      name: phoenix-backend
+commonLabels:
+  env: outpost-prd

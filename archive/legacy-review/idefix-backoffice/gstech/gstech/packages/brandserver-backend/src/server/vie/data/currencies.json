@@ -1,0 +1,46 @@
+[
+  {
+    "CurrencyISO": "EUR",
+    "CurrencySymbol": "€"
+  },
+  {
+    "CurrencyISO": "INR",
+    "CurrencySymbol": "₹"
+  },
+  {
+    "CurrencyISO": "NOK",
+    "CurrencySymbol": "kr"
+  },
+  {
+    "CurrencyISO": "SEK",
+    "CurrencySymbol": "kr"
+  },
+  {
+    "CurrencyISO": "GBP",
+    "CurrencySymbol": "£"
+  },
+  {
+    "CurrencyISO": "USD",
+    "CurrencySymbol": "$"
+  },
+  {
+    "CurrencyISO": "CAD",
+    "CurrencySymbol": "C$"
+  },
+  {
+    "CurrencyISO": "NZD",
+    "CurrencySymbol": "NZ$"
+  },
+  {
+    "CurrencyISO": "BRL",
+    "CurrencySymbol": "R$"
+  },
+  {
+    "CurrencyISO": "CLP",
+    "CurrencySymbol": "$"
+  },
+  {
+    "CurrencyISO": "PEN",
+    "CurrencySymbol": "S/"
+  }
+]

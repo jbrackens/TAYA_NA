@@ -1,0 +1,9 @@
+.DS_Store
+.classpath
+.project
+.settings/
+dependency-reduced-pom.xml
+sbtech-create-all.sql
+sbtech-drop-all.sql
+target/
+

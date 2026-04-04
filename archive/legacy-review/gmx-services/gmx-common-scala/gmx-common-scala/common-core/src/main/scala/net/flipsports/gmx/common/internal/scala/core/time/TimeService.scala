@@ -1,0 +1,8 @@
+package net.flipsports.gmx.common.internal.scala.core.time
+
+import java.time.{ Clock, LocalDateTime }
+
+class TimeService(val clock: Clock) {
+  def getCurrentTime: LocalDateTime = LocalDateTime.ofInstant(clock.instant(), clock.getZone)
+
+}

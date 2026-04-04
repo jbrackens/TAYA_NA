@@ -1,0 +1,19 @@
+<odds_change timestamp="1604863214564" event_id="od:match:19816" product="1" request_id="14526">
+    <sport_event_status home_score="0" away_score="4242" status="1" scoreboard_available="false" match_status="51">
+        <period_scores>
+            <period_score type="map" number="1" match_status_code="51" home_score="0" away_score="0"></period_score>
+            <period_score type="map" number="2" match_status_code="52" home_score="0" away_score="0"></period_score>
+            <period_score type="map" number="3" match_status_code="53" home_score="0" away_score="0"></period_score>
+        </period_scores>
+    </sport_event_status>
+    <odds>
+        <market id="27" specifiers="threshold=36|map=3" status="-1">
+            <outcome id="5" active="0"></outcome>
+            <outcome id="4" active="0"></outcome>
+        </market>
+        <market id="31" specifiers="map=1" status="1">
+            <outcome id="7" odds="1.15" active="0"></outcome>
+            <outcome id="6" odds="4.62" active="1"></outcome>
+        </market>
+    </odds>
+</odds_change>

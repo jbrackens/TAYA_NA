@@ -1,0 +1,24 @@
+nameOverride: "prod-affmore-client-service"
+fullnameOverride: "prod-affmore-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3050
+
+ingress:
+  enabled: false
+
+env:
+  NODE_ENV: production
+  ENDPOINT: http://prod-affmore-backend-service/api/v1

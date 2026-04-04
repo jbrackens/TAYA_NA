@@ -1,0 +1,193 @@
+[
+  {
+    "namespace": "stella.dataapi.achievement",
+    "name": "EventFieldConfiguration",
+    "type": "record",
+    "fields": [
+      {
+        "name": "fieldName",
+        "type": "string"
+      },
+      {
+        "name": "operationType",
+        "type": {
+          "name": "OperationType",
+          "type": "enum",
+          "symbols": [
+            "REPLACE_FROM",
+            "STATIC"
+          ]
+        }
+      },
+      {
+        "name": "aggregationRuleId",
+        "type": [
+          "null",
+          "string"
+        ],
+        "logicalType": "uuid"
+      },
+      {
+        "name": "value",
+        "type": "string"
+      }
+    ]
+  },
+  {
+    "namespace": "stella.dataapi.achievement",
+    "name": "AchievementConfiguration",
+    "type": "record",
+    "fields": [
+      {
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "name": "triggerBehaviour",
+        "type": {
+          "name": "AchievementTriggerBehaviour",
+          "type": "enum",
+          "symbols": [
+            "ALWAYS",
+            "ONLY_ONCE"
+          ],
+          "default": "ONLY_ONCE"
+        }
+      },
+      {
+        "name": "actionType",
+        "type": {
+          "name": "ActionType",
+          "type": "enum",
+          "symbols": [
+            "EVENT",
+            "WEBHOOK"
+          ]
+        }
+      },
+      {
+        "name": "webhookConfiguration",
+        "type": [
+          "null",
+          {
+            "name": "WebhookConfiguration",
+            "type": "record",
+            "fields": [
+              {
+                "name": "requestType",
+                "type": {
+                  "name": "RequestType",
+                  "type": "enum",
+                  "symbols": [
+                    "GET",
+                    "POST",
+                    "PUT",
+                    "PATCH",
+                    "DELETE"
+                  ]
+                }
+              },
+              {
+                "name": "url",
+                "type": "string"
+              },
+              {
+                "name": "webhookEventConfiguration",
+                "type": [
+                  "null",
+                  {
+                    "name": "WebhookEventConfiguration",
+                    "type": "record",
+                    "fields": [
+                      {
+                        "name": "eventId",
+                        "type": "string",
+                        "logicalType": "uuid"
+                      },
+                      {
+                        "name": "fields",
+                        "type": {
+                          "type": "array",
+                          "items": "EventFieldConfiguration"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "eventConfiguration",
+        "type": [
+          "null",
+          {
+            "name": "EventConfiguration",
+            "type": "record",
+            "fields": [
+              {
+                "name": "eventId",
+                "type": "string",
+                "logicalType": "uuid"
+              },
+              {
+                "name": "fields",
+                "type": {
+                  "type": "array",
+                  "items": "EventFieldConfiguration"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "conditions",
+        "type": {
+          "type": "array",
+          "items": {
+            "name": "AchievementCondition",
+            "type": "record",
+            "fields": [
+              {
+                "name": "aggregationRuleId",
+                "type": "string",
+                "logicalType": "uuid"
+              },
+              {
+                "name": "aggregationField",
+                "type": "string"
+              },
+              {
+                "name": "conditionType",
+                "type": {
+                  "name": "ConditionType",
+                  "type": "enum",
+                  "symbols": [
+                    "EQ",
+                    "NEQ",
+                    "LT",
+                    "LE",
+                    "GT",
+                    "GE",
+                    "NN"
+                  ]
+                }
+              },
+              {
+                "name": "value",
+                "type": [
+                  "null",
+                  "string"
+                ],
+                "default": null
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

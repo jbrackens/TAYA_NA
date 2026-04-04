@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<nodes>
+  <gc_transaction>28f991bea693c358</gc_transaction>
+  <error_code>0</error_code>
+  <error_message></error_message>
+  <geolocate_in>1800</geolocate_in>
+  <conn_type>mobile</conn_type>
+  <mac_address>B8:5E:7B:0D:D5:DD</mac_address>
+  <ip ipaddress="31.71.218.55" proxyscore="33" lat="51.6667" lon="-0.0667" acc="85295.2"
+    country_code="GB" country="United Kingdom" region_code="" region="Enfield" city="Enfield"
+    err="0"/>
+  <wifi lat="36.0147" lon="-115.065" acc="168" country_code="US" country="United States"
+    region_code="US-NV" region="Nevada" city="Henderson" street="South Valle Verde Drive"
+    err="0" secondary="1"/>
+  <gps lat="36.0076" lon="-115.059" acc="5" country_code="US" country="United States"
+    region_code="US-NV" region="Nevada" city="Henderson" street="Tangiers Drive" err="0"
+    primary="1" dist_to_border="69532.5"/>
+  <gsm lat="36.0147" lon="-115.065" acc="1296" country_code="US" country="United States"
+    region_code="US-NV" region="Nevada" city="Henderson" street=" South Valle Verde Drive"
+    err="0"/>
+  <user_id>Test User</user_id>
+  <reason>Login</reason>
+  <custom_fields>
+    <custom_field id="session_key">75CEFB6E</custom_field>
+  </custom_fields>
+  <timestamp>2016-10-13T15:47:54.725Z</timestamp>
+</nodes>

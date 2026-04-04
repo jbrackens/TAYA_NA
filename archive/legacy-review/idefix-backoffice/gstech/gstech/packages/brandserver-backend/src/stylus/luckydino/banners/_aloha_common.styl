@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$aloha_common_flowers_name = 'aloha_common_flowers';
+$aloha_common_flowers_x = 529px;
+$aloha_common_flowers_y = 0px;
+$aloha_common_flowers_offset_x = -529px;
+$aloha_common_flowers_offset_y = 0px;
+$aloha_common_flowers_width = 131px;
+$aloha_common_flowers_height = 226px;
+$aloha_common_flowers_total_width = 660px;
+$aloha_common_flowers_total_height = 299px;
+$aloha_common_flowers_image = 'aloha_common_b.png';
+$aloha_common_flowers = 529px 0px -529px 0px 131px 226px 660px 299px 'aloha_common_b.png' 'aloha_common_flowers';
+$aloha_common_logo_name = 'aloha_common_logo';
+$aloha_common_logo_x = 205px;
+$aloha_common_logo_y = 0px;
+$aloha_common_logo_offset_x = -205px;
+$aloha_common_logo_offset_y = 0px;
+$aloha_common_logo_width = 320px;
+$aloha_common_logo_height = 187px;
+$aloha_common_logo_total_width = 660px;
+$aloha_common_logo_total_height = 299px;
+$aloha_common_logo_image = 'aloha_common_b.png';
+$aloha_common_logo = 205px 0px -205px 0px 320px 187px 660px 299px 'aloha_common_b.png' 'aloha_common_logo';
+$aloha_common_tiki_name = 'aloha_common_tiki';
+$aloha_common_tiki_x = 0px;
+$aloha_common_tiki_y = 0px;
+$aloha_common_tiki_offset_x = 0px;
+$aloha_common_tiki_offset_y = 0px;
+$aloha_common_tiki_width = 201px;
+$aloha_common_tiki_height = 299px;
+$aloha_common_tiki_total_width = 660px;
+$aloha_common_tiki_total_height = 299px;
+$aloha_common_tiki_image = 'aloha_common_b.png';
+$aloha_common_tiki = 0px 0px 0px 0px 201px 299px 660px 299px 'aloha_common_b.png' 'aloha_common_tiki';
+$spritesheet_width = 660px;
+$spritesheet_height = 299px;
+$spritesheet_image = 'aloha_common_b.png';
+$spritesheet_sprites = $aloha_common_flowers $aloha_common_logo $aloha_common_tiki;
+$spritesheet = 660px 299px 'aloha_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

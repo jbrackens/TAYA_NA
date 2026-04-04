@@ -1,0 +1,1390 @@
+{
+  "namespace": "com.betconstruct.avro.enigma.internal",
+  "type": "record",
+  "name": "Enigma",
+  "fields": [
+    {
+      "name": "clientId",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "clientDetailsType",
+      "doc": "ClientDetails Payload descriptor",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "clientDetailsPayload",
+      "doc": "Customer personal information",
+      "type": [
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "ClientDetails",
+          "fields": [
+            {
+              "name": "id",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "registrationSource",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "name",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "currencyId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "regionId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "language",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "partnerId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "modified",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "ClientDetailsInLogin",
+          "fields": [
+
+            {
+              "name": "id",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "partnerId",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "currencyId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "name",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "regionId",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "gender",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "docNumber",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "address",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "email",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "language",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "phone",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "birthDate",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "city",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "isLocked",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isSubscribedToNewsletter",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isSubscribeToSMS",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isSubscribeToPushNotification",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isSubscribeToPhoneCall",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isSubscribeToInternalMessage",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isSubscribeToEmail",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "modified",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "iVerified",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isTest",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isResident",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "registrationSource",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "isCasinoBlocked",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "status",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "isRMTBlocked",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "nickName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "mobilePhone",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "promoCode",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "bTag",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "clientVerificationDate",
+              "type": [
+                "null",
+                {
+                  "type": "long",
+                  "connect.version": 1,
+                  "connect.name": "org.apache.kafka.connect.data.Timestamp"
+                }
+              ],
+              "default": null
+            },
+            {
+              "name": "termsAndConditionsVersion",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "tCVersionAcceptanceDate",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "tCVersionAcceptanceLocalDate",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "zipCode",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "iBAN",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "swiftCode",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "activationState",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "bankName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "birthCity",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "birthDepartment",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "birthRegionCode2",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "birthRegionId",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "countryName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "creditLimit",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "docIssueCode",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "docIssueDate",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "docIssuedBy",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "province",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "isUsingCredit",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "title",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "externalId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "description": "Unique external client id"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "messageType",
+      "doc": "Message Payload descriptor",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "message",
+      "doc": "Customers messages",
+      "type": [
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "FinanceTransaction",
+          "fields": [
+            {
+              "name": "clientId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "amount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "typeId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "currencyId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "state",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "transactionDate",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "modified",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "paymentSystemId",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "paymentSystemName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "transactionId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "clientTransactionCount",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "CasinoTransaction",
+          "fields": [
+            {
+              "name": "clientId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "partnerId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "sourceName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "betId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "typeId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "parentTransactionId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "currencyId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "gameId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "gameProductId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "gameProviderId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "gameName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "productName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "productProviderName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "betAmount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "winAmount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "SportsbookTransaction",
+          "fields": [
+            {
+              "name": "clientId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "betId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "betState",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null,
+              "description": "The state of Bet"
+            },
+            {
+              "name": "currencyId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "isBonus",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "isLive",
+              "type": [
+                "null",
+                "boolean"
+              ],
+              "default": null
+            },
+            {
+              "name": "amount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "bonusAmount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "bonusWinAmount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null,
+              "description": "Bet Wager Bonus Win amount funds in native currency"
+            },
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "sourceName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "winAmount",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "cashDeskId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "type",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null,
+              "description": "Type Id of the bet"
+            },
+            {
+              "name": "typeName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null,
+              "description": "Type name of the bet. Single or Multiple"
+            },
+            {
+              "name": "selections",
+              "type": [
+                "null",
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "record",
+                    "name": "Selection",
+                    "namespace": "com.betconstruct.avro.enigma.internal",
+                    "fields": [
+                      {
+                        "name": "id",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "stake",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "price",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null,
+                        "description": "Price of bet selection"
+                      },
+                      {
+                        "name": "handicap",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null,
+                        "description": "Handicap of bet selection"
+                      },
+                      {
+                        "name": "sportId",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "sportName",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "state",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "winning",
+                        "type": [
+                          "null",
+                          "double"
+                        ],
+                        "default": null
+                      },
+                      {
+                        "name": "marketId",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null,
+                        "description": "Market Id"
+                      },
+                      {
+                        "name": "marketName",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null,
+                        "description": "Market name"
+                      },
+                      {
+                        "name": "name",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null,
+                        "description": "Selection name"
+                      },
+                      {
+                        "name": "competitionId",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null,
+                        "description": "Competition Id"
+                      },
+                      {
+                        "name": "competitionName",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null,
+                        "description": "Competition name"
+                      },
+                      {
+                        "name": "matchId",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null,
+                        "description": "Match id"
+                      },
+                      {
+                        "name": "matchName",
+                        "type": [
+                          "null",
+                          "string"
+                        ],
+                        "default": null,
+                        "description": "Match name"
+                      },
+                      {
+                        "name": "matchStartTime",
+                        "type": [
+                          "null",
+                          "long"
+                        ],
+                        "default": null,
+                        "description": "Date and time when match starts by UTC timezone."
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "WalletBalance",
+          "fields": [
+            {
+              "name": "clientId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "preliminaryBalance",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "balance",
+              "type": [
+                "null",
+                "double"
+              ],
+              "default": null
+            },
+            {
+              "name": "currencyId",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "ClientRegistration",
+          "fields": [
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "clientId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "sourceName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "ClientLogin",
+          "fields": [
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "loginIp",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "sessionId",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "sourceName",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "ClientSelfExcluded",
+          "fields": [
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"
+              ],
+              "default": null
+            },
+            {
+              "name": "clientId",
+              "type": [
+                "null",
+                "int"
+              ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "BonusUsage",
+          "fields": [    {
+            "name": "clientId",
+            "type": [
+              "null",
+              "long" ],
+            "default": null
+          },
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string" ],
+              "default": null
+            },
+            {
+              "name": "bonusAmount",
+              "type": [
+                "null",
+                "double" ],
+              "default": null
+            },
+            {
+              "name": "betId",
+              "type": [
+                "null",
+                "long" ],
+              "default": null
+            },
+            {
+              "name": "bonusType",
+              "type": [
+                "null",
+                "string" ],
+              "default": null
+            },
+            {
+              "name": "bonusId",
+              "type": [
+                "null",
+                "long" ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "namespace": "com.betconstruct.avro.enigma.internal",
+          "type": "record",
+          "name": "BonusAccepted",
+          "fields": [    {
+            "name": "clientId",
+            "type": [
+              "null",
+              "long" ],
+            "default": null
+          },
+            {
+              "name": "bonusId",
+              "type": [
+                "null",
+                "long" ],
+              "default": null
+            },
+            {
+              "name": "created",
+              "type": [
+                "null",
+                "long"],
+              "default": null
+            },
+            {
+              "name": "transactionId",
+              "type": [
+                "null",
+                "long" ],
+              "default": null
+            },
+            {
+              "name": "acceptanceDate",
+              "type": [
+                "null",
+                "long"],
+              "default": null
+            },
+            {
+              "name": "amount",
+              "type": [
+                "null",
+                "double" ],
+              "default": null
+            },
+            {
+              "name": "serviceInfo",
+              "type": [
+                "null",
+                "string" ],
+              "default": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

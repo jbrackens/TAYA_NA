@@ -1,0 +1,3 @@
+[submodule "gmx_nifi_rest/gmx-avro-schema"]
+	path = gmx_nifi_rest/gmx-avro-schema
+	url = git@github.com:flipadmin/gmx-avro-schema.git

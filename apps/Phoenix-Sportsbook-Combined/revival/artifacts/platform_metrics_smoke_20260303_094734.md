@@ -1,0 +1,6 @@
+# Metrics Smoke Check (2026-03-03)
+
+| Service | URL | Result | Detail |
+|---|---|---|---|
+| gateway | http://127.0.0.1:18083/metrics | pass | metrics lines present |
+| auth | http://127.0.0.1:18082/metrics | pass | metrics lines present |

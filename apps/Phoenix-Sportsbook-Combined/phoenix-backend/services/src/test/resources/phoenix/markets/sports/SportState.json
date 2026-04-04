@@ -1,0 +1,5409 @@
+[
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "쀘榽徿⤣戽丌༃",
+      "abbreviation" : "䡱㯋英",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "魍䶘"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "䕍쉳㰝"
+          },
+          "name" : "턅呒",
+          "startTime" : "-427396380-01-11T21:04:34.69399421+10:26:37",
+          "currentScore" : {
+            "home" : -1,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ਖ਼"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㸴"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꑔ᷉昚"
+          },
+          "name" : "믘澌",
+          "startTime" : "+247622927-02-18T09:36:27.980676042+05:12:11",
+          "currentScore" : {
+            "home" : -63968839,
+            "away" : 1613646650
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "꫺",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "쇸"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ㆂ皴"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "婄䭻"
+          },
+          "name" : "",
+          "startTime" : "-984103089-03-07T06:13:29.056718072+15:51:49",
+          "currentScore" : {
+            "home" : 692577708,
+            "away" : 1420682645
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "㎺벽ꅐ镚䣽岜"
+          },
+          "name" : "",
+          "startTime" : "-429193154-09-08T10:05:16.293023645+12:46:51"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "犘"
+          },
+          "name" : "ⴎꠅᛝ⭖",
+          "startTime" : "-492772050-07-02T13:12:05.626299361+08:10:48"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "뫘귶ਠ螶"
+          },
+          "name" : "梁艡艐嚰ﻳ舯",
+          "startTime" : "+20918515-09-28T02:55:57.454202524-07:25:57"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⳨틙媬䒝"
+          },
+          "name" : "㌉攽",
+          "startTime" : "-57208304-08-15T20:10:35.962808181+03:48:46"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "湅⿑ᢞ譨⦙"
+          },
+          "name" : "䦩衝ᄑ⫊汬",
+          "startTime" : "-749624310-08-07T02:32:21.94706528+12:32:47"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "砥䃹"
+          },
+          "name" : "㹏泖簻搳Ӯ时",
+          "startTime" : "-596482187-06-26T05:05:33.058765421+09:44:50"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "鹱댥"
+          },
+          "name" : "뫽퍅噴俁騥썮➛",
+          "startTime" : "+743385341-03-17T13:35:35.179648025+13:53:01"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "વ랎"
+          },
+          "name" : "ᗆꟖ㽙屋ओ䴫",
+          "startTime" : "-779355520-07-12T01:26:43.453209367+12:11:32"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㲡뾳ꒆદ䥝ꍸ"
+          },
+          "name" : "콿矖詔䉹퀧",
+          "startTime" : "-503787645-04-18T01:26:21.234906431+07:50:54"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "᧔{䑾黣↮"
+          },
+          "name" : "䃋큞᚜粱",
+          "startTime" : "+702018461-08-09T06:13:19.823914859-16:22:51"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "Ⴟ퀧蘒㩈㘰혻"
+          },
+          "name" : "詹ꈪ",
+          "startTime" : "+2620256-12-10T04:05:09.212734134-09:13:04"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⠢Ṹ֕"
+          },
+          "name" : "݁壱迀⽲",
+          "startTime" : "+234298184-07-15T10:35:25.346889298+17:36:05"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ⷛ孄ﰅ좢瀼᰼"
+          },
+          "name" : "",
+          "startTime" : "+816236169-10-20T11:03:09.05796627-02:18:40"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "鄓劤燐叔͐接"
+          },
+          "name" : "",
+          "startTime" : "-333381437-03-02T02:15:24.125251028+08:55:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ιଢ଼"
+          },
+          "name" : "뇏玘",
+          "startTime" : "+528868587-01-05T14:23:03.347884382-16:17:26"
+        }
+      ]
+    }
+  },
+  {
+    "Available" : {
+      "name" : "털寐妺씍擷੪긭훦Ứ绤ᡔ쭫옆섒飲䟾",
+      "abbreviation" : "硼䕱‏橨๞껣⣲쯃慒",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "菕ﯣ"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᇩာ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "㶼∇"
+          },
+          "name" : "",
+          "startTime" : "+412230507-01-19T23:05:24.378998072+15:22:16",
+          "currentScore" : {
+            "home" : -1736543232,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "┙",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "鿶ൎ"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⪨腆"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "鉎埵"
+          },
+          "name" : "寀跄",
+          "startTime" : "-735004286-06-28T10:12:56.04180756-04:16:47",
+          "currentScore" : {
+            "home" : 2147483647,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "滔"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "쵊덿"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "륣"
+          },
+          "name" : "ퟑ",
+          "startTime" : "+605032574-03-05T07:04:35.881533856-06:39:10",
+          "currentScore" : {
+            "home" : 2147483647,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "譗긗ᜀ"
+          },
+          "name" : "ᮒ澐붡į",
+          "startTime" : "+472131087-12-17T19:43:55.793704805+07:59:44"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "㽎줖웤"
+          },
+          "name" : "嶫ꩮᛋᳬꔸ",
+          "startTime" : "+336311064-08-05T13:50:38.655555263+16:16:21"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "붺Ꮵ⸿珏"
+          },
+          "name" : "఼䨷喥퉴Ꝥ",
+          "startTime" : "-368998306-02-06T21:44:45.89261454-14:12:27"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "咋"
+          },
+          "name" : "",
+          "startTime" : "+29845035-09-10T11:07:28.849882584+02:24:41"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "蕂"
+          },
+          "name" : "䟘诲휛",
+          "startTime" : "-386804044-01-02T05:59:46.380613792-10:23:53"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⇳"
+          },
+          "name" : "㞑࣓ŷ",
+          "startTime" : "-37575944-01-20T03:49:40.012116045+07:54:06"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㯿㭮"
+          },
+          "name" : "煴⎻䌤萙",
+          "startTime" : "-89299795-01-13T07:25:31.383905631-14:35:18"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "엒둃娪霵"
+          },
+          "name" : "ᐈ콄筘",
+          "startTime" : "+490123695-12-28T06:13:16.365501087-15:15:06"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "࠹㟰"
+          },
+          "name" : "玕囫帙",
+          "startTime" : "+32184831-09-28T14:22:33.31070782+13:56:20"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꙟ"
+          },
+          "name" : "",
+          "startTime" : "+632711774-05-05T09:38:23.479837352+04:53:38"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "ொশ엑釔ᣥ醈왩꥔䷩⪞誺៛냮쬲뫌垄Ꮱ甽",
+      "abbreviation" : "霢丗洼嫢㿹ﾨ跬᳀젬홶緝塢唣⑇",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㡵鴗ꐫ"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "圤"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "教"
+          },
+          "name" : "㲷",
+          "startTime" : "-274905691-11-18T03:03:37.397626204+12:28:46",
+          "currentScore" : {
+            "home" : 0,
+            "away" : 2147483647
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "퉆ᐥ拷"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "꒟濕"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "쑷㚌늋"
+          },
+          "name" : "⏕寊",
+          "startTime" : "+592710908-03-22T15:35:41.473856873+08:42:03",
+          "currentScore" : {
+            "home" : 0,
+            "away" : 961163304
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "聭"
+          },
+          "name" : "┡蚉殧鯈拂蟎",
+          "startTime" : "+54022574-10-26T10:56:01.201003908+13:30:18"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "꺠䠛볪뮡"
+          },
+          "name" : "偓飯ᕯ첟㾧",
+          "startTime" : "+52211637-09-21T04:55:05.549945643-03:15:55"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "鿿"
+          },
+          "name" : "䠊ၪ帄ᑩ",
+          "startTime" : "-264932557-09-06T02:19:27.086127412+02:37:33"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "꫐"
+          },
+          "name" : "ᱜ촮㞝㵁篙꺡",
+          "startTime" : "-200642044-10-12T21:12:52.941313623-16:12:48"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "쵄苄"
+          },
+          "name" : "ᧁ",
+          "startTime" : "+284925787-04-21T13:44:49.850654719+17:38:48"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "侭⯥⽇泖"
+          },
+          "name" : "椯复",
+          "startTime" : "+465132835-02-10T07:32:32.902104372-06:25:26"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "荜㒏ࢳ㒵㦚欶ᵆ킛떘ڑ㱠➦㴄빅윭ึ휬",
+      "abbreviation" : "蛏ꦁ椊䱕儺鄾᷹箴︯턔짯㷑꩜榻",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "밒茻"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "핽㢾"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "濑洓橞"
+          },
+          "name" : "醘",
+          "startTime" : "-662545679-10-01T17:05:35.187595584-01:54:56",
+          "currentScore" : {
+            "home" : 1,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ü癴"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "芥"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᭃ襐퉌"
+          },
+          "name" : "蹓혘",
+          "startTime" : "-947829753-01-12T21:48:14.771780717-16:08:13",
+          "currentScore" : {
+            "home" : 1,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "퐐",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "鬣"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "犭ꅍ"
+          },
+          "name" : "ᗸᕘ穥",
+          "startTime" : "+480071224-01-19T07:11:05.292729788+17:24:49",
+          "currentScore" : {
+            "home" : -25077566,
+            "away" : 810411417
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "⵿",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㲝İ醻"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "͸㑚લ"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "꽒梧⎶"
+          },
+          "name" : "",
+          "startTime" : "-314058892-04-30T16:57:50.455389576-12:50:50",
+          "currentScore" : {
+            "home" : -454793270,
+            "away" : 617964395
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "潔"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ⷨ쿀"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "삥"
+          },
+          "name" : "",
+          "startTime" : "-967833274-10-05T07:39:25.104640256-16:51:44",
+          "currentScore" : {
+            "home" : 615594001,
+            "away" : -2091326252
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᔮ"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "唇"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "㵓"
+          },
+          "name" : "⚲롼",
+          "startTime" : "+181761028-05-06T23:35:25.512010997+15:38:46",
+          "currentScore" : {
+            "home" : -1450026939,
+            "away" : 325251797
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "跚섓㣆"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "뒑"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "ꇞⅬ"
+          },
+          "name" : "铐睢",
+          "startTime" : "-66151274-09-15T12:19:02.158785361+14:39:33",
+          "currentScore" : {
+            "home" : 1951220924,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "蒙"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "㳢덄"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "鋅밑"
+          },
+          "name" : "⦍",
+          "startTime" : "+305776715-12-16T14:54:12.036996656-07:01:01",
+          "currentScore" : {
+            "home" : 1804993442,
+            "away" : -211849987
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "힝",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "깖䏞"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꬸ收"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "쭽鏄"
+          },
+          "name" : "",
+          "startTime" : "-70769563-03-01T02:13:37.703830492-03:33:45",
+          "currentScore" : {
+            "home" : -405510535,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "ꔐ",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "꼀ᒿ핛"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "펝"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "湖ऒ"
+          },
+          "name" : "",
+          "startTime" : "+642572007-03-21T17:40:20.999060072+00:45:55",
+          "currentScore" : {
+            "home" : 1,
+            "away" : -592172540
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "聂",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "퀶≁䁯殈踋"
+          },
+          "name" : "㌺䀛즰뻕䓦툺",
+          "startTime" : "-468694204-01-13T04:48:00.345496048+17:47:30"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "倛"
+          },
+          "name" : "䨈輀㞎䑤熌鿆",
+          "startTime" : "-463710042-08-27T22:10:11.500063057-11:59:22"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "컢걩壤䣢賀冖"
+          },
+          "name" : "㉕ὠ",
+          "startTime" : "+985119524-09-16T06:51:06.322398688-04:54:07"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ẩ嘰꺂䦷먢擹"
+          },
+          "name" : "힒",
+          "startTime" : "-654953040-10-04T09:24:22.11497525+14:42:22"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "쫀혟"
+          },
+          "name" : "릷큌⨒",
+          "startTime" : "+789666278-03-20T10:14:20.087921442-00:31:19"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᜑȘṍ쳽"
+          },
+          "name" : "",
+          "startTime" : "-24933140-10-27T15:15:35.615887576-10:32:33"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᣆﶇﻷ똾㞴"
+          },
+          "name" : "衘툺◺",
+          "startTime" : "+668001542-06-28T21:28:57.912069628+15:56:47"
+        }
+      ]
+    }
+  },
+  {
+    "Available" : {
+      "name" : "",
+      "abbreviation" : "ﶴ䍚패蜃ꋌ睧⯢㙈ឪ",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "떩ꡋ"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "聍㣅"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "릞闚"
+          },
+          "name" : "꣦",
+          "startTime" : "+686586259-08-14T23:52:59.357991426-10:28:34",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : -1
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "ꁍ",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "繗",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "烀"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "㨞"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "눤害"
+          },
+          "name" : "杂",
+          "startTime" : "-139545360-03-18T06:00:04.232208521+00:31:34",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : -2004270487
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "⭷䚴"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ﻫ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "澮"
+          },
+          "name" : "ࡃ",
+          "startTime" : "-958302015-07-05T08:40:57.146956223-02:55:03",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : -38282038
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "餇"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "埖Ў"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᥣ֋璈"
+          },
+          "name" : "扌",
+          "startTime" : "-343346570-12-11T05:13:01.413850178+02:35:27",
+          "currentScore" : {
+            "home" : -1,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "⍯逐"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "薋餐"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "叙ꔩ"
+          },
+          "name" : "둿",
+          "startTime" : "-266563263-01-11T09:19:34.293071562-02:25:12",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "뽞"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "눎"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "꤀"
+          },
+          "name" : "鑨",
+          "startTime" : "-220666737-02-26T15:17:19.451417722-02:10:19",
+          "currentScore" : {
+            "home" : -1,
+            "away" : 119280901
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "൶",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䱱"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "Ⓩ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "萱屮趯"
+          },
+          "name" : "蘄",
+          "startTime" : "-261327944-06-30T02:34:54.409027607+11:39:36",
+          "currentScore" : {
+            "home" : 136790711,
+            "away" : -1
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᱟ࣠磗ѧ郌廥"
+          },
+          "name" : "㾯瓯",
+          "startTime" : "-269087740-10-14T12:11:23.758098183+07:57:20"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "燚ꓝﳤ숳"
+          },
+          "name" : "쨾혅郲",
+          "startTime" : "+523258634-03-23T15:20:23.412432871-12:07:21"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "旸ꪛ緳"
+          },
+          "name" : "㩑橛",
+          "startTime" : "-700558042-09-22T16:31:37.03844344-04:56:43"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "騯ş䋃"
+          },
+          "name" : "睞㥙唔퓒",
+          "startTime" : "+24984338-11-29T12:37:09.132424792-15:47:02"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "矃艐ᅬퟏ쁰㑭㿟"
+          },
+          "name" : "뮌",
+          "startTime" : "-201048197-08-06T06:26:24.052392953-09:36:24"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "쇕㿛"
+          },
+          "name" : "",
+          "startTime" : "+380923200-09-20T02:11:32.076484944+02:28:19"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "헸㰘"
+          },
+          "name" : "",
+          "startTime" : "-888320030-10-01T16:23:53.171533337+00:29:11"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꔺ䊹"
+          },
+          "name" : "뒐㴂퐪栗",
+          "startTime" : "-423558464-11-08T22:47:54.115324897+13:51:01"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          },
+          "name" : "툈칓",
+          "startTime" : "-529966725-04-26T09:25:17.078800159+13:10:37"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "荳"
+          },
+          "name" : "狫ಋ儛࠸銡ⓟ",
+          "startTime" : "-348388778-06-27T14:10:53.765121349+16:46:59"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "锦ฒꢀ뾸䜏"
+          },
+          "name" : "Ӈ튠",
+          "startTime" : "-692155650-06-22T18:58:30.225343993-00:39:44"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "篊䄱뻯䞐ꐷ䨉횡痾벉ꤘ鹡銔ຝ",
+      "abbreviation" : "摆ꀨ",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "넏짢聊"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "✲༈"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "浥￝䯪"
+          },
+          "name" : "遞",
+          "startTime" : "+526728011-12-24T19:50:44.610569137+05:40:04",
+          "currentScore" : {
+            "home" : -1780605556,
+            "away" : 1239164253
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "ཊ仯㠲"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "觔㡲"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "璘봜"
+          },
+          "name" : "",
+          "startTime" : "+605376578-11-20T22:57:41.052248986-06:44:18",
+          "currentScore" : {
+            "home" : -1186732743,
+            "away" : -1287490396
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "╁辥"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : ""
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "∻쿽"
+          },
+          "name" : "",
+          "startTime" : "-805071177-12-06T05:46:05.231765458+05:27:04",
+          "currentScore" : {
+            "home" : 1117636701,
+            "away" : -1
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "鹙"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꓸ쵊"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "␐鿘"
+          },
+          "name" : "",
+          "startTime" : "-922411097-10-07T06:06:33.341806262+03:41:45",
+          "currentScore" : {
+            "home" : 1,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ⅴ還࿵"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "馽"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "﮺赙"
+          },
+          "name" : "὎Ჶ",
+          "startTime" : "-770792509-02-06T18:24:35.793303068+11:09:55",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : -1840815327
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "䈫"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "‚"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "㻐"
+          },
+          "name" : "",
+          "startTime" : "-408380018-01-14T11:19:36.292209494-00:59:56",
+          "currentScore" : {
+            "home" : 1509769451,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "够ோ傝"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꢺ䈉"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "労䇟"
+          },
+          "name" : "鄟光",
+          "startTime" : "+776799091-04-12T05:07:56.612599235+15:46:21",
+          "currentScore" : {
+            "home" : 877777388,
+            "away" : 2050647070
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "╳",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "韆"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "듴"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : ""
+          },
+          "name" : "蓀㷴ᑞ",
+          "startTime" : "-46186401-05-21T02:05:13.316645839-15:32:16",
+          "currentScore" : {
+            "home" : 15601813,
+            "away" : 590520857
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "缵檀▹"
+          },
+          "name" : "믆ꇃⶢ",
+          "startTime" : "-303346232-10-10T02:17:17.861184696+09:23:44"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "޸"
+          },
+          "name" : "",
+          "startTime" : "+253571838-05-08T10:49:57.814336553+15:24:26"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "쉑ᄾ餦븬푃"
+          },
+          "name" : "",
+          "startTime" : "-45955730-02-19T00:11:06.747769221+02:24:21"
+        }
+      ]
+    }
+  },
+  {
+    "Available" : {
+      "name" : "魓⼞铸ꆭ鎬媰㰧헭ὕ툃咎௦ᥪﰈ",
+      "abbreviation" : "璕ﱖ詮㨀외뵝ᵙ䋜ࣽ⎭蓥䕊ﴝ랏ཐ➿ṗ蚁첪",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "厳䉣ᙓ"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᣂ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "뷙"
+          },
+          "name" : "횂恇",
+          "startTime" : "-691622222-02-21T19:59:15.157857095-02:00:31",
+          "currentScore" : {
+            "home" : 1002835869,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "極",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "髳"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᯁ"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "瘉ᐢ"
+          },
+          "name" : "裩",
+          "startTime" : "-782724777-03-07T20:35:29.3683084+12:01:34",
+          "currentScore" : {
+            "home" : 0,
+            "away" : 1715590094
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "♬Ὃ"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "簿"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "潦"
+          },
+          "name" : "",
+          "startTime" : "+352642344-01-30T12:38:38.28830535-05:10:17",
+          "currentScore" : {
+            "home" : -1,
+            "away" : 2147483647
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "팵땲㬐薯"
+          },
+          "name" : "Ẵ﯉癯",
+          "startTime" : "+469194516-10-08T14:36:01.54187776-11:21:45"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "녿ﶜ鑵"
+          },
+          "name" : "",
+          "startTime" : "-559525030-06-06T05:02:38.26233647-12:07"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ǁ"
+          },
+          "name" : "粗蒧⧒",
+          "startTime" : "-53647671-05-04T22:23:15.774241325+07:27:55"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "諓ꆦ몓厚桪"
+          },
+          "name" : "闿",
+          "startTime" : "-930032991-07-23T06:58:29.370926996+06:43:20"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "衊댊疷补"
+          },
+          "name" : "둨",
+          "startTime" : "-666640179-05-09T22:10:10.591526634+11:03:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "㹟"
+          },
+          "name" : "僷勓רּꏒꡂ距",
+          "startTime" : "-78289159-10-17T11:28:43.979992061-09:04:28"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ߚ"
+          },
+          "name" : "伶\u0015佑᪡",
+          "startTime" : "-44288784-11-27T06:12:47.464942518+07:11:20"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㫎"
+          },
+          "name" : "Ũ崑㑛➟",
+          "startTime" : "+804938930-10-24T21:00:28.386869948-00:26:15"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ō쿐ᳳ靳"
+          },
+          "name" : "䜊巯ё",
+          "startTime" : "-557482460-01-16T15:33:36.103662482-05:50:02"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䞲ꈆ"
+          },
+          "name" : "䕱窱鸹꺝긯",
+          "startTime" : "-378377480-06-29T14:12:54.431245261-06:52:16"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᇛ"
+          },
+          "name" : "處శ䥌]俁띊⹒",
+          "startTime" : "-430335536-06-17T08:26:51.278666739-14:56:26"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ମ槇ࣅ뗴"
+          },
+          "name" : "Ꞇꁪ퟊",
+          "startTime" : "-640792186-03-11T14:11:53.781051618-17:07:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "䤊"
+          },
+          "name" : "匦好슁脵",
+          "startTime" : "+598554092-09-06T15:22:27.253168166-08:40:46"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ʑ⺁"
+          },
+          "name" : "",
+          "startTime" : "-201362720-05-09T02:08:51.138623457-01:11:18"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "툃﬈コ煁Ḹ\u000f凊⸗巀",
+      "abbreviation" : "㐁쑙璥扻❉ᐋ툹ⶠ桁页暍ᐜ歹",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "琗"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "믵"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          },
+          "name" : "ᲆ",
+          "startTime" : "-162424380-08-07T21:54:55.874710618-08:08:02",
+          "currentScore" : {
+            "home" : 1383339713,
+            "away" : 2147483647
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "蹼",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "姶"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "鸥ᏹꃡ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "呅"
+          },
+          "name" : "檵㖗",
+          "startTime" : "+593361628-09-27T09:13:43.031803426+02:03:16",
+          "currentScore" : {
+            "home" : 0,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "៻"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "녅鴃"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "嘎ⶦ"
+          },
+          "name" : "",
+          "startTime" : "-802845571-08-02T00:05:41.784180636+06:57:38",
+          "currentScore" : {
+            "home" : -1,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "즍㜜뜽"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "稈絶"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "겯ꀾ텞"
+          },
+          "name" : "탁棂",
+          "startTime" : "+970147249-02-27T14:18:36.806730808-13:46:44",
+          "currentScore" : {
+            "home" : 1,
+            "away" : 402606810
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "穜"
+          },
+          "name" : "",
+          "startTime" : "-94994634-12-23T00:10:40.23711575+11:53:26"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "鞷"
+          },
+          "name" : "䡹쌠窋",
+          "startTime" : "+999764474-03-20T01:34:32.336400316-11:24:32"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "罙ꆵꞬ虛驥"
+          },
+          "name" : "",
+          "startTime" : "-299256872-09-24T18:07:45.90007073-11:51:10"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "보ꃓﴫ刬畐"
+          },
+          "name" : "쁜႕紕擧຃",
+          "startTime" : "-643705434-12-15T05:46:03.00768997-01:22:45"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "떩䫗弍⃱㜨㶪"
+          },
+          "name" : "䷖剅ៜ檽亂",
+          "startTime" : "-524469696-07-21T09:13:04.605659973-11:30:05"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᷓｵѱᒢ"
+          },
+          "name" : "蘖埌ะ蝽鿹",
+          "startTime" : "+764647836-03-21T13:24:40.045057047+04:01:17"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ි벘å"
+          },
+          "name" : "髀එ㩲ვ⿅఼",
+          "startTime" : "+897708516-08-02T02:13:55.704551506+05:41:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᑰ씛荌"
+          },
+          "name" : "퍹헳",
+          "startTime" : "-584553332-12-04T08:58:52.702763813-07:06:15"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "ﾡ᪬쩁쬸鎞쌳҂ʘ᝟댸ﾩ︂⽍⬃",
+      "abbreviation" : "⾅畀돏孔̊랊龌휨ㆌ笕蠼轸鴕ܰ",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "㯴"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "飦"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "뚈㳥"
+          },
+          "name" : "嬟",
+          "startTime" : "+310193011-10-06T21:11:28.66938829-09:42:05",
+          "currentScore" : {
+            "home" : -1196575457,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "톿",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "Ⱀ"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "湟Ẑ收"
+          },
+          "name" : "ꬢ㝉㘨",
+          "startTime" : "+864597661-08-04T11:57:16.460180624+03:53:11",
+          "currentScore" : {
+            "home" : -1102689189,
+            "away" : 1340381199
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꥧ⇢"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "穘礴뭔"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᬵ쨰"
+          },
+          "name" : "䨛",
+          "startTime" : "+359024384-12-26T10:44:16.244130209+14:47:57",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᥙ菗"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⛥隀"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          },
+          "name" : "ᤕᙐ",
+          "startTime" : "+291414994-05-24T13:56:54.641892529+11:55:03",
+          "currentScore" : {
+            "home" : -35110148,
+            "away" : 1456548879
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "螵",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "淝珣"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "鯻쁐뒄"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "梨"
+          },
+          "name" : "⾎",
+          "startTime" : "+294704213-02-18T02:58:14.799531124-01:17:58",
+          "currentScore" : {
+            "home" : -1419715637,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "歄ｍ"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "륓肇"
+          },
+          "name" : "⓼摯",
+          "startTime" : "+219281819-11-09T09:43:49.742385874+03:49:34",
+          "currentScore" : {
+            "home" : 0,
+            "away" : -266571986
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꔚ鷫ꢈ㤾愊"
+          },
+          "name" : "⛒妝萤⻨ႋ⦇✵",
+          "startTime" : "-789761617-07-09T05:30:21.028135021+04:03:32"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "竚닁᪘칯ⴍ껀"
+          },
+          "name" : "◣䕜赈㔢뾠䃒",
+          "startTime" : "+883394379-07-06T04:41:30.28388521+00:23:40"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "㪂ꆆ"
+          },
+          "name" : "캔ᬒꃧ",
+          "startTime" : "-453482797-05-03T10:12:24.372573473-10:44:08"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "䏠돇뾉⪩"
+          },
+          "name" : "⧧ج벙",
+          "startTime" : "-672020233-05-29T13:37:12.061905654+16:11:40"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ጺ刋⁘콕墱杲"
+          },
+          "name" : "輁䢹刲羱",
+          "startTime" : "-792097031-09-19T03:03:24.822567196+17:56:04"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ắ쿧水裘芖"
+          },
+          "name" : "鹙",
+          "startTime" : "-20634433-08-12T05:19:56.482011018-13:15:45"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "聴錓꾕┬ᔮ"
+          },
+          "name" : "䁼뙣吏ꋞ镏喝",
+          "startTime" : "-829304358-11-27T06:07:38.666233099-09:58:26"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "襚폸ҿặ"
+          },
+          "name" : "翊",
+          "startTime" : "+755624231-05-20T13:19:56.286748459+03:20:55"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᛐ"
+          },
+          "name" : "쾈鍙",
+          "startTime" : "-158403236-09-19T11:02:16.812067361+12:52:43"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "᪤쏰䘥䠤"
+          },
+          "name" : "聟ɰ",
+          "startTime" : "+480722633-11-11T01:57:02.472965177-08:56:06"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "᛽"
+          },
+          "name" : "੤",
+          "startTime" : "+688416980-03-08T21:27:48.62820397-11:22:44"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "趖凱荐돩"
+          },
+          "name" : "岏ꂋᵽ炘鶂",
+          "startTime" : "+150639591-05-22T16:35:20.253859123-14:45:05"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "飻㒩ຎ",
+      "abbreviation" : "ਠ絡ዻ㐘⚽禾턯ⰸ̻쓭䧳枞ꬲ",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "盁"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "粂䃿艀"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "ؕᑖ"
+          },
+          "name" : "㇊",
+          "startTime" : "+291703248-09-07T14:50:55.184076001-07:44:47",
+          "currentScore" : {
+            "home" : 0,
+            "away" : 1442169236
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "﬘"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "皷곎ᶧ"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "㝩຃"
+          },
+          "name" : "Ἀ਼⪑",
+          "startTime" : "+217237371-04-16T18:24:15.139465451-16:18:07",
+          "currentScore" : {
+            "home" : 2147483647,
+            "away" : 2147483647
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "팻",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "喿藩긟鄟會"
+          },
+          "name" : "䩝딜飷炔",
+          "startTime" : "+540449599-01-06T06:58:52.264391655+08:33:11"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "鵟潸宒ꔱ鄃㛲奃"
+          },
+          "name" : "蕛輔ﰳ祌ꠅ栻",
+          "startTime" : "-557643787-08-21T19:39:22.21188419-14:00:54"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "笹"
+          },
+          "name" : "",
+          "startTime" : "-736325706-11-16T13:57:53.594023895+02:19:36"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "₍"
+          },
+          "name" : "⚹隃ⵦ툦",
+          "startTime" : "-73117550-07-21T08:22:25.598927385+15:27:06"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ℼ⭢埘"
+          },
+          "name" : "琫띢絆⻸",
+          "startTime" : "-324272333-11-26T06:26:12.166640772-07:22:30"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "떿첆屸읬雷ਜ䙭"
+          },
+          "name" : "櫒r⎴",
+          "startTime" : "+770192408-10-16T00:35:11.919365411-02:14:18"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "谘匔⇅됲砑粙"
+          },
+          "name" : "缞ⶰ",
+          "startTime" : "-15778139-08-08T11:35:15.21094311+14:54:41"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "駗쁘梦㏯쾸"
+          },
+          "name" : "韚ᬇ妤꣌",
+          "startTime" : "+44418111-06-03T23:54:16.12782795+05:36:06"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "뙩"
+          },
+          "name" : "᷻",
+          "startTime" : "-129400282-11-17T10:51:52.022145983-05:59:46"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ㅣ훯➭똬튎藅!"
+          },
+          "name" : "",
+          "startTime" : "+608709894-07-31T06:53:23.472639569+04:05:39"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⼊⑕빈Ⱚ"
+          },
+          "name" : "ᛸ雅㒤ꟈ⑽”",
+          "startTime" : "+655265072-06-30T17:53:52.90105205-00:57:20"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "偹㮟⟨輼"
+          },
+          "name" : "楤뱔",
+          "startTime" : "-174536748-10-03T14:54:24.74086839+17:25:01"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "븈ࠤ詃෕"
+          },
+          "name" : "",
+          "startTime" : "-466774383-05-17T23:18:09.766554803+04:48:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "꩗ꎦ"
+          },
+          "name" : "揤ꟍ횑溬ሪ⥠",
+          "startTime" : "-851585986-12-16T06:32:49.867151863+06:13:02"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "㔱擕됊⫰ﳟ忄"
+          },
+          "name" : "",
+          "startTime" : "-735962050-07-26T07:46:15.462288156-02:47:04"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "킖䚎复쳣ꎊᔤ反꞊さὧ",
+      "abbreviation" : "킎庙",
+      "displayToPunters" : true,
+      "fixtures" : [
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "柲⌴㵬ꑍ"
+          },
+          "name" : "낱ഃジꘉ◩",
+          "startTime" : "+304637857-04-13T21:13:55.430186648-09:57:51"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ܤ他牍☫䙐"
+          },
+          "name" : "⪥과黟뵰둖",
+          "startTime" : "+996334471-03-03T07:38:22.435581469-12:29:33"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㞆"
+          },
+          "name" : "㞺ᖑ廿ࢆ剟ᅫ",
+          "startTime" : "+771317891-09-12T05:44:50.729571711-10:41:25"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "틑漿䮋韁"
+          },
+          "name" : "炰",
+          "startTime" : "+444558222-12-21T16:43:21.693461662+01:56:10"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "㄀⚓벍繋"
+          },
+          "name" : "畐锂넨Ⅽ您",
+          "startTime" : "+936855017-11-03T08:23:52.072667057+00:27:47"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "꾸毐퉈"
+          },
+          "name" : "薩誰",
+          "startTime" : "-316102859-03-26T09:26:47.078912638-01:23:04"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꊢ찶䘑ꎑ쒉"
+          },
+          "name" : "ﱘ邐씤溩",
+          "startTime" : "+773660947-11-07T23:00:12.573316729-04:15:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "࿈"
+          },
+          "name" : "⸎",
+          "startTime" : "-376509884-04-05T16:36:06.37781357-07:18:32"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "财ꫣ颏凣믿斎짃"
+          },
+          "name" : "࿜ᣥ溫⌞",
+          "startTime" : "+894432799-05-06T11:40:27.951163032-02:07:29"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "窵調긧塄焅"
+          },
+          "name" : "駙",
+          "startTime" : "-940927762-04-18T21:21:41.623502202-02:45:03"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "疐㾌죸찈"
+          },
+          "name" : "ꅓ믁䩤",
+          "startTime" : "+534999030-08-31T07:52:14.588741557-09:25:48"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "׻"
+          },
+          "name" : "",
+          "startTime" : "-313427768-01-24T05:12:42.290655838+08:38:07"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "쫡ꯊ謃"
+          },
+          "name" : "",
+          "startTime" : "+217162291-01-12T04:59:43.639365574+13:48:29"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "뀶핣㸺ਧ䃛桵",
+      "abbreviation" : "膹場",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "憌貝"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "馊ဓ"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "騡"
+          },
+          "name" : "",
+          "startTime" : "+90721628-07-14T15:07:33.562248213-05:09:22",
+          "currentScore" : {
+            "home" : 170481472,
+            "away" : -233057626
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "팰",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "茬"
+          },
+          "name" : "偔盩䖠䁁卤頹庙",
+          "startTime" : "+577043616-12-19T01:51:30.906799841+14:56:07"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "Ѐ᷷ꗀ︕౧"
+          },
+          "name" : "불虪ᘐꬖ篎",
+          "startTime" : "+824549425-04-03T19:04:32.061498848-00:57:48"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "殓"
+          },
+          "name" : "罣",
+          "startTime" : "-708670246-09-29T16:55:49.500745385+02:40:50"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꚥ"
+          },
+          "name" : "﹬鬦벖횱",
+          "startTime" : "-155731784-06-16T22:20:46.371212784+03:16:55"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "営肈✤"
+          },
+          "name" : "鹇靽",
+          "startTime" : "+474302515-12-18T17:36:35.592100039+09:02:18"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꚕ쬲"
+          },
+          "name" : "",
+          "startTime" : "-869437570-06-09T17:40:01.799004486+13:12:06"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "⏩㶙"
+          },
+          "name" : "ꇨ沵蛼摈猥",
+          "startTime" : "+251812864-11-29T22:17:13.962913841-13:12:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "녳ਅ묿큷"
+          },
+          "name" : "慭ڝ",
+          "startTime" : "-812413107-04-08T17:43:59.196011042-00:10:51"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "듊ꊂ"
+          },
+          "name" : "߹싅㔹淥姎",
+          "startTime" : "-947119815-12-05T12:39:47.848868041+02:19:21"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꢺ徂즧"
+          },
+          "name" : "",
+          "startTime" : "-416890776-04-01T13:06:25.691645875-12:57:33"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "頟灆ྠ셢⿬"
+          },
+          "name" : "굣䘊槗",
+          "startTime" : "-50794645-08-08T05:59:04.485369713+10:51:40"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "웏遴"
+          },
+          "name" : "᥏",
+          "startTime" : "+392382376-09-04T03:20:55.356558423+04:25:45"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "夊㯄䫓û"
+          },
+          "name" : "ⷧ퀚",
+          "startTime" : "+44471081-04-17T15:36:50.002254559+06:05:38"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "糥"
+          },
+          "name" : "",
+          "startTime" : "+77304269-12-06T15:50:15.577052035-10:12:33"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "䛇奴ܴ罸地꛳",
+      "abbreviation" : "Ꮅꈠ巼슌㞉닭杛ዾ䒭벱ׯ穡︟",
+      "displayToPunters" : false,
+      "fixtures" : [
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "奔陼跫๔"
+          },
+          "name" : "❰䞶",
+          "startTime" : "-643487911-07-18T23:07:07.959230048+01:32:48"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⭬놮큖"
+          },
+          "name" : "댪꩔넀",
+          "startTime" : "-503913373-08-24T18:42:41.472730794+15:03:01"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "튌⬂㦰齤陑"
+          },
+          "name" : "媰릗⇛",
+          "startTime" : "+851890230-08-04T13:12:55.102427569-15:51:19"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䖊"
+          },
+          "name" : "䝖얠纎鐍뵐",
+          "startTime" : "-897929666-11-13T00:52:10.796352645-16:26:16"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "댅ꇝ萕"
+          },
+          "name" : "昆ᣭ｝灯⧨",
+          "startTime" : "+810672662-11-27T05:14:39.707094133+05:00:27"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "髟"
+          },
+          "name" : "㗻㗕⃞向꿇",
+          "startTime" : "+395893034-01-19T22:46:02.063124943+09:36:28"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "涹㉑쟅"
+          },
+          "name" : "ࡷ鱃",
+          "startTime" : "+678397804-05-27T02:41:11.160950825+10:46:10"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "酐ҽ㙠낸彷蔂»좘ṹ쇐喥",
+      "abbreviation" : "៨蔠햶㱋구섩ඖ變팏뛊䳻鎢",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "攖"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⨀튆喇"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "鳻"
+          },
+          "name" : "",
+          "startTime" : "-837584379-01-13T02:49:54.272965142+15:20:18",
+          "currentScore" : {
+            "home" : -1863382155,
+            "away" : -48921739
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "揔",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "艉鏄"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "慶"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "墻⤏"
+          },
+          "name" : "␯뮷䌧",
+          "startTime" : "+362706161-12-01T23:53:11.389341861-14:26:09",
+          "currentScore" : {
+            "home" : -1,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꃤ榭칇"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "댼"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᝁ"
+          },
+          "name" : "ৼ㽿",
+          "startTime" : "-119908202-05-04T06:56:25.808567639+00:22:18",
+          "currentScore" : {
+            "home" : 0,
+            "away" : -681829456
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "ᑳ틊"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⌛ẵ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "ᷱ⊻"
+          },
+          "name" : "ƞꍂ",
+          "startTime" : "+942798563-03-21T04:14:55.981628382-01:55:35",
+          "currentScore" : {
+            "home" : 450857063,
+            "away" : 1209663838
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䙰"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䣧"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "졎ٜ"
+          },
+          "name" : "",
+          "startTime" : "+897458345-12-21T06:02:11.982020306-01:43:05",
+          "currentScore" : {
+            "home" : -1807615392,
+            "away" : -874365100
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "沈",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ۦ漁"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "☮೉펎"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "摧"
+          },
+          "name" : "✩",
+          "startTime" : "+113902334-05-24T02:01:00.110857153+08:22:31",
+          "currentScore" : {
+            "home" : 0,
+            "away" : -1382855466
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "㚀寒"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䇣ꮽ"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "name" : "✔⛯",
+          "startTime" : "+718481194-09-01T15:54:33.045288231+13:42:08",
+          "currentScore" : {
+            "home" : 1291990233,
+            "away" : -1891270948
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "䄎",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "౻",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "嫲ᖘ霿"
+          },
+          "name" : "놵跾翖",
+          "startTime" : "-718031111-08-18T22:13:05.790331538-06:52:22"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "迤灓"
+          },
+          "name" : "䢵Ꞽ윖ﷳ璖䂫䜐",
+          "startTime" : "+966810649-11-09T02:34:56.526662653+02:02:17"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "榢悺毻蠶릯"
+          },
+          "name" : "왳螿瘓仍쑍",
+          "startTime" : "-998960875-04-20T22:17:47.905673512-00:44:22"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "䗊⁤⦠闂"
+          },
+          "name" : "褀",
+          "startTime" : "-907023972-08-25T03:39:01.684621831-17:40:53"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "阡䒫"
+          },
+          "name" : "ᙧ퀔⌾Ⴘ金",
+          "startTime" : "-983717673-06-17T04:17:40.410451148-16:43:51"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "莹㋧厘⠏㬩鮬"
+          },
+          "name" : "쁢㼬⼕",
+          "startTime" : "+173903280-01-08T06:20:12.06085619-03:31:04"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "꠆⥄"
+          },
+          "name" : "",
+          "startTime" : "+353988484-04-20T19:29:20.081540365+02:41:35"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "烆"
+          },
+          "name" : "",
+          "startTime" : "+204007930-07-16T11:20:57.001883412-00:24:16"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᶀ䢞諷漯䰟"
+          },
+          "name" : "孇쑈␴險",
+          "startTime" : "-146582854-02-09T02:41:02.874091118+05:49:16"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⊸᲏峌띖뮄"
+          },
+          "name" : "榔짦뉗",
+          "startTime" : "+46194665-06-21T17:33:55.787505653-01:32:54"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "㭅暘ﳅ땨㶥ⷓ",
+      "abbreviation" : "",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "뭦ࢧ"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "ቚ⌮"
+          },
+          "name" : "퉗뎹ਙ",
+          "startTime" : "-541214181-09-01T07:16:18.36388437-02:02:53",
+          "currentScore" : {
+            "home" : 87688267,
+            "away" : -1
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "賊"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ʹ"
+          },
+          "name" : "얪㓣",
+          "startTime" : "-268732391-10-11T23:59:44.523199242+10:32:30",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "늴",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "圠팩"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "㤟"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "끻"
+          },
+          "name" : "味",
+          "startTime" : "-406800941-06-29T17:16:16.924786127-13:44:35",
+          "currentScore" : {
+            "home" : 2147483647,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "둌",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "롔嘼~엶ಣ畹"
+          },
+          "name" : "㙙પ",
+          "startTime" : "-688075178-01-10T20:03:00.776910664+09:37:50"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "욅꼹䱶"
+          },
+          "name" : "唹뵀靅鍣",
+          "startTime" : "+385524010-12-22T17:29:27.727162897-15:57:10"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "憍⠌烟몑겘⊞"
+          },
+          "name" : "풙쪹䄋",
+          "startTime" : "-647688586-10-12T13:10:01.353892465-15:21:21"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ᘽ"
+          },
+          "name" : "",
+          "startTime" : "+983257963-12-20T01:03:03.245527861-06:54:11"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "㥎报䱱尛놣"
+          },
+          "name" : "괥",
+          "startTime" : "+262293933-05-04T19:05:18.284002603-17:56:02"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "佌"
+          },
+          "name" : "⪎寅",
+          "startTime" : "+680194787-07-18T15:29:03.432397126+16:34:38"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "雎魤憤薫"
+          },
+          "name" : "뿎⿾뎻瑑",
+          "startTime" : "-825775672-04-12T09:22:40.581493895+03:28:34"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "뿙౑墨᭦❹㱋"
+          },
+          "name" : "",
+          "startTime" : "+266157839-04-24T05:43:24.957696213-04:08:05"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "폗华鵭ꉻ饈硱"
+          },
+          "name" : "ꎚ탵ⓙ",
+          "startTime" : "+937340832-07-11T11:38:57.662748681+06:10:03"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "޷"
+          },
+          "name" : "辋ƈΣ澚",
+          "startTime" : "+148949799-05-26T13:13:30.115833135+12:36:14"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "෕퀧湪讴"
+          },
+          "name" : "Ϋስꊲ",
+          "startTime" : "+845658629-08-15T23:09:17.885719704+02:26:28"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᇆ࿥졠"
+          },
+          "name" : "툨䫬㎁㰃쫺",
+          "startTime" : "-753041747-04-06T20:20:35.985812041-07:26:37"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "猐ꍚ"
+          },
+          "name" : "薑쨖",
+          "startTime" : "+909810255-05-08T00:54:00.517138145+09:04:05"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "뼫"
+          },
+          "name" : "홈椥",
+          "startTime" : "+962153862-11-19T01:06:01.365365272-04:21:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "猱蝟"
+          },
+          "name" : "麥쳿ꁾ䲈혜ᵌ",
+          "startTime" : "-100747032-11-20T06:51:41.36265109+02:54:22"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㄀ᔉ裄횤"
+          },
+          "name" : "",
+          "startTime" : "-726185687-07-24T04:34:30.891733614-03:20:33"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "",
+      "abbreviation" : "첹䎆꧚",
+      "displayToPunters" : false,
+      "fixtures" : [
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ၠ抙"
+          },
+          "name" : "ᢂ",
+          "startTime" : "+782346559-12-14T08:09:42.014407003-09:04:53"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "籪ᩔ݆뺟鷏"
+          },
+          "name" : "὇魖餧풶⑼",
+          "startTime" : "+773648036-09-23T11:01:47.945261641-09:29:45"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "풉"
+          },
+          "name" : "繝ꧼ",
+          "startTime" : "+693206455-01-31T01:59:21.170331852+08:36:16"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "踍枵眼ꤳ"
+          },
+          "name" : "爬澾驆ိ",
+          "startTime" : "-505073327-06-30T07:49:07.758534983-11:39:27"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "蕘섄⨢樜"
+          },
+          "name" : "瘓䆽둇",
+          "startTime" : "+130617495-09-09T10:11:19.213426362-11:39:41"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "✪涸"
+          },
+          "name" : "㘂",
+          "startTime" : "-235105279-11-10T01:14:45.436690185-12:02:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "龱膰矧札焟"
+          },
+          "name" : "",
+          "startTime" : "-335861048-01-05T12:55:29.596945083+01:47:21"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "鯀옿"
+          },
+          "name" : "홼琊",
+          "startTime" : "-62880748-03-06T01:24:22.728107085-08:20:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "䓞肬刪"
+          },
+          "name" : "ᯋ켼餾葎ﶷ㩑",
+          "startTime" : "+39880654-02-17T10:25:48.485721911+17:59"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "啢"
+          },
+          "name" : "枠레Ⱶ㵰⛡毲쥇",
+          "startTime" : "-172131396-02-26T12:17:16.310728973+10:41:01"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꉅ䌦춝갽훲겹ꘂ"
+          },
+          "name" : "䘙갮嵾",
+          "startTime" : "+568385822-06-21T04:38:51.188961362+09:18:30"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ﹾ濗䊶먞䌉풗"
+          },
+          "name" : "",
+          "startTime" : "+587075965-05-18T19:30:17.052793423+04:53:16"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "罪ψᅉ粊굓绺嵥䕍쑡䇏ꈜ븑漲",
+      "abbreviation" : "含",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꔑ콡"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㍏"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "觊ੵ"
+          },
+          "name" : "",
+          "startTime" : "+876582197-07-15T19:08:01.307621788-10:47:55",
+          "currentScore" : {
+            "home" : 1545362670,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "鼁",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "哦䬝"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "헉ܶ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "䣌뉝"
+          },
+          "name" : "♣䤉",
+          "startTime" : "-392601413-02-20T08:37:32.886922355-08:16:17",
+          "currentScore" : {
+            "home" : -1771773774,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "猖"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "膗"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "妮"
+          },
+          "name" : "࢘欍",
+          "startTime" : "+715070917-04-16T08:49:05.531598701-17:20:01",
+          "currentScore" : {
+            "home" : 1,
+            "away" : -2026855284
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᝢ"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "牘"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "⬘젱祯"
+          },
+          "name" : "࿮➬᭫",
+          "startTime" : "+269434986-02-06T07:03:57.692831317+12:50:06",
+          "currentScore" : {
+            "home" : 496693039,
+            "away" : -266675101
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "帔",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "쌸"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ૈ"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ꂘ"
+          },
+          "name" : "ﶹ뢇",
+          "startTime" : "+975597726-02-20T16:58:28.225733532-09:55:06",
+          "currentScore" : {
+            "home" : -387644775,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "৙В"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "虌娂"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "逐"
+          },
+          "name" : "",
+          "startTime" : "-503687378-10-02T11:53:16.699209383+17:10:07",
+          "currentScore" : {
+            "home" : 1474307641,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "哉",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "﮺ṑ"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꮒ鶊"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "彡⁖独"
+          },
+          "name" : "䏡阢",
+          "startTime" : "-729844802-01-05T11:01:17.808223753+03:58",
+          "currentScore" : {
+            "home" : 557325718,
+            "away" : 1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "民",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "亽",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⧼㩪塰믤쨣軂"
+          },
+          "name" : "⹟",
+          "startTime" : "-994287778-08-07T14:44:06.2798285-03:16:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "੻漲퀩⥁囹"
+          },
+          "name" : "购⟞",
+          "startTime" : "+844597456-08-11T06:06:02.671972459-00:52:14"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "⯮᲏"
+          },
+          "name" : "쩈",
+          "startTime" : "-113630321-12-05T13:22:41.462613529+10:24:52"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "⡲䵜"
+          },
+          "name" : "蓵閊앮瀂禤搈Ὥ",
+          "startTime" : "-38520327-07-13T11:02:02.656073664-11:01:48"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "排躱鰣롵ꒊꝾ욘䨓ᖨˈ剢띂ᦨ璘",
+      "abbreviation" : "裘㉏癣ፃ䡁躃ﲟ冝㻓ᛡ㩱阖ꨳ哾㷂䊯",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "錰籑Ԥ"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "亾"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "↓ೃ"
+          },
+          "name" : "",
+          "startTime" : "-306785305-11-13T18:02:18.590107747-00:02:47",
+          "currentScore" : {
+            "home" : 1,
+            "away" : -1
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "幆铄"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꆱ漭"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : ""
+          },
+          "name" : "膀狚ᶨ",
+          "startTime" : "-240554783-11-14T21:33:02.280372431+11:01:17",
+          "currentScore" : {
+            "home" : 1687345700,
+            "away" : 2147483647
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "卅꾈"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "컖\u0086"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "⽱ۧ"
+          },
+          "name" : "鷚笃뫘",
+          "startTime" : "-636643726-11-08T22:50:54.453101004+16:18:30",
+          "currentScore" : {
+            "home" : 1346221738,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "Unknown" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "䙲",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "᳊এ੼"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꌀ鑡"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "㷊"
+          },
+          "name" : "",
+          "startTime" : "+809052338-06-09T04:05:31.069852636+08:31:58",
+          "currentScore" : {
+            "home" : -193403041,
+            "away" : -2061755784
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "㔾"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "皑"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "᪍"
+          },
+          "name" : "",
+          "startTime" : "+763617164-03-09T04:08:26.294395008-09:02:43",
+          "currentScore" : {
+            "home" : 1,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "햌ﯝ"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ᴺ"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "걻"
+          },
+          "name" : "핅",
+          "startTime" : "+596597863-07-08T00:55:45.374163122-13:46:08",
+          "currentScore" : {
+            "home" : -1,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⍎ዂ"
+          },
+          "name" : "䪻",
+          "startTime" : "-132026862-02-03T05:07:35.153263966-11:28:51"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "覾뾺믦"
+          },
+          "name" : "腠멒陹",
+          "startTime" : "+219893024-09-30T23:26:56.779066327+15:38:16"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "롳ቆ擟䃠㣠荎"
+          },
+          "name" : "잠뮌就巹섩",
+          "startTime" : "+800968820-11-11T14:15:02.37397237+12:41:17"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "੉㠍㫹湜풪"
+          },
+          "name" : "",
+          "startTime" : "+7861613-05-22T14:44:06.647845887+10:09:01"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "䰺䧱䦴粛᥮㏯㹼"
+          },
+          "name" : "䘴㱨᫰꿄馻",
+          "startTime" : "-879765270-09-10T15:17:02.862879051-15:22:34"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ॱ训횟ᢟ炯"
+          },
+          "name" : "聧鷭狄",
+          "startTime" : "+429223423-07-21T02:54:07.427972527-14:28:08"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "资鶳멭縷犛"
+          },
+          "name" : "鐪맞綘㭻",
+          "startTime" : "+964447377-06-20T08:04:56.032547998-07:54:41"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "벧㓾"
+          },
+          "name" : "斖퀋鏃鏪",
+          "startTime" : "-625117737-11-11T07:26:52.77635871-16:07:54"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "蛹튅놇拃釸暓ꋷ"
+          },
+          "name" : "",
+          "startTime" : "-693039931-11-20T22:31:15.388641452-13:29:17"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ᒇూ"
+          },
+          "name" : "멒闋럪홁勾犨頼",
+          "startTime" : "-348153058-12-27T03:35:28.486389807+12:26:43"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "︫⏐"
+          },
+          "name" : "㿡듄澩炊᫖",
+          "startTime" : "+883210934-07-25T06:53:23.619869066-09:13:33"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "䕫잞猍ꋎ폽擪잛ᬨ蛭뚡긆ᛦ잆⎢",
+      "abbreviation" : "⩌ﯩ䞥瑐즓Ӝ錘뺛塦ᝑ",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "瞺"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⟤"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "嗑"
+          },
+          "name" : "䣣읔",
+          "startTime" : "-829411460-05-22T15:39:44.456805134-00:23:59",
+          "currentScore" : {
+            "home" : 2147483647,
+            "away" : -1
+          },
+          "fixtureLifecycleStatus" : {
+            "BreakInPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "졶",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "엯怛"
+          },
+          "name" : "䶪䟃앾饃᙮ꦪ",
+          "startTime" : "-207750474-01-02T11:11:42.311018255+00:42:42"
+        }
+      ]
+    }
+  },
+  {
+    "Available" : {
+      "name" : "ਈ뫓᧎⤧蒹眏ꝇ牳ꕨ耊",
+      "abbreviation" : "滔ꕋ㏛Ⓣ㷁爋菄ꐋ遴",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : ""
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "犀杨"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "褐ⰼ"
+          },
+          "name" : "",
+          "startTime" : "+971160009-07-27T12:07:10.792073484+16:48:51",
+          "currentScore" : {
+            "home" : 732994090,
+            "away" : 984948295
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "闪"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "敽끸"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "軄죴"
+          },
+          "name" : "䶑蟒",
+          "startTime" : "-666417850-08-17T11:09:56.000802848+00:41:16",
+          "currentScore" : {
+            "home" : 150132030,
+            "away" : -891820990
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "≃忇絯"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䋤邚"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "ꫣ"
+          },
+          "name" : "덾靟㢘",
+          "startTime" : "+103207629-09-17T18:29:49.508258158-16:00:32",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : -2147483648
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "轊窝"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "駳篚"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "拖閘"
+          },
+          "name" : "",
+          "startTime" : "+960139593-06-05T04:57:12.981948997+06:57:02",
+          "currentScore" : {
+            "home" : 1,
+            "away" : 1298941989
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "聺",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "챩"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "뒗"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "헠畳"
+          },
+          "name" : "䉴孆",
+          "startTime" : "-507749287-05-20T04:11:32.614516689+09:52:43",
+          "currentScore" : {
+            "home" : -1,
+            "away" : 2147483647
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "PHOENIX",
+            "id" : "똫"
+          },
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "빨"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "膪"
+          },
+          "name" : "莑뾄",
+          "startTime" : "+616907793-12-18T13:19:26.527058235-11:36:38",
+          "currentScore" : {
+            "home" : 0,
+            "away" : -2007743886
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "䄔猱錃鵡锌"
+          },
+          "name" : "꠶",
+          "startTime" : "-261178564-10-20T03:14:46.432218112+00:44:35"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "㭽㇥ᙑ"
+          },
+          "name" : "",
+          "startTime" : "+884430424-09-24T04:31:37.354746635-16:02:56"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㗂독嬚"
+          },
+          "name" : "",
+          "startTime" : "-924164718-09-01T08:56:52.656696832-09:59:32"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "껽"
+          },
+          "name" : "ꆟ퍴",
+          "startTime" : "-237131728-09-09T20:09:03.966018688+16:18:37"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "톌콣춱"
+          },
+          "name" : "",
+          "startTime" : "-69406567-12-01T12:28:15.105026393+09:31:37"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "⏍뷚퀆鉈肽"
+          },
+          "name" : "ޫ䭙唸᳻梐",
+          "startTime" : "-843444683-06-26T16:25:01.467570117+16:28:35"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ⴚ儅"
+          },
+          "name" : "鍠謿릍늴Ꮥ폟坃",
+          "startTime" : "-393877136-12-31T19:49:52.315698984+04:00:35"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ᔰ甲⸥"
+          },
+          "name" : "磕陁睓킂帠",
+          "startTime" : "+588959434-07-02T11:31:06.788655937+06:59:31"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "촊ꤾ菇"
+          },
+          "name" : "",
+          "startTime" : "+412897980-07-25T13:45:42.23696588+15:06:54"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "纫ｖ쬀"
+          },
+          "name" : "ᕑᦾ㺽樵Ꮝ",
+          "startTime" : "+216951341-06-29T22:36:47.668128186-03:21:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "쾿㓲蒂♟"
+          },
+          "name" : "偾褉듭롰ꂀ",
+          "startTime" : "+235150742-11-15T10:33:05.366859075-01:14:35"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : ""
+          },
+          "name" : "⧈Ᏽ搣䳓♭",
+          "startTime" : "-987527930-03-21T15:31:13.253611104+04:11:20"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "茀꧵蠐릙"
+          },
+          "name" : "ꎕ䂾㚤",
+          "startTime" : "-401217874-02-03T22:37:40.104599366+15:13:14"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "轴湁Ȳ턪퀾䇁"
+          },
+          "name" : "섺䶄鴡",
+          "startTime" : "-626845670-06-02T22:26:47.534696458+13:09:34"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "宥⺏"
+          },
+          "name" : "퍎",
+          "startTime" : "-629782763-12-27T15:48:22.486966165+00:04:40"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Available" : {
+      "name" : "띷႘듼厘☱☨瓞﹞ၤ皮焟頎墝﹣蹭ྰ䁸㯯疞꣈",
+      "abbreviation" : "὚筂",
+      "displayToPunters" : false,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "啕"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꐏ"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "焷狍"
+          },
+          "name" : "",
+          "startTime" : "-850887182-12-27T21:27:24.836955898+13:06:27",
+          "currentScore" : {
+            "home" : -2147483648,
+            "away" : 249782078
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "BETGENIUS",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "헍匛"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "唂㵼"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "鎵"
+          },
+          "name" : "⌻",
+          "startTime" : "+636304787-06-30T19:42:33.625156044-00:41:39",
+          "currentScore" : {
+            "home" : -877123243,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "GameAbandoned" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "ODDIN",
+                "id" : ""
+              },
+              "name" : "吨",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "ꈕ멕㦇"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "䲯"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "㨸跬"
+          },
+          "name" : "㫲ꗜ",
+          "startTime" : "+636352450-01-07T16:12:27.24152646+14:10:46",
+          "currentScore" : {
+            "home" : 0,
+            "away" : 0
+          },
+          "fixtureLifecycleStatus" : {
+            "Postponed" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "ꮋ儈闂䄣ࢢ뽋"
+          },
+          "name" : "껠㪹ᾬࠡ",
+          "startTime" : "+279697997-06-02T10:08:53.32002233-09:09:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "嬪䇥᪱"
+          },
+          "name" : "鎳㭃頶搭ᥰ䬠",
+          "startTime" : "-507886327-07-13T01:06:56.639223676-00:36:40"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "蒂뙠"
+          },
+          "name" : "",
+          "startTime" : "+860315982-08-30T19:57:13.512128725+14:28:03"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "舎獣휳䌁ფ"
+          },
+          "name" : "圈㒕（ᶇ롎",
+          "startTime" : "+798223819-01-23T04:05:59.025175828+09:01:04"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "뙳⑎ႌぉ삱"
+          },
+          "name" : "",
+          "startTime" : "-696778671-09-13T04:43:35.796842412-15:45:32"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "⏢鍍홝뚔৩목⩻"
+          },
+          "name" : "曍璴岩諞",
+          "startTime" : "+858474341-06-21T17:50:55.71659747+02:10:44"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "觍ꮺ彍㘼쉡"
+          },
+          "name" : "ᐠ佁",
+          "startTime" : "-90980061-11-06T00:12:57.134149872+01:09:15"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "泮ꩅ"
+          },
+          "name" : "烢",
+          "startTime" : "+868621293-05-31T08:38:30.974177412+02:55:28"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ิ둷焈陛蓺磋퐈"
+          },
+          "name" : "⤵ﭩ薉㏅",
+          "startTime" : "-365857904-05-09T03:07:47.841286404-09:27:35"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "埪挸닱઱"
+          },
+          "name" : "饖烴氨쮯裷唱",
+          "startTime" : "-884366597-05-09T04:50:51.835281092+17:51:46"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "䣋൙ꗵᔯ☏퀠檆"
+          },
+          "name" : "☀鮥",
+          "startTime" : "+112574507-07-14T03:23:23.301190866-15:23:12"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "彀ᎆ牙Ҵ䴖઻"
+          },
+          "name" : "䩲傐蹥",
+          "startTime" : "+861043502-11-24T09:40:44.859717448-06:47:41"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "차ษ﫝"
+          },
+          "name" : "⮔漸Ꭲ룱⸓冶",
+          "startTime" : "-665537246-12-01T06:29:32.280571166-15:34:57"
+        }
+      ]
+    }
+  },
+  {
+    "Available" : {
+      "name" : "엪ẫ䃁嗌Ї뚨竰㍙秼",
+      "abbreviation" : "",
+      "displayToPunters" : true,
+      "fixtures" : [
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "묏"
+          },
+          "tournamentId" : {
+            "provider" : "ODDIN",
+            "id" : "ꄻ"
+          },
+          "fixtureId" : {
+            "provider" : "BETGENIUS",
+            "id" : "때⠪"
+          },
+          "name" : "艴",
+          "startTime" : "-614166010-03-30T00:59:42.26100493+03:12:49",
+          "currentScore" : {
+            "home" : 1497742153,
+            "away" : 1045857358
+          },
+          "fixtureLifecycleStatus" : {
+            "PostGame" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "즅",
+              "qualifier" : ""
+            },
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "BETGENIUS",
+            "id" : "捹₲"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ἧ"
+          },
+          "fixtureId" : {
+            "provider" : "PHOENIX",
+            "id" : "캪"
+          },
+          "name" : "ᷓɝ",
+          "startTime" : "+437207568-08-02T02:01:52.566795842-09:06:07",
+          "currentScore" : {
+            "home" : 0,
+            "away" : -1984306640
+          },
+          "fixtureLifecycleStatus" : {
+            "PreGame" : {
+              
+            }
+          },
+          "competitors" : [
+          ]
+        },
+        {
+          "sportId" : {
+            "provider" : "ODDIN",
+            "id" : "싙勣"
+          },
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "脿"
+          },
+          "fixtureId" : {
+            "provider" : "ODDIN",
+            "id" : "즼"
+          },
+          "name" : "",
+          "startTime" : "+267303727-01-24T00:32:18.627945849-11:45:36",
+          "currentScore" : {
+            "home" : 926859956,
+            "away" : 1194541218
+          },
+          "fixtureLifecycleStatus" : {
+            "InPlay" : {
+              
+            }
+          },
+          "competitors" : [
+            {
+              "id" : {
+                "provider" : "PHOENIX",
+                "id" : ""
+              },
+              "name" : "",
+              "qualifier" : ""
+            }
+          ]
+        }
+      ],
+      "tournaments" : [
+        {
+          "tournamentId" : {
+            "provider" : "BETGENIUS",
+            "id" : "ີ崭"
+          },
+          "name" : "ﯠ뤀䟊븚飅",
+          "startTime" : "+471606167-12-02T20:22:11.349211601+14:58:13"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "頥㩭"
+          },
+          "name" : "킽⻊텛৑赘",
+          "startTime" : "+57411912-12-30T02:04:57.945763412+13:23:14"
+        },
+        {
+          "tournamentId" : {
+            "provider" : "PHOENIX",
+            "id" : "㒶챮䛓홾"
+          },
+          "name" : "篾",
+          "startTime" : "+529187332-03-01T20:05:05.96091533+09:44:48"
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  }
+]

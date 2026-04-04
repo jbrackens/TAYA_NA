@@ -1,0 +1,100 @@
+
+// custom changes to buttons
+// full width center panel Buttons
+.IsDesktop .rj-ev-list__view-all-link__wrap,
+.IsDesktop .rj-ev-list__view-all-btn__wrap{
+  padding:10px;
+  margin:0px 0px 2px;
+  background:$center-bg;
+}
+
+.IsDesktop .rj-ev-list__view-all-link,
+.IsDesktop .rj-ev-list__view-all-btn__link{
+    @include brand-button(15);
+}
+
+// mobile betslip buttons
+// rounded place bet button
+.betting-slip .betslip-maxbet-button{
+  background:transparent;
+  html.IsDesktop &:hover{
+    background:transparent;
+  }
+  a {
+    @include brand-button(12);
+  }
+}
+.accept-odds-btn.lnk_btn.green_btn,
+.betting-slip #PlaceBetButton.lnk_btn.green_btn{
+  @include brand-button(15);
+  margin: 0 auto;
+  width:unset;
+}
+.accept-odds-btn.lnk_btn.green_btn{
+  background:$accept;
+  &:hover{
+    background:darken($accept, 5%);
+  }
+}
+
+.responsible-gaming__btn,
+.facility-timeout__btn,
+.user-info__button{
+  @include brand-button(15);
+  margin: 0 auto;
+  min-width: 100px;
+  display: block;
+  white-space:nowrap;
+  max-width:unset;
+  &.user-info__button--rounded,
+  &.user-info__button--complete {
+    border-radius: 15px;
+  }
+}
+
+
+.ag-promo .promo-strip-btn, .super-banner-image-container .promo-strip-btn{
+  max-width:250px;
+}
+
+html.IsDesktop .stepwise-registration__button{
+  border-radius:40px;
+  padding:0.5em 1em;
+}
+
+// 'tab' buttons
+.user-info__tabs {
+  border-radius: 20px;
+}
+.user-info__tab, .user-info-tab-switch-overlay {
+  border-radius: 20px;
+}
+
+.c-reality-check__btn{
+  @include brand-button(15);
+  min-width:100px;
+}
+.responsible-gaming__btn{
+    @include brand-button(15);
+}
+
+//button containers
+.c-reality-check__group .c-reality-check__label,
+.c-reality-check__group .c-reality-check__field,
+.responsible-gaming__btn-wrap-inner,
+.personal-details-submit,
+.balance-limit-btn-wrap{
+  text-align:center;
+}
+.personal-details-submit .user-info__button{
+  width:250px;
+}
+
+.extra-deposit-button{
+  @include brand-button(20, true);
+  padding:0;
+}
+
+.IsDesktop .user-balance__deposit{
+  width:150px;
+}

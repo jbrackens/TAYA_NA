@@ -1,0 +1,100 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$sv-hide-info_name = 'sv-hide-info';
+$sv-hide-info_x = 0px;
+$sv-hide-info_y = 0px;
+$sv-hide-info_offset_x = 0px;
+$sv-hide-info_offset_y = 0px;
+$sv-hide-info_width = 12px;
+$sv-hide-info_height = 40px;
+$sv-hide-info_total_width = 75px;
+$sv-hide-info_total_height = 163px;
+$sv-hide-info_image = 'sprite_sv.png';
+$sv-hide-info = 0px 0px 0px 0px 12px 40px 75px 163px 'sprite_sv.png' 'sv-hide-info';
+$sv-new-badge_name = 'sv-new-badge';
+$sv-new-badge_x = 0px;
+$sv-new-badge_y = 88px;
+$sv-new-badge_offset_x = 0px;
+$sv-new-badge_offset_y = -88px;
+$sv-new-badge_width = 75px;
+$sv-new-badge_height = 75px;
+$sv-new-badge_total_width = 75px;
+$sv-new-badge_total_height = 163px;
+$sv-new-badge_image = 'sprite_sv.png';
+$sv-new-badge = 0px 88px 0px -88px 75px 75px 75px 163px 'sprite_sv.png' 'sv-new-badge';
+$sv-show-info_name = 'sv-show-info';
+$sv-show-info_x = 0px;
+$sv-show-info_y = 44px;
+$sv-show-info_offset_x = 0px;
+$sv-show-info_offset_y = -44px;
+$sv-show-info_width = 12px;
+$sv-show-info_height = 40px;
+$sv-show-info_total_width = 75px;
+$sv-show-info_total_height = 163px;
+$sv-show-info_image = 'sprite_sv.png';
+$sv-show-info = 0px 44px 0px -44px 12px 40px 75px 163px 'sprite_sv.png' 'sv-show-info';
+$spritesheet_width = 75px;
+$spritesheet_height = 163px;
+$spritesheet_image = 'sprite_sv.png';
+$spritesheet_sprites = $sv-hide-info $sv-new-badge $sv-show-info;
+$spritesheet = 75px 163px 'sprite_sv.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

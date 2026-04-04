@@ -1,0 +1,292 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+        "link": {
+            "href": "buckets/8e627645-03b8-4783-8c00-7cabb738ca6d",
+            "params": {
+                "rel": "self"
+            }
+        },
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+        "bucketName": "Common",
+        "createdTimestamp": 1555604572443,
+        "description": "",
+        "identifier": "53ac0374-ae72-42c1-ba5a-8b4e39e2f50c",
+        "link": {
+            "href": "buckets/8e627645-03b8-4783-8c00-7cabb738ca6d/flows/53ac0374-ae72-42c1-ba5a-8b4e39e2f50c",
+            "params": {
+                "rel": "self"
+            }
+        },
+        "modifiedTimestamp": 1555604572548,
+        "name": "GetOrCreateExtUser",
+        "type": "Flow",
+        "versionCount": 1
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                    "id": "1b9c68a7-5a1c-3b0c-90f5-268d8f01a753",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "0ca11a44-e0ab-38a3-a078-90a78dd032ac",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "groupId": "09f4d29c-bee8-3fb0-844e-aa62df3388aa",
+                    "id": "798e58dd-2412-3e12-b6b1-b2eceea7edd9",
+                    "name": "success",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                    "id": "1f67a60f-bae9-33a8-ba91-fb358847c4c5",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "f22989d6-4784-306d-9f68-37d281d6911c",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "53ed4db5-7964-3709-a1f0-6fb86eb5d17d",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "09f4d29c-bee8-3fb0-844e-aa62df3388aa",
+                    "id": "06cef334-936e-3d1d-a189-36c62dcd9ad5",
+                    "name": "input",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "78e030e8-a6ae-3dfc-9e8f-205133544a58",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                    "id": "1f67a60f-bae9-33a8-ba91-fb358847c4c5",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [
+            {
+                "componentType": "FUNNEL",
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "1f67a60f-bae9-33a8-ba91-fb358847c4c5",
+                "position": {
+                    "x": 1450.4695551856353,
+                    "y": 551.6595821759965
+                }
+            }
+        ],
+        "identifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+        "inputPorts": [],
+        "labels": [],
+        "name": "GetOrCreateExtUser",
+        "outputPorts": [],
+        "position": {
+            "x": 1184.759167703308,
+            "y": 198.4922435307094
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "09f4d29c-bee8-3fb0-844e-aa62df3388aa",
+                "inputPorts": [],
+                "labels": [],
+                "name": "ProcessGetOrCreateExtUser",
+                "outputPorts": [],
+                "position": {
+                    "x": 1285.9268349516005,
+                    "y": 665.3393646567488
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+                    "flowId": "2c703b11-42a9-4fed-9294-2d7b66dfdc7e",
+                    "registryUrl": "http://localhost:18080",
+                    "version": 2
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "inputPorts": [],
+                "labels": [],
+                "name": "FetchCustomerDetails",
+                "outputPorts": [],
+                "position": {
+                    "x": 1285.4021192588486,
+                    "y": 300.3879575958616
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+                    "flowId": "5c0e3532-95cf-45fb-8c4c-72cfbecf9976",
+                    "registryUrl": "http://localhost:18080",
+                    "version": 3
+                }
+            }
+        ],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [
+                    "success"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "identifier": "1b9c68a7-5a1c-3b0c-90f5-268d8f01a753",
+                "name": "LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1302.3939218429093,
+                    "y": 932.4589182092313
+                },
+                "properties": {
+                    "log-level": "info",
+                    "log-message": "Message processed ",
+                    "log-prefix": "[${PROCESS_ID}][GetOrCreateExtUser] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": [],
+        "variables": {
+            "API_ENDPOINT": "https://api.dev.rewardsmatrix.com",
+            "KAFKA.TOPIC.CUSTOMER_DETAILS": "customerdetails",
+            "KAFKA_HOST": "10.6.12.101",
+            "KAFKA_PORT": "9092"
+        }
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+        "comments": "",
+        "flowIdentifier": "53ac0374-ae72-42c1-ba5a-8b4e39e2f50c",
+        "link": {
+            "href": "buckets/8e627645-03b8-4783-8c00-7cabb738ca6d/flows/53ac0374-ae72-42c1-ba5a-8b4e39e2f50c/versions/1",
+            "params": {
+                "rel": "content"
+            }
+        },
+        "timestamp": 1555604572497,
+        "version": 1
+    }
+}

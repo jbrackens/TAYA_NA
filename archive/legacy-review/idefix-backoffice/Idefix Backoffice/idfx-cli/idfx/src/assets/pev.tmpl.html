@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pev2 example usage</title>
+    <meta charset="UTF-8" />
+    <script src="https://unpkg.com/vue@3.2.37/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/pev2@1.8.0/dist/pev2.umd.js"></script>
+    <link
+      href="https://unpkg.com/bootstrap@4.5.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/pev2/dist/style.css" />
+  </head>
+
+  <body>
+    <div id="app">
+      <pev2 style="height: 95vh" :plan-source="plan" :plan-query="query" />
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+      const app = createApp({
+        data() {
+          return {
+            plan: atob("${PEV_PLAN_B64}"),
+            query: atob("${PEV_QUERY_B64}"),
+          };
+        },
+      });
+      app.component("pev2", pev2.Plan);
+      app.mount("#app");
+    </script>
+  </body>
+</html>

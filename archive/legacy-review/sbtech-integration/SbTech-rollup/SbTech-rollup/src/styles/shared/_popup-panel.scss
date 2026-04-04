@@ -1,0 +1,102 @@
+$corner-radius: 0px !default;
+
+.IsDesktop .popup_panel.popup_panel_no_heading {
+  .popup_panel_blocks {
+    border-radius: $corner-radius;
+  }
+}
+.IsDesktop .popup_panel_content {
+  border-radius: $corner-radius;
+}
+.IsDesktop .my_account_popup{
+  .popup_panel_content{
+    border-radius: $corner-radius;
+  }
+}
+
+.popup.user-info__popup--acc-closure {
+  .popupWindow.popupWindow--noHead {
+    border-radius: $corner-radius;
+  }
+  .contentWrap {
+    border-radius: $corner-radius;
+  }
+  .user-info-p__text {
+    border-top-left-radius: $corner-radius;
+    border-top-right-radius: $corner-radius;
+  }
+}
+
+.rj-popup-message {
+    border-radius: $corner-radius;
+}
+
+.user-info-p__text {
+  border-top-left-radius: $corner-radius;
+  border-top-right-radius: $corner-radius;
+}
+
+.rj-popup-message__header {
+  border-top-left-radius: $corner-radius;
+  border-top-right-radius: $corner-radius;
+}
+
+.rj-popup-message__body {
+  border-top-left-radius: $corner-radius;
+  border-top-right-radius: $corner-radius;
+}
+
+// reality check
+// reality check 'invisible' buttons
+.c-reality-check .rj-popup-message__body-html{
+  margin-bottom:10px;
+}
+.c-reality-check .c-reality-check__button{
+  padding-top:5px;
+  padding-bottom:5px;
+  margin-bottom:5px;
+  &:last-child{
+    margin-bottom:10px;
+  }
+}
+
+.myacc-block-content-inner .filter-htmldropdown-wrapper{
+max-height:320px;
+}
+
+.rj-popup-message__button.popupBtnSecondary{
+  background:$brand-base;
+  color:$brand-light;
+  &:hover{
+    color:$brand-light;
+    background:$brand-base-light;
+  }
+}
+.rj-popup-message__button.popupBtnPrimary{
+  background:$brand-primary;
+  color:$brand-light;
+  &:hover{
+    color:$brand-light;
+    background:$brand-primary--hover;
+  }
+}
+
+.popup .popupWindow .popupWindowContent .popupBtns > button.popupBtnPrimary,
+.popup .popupWindow .popupWindowContent .popupBtns > a.popupBtnPrimary{
+  background:$brand-primary;
+  color:$brand-light;
+  &:hover{
+    color:$brand-light;
+    background:$brand-primary--hover;
+  }
+}
+
+.myacc-block-content-inner a.user-info__tab{
+  color:$brand-base;
+}
+
+.personal-details__preferences .user-info__button{ font-size:15px }
+
+.user-info__limitation-container{
+  padding-bottom:250px;
+}

@@ -1,0 +1,28 @@
+{% extends 'oidc_social/base.html' %}
+{% load bootstrap %}
+{% block container %}
+    <div class="row" style="margin-top: 100px">
+        <div class="col-xs-12 col-sm-10 col-sm-push-1 col-md-8 col-md-push-2 col-lg-6 col-lg-push-3">
+
+            <form method="post" action="{% url 'oidc_social:oauth_response' %}" class="form">
+                {% csrf_token %}
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Creating new account.</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            Please provide an email address used for account verification.
+                        </p>
+                        {% if form %}
+                            {{ form|bootstrap }}
+                        {% endif %}
+                    </div>
+                    <div class="panel-footer text-right">
+                        <input type="submit" value="Submit" class="btn btn-success"/>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

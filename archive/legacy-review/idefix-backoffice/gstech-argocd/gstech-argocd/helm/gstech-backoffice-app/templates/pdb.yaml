@@ -1,0 +1,17 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: {{ include "gstech-backoffice-app.name" . }}
+    chart: {{ include "gstech-backoffice-app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ include "gstech-backoffice-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  minAvailable: {{ .Values.minAvailable }}
+  selector:
+    matchLabels:
+      name: {{ include "gstech-backoffice-app.fullname" . }}
+      release: {{ .Release.Name }}

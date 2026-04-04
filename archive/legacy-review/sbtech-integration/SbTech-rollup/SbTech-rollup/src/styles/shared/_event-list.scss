@@ -1,0 +1,28 @@
+.rj-ev-list__sub-heading--regular {
+    font-weight: 900;
+    font-size: 2rem;
+    &:after{
+      display: block;
+      content: "";
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      left: 14px;
+      border-radius: 2px;
+      width: 3px;
+      background-color: $brand-primary;
+    }
+}
+
+.rj-ev-list__sub-heading--regular .rj-ev-list__heading-title {
+    font-size: 15px;
+    padding-left:30px;
+    text-transform:uppercase;
+}
+
+.rj-ev-list__main-heading:before{display:none;}
+
+.IsDesktop .rj-ev-list__sub-heading .rj-ev-list__heading-title{
+  padding-top:8px;
+  padding-bottom:8px;
+}

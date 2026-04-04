@@ -1,0 +1,2 @@
+ALTER TABLE rounds
+  ADD COLUMN pick_deadline TIMESTAMPTZ;

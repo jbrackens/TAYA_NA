@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  affmore-backend.test:
+    build:
+      context: ../../
+      dockerfile: packages/affmore-backend/Dockerfile
+    image: affmore-backend.test
+    container_name: affmore-backend.test
+    command: sh -c "yarn migrate && yarn workspace affmore-backend data:fake && yarn test"
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      POSTGRES_HOST: gstech-postgres-12
+      POSTGRES_PORT: 5433
+      REDIS_HOST: gstech-redis
+      MINIO_HOST: gstech-minio
+      MINIO_BUCKET_NAME: affmore-log-attachments
+      BACKEND_URL: http://gstech-backend:3001
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

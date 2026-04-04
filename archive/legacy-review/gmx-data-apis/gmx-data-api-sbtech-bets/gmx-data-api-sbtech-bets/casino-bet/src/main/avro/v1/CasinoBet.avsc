@@ -1,0 +1,224 @@
+{
+  "type": "record",
+  "name": "CasinoBet",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.CasinoBet.v1",
+  "fields": [
+    {
+      "name": "MessageCreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "BetID",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CustomerName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "LoginName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "Country",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CountryId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "WebProvider",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "WebProviderId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "LastUpdateDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "BetType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "BetTypeId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "BetStatus",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "BetStatusId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CurrencyCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Rate",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Stake",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Gain",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "BonusAmountUsed",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Stake_GBP",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Gain_GBP",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "BonusAmountUsed_GBP",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "GameProvider",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "GameProviderId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "SubproviderId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "GameType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "GameTypeId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "GameName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "GameNameId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "IsLive",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "IsExternalFreeSpins",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "IsFreeSpins",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "FreeSpinsID",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ],
+  "default": null
+}

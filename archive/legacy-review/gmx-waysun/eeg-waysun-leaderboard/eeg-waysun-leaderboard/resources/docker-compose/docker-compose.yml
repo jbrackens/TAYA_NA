@@ -1,0 +1,67 @@
+version: '3.8'
+
+x-images:
+  - &stella-leaderboard stella-leaderboard:latest
+  - &stella-leaderboard-ingestor stella-leaderboard-ingestor:latest
+
+services:
+  leaderboard-liquibase:
+    image: liquibase/liquibase:4.9.0
+    restart: on-failure
+    volumes: [ ../../common/src/main/resources/liquibase:/liquibase/changelog ]
+    command: [
+        '--changeLogFile=changelog/changelog.xml',
+        '--url=jdbc:postgresql://postgres/leaderboard',
+        '--username=leaderboard_liquibase',
+        '--password=leaderboard_liquibase',
+        'update'
+    ]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  stella-leaderboard-ingestor:
+    image: *stella-leaderboard-ingestor
+    depends_on:
+      leaderboard-liquibase:
+        condition: service_completed_successfully
+    env_file:
+      - ingestor-local.env
+    labels:
+      - "traefik.enable=true"
+
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  stella-leaderboard:
+    image: *stella-leaderboard
+    depends_on:
+      leaderboard-liquibase:
+        condition: service_completed_successfully
+    env_file:
+      - local.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.leaderboard.rule=PathPrefix(`/leaderboard/`, `/leaderboard_docs/`)"
+      - "traefik.http.services.leaderboard.loadbalancer.server.port=${LEADERBOARD_PORT:-11000}"
+
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 200M
+
+networks:
+  default:
+    external:
+      name: gmx-internal # a network used in gmx-traefik

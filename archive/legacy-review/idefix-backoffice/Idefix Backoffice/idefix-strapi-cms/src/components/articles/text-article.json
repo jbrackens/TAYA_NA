@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_articles_text_articles",
+  "info": {
+    "displayName": "Text Article",
+    "icon": "file"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    },
+    "content": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}

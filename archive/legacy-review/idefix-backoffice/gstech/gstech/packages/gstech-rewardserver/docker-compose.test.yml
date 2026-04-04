@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  gstech-rewardserver.test:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-rewardserver/Dockerfile
+    image: gstech-rewardserver.test
+    container_name: gstech-rewardserver.test
+    command: sh -c "yarn migrate && yarn test"
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      POSTGRES_HOST: gstech-postgres
+      POSTGRES_DATABASE: rewardserver
+      BACKEND_URL: http://gstech-backend:3001
+      KAFKA_HOST: gstech-kafka
+      KAFKA_PORT: 19092
+      KAFKA_AVRO_REGISTRY_HOST: gstech-schema-registry
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

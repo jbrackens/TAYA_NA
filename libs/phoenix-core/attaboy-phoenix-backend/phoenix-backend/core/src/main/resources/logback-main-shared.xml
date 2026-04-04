@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+    <include resource="logback-shared.xml"/>
+
+    <!-- Print out Logback's own status messages about config parsing -->
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+
+    <!-- property(...) can refer to environment variables as well -->
+    <if condition='property("PHOENIX_LOGGING_JSON_FORMAT_ENABLED").equals("true")'>
+        <then>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                    <providers>
+                        <timestamp/>
+                        <logLevel/>
+                        <threadName/>
+                        <loggerName/>
+                        <mdc/> <!-- provides: akkaAddress, akkaSource, akkaTimestamp, correlationId, sourceActorSystem, sourceThread -->
+                        <message/>
+                        <arguments/>
+                        <stackTrace/>
+                        <stackHash/>
+                    </providers>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>logs/application.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>30</maxHistory>
+                    <totalSizeCap>3GB</totalSizeCap>
+                </rollingPolicy>
+                <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                    <Pattern>${defaultPattern}</Pattern>
+                </encoder>
+            </appender>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                    <Pattern>${defaultPattern}</Pattern>
+                </encoder>
+            </appender>
+        </else>
+    </if>
+
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+        <!-- <appender-ref ref="FILE"/> -->
+    </root>
+
+    <!-- A defensive setting - if any of the below end up being DEBUG,
+         then admin access tokens to Keycloak server would leak to logs
+         (in HTTP data logged by Resteasy, which is a dependency of Keycloak SDK). -->
+    <logger name="org.apache.http.headers" level="INFO"/>
+    <logger name="org.apache.http.wire" level="INFO"/>
+</included>

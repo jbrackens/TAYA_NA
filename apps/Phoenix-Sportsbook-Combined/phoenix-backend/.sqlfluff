@@ -1,0 +1,32 @@
+[sqlfluff]
+dialect = postgres
+exclude_rules =
+  # Unnecessary trailing whitespace
+  L001,
+  # Indentation not consistent with preceding line
+  L003,
+  # Files must end with a single trailing newline
+  L009,
+  # Keywords must be consistently upper case
+  L010,
+  # Implicit/explicit aliasing of table
+  L011,
+  # Line is too long
+  L016,
+  # Function name not immediately followed by parenthesis
+  L017,
+  # Blank line expected but not found after CTE closing bracket.
+  # (CTE = common table expression i.e. temporary named result set created using WITH keyword)
+  L022,
+  # Avoid aliases in from clauses and join conditions
+  L031,
+  # Unnecessary whitespace found
+  L039,
+  # Boolean/null literals must be consistently lower case
+  L040,
+  # Files must not begin with newlines or whitespace
+  L050,
+  # Unnecessary quoted identifier
+  L059,
+  # Datatypes must be consistently upper case
+  L063

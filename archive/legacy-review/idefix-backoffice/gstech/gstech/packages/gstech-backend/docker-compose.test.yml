@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  gstech-backend.test:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-backend/Dockerfile
+      args:
+          NODE_ENV: test
+    image: gstech-backend.test
+    container_name: gstech-backend.test
+    command: sh -c "yarn migrate && yarn workspace gstech-backend test:slow"
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      MINIO_HOST: gstech-minio
+      REDIS_HOST: gstech-redis
+      POSTGRES_HOST: gstech-postgres
+      POSTGRES_PASSWORD: GS[ZciDNIe9quGR5kbJXgIy024p0tI9Vo0OVoqIN/X+bOucywWsGaljqRSWD6Q=]
+      KAFKA_HOST: gstech-kafka
+      KAFKA_PORT: 19092
+      KAFKA_AVRO_REGISTRY_HOST: gstech-schema-registry
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

@@ -1,0 +1,72 @@
+# postgres database connection credentials
+database:
+  gstech:
+    user:
+    host:
+    passwd:
+  campaignserver:
+    user:
+    host:
+    passwd:
+  rewardserver:
+    user:
+    host:
+    passwd:
+  gstech_beta:
+    user:
+    host:
+    passwd:
+
+devtools_interceptor:
+  # API key to interact with cloudflare devtools interceptor webworker
+  api_key:
+
+# root directories on your local machine where you cloned the repos
+repositories:
+  # backend repo - https://github.com/flipadmin/gstech
+  backend_dir:
+  # brand client repo - https://github.com/flipadmin/brandserver-client
+  brand_dir:
+  # backoffice repo - https://github.com/flipadmin/gstech-backoffice
+  backoffice_dir:
+  # affmore client repo - https://github.com/flipadmin/affmore-client
+  affmore_client_dir:
+  # campa client repo - https://github.com/flipadmin/gstech-campaignserver-client
+  campa_client_dir:
+
+mock:
+  # IP that will be "mocked" by the backend when accessing brands
+  fake_ip:
+  # email address used to create a mock user on idefix backoffice (pass: foobar123)
+  idefix_user:
+
+logs:
+  # ask to archive old logs once this size is reached
+  size_limit: 500M
+
+# ports that node-inspector will listen on when running services
+# also automatically injected into vscode launch.json while services are running
+# these are usually in the 9xxx range
+debugger_ports:
+  backend:
+  backend_cron:
+  backend_worker:
+  affmore:
+  payment:
+  wallet:
+  campaign:
+  reward:
+  ld_brand:
+  cj_brand:
+  vb_brand:
+  fk_brand:
+  os_brand:
+  kk_brand:
+  sn_brand:
+  ld_worker:
+  cj_worker:
+  vb_worker:
+  fk_worker:
+  os_worker:
+  kk_worker:
+  sn_worker:

@@ -1,0 +1,54 @@
+[
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA93565155#1075572916_23L201398Q1962301Q261"
+    },
+    "value": {
+      "messageId": "5b163af3-a575-4f96-9138-a944626a56c0",
+      "messageOriginDateUTC": 1626909852,
+      "messageProcessingDateUTC": 1627122251239,
+      "payload": {
+        "id": "0QA93565155#1075572916_23L201398Q1962301Q261",
+        "eventId": "93565155",
+        "marketId": "93565155",
+        "selectionIntId": "1075572916",
+        "selectionTypeId": "23",
+        "participantId": "962301",
+        "selectionName": "Indy Lyon (E/W 1/4 1-2)",
+        "isDisabled": false,
+        "trueOdds": 3.125,
+        "displayOdds": {},
+        "details": {
+          "runnerStatus": "DOE"
+        }
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA93610566#1076019117_25L199650Q11055689Q2167"
+    },
+    "value": {
+      "messageId": "b324243a-df5f-4264-b1fd-cff2c132d3d6",
+      "messageOriginDateUTC": 1626924011,
+      "messageProcessingDateUTC": 1627122270984,
+      "payload": {
+        "id": "0QA93610566#1076019117_25L199650Q11055689Q2167",
+        "eventId": "93610566",
+        "marketId": "93610566",
+        "selectionIntId": "1076019117",
+        "selectionTypeId": "25",
+        "participantId": "1055689",
+        "selectionName": "Te Awe Awe (E/W 1/5 1-2-3)",
+        "isDisabled": false,
+        "trueOdds": -1.0,
+        "displayOdds": {},
+        "details": {
+          "runnerStatus": "SP"
+        }
+      }
+    }
+  }
+]

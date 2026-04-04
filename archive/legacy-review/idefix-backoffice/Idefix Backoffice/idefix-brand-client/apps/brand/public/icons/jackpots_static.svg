@@ -1,0 +1,41 @@
+<svg id="jackpot1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="1080px" height="1080px" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1080 1080"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    
+   #jackpot1 .fil1, #jackpot1 .fil0 {fill:#3F3F3F}
+   	
+	#jp1sb1,#jp1sb2,#jp1sb3{
+		transform:translate(0,178px);
+	}
+	
+   ]]>
+  </style>
+   <clipPath id="jp1clp">
+    <path d="M615 460l116 0 0 160 -116 0 0 -160zm-266 0l116 0 0 160 -116 0 0 -160zm133 0l116 0 0 160 -116 0 0 -160z"/>
+   </clipPath>
+ </defs>
+ 
+  <path id="jp1bb" class="fil0" d="M349 640l382 0 0 16c0,3 -2,6 -6,6l-370 0c-4,0 -6,-3 -6,-6l0 -16z"/>
+  <path id="jp1tb" class="fil0" d="M355 418l370 0c4,0 6,3 6,6l0 17 -382 0 0 -17c0,-3 2,-6 6,-6z"/>
+ 
+ <g style="clip-path:url(#jp1clp)">
+   <g>
+	<g id="jp1sb1">
+     <rect class="fil1" x="349" y="460" width="117" height="160"/>
+     <path class="fil0" d="M349 284l116 0 0 160 -116 0 0 -160zm26 33l64 0 0 18 -33 76 -19 0 33 -74 0 -2 -45 0 0 -18z"/>
+    </g>
+    <g id="jp1sb2">
+     <rect class="fil1" x="482" y="460" width="117" height="160"/>
+     <path class="fil0" d="M482 284l116 0 0 160 -116 0 0 -160zm26 33l64 0 0 18 -33 76 -20 0 34 -74 0 -2 -45 0 0 -18z"/>
+    </g>
+    <g id="jp1sb3">
+     <rect class="fil1" x="615" y="460" width="117" height="160"/>
+     <path class="fil0" d="M615 284l116 0 0 160 -116 0 0 -160zm26 33l64 0 0 18 -33 76 -20 0 34 -74 0 -2 -45 0 0 -18z"/>
+    </g>
+   </g> 
+  </g> 
+ 
+</svg>

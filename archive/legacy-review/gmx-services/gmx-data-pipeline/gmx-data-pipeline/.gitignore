@@ -1,0 +1,18 @@
+# build output dirs
+.gradle/
+build/
+out/
+
+.idea/
+
+
+# Local config #
+######################
+*.ignore.*.yml
+*.ignore.*.conf
+*.ignore.*.properties
+*.ignore.*.env
+
+.DS_Store
+
+*.iml

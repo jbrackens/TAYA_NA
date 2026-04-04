@@ -1,0 +1,2689 @@
+[
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "恿䠼쀥"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "歟穼"
+        },
+        "marketId" : "m:o:癵沄砈喍",
+        "selectionId" : "ꉟ",
+        "stake" : {
+          "value" : {
+            "amount" : 4705100899715917314.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 23.7878
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "莁ਲ਼玄癕쮈掰캫厽瞭䁝ᎄ煚혅嗺ǌ쿧ꦸ아ﶒㅖ"
+      },
+      "geolocation" : {
+        "value" : "耉惹蚄牲？믐뾉ҡ泵청䎫厸潦塠蚞"
+      }
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "๮ꛝꄰ䌇晄袪팷ꟻ滎깯ꈮ渋俶於퓚힡ԃ啤⻺"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "挫믑ꈍ"
+        },
+        "marketId" : "m:o:ꜫ緻㌾",
+        "selectionId" : "፝懏",
+        "stake" : {
+          "value" : {
+            "amount" : 0.29,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 918.7988
+        }
+      },
+      "adminUser" : {
+        "value" : "뾦嫆አᩌ潕玡稩仦"
+      },
+      "cancellationReason" : "暹눓⪖걠ẑಎᩉ氧敩鱃켬ű襶″塀",
+      "betCancellationTimestamp" : "+802420699-01-26T23:37:06.049446722-02:54:03"
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "䟨㈞Ꮑ纔ㅆ썹"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㬐쏋픧拃"
+        },
+        "marketId" : "m:o:腽ᯥ",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 8885659409932831346.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 242.5964
+        }
+      },
+      "reasons" : [
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "诂䂺ꭴ㞕₧ᨸ"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "滥暏"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:赌壌婰葱"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:ꈬ䝽ྰ魷뜕鲾鎂뚰맾찛",
+            "selectionId" : "퉆Ộ㺃⟇"
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "ꏊD৔ｫ墼翤࣯毎퀖吡筺"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:⟐畇〲濤"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:딉ฦ漋劂췫祫᲌휅꽵Ꮏ憆㮳䷁⎠㢬㓬ᰋ᢯ꖉ꼣"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:㏷",
+            "selectionId" : "ꭸꗀ"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:o:Ɂᵫ뚃쫝㫷觥"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "㴱蛋垂ᩰ冖롣悂᝵꘹᥀姊쒶꒷ꠠ戜洤帡垿"
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:뒃筬ㄜᶾ쿐㶥⍤๳",
+            "selectionId" : "쪚蓇Ⱗဦ孛븫ꩲꤏ뤊錉"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "戒㿒醒砂Ṕ冋池綥㾨遗"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "깻౏솤躭밪큰陦뻽꺖眼룔쯣㕫醀뒍Ⱙ閨饥䫠ꖄ案"
+            }
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 1.0100
+            },
+            "current" : {
+              "value" : 39.9268
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "맄菔픺蘘┪ꠃ䣱현것㋯"
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "鈍업蝒쌈"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "៊ᓴ莃漇撋럒垉侄尔臐穬欩拝"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "鼅屢"
+        },
+        "marketId" : "m:b:ٮ뻺䃸",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 1112699941064421969430337124539517881953924154748266095800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 949.3946
+        }
+      },
+      "adminUser" : {
+        "value" : "휒튬ρ鉻"
+      },
+      "cancellationReason" : "佐ꘫ᳤潆∬⹩㨼ᣏ꾹",
+      "betCancellationTimestamp" : "+242069337-12-11T07:46:20.158115072-07:06:19"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "娈ࡹ䃙抵靰엾ￕ릞闡﯑⤢黔倠⚏眭縳৵㞯廔閷兣"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "ᓻ鏂ⷧ쏖蕰"
+        },
+        "marketId" : "m:b:욪畃",
+        "selectionId" : "긝횅",
+        "stake" : {
+          "value" : {
+            "amount" : 0.85,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 535.7190
+        }
+      },
+      "reasons" : [
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:木⡯Ƕ鼍몢麥嫖整",
+            "selectionId" : "௄쨰ࢭ뒂鱨眒\u008cﻆ艙"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:o:샹뽡襌脈Ė匭"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:⒮鑨렆鯞"
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "ﳎ탷⎉驕닛櫠ᅠ攎㪁픱琞隥劇㱩䟾羶䳪㱘罁薘蒫﵉숥"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "뗀楍"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : ""
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:㩽慧噡稙Ｉஃ抪抎᳎糝ꇓ"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "妑緅㰺곋଎Ƙ휟輝"
+            }
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 236.5130
+            },
+            "current" : {
+              "value" : 67.6357
+            }
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:厉垔ᗎꟗ"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:㘱隨ꘒꪊ㗯盨ࢦ쨷툒칟ؙ益拖溹㿧钅䰄∱"
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 656.5648
+            },
+            "current" : {
+              "value" : 1.0100
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "힓駟嗿Ọ潐☛擅ꮧ陗퓼鋢䣚몗ᵨᛄ母㻌뉷㺄嶴"
+            }
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:䌐⏍抜籱ቡ폳￦谟ὁΥ㊚洏饭錪㜞"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "⸤危埳躸ốꞠⰫ있ᖪ箔ௐ붫蓮眪쩡ꣵ㴎㯍낫挪톐밊Ꝇ"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : "ㆧ✿哞堹邓숃甿꺘꺎蹠ᆦ㴖磌쾖⋏鈀"
+                }
+              }
+            }
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:o:枮懝씿譔騢≑帽춥略⊮⃽ꎭ곜듊雩秘诨瑄⡞ᰳ"
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "䏱⠭ꬁ₯汇蘍ꩪ䶛똰ۓ뛵娖㲴梧譌錬洃桂鬆실怠ᵨ퇉"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "⁂뽇蹬褛ḛꗖ۽ᅆ⫐輪㑌ጦ謡蔴鴭飿빹툔軤訮ꍘ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "疥씿᭛쮝괒矢返"
+        },
+        "marketId" : "m:b:羬ꗉሄ䣍⯔湸ꂣ",
+        "selectionId" : "鏪㿬蔦恬隱㷢",
+        "stake" : {
+          "value" : {
+            "amount" : 92233720368547758070000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 229.4675
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "ᆢ禜嶡镅꘤Ɍ班扬⽓䩡戔榵剷䧺私"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㼫疰瞛投裾"
+        },
+        "marketId" : "m:b:䡹ӫ貴ꙑ",
+        "selectionId" : "䅅歹伓श",
+        "stake" : {
+          "value" : {
+            "amount" : 0.19,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 852.4011
+        }
+      },
+      "reasons" : [
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "ReservationAlreadyExistsError" : {
+                "walletId" : {
+                  "value" : "䂷흺"
+                },
+                "reservationId" : {
+                  "unwrap" : "鸃ꨣ♗鈯嗎鼃⓬境"
+                }
+              }
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "┻甔傻明덦뤀㏁ꁀ忶쵾퍀颸哾媞쐖틔劃⠯痒ꌴߣ姰㶯"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:㏇뇱ꦆ"
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "ꕝ頥헝䕏૪劄翼팿鿌盔襘ӥ태"
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:᧮䲣팊㪥즌",
+            "selectionId" : "죈쯓梾䚨巑"
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "㡅䍬䛗撎氩势쇥罫ኅ㵌ㆳ먆䃤鉮ǟꡉ"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "ReservationAlreadyExistsError" : {
+                "walletId" : {
+                  "value" : "ꀧ쏞涸샱絜됭즲鷟땥"
+                },
+                "reservationId" : {
+                  "unwrap" : "鶹ﶽ찑沈슔"
+                }
+              }
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "WalletNotFoundError" : {
+                "id" : {
+                  "value" : "᭚겜஭큩頄띆탮緝"
+                }
+              }
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "䂎뢤驱\u0017鱼僭暾垽羻ପ㛬ꣴᷕ얥聊價ڷ켓软랫㺾觴煍Å喪甀"
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "쾰螄ෆ"
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "᭔ꩨ砙㸲濜㖔㸳溫"
+            }
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:o:鴖ؘ⭭댙軰⿻◩썆熢ᵀ琢逞ᗇ縴䵇ǧꀾ׷뿪蠅蹵"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:ᤫ"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:㵈䧯陫艽咿줧捣죊閽㶀鍡⺫⟸꒒諪嘮㌽Ṳ"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "躡阪蟻៸묬폺罷ጆ䖎刵娒磱㱐硼褒㦬"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : "淠鮷灭毅䪼촖꧎䄬짥쿋ΰ"
+                }
+              }
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : "髉僢뢷캻椁ڴ๲ᅸ஛₸䘽됆꟏檷훧ᒄ྽Ċ埒柌噩␴"
+                }
+              }
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:묰浌趢圧䖆挕࿱౯㲰撄玹᰺믑藗"
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : ""
+                }
+              }
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "︝ﾕ㑉ﹾ6ꐘ瑼ു帳⦃▻昀翪荪⁺㲶劏⥶촔"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "ReservationAlreadyExistsError" : {
+                "walletId" : {
+                  "value" : "䪸囚꾿㨾"
+                },
+                "reservationId" : {
+                  "unwrap" : ""
+                }
+              }
+            }
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:串㫩൱细⹟"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "렅⚛鼉㝝蚃ॴ熆慨磐鉁ᬐ翏㔎䧡ˬ욿푕逤跼ⴿ远ᦈ栝䔫쇐"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "漧苕ᎇ"
+        },
+        "marketId" : "m:b:Ț㋴ሬ홍낇ꎋ鲡皚|",
+        "selectionId" : "劢அ᰽",
+        "stake" : {
+          "value" : {
+            "amount" : 6.48,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "輿筤⣮叙℄׭쟰㴽ᘽ应޼믵"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㻀뢡"
+        },
+        "marketId" : "m:o:偳缺∴愃",
+        "selectionId" : "夷궱⡘젳优䒽惲",
+        "stake" : {
+          "value" : {
+            "amount" : 0.74,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "౰餅갡"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "먥"
+        },
+        "marketId" : "m:b:輱罐໺",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 1110319336031470778.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "adminUser" : {
+        "value" : "被奔㐵꾠ꊃ碓魅굷蹺⤸硽퍁ꭕ䴦嶆飹"
+      },
+      "cancellationReason" : "뤣╝Ԃ턤㐯퓒㩼걜ոﬔᾜ⹪▍",
+      "betCancellationTimestamp" : "+853340442-09-23T10:38:16.196671273+12:40:28"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "﹦鹈尊詂㹐ﾝ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "鑔덹뢪▘ᖸ圝倌"
+        },
+        "marketId" : "m:o:亅䤄뗗ྌ汕譞",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 0.81,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "ꍱ﫩찁하ᷥ줕矚㲶滹⤧腄＋◥굔㼃숑넏갠놜萪㚘誈箈ꈇ⻣"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "䖽⸂"
+        },
+        "marketId" : "m:b:帽笞㜉洯댍",
+        "selectionId" : "珺绷羕㮣矤嶵灿",
+        "stake" : {
+          "value" : {
+            "amount" : 0.06,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 989.5066
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : ""
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:o:攙嚵᳾ࡦ",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 5162405095729318325.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 80.8836
+        }
+      },
+      "adminUser" : {
+        "value" : "龐꨼蹖㝐胭裸筝윁咂ﾗ곽黰醂鼨⾇蓔췲璯"
+      },
+      "cancellationReason" : "旴琏ⱴ杩靽摨鮀＾୥芘",
+      "betCancellationTimestamp" : "+616879532-05-04T22:18:38.668673079+15:02:33"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "ꄲ틉"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "嵓ᴘ☩撅"
+        },
+        "marketId" : "m:b:㸗䑎랆",
+        "selectionId" : "驕㐶",
+        "stake" : {
+          "value" : {
+            "amount" : 119972080035520983670289558272687000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "adminUser" : {
+        "value" : "ﭙ뢻뮴獝䧡ŷ㕼쑒碇ᴧ䖆弇蘒視㮩㯞胖ᤑ"
+      },
+      "cancellationReason" : "Ⴤ",
+      "betCancellationTimestamp" : "-571334158-09-10T06:51:19.095779193+03:13:52"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "꣬択ꮸ瑴鮂韞쫔꟝၉幈餔ힲ㓛瓀῞ᵹ庲쉷Ὁ摀☐"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㽥"
+        },
+        "marketId" : "m:b:ⴵⲢ᜴廲೐",
+        "selectionId" : "໇䕊듑ꀽ",
+        "stake" : {
+          "value" : {
+            "amount" : 1.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 188.6221
+        }
+      },
+      "reasons" : [
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 1.0100
+            },
+            "current" : {
+              "value" : 375.6062
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "幟傁뺍繂瀶ﭐ踭ᶥ䘣⾙鮆"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "◓농膧穱灋易⡜舳㗚⿒ᡦ巬쳼얾닦↱"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:㒕ၬ僴ం㌪쳻핵⊈ᶆ띱坔ꩃ㢼⧠▟꒼䉍ꈆ薄"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "㜚뇭ꛠⒾᗭꙏ朙₵伏菍皕Ɜ佫湍滙ꡜ芉꬇䲐茞愩"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:䮊懝妎᛭澕蟽犓Ք⸀ⳳ苉氪澷╤놟ᔆ꡶⠄겂篘竨㑫耛"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:ἡ巍殹︠㺁劖篚",
+            "selectionId" : "헷痐"
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 931.5929
+            },
+            "current" : {
+              "value" : 792.5774
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "ꪐᅑ꩖䉋鐠⦹䎂볃棊㓗๞　콚䝖揙౮"
+            }
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:篐剄獏钰氐㻡㾳瞧䗕例ﲟ廕⣲ǵ뤖푙匈뗾瓁폤뽀潳軖"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:o:偎ꋛ沜ᓥ怉۪ɲ릇煇Ⱳﶀ稻⢜䖸圄հ㑓능쾅"
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "餈턳嵊≆监놊银뺇틀攔㖁ᶡ댫ኗ뼹㶳댨䵇ꇤ"
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:䩆ꡬ㻒퉿잏໻昣캅ꏥ颵꡾",
+            "selectionId" : "珂஑捠ﰌ괲ሧ쯮ᨈ袒鯎"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:䟭꠬ᡒ潓宰볊ᯚ砹",
+            "selectionId" : "麟꜡紓粥圸"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:䖕꧴荠뮤鶴큉겻ῡ",
+            "selectionId" : "虙赟ᑸᓀ끞俪䝘ⱁꚜ궯ꕻ"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:咽뿣䧜㳉껵㚗ⴻ㊋뿞"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:ر챦뵖轏⢇讻",
+            "selectionId" : "र幃⺕烒뇼찇⋋Ṧ"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:斋쏧㶌ꃢ亓䅹䧶슀訙䨎脗䥾䲁"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:ᓬ͢ⰲᥳ퓵텫"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "濰➅聠"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "緍덊ꩂ뙪ṡ㈛髢ꗕ"
+        },
+        "marketId" : "m:o:랊娏",
+        "selectionId" : "벿",
+        "stake" : {
+          "value" : {
+            "amount" : 5628687350149588229.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 842.0561
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "０ⷊ๙旺ﶦ䟆"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "ꪕ鉋"
+        },
+        "marketId" : "m:o:硇틦",
+        "selectionId" : "\u0002䱽",
+        "stake" : {
+          "value" : {
+            "amount" : 1.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.5257
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "㼜䠵䥠韦ᮻ殓⾸ᥤ졑䇩ۇ褺⥚᪥"
+      },
+      "geolocation" : {
+        "value" : "쵞"
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "赱㴰䰍橥➞믴뜷﫢蘍ͬ碑"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:o:糩",
+        "selectionId" : "专㗵",
+        "stake" : {
+          "value" : {
+            "amount" : 3281775371216489525.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 6.6194
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "௾溓꼛⏣帨䉧㉣偼皝밠鿞ꭊ꨷"
+      },
+      "geolocation" : {
+        "value" : "┃뛦剴☷㬝ұ̶荚䜼"
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "燈좢ꗸ㎰갴♛꾭﵇뚸˖次혖ⷕ饷茦,瀈ꪁ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:b:挧썀࿮",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 2609997148733891385.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 279.4339
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "暬峿脛⬶뢺梥굟"
+      },
+      "geolocation" : {
+        "value" : "芫ꁥ떲儒矶듑갶᜿뿚栨綒≂㨨槗녃㧼䋤ꍐ"
+      }
+    }
+  },
+  {
+    "Settled" : {
+      "betId" : {
+        "value" : "Ṡￆꆍꉗ닙侧"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "楏㼟緻겾"
+        },
+        "marketId" : "m:o:峐辎\"랸",
+        "selectionId" : "ⷯ叾ﷃꮇ",
+        "stake" : {
+          "value" : {
+            "amount" : 1.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 497.4096
+        }
+      },
+      "isWinner" : false
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "̅읮᫴拋毼㉈櫵縖䁶虆ꗼ䛸Ⴋ㱲砵熄鹣뗵칣褽㒞䷄륃ⲳ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "య踪ໍꋕ෉"
+        },
+        "marketId" : "m:b:铦쏒⎅恧",
+        "selectionId" : "囌",
+        "stake" : {
+          "value" : {
+            "amount" : 0.53,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 491.4321
+        }
+      },
+      "reasons" : [
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:䃏Ჰᢴ둯蜯ﻲ嚴苺胐낣"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:㚨㕆",
+            "selectionId" : ""
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:o:✿춭嚅桜䶢膨㾨瞷있䢒匔"
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "뙳ऴ桨렓泏ꫯ葈峮"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "ւꔬ\\嗰儽懶퐖퇫Ѭ潭愠蔙憰춻埨듒헩窰Ǎﵼ"
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:⓼⾒뭇蠀",
+            "selectionId" : "雥䡥㱵킬닖晞鼩昢箚"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:뽍䄓텕侬迠㬤焪쎼⊭ᾘ",
+            "selectionId" : "૶倭延ܪ爉ꫵ﭅痯"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "⌙묲በ̬岌儨츃ᗃ䟨첡왟㽷琧ネ囀ฏꉯ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㏫阘㶤眺"
+        },
+        "marketId" : "m:o:茱뙺歲",
+        "selectionId" : "騨윷",
+        "stake" : {
+          "value" : {
+            "amount" : 1.11,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "ⴢꕵ쳧ǖ險빈췇遱"
+      },
+      "geolocation" : {
+        "value" : "찫曈씷ₑᙶ⎡굹ጡᇋᑂ㫳"
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "㕹ꌐ㕉嬅쿡⚖㴷휹겑ᣂ蹦潭躡휇鯕্騚ᛥﲐ୥"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㺸໗䥘唤陒"
+        },
+        "marketId" : "m:b:맱賨ᣮ",
+        "selectionId" : "庂蓏㹗ᡴ鋓",
+        "stake" : {
+          "value" : {
+            "amount" : 22397073108542607660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 683.0152
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "䯌㵻"
+      },
+      "geolocation" : {
+        "value" : "⚅絞ꝰ⇬ⶪ◫"
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : ""
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "꩚踆캐걕"
+        },
+        "marketId" : "m:o:厬",
+        "selectionId" : "蕍탗ꦤ",
+        "stake" : {
+          "value" : {
+            "amount" : 0.33,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 782.6806
+        }
+      },
+      "adminUser" : {
+        "value" : "ᑈ藍༥ỷ鲑襐ꨥ⨨ꆏⲰ尋黋벿"
+      },
+      "cancellationReason" : "쯲뗭ࣱ㌙疱ቄ",
+      "betCancellationTimestamp" : "-545052408-11-18T04:42:01.743942505+10:40:01"
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "㍡ꎈ跳윿⌢⥩蟳Ό㶒៲ᳲ獼巴椏覫㿁"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "욵ꉶ鞛"
+        },
+        "marketId" : "m:o:ⶒ덌ﴲ욛",
+        "selectionId" : "䲽遬℡溅",
+        "stake" : {
+          "value" : {
+            "amount" : 158113079621801982.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "箩ꟑⶑ䣛㭟滈ꭻ"
+      },
+      "geolocation" : {
+        "value" : "ᄛ᭓悟쭰吽쾊Ĕḿ⽾푫銉䩟鳻"
+      }
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "㫾栗砣㬾珳羭컝皨ꓠฬὗ栞쵆쪮깫熋␋伈ﴄ团艢葀∾"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "齝ꊼ쁁"
+        },
+        "marketId" : "m:b:蹏꓁䕫ꢠ凬팱",
+        "selectionId" : "霈⒩鄱⸬പꗨ짣",
+        "stake" : {
+          "value" : {
+            "amount" : 3917890570123278740.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reasons" : [
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "ReservationAlreadyExistsError" : {
+                "walletId" : {
+                  "value" : "灒᥈曽"
+                },
+                "reservationId" : {
+                  "unwrap" : "쿈鼛"
+                }
+              }
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:羴㼜냗诿㱼",
+            "selectionId" : "种㚁䕾"
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "ReservationAlreadyExistsError" : {
+                "walletId" : {
+                  "value" : "纪ꩯ"
+                },
+                "reservationId" : {
+                  "unwrap" : "紬Ᾰꨜࡳ⡺睇销ﰀᑤ"
+                }
+              }
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "⏑뇎芀脖朔ᷡ၁蜮쒅ຣ㊝ﱻ⃗㉾邐驔켎깙ꏄ"
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "䵙鬓킲핈霋亳"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:䷃࠲"
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "沣㉠됩Ĺꧼ꧄伹㽝䚸왱傾릪㩆밞ｴ⾈"
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "ᷛ⺺䵤๕ꨠଦၿ됰㜄椛舙薥朒ᯙ樑ᦘ푚Ɬ"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:ㇹ䧪魟䮆뗟瑹䈏촿ꂗ⚖䫉ꗞ陆"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:ਭ㠜۩箜ᙶ㳡縂ڈ柒꾤曾䬄싴聑떗횊윧승쉋ꓧ頺ᑎ䜏淌ϒ"
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 803.8470
+            },
+            "current" : {
+              "value" : 278.9671
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "侭菎년㾑ޞࢌ빕₱碡釷꡴轡㱻ㄯ羔ⷾ"
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:脗֓킲骝᤭㢲ཛ螚廕륮",
+            "selectionId" : "긽⪓⤠鈉댎㻠疧䗂惍"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:뭏쪨㨣촨䌳箫ߗ",
+            "selectionId" : "蛪͕姫ᨉ褮纆"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:駍",
+            "selectionId" : "鍇㰈靝綄푅磹迄槪룋ͯ캩"
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "떤部әᱭ犍ힵᥟ飷齇ڍ滅蔙蚃♲ꌵ콞븥䑔밁摅塀ꊟ㿿ぽ"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "徇鵟"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "ReservationAlreadyExistsError" : {
+                "walletId" : {
+                  "value" : "뻎"
+                },
+                "reservationId" : {
+                  "unwrap" : "➼㷾ⰴ댆蜡诌㯢ᐐۃ"
+                }
+              }
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "歓ᳺ偊姊ᅜ⌕맊홤귉䛠Ὗ口"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:鴽魥ᇗ灔秈䙠썳컼寐Ⳅጆᝊ孷鳓伱嵾⪡⇑옆"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:ĭṠ촐슶俏"
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : "뷌؋좫亼"
+                }
+              }
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "䴸ስ贿"
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "⏷깯蓀둬⇱씟頄잤ᮩ䀱䓃뎯漋ճ눩⣙䦕㶜縎"
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "鍧빸濲쿲㦮疗桥揯嫄烣̣퓺儔䩗闝։ߥ蝸ⲉ"
+            }
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 362.5723
+            },
+            "current" : {
+              "value" : 321.7931
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "꾒蹥켳図晫裄睜䠍鳸㲴㧌큫命"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "傚煼ㄱ꜑鸭ꐖ輸"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "遆᎒鋠篕"
+        },
+        "marketId" : "m:o:Ű蒮뭕∛璀뢌䈵",
+        "selectionId" : "ꢀ虃컘쨌灣꾣Ᾱꞔ",
+        "stake" : {
+          "value" : {
+            "amount" : 43069075638602221667140279129930510000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Settled" : {
+      "betId" : {
+        "value" : "゚瞧䐰翓"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:o:⻕",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 0.05,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "isWinner" : false
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "犎Ǽᒧ☍醚"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "╡"
+        },
+        "marketId" : "m:o:ᾤ穕婓",
+        "selectionId" : "棑ℯ蛞",
+        "stake" : {
+          "value" : {
+            "amount" : 9.16,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "adminUser" : {
+        "value" : "灪羧鶲ᶕ协빵俇弰Ώ辧댬湍駎㏬溶憳祃촴굔"
+      },
+      "cancellationReason" : "褬",
+      "betCancellationTimestamp" : "-974470093-03-25T22:38:36.474190324-00:08"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "쌸꫞嘃銔ᣄ㤤쯜데焢㄀磭㆞똙︮㏩쳅⸑㉅광薴혇ꚞ횐ꩣ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "웸糼ᱜϼ"
+        },
+        "marketId" : "m:o:ㅶ",
+        "selectionId" : "࡮屿䳭鋪㠨ㆴ迧",
+        "stake" : {
+          "value" : {
+            "amount" : 0.19,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 704.1101
+        }
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "긆砌뿾碶罁蛯췔඘涫亞蠶衱塢"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㌴"
+        },
+        "marketId" : "m:o:䓫⪕罀ﭴᤴ",
+        "selectionId" : "㭍꼫漟㌷",
+        "stake" : {
+          "value" : {
+            "amount" : 4549203039475256198.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 600.7485
+        }
+      },
+      "reservationId" : {
+        "unwrap" : ""
+      },
+      "geolocation" : {
+        "value" : "켛묧㓲舎峈欁澆뺍"
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "抝훩℻㯯潡磡쭕靈³ﴠ﷛藈豻퍊臰齚땘ᶔ륈츪돖Ⱘ䦫⋡蟤킊৙鬶蔲㴙咞쵲쟅쯸"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "‬"
+        },
+        "marketId" : "m:o:臨ꈆ쳎㐎沦㹳",
+        "selectionId" : "⬂",
+        "stake" : {
+          "value" : {
+            "amount" : 100418207222647337691790998987423585374420677126914652144.25,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 223.6186
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "ꈛ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "䏼"
+        },
+        "marketId" : "m:o:῿",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 2.14,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "䅰쎙㟯玵ꋏቚﱲ酀㬳쭍"
+      },
+      "geolocation" : {
+        "value" : "ꚸ炊騘甡랳鸼莟ŋ㢴琵▪"
+      }
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "큷瘀▟蛠藖䵖䵠ꭂ㏀狁滎럑滢叟쐵哒ꌝ롐䑵ߨ㫤뛔⨋驇빠甋ꞥ攱蓊䩷밐塨쮳놢ܶ칋訜"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㈑ꆪ祺"
+        },
+        "marketId" : "m:b:遍惝썉⃜妮㒑ᶠ煠",
+        "selectionId" : "᥹აﶷ䣦Ɇꥼ",
+        "stake" : {
+          "value" : {
+            "amount" : 92233720368547758080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "Ӧ췽ࠒ趐ꊖ펨"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "ᤚු"
+        },
+        "marketId" : "m:o:蜉剌贲",
+        "selectionId" : "䉦饏",
+        "stake" : {
+          "value" : {
+            "amount" : 5650422808642099591.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "Ζ품扊뀪톅鉠"
+      },
+      "geolocation" : {
+        "value" : "멄輽ꭒ熬⌅᧟刨᱀ⓛ䴎䲹᭢ࠞM쳔錫뷁"
+      }
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "胔幘ㄟ⺝鿽뤤ኊ穳ℜꂁ쀖뀾론螾᳣俷埝儏ᦌ᩷髜粝拤ࡣ弍㿔䭡鈂鮪鼵ᚠ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "픓ዩ"
+        },
+        "marketId" : "m:b:Ტ草㮕掑㨥",
+        "selectionId" : "앶솸帘",
+        "stake" : {
+          "value" : {
+            "amount" : 4977475573150517922.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "⊂櫩㲀틹鼮缳䧚赽륟恥䬣䞛ߺ籬盹鱞"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "閿岈马ᛸ胙눲싖"
+        },
+        "marketId" : "m:o:돛",
+        "selectionId" : "ꃴ駷뎥乖쮇᝛挪闶",
+        "stake" : {
+          "value" : {
+            "amount" : 11.38,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 71.6238
+        }
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "홥볆醹襳"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:o:渃⫝Π",
+        "selectionId" : "嵂㜢",
+        "stake" : {
+          "value" : {
+            "amount" : 1.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "翁컧剑㇯⥶쑂"
+      },
+      "geolocation" : {
+        "value" : "်싎쭤䱥鲨륇驓ɍ䥤ఇ槤棞մĻÒ"
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "ꁤ◚"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:b:央毊",
+        "selectionId" : "揤뼠ℸ쾋畭",
+        "stake" : {
+          "value" : {
+            "amount" : 3.03,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 525.3011
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "秎ꫠ끗ῒ蘿杳则ڈ퉞ꧮ봖퍈솠蔐░"
+      },
+      "geolocation" : {
+        "value" : "됍낶쬖粢ዿ敹ｽᴪ糷Ù겂茜辶"
+      }
+    }
+  },
+  {
+    "Settled" : {
+      "betId" : {
+        "value" : "翔ᱵ궧奥璼"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "Ꚁ䡐"
+        },
+        "marketId" : "m:o:ǵ❯↖꓃㒟",
+        "selectionId" : "餧ᤄ⟟",
+        "stake" : {
+          "value" : {
+            "amount" : 1.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "isWinner" : false
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "Љᘃ߰騥扴踅䬼鞺轈༃ࢪ䲊蓅๧欑㝁"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "䵏휙"
+        },
+        "marketId" : "m:b:鮎짼嶨℩蚴",
+        "selectionId" : "倈",
+        "stake" : {
+          "value" : {
+            "amount" : 0.85,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 872.8014
+        }
+      },
+      "reasons" : [
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "䄀筴㱄鞝瑵ꑲ幄ﯕ橂%യ꫔犫視ꮖ뀴衃걂⠉ၫ襺"
+            }
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "႐혯㮧嗱兡Ａ덬쿶昪安䶑湆ꓥ閇쁘ꦵ袉ꔽ嵓ྟ垶"
+            }
+          }
+        },
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "쩹急鞗ㄆ笗夓⥇鼓⅍㐣ꤼ웴귿⩸ⱘᴃ⳺ꁛ뗤椸᮱ධ覼Ụ뀚"
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:驽჈鏨ᾤ衭翿忟ը役鹾蟚",
+            "selectionId" : "횾"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:ᴉܪ켢밉ꔨ㝿"
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:\u001b譯睆",
+            "selectionId" : "돋䍔ꈪꒅᾉ䰶"
+          }
+        },
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "᳈ꓻ홎뉃"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : "砢ꔗ"
+                }
+              }
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:쬈᎖ᰃ뀂︈够興",
+            "selectionId" : "쨓᥉쫍ḵ尠䚻"
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:曝ᴞ≷☓ꀚ韩ᶨ㧚닰耷쑍"
+          }
+        },
+        {
+          "MarketNotBettable" : {
+            "marketId" : "m:b:≩䟓髻ᨙ㥘혌苖筑褏Ѫ蠙학靘펂醗"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "崋싘岟⷇טּ䪜伶ꅄ䶅祸脉럍讨孏ɐ뷲란臉좁蔂血꜍薬"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "礪瓽⃲ퟥ잕ḇ"
+        },
+        "marketId" : "m:o:ꫲ⟈뚫",
+        "selectionId" : "뚩",
+        "stake" : {
+          "value" : {
+            "amount" : 1.86,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "Დ⩓ઉ膆栎밽䏥ズ怎ꘈ톅둨"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:o:뜦੟",
+        "selectionId" : "㽒阸᨟ა",
+        "stake" : {
+          "value" : {
+            "amount" : 0.35,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 905.1161
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "醨ềԙ鼼ﳔ㒒䢃ٷ貫益⎰欷ࡰ媯䎿䤅竒䖷賕ᑧ｜檩"
+      },
+      "geolocation" : {
+        "value" : "䒟"
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "硉५煡纉抍ᵗ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "痷"
+        },
+        "marketId" : "m:o:쐉꣘ᶪ첯",
+        "selectionId" : "퓗됓",
+        "stake" : {
+          "value" : {
+            "amount" : 13207751592740540000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "찒襕ퟯ墷諆宨鵧䲊"
+      },
+      "geolocation" : {
+        "value" : "㞳汪犒鎮"
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "苳䖩涄餪ӥ羣䞳謂㞝ㄌꇯኍ捜"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㤩籊堑峚"
+        },
+        "marketId" : "m:o:쌳",
+        "selectionId" : "⟴ꦓ≨",
+        "stake" : {
+          "value" : {
+            "amount" : 57770329826866432340000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reasons" : [
+        {
+          "PunterCannotBetError" : {
+            "id" : {
+              "value" : "륔㡽䱇㉓뙎㳖⮰䗌䘺拶꽳⿛樽ዒ완㸗皼䇁⇎卽ꉉ뤥蔿毣䔲"
+            }
+          }
+        },
+        {
+          "OddsHaveChangedError" : {
+            "previous" : {
+              "value" : 1.0100
+            },
+            "current" : {
+              "value" : 1.0100
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "귣蠟כּ롕\u009f⦝斶"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "䚊杘饯환"
+        },
+        "marketId" : "m:o:딪侷邓뢎묀둂䉋",
+        "selectionId" : "䦘蒴맇깷퍻ᙋЂ૶",
+        "stake" : {
+          "value" : {
+            "amount" : 0.29,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Failed" : {
+      "betId" : {
+        "value" : "ꁹ⎏괖渜爌咎ꦗ噹䚫쓾뎴襋툙Ἂ젉䥚É煦䶞ᘕ괴鱡쒬荫⌵"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "㾔ᓇ彻惎"
+        },
+        "marketId" : "m:o:⨘쌘",
+        "selectionId" : "਌棧",
+        "stake" : {
+          "value" : {
+            "amount" : 1.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "reasons" : [
+        {
+          "GeolocationNotAllowed" : {
+            "geolocation" : {
+              "value" : "幟洺ꃪ황誔䳧몟෯眖࿶粷큾뷖懆"
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:o:脃쌻섬㕃䮇퇬鰌㒆꯺媿Gణ숚馃镗"
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "䳴ꛖዿ냢鹳벴弢좱힂痣샣"
+            }
+          }
+        },
+        {
+          "PunterDoesNotExist" : {
+            "id" : {
+              "value" : "퀺㷴"
+            }
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "WalletNotFoundError" : {
+                "id" : {
+                  "value" : "㔀"
+                }
+              }
+            }
+          }
+        },
+        {
+          "MarketDoesNotExist" : {
+            "marketId" : "m:b:懪"
+          }
+        },
+        {
+          "WalletReservationError" : {
+            "error" : {
+              "InsufficientFundsError" : {
+                "id" : {
+                  "value" : "塀晲ਸ਼풁㩏❤腗츪ꭴ䍒띬ꀵ"
+                }
+              }
+            }
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:b:촾끆༧Ί㦟糊",
+            "selectionId" : ""
+          }
+        },
+        {
+          "SelectionDoesNotExist" : {
+            "marketId" : "m:o:翄㟊",
+            "selectionId" : "䓔闕띻鋱ᳶ뫾㫤ﮇ"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "Pushed" : {
+      "betId" : {
+        "value" : "蚙煦ﬠ⺙ᇸ킟谀⬦黲ࢺ⺥봦鞈戓Ắ洞䃱癓攡⁼㰨㜰潔쥑뻚뗚뢺⶷ꑆ㹆툻샧⛭苚羾橷"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "ᝁ"
+        },
+        "marketId" : "m:o:퐰鐖龍빽뵧ੌ㽨",
+        "selectionId" : "Ḥ䍤㠘䗷䤮㜸ঋ",
+        "stake" : {
+          "value" : {
+            "amount" : 87222517734342019370000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Open" : {
+      "betId" : {
+        "value" : "䓦嗷偬旷댗뵾矻摅穒찝ᴧ酐鳁糇麧碄瞾"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "漈풚䍛︒嚂"
+        },
+        "marketId" : "m:b:缍訠螴鿀",
+        "selectionId" : "",
+        "stake" : {
+          "value" : {
+            "amount" : 3073028000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 993.3298
+        }
+      },
+      "reservationId" : {
+        "unwrap" : "鍶䋙펥ـ"
+      },
+      "geolocation" : {
+        "value" : "⚧ᠽᬾ똇⾌쏂㻿ꈎ뿿⍂荛"
+      }
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "겴挬勒礷蠭棄芚鐎⎳ޥぬ꘾鯭집뗦"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "妆峫"
+        },
+        "marketId" : "m:o:Ꜭ້",
+        "selectionId" : "ଝ",
+        "stake" : {
+          "value" : {
+            "amount" : 214.75,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      },
+      "adminUser" : {
+        "value" : "Φ꡸ͻ驅ļ䲝鷐쉿ﳃ톌稥"
+      },
+      "cancellationReason" : "⽑芙㪀舉细﫷䛭退ꮎࡃ̴Ճ弓宪낊",
+      "betCancellationTimestamp" : "+795911402-05-03T09:00:19.142787584-10:19:10"
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "咺渑볫桇㫗獱渚൶巟齡ꬪ㈖䟫K飻齏ꀟ䒹閈鱥"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "䠳壑摊⮇"
+        },
+        "marketId" : "m:b:儙웩",
+        "selectionId" : "摹璴俊ͻ瑅Є嵆街",
+        "stake" : {
+          "value" : {
+            "amount" : 6812758161650553747.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 1.0100
+        }
+      }
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "듋䬘Ὶノ"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : ""
+        },
+        "marketId" : "m:b:ᕰ",
+        "selectionId" : "꧒吽",
+        "stake" : {
+          "value" : {
+            "amount" : 1.92,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 309.4924
+        }
+      },
+      "adminUser" : {
+        "value" : "谽"
+      },
+      "cancellationReason" : "ﴪ嘂ꞡ䁑麿췩搐樝㐑ఊ舘ҙ㥵",
+      "betCancellationTimestamp" : "+439036045-03-30T18:52:26.698456001-14:27:53"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Voided" : {
+      "betId" : {
+        "value" : "輖迷ﮆរⰣ缬坣犁钍꿪ꮯ並롓篪♱"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "喖⣾㐓"
+        },
+        "marketId" : "m:o:ۍ㑡ᥣ",
+        "selectionId" : "䨼ᑰ䮠≡㷁ா",
+        "stake" : {
+          "value" : {
+            "amount" : 8552285969045269000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 664.1263
+        }
+      }
+    }
+  },
+  {
+    "Cancelled" : {
+      "betId" : {
+        "value" : "ᏹ텩㭹ꖑ㨦䘛"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "螩"
+        },
+        "marketId" : "m:b:ܺ둧ﱵ\u0087",
+        "selectionId" : "捆",
+        "stake" : {
+          "value" : {
+            "amount" : 42.10,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 177.2080
+        }
+      },
+      "adminUser" : {
+        "value" : "跔㢧뫿"
+      },
+      "cancellationReason" : "쯹뤫螺㑂ਦ젗圽⴨婗䲏",
+      "betCancellationTimestamp" : "-974212242-01-23T23:53:06.284170121-03:30:46"
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  },
+  {
+    "Settled" : {
+      "betId" : {
+        "value" : "뽓㹧跶䆃愻妹饕ᆤ湴䌥뺽嵤絅灓챏봰庁ῤ昺Ṯ쳘ؙ䌿༘遳栉"
+      },
+      "betData" : {
+        "punterId" : {
+          "value" : "쌓้쟘"
+        },
+        "marketId" : "m:o:菲",
+        "selectionId" : "Ȣ䏄믺ൟᥣ",
+        "stake" : {
+          "value" : {
+            "amount" : 0.24,
+            "currency" : {
+              
+            }
+          }
+        },
+        "odds" : {
+          "value" : 321.3096
+        }
+      },
+      "isWinner" : true
+    }
+  },
+  {
+    "Uninitialized" : {
+      
+    }
+  }
+]

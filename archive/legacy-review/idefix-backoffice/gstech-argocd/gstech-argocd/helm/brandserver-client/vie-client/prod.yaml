@@ -1,0 +1,27 @@
+nameOverride: "prod-vie-client-service"
+fullnameOverride: "prod-vie-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3000
+
+ingress:
+  enabled: false
+
+env:
+  SITE_NAME: vie
+  NODE_ENV: production
+  PORT: 3000
+  API: http://prod-vie-backend-service:3000
+  CAPTCHA_KEY: "6LeOV1clAAAAAEWDX819wE0SFmy6EZK9apYbFo-T"

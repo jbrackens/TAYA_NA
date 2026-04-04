@@ -1,0 +1,32 @@
+nameOverride: "dev-vie-worker-service"
+fullnameOverride: "dev-vie-worker-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3000
+
+env:
+  SITE_NAME: vie
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  API_URL: http://dev-gstech-backend-service:3001/api/OS/v1/
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  SESSION_REDIS_URL: redis://redis.dev.eeg.viegg.net:6379
+  REWARD_SERVER_URL: http://dev-gstech-rewardserver-service:3012/api/v1
+  PORT: 3000
+  PAYMENT_URL: http://dev-vie-backend-service:3000
+  CAMPAIGN_SERVER_PRIVATE_URL: http://dev-gstech-campaignserver-backend-service:3014/api/v1
+  NODE_ENV: development

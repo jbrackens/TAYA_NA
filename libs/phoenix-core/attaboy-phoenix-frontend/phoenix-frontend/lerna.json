@@ -1,0 +1,26 @@
+{
+  "version": "independent",
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "ignoreChanges": [
+    "**/*.spec.{ts,tsx}",
+    "**/*.spec.{js,jsx}",
+    "**/*.test.{ts,tsx}",
+    "**/*.test.{js,jsx}",
+    "**/*.md"
+  ],
+  "packages": ["packages/*"],
+  "command": {
+    "publish": {
+      "allowBranch": ["master", "develop"],
+      "conventionalCommits": true,
+      "message": "chore(release): publish",
+      "registry": "https://lena-srv01.flipsports.net:4566/repository/npm-releases/",
+      "exact": true,
+      "push": true,
+      "verifyAccess": false,
+      "yes": true,
+      "logLevel": "verbose"
+    }
+  }
+}

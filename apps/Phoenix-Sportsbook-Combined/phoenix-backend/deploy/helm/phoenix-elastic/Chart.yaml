@@ -1,0 +1,16 @@
+apiVersion: v2
+name: phoenix-elastic
+description: A wrapper Helm chart for Elasticsearch, Filebeat and Kibana
+dependencies:
+  - name: elasticsearch
+    repository: &repository https://helm.elastic.co
+    version: &version 7.16.1
+  - name: filebeat
+    repository: *repository
+    version: *version
+  - name: kibana
+    repository: *repository
+    version: *version
+type: application
+version: 0.0.1
+appVersion: 0.0.1

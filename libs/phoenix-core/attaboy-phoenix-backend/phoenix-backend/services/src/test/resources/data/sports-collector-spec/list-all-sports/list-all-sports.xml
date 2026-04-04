@@ -1,0 +1,4 @@
+<sports>
+    <sport id="od:sport:1" name="League of Legends" abbreviation="lol"/>
+    <sport id="od:sport:2" name="Fortnite" abbreviation="for"/>
+</sports>

@@ -1,0 +1,62 @@
+livenessProbe:
+  httpGet:
+    path: /
+    port: 3000
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 3000
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: metabase/metabase
+  pullPolicy: Always
+  tag: "v0.47.2"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+ingress:
+  enabled: false
+  annotations: {}
+
+  hosts:
+    - host: gstech-metabase-service.local
+      paths: []
+  tls: []
+
+resources:
+  requests:
+    memory: "1024Mi"
+    cpu: "100m"
+  limits:
+    memory: "1024Mi"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3000
+
+prometheus:
+  enabled: false
+  path: /metrics
+  interval: 40s
+  portname: metrics

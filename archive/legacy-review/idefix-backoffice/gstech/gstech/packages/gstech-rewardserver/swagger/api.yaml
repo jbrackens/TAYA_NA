@@ -1,0 +1,174 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Rewardserver API"
+basePath: "/api/v1/"
+schemes:
+  - "https"
+  - "http"
+paths:
+  /players/{playerId}/ledgers-with-events:
+    get:
+      summary: Get player ledgers with events
+      description: Get player ledgers with events
+      tags:
+        - ledgers
+      parameters:
+        - in: path
+          name: "playerId"
+          type: number
+          required: true
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/GetPlayerLedgersWithEventsResponse'
+definitions:
+  Game:
+    type: object
+    required:
+      - brandId
+      - permalink
+      - name
+      - primaryCategory
+      - aspectRatio
+      - viewMode
+      - newGame
+      - jackpot
+      - thumbnail
+      - searchOnly
+      - active
+    properties:
+      brandId:
+        type: string
+      permalink:
+        type: string
+      name:
+        type: string
+      manufacturer:
+        type: string
+      primaryCategory:
+        type: string
+      aspectRatio:
+        type: string
+        enum: [ 16x9', '4:3', '3x2', 'wms-wide' ]
+      viewMode:
+        type: string
+        enum: [ 'single', 'max' ]
+      newGame:
+        type: boolean
+      jackpot:
+        type: boolean
+      thumbnail:
+        type: string
+      searchOnly:
+        type: boolean
+      active:
+        type: boolean
+      order:
+        type: number
+      keywords:
+        type: string
+      tags:
+        type: array
+        items:
+          type: string
+      parameters:
+        type: object
+  Reward:
+    type: object
+    required:
+      - rewardDefinitionId
+      - creditType
+      - bonusCode
+      - externalId
+    properties:
+      rewardDefinitionId:
+        type: number
+      creditType:
+        type: string
+        example: freeSpins
+      bonusCode:
+        type: string
+      externalId:
+        type: string
+      description:
+        type: string
+      validity:
+        type: string
+        format: date-time
+        example: null
+      price:
+        type: number
+        example: null
+      cost:
+        type: number
+        example: null
+      spins:
+        type: number
+        example: null
+      spinValue:
+        type: number
+        example: null
+      spinType:
+        type: string
+        example: null
+      gameId:
+        type: number
+        example: null
+      currency:
+        type: string
+        example: null
+      metadata:
+        type: object
+        example: null
+      active:
+        type: boolean
+  GetPlayerLedgersWithEventsResponse:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          ledgers:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                creditDate:
+                  type: string
+                  format: 'date-time'
+                useDate:
+                  type: string
+                  format: 'date-time'
+                expires:
+                  type: string
+                  format: 'date-time'
+                externalId:
+                  type: string
+                result:
+                  type: string
+                groupId:
+                  type: number
+                quantity:
+                  type: number
+                events:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      event:
+                        type: string
+                      comment:
+                        type: string
+                      parameters:
+                        type: object
+                game:
+                  $ref: '#/definitions/Game'
+                reward:
+                  $ref: '#/definitions/Reward'

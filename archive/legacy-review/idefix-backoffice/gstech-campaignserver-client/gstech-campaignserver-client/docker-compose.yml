@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  gstech-campaignserver-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-campaignserver-client
+    container_name: gstech-campaignserver-client
+    ports:
+      - "3051:3051"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+      PORT: 3051
+      ENDPOINT: http://gstech-campaignserver:3013/api/v1
+
+networks:
+  gstech:
+    external: true

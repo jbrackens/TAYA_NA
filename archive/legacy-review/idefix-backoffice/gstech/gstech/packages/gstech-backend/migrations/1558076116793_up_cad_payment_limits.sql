@@ -1,0 +1,1 @@
+INSERT INTO payment_method_limits ("id", "brandId", "paymentMethodId", "currencyId", "minDeposit", "maxDeposit", "minWithdrawal", "maxWithdrawal") VALUES (131, 'LD', 1, 'CAD', 2000, 200000, 3000, 300000);

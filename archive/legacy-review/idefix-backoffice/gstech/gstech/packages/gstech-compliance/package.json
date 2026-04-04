@@ -1,0 +1,16 @@
+{
+  "name": "gstech-compliance",
+  "version": "1.2.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "pretty": "prettier -c '**/*.js'",
+    "start": "nodemon ./server",
+    "serve": "node ./server",
+    "test": "NODE_ENV=test mocha --exit --timeout 15000 --require '../gstech-core/modules/setup-test' './server/**/*.spec.js'",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from gstech-compliance.test",
+    "docker:start": "docker compose up --build -d"
+  }
+}

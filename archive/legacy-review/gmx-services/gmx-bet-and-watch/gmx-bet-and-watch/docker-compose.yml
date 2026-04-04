@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+  # forwards to host via 'dockerhost' name
+  dockerhost:
+    image: qoomon/docker-host
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
+    restart: on-failure
+
+  # apps
+  webgateway:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-bet-and-watch/webgateway:latest'
+    ports:
+    - "9000:9000"
+    env_file:
+    - .env
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  eventsSN:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-bet-and-watch/events:latest'
+    ports:
+    - "9001:9000"
+    env_file:
+    - .env
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+
+  eventsRZ:
+    image: '259420793117.dkr.ecr.eu-west-1.amazonaws.com/gmx-bet-and-watch/events:latest'
+    ports:
+      - "9002:9000"
+    env_file:
+      - .RZ.env
+    deploy:
+      resources:
+        limits:
+          memory: 384m

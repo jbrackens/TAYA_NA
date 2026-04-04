@@ -1,0 +1,680 @@
+#!groovy
+
+String deriveAppVersion() {
+  // sbt relies on git tags for determining app version, and Jenkins doesn't fetch tags by default.
+  shWithGithubSshPrivateKey 'git fetch --tags'
+
+  return shOutput("sbt -error 'export phoenix-backend/version'")
+}
+
+/**
+ * @param body        optional, Map<String, Object>
+ * @param jq          optional, String
+ * @param urlPath     required, String
+ * @param queryParams optional, Map<String, String>
+ * @param verb        required, String
+ */
+String fireGithubRequest(Map<String, Object> params) {
+  script {
+    String jq = params.jq
+    String url = "https://api.github.com/repos/${env.GITHUB_ACCOUNT}/${env.GITHUB_REPO}${params.urlPath}" +
+      (params.queryParams ? "?${params.queryParams.collect { k, v -> "$k=$v" }.join("&")}" : "")
+    String verb = params.verb
+
+    echo "Firing ${verb} ${url}" + (jq ? " with jq '$jq'" : "")
+
+    withGithubToken {
+      String result = shOutput("""
+        curl --fail --location --silent --show-error \\
+          -HAccept:application/json ${params.body ? "-HContent-Type:application/json" : ""} -HCache-Control:no-cache \\
+          -H "Authorization: Bearer ${env.GITHUB_TOKEN}" \\
+          -X ${params.verb} \\
+          ${params.body ? "-d '${groovy.json.JsonOutput.toJson(params.body)}'" : ""} \\
+          ${url} \\
+        | jq -r '(${jq ?: "."}) // empty'
+      """)
+      // The `// empty` ("or empty string") part in jq selector is a useful safeguard:
+      // by default, if the given path is not found in the JSON, jq prints out `null`.
+      // Empty string is safer to return in such case, since Groovy Truth rules consider it "false" (unlike "null" String, which is "true").
+
+      echo "Result is '$result'"
+      return result
+    }
+  }
+}
+
+void notifyGithub(Map<String, String> params) {
+  githubNotify(
+      description: params.description,
+      context: env.GITHUB_NOTIFICATION_CONTEXT,
+      account: env.GITHUB_ACCOUNT,
+      repo: env.GITHUB_REPO,
+      credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+      targetUrl: env.RUN_DISPLAY_URL,
+      status: params.status
+  )
+}
+
+// build status constants: https://www.jenkins.io/doc/book/glossary/#build-status
+void notifySlack(String branch, String buildStatus) {
+  if (branch in ['develop', 'master']) {
+
+    // Build status of null means success.
+    buildStatus = buildStatus ?: 'SUCCESS'
+
+    def color
+    def stageIfFailed = ''
+    if (buildStatus == 'STARTED') {
+      color = '#D4DADF'
+    } else if (buildStatus in ['SUCCESS', 'STABLE']) {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'UNSTABLE') {
+      color = '#FFFE89'
+    } else { // FAILURE or ABORTED
+      color = '#FF9FA1'
+      stageIfFailed = " (_${latestStartedStage}_)"
+    }
+
+    sendCurrentBuildSlackMessage("${buildStatus}${stageIfFailed}", color)
+  }
+}
+
+String sendCurrentBuildSlackMessage(String message, String color = 'D4DADF') {
+  String currentBuildUrl = "<${env.RUN_DISPLAY_URL}|${env.GITHUB_REPO}/${env.BRANCH_NAME} #${env.BUILD_NUMBER}>"
+  slackSend(channel: env.SLACK_NOTIFICATION_CHANNEL, color: color, message: "$message: $currentBuildUrl")
+}
+
+void setupGitUserNameAndEmail() {
+  sh "git config user.name  '${env.RELEASE_BOT_GIT_USER_NAME}'"
+  sh "git config user.email '${env.RELEASE_BOT_GIT_USER_EMAIL}'"
+}
+
+String shOutput(String cmd) {
+  return sh(script: cmd, returnStdout: true).trim()
+}
+
+void shWithGithubSshPrivateKey(String shellCommand) {
+  withCredentials([
+      sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_PRIVATE_KEY_FILE')
+  ]) {
+    sh 'eval $(ssh-agent) && ssh-add "$SSH_PRIVATE_KEY_FILE" && ' + shellCommand
+  }
+}
+
+void withAwsEcrAuthentication(Closure<Void> block) {
+  withAWS(credentials: env.AWS_ECR_CREDENTIALS_ID, region: env.AWS_ECR_REGION) {
+    block()
+  }
+}
+
+void withDockerHubAuthentication(Closure<Void> block) {
+  // Logging in to DockerHub is needed to increase the limits for pulling the images
+  docker.withRegistry(/* empty = Docker Hub */ '', env.DOCKER_HUB_CREDENTIALS_ID) {
+    block()
+  }
+}
+
+void withGithubStatusUpdates(Closure<Void> block) {
+  latestStartedStage = env.STAGE_NAME
+
+  try {
+    notifyGithub(description: env.STAGE_NAME, status: 'PENDING')
+    block()
+    // Note that `gitStatusWrapper` (https://github.com/jenkinsci/pipeline-gitstatuswrapper-plugin#pipeline-git-status-wrapper-plugin)
+    // would instead report `SUCCESS` and not `PENDING` back to GitHub at this point.
+    // This is generally fine... but has a caveat:
+    // for a brief moment before one block wrapped in `gitStatusWrapper` ends and another one starts,
+    // GitHub sees that the `Jenkins Build` (env.GITHUB_NOTIFICATION_CONTEXT) check has *succeeded*.
+    // This technically makes the PR ready to merge if it passes all other merge criteria (not a draft, up to date with `develop`, 1+ approvals etc.).
+    // As long as it's *humans* who merge the PRs, it's highly unlikely that anybody will even capture that moment
+    // (esp. that it happens so fast that I've only seen such transient SUCCESS actually displayed in web GitHub once in 1.5 years,
+    // probably due to some well-timed lag in Jenkins->Github communication).
+    //
+    // This would become more serious, however, once auto-merge is enabled for the given PR.
+    // The PR would get merged as soon as the first SUCCESS for the required `Jenkins Build` check is reported -
+    // i.e. after the first (typically `Checkout` or `Init build`) stage is completed, which is unacceptable.
+    // Hence, we need to ditch `gitStatusWrapper` and report `PENDING` back to GitHub.
+    // We rely on `post { success { ... } }` block to ultimately notify `SUCCESS` instead.
+    notifyGithub(description: "Completed stage: " + env.STAGE_NAME, status: 'PENDING')
+  } catch (Exception e) {
+    notifyGithub(description: env.STAGE_NAME, status: 'FAILURE')
+    // Note that unless the exception is re-thrown,
+    // we'd end up sending FAILURE notification to Github,
+    // but Jenkins would continue execution, and, as a side effect,
+    // quickly override the FAILURE with a subsequent PENDING (or final SUCCESS) notification.
+    throw e
+  }
+}
+
+void withGithubToken(Closure block) {
+  withCredentials([
+    usernamePassword(
+      credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+      usernameVariable: '__ignored__',
+      passwordVariable: 'GITHUB_TOKEN'
+    )
+  ]) {
+    block()
+  }
+}
+
+void withJunitTestReports(Closure block) {
+  try {
+    block()
+  } finally {
+    junit '**/target/test-reports/*.xml'
+  }
+}
+
+boolean isUpToDateWithUltimateMergeTarget = true
+String  pullRequestNumber = null
+String  ultimateMergeTarget = null
+
+boolean apiChangesDetected = false
+boolean persistenceSchemaChangesDetected = false
+
+String latestStartedStage = 'pipeline has not started yet'
+
+properties(
+    env.BRANCH_NAME in ['develop', 'master']
+        ? [disableConcurrentBuilds()]
+        : []
+)
+
+pipeline {
+  agent { label 'ecs-ec2-java11-helm' }
+
+  environment {
+    DOCKER_HUB_CREDENTIALS_ID = 'docker-hub-read-only'
+
+    // github status notifications
+    GITHUB_ACCOUNT = 'flipadmin'
+    GITHUB_REPO = 'phoenix-backend'
+    GITHUB_API_TOKEN_CREDENTIALS_ID = 'CICD-GitHub-API-token'
+    GITHUB_NOTIFICATION_CONTEXT = 'Jenkins Build'
+
+    // ArgoCD
+    ARGOCD_GIT_REPO_URL = 'git@github.com:flipadmin/phoenix-argocd.git'
+    ARGOCD_GIT_BRANCH = 'dev'
+    RELEASE_BOT_GIT_USER_NAME = 'Jenkins Release Bot'
+    RELEASE_BOT_GIT_USER_EMAIL = 'jenkins-release-bot@darkstormlabs.net'
+
+    // slack build notifications
+    SLACK_NOTIFICATION_CHANNEL = '#phoenix-builds'
+
+    // sbt
+    SBT_HOME = tool name: 'sbt', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
+    PATH = "${env.SBT_HOME}/bin:${env.PATH}"
+    // To avoid ANSI escape sequences in the output of sbt, which might wreak havoc in the scripts.
+    // For some reason, in Jenkins sbt doesn't always correctly recognize that stdout is NOT a terminal.
+    SBT_OPTS = '-no-colors'
+
+    AWS_ECR_ACCOUNT_ID = '259420793117'
+    AWS_ECR_REGION = 'eu-west-1'
+    AWS_ECR_HOST = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+    AWS_ECR_CREDENTIALS_ID = 'ecr-fs-rw-phoenix-project'
+  }
+
+  options {
+    // Allow all branches (*) to copy artifacts from the builds of the branch currently being built.
+    // Note that currently we're only ever comparing Akka persistence schema YAML/OpenAPI YAML against artifacts from `develop`.
+    copyArtifactPermission('*')
+  }
+
+  stages {
+    stage('Init build') {
+      steps {
+        withGithubStatusUpdates {
+          script {
+            def shouldLeavePreviousBuildsRunning = env.BRANCH_NAME in ['develop', 'master']
+            if (!shouldLeavePreviousBuildsRunning) {
+              // Note that https://plugins.jenkins.io/autocancel/ offers `autocancelBranchBuildsOnPullRequestBuilds()` as well,
+              // but we apparently can't use that since it relies on env.CHANGE_BRANCH, which is NOT available in our builds for some reason.
+              autocancelConsecutiveBuilds()
+            }
+
+            notifySlack(env.BRANCH_NAME, 'STARTED')
+
+            currentBuild.displayName = "#${env.BUILD_NUMBER} for ${env.BRANCH_NAME}"
+          }
+        }
+      }
+    }
+
+    stage('Extract pull request data') {
+      steps {
+        withGithubStatusUpdates {
+          script {
+            pullRequestNumber = fireGithubRequest(
+              verb: "GET",
+              urlPath: "/pulls",
+              queryParams: [head: "${env.GITHUB_ACCOUNT}:${env.BRANCH_NAME}"],
+              jq: ".[0].number")
+
+            String pullRequestBase = null
+            if (pullRequestNumber) {
+              pullRequestBase = fireGithubRequest(
+                verb: "GET",
+                urlPath: "/pulls/${pullRequestNumber}",
+                jq: ".base.ref"
+              )
+              echo "Base branch for PR #${pullRequestNumber} is $pullRequestBase"
+            } else {
+              // A PR might be not found for certain branches, since our Jenkins builds all branches, not just the ones with an open PR.
+              echo "No PR found for branch ${env.BRANCH_NAME}"
+            }
+
+            // It could theoretically happen that a PR has a base different than `master`,
+            // but is still meant to be ultimately merged into `master`...
+            // but this would require a stacked PR on the top of a PR to `master`,
+            // which literally never happened so far (unlike multiple stacked PRs ultimately leading to `develop`).
+            // We can thus safely assume that unless PR base is `master`, the PR will ultimately be merged to `develop`.
+            ultimateMergeTarget = pullRequestBase == 'master' ? 'master' : 'develop'
+            echo "Assuming $ultimateMergeTarget as the ultimate merge target for ${env.BRANCH_NAME}"
+
+            isUpToDateWithUltimateMergeTarget = sh(script: "git merge-base --is-ancestor 'origin/${ultimateMergeTarget}' HEAD", returnStatus: true) == 0
+            echo "Current branch is ${isUpToDateWithUltimateMergeTarget ? "" : "NOT "}up to date with ${ultimateMergeTarget}"
+          }
+        }
+      }
+    }
+
+    stage('Run pre-build checks') {
+      environment {
+        // Let's modify PATH rather than use `dir('ci')` here,
+        // since some of these scripts rely on being executed from top-level folder.
+        PATH = "${env.WORKSPACE}/ci:$PATH"
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            if (ultimateMergeTarget == 'develop') {
+              if (isUpToDateWithUltimateMergeTarget) {
+                // Let's use `origin/develop` rather than `develop` since Jenkins does NOT check out other local branches by default
+                // (so there's no `develop` branch on non-`develop` builds).
+                sh 'enforce_db_migrations_in_commit1_are_prefix_of_commit2.sh origin/develop HEAD'
+              } else {
+                echo 'Current commit is OUT of sync with origin/develop.'
+                echo 'Skipping the check of DB migration order to avoid false-positive errors.'
+                echo 'Sync the current branch to origin/develop by rebase or merge.'
+              }
+            } else if (ultimateMergeTarget == 'master') { // that's typically a release or hotfix
+              String extraErrorMessage =
+                "Otherwise, we might end up with a nasty divergence between `dev` and higher environments " +
+                "that can only be resolved after turning on a dangerous `flyway.outOfOrder` option."
+              sh """enforce_db_migrations_in_commit1_are_prefix_of_commit2.sh HEAD origin/develop '$extraErrorMessage' """
+            }
+
+            // Certain scripts need SSH key for their underlying git fetch
+            sh 'enforce_db_migrations_pass_sqlfluff.sh'
+            sh 'enforce_env_vars_consistent_k8s_vs_app.sh'
+            sh 'enforce_helm_values_all_defined_for_each_env.sh'
+            sh 'enforce_issue_number_for_todos.sh'
+            sh 'enforce_kubernetes_manifests_pass_kubeconform.sh'
+            sh 'enforce_markdown_tocs_and_links_correct.sh'
+            sh 'enforce_shell_scripts_pass_shellcheck.sh'
+            shWithGithubSshPrivateKey 'enforce_version_bumped_since_latest_release.sh'
+            sh 'enforce_yaml_format_correct.sh'
+            sh 'prohibit_brace_brace_hyphen_after_yaml_comment.sh'
+            sh 'prohibit_broken_symlinks.sh'
+            sh 'prohibit_db_migrations_add_non_null_column_without_default.sh'
+            sh 'prohibit_logger_name_mismatch.sh'
+            sh 'prohibit_tab_character.sh'
+          }
+        }
+      }
+    }
+
+    stage('Resolve dependencies') {
+      steps {
+        withGithubStatusUpdates {
+          // -batch to prevent sbt from waiting on user input in case the project model is invalid
+          sh 'sbt -batch update'
+        }
+      }
+    }
+
+    stage('Check formatting & code style') {
+      steps {
+        withGithubStatusUpdates {
+          // Curiously, scalafmtCheckAll doesn't cover *.sbt/Build.scala files, hence scalafmtSbtCheck is needed as well
+          sh 'sbt scalafmtCheckAll scalafmtSbtCheck scalastyle'
+        }
+      }
+    }
+
+    stage('Compile production code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt compile'
+        }
+      }
+    }
+
+    stage('Detect Akka persistence changes') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt ashDumpPersistenceSchema'
+
+          dir('target') {
+            archiveArtifacts 'akka-persistence-schema.yaml'
+
+            script {
+              if (isUpToDateWithUltimateMergeTarget) {
+                copyArtifacts projectName: "Phoenix/gmx-system/$ultimateMergeTarget",
+                  filter: 'akka-persistence-schema.yaml',
+                  optional: true,
+                  selector: lastCompleted(),
+                  target: 'base-schemas/'
+
+                if (fileExists('base-schemas/akka-persistence-schema.yaml')) {
+                  sh "diff --unified=30 base-schemas/akka-persistence-schema.yaml akka-persistence-schema.yaml | tee akka-persistence-schema-current-vs-${ultimateMergeTarget}.diff"
+                  archiveArtifacts "akka-persistence-schema-current-vs-${ultimateMergeTarget}.diff"
+                  if (readFile("akka-persistence-schema-current-vs-${ultimateMergeTarget}.diff").size() > 0) {
+                    persistenceSchemaChangesDetected = true
+                  }
+                }
+              } else {
+                echo "Not comparing schema to ${ultimateMergeTarget} artifacts " +
+                  "since this branch (${env.BRANCH_NAME}) is NOT up to date with ${ultimateMergeTarget}"
+              }
+            }
+          }
+        }
+      }
+    }
+
+    stage('Detect API changes') {
+      steps {
+        withGithubStatusUpdates {
+          sh './ci/dump_openapi_yaml.sh target/openapi.yaml'
+
+          dir('target') {
+            // We don't care about `.servers` field since it's meaningless from the PoV of detecting API changes.
+            sh "yq eval 'del(.servers)' --inplace openapi.yaml"
+            archiveArtifacts 'openapi.yaml'
+
+            script {
+              if (isUpToDateWithUltimateMergeTarget) {
+                copyArtifacts projectName: "Phoenix/gmx-system/${ultimateMergeTarget}",
+                  filter: 'openapi.yaml',
+                  optional: true,
+                  selector: lastCompleted(),
+                  target: 'base-schemas/'
+
+                if (fileExists('base-schemas/openapi.yaml')) {
+                  sh "diff --unified=30 base-schemas/openapi.yaml openapi.yaml | tee openapi-current-vs-${ultimateMergeTarget}.diff"
+                  archiveArtifacts "openapi-current-vs-${ultimateMergeTarget}.diff"
+                  if (readFile("openapi-current-vs-${ultimateMergeTarget}.diff").size() > 0) {
+                    apiChangesDetected = true
+                  }
+                }
+              } else {
+                echo "Not comparing schema to ${ultimateMergeTarget} artifacts " +
+                  "since this branch (${env.BRANCH_NAME}) is NOT up to date with ${ultimateMergeTarget}"
+              }
+            }
+          }
+        }
+      }
+    }
+
+    stage('Post GitHub comment on API/persistence changes') {
+      when {
+        allOf {
+          expression { persistenceSchemaChangesDetected || apiChangesDetected }
+          not {
+            anyOf {
+              branch 'develop'
+              branch 'master'
+            }
+          }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            if (pullRequestNumber) {
+
+              echo "Posting a comment on pull request #${pullRequestNumber}..."
+
+              String commitShortHash = shOutput('git rev-parse --short HEAD')
+              String body = 'Note: changes to ' +
+                (apiChangesDetected ? '**API**' : '') +
+                (apiChangesDetected && persistenceSchemaChangesDetected ? ' and ' : '') +
+                (persistenceSchemaChangesDetected ? '**akka-persistence events/states**' : '') +
+                " (when comparing to the latest completed `$ultimateMergeTarget` build) have been detected for commit `$commitShortHash`.\n" +
+                "Check [Jenkins artifacts for this build](${env.RUN_ARTIFACTS_DISPLAY_URL}) for more details. These changes may or may not be breaking."
+
+
+              fireGithubRequest(
+                verb: "POST",
+                urlPath: "/issues/${pullRequestNumber}/comments",
+                body: [body: body]
+              )
+            } else {
+              echo 'Skipping since this is NOT a pull request build'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Compile test code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt Test/compile Contract/compile'
+        }
+      }
+    }
+
+    stage('Check scalafix rules') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "scalafixAll --check"'
+        }
+      }
+    }
+
+    stage('Run unit & integration tests') {
+      steps {
+        withGithubStatusUpdates {
+          // Tests do pull quite a few Docker images (due to the use of testcontainers).
+          withDockerHubAuthentication {
+            // Let's first run DatabaseMigrationsSpec separately:
+            // - if DB migrations are correct, there's little difference (just DatabaseMigrationsSpec being run twice, but that's little overhead)
+            // - if DB migrations are NOT correct, then running `test:test` first would flood us with error logs from multiple IntegrationSpecs;
+            //   even worse, some of the specs seem to stall (rather than crash) when the DB cannot be migrated properly.
+            //   OTOH, DatabaseMigrationsSpec will just quickly crash, preventing us from running `test:test` needlessly.
+            // Inb4, yes, another IntegrationSpec could also be designated for that role;
+            // DatabaseMigrationsSpec is just specifically suited for the purpose and does nothing else.
+            withJunitTestReports {
+              sh 'sbt "Test/testOnly phoenix.DatabaseMigrationsSpec" Test/test'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Create and push git tag') {
+      when {
+        branch 'master'
+      }
+      steps {
+        shWithGithubSshPrivateKey('./ci/create_and_push_git_tag.sh')
+      }
+    }
+
+    stage('Build Docker image') {
+      when {
+        anyOf {
+          branch 'develop'
+          branch 'master'
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          // sbt relies on git tags for determining app version, and Jenkins doesn't fetch tags by default.
+          shWithGithubSshPrivateKey 'git fetch --tags'
+
+          // Even though the resulting image is pushed to AWS ECR,
+          // the base image (`FROM`) is still pulled form Docker Hub.
+          withDockerHubAuthentication {
+            withAwsEcrAuthentication {
+              sh "./k8s-operations/build_image_and_publish_to_ecr.sh '${env.AWS_ECR_HOST}' phoenix-backend"
+              sh "./k8s-operations/build_image_and_publish_to_ecr.sh '${env.AWS_ECR_HOST}' phoenix-keycloak-to-db-migration"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Upload Helm charts for virginia-*') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            withAwsEcrAuthentication {
+              sh "aws ecr get-login-password --region ${env.AWS_ECR_REGION} " +
+                "| HELM_EXPERIMENTAL_OCI=1 helm registry login --username AWS --password-stdin ${env.AWS_ECR_HOST}"
+            }
+
+            String appVersion = deriveAppVersion()
+
+            sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-backend '${env.AWS_ECR_HOST}/phoenix-backend-helm-chart' '$appVersion' virginia-dev"
+          }
+        }
+      }
+    }
+
+    stage('Upload Helm charts for outpost-*') {
+      when {
+        branch 'master'
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            withAwsEcrAuthentication {
+              sh "aws ecr get-login-password --region ${env.AWS_ECR_REGION} " +
+                "| HELM_EXPERIMENTAL_OCI=1 helm registry login --username AWS --password-stdin ${env.AWS_ECR_HOST}"
+            }
+
+            String appVersion = deriveAppVersion()
+
+            sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-backend '${env.AWS_ECR_HOST}/phoenix-backend-helm-chart' '$appVersion' outpost-stg"
+            sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-backend '${env.AWS_ECR_HOST}/phoenix-backend-helm-chart' '$appVersion' outpost-prd"
+          }
+        }
+      }
+    }
+
+    stage('Update ArgoCD Applications in virginia-dev') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            String appVersion = deriveAppVersion()
+            String targetCluster = 'virginia-dev'
+            // Even though the builds of `develop` branch in this pipeline are executed sequentially,
+            // we need to remember that a few other pipelines also want to update `main` branch in the ArgoCD repo
+            // (although each pipeline should touch a different YAML file).
+            // To avoid race conditions (which would be rare, but still possible),
+            // each pipeline should first acquire this particular lock before accessing the ArgoCD repo.
+            lock('git-push-to-phoenix-argocd') {
+
+              dir('../phoenix-argocd') {
+                shWithGithubSshPrivateKey "git clone '${env.ARGOCD_GIT_REPO_URL}' -b ${env.ARGOCD_GIT_BRANCH} ."
+
+                sh """
+                  yq --inplace eval '.spec.source.targetRevision = "${appVersion}-${targetCluster}"' eks-${targetCluster}/phoenix-backend.yaml
+                """
+                setupGitUserNameAndEmail()
+                sh "git commit --allow-empty -a -m 'Bump version of phoenix-backend in $targetCluster to `$appVersion`'"
+                shWithGithubSshPrivateKey "git push origin ${env.ARGOCD_GIT_BRANCH}"
+              }
+
+              withCredentials([
+                usernamePassword(
+                  credentialsId: 'phoenix-virginia-dev-argocd-admin',
+                  usernameVariable: 'ARGOCD_USERNAME',
+                  passwordVariable: 'ARGOCD_PASSWORD'
+                )
+              ]) {
+                sh 'argocd login argocd.dev.phoenix.darkstormlabs.net --username="$ARGOCD_USERNAME" --password="$ARGOCD_PASSWORD" --grpc-web'
+
+                String apps = "eks-$targetCluster ecr-docker-credentials-renewer phoenix-backend phoenix-elastic phoenix-keycloak"
+                // See https://github.com/argoproj/argo-cd/issues/4505 for why the entire thing can't be done more easily.
+                sh "argocd app sync --async $apps"
+
+                // This is a SYNchronous operation.
+                // We need to actually wait for app to be ready before we start contract tests.
+                // This waiting is achieved by deploy/helm/phoenix-backend/templates/hook-*-await-rollout-complete-pod.yaml -
+                // see the comments in that file for why we cannot just rely on standard k8s criteria for readiness.
+                // Also, we cannot easily check from Jenkins whether the app is ready -
+                // we've got NO access to virginia-dev kubernetes API, and Akka Management's `/ready` endpoint is NOT exposed publicly.
+                sh "argocd app wait --operation $apps"
+                // Unfortunately, even if the sync fails, exit code of `argocd app wait` will still be 0.
+
+                // Hence we need to check if the apps actually got synced to the target state successfully,
+                // and fail the pipeline if it didn't.
+                sh """
+                    for app in $apps; do
+                      if ! argocd app diff \$app; then
+                        echo
+                        echo 'The above `argocd app diff` failed with a non-zero exit code.'
+                        echo 'This indicates that the sync has failed.'
+                        echo 'Inspect the logs of the preceding `argocd app wait` for more details.'
+                        exit 1
+                      fi
+                    done
+                """
+              }
+            }
+          }
+        }
+      }
+    }
+
+    stage('Run contract tests against virginia-dev') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          withCredentials([
+            usernamePassword(credentialsId: 'payments-pxp-api-credentials', usernameVariable: 'CONTRACT_TESTS_PXP_API_USERNAME', passwordVariable: 'CONTRACT_TESTS_PXP_API_PASSWORD'),
+            usernamePassword(credentialsId: 'dev-routes-credentials', usernameVariable: 'CONTRACT_TESTS_DEV_API_USERNAME', passwordVariable: 'CONTRACT_TESTS_DEV_API_PASSWORD')
+          ]) {
+            withJunitTestReports {
+              sh 'sbt -Dakka.test.timeFactor=5 Contract/test'
+            }
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      script {
+        if (!apiChangesDetected && !persistenceSchemaChangesDetected) {
+          notifyGithub(description: 'Complete', status: 'SUCCESS')
+        } else {
+          notifyGithub(description: 'Complete, ' +
+              (apiChangesDetected ? 'API' : '') +
+              (apiChangesDetected && persistenceSchemaChangesDetected ? ' & ' : '') +
+              (persistenceSchemaChangesDetected ? 'akka-persistence events/states' : '') +
+              ' changes detected', status: 'SUCCESS')
+        }
+      }
+    }
+
+    always {
+      notifySlack(env.BRANCH_NAME, currentBuild.result)
+    }
+  }
+}

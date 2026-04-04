@@ -1,0 +1,34 @@
+{
+  "type": "record",
+  "name": "SportBetInfo",
+  "namespace": "SBTech.KafkaLinuxHost.KafkaConsumers.Models",
+  "fields": [
+    {
+      "name": "ObjectID",
+      "type": "string"
+    },
+    {
+      "name": "Operation",
+      "type": "string"
+    },
+    {
+      "name": "OperationDate",
+      "type": "long"
+    },
+    {
+      "name": "PurchaseInfo",
+      "type": "string"
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "long"
+    },
+    {
+      "name": "SiteID",
+      "type": [
+        "int",
+        "null"
+      ]
+    }
+  ]
+}

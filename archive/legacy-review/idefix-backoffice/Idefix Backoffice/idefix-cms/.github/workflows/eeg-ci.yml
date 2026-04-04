@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  cancel_running_workflows:
+    name: Cancel running workflows
+    runs-on: ubuntu-20.04
+    steps:
+      - name: cancel running workflows
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: restore cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          node_modules
+          */*/node_modules
+        key: ${{ hashFiles('**/yarn.lock') }}
+
+    - name: Install
+      run: yarn install
+
+    - name: Build
+      run: yarn run build

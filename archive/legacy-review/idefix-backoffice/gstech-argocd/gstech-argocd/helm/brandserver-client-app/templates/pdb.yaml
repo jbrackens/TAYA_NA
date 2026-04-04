@@ -1,0 +1,17 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: {{ include "brandserver-client-app.name" . }}
+    chart: {{ include "brandserver-client-app.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ include "brandserver-client-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  minAvailable: {{ .Values.minAvailable }}
+  selector:
+    matchLabels:
+      name: {{ include "brandserver-client-app.fullname" . }}
+      release: {{ .Release.Name }}

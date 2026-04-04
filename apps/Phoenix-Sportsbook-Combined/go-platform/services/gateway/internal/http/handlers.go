@@ -1,0 +1,157 @@
+package http
+
+import (
+	"context"
+	"log"
+	stdhttp "net/http"
+	"os"
+	"strings"
+
+	"phoenix-revival/gateway/internal/bets"
+	"phoenix-revival/gateway/internal/cache"
+	"phoenix-revival/gateway/internal/compliance"
+	"phoenix-revival/gateway/internal/domain"
+	"phoenix-revival/gateway/internal/freebets"
+	"phoenix-revival/gateway/internal/matchtracker"
+	"phoenix-revival/gateway/internal/oddsboosts"
+	"phoenix-revival/gateway/internal/payments"
+	"phoenix-revival/gateway/internal/provider"
+	"phoenix-revival/gateway/internal/riskintel"
+	"phoenix-revival/gateway/internal/wallet"
+	"phoenix-revival/gateway/internal/ws"
+	"phoenix-revival/platform/transport/httpx"
+)
+
+func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
+	repository := createReadRepository()
+	walletService := wallet.NewServiceFromEnv()
+	betService := bets.NewServiceFromEnv(repository, walletService)
+	riskService := riskintel.NewService(repository, betService)
+	freebetService := freebets.NewService()
+	oddsBoostService := oddsboosts.NewService()
+	betService.SetPromotionServices(freebetService, oddsBoostService)
+	matchTrackerService := matchtracker.NewService()
+	providerRuntime, err := provider.BootstrapRuntimeFromEnv(
+		context.Background(),
+		newProviderEventSink(betService, matchTrackerService),
+	)
+	if err != nil {
+		log.Printf("warning: failed to bootstrap provider runtime: %v", err)
+	}
+	registerFeedMetricsRoute(mux, service, providerRuntime, betService)
+
+	// Initialize WebSocket hub
+	wsHub := ws.NewHub()
+	go wsHub.Run(context.Background())
+	registerWebSocketRoutes(mux, wsHub)
+
+	mux.Handle("/healthz", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		w.WriteHeader(stdhttp.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+		return nil
+	}))
+
+	mux.Handle("/readyz", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
+			"service": service,
+			"status":  "ready",
+		})
+	}))
+
+	mux.Handle("/api/v1/status", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
+			"service": service,
+			"status":  "up",
+		})
+	}))
+
+	registerMarketRoutes(mux, repository)
+	registerSportRoutes(mux, repository)
+	registerMatchTrackerRoutes(mux, repository, matchTrackerService)
+	registerStatsCenterRoutes(mux, repository)
+	registerFreebetRoutes(mux, freebetService)
+	registerOddsBoostRoutes(mux, oddsBoostService)
+	registerPersonalizationRoutes(mux, riskService)
+	registerAdminRiskRoutes(mux, "/admin/risk", riskService)
+	registerAdminRiskRoutes(mux, "/api/v1/admin/risk", riskService)
+	registerAdminRoutes(mux, repository, walletService, betService, providerRuntime)
+	registerWalletRoutes(mux, walletService)
+	registerBetRoutes(mux, betService)
+	registerAdminBetRoutes(mux, betService)
+
+	// Register payment and compliance services
+	paymentService := payments.NewMockPaymentService(walletService)
+	payments.RegisterPaymentRoutes(mux, paymentService)
+
+	geoService := compliance.NewMockGeoComplianceService()
+	kycService := compliance.NewMockKYCService()
+	rgService := compliance.NewMockResponsibleGamblingService()
+	compliance.RegisterComplianceRoutes(mux, geoService, kycService, rgService)
+}
+
+func registerWebSocketRoutes(mux *stdhttp.ServeMux, hub *ws.Hub) {
+	mux.HandleFunc("/ws", ws.NewHandler(hub))
+}
+
+func createReadRepository() domain.ReadRepository {
+	mode := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_READ_REPO_MODE")))
+	var repository domain.ReadRepository
+
+	if mode == "db" || mode == "sql" || mode == "postgres" {
+		driver := strings.TrimSpace(os.Getenv("GATEWAY_DB_DRIVER"))
+		if driver == "" {
+			driver = "postgres"
+		}
+		dsn := strings.TrimSpace(os.Getenv("GATEWAY_DB_DSN"))
+		if dsn == "" {
+			log.Printf("warning: GATEWAY_READ_REPO_MODE=%s requested, but GATEWAY_DB_DSN is empty; falling back to non-db repository", mode)
+		} else {
+			r, err := domain.OpenSQLReadRepository(driver, dsn)
+			if err != nil {
+				log.Printf("warning: failed to initialize SQL read repository driver=%s: %v; falling back to non-db repository", driver, err)
+			} else {
+				log.Printf("gateway read repository initialized in db mode using driver=%s", driver)
+				repository = r
+			}
+		}
+	}
+
+	if repository == nil {
+		if snapshotPath := os.Getenv("GATEWAY_READ_MODEL_FILE"); snapshotPath != "" {
+			r, err := domain.NewFileReadRepository(snapshotPath)
+			if err != nil {
+				log.Printf("warning: failed to load GATEWAY_READ_MODEL_FILE=%s: %v; falling back to in-memory seed data", snapshotPath, err)
+			} else {
+				log.Printf("gateway read repository initialized from snapshot file: %s", snapshotPath)
+				repository = r
+			}
+		}
+	}
+
+	if repository == nil {
+		repository = domain.NewInMemoryReadRepository()
+	}
+
+	// Wrap with Redis caching if REDIS_URL is set
+	if redisURL := strings.TrimSpace(os.Getenv("REDIS_URL")); redisURL != "" || os.Getenv("ENABLE_CACHE") != "" {
+		redisClient, err := cache.NewRedisClientFromEnv()
+		if err != nil {
+			log.Printf("warning: failed to initialize Redis cache: %v; using uncached repository", err)
+		} else {
+			cachedRepo := cache.NewCachedReadRepository(repository, redisClient)
+			log.Printf("gateway read repository wrapped with Redis cache")
+			repository = cachedRepo
+		}
+	}
+
+	return repository
+}

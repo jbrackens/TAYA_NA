@@ -1,0 +1,1557 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1555593150462,
+        "description": "",
+        "identifier": "648fb416-62a0-5165-a8fd-5fe85818aaa7",
+        "modifiedTimestamp": 1565126904162,
+        "name": "FetchCasinoAndSportBetsTopupData",
+        "type": "Flow",
+        "versionCount": 14
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "3f3bd971-05e0-35d6-98be-1f0d7364a9ee",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "8959541a-4ade-333d-a1ef-573a869baefb",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "d44c4a15-32be-33da-b801-6b002d895995",
+                    "name": "gmx-messaging.sportnation-reward-points-topup",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "60204f7f-5106-3d7f-8b74-09d1c44705bd",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "7c3cbc57-0256-3bf3-bb8d-95ae8a78b340",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "c1817ae4-89ba-3172-80d9-9c1464713170",
+                    "name": "GenerateFlowFile",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "86457222-ef08-3bf5-9534-03c5f584de9f",
+                    "name": "LogError - parse error",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "e8ec4a81-aaa1-394f-b16c-137842a0fde6",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "f2fa3b9f-c76a-3317-a4a7-4fa6035f0d3a",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "04a9cb4b-936e-3ad9-af7c-8ccc315fc3e6",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "23e7ac91-9b20-33d3-b788-de4654abb4f0",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "5c41be7c-f98c-3ff7-afe1-285d48010acc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "5c41be7c-f98c-3ff7-afe1-285d48010acc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "cf23f29a-ef44-3f84-a51f-3c9d93d06ae1",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "3f3bd971-05e0-35d6-98be-1f0d7364a9ee",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "3f3bd971-05e0-35d6-98be-1f0d7364a9ee",
+                    "name": "Funnel",
+                    "type": "FUNNEL"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "d8ec289c-b02f-3ad1-a6cd-d58114a9c165",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "ccafc744-9a11-3a0c-ae18-cc7b9a7bef2f",
+                    "name": "gmx-messaging.redzone-reward-points-topup",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": -22.52765655517578,
+                        "y": 437.2401123046875
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "f2fa3b9f-c76a-3317-a4a7-4fa6035f0d3a",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "6b8334d6-e61a-3f95-882d-ef62f2fc9fa3",
+                "labelIndex": 0,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "04a9cb4b-936e-3ad9-af7c-8ccc315fc3e6",
+                    "name": "LogAttribute",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "c4a1356b-972f-342b-9d5a-60b8ebb4c4e4",
+                    "name": "LogError - parse error",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "190572a5-7ec5-38f3-a707-22ae33ab113a",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "5c41be7c-f98c-3ff7-afe1-285d48010acc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 967.9604401074732,
+                        "y": 153.38161982577856
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "5c41be7c-f98c-3ff7-afe1-285d48010acc",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "ae0e5323-392d-38f8-83b3-c5b795eee445",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "c4a1356b-972f-342b-9d5a-60b8ebb4c4e4",
+                    "name": "LogError - parse error",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 500000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "60204f7f-5106-3d7f-8b74-09d1c44705bd",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "715eb6f3-08b8-3768-9d50-9561248a354c",
+                "labelIndex": 0,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "matched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "f2fa3b9f-c76a-3317-a4a7-4fa6035f0d3a",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 967.9012112130293,
+                        "y": 361.88887456148717
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "f2fa3b9f-c76a-3317-a4a7-4fa6035f0d3a",
+                    "name": "EvaluateJsonPath",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "ef3358a8-a14b-3e91-8508-735e235c666c",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "86457222-ef08-3bf5-9534-03c5f584de9f",
+                    "name": "LogError - parse error",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [
+            {
+                "componentType": "FUNNEL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "3f3bd971-05e0-35d6-98be-1f0d7364a9ee",
+                "position": {
+                    "x": 614.2863265516387,
+                    "y": 61.45615177382612
+                }
+            }
+        ],
+        "identifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+        "inputPorts": [],
+        "labels": [],
+        "name": "FetchCasinoAndSportBetsTopupData",
+        "outputPorts": [
+            {
+                "comments": "",
+                "componentType": "OUTPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "60204f7f-5106-3d7f-8b74-09d1c44705bd",
+                "name": "output",
+                "position": {
+                    "x": 514.3630179253844,
+                    "y": 708.6800032836818
+                },
+                "type": "OUTPUT_PORT"
+            }
+        ],
+        "position": {
+            "x": 407.1938758382428,
+            "y": -143.5708603756591
+        },
+        "processGroups": [],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [
+                    "unmatched"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "f2fa3b9f-c76a-3317-a4a7-4fa6035f0d3a",
+                "name": "EvaluateJsonPath",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 462.7809993768735,
+                    "y": 371.67745569191504
+                },
+                "properties": {
+                    "Destination": "flowfile-attribute",
+                    "Null Value Representation": "empty string",
+                    "Path Not Found Behavior": "ignore",
+                    "Return Type": "scalar",
+                    "amount": "$.amount",
+                    "company_id": "$.company_id",
+                    "created_date": "$.created_date_value",
+                    "external_transaction_id": "$.external_transaction_id",
+                    "external_user_id": "$.external_user_id",
+                    "operation_subtype": "$.operation_subtype",
+                    "title": "$.title"
+                },
+                "propertyDescriptors": {
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Null Value Representation": {
+                        "displayName": "Null Value Representation",
+                        "identifiesControllerService": false,
+                        "name": "Null Value Representation",
+                        "sensitive": false
+                    },
+                    "Path Not Found Behavior": {
+                        "displayName": "Path Not Found Behavior",
+                        "identifiesControllerService": false,
+                        "name": "Path Not Found Behavior",
+                        "sensitive": false
+                    },
+                    "Return Type": {
+                        "displayName": "Return Type",
+                        "identifiesControllerService": false,
+                        "name": "Return Type",
+                        "sensitive": false
+                    },
+                    "amount": {
+                        "displayName": "amount",
+                        "identifiesControllerService": false,
+                        "name": "amount",
+                        "sensitive": false
+                    },
+                    "company_id": {
+                        "displayName": "company_id",
+                        "identifiesControllerService": false,
+                        "name": "company_id",
+                        "sensitive": false
+                    },
+                    "created_date": {
+                        "displayName": "created_date",
+                        "identifiesControllerService": false,
+                        "name": "created_date",
+                        "sensitive": false
+                    },
+                    "external_transaction_id": {
+                        "displayName": "external_transaction_id",
+                        "identifiesControllerService": false,
+                        "name": "external_transaction_id",
+                        "sensitive": false
+                    },
+                    "external_user_id": {
+                        "displayName": "external_user_id",
+                        "identifiesControllerService": false,
+                        "name": "external_user_id",
+                        "sensitive": false
+                    },
+                    "operation_subtype": {
+                        "displayName": "operation_subtype",
+                        "identifiesControllerService": false,
+                        "name": "operation_subtype",
+                        "sensitive": false
+                    },
+                    "title": {
+                        "displayName": "title",
+                        "identifiesControllerService": false,
+                        "name": "title",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.EvaluateJsonPath",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "d7419584-7011-3422-b8a9-1d0ac7e9817e",
+                "name": "[OBSOLETE] ConsumeKafka(SPORT_BETS)",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 782.5573389144411,
+                    "y": -681.0343373546395
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "earliest",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "nifi.sportbets.${KAFKA_GROUP_ID_SUFIX}",
+                    "honor-transactions": "true",
+                    "key-attribute-encoding": "utf-8",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "1",
+                    "message-header-encoding": "UTF-8",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "${KAFKA.TOPIC.SPORT_BETS}",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "ccafc744-9a11-3a0c-ae18-cc7b9a7bef2f",
+                "name": "gmx-messaging.redzone-reward-points-topup",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 799.5585596175661,
+                    "y": -223.3125737437997
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "latest",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "nifi.${KAFKA_GROUP_ID_SUFIX}",
+                    "honor-transactions": "true",
+                    "key-attribute-encoding": "utf-8",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "1",
+                    "message-header-encoding": "UTF-8",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "gmx-messaging.redzone-reward-points-topup",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "86457222-ef08-3bf5-9534-03c5f584de9f",
+                "name": "LogError - parse error",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1133.6403195335602,
+                    "y": 371.8462651107468
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to convert JSON to FlowFile attributes for message offset ${kafka.offset} from ${kafka.topic}",
+                    "log-prefix": "[FetchCasinoAndSportBetsTopupData]"
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 1000,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ffa0a0"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "c1817ae4-89ba-3172-80d9-9c1464713170",
+                "name": "GenerateFlowFile",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1124.9660555501428,
+                    "y": 671.0376167582207
+                },
+                "properties": {
+                    "Batch Size": "1",
+                    "Data Format": "Text",
+                    "File Size": "0B",
+                    "Unique FlowFiles": "false",
+                    "amount": "255.00",
+                    "character-set": "UTF-8",
+                    "company_id": "9577609b-d14f-4f14-ae6d-a6de017e8254",
+                    "created_date": "2019-07-10T20:22:28.000+00:00",
+                    "external_transaction_id": "nifi_test_${UUID()}",
+                    "external_user_id": "21924841",
+                    "operation_subtype": "STD",
+                    "title": "Niti testing ${UUID()}"
+                },
+                "propertyDescriptors": {
+                    "Batch Size": {
+                        "displayName": "Batch Size",
+                        "identifiesControllerService": false,
+                        "name": "Batch Size",
+                        "sensitive": false
+                    },
+                    "Data Format": {
+                        "displayName": "Data Format",
+                        "identifiesControllerService": false,
+                        "name": "Data Format",
+                        "sensitive": false
+                    },
+                    "File Size": {
+                        "displayName": "File Size",
+                        "identifiesControllerService": false,
+                        "name": "File Size",
+                        "sensitive": false
+                    },
+                    "Unique FlowFiles": {
+                        "displayName": "Unique FlowFiles",
+                        "identifiesControllerService": false,
+                        "name": "Unique FlowFiles",
+                        "sensitive": false
+                    },
+                    "amount": {
+                        "displayName": "amount",
+                        "identifiesControllerService": false,
+                        "name": "amount",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    },
+                    "company_id": {
+                        "displayName": "company_id",
+                        "identifiesControllerService": false,
+                        "name": "company_id",
+                        "sensitive": false
+                    },
+                    "created_date": {
+                        "displayName": "created_date",
+                        "identifiesControllerService": false,
+                        "name": "created_date",
+                        "sensitive": false
+                    },
+                    "external_transaction_id": {
+                        "displayName": "external_transaction_id",
+                        "identifiesControllerService": false,
+                        "name": "external_transaction_id",
+                        "sensitive": false
+                    },
+                    "external_user_id": {
+                        "displayName": "external_user_id",
+                        "identifiesControllerService": false,
+                        "name": "external_user_id",
+                        "sensitive": false
+                    },
+                    "generate-ff-custom-text": {
+                        "displayName": "Custom Text",
+                        "identifiesControllerService": false,
+                        "name": "generate-ff-custom-text",
+                        "sensitive": false
+                    },
+                    "operation_subtype": {
+                        "displayName": "operation_subtype",
+                        "identifiesControllerService": false,
+                        "name": "operation_subtype",
+                        "sensitive": false
+                    },
+                    "title": {
+                        "displayName": "title",
+                        "identifiesControllerService": false,
+                        "name": "title",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "1000 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.GenerateFlowFile",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "d44c4a15-32be-33da-b801-6b002d895995",
+                "name": "gmx-messaging.sportnation-reward-points-topup",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 116.23778935389419,
+                    "y": -224.1800511607919
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "latest",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "nifi.${KAFKA_GROUP_ID_SUFIX}",
+                    "honor-transactions": "true",
+                    "key-attribute-encoding": "utf-8",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "1",
+                    "message-header-encoding": "UTF-8",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "gmx-messaging.sportnation-reward-points-topup",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-avro-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "5c41be7c-f98c-3ff7-afe1-285d48010acc",
+                "name": "ConvertAvroToJSON",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 462.0030948610738,
+                    "y": 163.81373479658623
+                },
+                "properties": {
+                    "Avro schema": "{\n  \"type\": \"record\",\n  \"name\": \"CasinoAndSportBetsTopupData\",\n  \"namespace\": \"net.flipsports.gmx.rewardcalculator.api\",\n  \"fields\": [\n    {\n      \"name\": \"external_user_id\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"external_transaction_id\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"amount\",\n      \"type\": \"double\"\n    },\n    {\n      \"name\": \"title\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"created_date\",\n      \"type\": \"long\"\n    },\n    {\n      \"name\": \"created_date_value\",\n      \"type\": \"string\"\n    },\n    {\n        \"name\": \"company_id\",\n        \"type\": \"string\",\n        \"logicalType\": \"UUID\"\n    },\n    {\n       \"name\": \"operation_subtype\",\n       \"type\": \"string\"\n    },\n    {\n        \"name\": \"context_data\",\n        \"type\": {\n            \"type\": \"map\",\n            \"values\": \"string\"\n            }\n    }\n  ]\n}",
+                    "JSON container options": "none",
+                    "Wrap Single Record": "false"
+                },
+                "propertyDescriptors": {
+                    "Avro schema": {
+                        "displayName": "Avro schema",
+                        "identifiesControllerService": false,
+                        "name": "Avro schema",
+                        "sensitive": false
+                    },
+                    "JSON container options": {
+                        "displayName": "JSON container options",
+                        "identifiesControllerService": false,
+                        "name": "JSON container options",
+                        "sensitive": false
+                    },
+                    "Wrap Single Record": {
+                        "displayName": "Wrap Single Record",
+                        "identifiesControllerService": false,
+                        "name": "Wrap Single Record",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.avro.ConvertAvroToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "492e6f99-e0df-3458-a6f6-191a72e465c3",
+                "name": "[OBSOLETE] ConsumeKafka(CASINO_BETS)",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 782.6631433578004,
+                    "y": -826.5286610851083
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "latest",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "nifi.casinobets.${KAFKA_GROUP_ID_SUFIX}",
+                    "honor-transactions": "true",
+                    "key-attribute-encoding": "utf-8",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "1",
+                    "message-header-encoding": "UTF-8",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "${KAFKA.TOPIC.CASINO_BETS}",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "c4a1356b-972f-342b-9d5a-60b8ebb4c4e4",
+                "name": "LogError - parse error",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1123.9177853538727,
+                    "y": 162.94950485497088
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to parse message offset ${kafka.offset} from ${kafka.topic}",
+                    "log-prefix": "[FetchCasinoAndSportBetsTopupData]"
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 1000,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ffa0a0"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "identifier": "04a9cb4b-936e-3ad9-af7c-8ccc315fc3e6",
+                "name": "LogAttribute",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -196.7415498853182,
+                    "y": 162.40267876930346
+                },
+                "properties": {
+                    "Log Level": "info",
+                    "Log Payload": "true",
+                    "Log prefix": "[FetchCasinoAndSportBetsTopupData] ",
+                    "attributes-to-log-regex": "kafka.*",
+                    "character-set": "UTF-8"
+                },
+                "propertyDescriptors": {
+                    "Attributes to Ignore": {
+                        "displayName": "Attributes to Ignore",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Ignore",
+                        "sensitive": false
+                    },
+                    "Attributes to Log": {
+                        "displayName": "Attributes to Log",
+                        "identifiesControllerService": false,
+                        "name": "Attributes to Log",
+                        "sensitive": false
+                    },
+                    "Log Level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "Log Level",
+                        "sensitive": false
+                    },
+                    "Log Payload": {
+                        "displayName": "Log Payload",
+                        "identifiesControllerService": false,
+                        "name": "Log Payload",
+                        "sensitive": false
+                    },
+                    "Log prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "Log prefix",
+                        "sensitive": false
+                    },
+                    "attributes-to-ignore-regex": {
+                        "displayName": "Attributes to Ignore by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-ignore-regex",
+                        "sensitive": false
+                    },
+                    "attributes-to-log-regex": {
+                        "displayName": "Attributes to Log by Regular Expression",
+                        "identifiesControllerService": false,
+                        "name": "attributes-to-log-regex",
+                        "sensitive": false
+                    },
+                    "character-set": {
+                        "displayName": "Character Set",
+                        "identifiesControllerService": false,
+                        "name": "character-set",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogAttribute",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "new topic name",
+        "flowIdentifier": "648fb416-62a0-5165-a8fd-5fe85818aaa7",
+        "timestamp": 1565126254529,
+        "version": 13
+    }
+}

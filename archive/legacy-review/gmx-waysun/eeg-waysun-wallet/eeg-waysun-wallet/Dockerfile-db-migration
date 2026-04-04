@@ -1,0 +1,2 @@
+FROM liquibase/liquibase:4.10.0
+COPY ./wallet/conf/liquibase /liquibase/changelog

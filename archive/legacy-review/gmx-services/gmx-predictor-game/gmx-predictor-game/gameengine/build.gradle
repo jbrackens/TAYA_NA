@@ -1,0 +1,13 @@
+plugins {
+}
+
+description = "GMX Platform :: Predictor Game :: Game Engine"
+
+dependencies {
+    implementation project(':common')
+    implementation project(':domain')
+
+    implementation "org.scala-lang:scala-library:${scalaVersion}"
+
+    implementation "com.google.inject:guice:4.2.0"
+}

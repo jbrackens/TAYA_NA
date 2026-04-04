@@ -1,0 +1,41 @@
+# HTTP routes don't start unless ingestion is enabled.
+{{ if .Values.betgenius.dataIngestionEnabled -}}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "phoenix-backend.fullname" . }}-betgenius
+  labels:
+    {{- include "phoenix-backend.labels" . | nindent 4 }}
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-1-2017-01
+    {{- if .Values.ingress.whitelistedIps.betgenius }}
+    alb.ingress.kubernetes.io/inbound-cidrs: "{{ join "," .Values.ingress.whitelistedIps.betgenius }}"
+    {{- end }}
+    {{- if .Values.ingress.alb.group }}
+    alb.ingress.kubernetes.io/group.name: "{{ .Values.ingress.alb.group }}"
+    {{- else }}
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    {{- if .Values.ingress.alb.customerOwnedIP.enabled }}
+    alb.ingress.kubernetes.io/customer-owned-ipv4-pool: "{{ .Values.ingress.alb.customerOwnedIP.ipv4poolCoip }}"
+    alb.ingress.kubernetes.io/subnets: "{{ .Values.ingress.alb.customerOwnedIP.outpostPublicSubnetID }}"
+    {{- end }}
+    {{- end }}
+spec:
+  rules:
+    - host: betgenius-api.{{ .Values.ingress.baseDNS }}
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ include "phoenix-backend.fullname" . }}
+                port: { name: betgenius-api }
+
+{{- end }}

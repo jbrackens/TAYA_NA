@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+GOVERNANCE_SCRIPT="$PROJECT_ROOT/scripts/release/private-governance-enforce.sh"
+SKIP_FLAG="${SKIP_PRIVATE_GOVERNANCE_GUARD:-0}"
+needs_governance_check=0
+
+# Guard against parent-repo hook path reuse: only enforce when push is initiated from project tree.
+CURRENT_DIR="$(pwd -P)"
+if [[ "$CURRENT_DIR" != "$PROJECT_ROOT" && "$CURRENT_DIR" != "$PROJECT_ROOT/"* ]]; then
+  exit 0
+fi
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [[ "$local_ref" == refs/heads/release/* ]] || [[ "$local_ref" == refs/tags/release-* ]] || [[ "$local_ref" == refs/tags/v* ]]; then
+    needs_governance_check=1
+    break
+  fi
+done
+
+if [[ "$needs_governance_check" -eq 0 ]]; then
+  exit 0
+fi
+
+if [[ "$SKIP_FLAG" == "1" || "$SKIP_FLAG" == "true" ]]; then
+  echo "[private-governance] WARNING: skipping release-ref governance gate because SKIP_PRIVATE_GOVERNANCE_GUARD=$SKIP_FLAG"
+  exit 0
+fi
+
+echo "[private-governance] release ref detected; running mandatory private governance gate..."
+bash "$GOVERNANCE_SCRIPT"

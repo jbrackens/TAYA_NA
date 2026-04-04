@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$new2nddeposit_common_fairy_name = 'new2nddeposit_common_fairy';
+$new2nddeposit_common_fairy_x = 286px;
+$new2nddeposit_common_fairy_y = 0px;
+$new2nddeposit_common_fairy_offset_x = -286px;
+$new2nddeposit_common_fairy_offset_y = 0px;
+$new2nddeposit_common_fairy_width = 250px;
+$new2nddeposit_common_fairy_height = 263px;
+$new2nddeposit_common_fairy_total_width = 536px;
+$new2nddeposit_common_fairy_total_height = 415px;
+$new2nddeposit_common_fairy_image = 'new2nddeposit_common_b.png';
+$new2nddeposit_common_fairy = 286px 0px -286px 0px 250px 263px 536px 415px 'new2nddeposit_common_b.png' 'new2nddeposit_common_fairy';
+$new2nddeposit_common_felix_name = 'new2nddeposit_common_felix';
+$new2nddeposit_common_felix_x = 0px;
+$new2nddeposit_common_felix_y = 0px;
+$new2nddeposit_common_felix_offset_x = 0px;
+$new2nddeposit_common_felix_offset_y = 0px;
+$new2nddeposit_common_felix_width = 282px;
+$new2nddeposit_common_felix_height = 299px;
+$new2nddeposit_common_felix_total_width = 536px;
+$new2nddeposit_common_felix_total_height = 415px;
+$new2nddeposit_common_felix_image = 'new2nddeposit_common_b.png';
+$new2nddeposit_common_felix = 0px 0px 0px 0px 282px 299px 536px 415px 'new2nddeposit_common_b.png' 'new2nddeposit_common_felix';
+$new2nddeposit_common_text_name = 'new2nddeposit_common_text';
+$new2nddeposit_common_text_x = 0px;
+$new2nddeposit_common_text_y = 303px;
+$new2nddeposit_common_text_offset_x = 0px;
+$new2nddeposit_common_text_offset_y = -303px;
+$new2nddeposit_common_text_width = 407px;
+$new2nddeposit_common_text_height = 112px;
+$new2nddeposit_common_text_total_width = 536px;
+$new2nddeposit_common_text_total_height = 415px;
+$new2nddeposit_common_text_image = 'new2nddeposit_common_b.png';
+$new2nddeposit_common_text = 0px 303px 0px -303px 407px 112px 536px 415px 'new2nddeposit_common_b.png' 'new2nddeposit_common_text';
+$spritesheet_width = 536px;
+$spritesheet_height = 415px;
+$spritesheet_image = 'new2nddeposit_common_b.png';
+$spritesheet_sprites = $new2nddeposit_common_fairy $new2nddeposit_common_felix $new2nddeposit_common_text;
+$spritesheet = 536px 415px 'new2nddeposit_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "gstech-campaignserver",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "test": "NODE_ENV=test mocha --exit --timeout 15000 -r '../gstech-core/modules/setup-test' -r './setup-test'  './server/**/*.spec.js'",
+    "serve": "yarn migrate && node .",
+    "start": "KAFKA_ENABLED=true nodemon .",
+    "migrate": "node ../gstech-core/modules/migrator.js migrate",
+    "mocha": "NODE_ENV=test mocha --exit -r ../gstech-core/modules/setup-test -r ./setup-test",
+    "add:migration": "node ../gstech-core/modules/migrator.js create",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from gstech-campaignserver.test",
+    "docker:start": "docker compose up --build -d",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "prettier": "prettier -c ./server/**/*.js",
+    "data:import-campaigns": "node ./scripts/jobRunner.js run '../server/jobs/importKKCampaigns.js'",
+    "data:import-sheets": "node ./scripts/jobRunner.js run '../server/jobs/importSheetsContent.js'",
+    "data:import-localizations": "node ./scripts/jobRunner.js run '../server/jobs/importLocalizations.js'",
+    "data:import": "node ./scripts/jobRunner.js run '../server/jobs/importContent.js'",
+    "data:mock-import": "node ./scripts/jobRunner.js run '../server/jobs/mockImport.js'",
+    "data:update-membership": "node ./scripts/jobRunner.js run '../server/jobs/updatePlayersCampaignsMembership.js'",
+    "data:promo-fix": "node ./scripts/jobRunner.js run '../server/jobs/promoFlagMismatchFix.js'",
+    "data:764": "node ./scripts/jobRunner.js run '../server/jobs/764-correct-campa-promo-flags.js'",
+    "data:countries": "node ./scripts/jobRunner.js run '../server/jobs/syncCountries.js'",
+    "data:fake": "node ./scripts/jobRunner.js run '../server/jobs/fakeData.js'",
+    "data:clean": "node ./scripts/jobRunner.js run '../server/jobs/cleanDb.js'"
+  }
+}

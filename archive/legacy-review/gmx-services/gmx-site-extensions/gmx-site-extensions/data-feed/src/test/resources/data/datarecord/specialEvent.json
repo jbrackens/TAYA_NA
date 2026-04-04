@@ -1,0 +1,207 @@
+[
+  {
+    "key": {
+      "type": "Event",
+      "id": "87053536"
+    },
+    "value": {
+      "messageId": "449ab108-ec58-423d-8938-4c4bd023c581",
+      "messageOriginDateUTC": 1617738933,
+      "messageProcessingDateUTC": 1617738933628,
+      "payload": {
+        "id": "87053536",
+        "sportId": "79",
+        "sportName": "Enhanced Odds",
+        "countryId": "245",
+        "countryCode": "ZZ",
+        "countryName": "International",
+        "leagueId": "202137",
+        "leagueName": "Soccer Specials",
+        "eventType": "Outright",
+        "eventName": "Bayern Munich vs Paris St-Germain | SOT Specials",
+        "startTime": 1617822000,
+        "status": "NotStarted",
+        "isDisabled": false,
+        "isLive": false,
+        "participants": [
+          {
+            "id": "-999",
+            "name": "Other",
+            "details": {}
+          },
+          {
+            "id": "1144739",
+            "name": "Mbappe, Muller and Neymar each to have a shot on target",
+            "details": {}
+          },
+          {
+            "id": "1144740",
+            "name": "Mbappe and Sane each to have a shot on target",
+            "details": {}
+          },
+          {
+            "id": "1144741",
+            "name": "Gueye to have 2 or more shots on target",
+            "details": {}
+          },
+          {
+            "id": "1144742",
+            "name": "Coman and Alaba to each have a shot on target",
+            "details": {}
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Market",
+      "id": "87053536"
+    },
+    "value": {
+      "messageId": "8565b09f-bc6e-4dbc-9612-910ad6f5f3f3",
+      "messageOriginDateUTC": 1617738933,
+      "messageProcessingDateUTC": 1617738933560,
+      "payload": {
+        "id": "87053536",
+        "eventId": "87053536",
+        "marketTypeId": "8",
+        "marketTypeName": "Outright",
+        "marketName": "Bayern Munich vs Paris St-Germain | SOT Specials",
+        "isDisabled": false
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA87053536#1014340385_4L202137Q11144741Q2-1"
+    },
+    "value": {
+      "messageId": "15531fa1-f833-4c20-8cb5-7e5187ef343f",
+      "messageOriginDateUTC": 1617738933,
+      "messageProcessingDateUTC": 1617738933495,
+      "payload": {
+        "id": "0QA87053536#1014340385_4L202137Q11144741Q2-1",
+        "eventId": "87053536",
+        "marketId": "87053536",
+        "selectionIntId": "1014340385",
+        "selectionTypeId": "4",
+        "participantId": "1144741",
+        "selectionName": "Gueye to have 2 or more shots on target",
+        "isDisabled": false,
+        "trueOdds": 51.0,
+        "displayOdds": {
+          "Fractional": "50/1",
+          "Indo": "50.00",
+          "Malay": "-0.02",
+          "HK": "50.00",
+          "American": "+5000",
+          "Decimal": "51.00"
+        },
+        "details": {
+          "runnerStatus": ""
+        }
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA87053536#1014340387_4L202137Q11144742Q2-1"
+    },
+    "value": {
+      "messageId": "65d24892-f726-4039-8fd0-0ed2c0e5d096",
+      "messageOriginDateUTC": 1617738933,
+      "messageProcessingDateUTC": 1617738933496,
+      "payload": {
+        "id": "",
+        "eventId": "87053536",
+        "marketId": "87053536",
+        "selectionIntId": "1014340387",
+        "selectionTypeId": "4",
+        "participantId": "1144742",
+        "selectionName": "Coman and Alaba to each have a shot on target",
+        "isDisabled": false,
+        "trueOdds": 7.5,
+        "displayOdds": {
+          "Fractional": "13/2",
+          "Indo": "6.50",
+          "Malay": "-0.15",
+          "HK": "6.50",
+          "American": "+650",
+          "Decimal": "7.50"
+        },
+        "details": {
+          "runnerStatus": ""
+        }
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA87053536#1014340381_4L202137Q11144739Q2-1"
+    },
+    "value": {
+      "messageId": "b0b595f3-dd51-4a17-8e7c-c214694e858c",
+      "messageOriginDateUTC": 1617738933,
+      "messageProcessingDateUTC": 1617738933499,
+      "payload": {
+        "id": "0QA87053536#1014340381_4L202137Q11144739Q2-1",
+        "eventId": "87053536",
+        "marketId": "87053536",
+        "selectionIntId": "1014340381",
+        "selectionTypeId": "4",
+        "participantId": "1144739",
+        "selectionName": "Mbappe, Muller and Neymar each to have a shot on target",
+        "isDisabled": false,
+        "trueOdds": 3.5,
+        "displayOdds": {
+          "Fractional": "5/2",
+          "Indo": "2.50",
+          "Malay": "-0.40",
+          "HK": "2.50",
+          "American": "+250",
+          "Decimal": "3.50"
+        },
+        "details": {
+          "runnerStatus": ""
+        }
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Selection",
+      "id": "0QA87053536#1014340383_4L202137Q11144740Q2-1"
+    },
+    "value": {
+      "messageId": "0c977b29-19c9-49d0-9a5c-24db2f668671",
+      "messageOriginDateUTC": 1617738933,
+      "messageProcessingDateUTC": 1617738933567,
+      "payload": {
+        "id": "0QA87053536#1014340383_4L202137Q11144740Q2-1",
+        "eventId": "87053536",
+        "marketId": "87053536",
+        "selectionIntId": "1014340383",
+        "selectionTypeId": "4",
+        "participantId": "1144740",
+        "selectionName": "Mbappe and Sane each to have a shot on target",
+        "isDisabled": false,
+        "trueOdds": 2.15,
+        "displayOdds": {
+          "Fractional": "23/20",
+          "Indo": "1.15",
+          "Malay": "-0.87",
+          "HK": "1.15",
+          "American": "+115",
+          "Decimal": "2.15"
+        },
+        "details": {
+          "runnerStatus": ""
+        }
+      }
+    }
+  }
+]

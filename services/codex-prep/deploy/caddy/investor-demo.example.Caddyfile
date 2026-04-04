@@ -1,0 +1,14 @@
+# Example private investor-demo reverse proxy.
+# Replace domains, TLS policy, and upstream addresses for the target VM.
+
+player.demo.example {
+    reverse_proxy 127.0.0.1:3100
+}
+
+talon.demo.example {
+    reverse_proxy 127.0.0.1:3101
+}
+
+api.demo.example {
+    reverse_proxy 127.0.0.1:8080
+}

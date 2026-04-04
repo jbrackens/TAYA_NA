@@ -1,0 +1,94 @@
+replicaCount: 1
+imagePullPolicy: Always
+imagePullSecrets:
+servicePort: 8083
+
+configurationOverrides:
+  "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components,/data"
+  "key.converter": "io.confluent.connect.avro.AvroConverter"
+  "value.converter": "io.confluent.connect.avro.AvroConverter"
+  "key.converter.schemas.enable": "false"
+  "value.converter.schemas.enable": "false"
+  "internal.key.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "internal.value.converter": "org.apache.kafka.connect.json.JsonConverter"
+  "config.storage.replication.factor": "3"
+  "offset.storage.replication.factor": "3"
+  "status.storage.replication.factor": "3"
+
+## Kafka Connect JVM Heap Option
+heapOptions: >-
+  -XX:MaxRAMPercentage=75.0 
+  -XX:InitialRAMPercentage=75.0 
+
+customEnv: {}
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 2048Mi
+  requests:
+    cpu: 500m
+    memory: 2048Mi
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: nodes-type
+              operator: In
+              values:
+                - streaming-nodes
+        weight: 1
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: nodes-type
+              operator: In
+              values:
+                - streaming-nodes
+
+jmx:
+  port: 5555
+  expose: true
+
+prometheus:
+  jmx:
+    enabled: true
+    image: solsson/kafka-prometheus-jmx-exporter@sha256
+    imageTag: 6f82e2b0464f50da8104acd7363fb9b995001ddff77d248379f8788e78946143
+    imagePullPolicy: Always
+    port: 5556
+    resources:
+      limits:
+        cpu: 250m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+
+kafka:
+  bootstrapServers: "PLAINTEXT://kafka.streaming.svc.cluster.local:9092"
+cp-schema-registry:
+  url: "http://cp-schema-registry.streaming.svc.cluster.local:8081"
+
+eeg_pvc_cfs:
+  capacity: # example: 100Gi
+  host:  # example: 10.17.105.17
+  permissionGroupId:  # pgroup-5nnsx6up
+  subnetId:  # subnet-mqulbblm
+  vpcId:  # vpc-fc428r6x
+  region:  # eu-frankfurt-1
+
+secrets:
+livenessProbe:
+  httpGet:
+    path: /connectors
+    port: 8083
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 10
+

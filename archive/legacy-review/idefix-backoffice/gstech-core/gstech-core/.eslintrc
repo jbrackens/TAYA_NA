@@ -1,0 +1,30 @@
+{
+  "extends": ["airbnb", "plugin:flowtype/recommended"],
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "parser": "babel-eslint",
+  "plugins": [
+    "flowtype"
+  ],
+  "globals": {
+    "expect": true,
+    "setup": true,
+    "clean": true
+  },
+  "rules": {
+    "max-len": ["error", 500, 2],
+    "import/no-dynamic-require": "off",
+    "global-require": "off",
+    "camelcase": 0,
+    "no-restricted-syntax": 0,
+    "implicit-arrow-linebreak": 0,
+    "arrow-parens": 0,
+    "object-curly-newline": 0,
+    "prefer-promise-reject-errors": 0,
+    "no-await-in-loop": 0,
+    "no-buffer-constructor": 0,
+    "no-restricted-globals": 0
+  }
+}

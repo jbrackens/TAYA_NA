@@ -1,0 +1,112 @@
+{
+  "type": "record",
+  "name": "Notification",
+  "namespace": "gmx.dataapi.internal.customer",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "createdDateUTC",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "companyId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "logicalType": "UUID"
+    },
+    {
+      "name": "externalUserId",
+      "type": "string"
+    },
+    {
+      "name": "action",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "ActionType",
+          "symbols": [
+            "SLACK",
+            "EMAIL"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "notificationTrigger",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Priority",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "PriorityType",
+          "symbols": [
+            "lowest",
+            "low",
+            "medium",
+            "high",
+            "highest"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "type": "record",
+          "name": "StraightValue",
+          "fields": [
+            {
+              "name": "value",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "ComplexValue",
+          "fields": [
+            {
+              "name": "value",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "operationTarget",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

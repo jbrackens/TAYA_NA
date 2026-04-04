@@ -1,0 +1,1 @@
+alter table promotions add column "calculateWins" boolean not null default false;

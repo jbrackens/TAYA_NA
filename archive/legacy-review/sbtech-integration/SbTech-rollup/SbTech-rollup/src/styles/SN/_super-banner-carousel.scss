@@ -1,0 +1,109 @@
+.scarousel-pagination{
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8px;
+    margin: 0 auto;
+    text-align: center;
+}
+html.IsDesktop .super-banner-carousel .scarousel-list:not(:empty){
+  margin-bottom:20px;
+}
+.IsMobile .group-view-carousel .scarousel-list:empty{
+  margin-bottom:0px;
+}
+html.IsDesktop .super-banner-carousel .super-banner-slide,
+html.IsMobile .super-banner-carousel .super-banner-slide,
+html.IsTablet .super-banner-carousel .super-banner-slide{
+  border-radius:0px;
+}
+
+html.IsMobile .scarousel .super-banner-slide, html.IsTablet .scarousel .super-banner-slide{
+  width:266px;
+  height:190px;
+}
+
+.super-banner .custom-slider-arrow-next, .super-banner-carousel .scarousel-btn-next, html.IsMobile .scarousel-btn-next, html.IsTablet .scarousel-btn-next{
+  box-shadow:none;
+}
+
+
+html.IsDesktop .super-banner-carousel .scarousel-list-wrapper, html.IsDesktop html.IsMobile .scarousel-list-wrapper, html.IsDesktop html.IsTablet .scarousel-list-wrapper{
+  margin: 0;
+}
+
+.super-banner-event-odds,
+.super-banner-event-odds-item:not(:empty)
+{
+    padding: 1px;
+}
+
+html.IsDesktop .super-banner-frameless .custom-slider-trigger{
+  background:white;
+}
+html.IsDesktop .super-banner-frameless .custom-slider-trigger.custom-slider-active{
+  background:$brand-base;
+}
+
+.super-banner-carousel .scarousel-btn-prev,
+html.IsMobile .scarousel-btn-prev,
+html.IsTablet .scarousel-btn-prev{
+  left:0;
+}
+.super-banner-carousel .scarousel-btn-next,
+html.IsMobile .scarousel-btn-next,
+html.IsTablet .scarousel-btn-next{
+  right:0;
+}
+
+.super-banner-event-odds .super-banner-event-odds-item {
+    padding:0 1px;
+    &:first-of-type {
+        padding-left:0;
+    }
+    &:last-of-type {
+        padding-right:0;
+    }
+}
+
+.video-slider{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background: white;
+  .video-title{
+    @include brand-header();
+  }
+  .video-player{
+    position:absolute;
+    top:0;
+    bottom:30px;
+    left:0;
+    right:0;
+    background:#282828;
+    margin:0;
+  }
+  .slider-player .thumbnail{
+    margin:auto;
+    height:unset;
+    bottom:unset;
+  }
+  .ag-button{
+    position:absolute;
+    bottom:0;
+  }
+}
+
+.super-banner-slide-link[href=""]{
+  //display:none;
+  & + .super-banner-free-html{
+    pointer-events:all;
+  }
+}
+
+// 4.4 banner image fix
+html.IsMobile .super-banner-slide.super-banner-slide-event .super-banner-image-container, html.IsTablet .super-banner-slide.super-banner-slide-event .super-banner-image-container {
+    height: 80px;
+}

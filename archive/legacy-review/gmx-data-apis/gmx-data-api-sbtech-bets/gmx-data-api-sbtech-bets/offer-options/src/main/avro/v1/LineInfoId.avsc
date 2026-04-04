@@ -1,0 +1,17 @@
+{
+  "type": "record",
+  "name": "LineInfoId",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.LineInfo.v1",
+  "fields": [
+    {
+      "name": "LineId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "EventId",
+      "type": "int",
+      "default": 0
+    }
+  ]
+}

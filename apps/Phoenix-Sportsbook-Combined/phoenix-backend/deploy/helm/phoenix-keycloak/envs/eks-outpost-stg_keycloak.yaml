@@ -1,0 +1,17 @@
+operator:
+  replicaCount: 1
+
+keycloak:
+  instances: 1
+
+postgresOperator:
+  dbName: keycloak
+  dbHost: phoenix-cluster.postgres-operator.svc.cluster.local
+  dbOwnerSecretName: keycloak-owner-user.phoenix-cluster.credentials.postgresql
+
+realm:
+  name: phoenix
+
+client:
+  realm: phoenix
+  name: phoenix-backend

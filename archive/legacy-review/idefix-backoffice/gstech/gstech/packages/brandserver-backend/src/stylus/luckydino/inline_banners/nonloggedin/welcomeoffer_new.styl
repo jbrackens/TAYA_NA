@@ -1,0 +1,86 @@
+#banner_nonloggedin_welcomeoffer_new
+  dark_bg_banner()
+  banner-bg $nonloggedin_bg $nonloggedin_bg_m
+  .campaign-title
+    top auto
+    position absolute
+    bottom 72px
+    width 100%
+    font-size 26px
+    font-family 'Titillium Web', sans-serif
+    text-transform none
+    font-weight 700
+    margin 0
+    @media only screen and (max-width:1199px)
+      font-size 18px
+  .button, .button:hover, .button:focus
+    height 44px
+    padding-top 8px
+    padding-bottom 12px
+
+#banner_nonloggedin_welcomeoffer_new_image
+  banner_sprite: $nonloggedin_en_text
+  position relative
+  display block
+  margin 0 auto
+  top 50px
+  @media only screen and (max-width:1199px)
+    top 40px
+    banner_sprite: $nonloggedin_en_mobile_text
+
+#banner_nonloggedin_welcomeoffer_new_item1
+  position absolute
+  banner_sprite: $nonloggedin_common_felix
+  right 5%
+  bottom 0
+  animation reveal-up ease-out 6s
+  animation-iteration-count 1
+  @media only screen and (max-width:1199px)
+    right -20px
+  @media only screen and (max-width:1099px)
+    right -80px
+  @media only screen and (max-width:767px)
+    display none
+
+#banner_nonloggedin_welcomeoffer_new_item2
+  position absolute
+  banner_sprite: $nonloggedin_common_lights
+  left 5%
+  top 0
+  animation lanterndrop 3s 1, 2.2s ease 0s normal none infinite lanternswing
+  animation-direction alternate
+  transform-origin  center top
+  transform-style preserve-3d
+
+.lang-fi #banner_nonloggedin_welcomeoffer_new_image
+  banner_sprite: $nonloggedin_fi_text
+  @media only screen and (max-width:1199px)
+    top 80px
+    banner_sprite: $nonloggedin_fi_mobile_text
+
+.lang-sv #banner_nonloggedin_welcomeoffer_new_image
+  banner_sprite: $nonloggedin_sv_text
+  @media only screen and (max-width:1199px)
+    banner_sprite: $nonloggedin_sv_mobile_text
+
+.lang-no #banner_nonloggedin_welcomeoffer_new_image
+  banner_sprite: $nonloggedin_no_text
+  @media only screen and (max-width:1199px)
+    banner_sprite: $nonloggedin_no_mobile_text
+
+.lang-de #banner_nonloggedin_welcomeoffer_new_image
+  banner_sprite: $nonloggedin_de_text
+  @media only screen and (max-width:1199px)
+    banner_sprite: $nonloggedin_de_mobile_text
+    top 30px
+
+@keyframes lanterndrop {
+  0% {transform: translateY(-400px);}
+  95% {transform: translateY(-400px);}
+  100% {transform: translateY(0px);}
+}
+
+@keyframes lanternswing {
+  0% {transform: rotate(-2deg);}
+  100% {transform: rotate(2deg);}
+}

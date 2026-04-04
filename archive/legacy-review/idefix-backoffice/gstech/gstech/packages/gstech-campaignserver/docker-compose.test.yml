@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  gstech-campaignserver.test:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-campaignserver/Dockerfile
+    image: gstech-campaignserver.test
+    container_name: gstech-campaignserver.test
+    command: sh -c "yarn migrate && yarn workspace gstech-campaignserver data:fake && yarn test"
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      REDIS_HOST: gstech-redis
+      POSTGRES_HOST: gstech-postgres
+      POSTGRES_DATABASE: campaignserver
+      KAFKA_HOST: gstech-kafka
+      KAFKA_PORT: 19092
+      KAFKA_AVRO_REGISTRY_HOST: gstech-schema-registry
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

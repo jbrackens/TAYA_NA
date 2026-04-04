@@ -1,0 +1,1 @@
+INSERT INTO risks ("type", "fraudKey", "points", "maxCumulativePoints", "title", "description", "riskProfiles") VALUES ('customer', 'same_details_different_name', 30, 30, 'Same details different name reigstration', 'Registration with same email/phone number, but different name', null);

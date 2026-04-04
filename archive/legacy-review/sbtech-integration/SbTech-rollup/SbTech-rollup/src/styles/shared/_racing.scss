@@ -1,0 +1,58 @@
+
+.IsDesktop .rj-racing-next-races__header{
+  padding:0.5em 1em;
+  background:$brand-base;
+  color:white;
+  .rj-racing-next-races__title{
+    color: white;
+    line-height:2em;
+  }
+}
+.rj-racing-next-races{
+  padding:0;
+  margin:1px 0;
+  &__header{
+    margin-bottom:1px;
+  }
+}
+.rj-racing-current-races__event{
+  background: $main-bg;
+  &:hover{
+    background:$brand-primary;
+    color:white;
+  }
+}
+
+.IsDesktop .rj-racing-current-races {
+  border-top-right-radius: 0px;
+}
+
+.rj-racing-next-races__view,
+.rj-racing-next-races__item,
+.rj-racing-next-races__game,
+.rj-racing-current-races__row,
+button.rj-racing-next-races__button {
+  border-radius: 0px;
+}
+
+.IsDesktop{
+  .rj-racing-next-races__item{
+    margin-left:2px;
+    &:first-child{
+      margin-left:0;
+    }
+  }
+  .rj-racing-next-races__wrapper{
+    padding-top:0;
+  }
+}
+.rj-racing-next-races__arrow{
+  background:#eeeeee;
+  color:white;
+  &:hover{
+    background:darken(#eeeeee, 5%);
+  }
+  .arrow-flat-right{
+    background-image: url("/imgs/i-v2/o/arrows/arrow-right.svg");
+  }
+}

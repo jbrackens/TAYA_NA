@@ -1,0 +1,489 @@
+#!groovy
+
+String getAppDockerImageTag() {
+  return shOutput('jq -r .version packages/app/package.json')
+}
+
+String getOfficeDockerImageTag() {
+  return shOutput('jq -r .version packages/office/package.json')
+}
+
+void notifyGithub(String description) {
+  githubNotify(
+      description: description,
+      context: env.GITHUB_NOTIFICATION_CONTEXT,
+      account: env.GITHUB_ACCOUNT,
+      repo: env.GITHUB_REPO,
+      credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+      targetUrl: env.RUN_DISPLAY_URL,
+      status: 'SUCCESS'
+  )
+}
+
+// build status constants: https://www.jenkins.io/doc/book/glossary/#build-status
+def notifySlack(String branch, String buildStatus) {
+
+  if (branch in ['develop', 'master']) {
+
+    // Build status of null means success.
+    buildStatus = buildStatus ?: 'SUCCESS'
+
+    def color
+    def stageIfFailed = ''
+    if (buildStatus == 'STARTED') {
+      color = '#D4DADF'
+    } else if (buildStatus in ['SUCCESS', 'STABLE']) {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'UNSTABLE') {
+      color = '#FFFE89'
+    } else { // FAILURE or ABORTED
+      color = '#FF9FA1'
+      stageIfFailed = " (_${latestStartedStage}_)"
+    }
+
+    sendCurrentBuildSlackMessage("${buildStatus}${stageIfFailed}", color)
+  }
+}
+
+def sendCurrentBuildSlackMessage(message, color = 'D4DADF') {
+  String currentBuildUrl = "<${env.RUN_DISPLAY_URL}|${env.GITHUB_REPO}/${env.BRANCH_NAME} #${env.BUILD_NUMBER}>"
+  slackSend(channel: env.SLACK_NOTIFICATION_CHANNEL, color: color, message: "$message: $currentBuildUrl")
+}
+
+void setupGitUserNameAndEmail() {
+  sh "git config user.name  '${env.RELEASE_BOT_GIT_USER_NAME}'"
+  sh "git config user.email '${env.RELEASE_BOT_GIT_USER_EMAIL}'"
+}
+
+void setupNpmCredentials() {
+  withCredentials([
+      usernamePassword(
+          credentialsId: 'nexus-lena',
+          usernameVariable: 'NPM_USERNAME',
+          passwordVariable: 'NPM_PASSWORD'
+      )
+  ]) {
+    withEnv([
+        'NPM_EMAIL=support@flipsports.net',
+        'NPM_REGISTRY=https://lena-srv01.flipsports.net:4566/repository/npm-releases/'
+    ]) {
+      sh 'npm-ci-login'
+    }
+  }
+}
+
+String shOutput(String cmd) {
+  return sh(script: cmd, returnStdout: true).trim()
+}
+
+void shWithGithubSshPrivateKey(String shellCommand) {
+  withCredentials([
+      sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_PRIVATE_KEY_FILE')
+  ]) {
+    sh 'eval $(ssh-agent) && ssh-add "$SSH_PRIVATE_KEY_FILE" && ' + shellCommand
+  }
+}
+
+void withAwsEcrAuthentication(Closure<Void> block) {
+  withAWS(credentials: env.AWS_ECR_CREDENTIALS_ID, region: env.AWS_ECR_REGION) {
+    block()
+  }
+}
+
+void withDockerHubAuthentication(Closure<Void> block) {
+  // Logging in to DockerHub is needed to increase the limits for pulling the images
+  docker.withRegistry(/* empty = Docker Hub */ '', env.DOCKER_HUB_CREDENTIALS_ID) {
+    block()
+  }
+}
+
+void withGithubStatusUpdates(Closure block) {
+  latestStartedStage = env.STAGE_NAME
+
+  gitStatusWrapper(
+      description: env.STAGE_NAME,
+      gitHubContext: env.GITHUB_NOTIFICATION_CONTEXT,
+      account: env.GITHUB_ACCOUNT,
+      repo: env.GITHUB_REPO,
+      credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+      targetUrl: env.RUN_DISPLAY_URL
+  ) {
+    block()
+  }
+}
+
+
+boolean isPrereleaseCommit = false
+boolean isReleaseCommit = false
+String latestStartedStage = 'pipeline has not started yet'
+
+properties(
+    env.BRANCH_NAME in ['develop', 'master']
+        ? [disableConcurrentBuilds()]
+        : []
+)
+
+pipeline {
+  agent { label 'ecs-ec2-java11-helm' }
+
+  environment {
+    DOCKER_HUB_CREDENTIALS_ID = 'docker-hub-read-only'
+
+    // github status notifications
+    GITHUB_ACCOUNT = 'flipadmin'
+    GITHUB_REPO = 'phoenix-frontend'
+    GITHUB_API_TOKEN_CREDENTIALS_ID = 'CICD-GitHub-API-token'
+    GITHUB_NOTIFICATION_CONTEXT = 'Jenkins Build'
+
+    RELEASE_BOT_GIT_USER_NAME = 'Jenkins Release Bot'
+    RELEASE_BOT_GIT_USER_EMAIL = 'jenkins-release-bot@viegg.net'
+    ARGOCD_GIT_REPO_URL = 'git@github.com:flipadmin/phoenix-argocd.git'
+    ARGOCD_GIT_BRANCH = 'dev'
+
+    // slack build notifications
+    SLACK_NOTIFICATION_CHANNEL = '#phoenix-builds'
+
+    // AWS S3 + CloudFront for CDN
+    AWS_S3_AND_CLOUDFRONT_CREDENTIALS_ID = 'phoenix-cdn-deploy-user'
+    AWS_S3_AND_CLOUDFRONT_REGION = 'us-east-1'
+    AWS_S3_BUCKET = 'phoenix-prd-cdn-contents'
+    AWS_CLOUDFRONT_DISTRIBUTION_ID = 'EZ2L8NGOFMZA4'
+
+    // AWS ECR for Docker and Helm
+    AWS_ECR_ACCOUNT_ID = '259420793117'
+    AWS_ECR_REGION = 'eu-west-1'
+    AWS_ECR_HOST = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+    AWS_ECR_CREDENTIALS_ID = 'ecr-fs-rw-phoenix-project'
+
+    // To prevent ENOMEM errors
+    NODE_OPTIONS = "--max-old-space-size=8192"
+  }
+
+  stages {
+    stage('Init build') {
+      steps {
+        script {
+          def shouldLeavePreviousBuildsRunning = env.BRANCH_NAME in ['develop', 'master']
+          if (!shouldLeavePreviousBuildsRunning) {
+            // Note that https://plugins.jenkins.io/autocancel/ offers `autocancelBranchBuildsOnPullRequestBuilds()` as well,
+            // but we apparently can't use that since it relies on env.CHANGE_BRANCH, which is NOT available in our builds for some reason.
+            autocancelConsecutiveBuilds()
+          }
+        }
+
+        notifySlack(env.BRANCH_NAME, 'STARTED')
+
+        withGithubStatusUpdates {
+          script {
+            currentBuild.displayName = "#${env.BUILD_NUMBER} for ${env.BRANCH_NAME}"
+          }
+        }
+      }
+    }
+
+    stage('Check for release commit') {
+      when {
+        anyOf {
+          branch 'develop'
+          branch 'master'
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            String latestCommitMessage = shOutput('git log -1 --format=%s')
+            String latestCommitAuthor = shOutput('git log -1 --format=%an')
+            if (latestCommitMessage.startsWith('chore(release): ') && latestCommitAuthor == env.RELEASE_BOT_GIT_USER_NAME) {
+              String appPackageVersion = shOutput('jq -r .version packages/app/package.json')
+              if (appPackageVersion.matches('.*-build\\..*')) {
+                echo 'Commit message, commit author and app version indicate that this is a PRERELEASE commit'
+                isPrereleaseCommit = true
+              } else {
+                echo 'Commit message, commit author and app version indicate that this is a RELEASE commit'
+                isReleaseCommit = true
+              }
+            } else {
+              echo 'Commit message and commit author indicate that this is a regular commit'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Validate .env & yaml files') {
+      steps {
+        withGithubStatusUpdates {
+          // Don't use `dir('ci')` here, some of these scripts rely on being executed from top-level folder
+          sh './ci/enforce_env_files_usable_in_docker_run.sh'
+          sh './ci/enforce_env_vars_consistent_k8s_vs_app.sh'
+          sh './ci/enforce_helm_values_all_defined_for_each_env.sh'
+          sh './ci/enforce_kubernetes_manifests_pass_kubeconform.sh'
+          sh './ci/prohibit_brace_brace_hyphen_after_yaml_comment.sh'
+        }
+      }
+    }
+
+    stage('Bootstrap') {
+      // This step installs required software like `lerna`,
+      // should be executed also for (pre)release commit builds to avoid surprises further down the pipeline.
+      steps {
+        withGithubStatusUpdates {
+          sh 'yarn bootstrap'
+          sh 'git diff --exit-code HEAD yarn.lock || { echo "yarn.lock is not up to date! run \'yarn bootstrap\' locally and commit the changes"; exit 1; }'
+        }
+      }
+    }
+
+    stage('Test') {
+      when {
+        // It does NOT make sense to run this step when building a (pre)release commit
+        // since the project has already been already tested & exported in the preceding develop/master build
+        // (the one that created the (pre)release commit we're now about to deploy).
+        not { expression { isPrereleaseCommit || isReleaseCommit } }
+      }
+      steps {
+        withGithubStatusUpdates {
+          sh 'yarn test'
+        }
+      }
+    }
+
+    stage('Upload static assets to CDN') {
+      when {
+        // We don't publish separate assets on per-environment basis; all environments use cdn.vie.gg.
+        branch 'develop'
+        // It does NOT make sense to run this step when we're building a (pre)release commit
+        // since the assets were already uploaded in a preceding develop build.
+        not { expression { isPrereleaseCommit || isReleaseCommit } }
+      }
+      steps {
+        withGithubStatusUpdates {
+          dir('cdn') {
+            sh 'date --utc > build.txt'
+
+            withAWS(credentials: env.AWS_S3_AND_CLOUDFRONT_CREDENTIALS_ID, region: env.AWS_S3_AND_CLOUDFRONT_REGION) {
+              sh "aws s3 sync --delete . s3://${env.AWS_S3_BUCKET}/cdn/phoenix/static"
+              sh "aws cloudfront create-invalidation --distribution-id '${env.AWS_CLOUDFRONT_DISTRIBUTION_ID}' --paths '/*' "
+            }
+          }
+        }
+      }
+    }
+
+    stage('Build and export') {
+      when {
+        anyOf {
+          allOf {
+            branch 'develop'
+            not { expression { isPrereleaseCommit || isReleaseCommit } }
+          }
+          allOf {
+            branch 'master'
+            not { expression { isReleaseCommit } }
+          }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          sh 'yarn build:export'
+        }
+      }
+    }
+
+    // Note that `lerna` needs to push commits back to develop/master branch in the below steps.
+    // This has an unfortunate consequence:
+    // * we do require PR approvals, and the technical GitHub user (used by lerna under the hood) bypasses that restriction,
+    // * we do NOT require CI check to pass, since there is currently (Dec 2021) no way to bypass that restriction for just a single user.
+
+    stage('Publish to Nexus (prerelease packages)') {
+      when {
+        allOf {
+          branch 'develop'
+          // It does NOT make sense to run this step when building a (pre)release commit
+          // since the packages were published in the preceding develop/master build
+          // (the one that created the (pre)release commit we're now about to deploy).
+          not { expression { isPrereleaseCommit || isReleaseCommit } }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          setupGitUserNameAndEmail()
+          setupNpmCredentials()
+
+          sh './ci/bump_serial_number_to_enforce_lerna_release.sh'
+          shWithGithubSshPrivateKey 'yarn version-and-publish:develop'
+        }
+      }
+    }
+
+    stage('Publish to Nexus (release packages)') {
+      when {
+        allOf {
+          branch 'master'
+          not { expression { isReleaseCommit } }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          setupGitUserNameAndEmail()
+          setupNpmCredentials()
+
+          sh './ci/bump_serial_number_to_enforce_lerna_release.sh'
+          shWithGithubSshPrivateKey 'yarn version-and-publish:stage'
+        }
+      }
+    }
+
+    stage('Merge master to develop') {
+      when {
+        allOf {
+          branch 'master'
+          not { expression { isReleaseCommit } }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          shWithGithubSshPrivateKey './ci/merge_master_to_develop.sh'
+        }
+      }
+    }
+
+    stage('Build and push Docker images') {
+      when {
+        anyOf {
+          allOf {
+            branch 'develop'
+            expression { isPrereleaseCommit || isReleaseCommit }
+          }
+          allOf {
+            branch 'master'
+            expression { isReleaseCommit }
+          }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          setupNpmCredentials()
+          // Even though the resulting image is pushed to AWS ECR,
+          // the base image (`FROM`) is still pulled from Docker Hub.
+          withDockerHubAuthentication {
+            withAwsEcrAuthentication {
+              sh "./k8s-operations/build_image_and_publish_to_ecr.sh '${env.AWS_ECR_HOST}' app    '${getAppDockerImageTag()}'"
+              sh "./k8s-operations/build_image_and_publish_to_ecr.sh '${env.AWS_ECR_HOST}' office '${getOfficeDockerImageTag()}'"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Upload Helm charts for virginia-*') {
+      when {
+        allOf {
+          branch 'develop'
+          expression { isPrereleaseCommit || isReleaseCommit }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          withAwsEcrAuthentication {
+            sh "aws ecr get-login-password --region ${env.AWS_ECR_REGION} " +
+              "| HELM_EXPERIMENTAL_OCI=1 helm registry login --username AWS --password-stdin ${env.AWS_ECR_HOST}"
+
+            script {
+              def officeDockerImageTag = getOfficeDockerImageTag()
+
+              // Pushing the app chart only once, with no values! the values will need to be specified by the consumers (i.e. brand app deployments)
+              sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-ui app    '${env.AWS_ECR_HOST}/phoenix-ui-app-helm-chart'    '${getAppDockerImageTag()}'"
+
+              sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-ui office '${env.AWS_ECR_HOST}/phoenix-ui-office-helm-chart' '${officeDockerImageTag}' virginia-dev"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Upload Helm charts for outpost-*') {
+      when {
+        allOf {
+          branch 'master'
+          expression { isReleaseCommit }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          withAwsEcrAuthentication {
+            sh "aws ecr get-login-password --region ${env.AWS_ECR_REGION} " +
+              "| HELM_EXPERIMENTAL_OCI=1 helm registry login --username AWS --password-stdin ${env.AWS_ECR_HOST}"
+
+            script {
+              def officeDockerImageTag = getOfficeDockerImageTag()
+
+              // Pushing the app chart only once, with no values! the values will need to be specified by the consumers (i.e. brand app deployments)
+              sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-ui app    '${env.AWS_ECR_HOST}/phoenix-ui-app-helm-chart'    '${getAppDockerImageTag()}'"
+
+              sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-ui office '${env.AWS_ECR_HOST}/phoenix-ui-office-helm-chart' '${officeDockerImageTag}' outpost-stg"
+              sh "./k8s-operations/build_chart_and_publish_to_ecr.sh phoenix-ui office '${env.AWS_ECR_HOST}/phoenix-ui-office-helm-chart' '${officeDockerImageTag}' outpost-prd"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Update phoenix-ui-office in virginia-dev ArgoCD') {
+      // Note that app in virginia-dev is a BRANDED, not core app - so it's NOT deployed from this project.
+      when {
+        allOf {
+          branch 'develop'
+          expression { isPrereleaseCommit || isReleaseCommit }
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          script {
+            String officeDockerImageTag = getOfficeDockerImageTag()
+            String targetCluster = 'virginia-dev'
+            // Even though the builds of `develop` branch in this pipeline are executed sequentially,
+            // we need to remember that a few other pipelines also want to update `main` branch in the ArgoCD repo
+            // (although each pipeline should touch a different YAML file).
+            // To avoid race conditions (which would be rare, but still possible),
+            // each pipeline should first acquire this particular lock before accessing the ArgoCD repo.
+            lock('git-push-to-phoenix-argocd') {
+
+              dir('../phoenix-argocd') {
+                shWithGithubSshPrivateKey "git clone '${env.ARGOCD_GIT_REPO_URL}' -b ${env.ARGOCD_GIT_BRANCH} ."
+
+                sh """
+                  yq --inplace eval '.spec.source.targetRevision = "${officeDockerImageTag}-${targetCluster}"' eks-${targetCluster}/phoenix-ui-office.yaml
+                """
+                setupGitUserNameAndEmail()
+                sh "git commit --allow-empty -a -m 'Bump version of phoenix-ui-office in $targetCluster to `$officeDockerImageTag`'"
+                shWithGithubSshPrivateKey "git push origin ${env.ARGOCD_GIT_BRANCH}"
+              }
+
+              withCredentials([
+                usernamePassword(credentialsId: 'phoenix-virginia-dev-argocd-admin', usernameVariable: 'ARGOCD_USERNAME', passwordVariable: 'ARGOCD_PASSWORD')
+              ]) {
+                sh 'argocd login argocd.dev.phoenix.viegg.net --username="$ARGOCD_USERNAME" --password="$ARGOCD_PASSWORD" --grpc-web'
+                // Let's fire and forget here (`--async`) on the top-level app.
+                // The failure/success result will come to the other Slack channel via ArgoCD Notifications (without Jenkins involvement).
+                sh "argocd app sync --async eks-$targetCluster phoenix-ui-office"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      // This is to ensure that the name of the last executed stage
+      // doesn't linger in GitHub's CI status once the pipeline is complete.
+      notifyGithub('Complete')
+    }
+
+    always {
+      notifySlack(env.BRANCH_NAME, currentBuild.result)
+    }
+  }
+}

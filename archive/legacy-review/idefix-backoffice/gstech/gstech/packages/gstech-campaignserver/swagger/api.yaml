@@ -1,0 +1,1589 @@
+---
+  swagger: "2.0"
+  info:
+    version: "1.0.0"
+    title: "Campaignserver API"
+  basePath: "/api/v1"
+  schemes:
+    - "https"
+    - "http"
+  paths:
+    /config/countries:
+      get:
+        tags:
+          - config
+        summary: Get list of countries with languages
+        description: Get list of countries with languages
+        parameters:
+          - in: "query"
+            name: "brandId"
+            type: string
+            enum: ['KK', 'LD', 'CJ', 'OS']
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetCountriesResponse'
+    /config/init:
+      get:
+        tags:
+          - config
+        summary: Get initial data for UI
+        description: Get initial data for UI
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetInitResponse'
+    /config/languages:
+      get:
+        tags:
+          - config
+        summary: Get languages for brand
+        description: Get languages for brand
+        parameters:
+          - in: query
+            name: "brandId"
+            type: string
+            required: true
+            enum: ['KK', 'LD', 'CJ', 'OS']
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetLanguagesResponse'
+    /config/rewards:
+      get:
+        tags:
+          - config
+        summary: Get possible rewards
+        description: Get possible rewards
+        parameters:
+          - in: query
+            name: brandId
+            type: string
+            required: true
+            enum: ['KK', 'LD', 'CJ', 'OS']
+          - in: query
+            name: rewardType
+            type: string
+            enum: ["bounty", "wheelSpin", "coin", "reward", "shopItem"]
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetRewardsResponse'
+          503:
+            description: External provider fail
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+    /config/segments:
+      get:
+        tags:
+          - config
+        summary: Get possible segments
+        description: Get possible segments
+        parameters:
+          - in: "query"
+            name: "brandId"
+            type: string
+            enum: ['KK', 'LD', 'CJ', 'OS']
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ArrayOfStringsResponse'
+    /config/tags:
+      get:
+        tags:
+          - config
+        summary: Get possible tags
+        description: Get possible tags
+        parameters:
+          - in: "query"
+            name: "brandId"
+            type: string
+            enum: ['KK', 'LD', 'CJ', 'OS']
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ArrayOfStringsResponse'
+    /campaigns:
+      get:
+        tags:
+          - campaigns
+        parameters:
+          - in: query
+            type: string
+            name: campaign-status
+            required: true
+            enum: ['draft', 'active', 'archived']
+            description: Campaign status "active" will return both "active" and "running" campaigns
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: "#/definitions/GetCampaignsResponse"
+      post:
+        tags:
+          - campaigns
+        parameters:
+          - in: "body"
+            name: "body"
+            required: true
+            schema:
+              $ref: "#/definitions/CreateCampaign"
+        responses:
+          200:
+            description: "Campaign created succesfully"
+            schema:
+              $ref: "#/definitions/CreateCampaignResponse"
+          400:
+            description: "Schema validation failed"
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+    /campaigns/with-rewards:
+      get:
+        tags:
+          - campaigns
+        summary: Get list of campaigns with rewards
+        description: Get list of campaigns with rewards
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetCampaignsWithRewards'
+    /campaigns/{campaignId}:
+      get:
+        tags:
+          - campaigns
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: "#/definitions/GetCampaignResponse"
+          404:
+            description: "Campaign of given ID not found"
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+      put:
+        tags:
+          - campaigns
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+          - in: "body"
+            name: "body"
+            required: true
+            schema:
+              $ref: "#/definitions/CreateCampaign"
+        responses:
+          200:
+            description: "Campaign updated succesfully"
+            schema:
+              $ref: '#/definitions/OKResponse'
+          403:
+            description: "Campaigns has to be in 'draft' status"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+      delete:
+        tags:
+          - campaigns
+        summary: Archive campaign
+        description: Archive campaign
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+        responses:
+          200:
+            description: "Campaign archived successfully"
+            schema:
+              $ref: '#/definitions/OKResponse'
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /campaigns/{campaignId}/activate:
+      post:
+        tags:
+          - campaigns
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+        responses:
+          200:
+            description: "Campaign activated succesfully"
+            schema:
+              $ref: '#/definitions/OKResponse'
+          403:
+            description: "Campaign cannot be activated"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /campaigns/{campaignId}/duplicate:
+      post:
+        tags:
+          - campaigns
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+        responses:
+          200:
+            description: Campaign duplicated succesfully
+            schema:
+              $ref: '#/definitions/CreateCampaignResponse'
+    /campaigns/{campaignId}/send-emails:
+      post:
+        tags:
+          - campaigns
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+        description: Triggers email sending to people that not yet received one
+        summary: Triggers email sending to people that not yet received one
+        responses:
+          202:
+            description: Succesfully scheduled email sending
+            schema:
+              $ref: '#/definitions/OKResponse'
+    /campaigns/{campaignId}/send-smses:
+      post:
+        tags:
+          - campaigns
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+        description: Triggers sms sending to people that not yet received one
+        summary: Triggers sms sending to people that not yet received one
+        responses:
+          202:
+            description: Succesfully scheduled sms sending
+            schema:
+              $ref: '#/definitions/OKResponse'
+    /campaigns/{campaignId}/stats:
+      get:
+        tags:
+          - campaigns
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetCampaignStatsResponse'
+    /campaigns/{campaignId}/toggle-preview:
+      post:
+        tags:
+          - campaigns
+        summary: Toggle campaign preview mode
+        description: Toggle campaign preview mode
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ToggleCampaignPreview'
+    /campaigns/{campaignId}/csv-audience:
+      get:
+        tags:
+          - campaigns
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+          - in: query
+            name: type
+            type: string
+            enum: ['email', 'sms']
+        responses:
+          200:
+            description: A csv file
+            schema:
+              type: file
+    /campaigns/{campaignId}/audience-rules:
+      post:
+        tags:
+          - audience rules
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+          - in: "body"
+            name: "body"
+            required: true
+            schema:
+              $ref: "#/definitions/AddAudienceRule"
+        responses:
+          200:
+            description: "Campaign rule added succesfully"
+            schema:
+              $ref: '#/definitions/AddAudienceRuleResponse'
+          400:
+            description: "Schema validation failed"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /campaigns/{campaignId}/audience-rules/csv:
+      post:
+        tags:
+          - audience rules
+        summary: Upload csv file as audience rule
+        description: Upload csv file as audience rule
+        consumes:
+          - text/csv
+          - multipart/form-data
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: number
+            required: true
+          - in: "formData"
+            name: "file"
+            type: file
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/AddAudienceRuleResponse'
+    /campaigns/{campaignId}/audience-rules/{audienceRuleId}:
+      put:
+        tags:
+          - audience rules
+        summary: Update audience rule
+        description: Update audience rule
+        parameters:
+          - in: path
+            name: "campaignId"
+            type: number
+            required: true
+          - in: "path"
+            name: "audienceRuleId"
+            type: number
+            required: true
+          - in: "body"
+            name: "body"
+            required: true
+            schema:
+              $ref: '#/definitions/AddAudienceRule'
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+      delete:
+        tags:
+          - audience rules
+        summary: Delete audience rule
+        description: Delete audience rule
+        parameters:
+          - in: path
+            name: "campaignId"
+            type: number
+            required: true
+          - in: "path"
+            name: "audienceRuleId"
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+    /campaigns/{campaignId}/reward-rules:
+      post:
+        tags:
+          - reward rules
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+          - in: "body"
+            name: "body"
+            required: true
+            schema:
+              $ref: "#/definitions/AddRewardRule"
+        responses:
+          200:
+            description: "Reward rule added succesfully"
+            schema:
+              $ref: '#/definitions/AddRewardRuleResponse'
+    /campaigns/{campaignId}/reward-rules/{rewardRuleId}:
+      put:
+        tags:
+          - reward rules
+        parameters:
+          - in: path
+            name: campaignId
+            type: number
+            required: true
+          - in: path
+            name: rewardRuleId
+            type: number
+            required: true
+          - in: body
+            name: body
+            required: true
+            schema:
+              $ref: '#/definitions/AddRewardRule'
+        responses:
+          200:
+            description: "Reward rule updated successfully"
+            schema:
+              $ref: '#/definitions/OKResponse'
+          400:
+            description: 'Schema validation failed'
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+          404:
+            description: 'Campaign/reward rule not found'
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+      delete:
+        tags:
+          - reward rules
+        parameters:
+          - in: path
+            name: "campaignId"
+            type: number
+            required: true
+          - in: path
+            name: "rewardRuleId"
+            type: number
+            required: true
+        responses:
+          200:
+            description: "Reward rule removed succesfully"
+            schema:
+              $ref: '#/definitions/OKResponse'
+          409:
+            description: "Failed to delete reward rule"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /campaigns/{campaignId}/content:
+      post:
+        tags:
+          - campaign content
+        summary: Add content to the campaign
+        description: Add content to the campaign
+        parameters:
+          - in: path
+            name: "campaignId"
+            type: number
+            required: true
+          - in: body
+            name: body
+            required: true
+            schema:
+              $ref: "#/definitions/AddCampaignContent"
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: "#/definitions/AddCampaignContentResponse"
+    /campaigns/{campaignId}/content/{campaignContentId}:
+      put:
+        tags:
+          - campaign content
+        summary: Update campaign content
+        description: Update campaigns content
+        parameters:
+          - in: path
+            name: "campaignId"
+            type: number
+            required: true
+          - in: path
+            name: "campaignContentId"
+            type: number
+            required: true
+          - in: body
+            name: body
+            required: true
+            schema:
+              $ref: '#/definitions/AddCampaignContent'
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+          409:
+            description: "Failed to update campaign content"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+      delete:
+        tags:
+          - campaign content
+        summary: Delete campaign content
+        description: Delete campaign content
+        parameters:
+          - in: path
+            name: "campaignId"
+            type: number
+            required: true
+          - in: path
+            name: "campaignContentId"
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+          409:
+            description: "Failed to delete campaign content"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /campaigns/{campaignId}/events:
+      post:
+        parameters:
+          - in: "path"
+            name: "campaignId"
+            type: "number"
+            required: true
+          - in: "body"
+            name: "body"
+            required: true
+            schema:
+              $ref: "#/definitions/AddEvent"
+        responses:
+          200:
+            description: "Event added succesfully"
+            schema:
+              $ref: '#/definitions/AddEventResponse'
+    /campaign-groups/{groupId}:
+      put:
+        tags:
+          - campaign groups
+        summary: Update campaign name
+        description: Update campaign name
+        parameters:
+          - in: path
+            name: "groupId"
+            type: number
+            required: true
+          - in: body
+            name: body
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+      delete:
+        tags:
+          - campaign groups
+        summary: Archive group campaigns
+        description: Archive group campaigns
+        parameters:
+          - in: path
+            name: "groupId"
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+    /campaign-groups/{groupId}/duplicate:
+      post:
+        tags:
+          - campaign groups
+        summary: Duplicate campaign group
+        description: Duplicate campaign group
+        parameters:
+          - in: path
+            name: "groupId"
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/DuplicateCampaignGroupResponse'
+    /emails:
+      get:
+        tags:
+          - emails
+        summary: Get list of emails for brand
+        description: Get list of emails for brand
+        parameters:
+          - in: query
+            name: "brandId"
+            type: string
+            enum: ['KK', 'LD', 'CJ', 'OS']
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetEmailsResponse'
+    /emails/{contentId}/preview:
+      get:
+        tags:
+          - emails
+        summary: "Get rendered email in form of HTML"
+        produces:
+          - "text/html"
+        parameters:
+          - in: "path"
+            name: "contentId"
+            type: number
+            required: true
+          - in: "query"
+            name: "lang"
+            type: string
+        responses:
+          200:
+            description: HTML
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /smses:
+      get:
+        tags:
+          - smses
+        summary: Get list of smses for brand
+        description: Get list of smses for brand
+        parameters:
+          - in: "query"
+            name: "brandId"
+            type: string
+            enum: ['KK', 'LD', 'CJ', 'OS']
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetSmsesResponse'
+    /smses/{contentId}/preview:
+      get:
+        tags:
+          - smses
+        summary: "Get rendered sms"
+        description: "Get rendered sms in all languages"
+        parameters:
+          - in: "path"
+            name: "contentId"
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/RenderSmsResponse'
+    /notifications:
+      get:
+        tags:
+          - notifications
+        summary: Get list of notifications for brand
+        description: Get list of notifications for brand
+        parameters:
+          - in: query
+            name: brandId
+            type: string
+            enum: ['KK', 'LD', 'CJ', 'OS']
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetNotificationsResponse'
+    /notifications/{contentId}/preview:
+      get:
+        tags:
+          - notifications
+        summary: "Get rendered notification"
+        description: "Get rendered notification"
+        parameters:
+          - in: "path"
+            name: "contentId"
+            type: number
+            required: true
+          - in: "query"
+            name: "lang"
+            type: string
+        responses:
+          200:
+            description: HTML
+    /players/{playerId}/content:
+      get:
+        summary: "Get available players content"
+        parameters:
+          - in: "path"
+            name: "playerId"
+            type: number
+            required: true
+          - in: "query"
+            name: "content-type"
+            type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetAvaialblePlayerContent'
+          400:
+            description: "Schema validation fail"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+          500:
+            description: "Internal server error"
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+    /content/init:
+      get:
+        tags:
+          - content
+        summary: Get content initial configuration
+        description: Get content initial configuration
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetContentInitResponse'
+    /content:
+      get:
+        tags:
+          - content
+        summary: Get list of content
+        description: Get list of content
+        parameters:
+          - in: query
+            name: "contentType"
+            type: string
+            required: true
+            enum: ['email', 'sms', 'notification', 'landingPage', 'banner']
+          - in: query
+            name: brandId
+            type: string
+            required: true
+            enum: ['KK', 'LD', 'CJ', 'OS']
+          - in: query
+            name: status
+            type: string
+            enum: ['draft', 'published']
+          - in: query
+            name: excludeInactive
+            type: boolean
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetContentListResponse'
+      post:
+        tags:
+          - content
+        summary: Create new content
+        description: Create new content
+        parameters:
+          - in: body
+            name: body
+            required: true
+            schema:
+              $ref: '#/definitions/CreateContentRequest'
+        responses:
+          201:
+            description: OK
+            schema:
+              $ref: '#/definitions/CreateContentResponse'
+    /content/{contentId}:
+      get:
+        tags:
+          - content
+        summary: Get content by id
+        description: Get content by id
+        parameters:
+          - in: path
+            name: contentId
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/GetContentResponse'
+          404:
+            description: Content not found
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+      put:
+        tags:
+          - content
+        summary: Update content
+        description: Update content
+        parameters:
+          - in: path
+            name: contentId
+            type: number
+            required: true
+          - in: body
+            name: body
+            required: true
+            schema:
+              $ref: '#/definitions/PutContentBody'
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/PutContentResponse'
+      delete:
+        tags:
+          - content
+        summary: Delete content
+        description: Delete content
+        parameters:
+          - in: path
+            name: contentId
+            type: number
+            required: true
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/OKResponse'
+          409:
+            description: Cannot delete content
+            schema:
+              $ref: '#/definitions/ErrorResponse'
+  definitions:
+    ValueOrArray:
+      type: "object"
+      description: "Depends on the operator:\n'in' and 'between': array of numbers or strings.\n'withinMinutes': number.\n'otherCampaignReward': object with type { campaignId: Id, rewardId: number }\nOtherswise: string or number"
+    GetInitResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            brands:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+            rewardTypes:
+              type: object
+              properties:
+                CJ:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+            rewardTriggers:
+              type: array
+              items:
+                type: string
+            bannerLocations:
+              type: object
+              properties:
+                "KK/LD/CJ/OS":
+                  type: array
+                  items:
+                    type: string
+    GetCountriesResponse:
+      type: "object"
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              brandId:
+                type: string
+              code:
+                type: string
+              name:
+                type: string
+    DuplicateCampaignGroupResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            id:
+              type: number
+            firstCampaignId:
+              type: number
+    GetEmailsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+              subject:
+                type: string
+    GetLanguagesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              longCode:
+                type: string
+              name:
+                type: string
+              engName:
+                type: string
+    GetNotificationsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+              title:
+                type: string
+    GetRewardsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              description:
+                type: string
+    GetSmsesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+              text:
+                type: string
+    ArrayOfStringsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: string
+    GetCampaignsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            groups:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+                  campaigns:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        brandId:
+                          type: string
+                        name:
+                          type: string
+                        status:
+                          type: string
+                        startTime:
+                          type: string
+                          format: "date-time"
+                        endTime:
+                          type: string
+                          format: "date-time"
+                        audienceType:
+                          type: string
+                        audience:
+                          type: number
+                        reactions:
+                          type: number
+            pagination:
+              type: object
+    CreateCampaign:
+      type: "object"
+      required:
+        - "brandId"
+        - "creditMultiple"
+        - "name"
+        - "audienceType"
+      properties:
+        brandId:
+          type: "string"
+        creditMultiple:
+          type: boolean
+        name:
+          type: "string"
+        startTime:
+          type: "string"
+          format: "date-time"
+        endTime:
+          type: "string"
+          format: "date-time"
+        audienceType:
+          type: string
+          enum: ["dynamic", "static"]
+        groupId:
+          type: number
+    CreateCampaignResponse:
+      type: "object"
+      properties:
+        data:
+          type: "object"
+          required:
+            - "campaignId"
+          properties:
+            campaignId:
+              type: "number"
+    GetCampaignStatsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            audience:
+              type: number
+            emailAudience:
+              type: number
+            smsAudience:
+              type: number
+    ToggleCampaignPreview:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            previewMode:
+              type: boolean
+    AddAudienceRule:
+      type: object
+      required:
+        - "name"
+        - "operator"
+        - "values"
+      properties:
+        name:
+          type: string
+          enum: ["numDeposits", "country", "player", "email", "deposit", "depositAmount", "totalDepositAmount", "register", "tags", "segments", "campaignDeposit", "login", "language", "contact", "landingPage"]
+        operator:
+          type: string
+          enum: ["<", "<=", ">", ">=", "!=", "<>", "=", "between", "csv", "in", "withinMinutes", "otherCampaignReward", "otherCampaignsMember"]
+        values:
+          $ref: '#/definitions/ValueOrArray'
+        not:
+          type: boolean
+          default: false
+          description: "Used to revert the query, i.e. NOT between or NOT in"
+    AddAudienceRuleResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          required:
+            - "campaignRuleId"
+          properties:
+            campaignRuleId:
+              type: number
+    AddRewardRule:
+      type: object
+      required:
+        - "trigger"
+        - "wager"
+        - "quantity"
+        - "titles"
+      properties:
+        trigger:
+          type: string
+          enum: ["deposit", "registration", "login", "instant"]
+        rewardId:
+          type: number
+        wager:
+          type: number
+        quantity:
+          type: number
+        minDeposit:
+          type: number
+        maxDeposit:
+          type: number
+        titles:
+          type: object
+          properties:
+            en:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                required:
+                  type: boolean
+            fi:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                required:
+                  type: boolean
+            de:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                required:
+                  type: boolean
+            sv:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                required:
+                  type: boolean
+            no:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                required:
+                  type: boolean
+    AddRewardRuleResponse:
+      type: "object"
+      properties:
+        data:
+          type: "object"
+          required:
+            - "rewardRuleId"
+          properties:
+            rewardRuleId:
+              type: number
+    AddEvent:
+      type: object
+      required:
+        - "text"
+        - "contentId"
+      properties:
+        text:
+          type: string
+        contentId:
+          type: number
+    AddEventResponse:
+      type: "object"
+      properties:
+        data:
+          type: "object"
+          required:
+            - "eventId"
+          properties:
+            eventId:
+              type: number
+    AddCampaignContent:
+      type: object
+      required:
+        - "contentId"
+      properties:
+        sendingTime:
+          type: string
+          pattern: "^([01]\\d|2[0123]):[012345]\\d$"
+          example: "15:00"
+        contentId:
+          type: number
+        sendToAll:
+          type: boolean
+    AddCampaignContentResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            emailId:
+              type: number
+    GetCampaignResponse:
+      type: "object"
+      properties:
+        data:
+          type: "object"
+          properties:
+            id:
+              type: "number"
+            brandId:
+              type: "string"
+            creditMultiple:
+              type: boolean
+            name:
+              type: "string"
+            startTime:
+              type: "string"
+              format: "date-time"
+            endTime:
+              type: "string"
+              format: "date-time"
+            status:
+              type: "string"
+            audienceType:
+              type: "string"
+            audience:
+              type: object
+              properties:
+                rules:
+                  type: array
+                  items:
+                    type: "object"
+                    properties:
+                      id:
+                        type: number
+                      name:
+                        type: "string"
+                      operator:
+                        type: "string"
+                      not:
+                        type: boolean
+                      values:
+                        $ref: "#/definitions/ValueOrArray"
+            reward:
+              type: object
+              properties:
+                rewards:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      trigger:
+                        type: string
+                      minDeposit:
+                        type: number
+                      maxDeposit:
+                        type: number
+                      rewardId:
+                        type: number
+                      wager:
+                        type: number
+                      quantity:
+                        type: number
+                      titles:
+                        type: object
+            email:
+              type: object
+              properties:
+                emailId:
+                  type: number
+                contentId:
+                  type: number
+                name:
+                  type: string
+                subject:
+                  type: string
+                sendingTime:
+                  type: string
+                  example: "15:00"
+            sms:
+              type: object
+              properties:
+                smsId:
+                  type: number
+                contentId:
+                  type: number
+                name:
+                  type: string
+                text:
+                  type: string
+                sendingTime:
+                  type: string
+                  example: "15:00"
+            notification:
+              type: object
+              properties:
+                notificationId:
+                  type: number
+                contentId:
+                  type: number
+                name:
+                  type: string
+                title:
+                  type: string
+            group:
+              type: object
+              properties:
+                name:
+                  type: string
+                campaigns:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      name:
+                        type: string
+    GetCampaignsWithRewards:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              campaignId:
+                type: number
+              name:
+                type: string
+              rewards:
+                type: array
+                items:
+                  type: number
+    GetPlayerCampaignsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              campaignName:
+                type: string
+              minDeposit:
+                type: number
+              maxDeposit:
+                type: number
+              rewardId:
+                type: number
+    GetAvaialblePlayerContent:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              name:
+                type: string
+              content:
+                type: object
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    text:
+                      type: string
+                    timestamp:
+                      type: string
+                      format: date-time
+    RenderSmsResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            fi:
+              type: string
+            en:
+              type: string
+            de:
+              type: string
+            sv:
+              type: string
+            no:
+              type: string
+    ContentFields:
+      type: array
+      items:
+        type: object
+        required:
+          - property
+          - title
+          - type
+          - required
+        properties:
+          property:
+            type: string
+          title:
+            type: string
+          "type":
+            type: string
+            enum: ['number', 'string', 'money', 'boolean', 'array']
+          "required":
+            type: boolean
+          "limit":
+            type: number
+          values:
+            type: array
+            items:
+              type: string
+          preview:
+            type: string
+          pattern:
+            type: string
+    GetContentInitResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            email/sms/notification/landingPage/banner:
+              type: object
+              properties:
+                fields:
+                  $ref: '#/definitions/ContentFields'
+                localizedFields:
+                  $ref: '#/definitions/ContentFields'
+    Content:
+      type: object
+      properties:
+        id:
+          type: number
+        contentTypeId:
+          type: number
+        name:
+          type: string
+        content:
+          type: object
+        externalId:
+          type: string
+        subtype:
+          type: string
+        status:
+          type: string
+    ContentUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        content:
+          type: object
+        externalId:
+          type: string
+        subtype:
+          type: string
+        active:
+          type: boolean
+    GetContentResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/definitions/Content'
+    GetContentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/definitions/Content'
+    PutContentBody:
+      $ref: '#/definitions/ContentUpdate'
+    PutContentResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/definitions/Content'
+    OKResponse:
+      type: "object"
+      properties:
+        data:
+          type: "object"
+          required:
+            - "ok"
+          properties:
+            ok:
+              type: "boolean"
+    ErrorResponse:
+      type: "object"
+      properties:
+        error:
+          type: "object"
+          required:
+            - "message"
+          properties:
+            message:
+              type: "string"
+  

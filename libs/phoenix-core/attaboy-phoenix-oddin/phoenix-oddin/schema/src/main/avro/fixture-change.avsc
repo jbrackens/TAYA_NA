@@ -1,0 +1,27 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "FixtureChange",
+  "fields":[
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "timestamp",
+      "type": "long"
+    },
+    {
+      "name": "eventId",
+      "type": "string"
+    },
+    {
+      "name": "product",
+      "type": "int"
+    },
+    {
+      "name": "changeType",
+      "type": "int"
+    }
+  ]
+}

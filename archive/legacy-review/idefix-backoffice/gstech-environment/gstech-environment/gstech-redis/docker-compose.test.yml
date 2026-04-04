@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  gstech-redis.test:
+    environment:
+     IP: 0.0.0.0
+     SENTINEL: "false"
+     STANDALONE: "true"
+    build:
+      context: .
+      args:
+        redis_version: '5.0.3'
+      dockerfile: Dockerfile
+    image: gstech-redis.test
+    container_name: gstech-redis.test
+    hostname: server
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

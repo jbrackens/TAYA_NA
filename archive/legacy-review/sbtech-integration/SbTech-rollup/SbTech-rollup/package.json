@@ -1,0 +1,23 @@
+{
+  "name": "fs-betcontruct",
+  "version": "1.0.0",
+  "description": "Frontend files to enhance BetConstruct sites",
+  "main": "rollup.config.js",
+  "devDependencies": {
+    "@babel/core": "^7.13.14",
+    "@babel/preset-env": "^7.13.12",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-eslint": "^8.0.1",
+    "@rollup/plugin-replace": "^2.4.2",
+    "eslint": "^7.23.0",
+    "eslint-config-healthier": "^3.2.0",
+    "rollup": "^2.44.0",
+    "rollup-plugin-scss": "^2.6.1",
+    "node-sass":"^6"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

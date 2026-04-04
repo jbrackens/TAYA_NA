@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  gstech-redis:
+    image: public.ecr.aws/x1y4u7f1/gstech-redis:vnext
+    platform: linux/amd64
+    environment:
+      IP: 0.0.0.0
+      SENTINEL: 'false'
+      STANDALONE: "true"
+    container_name: gstech-redis
+    hostname: server
+    ports:
+      - '7000-7007:7000-7007'
+      - '5000-5002:5000-5002'
+      - '6379:6379'
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

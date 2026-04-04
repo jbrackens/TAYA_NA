@@ -1,0 +1,220 @@
+{
+  "code": 0,
+  "Odds": [
+    {
+      "SportID": 1,
+      "LeagueID": 53840,
+      "GameID": 9645928,
+      "Markets": [
+        {
+          "MarketTypeID": 1,
+          "Lines": [
+            {
+              "LineIntID": 357386690,
+              "Odds": "3/1"
+            },
+            {
+              "LineIntID": 357386693,
+              "Odds": "13/5"
+            },
+            {
+              "LineIntID": 357386694,
+              "Odds": "20/29"
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 1570002,
+          "Lines": [
+            {
+              "LineIntID": 357562615,
+              "Odds": "11/5",
+              "Points": 0
+            },
+            {
+              "LineIntID": 357562619,
+              "Odds": "2/7",
+              "Points": 0
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 610011,
+          "Lines": [
+            {
+              "LineIntID": 477768769,
+              "Odds": "10/11"
+            },
+            {
+              "LineIntID": 477768770,
+              "Odds": "2/17"
+            },
+            {
+              "LineIntID": 477768771,
+              "Odds": "1/6"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "SportID": 1,
+      "LeagueID": 100838,
+      "GameID": 9646042,
+      "Markets": [
+        {
+          "MarketTypeID": 1570002,
+          "Lines": [
+            {
+              "LineIntID": 357429860,
+              "Odds": "1/7",
+              "Points": 0
+            },
+            {
+              "LineIntID": 357429864,
+              "Odds": "19/4",
+              "Points": 0
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 1,
+          "Lines": [
+            {
+              "LineIntID": 357390764,
+              "Odds": "7/1"
+            },
+            {
+              "LineIntID": 357390767,
+              "Odds": "41/20"
+            },
+            {
+              "LineIntID": 357390768,
+              "Odds": "2/3"
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 2,
+          "Lines": [
+            {
+              "LineIntID": 357390765,
+              "Odds": "10/11",
+              "Points": -1.5
+            },
+            {
+              "LineIntID": 357390769,
+              "Odds": "50/51",
+              "Points": 1.5
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 3,
+          "Lines": [
+            {
+              "LineIntID": 357390766,
+              "Odds": "4/5",
+              "Points": 3.5
+            },
+            {
+              "LineIntID": 357390770,
+              "Odds": "21/20",
+              "Points": 3.5
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 610011,
+          "Lines": [
+            {
+              "LineIntID": 477635495,
+              "Odds": "1/10"
+            },
+            {
+              "LineIntID": 477635496,
+              "Odds": "9/4"
+            },
+            {
+              "LineIntID": 477635497,
+              "Odds": "2/15"
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 1580013,
+          "Lines": [
+            {
+              "LineIntID": 477635611,
+              "Odds": "10/19"
+            },
+            {
+              "LineIntID": 477635612,
+              "Odds": "6/4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "SportID": 61,
+      "LeagueID": 114671,
+      "GameID": 41573565,
+      "Markets": [
+        {
+          "MarketTypeID": 3410022,
+          "Lines": [
+            {
+              "LineIntID": 477571278,
+              "Odds": "25/1"
+            },
+            {
+              "LineIntID": 477571288,
+              "Odds": "33/1"
+            },
+            {
+              "LineIntID": 477571296,
+              "Odds": "20/1"
+            },
+            {
+              "LineIntID": 477571304,
+              "Odds": "50/1"
+            },
+            {
+              "LineIntID": 477571312,
+              "Odds": "12/1"
+            },
+            {
+              "LineIntID": 477571320,
+              "Odds": "25/1"
+            },
+            {
+              "LineIntID": 477571328,
+              "Odds": "22/1"
+            },
+            {
+              "LineIntID": 477571336,
+              "Odds": "17/2"
+            },
+            {
+              "LineIntID": 477571344,
+              "Odds": "22/1"
+            },
+            {
+              "LineIntID": 477571352,
+              "Odds": "11/4"
+            },
+            {
+              "LineIntID": 477571360,
+              "Odds": "8/1"
+            },
+            {
+              "LineIntID": 477571368,
+              "Odds": "11/8"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

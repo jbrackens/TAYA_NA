@@ -1,0 +1,2 @@
+INSERT INTO risks ("riskProfiles", "manualCheck", "type", "fraudKey", "points", "maxCumulativePoints", "requiredRole", "active", "manualTrigger", "title", "description", "name") VALUES
+(NULL, 't', 'customer', 'deposit_estimation_doubled', 0, 0, 'agent', 't', 't', 'AML Alert: Source of Wealth Estimation Doubled', 'A player''s actual deposits have surpassed twice (or more) the upper limit of their self-declared expected deposit range', 'Player Deposits Exceed Estimation Range');

@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    announcements BOOLEAN NOT NULL DEFAULT TRUE,
+    promotions BOOLEAN NOT NULL DEFAULT TRUE,
+    subscription_updates BOOLEAN NOT NULL DEFAULT FALSE,
+    sign_in_notifications BOOLEAN NOT NULL DEFAULT TRUE,
+    auto_accept_better_odds BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

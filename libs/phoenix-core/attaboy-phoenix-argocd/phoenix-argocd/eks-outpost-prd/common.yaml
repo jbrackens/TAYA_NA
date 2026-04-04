@@ -1,0 +1,21 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: not-important
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-status-unknown.slack: deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: deployments
+    notifications.argoproj.io/subscribe.on-health-degraded.slack: deployments
+    notifications.argoproj.io/subscribe.on-deleted.slack: deployments
+spec:
+  project: default
+  destination:
+    server: 'https://kubernetes.default.svc'
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 0
+    syncOptions:
+      - CreateNamespace=true

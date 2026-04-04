@@ -1,0 +1,104 @@
+[
+  {
+    "statusCode": "PurchaseNotAccepted",
+    "statusDescription": "PurchaseNotAccepted",
+    "response": {
+      "bets": [
+        {
+          "declineReasons": [
+            {
+              "name": "CustomerLimitsError",
+              "reason": "Deposit amount is too low"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "statusCode": "PurchaseNotAccepted",
+    "statusDescription": "PurchaseNotAccepted",
+    "response": {
+      "bets": [
+        {
+          "declineReasons": [
+            {
+              "name": "PotentialReturnsCalculation",
+              "reason": "The posted potential returns are not calculated correctly."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "statusCode": "PurchaseNotAccepted",
+    "statusDescription": "PurchaseNotAccepted",
+    "response": {
+      "bets": [
+        {
+          "receivedOdds": 8.0,
+          "newOdds": 8.0,
+          "selections": [
+            {
+              "id": "0QA70613700#822326110_22L198141Q1595530Q2-1",
+              "receivedOdds": 3.0,
+              "newOdds": 3.0
+            },
+            {
+              "id": "0QA70613700#822326144_22L198141Q1330923Q2-1",
+              "receivedOdds": 8.0,
+              "newOdds": 8.0
+            }
+          ],
+          "declineReasons": [
+            {
+              "name": "OddsNotMatch",
+              "reason": "The posted odds for the bet or selection do not match the actual values."
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "statusCode": "PurchaseNotAccepted",
+    "statusDescription": "PurchaseNotAccepted",
+    "response": {
+      "id": "",
+      "status": "Declined",
+      "creationDate": "2019-11-29T14:40:33.0877204Z",
+      "bets": [
+        {
+          "type": "Single",
+          "trueOdds": 4.33,
+          "displayOdds": "10/3",
+          "numberOfBets": 1,
+          "stake": 0.43,
+          "potentialReturns": 1.86,
+          "selectionsMapped": [
+            {
+              "id": "0QA68849597#802536410_22L198380Q1473200Q2-1"
+            }
+          ],
+          "declineReasons": [
+            {
+              "name": "OddsNotMatch",
+              "reason": "The posted odds for the selection do not match the actual values",
+              "affectedSelection": "0QA68849597#802536410_22L198380Q1473200Q2-1"
+            }
+          ],
+          "status": "Declined"
+        }
+      ],
+      "selections": [
+        {
+          "id": "0QA68849597#802536410_22L198380Q1473200Q2-1",
+          "trueOdds": 4.33,
+          "displayOdds": "10/3",
+          "status": "Active"
+        }
+      ]
+    }
+  }
+]

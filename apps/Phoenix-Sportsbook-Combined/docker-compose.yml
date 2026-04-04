@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: phoenix_postgres
+    environment:
+      POSTGRES_DB: phoenix_sportsbook
+      POSTGRES_USER: phoenix
+      POSTGRES_PASSWORD: localdev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phoenix -d phoenix_sportsbook"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - phoenix_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: phoenix_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - phoenix_network
+
+  gateway:
+    build:
+      context: ./go-platform
+      dockerfile: services/gateway/Dockerfile
+    container_name: phoenix_gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "18080:18080"
+    environment:
+      GATEWAY_PORT: "18080"
+      GATEWAY_DB_DSN: "postgres://phoenix:localdev@postgres:5432/phoenix_sportsbook"
+      REDIS_URL: "redis://redis:6379/0"
+      LOG_LEVEL: "debug"
+      NODE_ENV: "development"
+    networks:
+      - phoenix_network
+
+  auth:
+    build:
+      context: ./go-platform
+      dockerfile: services/auth/Dockerfile
+    container_name: phoenix_auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "18081:18081"
+    environment:
+      AUTH_PORT: "18081"
+      AUTH_DB_DSN: "postgres://phoenix:localdev@postgres:5432/phoenix_sportsbook"
+      REDIS_URL: "redis://redis:6379/0"
+      LOG_LEVEL: "debug"
+      NODE_ENV: "development"
+      JWT_SECRET: "dev-secret-key-change-in-production"
+    networks:
+      - phoenix_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  phoenix_network:
+    driver: bridge

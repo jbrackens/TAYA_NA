@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+node_modules---old/
+
+# Build output
+.next/
+.next.stale.*/
+.next.stale*/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Webpack cache packs (large binary files)
+*.pack
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Coverage
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Temp files
+/tmp/
+*.tmp
+
+# Go binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Go build cache
+vendor/
+
+# Runtime artifacts
+.runtime/
+
+# Stale runtime logs
+archive/stale-runtime/
+
+# SWC native binaries
+next-swc.*.node

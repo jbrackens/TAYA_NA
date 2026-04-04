@@ -1,0 +1,20 @@
+# keys
+*.priv
+*.pub
+
+# Terraform
+*tfstate
+*tfstate*
+*terraform/*
+.terraform
+*.hcl
+
+#Passwords
+100-passwords.tf
+
+# Not finished features
+*.bac
+not-to-share
+
+# Desktop Service Store file
+.DS_Store

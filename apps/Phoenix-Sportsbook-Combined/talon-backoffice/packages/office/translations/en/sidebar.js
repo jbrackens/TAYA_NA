@@ -1,0 +1,11 @@
+module.exports = {
+  GROUP_TRADING: "Trading",
+  GROUP_DASHBOARD: "Dashboard",
+  RISK_MANAGEMENT_SUMMARY: "Summary",
+  RISK_MANAGEMENT_FIXTURES: "Fixtures",
+  RISK_MANAGEMENT_MARKETS: "Markets",
+  RISK_MANAGEMENT_MARKET_CATEGORIES: "Market categories",
+  RISK_MANAGEMENT_FIXED_EXOTICS: "Fixed exotics",
+  RISK_MANAGEMENT_PROVIDER_OPS: "Provider ops",
+  RISK_MANAGEMENT_PREDICTION: "Prediction ops",
+};

@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$soa_common_clam_name = 'soa_common_clam';
+$soa_common_clam_x = 0px;
+$soa_common_clam_y = 302px;
+$soa_common_clam_offset_x = 0px;
+$soa_common_clam_offset_y = -302px;
+$soa_common_clam_width = 205px;
+$soa_common_clam_height = 162px;
+$soa_common_clam_total_width = 596px;
+$soa_common_clam_total_height = 464px;
+$soa_common_clam_image = 'soa_common_b.png';
+$soa_common_clam = 0px 302px 0px -302px 205px 162px 596px 464px 'soa_common_b.png' 'soa_common_clam';
+$soa_common_logo_name = 'soa_common_logo';
+$soa_common_logo_x = 276px;
+$soa_common_logo_y = 0px;
+$soa_common_logo_offset_x = -276px;
+$soa_common_logo_offset_y = 0px;
+$soa_common_logo_width = 320px;
+$soa_common_logo_height = 154px;
+$soa_common_logo_total_width = 596px;
+$soa_common_logo_total_height = 464px;
+$soa_common_logo_image = 'soa_common_b.png';
+$soa_common_logo = 276px 0px -276px 0px 320px 154px 596px 464px 'soa_common_b.png' 'soa_common_logo';
+$soa_common_mermaid_name = 'soa_common_mermaid';
+$soa_common_mermaid_x = 0px;
+$soa_common_mermaid_y = 0px;
+$soa_common_mermaid_offset_x = 0px;
+$soa_common_mermaid_offset_y = 0px;
+$soa_common_mermaid_width = 272px;
+$soa_common_mermaid_height = 298px;
+$soa_common_mermaid_total_width = 596px;
+$soa_common_mermaid_total_height = 464px;
+$soa_common_mermaid_image = 'soa_common_b.png';
+$soa_common_mermaid = 0px 0px 0px 0px 272px 298px 596px 464px 'soa_common_b.png' 'soa_common_mermaid';
+$spritesheet_width = 596px;
+$spritesheet_height = 464px;
+$spritesheet_image = 'soa_common_b.png';
+$spritesheet_sprites = $soa_common_clam $soa_common_logo $soa_common_mermaid;
+$spritesheet = 596px 464px 'soa_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

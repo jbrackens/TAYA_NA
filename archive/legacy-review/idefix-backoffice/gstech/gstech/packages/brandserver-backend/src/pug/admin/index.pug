@@ -1,0 +1,52 @@
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    title=projectName + ' Admin'
+    link(href='css/bootstrap.css', rel='stylesheet')
+    link(href='font-awesome/css/font-awesome.css', rel='stylesheet')
+    link(href='css/sb-admin.css', rel='stylesheet')
+    link(href='css/bootstrap-multiselect.css', rel='stylesheet')
+
+  body(style='')
+    #wrapper
+      nav.navbar.navbar-default.navbar-fixed-top(role='navigation', style='margin-bottom: 0')
+        .navbar-header
+          button.navbar-toggle(type='button', data-toggle='collapse', data-target='.sidebar-collapse')
+            span.sr-only Toggle navigation
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand(href='/admin/', style='text-transform: capitalize;')
+            =configuration.project()
+            span.loading-indicator
+        .navbar-default.navbar-static-side(role='navigation')
+          .sidebar-collapse
+            ul#side-menu.nav
+              li
+                a(href='#', data-target='smsverification')
+                  i.fa.fa-mobile
+                  |  SMS Verification
+              li
+                a(href='#', data-target='content')
+                  i.fa.fa-files-o.fa-fw
+                  |  Content
+                ul.nav.nav-second-level.in(style='height: auto;')
+                  li
+                    a(href='#', data-target='banners') Banners
+                  li
+                    a(href='#', data-target='landers') Landing pages
+
+      #page-wrapper
+        include dashboard
+        include content
+        include banner-admin
+        include lander-admin
+        include smsverification
+
+    script(src='js/jquery-1.10.2.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.2/lodash.min.js')
+    script(src='js/bootstrap.min.js')
+    script(src='js/sb-admin.js')
+    script(src='js/jquery.serializeJSON.js')
+    script(src='js/ld-dashboard.js?v89')

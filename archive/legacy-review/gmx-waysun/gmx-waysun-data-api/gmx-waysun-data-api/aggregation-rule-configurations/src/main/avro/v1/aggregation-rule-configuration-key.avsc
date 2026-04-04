@@ -1,0 +1,26 @@
+{
+  "namespace": "stella.dataapi.aggregation",
+  "type": "record",
+  "name": "AggregationRuleConfigurationKey",
+  "fields": [
+    {
+      "name": "ruleId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "projectId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "eventId",
+      "type": "string",
+      "logicalType": "uuid"
+    }
+  ]
+}

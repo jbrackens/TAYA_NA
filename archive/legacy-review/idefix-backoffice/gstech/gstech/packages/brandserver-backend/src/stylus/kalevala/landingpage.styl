@@ -1,0 +1,509 @@
+@require '_sprite_lander'
+@require '_sprite_lander_2x'
+
+.lander
+  position relative
+  background-color #87d2f9
+
+.all-slots-link
+  line-height 40px
+  color $kalevala_light_blue
+  margin-right 8px
+  font-size 11px
+  font-weight 700
+  text-transform uppercase
+  @media only screen and (max-width:767px)
+    display none
+  position absolute
+  right 25px
+  @media only screen and (max-width:767px)
+    display none
+
+.more
+  sprite2x($more, $more_2x)
+  position absolute
+  bottom 0
+  left 0
+  right 0
+  margin 0 auto
+  animation notify 0.4s
+  animation-iteration-count 2
+  &:hover
+    transform:translateY(5px);
+  @media only screen and (max-width:767px)
+    display none
+
+@keyframes notify {
+    0% {transform: translateY(0px);}
+    55% {transform:translateY(0px);}
+    75% {transform:translateY(10px);}
+    100% {transform:translateY(0px)}
+}
+
+.lander-button-holder
+  text-align center
+  .button
+    font-size 22px
+
+.lander-page
+  padding 0 4px
+  position relative
+  min-height calc(100vh - 60px)
+  display flex
+  flex-direction column
+  justify-content center
+
+  @media only screen and (max-width:767px)
+    padding-bottom 100px
+  .anchor
+    position absolute
+    visibility hidden
+    display block
+    top (0px - $header_height)
+
+  .content
+    max-width 360px
+    padding-top 100px
+    margin 0 auto
+    position relative
+    z-index 1800
+    width 100%
+    @media only screen and (max-width:767px)
+      max-width 300px
+      padding-top 20px
+    h1
+      letter-spacing -1px
+      color $kalevala_blue
+      line-height 40px
+      font-size 50px
+      margin 0
+      @media only screen and (max-width:767px)
+        text-align center
+        font-size 40px
+    h2
+      margin 0 0 10px 0
+      font-size 20px
+      line-height 24px
+      color #5fc7f8
+      @media only screen and (max-width:767px)
+        text-align center
+    h3
+      margin 0
+      color #ffffff
+      font-size 20px
+      line-height 24px
+      @media only screen and (max-width:767px)
+        text-align center
+.lander-page-content-block
+  p
+    font-size 16px
+    max-width 360px
+    color #fff
+
+#lander-page-1
+  cdn-background-image '/images/lander_bg_1.jpg'
+  background-position center
+  background-size cover
+  .lander-button-holder
+    margin-top 30px
+    height calc(50vh - 60px)
+  .clouds
+    position absolute
+    top 15%
+    left 8%
+    sprite2x($cloud, $cloud_2x)
+    @media only screen and (max-width:767px)
+      display none
+  .birdy
+    position absolute
+    top 12%
+    left 13%
+    sprite2x($birdy, $birdy_2x)
+    @media only screen and (max-width:767px)
+      display none
+
+  &:after
+    content ''
+    position absolute
+    left 5%
+    bottom 0
+    cdn-background-image '/images/lander_wayne_1@2x.png'
+    background-size contain
+    background-repeat no-repeat
+    background-position center bottom
+    width 25%
+    height 100%
+    @media only screen and (max-width:768px)
+      display none
+  .content
+    width 100%
+    @media only screen and (min-width:768px)
+      padding-left 210px
+      max-width 520px
+  &-amount20
+    margin 0 auto
+    sprite2x($amount20, $amount20_2x)
+    @media only screen and (min-width:768px)
+      position absolute
+      left 0
+      margin-top -20px
+
+&#lander-page-2
+  cdn-background-image '/images/lander_bg_2.jpg'
+  background-size cover
+  @media only screen and (min-width:768px)
+    background-position center right
+  h1
+    @media only screen and (min-width:768px)
+      white-space nowrap
+    span
+      color #ffffff
+  h3
+    text-align center
+  &-amount325
+    margin 0 auto
+    sprite2x($amount325, $amount325_2x)
+    position relative
+    &:after
+      content ''
+      position absolute
+      top -10px
+      left -150px
+      sprite2x($birdy, $birdy_2x)
+    &:before
+      content ''
+      position absolute
+      top -10px
+      left -250px
+      sprite2x($cloud, $cloud_2x)
+
+  .content
+    @media only screen and (min-width:768px)
+      padding-right 300px
+      max-width 640px
+      &:after
+        content ''
+        position absolute
+        right 1%
+        bottom 0
+        cdn-background-image '/images/lander_wayne_2@2x.png'
+        background-size contain
+        background-repeat no-repeat
+        background-position center bottom
+        width 50%
+        height 100%
+        @media only screen and (max-width:768px)
+          display none
+
+  .lander-button-holder
+    margin-top 30px
+    height calc(25vh - 60px)
+    @media only screen and (min-width:768px)
+      text-align right
+
+#lander-page-3
+  background linear-gradient(to bottom, #84d1fb 0%,#84d1fb 73%,#7dcefd 83%,#79cbfa 86%,#76c8fa 93%,#6ec3f9 100%)
+  @media only screen and (min-width:768px)
+    &:after
+      content ''
+      position absolute
+      left 5%
+      bottom 0
+      max-width 400px
+      cdn-background-image '/images/lander_wayne_3@2x.png'
+      background-size contain
+      background-repeat no-repeat
+      background-position center bottom
+      width 30%
+      height 100%
+      @media only screen and (max-width:768px)
+        display none
+
+  &:before
+    content ''
+    position absolute
+    top 12%
+    left 13%
+    sprite2x($2could, $2cloud_2x)
+  &-meter
+    margin 0 auto
+    sprite2x($meter, $meter_2x)
+    position absolute
+    right -100px
+    bottom 0
+    @media only screen and (max-width:767px)
+      display none
+  .content
+    &:after
+      content ''
+      position absolute
+      top 0
+      right -15%
+      sprite2x($birdy, $birdy_2x)
+
+#lander-page-4
+  cdn-background-image '/images/lander_bg_4.jpg'
+  background-position center
+  background-size cover
+  &:after
+    content ''
+    position absolute
+    right 10px
+    bottom 0
+    cdn-background-image '/images/lander_wayne_4@2x.png'
+    background-position center bottom
+    background-size contain
+    background-repeat no-repeat
+    width 30%
+    height 100%
+    @media only screen and (max-width:768px)
+      display none
+
+  .content
+    padding-top 5px
+    max-width 640px
+    h1, h2
+      text-align center
+    h1
+      position relative
+      @media only screen and (min-width:768px)
+        &:before
+          content ''
+          position absolute
+          top -10px
+          left 30px
+          sprite2x($birdy, $birdy_2x)
+
+.regform-wrapper
+  .sod_select
+    background transparent
+    color $placeholder-color
+
+  .floatlabel
+    background-color #ffffff
+    color $placeholder-color
+    box-shadow: 0px 2px 0px 0px $kalevala_dark_blue
+    border 1px solid $kalevala_light_blue
+    margin 0
+    label
+      text-transform uppercase
+      color $kalevala_blue
+    &:focus
+      background-color #ffffff
+
+  .reg-form
+    a
+      color $header-color
+      text-decoration underline
+    formFeedback()
+    input-placeholder(color #b1b1b1, text-transform uppercase)
+    .form-control
+      validatorFeedback()
+
+    .submit-holder
+      margin 0 0 10px
+      padding 5px 5px 20px
+      position relative
+      text-align center
+      font-size 16px
+
+    .input-row
+      position relative
+      margin 0 0 12px 0
+      clearfix()
+    .postcode
+      width 100px !important
+      margin 0 10px 0 0
+      float left
+    .city
+      width 155px !important
+      margin 0
+      float left
+    .dob-label
+      margin 0
+      text-align left
+    .phoneInput
+      width 190px
+      float right
+    .phoneAreaInput
+      width 70px
+      float left
+      height 46px
+      .sod_select
+        height 46px
+    .dobField
+      width 75px
+      float left
+      margin-left 15px
+      &:first-child
+        margin-left 0
+    label
+      color $kalevala_dark_blue
+  .register-form
+    formFeedback()
+    padding-bottom 20px
+    .input-group
+      input-placeholder(color $placeholder-color, text-transform uppercase)
+    .btn-holder
+      text-align center
+      a
+        text-transform uppercase
+        font-size 11px
+        color #fff
+
+.login-box
+  transform translateY(-1000px)
+  transition: transform 0.5s ease-in-out
+  position fixed
+  width 460px
+  min-height 272px
+  z-index 15050
+  top 50%
+  left 50%
+  margin -200px 0 0 -210px
+  background-color $bg-dialog
+  border 1px solid $kalevala_cta_secondary
+  border-radius 6px
+  text-align center
+  display flex
+  .btn-holder
+    display flex
+    justify-content center
+  .close-button
+    position absolute
+    display inline
+    top -1px
+    right -1px
+    z-index 10003
+    closebutton()
+  .form-feedback
+    position relative
+    padding-right 8px
+    margin-right 5px
+    &:after
+      display inline
+      content ' - '
+      position absolute
+      right 0
+      top 0
+  &.active
+    transform translateY(0)
+  label
+    font-size 13px
+    color $kalevala_dark_blue
+  a, a:hover, a:active, a:visited
+    color $kalevala_blue
+    font-size 14px
+    font-weight 700
+    &.button
+      color #ffffff
+  .input-group-after
+    background-color #ffffff
+    width 15px
+    height 40px
+    position absolute
+    z-index 10000
+    right -15px
+    border-radius 0 15px 15px 0
+
+  .input-group-addon
+    background-color $kalevala_blue !important
+    width 45px
+    height 40px
+    position absolute
+    z-index 10000
+    left -45px
+    border-radius 15px 0 0 15px
+    &.email-addon:after
+      content ''
+      position absolute
+      top 10px
+      right 8px
+      sprite2x($icon_email, $icon_email_2x)
+    &.password-addon:after
+      content ''
+      position absolute
+      top 8px
+      right 12px
+      sprite2x($icon_lock, $icon_lock_2x)
+
+  .input-row
+    text-align center
+    margin 10px 0
+    .dobFields
+      margin 0 auto
+      width 320px
+      text-align center
+    .dobField
+      width 75px !important
+      margin-left 15px
+      &:first-child
+        margin-left 0
+    .floatlabel
+      box-shadow none
+      margin 4px 0 0 5px
+      width 185px
+      height 40px
+      display inline-block
+      input
+        padding-right 0
+      &.wide
+        width 300px
+      .form-control
+        background-color #ffffff !important
+      label
+        text-transform uppercase
+      &:focus
+        background-color #ffffff
+  .submit-button
+    font-size 18px
+    margin-bottom 5px
+
+  .register-link
+    position absolute
+    bottom 5px
+    left 0
+    right 0
+    color #fffff
+    span
+      color #C3FF01
+  h2
+    white-space nowrap
+    margin 8px 0 4px 0
+    color $kalevala_blue
+  .login-form
+    width 310px
+    margin 0 auto
+    display inline-block
+  .login-mascot
+    align-self flex-end
+    display inline-block
+    cdn-background-image2x '/images/login_wayne.png'  '/images/login_wayne@2x.png' 121px 216px
+    width 121px
+    height 216px
+    @media only screen and (max-width:767px)
+      display none
+  @media only screen and (max-width:767px)
+    top 0
+    left 0
+    right 0
+    margin 0
+    width 100%
+    height auto
+    min-height 100vh
+
+#pincode-input, #pincode-placeholder
+  margin-top -8px
+  .input-row
+    margin 0 !important
+  label
+    text-align left !important
+
+#landing-page .content-block
+  background-color #3a3a3a
+  max-width 585px
+  min-height 500px
+  margin 0 auto
+  padding 15px
+  h3
+    color #ffffff

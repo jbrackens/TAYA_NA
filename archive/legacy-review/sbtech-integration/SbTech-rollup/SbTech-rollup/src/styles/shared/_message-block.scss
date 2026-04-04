@@ -1,0 +1,23 @@
+.message-block{
+  margin: 0px;
+  background: $alert;
+  color: white;
+  padding: 10px;
+  h1, span{
+    text-align:center;
+    color:$brand-grey;
+    text-transform:uppercase;
+    font-family: $brand-font--header;
+    line-height:2em;
+  }
+  p{
+    color:$brand-grey;
+    font-family: $brand-font--body;
+  }
+  .IsMobile &{
+    margin:1px 0 1px;
+  }
+  .rmx-message-block &{
+    margin:1px 0 1px;
+  }
+}

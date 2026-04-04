@@ -1,0 +1,38 @@
+[
+  {
+    "MessageCreationDate": 1596555646882,
+    "LoginID": 1517973653,
+    "CustomerID": 928715313,
+    "LoginName": "magnam_tempora",
+    "SiteName": "Sportnation",
+    "SiteId": 154,
+    "Country": "United Kingdom",
+    "LoginDate": 1596555624813,
+    "LogoutDate": 0,
+    "LoginIP": "43.226.164.178",
+    "LoginProxyIP": "43.226.164.178",
+    "UAFamily": "Chrome",
+    "UAName": "Chrome 83.0.4103.116",
+    "OSCompany": "Apple Inc.",
+    "OSName": "macOS 10.15 Catalina",
+    "DeviceType": "Personal computer"
+  },
+  {
+    "MessageCreationDate": 1596555646982,
+    "LoginID": 1517973653,
+    "CustomerID": 928715313,
+    "LoginName": "magnam_tempora",
+    "SiteName": "Sportnation",
+    "SiteId": 154,
+    "Country": "United Kingdom",
+    "LoginDate": 1596555624813,
+    "LogoutDate": 0,
+    "LoginIP": "43.226.164.178",
+    "LoginProxyIP": "43.226.164.178",
+    "UAFamily": "Chrome",
+    "UAName": "Chrome 83.0.4103.116",
+    "OSCompany": "Apple Inc.",
+    "OSName": "macOS 10.15 Catalina",
+    "DeviceType": "Personal computer"
+  }
+]

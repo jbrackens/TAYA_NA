@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tournament_schedule generated_at="2020-09-09T10:56:53">
+    <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+        <tournament_length start_date="2020-08-07"></tournament_length>
+        <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        <competitors>
+            <competitor id="od:competitor:882" name="ShaDoWn" abbreviation="ShaDoWn"></competitor>
+            <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons"></competitor>
+            <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula"></competitor>
+            <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury"></competitor>
+            <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better"></competitor>
+            <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi"></competitor>
+            <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB"></competitor>
+            <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul"></competitor>
+            <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF"></competitor>
+            <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls"></competitor>
+            <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet"></competitor>
+        </competitors>
+    </tournament>
+    <sport_events>
+        <sport_event id="od:match:13709" name="NoBKB vs Cuteanimegirls" scheduled="2020-08-07T08:00:00">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="home"></competitor>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14375" name="C&#39;s Better vs Cuteanimegirls" scheduled="2020-08-29T05:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="home"></competitor>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13710" name="Adió Chula vs Spag and Sons" scheduled="2020-08-07T10:00:00">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="home"></competitor>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13718" name="Your Soul is Mine vs C&#39;s Better" scheduled="2020-08-13T10:30:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="home"></competitor>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15865" name="Bokebi vs Shadownet" scheduled="2020-09-09T08:00:00">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="home"></competitor>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14184" name="Power of Friendship vs Your Soul is Mine" scheduled="2020-08-21T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15866" name="C&#39;s Better vs Your Soul is Mine" scheduled="2020-09-09T10:00:00" status="not_started">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15857" name="NoBKB vs Bokebi" scheduled="2020-09-02T08:20:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="home"></competitor>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15861" name="Spag and Sons vs C&#39;s Better" scheduled="2020-09-04T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13715" name="NoBKB vs Shadownet" scheduled="2020-08-12T08:10:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="home"></competitor>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15858" name="Shadownet vs Sincerely Fury" scheduled="2020-09-02T10:55:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="home"></competitor>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13712" name="Spag and Sons vs Adió Chula" scheduled="2020-08-07T10:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13716" name="Sincerely Fury vs Your Soul is Mine" scheduled="2020-08-12T10:20:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13719" name="Spag and Sons vs Cuteanimegirls" scheduled="2020-08-14T08:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15867" name="Power of Friendship vs Cuteanimegirls" scheduled="2020-09-10T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="home"></competitor>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15869" name="Cuteanimegirls vs NoBKB" scheduled="2020-09-11T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="home"></competitor>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15872" name="Your Soul is Mine vs Shadownet" scheduled="2020-09-12T10:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="home"></competitor>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15868" name="Spag and Sons vs NoBKB" scheduled="2020-09-10T10:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15871" name="Spag and Sons vs Adió Chula" scheduled="2020-09-12T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15870" name="Power of Friendship vs Sincerely Fury" scheduled="2020-09-11T10:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="home"></competitor>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13714" name="Cuteanimegirls vs Your Soul is Mine" scheduled="2020-08-08T08:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13711" name="NoBKB vs C&#39;s Better" scheduled="2020-08-07T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="home"></competitor>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13713" name="Sincerely Fury vs Spag and Sons" scheduled="2020-08-08T06:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="home"></competitor>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13717" name="Sincerely Fury vs Bokebi" scheduled="2020-08-13T08:10:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="home"></competitor>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13721" name="Bokebi vs Power of Friendship" scheduled="2020-08-15T06:10:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="home"></competitor>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13722" name="Spag and Sons vs ShaDoWn" scheduled="2020-08-15T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:882" name="ShaDoWn" abbreviation="ShaDoWn" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14186" name="Spag and Sons vs Power of Friendship" scheduled="2020-08-22T06:15:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14185" name="C&#39;s Better vs ShaDoWn" scheduled="2020-08-21T11:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="home"></competitor>
+                <competitor id="od:competitor:882" name="ShaDoWn" abbreviation="ShaDoWn" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:13720" name="Adió Chula vs C&#39;s Better" scheduled="2020-08-14T10:20:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="home"></competitor>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14187" name="Sincerely Fury vs NoBKB" scheduled="2020-08-22T08:15:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="home"></competitor>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14370" name="Adió Chula vs Your Soul is Mine" scheduled="2020-08-26T11:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14180" name="C&#39;s Better vs Bokebi" scheduled="2020-08-19T08:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="home"></competitor>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14369" name="C&#39;s Better vs Sincerely Fury" scheduled="2020-08-26T08:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="home"></competitor>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14181" name="Adió Chula vs Cuteanimegirls" scheduled="2020-08-19T10:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="home"></competitor>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14182" name="Cuteanimegirls vs NoBKB" scheduled="2020-08-20T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="home"></competitor>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14183" name="Shadownet vs Adió Chula" scheduled="2020-08-20T10:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="home"></competitor>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14371" name="Spag and Sons vs Bokebi" scheduled="2020-08-27T08:10:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14373" name="Shadownet vs Cuteanimegirls" scheduled="2020-08-28T08:05:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="home"></competitor>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14374" name="Sincerely Fury vs Adió Chula" scheduled="2020-08-28T10:15:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="home"></competitor>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14372" name="NoBKB vs Power of Friendship" scheduled="2020-08-27T10:15:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="home"></competitor>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15862" name="Adió Chula vs Power of Friendship" scheduled="2020-09-04T10:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="home"></competitor>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15859" name="NoBKB vs Your Soul is Mine" scheduled="2020-09-03T08:00:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1904" name="NoBKB" abbreviation="No BKB" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15860" name="Power of Friendship vs Adió Chula" scheduled="2020-09-03T10:30:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="home"></competitor>
+                <competitor id="od:competitor:1377" name="Adió Chula" abbreviation="Adió Chula" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14376" name="Shadownet vs Power of Friendship" scheduled="2020-08-29T06:35:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1937" name="Shadownet" abbreviation="Shadownet" qualifier="home"></competitor>
+                <competitor id="od:competitor:1906" name="Power of Friendship" abbreviation="PoF" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:14377" name="Spag and Sons vs Your Soul is Mine" scheduled="2020-08-29T08:30:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1376" name="Spag and Sons" abbreviation="Spag and Sons" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15863" name="Bokebi vs Your Soul is Mine" scheduled="2020-09-05T06:10:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1903" name="Bokebi" abbreviation="Bokebi" qualifier="home"></competitor>
+                <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+        <sport_event id="od:match:15864" name="Cuteanimegirls vs Sincerely Fury" scheduled="2020-09-05T08:30:00" liveodds="not_available">
+            <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+                <tournament_length start_date="2020-08-07"></tournament_length>
+                <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+            </tournament>
+            <competitors>
+                <competitor id="od:competitor:1907" name="Cuteanimegirls" abbreviation="Cute Girls" qualifier="home"></competitor>
+                <competitor id="od:competitor:1378" name="Sincerely Fury" abbreviation="Sincerely Fury" qualifier="away"></competitor>
+            </competitors>
+        </sport_event>
+    </sport_events>
+</tournament_schedule>

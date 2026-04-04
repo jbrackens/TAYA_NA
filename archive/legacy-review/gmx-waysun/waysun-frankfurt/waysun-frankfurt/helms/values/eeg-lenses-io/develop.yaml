@@ -1,0 +1,100 @@
+ingress:
+  qcloud_cert_id: trk0CNuW
+  clb_id: lb-a0cqfc0e
+  domain: lenses.dev.stella.waysungames.com
+
+lenses:
+  # Resource management
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
+  persistence:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+    storageClass: "cbs"
+  service:
+    enabled: true
+    type: NodePort
+  ingress:
+    enabled: false
+
+  lenses:
+    kafka:
+      metrics:
+        enabled: true
+        type: "JMX"
+        port: 5555
+      bootstrapServers:
+        - name: kafka-0.kafka-headless.streaming.svc.cluster.local
+          port: 9092
+          sslPort: 9093
+          saslSslPort: 9094
+          saslPlainTextPort: 9095
+        - name: kafka-1.kafka-headless.streaming.svc.cluster.local
+          port: 9092
+          sslPort: 9093
+          saslSslPort: 9094
+          saslPlainTextPort: 9095
+        - name: kafka-2.kafka-headless.streaming.svc.cluster.local
+          port: 9092
+          sslPort: 9093
+          saslSslPort: 9094
+          saslPlainTextPort: 9095
+
+    zookeepers:
+      enabled: true
+      hosts:
+        - host: zookeeper-0.zookeeper-headless.streaming.svc.cluster.local
+          port: 2181
+          metrics:
+            url: "zookeeper-0.zookeeper-headless.streaming.svc.cluster.local:9010"
+            type: "JMX"
+        - host: zookeeper-1.zookeeper-headless.streaming.svc.cluster.local
+          port: 2181
+          metrics:
+            url: "zookeeper-1.zookeeper-headless.streaming.svc.cluster.local:9010"
+            type: "JMX"
+        - host: zookeeper-2.zookeeper-headless.streaming.svc.cluster.local
+          port: 2181
+          metrics:
+            url: "zookeeper-2.zookeeper-headless.streaming.svc.cluster.local:9010"
+            type: "JMX"
+    schemaRegistries:
+      enabled: true
+      hosts:
+        - host: cp-schema-registry.streaming.svc.cluster.local
+          protocol: http
+          port: 8081
+          metrics:
+            url: cp-schema-registry.streaming.svc.cluster.local:5555
+      security:
+        enabled: false
+
+    connectClusters:
+      enabled: true
+      external: false
+      clusters:
+        - name: cp-kafka-connect
+          port: 8083
+          jmxPort: 5555
+          protocol: http
+          offsetsTopic: cp-kafka-connect-offset
+          statusTopic: cp-kafka-connect-status
+          configTopic: cp-kafka-connect-config
+          hosts:
+            - url: http://cp-kafka-connect.streaming.svc.cluster.local:8083
+              metrics:
+                url: cp-kafka-connect.streaming.svc.cluster.local:5555
+
+    storage:
+      postgres:
+        enabled: true
+        host:  10.17.102.14
+    topics:
+      suffix: manual_lenses

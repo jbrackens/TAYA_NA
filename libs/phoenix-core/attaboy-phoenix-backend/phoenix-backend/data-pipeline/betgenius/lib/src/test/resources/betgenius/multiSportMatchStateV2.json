@@ -1,0 +1,20 @@
+[
+  {
+    "Header": {
+      "MessageGuid": "a47de8d2-2a20-48b7-9b82-6fe441ccdc68",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-18T16:11:13.2421376Z"
+    },
+    "MultiSportMatchStateV2": {
+      "AwayScore": "0",
+      "BetgeniusFixtureId": 8591047,
+      "BookmakerId": 10231,
+      "HomeScore": "0",
+      "IsReliable": true,
+      "MatchPhase": "InPlay",
+      "MatchStatus": "1st Half  < 40mins",
+      "MessageTimestampUtc": "2021-10-18T16:11:13.238Z",
+      "SportId": 10915624
+    }
+  }
+]

@@ -1,0 +1,53 @@
+replicaCount: 1
+servicePort: 8082
+heapOptions: >-
+  -XX:MaxRAMPercentage=75.0 
+  -XX:InitialRAMPercentage=75.0
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 1024Mi
+
+
+affinity:
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+            - key: nodes-type
+              operator: In
+              values:
+                - streaming-nodes
+        weight: 1
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: nodes-type
+              operator: In
+              values:
+                - streaming-nodes
+
+## Kafka REST configuration options
+## ref: https://docs.confluent.io/current/kafka-rest/docs/config.html
+configurationOverrides:
+  # "consumer.request.timeout.ms": 5000
+
+## Additional env variables
+customEnv: {}
+  # ZOOKEEPER_SASL_ENABLED: "false"
+
+## If the Kafka Chart is disabled a URL of zookeeper are required to connect
+## e.g. ungaged-sparrow-cp-zookeeper:2181
+cp-zookeeper:
+  url: ""
+
+## If the Kafka Chart is disabled a URL and port are required to connect
+## e.g. gnoble-panther-cp-schema-registry:8081
+cp-schema-registry:
+  url: ""
+
+cp-kafka:
+  bootstrapServers: ""

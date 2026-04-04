@@ -1,0 +1,71 @@
+nameOverride: "dev-luckydino-strapi-cms"
+fullnameOverride: "dev-luckydino-strapi-cms"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  name: "luckydino-strapi-cms"
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-dev-luckydino-strapi-cms-s3
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3000
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: dev-luckydino-strapi-cms
+  hosts:
+  - host: luckydino-strapi-cms.dev.eeg.viegg.net
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: dev-luckydino-strapi-cms
+      servicePort: 3000
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+  tls: []
+
+env:
+  DATABASE_CLIENT: 'postgres'
+  DATABASE_TYPE: 'postgres'
+  DATABASE_HOST: db-luckydino-strapi-cms.dev.eeg.viegg.net
+  DATABASE_PORT: 5432
+  DATABASE_USERNAME: luckydino_strapi_cms
+  DATABASE_NAME: luckydino_strapi_cms
+  DATABASE_SSL: false
+  HOST: "0.0.0.0"
+  PORT: 3000
+  STRAPI_TELEMETRY_DISABLED: true
+  NODE_ENV: "production"
+  ENABLE_S3_UPLOAD: true
+  AWS_BUCKET_NAME: "dev-luckydino-strapi-cms-content"
+  AWS_REGION: "eu-central-1"
+secretEnv:
+  DATABASE_PASSWORD:
+    dev-luckydino-strapi-cms: postgres-password
+  JWT_SECRET:
+    dev-luckydino-strapi-cms: jwt-secret
+  ADMIN_JWT_SECRET:
+    dev-luckydino-strapi-cms: admin-jwt-secret
+  API_TOKEN_SALT:
+    dev-luckydino-strapi-cms: api-token-salt
+  APP_KEYS:
+    dev-luckydino-strapi-cms: app-keys

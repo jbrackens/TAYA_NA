@@ -1,0 +1,24 @@
+more;More games
+leaderboard;Leaderboard
+fun;Fun games
+back;Back
+main_menu;main menu
+menu;Menu
+fun_games;fun games
+play;play game
+next;Next
+replay;Replay
+level;Level %d / 20
+credits;Credits
+code;Code
+art;Art
+levels;Levels
+sound;Sound
+game_complete;Game Complete
+level_complete;Level Complete
+level_failed;Level Failed
+pause;Pause
+shots;Shots:
+select_level;Select Level
+total_shots;Total shots   %d
+shots;shots: %d

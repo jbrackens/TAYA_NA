@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<market_descriptions response_code="OK">
+    <market id="1" name="Match winner - {way}way" variant="way:two">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="1" name="Match winner - {way}way" variant="way:three">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+            <outcome id="3" name="draw"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="2" name="Match handicap {handicap}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="handicap" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="3" name="Number of maps {threshold}">
+        <outcomes>
+            <outcome id="4" name="under"></outcome>
+            <outcome id="5" name="over"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="4" name="Correct match score" variant="best_of:2">
+        <outcomes>
+            <outcome id="8" name="0:2"></outcome>
+            <outcome id="9" name="1:1"></outcome>
+            <outcome id="10" name="2:0"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="best_of" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="4" name="Correct match score" variant="best_of:3">
+        <outcomes>
+            <outcome id="8" name="0:2"></outcome>
+            <outcome id="10" name="2:0"></outcome>
+            <outcome id="11" name="1:2"></outcome>
+            <outcome id="12" name="2:1"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="best_of" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="4" name="Correct match score" variant="best_of:4">
+        <outcomes>
+            <outcome id="13" name="0:3"></outcome>
+            <outcome id="14" name="1:3"></outcome>
+            <outcome id="15" name="2:2"></outcome>
+            <outcome id="16" name="3:1"></outcome>
+            <outcome id="17" name="3:0"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="best_of" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="4" name="Correct match score" variant="best_of:5">
+        <outcomes>
+            <outcome id="13" name="0:3"></outcome>
+            <outcome id="14" name="1:3"></outcome>
+            <outcome id="16" name="3:1"></outcome>
+            <outcome id="17" name="3:0"></outcome>
+            <outcome id="18" name="2:3"></outcome>
+            <outcome id="19" name="3:2"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="best_of" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="4" name="Correct match score" variant="best_of:6">
+        <outcomes>
+            <outcome id="20" name="0:4"></outcome>
+            <outcome id="21" name="1:4"></outcome>
+            <outcome id="22" name="2:4"></outcome>
+            <outcome id="23" name="3:3"></outcome>
+            <outcome id="24" name="4:2"></outcome>
+            <outcome id="25" name="4:1"></outcome>
+            <outcome id="26" name="4:0"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="best_of" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="4" name="Correct match score" variant="best_of:7">
+        <outcomes>
+            <outcome id="20" name="0:4"></outcome>
+            <outcome id="21" name="1:4"></outcome>
+            <outcome id="22" name="2:4"></outcome>
+            <outcome id="24" name="4:2"></outcome>
+            <outcome id="25" name="4:1"></outcome>
+            <outcome id="26" name="4:0"></outcome>
+            <outcome id="27" name="3:4"></outcome>
+            <outcome id="28" name="4:3"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="best_of" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="5" name="Correct round score - map {map}">
+        <outcomes>
+            <outcome id="29" name="16:00"></outcome>
+            <outcome id="30" name="16:01"></outcome>
+            <outcome id="31" name="16:02"></outcome>
+            <outcome id="32" name="16:03"></outcome>
+            <outcome id="33" name="16:04"></outcome>
+            <outcome id="34" name="16:05"></outcome>
+            <outcome id="35" name="16:06"></outcome>
+            <outcome id="36" name="16:07"></outcome>
+            <outcome id="37" name="16:08"></outcome>
+            <outcome id="38" name="16:09"></outcome>
+            <outcome id="39" name="16:10"></outcome>
+            <outcome id="40" name="16:11"></outcome>
+            <outcome id="41" name="16:12"></outcome>
+            <outcome id="42" name="16:13"></outcome>
+            <outcome id="43" name="16:14"></outcome>
+            <outcome id="44" name="15:15"></outcome>
+            <outcome id="45" name="14:16"></outcome>
+            <outcome id="46" name="13:16"></outcome>
+            <outcome id="47" name="12:16"></outcome>
+            <outcome id="48" name="11:16"></outcome>
+            <outcome id="49" name="10:16"></outcome>
+            <outcome id="50" name="09:16"></outcome>
+            <outcome id="51" name="08:16"></outcome>
+            <outcome id="52" name="07:16"></outcome>
+            <outcome id="53" name="06:16"></outcome>
+            <outcome id="54" name="05:16"></outcome>
+            <outcome id="55" name="04:16"></outcome>
+            <outcome id="56" name="03:16"></outcome>
+            <outcome id="57" name="02:16"></outcome>
+            <outcome id="58" name="01:16"></outcome>
+            <outcome id="59" name="00:16"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="6" name="Map {map} winner - {way}way" variant="way:two">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="6" name="Map {map} winner - {way}way" variant="way:three">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+            <outcome id="3" name="draw"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="7" name="Round {round} winner - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="round" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="10" name="Pistol Round {order} winner - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="round" type="integer"></specifier>
+            <specifier name="order" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="11" name="Round handicap {handicap}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="handicap" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="12" name="First to reach {threshold} rounds - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="13" name="First Aegis - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="14" name="First Baron - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="15" name="First barracks - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="16" name="First blood - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="17" name="First dragon - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="18" name="First inhibitor - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="19" name="First tower - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="20" name="First turret - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="21" name="First half winner - {way}way" variant="way:two">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="22" name="Second half winner - {way}way" variant="way:three">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+            <outcome id="3" name="draw"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="way" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="23" name="{threshold}th kill - map {map}">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="24" name="Number of rounds {threshold} - map {map}">
+        <outcomes>
+            <outcome id="4" name="under"></outcome>
+            <outcome id="5" name="over"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="25" name="Number of rounds parity - map {map}">
+        <outcomes>
+            <outcome id="60" name="odd"></outcome>
+            <outcome id="61" name="even"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="26" name="Megacreeps - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="27" name="Map duration {threshold} - map {map}">
+        <outcomes>
+            <outcome id="4" name="under"></outcome>
+            <outcome id="5" name="over"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="28" name="Overtime - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="29" name="Quadra kill - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="30" name="Penta kill - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="31" name="Ultra kill - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="32" name="Beyond godlike - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="33" name="Rampage - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="34" name="Total kills {threshold} - map {map}">
+        <outcomes>
+            <outcome id="4" name="under"></outcome>
+            <outcome id="5" name="over"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="35" name="Total kills parity - map {map}">
+        <outcomes>
+            <outcome id="60" name="odd"></outcome>
+            <outcome id="61" name="even"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+        </specifiers>
+    </market>
+    <market id="36" name="Total turrets {threshold} - map {map}">
+        <outcomes>
+            <outcome id="4" name="under"></outcome>
+            <outcome id="5" name="over"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="37" name="{side} wins at least one map">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="side" type="variable_text"></specifier>
+        </specifiers>
+    </market>
+    <market id="38" name="First to reach {threshold} kills">
+        <outcomes>
+            <outcome id="1" name="home"></outcome>
+            <outcome id="2" name="away"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="39" name="Place within TOP{threshold} - map {map}">
+        <outcomes>
+            <outcome id="6" name="yes"></outcome>
+            <outcome id="7" name="no"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+    <market id="40" name="Total towers {threshold} - map {map}">
+        <outcomes>
+            <outcome id="4" name="under"></outcome>
+            <outcome id="5" name="over"></outcome>
+        </outcomes>
+        <specifiers>
+            <specifier name="map" type="integer"></specifier>
+            <specifier name="threshold" type="decimal"></specifier>
+        </specifiers>
+    </market>
+</market_descriptions>

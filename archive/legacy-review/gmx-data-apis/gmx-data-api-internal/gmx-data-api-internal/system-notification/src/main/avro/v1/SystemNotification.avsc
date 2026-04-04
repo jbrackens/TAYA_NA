@@ -1,0 +1,72 @@
+{
+  "type": "record",
+  "name": "SystemNotification",
+  "namespace": "net.eeg.gmx.dataapi.internal.systemnotification",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "createdDateUTC",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "companyId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "logicalType": "UUID"
+    },
+    {
+      "name": "externalUserId",
+      "type": "string"
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "action",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "ActionType",
+          "symbols": [
+            "START_OVER_AGAIN",
+            "VERIFY_CUSTOMER",
+            "DECLINE_CUSTOMER"
+          ]
+        }
+      ]
+    }
+    ]
+}

@@ -1,0 +1,87 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.iatoki:gradle-play-webjars:0.1.0'
+    }
+}
+
+plugins {
+    id "play"
+    id "idea"
+    id "com.palantir.docker"
+}
+
+apply plugin: 'org.iatoki.play-webjars'
+
+description = "GMX Platform :: Predictor Game :: Web Gateway"
+
+ext {
+    dockerName = "${dockerRegistry}/${dockerRegistryGroup}/${project.name}"
+}
+
+dependencies {
+    play project(':common')
+    play project(':domain')
+    play project(':security')
+    play project(':gameengine')
+
+    play "com.iheart:play-swagger_${scalaDepVersion}:0.7.3"
+    play "org.webjars:swagger-ui:3.17.6"
+
+    play "com.typesafe.play:play-guice_${scalaDepVersion}:${playVersion}"
+    play "com.typesafe.play:filters-helpers_${scalaDepVersion}:${playVersion}"
+    play "com.typesafe.play:play-slick_${scalaDepVersion}:3.0.3"
+
+    play "com.softwaremill.sttp:core_${scalaDepVersion}:1.3.0"
+
+    playTest "junit:junit:4.12"
+    playTest "org.scalatest:scalatest_${scalaDepVersion}:3.0.5"
+    playTest "org.mockito:mockito-scala_${scalaDepVersion}:0.3.1"
+}
+
+
+model {
+    components {
+        play {
+            platform play: playVersion, scala: scalaDepVersion, java: javaVersion
+            injectedRoutesGenerator = true
+            binaries.all {
+                tasks.withType(PlatformScalaCompile) {
+                    scalaCompileOptions.additionalParameters = ["-feature", "-language:implicitConversions"]
+                }
+            }
+        }
+    }
+    //FIXME: 'baseName' is ignored after upgrading gradle version ;/
+//    distributions {
+//        playBinary {
+//            baseName = "${project.name}-${project.version}"
+//        }
+//    }
+}
+
+configurations.findByName(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+        .extendsFrom(configurations.findByName(PlayPluginConfigurations.COMPILE_CONFIGURATION))
+        .setTransitive(true)
+
+configurations.findByName(JavaPlugin.TEST_COMPILE_CLASSPATH_CONFIGURATION_NAME)
+        .extendsFrom(configurations.findByName(PlayPluginConfigurations.TEST_COMPILE_CONFIGURATION))
+        .setTransitive(true)
+
+
+tasks.withType(PlayRun) {
+    forkOptions.jvmArgs = ['-Xdebug',
+                           '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005'
+            ]
+}
+
+docker {
+//    dependsOn build
+    name "${dockerName}:${project.version}"
+    tag 'latest', "${dockerName}:latest"
+    files new File(project.buildDir, "distributions")
+    buildArgs(['JAR_FILE': "${project.name}", 'APP_NAME': "${project.name}", 'VCS_REF': "${System.getenv('VCS_REF')}"])
+}

@@ -1,0 +1,13 @@
+-J-Xmx5120M
+-J-Xms1024M
+-J-XX:MaxMetaspaceSize=2048M
+
+# Seems to prevent https://github.com/softwaremill/tapir/issues/940
+# Compiler has very deep recursions during type erasure on phoenix.core.serialization.PhoenixCirceAkkaSerializer
+-J-Xss4M
+
+# Allows dotenv plugin to work on modern JVMs
+-J--add-opens
+-Jjava.base/java.util=ALL-UNNAMED
+-J--add-opens
+-Jjava.base/java.lang=ALL-UNNAMED

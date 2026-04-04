@@ -1,0 +1,41 @@
+{
+  "fixtureId": "f:local:001",
+  "status": "in_play",
+  "period": "1H",
+  "clockSeconds": 1320,
+  "score": {
+    "home": 1,
+    "away": 0
+  },
+  "incidents": [
+    {
+      "incidentId": "inc:f:local:001:kickoff",
+      "fixtureId": "f:local:001",
+      "type": "kickoff",
+      "period": "1H",
+      "clockSeconds": 0,
+      "occurredAt": "2026-03-04T12:00:00Z",
+      "score": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    {
+      "incidentId": "inc:f:local:001:goal-1",
+      "fixtureId": "f:local:001",
+      "type": "goal",
+      "period": "1H",
+      "clockSeconds": 1320,
+      "occurredAt": "2026-03-04T12:22:00Z",
+      "score": {
+        "home": 1,
+        "away": 0
+      },
+      "details": {
+        "participantId": "home",
+        "scorer": "Liverpool"
+      }
+    }
+  ],
+  "updatedAt": "2026-03-04T12:22:01Z"
+}

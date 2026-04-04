@@ -1,0 +1,144 @@
+---
+swagger: "2.0"
+info:
+  description: "Lotto-Backend API"
+  version: "0.0.1"
+  title: "Lotto-Backend API"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "apiteam@swagger.io"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:3020"
+basePath: "/api/v1/lottobackend"
+tags:
+- name: "game"
+  description: "game related requests"
+  externalDocs:
+    description: "Find out more about our store"
+    url: "http://swagger.io"
+schemes:
+- "http"
+- "https"
+paths:
+  /game/{gametypeid}:
+    get:
+      tags:
+      - "game"
+      summary: "Provides an endpoint for Lotto Warehouse to send their callbacks requests"
+      description: ".."
+      operationId: "GetGameById"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "gametypeid"
+        description: "unique identifier of the game"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Game by gametypeid"
+          schema:
+            $ref: "#/definitions/Game"
+        404:
+          description: "Game not found"
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: "Internal Server Error"
+          schema:
+            $ref: "#/definitions/Error"
+securityDefinitions:
+  petstore_auth:
+    type: "oauth2"
+    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:pets: "modify pets in your account"
+      read:pets: "read your pets"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+definitions:
+  Game:
+    type: "object"
+    properties:
+      id:
+        type: "Int64"
+      gametypeid:
+        type: "string"
+      name:
+        type: "string"
+      cutoffhours:
+        type: "Int32"
+      currency:
+        type: "string"
+      country:
+        type: "string"
+      isplayable:
+        type: "Int32"
+      numberscount:
+        type: "Int32"
+      extranumberscount:
+        type: "Int32"
+      bonusnumberscount:
+        type: "Int32"
+      refundnumberscount:
+        type: "Int32"
+      numbermin:
+        type: "Int32"
+      numbermax:
+        type: "Int32"
+      bonusnumbermin:
+        type: "Int32"
+      bonusnumbermax:
+        type: "Int32"
+      refundnumbermin:
+        type: "Int32"
+      refundnumbermax:
+        type: "Int32"
+      currentjackpot:
+        type: "Int32"
+      nextdrawid:
+        type: "Int32"
+      numbersperrow:
+        type: "Int32"
+      bonusnumbersperrow:
+        type: "Int32"
+      priceperrow:
+        type: "Int32"
+      symbol:
+        type: "string"
+      locale:
+        type: "string"
+    example:
+      id: 9,
+      gametypeid: 9
+      name: 'Powerball'
+      cutoffhours: 2
+      currency: 'USD'
+      country: 'USA'
+      isplayable: 1
+      numberscount: 5
+      extranumberscount: 0
+      bonusnumberscount: 1
+      refundnumberscount: 0
+      numbermin: 1
+      numbermax: 69
+      bonusnumbermin: 1
+      bonusnumbermax: 26
+      refundnumbermin: 1
+      refundnumbermax: 1
+      currentjackpot: 110000000
+      nextdrawid: 82820
+      numbersperrow: 10
+      bonusnumbersperrow: 9
+      priceperrow: 250
+      symbol: '$'
+      locale: 'fi'
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

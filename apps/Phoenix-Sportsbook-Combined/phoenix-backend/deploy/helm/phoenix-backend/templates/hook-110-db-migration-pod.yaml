@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-migration
+  # We've decided to use Helm hooks rather than init containers
+  # since the latter would heavily restrict the allowed values for
+  # `maxUnavailable` and `maxSurge` of phoenix-backend's Deployment
+  # if we want to prevent two or more pods from running migrations at the same time.
+  # We're theoretically running all migrations within a single DB transaction (FLYWAY_GROUP=true),
+  # but still, it's better to be on the safe side.
+  # See https://itnext.io/database-migrations-on-kubernetes-using-helm-hooks-fb80c0d97805 for more discussion.
+  annotations:
+    # Note that we need to run this hook both when *installing* the chart (i.e. creating a new Helm release),
+    # and when *upgrading* it (i.e. updating an existing Helm release - the typical case)
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "110"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  volumes:
+    - name: db-migration-volume
+      configMap:
+        name: db-migration
+  containers:
+    - name: flyway
+      image: flyway/flyway:8.0
+      imagePullPolicy: IfNotPresent
+      command: [ /bin/bash, -c ]
+      args:
+        - FLYWAY_URL="jdbc:postgresql://$FLYWAY_DATABASE_HOST/$FLYWAY_DATABASE_NAME" flyway migrate
+      volumeMounts:
+        - name: db-migration-volume
+          mountPath: /flyway/sql
+          readOnly: true
+      securityContext:
+        # User and group 101 are readily available in `flyway/flyway` image.
+        allowPrivilegeEscalation: false
+        runAsGroup: 101
+        runAsNonRoot: true
+        runAsUser: 101
+      env:
+        # There's apparently no way to interpolate 2 secret values into an env var (FLYWAY_URL) directly in `env` section of pod manifest,
+        # so we're doing the interpolation in a Bash script (via `args`) instead.
+        - name: FLYWAY_DATABASE_HOST
+          value: {{ .Values.postgresOperator.dbHost }}
+        - name: FLYWAY_DATABASE_NAME
+          value: {{ .Values.postgresOperator.dbName }}
+        - name: FLYWAY_OUT_OF_ORDER
+          value: "{{ .Values.flyway.outOfOrder }}"
+        - name: FLYWAY_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresOperator.dbOwnerSecretName }}
+              key: username
+        - name: FLYWAY_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.postgresOperator.dbOwnerSecretName }}
+              key: password
+        - name: FLYWAY_GROUP
+          value: 'true'

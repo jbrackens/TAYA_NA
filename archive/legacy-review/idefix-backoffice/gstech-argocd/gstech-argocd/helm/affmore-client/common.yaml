@@ -1,0 +1,58 @@
+livenessProbe:
+  path: /
+  port: 3050
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  path: /
+  port: 3050
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/affmore-client
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources:
+  requests:
+    memory: "1536Mi"
+    cpu: "200m"
+  limits:
+    memory: "1536Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3050
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics

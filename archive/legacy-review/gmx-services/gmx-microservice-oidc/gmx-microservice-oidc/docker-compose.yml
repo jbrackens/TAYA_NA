@@ -1,0 +1,43 @@
+version: '3.1'
+
+services:
+  postgres:
+    image: postgres:9-alpine
+    environment:
+        - POSTGRES_PASSWORD=microservice
+        - POSTGRES_USER=microservice
+        - POSTGRES_DB=microservice
+    volumes:
+#       - /var/lib/postgresql/data
+        - ./persistence/db:/var/lib/postgresql/data
+    ports:
+        - "15432:5432"
+
+  redis:
+    image: redis:alpine
+
+  sftp_server:
+    image: atmoz/sftp
+    volumes:
+      - ./persistence/static:/home/microservice/static
+    command: microservice:microservice:1001
+
+  static_http_server:
+    image: nginx
+    volumes:
+      - ./persistence/static:/usr/share/nginx/html
+    ports:
+      - "8002:80"
+
+  micro-service:
+    build: .
+    volumes:
+      - ./src:/app
+      - ./persistence/env.local:/app/.env
+    ports:
+      - "8001:8080"
+    depends_on:
+      - postgres
+      - redis
+      - sftp_server
+    command: 'wait-for postgres:5432 -t 200 -- python3 manage.py runserver 0.0.0.0:8080'

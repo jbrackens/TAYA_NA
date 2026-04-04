@@ -1,0 +1,107 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$poa_common_mobile_copyright_name = 'poa_common_mobile_copyright';
+$poa_common_mobile_copyright_x = 324px;
+$poa_common_mobile_copyright_y = 0px;
+$poa_common_mobile_copyright_offset_x = -324px;
+$poa_common_mobile_copyright_offset_y = 0px;
+$poa_common_mobile_copyright_width = 366px;
+$poa_common_mobile_copyright_height = 42px;
+$poa_common_mobile_copyright_total_width = 690px;
+$poa_common_mobile_copyright_total_height = 125px;
+$poa_common_mobile_copyright_image = 'poa_common_mobile_b.png';
+$poa_common_mobile_copyright = 324px 0px -324px 0px 366px 42px 690px 125px 'poa_common_mobile_b.png' 'poa_common_mobile_copyright';
+$poa_common_mobile_logo_name = 'poa_common_mobile_logo';
+$poa_common_mobile_logo_x = 0px;
+$poa_common_mobile_logo_y = 0px;
+$poa_common_mobile_logo_offset_x = 0px;
+$poa_common_mobile_logo_offset_y = 0px;
+$poa_common_mobile_logo_width = 320px;
+$poa_common_mobile_logo_height = 125px;
+$poa_common_mobile_logo_total_width = 690px;
+$poa_common_mobile_logo_total_height = 125px;
+$poa_common_mobile_logo_image = 'poa_common_mobile_b.png';
+$poa_common_mobile_logo = 0px 0px 0px 0px 320px 125px 690px 125px 'poa_common_mobile_b.png' 'poa_common_mobile_logo';
+$spritesheet_width = 690px;
+$spritesheet_height = 125px;
+$spritesheet_image = 'poa_common_mobile_b.png';
+$spritesheet_sprites = $poa_common_mobile_copyright $poa_common_mobile_logo;
+$spritesheet = 690px 125px 'poa_common_mobile_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "code": 0,
+  "Odds": [
+    {
+      "SportID": 1,
+      "LeagueID": 14823,
+      "GameID": 8839912,
+      "Markets": [
+        {
+          "MarketTypeID": 1,
+          "Lines": [
+            {
+              "LineIntID": 318275660,
+              "Odds": "10/31"
+            },
+            {
+              "LineIntID": 318275663,
+              "Odds": "15/4"
+            },
+            {
+              "LineIntID": 318275664,
+              "Odds": "21/2"
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 2,
+          "Lines": [
+            {
+              "LineIntID": 318275661,
+              "Odds": "53/50",
+              "Points": -1.5
+            },
+            {
+              "LineIntID": 318275665,
+              "Odds": "4/5",
+              "Points": 1.5
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 3,
+          "Lines": [
+            {
+              "LineIntID": 318275662,
+              "Odds": "5/6",
+              "Points": 2.25
+            },
+            {
+              "LineIntID": 318275666,
+              "Odds": "50/51",
+              "Points": 2.25
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 1570002,
+          "Lines": [
+            {
+              "LineIntID": 318275780,
+              "Odds": "1/15",
+              "Points": 0
+            },
+            {
+              "LineIntID": 318275784,
+              "Odds": "13/2",
+              "Points": 0
+            }
+          ]
+        },
+        {
+          "MarketTypeID": 610011,
+          "Lines": [
+            {
+              "LineIntID": 425422436,
+              "Odds": "1/25"
+            },
+            {
+              "LineIntID": 425422437,
+              "Odds": "23/10"
+            },
+            {
+              "LineIntID": 425422438,
+              "Odds": "1/6"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

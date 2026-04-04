@@ -1,0 +1,141 @@
+{
+  "name": "phoenix-ui",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:flipadmin/phoenix-frontend.git"
+  },
+  "publishConfig": {
+    "registry": "https://lena-srv01.flipsports.net:4566/repository/npm-releases/"
+  },
+  "workspaces": [
+    "packages/**/*"
+  ],
+  "engines": {
+    "node": ">=20",
+    "yarn": ">=1.22.22 <2"
+  },
+  "scripts": {
+    "dev": "concurrently --kill-others 'yarn run-local:dev'",
+    "dev:office": "concurrently --kill-others 'yarn run-local:dev:office'",
+    "run-local:dev": "lerna run --scope @phoenix-ui/app --scope @phoenix-ui/mock-server --parallel run-local:dev",
+    "run-local:dev:office": "lerna run --scope @phoenix-ui/office --scope @phoenix-ui/mock-server --parallel run-local:dev",
+    "run-docker:app:dev": "yarn dockerize:app    && docker run --rm -p 3000:3000 --env-file packages/app/.env.development     phoenix-ui/app",
+    "run-docker:app:stage": "yarn dockerize:app    && docker run --rm -p 3000:3000 --env-file packages/app/.env.staging         phoenix-ui/app",
+    "run-docker:office:dev": "yarn dockerize:office && docker run --rm -p 3000:3000 --env-file packages/office/.env.development  phoenix-ui/office",
+    "run-docker:office:stage": "yarn dockerize:office && docker run --rm -p 3000:3000 --env-file packages/office/.env.staging      phoenix-ui/office",
+    "dist": "lerna run dist",
+    "build": "yarn bootstrap && lerna run build",
+    "build:local": "lerna run build:local",
+    "build:dev": "lerna run build:dev",
+    "build:stage": "lerna run build:stage",
+    "build:prod": "lerna run build:prod",
+    "build:start": "lerna run build:start",
+    "build:export": "lerna run build:export",
+    "build:export:local": "lerna run build:export:local",
+    "build:export:dev": "lerna run build:export:dev",
+    "build:export:stage": "lerna run build:export:stage",
+    "build:export:prod": "lerna run build:export:prod",
+    "start:app": "lerna run --scope @phoenix-ui/app start",
+    "start:app:dev": "lerna run --scope @phoenix-ui/app start:dev",
+    "start:app:stage": "lerna run --scope @phoenix-ui/app start:stage",
+    "start:office": "lerna run --scope @phoenix-ui/office start",
+    "start:office:dev": "lerna run --scope @phoenix-ui/office start:dev",
+    "start:office:stage": "lerna run --scope @phoenix-ui/office start:stage",
+    "test": "lerna run test",
+    "bootstrap": "yarn install && lerna bootstrap && lerna run --parallel bootstrap",
+    "bootstrap:locales": "lerna run bootstrap:locales",
+    "on-pre-commit": "yarn test && lint-staged",
+    "on-post-commit": "commitlint --from=HEAD~1",
+    "on-pre-push": "commitlint --from=HEAD~1",
+    "clean-all": "lerna run --parallel clean-all && rimraf node_modules",
+    "version-and-publish:develop": "yarn dist && lerna publish prerelease --preid build --no-commit-hooks",
+    "version-and-publish:stage": "yarn dist && lerna publish minor --no-commit-hooks",
+    "version-and-publish": "yarn dist && lerna publish major --no-commit-hooks",
+    "dockerize:app": "./docker/dockerize.sh app",
+    "dockerize:office": "./docker/dockerize.sh office"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn on-pre-commit",
+      "post-commit": "yarn on-post-commit",
+      "pre-push": "yarn on-pre-push"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.{md,css,scss,json}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "header-max-length": [
+        2,
+        "always",
+        200
+      ]
+    }
+  },
+  "dependencies": {
+    "@babel/runtime": "7.28.6",
+    "dayjs": "^1.11.19",
+    "lodash": "^4.17.23",
+    "qs": "^6.15.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-redux": "^7.1.3",
+    "redux-mock-store": "^1.5.4",
+    "use-http": "^1.0.16"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.0.2",
+    "@testing-library/react-hooks": "^3.4.1",
+    "@testing-library/user-event": "^7.1.2",
+    "@types/enzyme": "^3.10.19",
+    "@types/enzyme-adapter-react-16": "^1.0.9",
+    "@types/jest": "24.0.23",
+    "@types/lodash": "4.14.161",
+    "@types/node": "10.12.18",
+    "@typescript-eslint/eslint-plugin": "5.23.0",
+    "@typescript-eslint/parser": "5.23.0",
+    "babel-plugin-module-resolver": "^4.0.0",
+    "babel-plugin-styled-components": "^1.11.1",
+    "concurrently": "^5.1.0",
+    "env-cmd": "10.1.0",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.5",
+    "eslint": "^7.24.0",
+    "eslint-config-next": "^16.1.6",
+    "husky": "^4.2.3",
+    "jest": "25.4.0",
+    "jest-fetch-mock": "^3.0.3",
+    "lerna": "^3.22.1",
+    "lint-staged": "^10.0.8",
+    "prettier": "^1.19.1",
+    "rimraf": "^3.0.2",
+    "ts-jest": "24.2.0",
+    "typescript": "5.3.3",
+    "utility-types": "^3.11.0"
+  },
+  "resolutions": {
+    "**/http-errors/statuses": "1.5.0",
+    "@babel/runtime": "7.28.6",
+    "@types/babel__traverse": "7.20.6",
+    "@types/minimatch": "3.0.5",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
+    "@types/react-test-renderer": "18.0.0"
+  }
+}

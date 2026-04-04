@@ -1,0 +1,88 @@
+[
+  {
+    "key": {
+      "type": "Event",
+      "id": "23706700"
+    },
+    "value": {
+      "messageId": "190770ea-995c-441c-a9b5-120b55ed392b",
+      "messageOriginDateUTC": 1627208729,
+      "messageProcessingDateUTC": 1627208729705,
+      "payload": {
+        "id": "23706700",
+        "sportId": "1",
+        "sportName": "Soccer",
+        "countryId": "107",
+        "countryCode": "IT",
+        "countryName": "Italy",
+        "leagueId": "40030",
+        "leagueName": "Italy - Serie A",
+        "eventType": "Fixture",
+        "eventName": "Verona vs Sassuolo",
+        "startTime": 1629637200,
+        "status": "NotStarted",
+        "isDisabled": false,
+        "isLive": false,
+        "participants": [
+          {
+            "id": "1160",
+            "name": "Verona",
+            "details": {
+              "venueRole": "Home"
+            }
+          },
+          {
+            "id": "16730",
+            "name": "Sassuolo",
+            "details": {
+              "venueRole": "Away"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "key": {
+      "type": "Event",
+      "id": "23706700"
+    },
+    "value": {
+      "messageId": "b5446520-7fda-41fa-8ca9-143c45caaa5d",
+      "messageOriginDateUTC": 1627291776000,
+      "messageProcessingDateUTC": 1627291778003,
+      "payload": {
+        "id": "23706700",
+        "sportId": "1",
+        "sportName": "Soccer",
+        "countryId": "107",
+        "countryCode": "IT",
+        "countryName": "Italy",
+        "leagueId": "40030",
+        "leagueName": "Italy - Serie A",
+        "eventType": "Fixture",
+        "eventName": "Verona vs Sassuolo",
+        "startTime": 1629637200000,
+        "status": "NotStarted",
+        "isDisabled": false,
+        "isLive": false,
+        "participants": [
+          {
+            "id": "1160",
+            "name": "Verona",
+            "details": {
+              "venueRole": "Home"
+            }
+          },
+          {
+            "id": "16730",
+            "name": "Sassuolo",
+            "details": {
+              "venueRole": "Away"
+            }
+          }
+        ]
+      }
+    }
+  }
+]

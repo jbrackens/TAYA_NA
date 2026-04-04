@@ -1,0 +1,23 @@
+{
+  "code": 0,
+  "Odds": [
+    {
+      "SportID": 1,
+      "LeagueID": 14823,
+      "GameID": 8839912,
+      "Markets": [
+        {
+          "MarketTypeID": 1570002,
+          "Lines": [
+            {
+              "LineIntID": 318275780,
+              "Odds": "1/15",
+              "Points": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

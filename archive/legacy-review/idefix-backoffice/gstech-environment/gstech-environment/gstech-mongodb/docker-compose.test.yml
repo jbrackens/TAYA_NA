@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  gstech-mongodb.test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-mongodb.test
+    container_name: gstech-mongodb.test
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

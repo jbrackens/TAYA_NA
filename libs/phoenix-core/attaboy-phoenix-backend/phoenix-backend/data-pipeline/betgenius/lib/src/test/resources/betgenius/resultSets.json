@@ -1,0 +1,54 @@
+[
+  {
+    "Header": {
+      "MessageGuid": "132106a4-3913-4259-ad43-af55db0a1f6d",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-19T18:51:54.8160223Z"
+    },
+    "ResultSet": {
+      "FixtureId": 8571625,
+      "Results": [
+        {
+          "MarketId": 100000004,
+          "MarketSequence": 0,
+          "Results": [
+            {
+              "ResultStatus": "Loser",
+              "SelectionId": 300000008
+            },
+            {
+              "ResultStatus": "Winner",
+              "SelectionId": 300000009
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "Header": {
+      "MessageGuid": "0fae587a-a096-455e-8e4a-1fc5078bd9c3",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-13T17:13:50.0642184Z"
+    },
+    "ResultSet": {
+      "FixtureId": 8577226,
+      "Results": [
+        {
+          "MarketId": 100000002,
+          "MarketSequence": 0,
+          "Results": [
+            {
+              "ResultStatus": "Winner",
+              "SelectionId": 300000004
+            },
+            {
+              "ResultStatus": "Loser",
+              "SelectionId": 300000005
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

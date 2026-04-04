@@ -1,0 +1,1 @@
+create index "campaigns_players_campaignId_playerId" on campaigns_players ("campaignId", "playerId");

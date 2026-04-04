@@ -1,0 +1,10 @@
+Hi {{ user.display_name }},
+
+    This is email verification link: {{scheme}}://{{site.domain}}{% url 'frontend:profile__email_verify'%}.
+
+    It is valid until {{exp_date}}.
+
+    You KEY is: {{ key }}
+
+    Regards,
+    RMX

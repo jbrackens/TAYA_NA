@@ -1,0 +1,37 @@
+{{- define "ecr-docker-credentials-renewer.container" -}}
+
+name: ecr-docker-credentials-renewer
+image: nabsul/k8s-ecr-login-renew:v1.7.1
+imagePullPolicy: IfNotPresent
+securityContext:
+  allowPrivilegeEscalation: false
+  runAsGroup: 1001
+  runAsNonRoot: true
+  runAsUser: 1001
+env:
+  - name: AWS_ACCESS_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: aws-ecr-credentials
+        key: accessKeyId
+  - name: AWS_REGION
+    value: eu-west-1
+  - name: AWS_SECRET_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: aws-ecr-credentials
+        key: secretAccessKey
+  # We need to specify the registry explicitly so that k8s-ecr-login-renew
+  # does NOT rely on ProxyEndpoint returned by AWS (see https://github.com/nabsul/k8s-ecr-login-renew/blob/main/src/aws/aws.go),
+  # since this will point to the master `fs-sec` (864433324723) AWS account in our case,
+  # rather than to the AWS account where we actually store the Docker images.
+  - name: DOCKER_REGISTRIES
+    value: "{{ .Values.ecrRegistry }}"
+  - name: DOCKER_SECRET_NAME
+    value: ecr-docker-credentials
+  - name: TARGET_NAMESPACE
+    # Despite a singular name of the env var itself,
+    # multiple namespaces can be provided - see https://github.com/nabsul/k8s-ecr-login-renew#multiple-namespace-support
+    value: "{{ join "," .Values.targetNamespaces }}"
+
+{{- end }}

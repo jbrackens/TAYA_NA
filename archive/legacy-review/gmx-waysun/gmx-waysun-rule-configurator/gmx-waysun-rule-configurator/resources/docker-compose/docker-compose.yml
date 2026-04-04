@@ -1,0 +1,50 @@
+version: '3.8'
+
+x-images:
+  - &stella-rule-configurator stella-rule-configurator:latest
+
+services:
+  rule-configurator-liquibase:
+    image: liquibase/liquibase:4.9.0
+    restart: on-failure
+    volumes: [ ../../rule-configurator/conf/liquibase:/liquibase/changelog]
+    command: [
+        '--changeLogFile=changelog/changelog.xml',
+        '--url=jdbc:postgresql://postgres/rule_configurator',
+        '--username=rule_configurator_liquibase',
+        '--password=rule_configurator_liquibase',
+        'update'
+    ]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  rule-configurator:
+    image: *stella-rule-configurator
+    depends_on:
+      rule-configurator-liquibase:
+        condition: service_completed_successfully
+    env_file:
+      - local.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rule_configurator.rule=PathPrefix(`/rule_configurator/`, `/rule_configurator_docs/`)"
+      - "traefik.http.services.rule_configurator.loadbalancer.server.port=${RULE_CONFIGURATOR_PORT:-10000}"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 500M
+        reservations:
+          memory: 200M
+
+
+networks:
+  default:
+    name: gmx-internal

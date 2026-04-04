@@ -1,0 +1,101 @@
+#game-slider
+  .sidebar
+    position relative
+    z-index 200
+    height 100%
+    float right
+    width 150px
+    overflow hidden
+    background-color $warm-purple
+    .banner
+      margin-top 40px
+      bannerStyles()
+      width 100%
+      height 100%
+    .banner-wrapper
+      width 100%
+      height 100%
+      background-size 150px 460px
+      display flex
+      align-items center
+    .banner-cta-button
+      background-color $cta
+      color $cta_text
+      position absolute
+      bottom 45px
+      left 0
+      right 0
+      margin 0 auto
+      width 130px
+      font-size 15px
+      padding 0 4px
+  .buttons
+    position absolute
+    height 40px
+    top 10px
+    right 10px
+    z-index 200
+    width 100%
+    display flex
+    width: 100%
+    justify-content flex-end
+    .hide-info-button
+      genericbutton()
+      margin-right -5px
+      display inline-block
+      background-color $pinky-purple
+      &:after
+        content ''
+        position absolute
+        top -5px
+        left -5px
+        sprite2x($button_hide, $button_hide_2x)
+    .banner-tab1-button
+      genericbutton()
+      margin-right -5px
+      display inline-block
+      &:after
+        content ''
+        position absolute
+        top -5px
+        left -5px
+        sprite2x($button_coin, $button_coin_2x)
+    .banner-tab2-button
+      genericbutton()
+      margin-right -5px
+      display inline-block
+      &:after
+        content ''
+        position absolute
+        top -5px
+        left -5px
+        sprite2x($button_alert, $button_alert_2x)
+    .close-button
+      genericbutton()
+      display inline-block
+      &:after
+        content ''
+        position absolute
+        top 10px
+        left 10px
+        sprite2x($closebutton, $closebutton_2x)
+
+#banner_game_nonloggedin
+  cdn-background-image2x '/images/banners/sidebar/notloggedin.jpg' '/images/banners/sidebar/notloggedin@2x.jpg' 300px 430px
+  background-repeat no-repeat
+  background-position center
+  width 300px
+  height 100%
+  background-color $warm-purple
+
+#leaderboard-wrapper
+  width 320px
+  margin 0 auto
+  border 0
+  padding 0
+  #banner_game-leaderboard_leaderboard
+    background-color $warm-purple
+
+.sidebar #banner_game-leaderboard_leaderboard
+  top 140px
+

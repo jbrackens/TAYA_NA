@@ -1,0 +1,2034 @@
+[
+ {
+   "code": "AX",
+   "name": "Aland",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AD",
+   "name": "Andorra",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AO",
+   "name": "Angola",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AI",
+   "name": "Anguilla",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AQ",
+   "name": "Antarctica",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AG",
+   "name": "Antigua and Barbuda",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AR",
+   "name": "Argentina",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AM",
+   "name": "Armenia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AW",
+   "name": "Aruba",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AZ",
+   "name": "Azerbaijan",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BZ",
+   "name": "Belize",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BJ",
+   "name": "Benin",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BM",
+   "name": "Bermuda",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BT",
+   "name": "Bhutan",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BQ",
+   "name": "Bonaire",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BW",
+   "name": "Botswana",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BR",
+   "name": "Brazil",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "VG",
+   "name": "British Virgin Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BN",
+   "name": "Brunei",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BI",
+   "name": "Burundi",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CM",
+   "name": "Cameroon",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CA",
+   "name": "Canada",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CV",
+   "name": "Cape Verde",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CF",
+   "name": "Central African Republic",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TD",
+   "name": "Chad",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CL",
+   "name": "Chile",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CX",
+   "name": "Christmas Island",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CO",
+   "name": "Colombia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "KM",
+   "name": "Comoros",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CK",
+   "name": "Cook Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CR",
+   "name": "Costa Rica",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "CW",
+   "name": "Curacao",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "DJ",
+   "name": "Djibouti",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "DM",
+   "name": "Dominica",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "DO",
+   "name": "Dominican Republic",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SV",
+   "name": "El Salvador",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GQ",
+   "name": "Equatorial Guinea",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "FK",
+   "name": "Falkland Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "FO",
+   "name": "Faroe Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "FI",
+   "name": "Finland",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GF",
+   "name": "French Guiana",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "PF",
+   "name": "French Polynesia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GA",
+   "name": "Gabon",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GM",
+   "name": "Gambia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GH",
+   "name": "Ghana",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GL",
+   "name": "Greenland",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GD",
+   "name": "Grenada",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GT",
+   "name": "Guatemala",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GG",
+   "name": "Guernsey",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "GN",
+   "name": "Guinea",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "HM",
+   "name": "Heard Island and McDonald Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "HN",
+   "name": "Honduras",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "IS",
+   "name": "Iceland",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "ID",
+   "name": "Indonesia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "IM",
+   "name": "Isle of Man",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "KI",
+   "name": "Kiribati",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "XK",
+   "name": "Kosovo",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "LS",
+   "name": "Lesotho",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "LI",
+   "name": "Liechtenstein",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "LU",
+   "name": "Luxembourg",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MK",
+   "name": "Macedonia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MG",
+   "name": "Madagascar",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MW",
+   "name": "Malawi",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MY",
+   "name": "Malaysia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MV",
+   "name": "Maldives",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MT",
+   "name": "Malta",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MH",
+   "name": "Marshall Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MR",
+   "name": "Mauritania",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MU",
+   "name": "Mauritius",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "YT",
+   "name": "Mayotte",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MX",
+   "name": "Mexico",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "FM",
+   "name": "Micronesia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MD",
+   "name": "Moldova",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MC",
+   "name": "Monaco",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MN",
+   "name": "Mongolia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "ME",
+   "name": "Montenegro",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NA",
+   "name": "Namibia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NR",
+   "name": "Nauru",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NP",
+   "name": "Nepal",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AN",
+   "name": "Netherlands Antilles",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NC",
+   "name": "New Caledonia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NZ",
+   "name": "New Zealand",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NE",
+   "name": "Niger",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NU",
+   "name": "Niue",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NF",
+   "name": "Norfolk Island",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "NO",
+   "name": "Norway",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "OM",
+   "name": "Oman",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "PW",
+   "name": "Palau",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "PY",
+   "name": "Paraguay",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "PE",
+   "name": "Peru",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "PN",
+   "name": "Pitcairn Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "BL",
+   "name": "Saint Barthelemy",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SH",
+   "name": "Saint Helena",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "KN",
+   "name": "Saint Kitts and Nevis",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "LC",
+   "name": "Saint Lucia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "MF",
+   "name": "Saint Martin",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "PM",
+   "name": "Saint Pierre and Miquelon",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "VC",
+   "name": "Saint Vincent and the Grenadines",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SM",
+   "name": "San Marino",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "ST",
+   "name": "Sao Tome and Principe",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "RS",
+   "name": "Serbia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SC",
+   "name": "Seychelles",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SL",
+   "name": "Sierra Leone",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SX",
+   "name": "Sint Maarten",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SB",
+   "name": "Solomon Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SR",
+   "name": "Suriname",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SJ",
+   "name": "Svalbard and Jan Mayen",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "SZ",
+   "name": "Swaziland",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TW",
+   "name": "Taiwan",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TJ",
+   "name": "Tajikistan",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TH",
+   "name": "Thailand",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TG",
+   "name": "Togo",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TK",
+   "name": "Tokelau",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TO",
+   "name": "Tonga",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TN",
+   "name": "Tunisia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TM",
+   "name": "Turkmenistan",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TC",
+   "name": "Turks and Caicos Islands",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "TV",
+   "name": "Tuvalu",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "UY",
+   "name": "Uruguay",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "UZ",
+   "name": "Uzbekistan",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "WF",
+   "name": "Wallis and Futuna",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "EH",
+   "name": "Western Sahara",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "ZM",
+   "name": "Zambia",
+   "minAge": 18,
+   "regAllowed": true,
+   "blocked": false,
+   "loginsAllowed": true
+ },
+ {
+   "code": "AF",
+   "name": "Afghanistan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "AL",
+   "name": "Albania",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "DZ",
+   "name": "Algeria",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "AS",
+   "name": "American Samoa",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "AU",
+   "name": "Australia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "AT",
+   "name": "Austria",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BS",
+   "name": "Bahamas",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BH",
+   "name": "Bahrain",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BD",
+   "name": "Bangladesh",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BB",
+   "name": "Barbados",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BY",
+   "name": "Belarus",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BE",
+   "name": "Belgium",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BO",
+   "name": "Bolivia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BA",
+   "name": "Bosnia and Herzegovina",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BV",
+   "name": "Bouvet Island",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IO",
+   "name": "British Indian Ocean Territory",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BG",
+   "name": "Bulgaria",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "BF",
+   "name": "Burkina Faso",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KH",
+   "name": "Cambodia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KY",
+   "name": "Cayman Islands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CN",
+   "name": "China",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CC",
+   "name": "Cocos [Keeling] Islands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": false,
+   "loginsAllowed": false
+ },
+ {
+   "code": "HR",
+   "name": "Croatia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CU",
+   "name": "Cuba",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CY",
+   "name": "Cyprus",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CZ",
+   "name": "Czechia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CD",
+   "name": "Democratic Republic of the Congo",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "DK",
+   "name": "Denmark",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "TL",
+   "name": "East Timor",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": false,
+   "loginsAllowed": false
+ },
+ {
+   "code": "EC",
+   "name": "Ecuador",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "EG",
+   "name": "Egypt",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ER",
+   "name": "Eritrea",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "EE",
+   "name": "Estonia",
+   "minAge": 21,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ET",
+   "name": "Ethiopia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": false,
+   "loginsAllowed": false
+ },
+ {
+   "code": "FJ",
+   "name": "Fiji",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "FR",
+   "name": "France",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "TF",
+   "name": "French Southern Territories",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GE",
+   "name": "Georgia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "DE",
+   "name": "Germany",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GI",
+   "name": "Gibraltar",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GR",
+   "name": "Greece",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GP",
+   "name": "Guadeloupe",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GU",
+   "name": "Guam",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GW",
+   "name": "Guinea-Bissau",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GY",
+   "name": "Guyana",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "HT",
+   "name": "Haiti",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "HK",
+   "name": "Hong Kong",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "HU",
+   "name": "Hungary",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IN",
+   "name": "India",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IR",
+   "name": "Iran",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IQ",
+   "name": "Iraq",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IE",
+   "name": "Ireland",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IL",
+   "name": "Israel",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "IT",
+   "name": "Italy",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CI",
+   "name": "Ivory Coast",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "JM",
+   "name": "Jamaica",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "JP",
+   "name": "Japan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "JE",
+   "name": "Jersey",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "JO",
+   "name": "Jordan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KZ",
+   "name": "Kazakhstan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KE",
+   "name": "Kenya",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KW",
+   "name": "Kuwait",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KG",
+   "name": "Kyrgyzstan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LA",
+   "name": "Laos",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LV",
+   "name": "Latvia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LB",
+   "name": "Lebanon",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LR",
+   "name": "Liberia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LY",
+   "name": "Libya",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LT",
+   "name": "Lithuania",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MO",
+   "name": "Macao",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ML",
+   "name": "Mali",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MQ",
+   "name": "Martinique",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MS",
+   "name": "Montserrat",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": false,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MA",
+   "name": "Morocco",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MZ",
+   "name": "Mozambique",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MM",
+   "name": "Myanmar [Burma]",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "NL",
+   "name": "Netherlands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "NI",
+   "name": "Nicaragua",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "NG",
+   "name": "Nigeria",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "MP",
+   "name": "Northern Mariana Islands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KP",
+   "name": "North Korea",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "O1",
+   "name": "Other",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PK",
+   "name": "Pakistan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PS",
+   "name": "Palestine",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PA",
+   "name": "Panama",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PG",
+   "name": "Papua New Guinea",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PH",
+   "name": "Philippines",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PL",
+   "name": "Poland",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PT",
+   "name": "Portugal",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "PR",
+   "name": "Puerto Rico",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "QA",
+   "name": "Qatar",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CG",
+   "name": "Republic of the Congo",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "RE",
+   "name": "Reunion",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "RO",
+   "name": "Romania",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "RU",
+   "name": "Russia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "RW",
+   "name": "Rwanda",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "WS",
+   "name": "Samoa",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SA",
+   "name": "Saudi Arabia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SN",
+   "name": "Senegal",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SG",
+   "name": "Singapore",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SK",
+   "name": "Slovakia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SI",
+   "name": "Slovenia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SO",
+   "name": "Somalia",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ZA",
+   "name": "South Africa",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GS",
+   "name": "South Georgia and the South Sandwich Islands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": false,
+   "loginsAllowed": false
+ },
+ {
+   "code": "KR",
+   "name": "South Korea",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SS",
+   "name": "South Sudan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ES",
+   "name": "Spain",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "LK",
+   "name": "Sri Lanka",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SD",
+   "name": "Sudan",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SE",
+   "name": "Sweden",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "CH",
+   "name": "Switzerland",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "SY",
+   "name": "Syria",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "TZ",
+   "name": "Tanzania",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "TT",
+   "name": "Trinidad and Tobago",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "TR",
+   "name": "Turkey",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "UG",
+   "name": "Uganda",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "UA",
+   "name": "Ukraine",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "AE",
+   "name": "United Arab Emirates",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "GB",
+   "name": "United Kingdom",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "US",
+   "name": "United States",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "XX",
+   "name": "Unknown",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": false,
+   "loginsAllowed": false
+ },
+ {
+   "code": "UM",
+   "name": "U.S. Minor Outlying Islands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "VI",
+   "name": "U.S. Virgin Islands",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "VU",
+   "name": "Vanuatu",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "VA",
+   "name": "Vatican City",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "VE",
+   "name": "Venezuela",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "VN",
+   "name": "Vietnam",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "YE",
+   "name": "Yemen",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ZR",
+   "name": "Zaire (Congo)",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ },
+ {
+   "code": "ZW",
+   "name": "Zimbabwe",
+   "minAge": 18,
+   "regAllowed": false,
+   "blocked": true,
+   "loginsAllowed": false
+ }
+]

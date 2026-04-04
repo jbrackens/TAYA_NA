@@ -1,0 +1,101 @@
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-inner-container{
+  background:$brand-primary;
+}
+
+
+// square corners
+html.IsDesktop .popup_panel_content_wrap > .popup_panel_content{
+  border-radius:0px;
+}
+
+#unislip_no_selections{
+  background:$brand-light;
+}
+
+html.IsDesktop body{
+  background:#f5f5f5;
+}
+body,
+.page,
+.content-main{
+  font-family:$brand-font--body;
+}
+
+.auth-form__error{
+  color:#df2f2f;
+}
+.user-info__input.user-info__input--invalid input{
+  border-color:#df2f2f;
+}
+
+.page-promotion .text-box a{
+  color:$brand-primary;
+}
+
+// action button color, cant have different colour from rest of element in sbtech code
+.action-betting-buttons-wrapper{
+  color:white;
+}
+// action betting box shadow
+.IsMobile .action-betting-incident-wrapper{
+  box-shadow:0px 0px 0px 2px rgba(255, 82, 91, 0.8);
+}
+
+
+// sbtech hardcoded as 'emphasis' - need to override green
+// horse racing forcast, tricast, tick boxes
+.racing-card-rc__table .horseRacing-checkbox:checked + .horseRacing-checkWrapper{
+  background-color: $accept;
+}
+
+
+// hover for league checkboxes, since its not on sbtech styles
+.rj-checkbox__label:hover:before{
+    background: $accept;
+}
+
+.facility-upload__review-text-value{
+  color: $brand-base;
+}
+
+.myacc-block-heading{
+  font-family:$brand-font--header;
+  font-weight:bold;
+  text-transform:uppercase;
+  margin-top:10px;
+}
+
+.my_account_popup .negative {
+  color:$alert;
+}
+
+//todo - add to sbtech css
+.my-bets-block .eventClock{
+  color:black;
+}
+.user-info__error, .user-balance-t__notification{
+  border-radius:0px;
+}
+.login-rblock .user-info__error.user-info__error--pink{
+  background:$brand-alert;
+  color:$brand-base;
+  border-radius:0px;
+}
+
+.qnav-container{
+  margin-top:1px;
+}
+
+.bet-search-results .side-menu-message{
+  color:#282828;
+}
+
+#webpush-notification-center-open.webpush-notification-center-color-custom{
+  background-color:$brand-primary !important;
+  &:hover{
+    background-color:$brand-primary--hover;
+  }
+}
+.not-logged div[id^="webpush-notification-center"]{
+display:none !important;
+}

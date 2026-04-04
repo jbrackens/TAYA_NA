@@ -1,0 +1,101 @@
+nameOverride: "dev-gstech-backend-service"
+fullnameOverride: "dev-gstech-backend-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3001
+
+extraTCPPorts:
+  private-api: 3005
+
+ingressClassName: nginx
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-dev-fasttrack-csv-s3
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-gstech-backend-service
+  hosts:
+  - host: idefix-luckydino.dev.eeg.viegg.net
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: dev-gstech-backend-service
+      servicePort: 3001
+    - path: /socket.io/
+      pathType: Prefix
+      serviceName: dev-gstech-backend-service
+      servicePort: 3001
+    - path: /bull/
+      pathType: Prefix
+      serviceName: dev-gstech-worker-service
+      servicePort: 3700
+    - path: /
+      pathType: Prefix
+      serviceName: dev-gstech-backoffice-service
+      servicePort: 5000
+
+  annotations:
+    external-dns.alpha.kubernetes.io/target: d31406xc47scem.cloudfront.net
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+
+  tls: []
+
+env:
+  NODE_ENV: development
+  MINIO_HOST: s3.eu-central-1.amazonaws.com
+  MINIO_PORT: 443
+  MINIO_USE_SSL: "true"
+  MINIO_BUCKET_NAME: bucket-backend.dev.eeg
+  MINIO_REGION: eu-central-1
+  REDIS_HOST: redis.dev.eeg.viegg.net
+  REDIS_PORT: 6379
+  POSTGRES_HOST: db-1.dev.eeg.viegg.net
+  POSTGRES_USER: gstech
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  PORT: 3001
+  WALLET_PORT: 3005
+  GAME_SERVER_URL: http://dev-gstech-walletserver-service:3004/api/v1
+  COMPLIANCE_SERVER_URL: http://dev-gstech-compliance-service:3009/api/v1
+  PAYMENT_SERVER_URL: http://dev-gstech-paymentserver-service:3007/api/v1
+  CF_CERTS_URL: https://idefix-luckydino.dev.eeg.viegg.net/cdn-cgi/access/certs
+  CAMPAIGN_SERVER_PRIVATE_URL: http://dev-gstech-campaignserver-backend-service:3014/api/v1
+  REWARD_SERVER_URL: http://dev-gstech-rewardserver-service:3012/api/v1
+  AFFILIATE_SYSTEM_URL: http://dev-affmore-backend-service:3034
+  notifications_LD: http://dev-luckydino-backend-service:3000
+  notifications_CJ: http://dev-jefe-backend-service:3000
+  notifications_KK: http://dev-justwow-backend-service:3000
+  notifications_OS: http://dev-olaspill-backend-service:3000
+  CONTENT_SERVER_URL: http://dev-gstech-contentserver-service:3017/api/v1
+  FT_MIGRATION_S3: dev-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: us-east-1
+secretEnv:
+  POSTGRES_PASSWORD:
+    dev-gstech-backend-service: postgres-password
+  MINIO_ACCESS_KEY:
+    dev-gstech-backend-service: minio-access-key
+  MINIO_SECRET_KEY:
+    dev-gstech-backend-service: minio-secret-key
+  GOOGLE_CLIENT_ID:
+    dev-gstech-backend-service: google-client-id
+  GOOGLE_CLIENT_SECRET:
+    dev-gstech-backend-service: google-client-secret

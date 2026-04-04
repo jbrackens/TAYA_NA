@@ -1,0 +1,32 @@
+#banner_game-wheel_wheel_meter
+  sidebarBanner()
+  meterBanner(306px, 19px)
+  padding-top 272px
+  cdn_image '/images/sidebar/jefewheel/jefewheel_bg_cat.jpg' 240px 640px
+  &:after
+    content ''
+    position absolute
+    top 165px
+    left 15px
+    cdn_image '/images/sidebar/jefewheel/jefewheel_jackpot_eur.png' 213px 99px
+    width 213px
+    height 99px
+  .text
+    margin-top -10px
+    p
+      font-size 12px
+      color #584c2d
+  &.currency-gbp:after
+    cdn_image '/images/sidebar/jefewheel/jefewheel_jackpot_gbp.png' 213px 99px
+
+  &.currency-sek:after
+    cdn_image '/images/sidebar/jefewheel/jefewheel_jackpot_kr.png' 213px 99px
+
+  &.currency-nok:after
+    cdn_image '/images/sidebar/jefewheel/jefewheel_jackpot_kr.png' 213px 99px
+
+  &.currency-usd:after
+    cdn_image '/images/sidebar/jefewheel/jefewheel_jackpot_usd.png' 213px 99px
+
+  &.currency-cad:after
+    cdn_image '/images/sidebar/jefewheel/jefewheel_jackpot_usd.png' 213px 99px

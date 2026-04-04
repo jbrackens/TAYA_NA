@@ -1,0 +1,30 @@
+image:
+  name: phoenix-ui-app-darkstormlabs
+
+apiGlobalEndpoint: "https://api.dev.phoenix.darkstormlabs.net"
+# TODO (GMV-1224): extract a separate CDN bucket
+cdnUrl: "https://cdn.vie.gg/phoenix/static"
+envName: development
+showForSubmission: 0
+wsGlobalEndpoint: "wss://ws-api.dev.phoenix.darkstormlabs.net/web-socket"
+geocomply:
+  env: "staging"
+  mobileServiceUrl: "https://stg-es.geocomply.net/oobee.php"
+  oobeeUrl: "https://nj-stg-oobee.geocomply.net"
+
+imagePullSecrets: [ecr-docker-credentials]
+
+ingress:
+  host: app.dev.phoenix.darkstormlabs.net
+
+  alb:
+    group: null
+    customerOwnedIP:
+      enabled: false
+
+  whitelistedIps:
+    - 212.250.151.148/32 # VPN: fw01-lon.argyll.tech
+    - 212.250.151.149/32 # VPN: fw02-lon.argyll.tech
+    - 178.23.129.249/32  # VPN: fw01-ghd.flipsports.net
+    - 107.22.63.253/32   # VPN: twingate-phoenix-dev-connector-13
+    - 34.206.153.88/32   # VPN: twingate-phoenix-dev-connector-14

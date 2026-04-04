@@ -1,0 +1,33 @@
+{
+  "name": "idefix-cms",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Idefix headless CMS",
+  "scripts": {
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "build": "strapi build",
+    "strapi": "strapi"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@strapi/plugin-i18n": "4.5.3",
+    "@strapi/plugin-users-permissions": "4.5.3",
+    "@strapi/provider-upload-aws-s3": "^4.5.3",
+    "@strapi/strapi": "4.5.3",
+    "jsonwebtoken": "^8.5.1",
+    "passport-azure-ad-oauth2": "^0.0.4",
+    "pg": "8.8.0"
+  },
+  "author": {
+    "name": "A Strapi developer"
+  },
+  "strapi": {
+    "uuid": "be09465d-c1b0-49f6-a637-e6172301b4bb"
+  },
+  "engines": {
+    "node": ">=14.19.1 <=18.x.x",
+    "npm": ">=6.0.0"
+  },
+  "license": "MIT"
+}

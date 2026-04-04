@@ -1,0 +1,15 @@
+# Ignored due to false positives (https://github.com/sqlfluff/sqlfluff/issues/2978):
+# L:  10 | P:   1 |  PRS | Line 10, Position 1: Found unparsable section: 'ALTER
+#                        | INDEX "AKKA_PROJECTION_OFFSET_STOR...'
+# L:  11 | P:   1 |  PRS | Line 11, Position 1: Found unparsable section: 'ALTER
+#                        | INDEX "PROJECTION_NAME_INDEX" RENA...'
+V11_0_0__Rename_projections_table_and_columns_and_indices.sql
+
+# Ignored due to false positives:
+# L:   2 | P:   6 | L045 | Query defines CTE "new_payloads" but does not use it.
+# L:  15 | P:   6 | L045 | Query defines CTE "new_payloads" but does not use it.
+V27_0_0__Delete_unredacted_sensitive_data_registration_events.sql
+
+# Ignored due to an actual error, fixed in the subsequent (V32_0_0) migration:
+# L:   3 | P:  62 | L049 | Comparisons with NULL should use "IS" or "IS NOT".
+V31_0_0__Update_reporting_wallet_transactions.sql

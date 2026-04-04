@@ -1,0 +1,5 @@
+# robots.txt file 01032022
+User-agent: *
+Disallow: */login/form
+Disallow: */login/again
+Disallow: /loggedin/

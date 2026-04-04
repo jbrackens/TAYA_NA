@@ -1,0 +1,91 @@
+.filter-wrapper
+  position relative
+  height 40px
+  margin-bottom 27px
+
+.filter-row
+  z-index 3
+  margin 0 auto
+  height 40px
+  left 0
+  right 0
+  clearfix()
+  text-align center
+  background-color $jefe-blue-dark
+  &.fixed
+    position fixed
+    top $header_height
+
+  .filter-frame
+    force3d()
+    display inline-block
+    position relative
+    z-index 3
+    .filter-nav
+      float left
+      white-space nowrap
+      list-style none
+      padding 0
+      font-size 15px
+      line-height 40px
+      headerFont()
+      text-transform uppercase
+      & > li
+        display inline-block
+        vertical-align top
+        & > a
+          color #ffffff
+          display block
+          position relative
+          padding 0 8px
+          height 40px
+          &:focus
+            text-decoration none
+        &.selected > a
+          background-color $bg-white
+          color $kalevala_blue
+          text-decoration none
+          z-index 2
+
+    .search
+      width 150px
+      margin-left 10px
+      position relative
+      font-family $body_font
+      &:before
+        content ""
+        sprite2x($search, $search_2x)
+        position absolute
+        left 10px
+        top -2px
+
+      input
+        border 0
+        border-bottom: 2px solid $kalevala_blue
+        background-color transparent
+        color #ffffff
+        width 150px
+        margin 0 0 5px 40px
+        height 30px
+        appearance none
+        padding 5px 0 0 0
+        line-height 20px
+        font-weight 700
+        input-placeholder(color #ffffff,font-family 'PT Sans', font-style italic, font-weight 700)
+
+@media only screen and (max-width:991px)
+  .filter-row
+    .filter-frame
+      .filter-nav
+        float none
+      width 100%
+      padding 0 10px
+  .search
+    display none
+
+@media only screen and (max-width:767px)
+  .filter-wrapper
+    display none
+
+.mobile .filter-wrapper
+  display none

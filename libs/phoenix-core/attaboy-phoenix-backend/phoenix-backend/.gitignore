@@ -1,0 +1,68 @@
+########################
+### Project specific ###
+akka-diagnostics
+documentation/website/project
+helm.output
+
+####################
+### Local config ###
+dev-env.conf
+keycloak*.json
+kubeconfig_*
+target-env.sbt
+terraform.tfvars
+terraform.tfvars.dev
+
+
+###############
+# All below could be shared across many sbt projects (on developer machine: https://github.com/flipadmin/command-line-tools/blob/develop/templates/.gitignore-template)
+
+###############
+### General ###
+# all "hidden" files/folders are most of the time NOT intended to be shared with others, if we want to track any of those we should EXPLICITLY mention them
+.*
+*.env
+!contract-local.env
+!.env.template
+!.github
+!.gitignore
+!.remarkrc*.yml
+!.sqlfluff
+!.sqlfluffignore
+
+####################
+### Logs & dumps ###
+*.hprof
+*.log
+**/*-log-*.gz
+
+##############################
+### Java, Scala - compiled ###
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+target/
+
+#################
+### JetBrains ###
+*.iml
+.idea
+.idea_modules
+out/
+
+###########
+### SBT ###
+!.sbtopts
+!.scalafmt.conf
+!.scalafix.conf
+
+###########
+### Other ###
+dist/*
+.history
+.lib/

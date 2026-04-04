@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Draft preview</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: row;
+      }
+
+      iframe {
+        height: 100vh;
+      }
+
+      .links {
+        width: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="links">
+    {{#each languages}}
+      <p><a href="{{../url}}&lang={{this}}" target="preview">{{this}}</a></p>
+    {{/each}}
+    </div>
+    <iframe
+      src="{{url}}&lang={{languages.[0]}}"
+      name="preview"
+      width="700px"
+      title="Draft preview"
+      frameborder="0"
+      allowtransparency="true"
+      seamless="seamless"
+    ></iframe>
+  </body>
+</html>

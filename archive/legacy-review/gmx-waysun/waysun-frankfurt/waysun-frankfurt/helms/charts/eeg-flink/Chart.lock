@@ -1,0 +1,6 @@
+dependencies:
+- name: eeg-pvc-cfs
+  repository: https://waysun-dev.tencentcloudcr.com/chartrepo/stella
+  version: 0.2.0
+digest: sha256:c0cee3c921e9e0406322c27e5e05425a25520cbc3cc49d56787deee5d9a7d945
+generated: "2022-02-13T02:02:42.242852+01:00"

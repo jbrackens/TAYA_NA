@@ -1,0 +1,105 @@
+nameOverride: "prod-justwow-backend-service"
+fullnameOverride: "prod-justwow-backend-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "200m"
+  limits:
+    memory: "512Mi"
+
+service:
+  enabled: true
+  port: 3000
+
+command: yarn workspace brandserver-backend prod
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-justwow-backend-service
+  hosts:
+  - host: justwow.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+    - path: /admin
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+    - path: /ws
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+    - path: /
+      pathType: Prefix
+      serviceName: prod-justwow-client-service
+      servicePort: 3000
+  - host: www.justwow.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+    - path: /admin
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+    - path: /ws
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+    - path: /
+      pathType: Prefix
+      serviceName: prod-justwow-client-service
+      servicePort: 3000
+  - host: api.justwow.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+  - host: kk-api.luckydino.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+  - host: jw-api.luckydino.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-justwow-backend-service
+      servicePort: 3000
+
+  annotations: {}
+
+env:
+  SITE_NAME: kalevala
+  API_URL: http://prod-gstech-backend-service:3001/api/KK/v1/
+  BACKEND_URL: http://prod-gstech-backend-service:3001
+  SESSION_REDIS_URL: redis://redis-kalevalakasino.prod.eeg.viegg.net:6379
+  PORT: 3000
+  REWARD_SERVER_URL: http://prod-gstech-rewardserver-service:3012/api/v1
+  CAMPAIGN_SERVER_PRIVATE_URL: http://prod-gstech-campaignserver-backend-service:3014/api/v1
+  NODE_ENV: production
+  REWARD_SERVER_AUTH_TOKEN: "GS[fPcXPQo5QKmJmzfcAbL1eqz6JZJwnT94otkZ5CP6EBWwqRBhB0r9TgMVRpRttQnV/dEE+L2MAbfulWpy2OmaEKZnqB/RTmvQ2ZNbaZWlfwFgGLMlUCo=]"
+  CAMPAIGN_SERVER_AUTH_TOKEN: "GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]"
+secretEnv:
+  PRIVATE_KEY:
+    prod-common-secrets: private-key

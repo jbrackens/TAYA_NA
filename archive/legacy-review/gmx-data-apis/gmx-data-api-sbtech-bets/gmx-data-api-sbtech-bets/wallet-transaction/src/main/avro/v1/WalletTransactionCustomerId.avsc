@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "WalletTransactionCustomerId",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.WalletTransaction.v1",
+  "fields": [
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    }
+  ],
+  "default": null
+}

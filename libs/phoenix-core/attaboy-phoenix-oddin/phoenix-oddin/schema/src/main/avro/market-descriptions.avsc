@@ -1,0 +1,76 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "MarketDescriptions",
+  "fields": [
+    {
+      "name": "responseCode",
+      "type": "string"
+    },
+    {
+      "namespace": "phoenix.oddin.data",
+      "name": "marketDescriptions",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "MarketDescription",
+          "type": "record",
+          "fields": [
+            {
+              "name": "id",
+              "type": "int"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "variant",
+              "type": "string"
+            },
+            {
+              "name": "outcomes",
+              "type": {
+                "type": "array",
+                "items": {
+                  "name": "OutcomeDescription",
+                  "type": "record",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "type": "int"
+                    },
+                    {
+                      "name": "name",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "specifiers",
+              "type": {
+                "type": "array",
+                "items": {
+                  "name": "Specifier",
+                  "type": "record",
+                  "fields": [
+                    {
+                      "name": "name",
+                      "type": "string"
+                    },
+                    {
+                      "name": "type",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  gstech-ngrok:
+    environment:
+      NGROK_PORT: 3006
+      NGROK_REGION: eu
+      NGROK_AUTH: YOUR_AUTH_TOKEN
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-ngrok
+    container_name: gstech-ngrok
+    hostname: server
+    ports:
+      - 4040:4040
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

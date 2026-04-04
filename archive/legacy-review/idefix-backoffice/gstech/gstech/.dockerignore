@@ -1,0 +1,16 @@
+.git
+.gitignore
+.gitmodules
+.github
+.eslintrc
+.prettierrc
+.flowconfig
+.vscode
+Jenkinsfile
+hooks
+**/.prettierignore
+**/.DS_Store
+**/README.md
+**/node_modules
+**/Dockerfile
+**/docker-compose*

@@ -1,0 +1,73 @@
+
+// event lists
+.IsDesktop .rj-ev-list__ev-card{
+  padding-left:0;
+  padding-right:0;
+}
+
+// removing margin from leage view
+.IsDesktop
+{
+    .LeagueViewResponsiveBlock
+    {
+        .league-events-block
+        {
+            margin-bottom: 0px;
+        }
+    }
+}
+
+.lbetting-tabs{
+  border-top-left-radius: 0px;
+  border-right:0px;
+}
+// live betting buttons
+.IsDesktop .event-view .toggleableHeadline{
+  border-radius:0px;
+}
+
+
+@media screen and (min-width: 1697px) {
+  .IsDesktop .event-view .event-view-column-left {
+    padding-right: 1px;
+  }
+  .IsDesktop .event-view .event-view-column-right {
+    padding-left: 1px;
+  }
+}
+
+
+.LBettingEventView .panel-left .live-now-betting-rblock{
+  padding:0;
+}
+
+
+// live overview branch nav
+.live-now-betting-rblock .rj-carousel{
+  background: $center-bg;
+  margin-right:10px;
+}
+.IsDesktop .lbetting-block .rj-carousel{
+  width:calc(100% - 10px);
+}
+// live betting rihgt sidebar
+.IsDesktop .rj-ev-list__sub-heading{
+  border-bottom:1px solid $main-bg;
+}
+
+.IsDesktop .rj-sport-heading {
+  border-radius: 0px;
+}
+.rj-event-card {
+    border-radius: 0px;
+}
+
+// scoreboard background
+.rj-background-img-wrapper{
+  margin:0;
+  border-radius:0px;
+}
+
+html.IsDesktop .panel-center .events-container.events-container-today{
+  padding-top:0;
+}

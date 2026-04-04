@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/luckydino-strapi-cms
+    forcestring: true
+  - name: image.tag
+    value: beta-e11025588b27d4401d29dcdf6c3d1adf7af5baf4
+    forcestring: true

@@ -1,0 +1,149 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1558711521019,
+        "description": "",
+        "identifier": "07e4ef4d-ad34-5305-a27b-1bb0a2fc7edf",
+        "modifiedTimestamp": 1574852682509,
+        "name": "ProcessController",
+        "type": "Flow",
+        "versionCount": 30
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+        "inputPorts": [],
+        "labels": [
+            {
+                "componentType": "LABEL",
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "height": 658.865234375,
+                "identifier": "3b2cb017-b627-3b67-a654-90d8a9f122a0",
+                "label": "STABLE",
+                "position": {
+                    "x": 322.5535169390687,
+                    "y": 27.443402235850556
+                },
+                "style": {
+                    "background-color": "#c0ffc0",
+                    "font-size": "24px"
+                },
+                "width": 400.80126953125
+            }
+        ],
+        "name": "ProcessController",
+        "outputPorts": [],
+        "position": {
+            "x": 348.9901102641029,
+            "y": 31.292493508622158
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "8fcabde6-ace8-3b10-b1a2-dc3c2d545fcd",
+                "inputPorts": [],
+                "labels": [],
+                "name": "GetOrCreateExtUser",
+                "outputPorts": [],
+                "position": {
+                    "x": 329.84858420721434,
+                    "y": 487.52658343549456
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "0dd351d2-b58c-510e-8f1d-c176ec64a2d4",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 8
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "inputPorts": [],
+                "labels": [],
+                "name": "WalletTopUp",
+                "outputPorts": [],
+                "position": {
+                    "x": 333.07073974609375,
+                    "y": 297.10105895996094
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "808c6e44-a6a4-581d-9d87-706d15f51901",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 10
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "fdc6e4d6-a70b-3d20-93f6-8eb3725193ad",
+                "identifier": "05f6fc79-b739-32f0-9ac8-2a654d7fa107",
+                "inputPorts": [],
+                "labels": [],
+                "name": "RefreshOpenIDToken",
+                "outputPorts": [],
+                "position": {
+                    "x": 332.27667236328125,
+                    "y": 106.7048568725586
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+                    "flowId": "3d097e97-34e0-50d8-9d81-57067746e57b",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 6
+                }
+            }
+        ],
+        "processors": [],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "",
+        "flowIdentifier": "07e4ef4d-ad34-5305-a27b-1bb0a2fc7edf",
+        "timestamp": 1561352071280,
+        "version": 7
+    }
+}

@@ -1,0 +1,23 @@
+
+// mobile hamburger nav
+#mainNavigation #mainNavigationContentWrapper{
+  padding:0;
+}
+#mainNavigation.main-navigation-mobile #mainNavigationContentWrapper .navigationSection > h3,
+#mainNavigation.main-navigation-mobile #mainNavigationContentWrapper > h3{
+  @include brand-header($font-size:15px);
+  margin-top:0;
+}
+.fixedMenuItem {
+    padding: 0 0 1px 0;
+}
+.fixedMenuItem > a.selected:after{
+  display:none;
+}
+.fixedMenuItem.loggedin.redButton {
+  text-align:center;
+  margin:5px;
+}
+.fixedMenuItem.loggedin.redButton a{
+  @include brand-button(15);
+}

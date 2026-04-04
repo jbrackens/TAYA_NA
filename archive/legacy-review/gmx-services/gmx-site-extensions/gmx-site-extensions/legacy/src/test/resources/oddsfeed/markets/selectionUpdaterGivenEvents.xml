@@ -1,0 +1,48 @@
+<Events>
+    <Event DateTimeGMT="27/02/2018 19:30:00" Branch="Soccer" Sport="Soccer" BranchID="1" League="Poland - Ekstraklasa"
+           LeagueID="40145" ID="24912032" IsOption="0" EventType="0" MEID="9381821">
+        <Participants>
+            <Participant1 Name="Legia Warsaw" Home_Visiting="Home"/>
+            <Participant2 Name="Jagiellonia Bialystok" Home_Visiting="Visiting"/>
+        </Participants>
+        <MoneyLine Home="1/1" Draw="11/5" Away="14/5" Home_LineID="R343778018" Draw_LineID="R343778021"
+                   Away_LineID="R343778022"/>
+        <Spread Home_Odds="1/1" Home_Points="-0.5" Away_Points="0.5" Away_Odds="4/5" Home_LineID="R343778019"
+                Away_LineID="R343778023"/>
+        <Total Points="2.25" Over="50/59" Under="20/21" Over_LineID="R343778020" Under_LineID="R343778024"/>
+    </Event>
+    <Event DateTimeGMT="27/02/2018 19:30:00" Branch="Soccer" Sport="Soccer" BranchID="1" League="Poland - Ekstraklasa"
+           LeagueID="40145" ID="24912147" IsOption="0" EventType="157" MEID="9381821">
+        <Participants>
+            <Participant1 Name="Legia Warsaw" Home_Visiting="Home"/>
+            <Participant2 Name="Jagiellonia Bialystok" Home_Visiting="Visiting"/>
+        </Participants>
+        <Spread Home_Odds="5/11" Home_Points="0" Away_Points="0" Away_Odds="33/20" Home_LineID="R343779951"
+                Away_LineID="R343779955"/>
+    </Event>
+    <Event DateTimeGMT="27/02/2018 19:30:00" Branch="Soccer" BranchID="1" League="Poland - Ekstraklasa" LeagueID="40145"
+           QAID="39990956" EventType="61" EventName="Legia Warsaw vs Jagiellonia Bialystok">
+        <Participants>
+            <Participant Name="1 or X">
+                <Odds TypeName="Double Chance" OddsValue="5/18" LineID="Q460682301_40145"/>
+            </Participant>
+            <Participant Name="X or 2">
+                <Odds TypeName="Double Chance" OddsValue="5/7" LineID="Q460682302_40145"/>
+            </Participant>
+            <Participant Name="1 or 2">
+                <Odds TypeName="Double Chance" OddsValue="5/19" LineID="Q460682303_40145"/>
+            </Participant>
+        </Participants>
+    </Event>
+    <Event DateTimeGMT="27/02/2018 19:30:00" Branch="Soccer" BranchID="1" League="Poland - Ekstraklasa" LeagueID="40145"
+           QAID="40225609" EventType="158" EventName="Legia Warsaw vs Jagiellonia Bialystok">
+        <Participants>
+            <Participant Name="Yes">
+                <Odds TypeName="Both to Score" OddsValue="10/11" LineID="Q463226874_40145"/>
+            </Participant>
+            <Participant Name="No">
+                <Odds TypeName="Both to Score" OddsValue="5/6" LineID="Q463226875_40145"/>
+            </Participant>
+        </Participants>
+    </Event>
+</Events>

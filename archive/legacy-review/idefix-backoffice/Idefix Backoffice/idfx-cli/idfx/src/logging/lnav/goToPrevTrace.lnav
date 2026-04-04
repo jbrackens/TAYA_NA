@@ -1,0 +1,4 @@
+;select trace_id as currtid from idefix_log where log_line = log_top_line()
+;select trace_id as prevtid from idefix_log where trace_id is not $currtid and trace_id is not null and log_line < log_top_line() order by log_line desc limit 1
+;select min(log_line) as trg from idefix_log where trace_id = $prevtid
+:eval :goto $trg

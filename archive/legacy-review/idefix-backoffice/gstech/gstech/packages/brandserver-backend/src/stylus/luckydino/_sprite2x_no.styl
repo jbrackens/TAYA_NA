@@ -1,0 +1,100 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$no-hide-info_2x_name = 'no-hide-info_2x';
+$no-hide-info_2x_x = 0px;
+$no-hide-info_2x_y = 0px;
+$no-hide-info_2x_offset_x = 0px;
+$no-hide-info_2x_offset_y = 0px;
+$no-hide-info_2x_width = 18px;
+$no-hide-info_2x_height = 124px;
+$no-hide-info_2x_total_width = 150px;
+$no-hide-info_2x_total_height = 406px;
+$no-hide-info_2x_image = 'sprite_no@2x.png';
+$no-hide-info_2x = 0px 0px 0px 0px 18px 124px 150px 406px 'sprite_no@2x.png' 'no-hide-info_2x';
+$no-new-badge_2x_name = 'no-new-badge_2x';
+$no-new-badge_2x_x = 0px;
+$no-new-badge_2x_y = 256px;
+$no-new-badge_2x_offset_x = 0px;
+$no-new-badge_2x_offset_y = -256px;
+$no-new-badge_2x_width = 150px;
+$no-new-badge_2x_height = 150px;
+$no-new-badge_2x_total_width = 150px;
+$no-new-badge_2x_total_height = 406px;
+$no-new-badge_2x_image = 'sprite_no@2x.png';
+$no-new-badge_2x = 0px 256px 0px -256px 150px 150px 150px 406px 'sprite_no@2x.png' 'no-new-badge_2x';
+$no-show-info_2x_name = 'no-show-info_2x';
+$no-show-info_2x_x = 0px;
+$no-show-info_2x_y = 128px;
+$no-show-info_2x_offset_x = 0px;
+$no-show-info_2x_offset_y = -128px;
+$no-show-info_2x_width = 18px;
+$no-show-info_2x_height = 124px;
+$no-show-info_2x_total_width = 150px;
+$no-show-info_2x_total_height = 406px;
+$no-show-info_2x_image = 'sprite_no@2x.png';
+$no-show-info_2x = 0px 128px 0px -128px 18px 124px 150px 406px 'sprite_no@2x.png' 'no-show-info_2x';
+$spritesheet_width = 150px;
+$spritesheet_height = 406px;
+$spritesheet_image = 'sprite_no@2x.png';
+$spritesheet_sprites = $no-hide-info_2x $no-new-badge_2x $no-show-info_2x;
+$spritesheet = 150px 406px 'sprite_no@2x.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

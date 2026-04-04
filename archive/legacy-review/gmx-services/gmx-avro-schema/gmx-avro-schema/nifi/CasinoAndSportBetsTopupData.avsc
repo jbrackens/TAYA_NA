@@ -1,0 +1,47 @@
+{
+  "type": "record",
+  "name": "CasinoAndSportBetsTopupData",
+  "namespace": "net.flipsports.gmx.nifi",
+  "fields": [
+    {
+      "name": "external_user_id",
+      "type": "string"
+    },
+    {
+      "name": "external_transaction_id",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    },
+    {
+      "name": "title",
+      "type": "string"
+    },
+    {
+      "name": "created_date",
+      "type": "long"
+    },
+    {
+      "name": "created_date_value",
+      "type": "string"
+    },
+    {
+        "name": "company_id",
+        "type": "string",
+        "logicalType": "UUID"
+    },
+    {
+       "name": "operation_subtype",
+       "type": "string"
+    },
+    {
+        "name": "context_data",
+        "type": {
+            "type": "map",
+            "values": "string"
+            }
+    }
+  ]
+}

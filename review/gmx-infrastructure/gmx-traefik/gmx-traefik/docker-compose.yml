@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  reverse-proxy:
+    image: traefik:2.2
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --api=true
+      - --api.dashboard=true
+      - --log.level=DEBUG
+    deploy:
+      resources:
+        limits:
+          cpus: '0.10'
+          memory: 100M
+        reservations:
+          memory: 20M
+    ports:
+      # The HTTP port
+      - "8000:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  postgres:
+    image: postgres:12
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./persistence/db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 200M
+        reservations:
+          memory: 20M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  redis:
+    image: redis:6
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 100M
+        reservations:
+          memory: 100M
+
+#  sftp_server:
+#    image: atmoz/sftp
+#    volumes:
+#      - ./persistence/static:/home/microservice/static
+#    command: microservice:microservice:1001
+
+  #static_http_server:
+  #  image: nginx
+  #  volumes:
+  #    - ./persistence/static:/usr/share/nginx/html
+  #  labels:
+  #    - "traefik.enable=true"
+  #    - "traefik.http.routers.static_http_server.rule=PathPrefix(`/static/`)"
+  #    - "traefik.http.services.static_http_server.loadbalancer.server.port=80"
+  #    - "traefik.http.routers.static_http_server.middlewares=static_http_server-stripprefix"
+  #    - "traefik.http.middlewares.static_http_server-stripprefix.stripprefix.prefixes=/static"
+
+  ## This servers must use root so they will expose ports for management "1" + port of the service
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@waysun.local
+      PGADMIN_DEFAULT_PASSWORD: postgres
+      SCRIPT_NAME: /pgadmin
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 200M
+        reservations:
+          memory: 100M
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin.rule=PathPrefix(`/pgadmin/`)"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
+
+  #rediscmd:
+  #  image: rediscommander/redis-commander
+  #  expose:
+  #    - "8000"
+  #  environment:
+  #    REDIS_HOSTS: "local:redis:6379"
+  #    HOST: "0.0.0.0"
+  #    PORT: "8000"
+  #    URL_PREFIX: "/rediscmd"
+  #  labels:
+  #    - "traefik.enable=true"
+  #    - "traefik.http.routers.rediscmd.rule=PathPrefix(`/rediscmd/`)"
+  #    - "traefik.http.services.rediscmd.loadbalancer.server.port=8000"
+
+  kafka-cluster:
+    image: landoop/fast-data-dev:2.2.0
+    container_name: kafka
+    environment:
+      - DISABLE=azure-documentdb,blockchain,bloomberg,cassandra,coap,druid,elastic,elastic5,ftp,hazelcast,hbase,influxdb,jms,kudu,mongodb,mqtt,pulsar,redis,rethink,voltdb,couchbase,dbvisitreplicate,debezium-mongodb,debezium-mysql,debezium-postgres,elasticsearch,hdfs,jdbc,s3,twitter
+      - ADV_HOST=192.168.99.1
+      - RUNTESTS=0
+      - DISABLE_JMX=1
+    ports:
+      - 2181:2181           # Zookeeper
+      - 3030:3030           # Landoop UI
+      - 8081-8083:8081-8083 # REST Proxy, Schema Registry, Kafka Connector
+      - 9092:9092           # Kafka Broker
+
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2200M
+        reservations:
+          memory: 1000M
+
+networks:
+  default:
+    external:
+      name: gmx-internal

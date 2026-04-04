@@ -1,0 +1,23 @@
+
+@import '../../rz-variables';
+@import 'new-header';
+
+@import 'dropdowns';
+@import 'hamburger';
+@import 'mobile';
+
+.page-header-wrapper-middle{
+    background:$brand-base;
+}
+.page-header-wrapper-top{
+  background:$brand-base;
+}
+.mobile-header-open-bets-count-number{
+	color:$brand-primary;
+}
+
+html.IsMobile .page-header-wrapper-top .page-header-join-button,
+.mobile-login-container,
+html.IsMobile .page-header-wrapper-top .mobile-login-element{
+  width:100%;
+}

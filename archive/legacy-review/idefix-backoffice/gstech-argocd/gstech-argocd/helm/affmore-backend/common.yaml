@@ -1,0 +1,67 @@
+livenessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: 3033
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: 3033
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/affmore-backend
+  pullPolicy: Always
+  tag: "latest"
+
+command: "yarn migrate && yarn workspace affmore-backend serve"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "50m"
+  limits:
+    memory: "256Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3033
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+env:
+  METRICS_PORT: 4001
+  LOGGER_HOST: http://loki-write.monitoring.svc.cluster.local:3100
+  LOGGER_SERVICE: affmore-backend

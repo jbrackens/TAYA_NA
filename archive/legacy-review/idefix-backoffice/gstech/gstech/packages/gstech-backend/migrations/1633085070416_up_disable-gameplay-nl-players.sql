@@ -1,0 +1,1 @@
+UPDATE players SET "allowGameplay" = FALSE WHERE "countryId" = 'NL';

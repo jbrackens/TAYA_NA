@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: ecr-docker-credentials-renewer
+  labels:
+    app: ecr-docker-credentials-renewer
+spec:
+  # ECR Docker credentials (that we use to pull images in Kubernetes cluster) expire every 12 hours.
+  # To work around this, we're using https://github.com/nabsul/k8s-ecr-login-renew.
+  # This tool automatically refreshes the secret in Kubernetes.
+  # It deploys as a cron job and ensures that Kubernetes cluster will always be able to pull Docker images from ECR.
+
+  # Let's run the cron job every 6 hours to provide some leeway.
+  schedule: "0 */6 * * *"  # minute, hour, day of month, month, day of week
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: ecr-docker-credentials-renewer
+          containers:
+            - {{ include "ecr-docker-credentials-renewer.container" . | nindent 14 }}

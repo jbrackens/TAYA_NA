@@ -1,0 +1,2 @@
+stella.identity.auth.identityprovider.social.facebook.StellaFacebookUserAttributeMapper
+stella.identity.auth.identityprovider.social.google.StellaGoogleUserAttributeMapper

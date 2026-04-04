@@ -1,0 +1,4 @@
+stella.identity.spi.ProjectSpi
+stella.identity.spi.PayloadSigningSpi
+stella.identity.spi.StellaSecretBoxSpi
+stella.identity.spi.StellaEventPublisherSpi

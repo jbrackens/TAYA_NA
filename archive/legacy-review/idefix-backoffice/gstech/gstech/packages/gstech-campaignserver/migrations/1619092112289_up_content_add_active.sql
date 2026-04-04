@@ -1,0 +1,1 @@
+ alter table content add column active boolean not null default false

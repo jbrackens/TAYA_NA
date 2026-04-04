@@ -1,0 +1,34 @@
+
+.action-betting-button-inner{
+  border-radius:0px;
+}
+.action-betting-button-name{
+  color:white;
+  font-family: $brand-font--header;
+}
+.action-betting-buttons-wrapper{
+  border-radius:0px;
+}
+.action-betting-incident-name{
+  color:white;
+  font-family: $brand-font--header;
+  font-size:15px;
+}
+
+#betslipNotificationWrap.action-betting-visible{
+  transform:none;
+  left:0;
+  right:0;
+}
+.action-betting-incident-content{
+  font-family: $brand-font--body;
+  text-transform:capitalize;
+}
+.action-betting-bet-name{
+  font-size:1em;
+}
+// 4.4
+.IsMobile .action-betting-incident-wrapper,
+.action-betting-incident-wrapper{
+  border-radius:0px;
+}

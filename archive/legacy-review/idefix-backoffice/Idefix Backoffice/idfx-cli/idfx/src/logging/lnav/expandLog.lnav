@@ -1,0 +1,3 @@
+:redirect-to /dev/null
+;select encode(metadata,"base64") AS bdy from idefix_log where log_line = log_top_line()
+:eval :pipe-line-to expandLog.sh \'$bdy\'

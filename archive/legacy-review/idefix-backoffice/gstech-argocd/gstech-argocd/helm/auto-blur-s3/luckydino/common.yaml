@@ -1,0 +1,22 @@
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/auto-blur-s3
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-prod-auto-blur-s3
+  name: ""
+
+command: "yarn run:ld"
+
+podSecurityContext: {}
+
+securityContext: {}
+
+rbac:
+  create: false
+
+podSecurityPolicy:
+  create: false

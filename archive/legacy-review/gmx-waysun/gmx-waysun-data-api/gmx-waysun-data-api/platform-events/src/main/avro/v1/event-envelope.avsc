@@ -1,0 +1,149 @@
+[
+  {
+    "namespace": "stella.dataapi.platformevents",
+    "name": "Source",
+    "type": "enum",
+    "symbols": [
+      "external",
+      "internal"
+    ]
+  },
+  {
+    "namespace": "stella.dataapi.platformevents",
+    "name": "EventEnvelope",
+    "type": "record",
+    "fields": [
+      {
+        "name": "messageId",
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      {
+        "name": "messageOriginDateUTC",
+        "type": "string"
+      },
+      {
+        "name": "messageProcessingDateUTC",
+        "type": "string"
+      },
+      {
+        "name": "source",
+        "type" : "stella.dataapi.platformevents.Source"
+      },
+      {
+        "name": "eventName",
+        "type": "string"
+      },
+      {
+        "name": "payload",
+        "type": {
+          "type": "array",
+          "items": {
+            "name": "Field",
+            "type": "record",
+            "fields": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              }
+            ]
+          },
+          "default": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "ValidatedEventEnvelope",
+    "namespace": "stella.dataapi.platformevents",
+    "type": "record",
+    "fields": [
+      {
+        "name": "eventDefinitionId",
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      {
+        "name": "messageId",
+        "type": "string",
+        "logicalType": "uuid"
+      },
+      {
+        "name": "messageOriginDateUTC",
+        "type": "string"
+      },
+      {
+        "name": "messageProcessingDateUTC",
+        "type": "string"
+      },
+      {
+        "name": "source",
+        "type" : "stella.dataapi.platformevents.Source"
+      },
+      {
+        "name": "eventName",
+        "type": "string"
+      },
+      {
+        "name": "payload",
+        "type": {
+          "type": "array",
+          "items": {
+            "name": "FieldTyped",
+            "type": "record",
+            "fields": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "value",
+                "type": "string"
+              },
+              {
+                "name": "type",
+                "type": "string"
+              }
+            ]
+          },
+          "default": []
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "stella.dataapi.platformevents",
+    "name": "FailedEventEnvelope",
+    "type": "record",
+    "fields": [
+      {
+        "name": "failedValidation",
+        "type": {
+          "type": "array",
+          "items": {
+            "name": "FailedValidationMethods",
+            "type": "record",
+            "fields": [
+              {
+                "name": "validationName",
+                "type": "string"
+              },
+              {
+                "name": "description",
+                "type": "string"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "EventEnvelope",
+        "name": "eventEnvelope"
+      }
+    ]
+  }
+]

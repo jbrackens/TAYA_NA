@@ -1,0 +1,70 @@
+name: EEG CD DEV
+
+on:
+  push:
+    branches: [ beta ]
+
+env:
+  AWS-ACCESS-KEY-ID: ${{ secrets.EEG_AWS_ACCESS_KEY_ID }}
+  AWS-SECRET-ACCESS-KEY: ${{ secrets.EEG_AWS_SECRET_ACCESS_KEY }}
+  role-to-assume: ${{ secrets.EEG_AWS_ROLE_TO_ASSUME }}
+  role-external-id: ${{ secrets.EEG_AWS_ROLE_EXTERNAL_ID }}
+  role-duration-seconds: 3600
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Do not change
+  REGION: 'eu-central-1'
+  HELM_VERSION: 'v3.5.4'
+  environment: 'dev'
+  aws_region: 'eu-central-1'
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Push to ECR
+  # --------------------------------------------------------------------------
+  ecr:
+    if : true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        container: ["gstech-campaignserver-client"]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ env.REGION }}
+          aws-access-key-id: ${{ env.AWS-ACCESS-KEY-ID }}
+          aws-secret-access-key: ${{ env.AWS-SECRET-ACCESS-KEY }}
+          role-to-assume: ${{ env.role-to-assume }}
+          role-external-id: ${{ env.role-external-id }}
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: For each service (matrix) - Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.container }}
+          IMAGE_TAG: ${{github.sha}}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          docker build -t ${{ matrix.container }}-$IMAGE_TAG .
+          docker tag ${{ matrix.container }}-$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:${BRANCH_NAME}-$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${BRANCH_NAME}-$IMAGE_TAG
+
+      - name: Log out of Amazon ECR
+        if: always()
+        run: docker logout ${{ steps.login-ecr.outputs.registry }}
+

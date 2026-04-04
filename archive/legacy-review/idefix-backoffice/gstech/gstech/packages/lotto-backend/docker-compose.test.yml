@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  lotto-backend.test:
+    build:
+      context: ../../
+      dockerfile: packages/lotto-backend/Dockerfile
+    image: lotto-backend.test
+    container_name: lotto-backend.test
+    command: sh -c "yarn migrate && yarn test"
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      REDIS_HOST: gstech-redis
+      POSTGRES_HOST: gstech-postgres
+      WALLET_URL: http://gstech-backend:3005/api/v1/wallet
+      BACKEND_URL: http://gstech-backend:3001
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

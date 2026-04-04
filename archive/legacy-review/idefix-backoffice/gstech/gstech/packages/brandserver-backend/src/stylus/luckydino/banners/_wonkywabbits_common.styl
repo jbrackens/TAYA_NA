@@ -1,0 +1,140 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$wonkywabbits_common_logo_name = 'wonkywabbits_common_logo';
+$wonkywabbits_common_logo_x = 416px;
+$wonkywabbits_common_logo_y = 0px;
+$wonkywabbits_common_logo_offset_x = -416px;
+$wonkywabbits_common_logo_offset_y = 0px;
+$wonkywabbits_common_logo_width = 320px;
+$wonkywabbits_common_logo_height = 144px;
+$wonkywabbits_common_logo_total_width = 736px;
+$wonkywabbits_common_logo_total_height = 485px;
+$wonkywabbits_common_logo_image = 'wonkywabbits_common_b.png';
+$wonkywabbits_common_logo = 416px 0px -416px 0px 320px 144px 736px 485px 'wonkywabbits_common_b.png' 'wonkywabbits_common_logo';
+$wonkywabbits_common_rabbit1_name = 'wonkywabbits_common_rabbit1';
+$wonkywabbits_common_rabbit1_x = 416px;
+$wonkywabbits_common_rabbit1_y = 148px;
+$wonkywabbits_common_rabbit1_offset_x = -416px;
+$wonkywabbits_common_rabbit1_offset_y = -148px;
+$wonkywabbits_common_rabbit1_width = 178px;
+$wonkywabbits_common_rabbit1_height = 179px;
+$wonkywabbits_common_rabbit1_total_width = 736px;
+$wonkywabbits_common_rabbit1_total_height = 485px;
+$wonkywabbits_common_rabbit1_image = 'wonkywabbits_common_b.png';
+$wonkywabbits_common_rabbit1 = 416px 148px -416px -148px 178px 179px 736px 485px 'wonkywabbits_common_b.png' 'wonkywabbits_common_rabbit1';
+$wonkywabbits_common_rabbit2_name = 'wonkywabbits_common_rabbit2';
+$wonkywabbits_common_rabbit2_x = 598px;
+$wonkywabbits_common_rabbit2_y = 148px;
+$wonkywabbits_common_rabbit2_offset_x = -598px;
+$wonkywabbits_common_rabbit2_offset_y = -148px;
+$wonkywabbits_common_rabbit2_width = 106px;
+$wonkywabbits_common_rabbit2_height = 107px;
+$wonkywabbits_common_rabbit2_total_width = 736px;
+$wonkywabbits_common_rabbit2_total_height = 485px;
+$wonkywabbits_common_rabbit2_image = 'wonkywabbits_common_b.png';
+$wonkywabbits_common_rabbit2 = 598px 148px -598px -148px 106px 107px 736px 485px 'wonkywabbits_common_b.png' 'wonkywabbits_common_rabbit2';
+$wonkywabbits_common_rabbit3_name = 'wonkywabbits_common_rabbit3';
+$wonkywabbits_common_rabbit3_x = 0px;
+$wonkywabbits_common_rabbit3_y = 380px;
+$wonkywabbits_common_rabbit3_offset_x = 0px;
+$wonkywabbits_common_rabbit3_offset_y = -380px;
+$wonkywabbits_common_rabbit3_width = 106px;
+$wonkywabbits_common_rabbit3_height = 105px;
+$wonkywabbits_common_rabbit3_total_width = 736px;
+$wonkywabbits_common_rabbit3_total_height = 485px;
+$wonkywabbits_common_rabbit3_image = 'wonkywabbits_common_b.png';
+$wonkywabbits_common_rabbit3 = 0px 380px 0px -380px 106px 105px 736px 485px 'wonkywabbits_common_b.png' 'wonkywabbits_common_rabbit3';
+$wonkywabbits_common_rabbit4_name = 'wonkywabbits_common_rabbit4';
+$wonkywabbits_common_rabbit4_x = 0px;
+$wonkywabbits_common_rabbit4_y = 0px;
+$wonkywabbits_common_rabbit4_offset_x = 0px;
+$wonkywabbits_common_rabbit4_offset_y = 0px;
+$wonkywabbits_common_rabbit4_width = 412px;
+$wonkywabbits_common_rabbit4_height = 376px;
+$wonkywabbits_common_rabbit4_total_width = 736px;
+$wonkywabbits_common_rabbit4_total_height = 485px;
+$wonkywabbits_common_rabbit4_image = 'wonkywabbits_common_b.png';
+$wonkywabbits_common_rabbit4 = 0px 0px 0px 0px 412px 376px 736px 485px 'wonkywabbits_common_b.png' 'wonkywabbits_common_rabbit4';
+$spritesheet_width = 736px;
+$spritesheet_height = 485px;
+$spritesheet_image = 'wonkywabbits_common_b.png';
+$spritesheet_sprites = $wonkywabbits_common_logo $wonkywabbits_common_rabbit1 $wonkywabbits_common_rabbit2 $wonkywabbits_common_rabbit3 $wonkywabbits_common_rabbit4;
+$spritesheet = 736px 485px 'wonkywabbits_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

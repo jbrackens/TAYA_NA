@@ -1,0 +1,123 @@
+@import 'subheader';
+@import 'title-line';
+@import 'grid';
+@import 'big-winners-widget';
+@import 'casino-labels';
+@import 'virtuals';
+@import 'tournaments';
+@import 'freespins';
+
+// no gap at top of panel
+#casino #panel-center-inner{
+  padding-top:0;
+}
+
+.sb-src-components-sbtech-cas-widget-grid-_index__game-grid-wrapper{
+  background:transparent;
+}
+
+//fixing staging buttons for scrolable header items
+.sb-src-components-sbtech-cas-component-scrollable-list-_index__wrapper{
+  width:calc(100% - 50px);
+  padding:0;
+}
+.sb-src-components-sbtech-cas-component-scrollable-list-_index__content{
+  height:auto;
+}
+#virtuals-casino-panel .super-banner,
+.casino-panel .super-banner{
+  margin: 0 auto;
+  max-width: 1464px;
+}
+
+#virtuals-casino-panel .custom-slider-container,
+#h-casino-panel .custom-slider-container,
+#h-live-casino-panel .custom-slider-container{
+  margin:2px 1px;
+  .IsMobile & {
+    margin:2px;
+  }
+}
+
+#virtuals-casino-panel .super-banner,
+#h-casino-panel .super-banner,
+#h-live-casino-panel .super-banner {
+    background-color: transparent;
+    margin: 0 auto 10px;
+    max-width: 1464px;
+}
+
+html.IsMobile #virtuals-casino-panel .custom-slider-list-item:first-child .super-banner-slide,
+html.IsMobile #h-casino-panel .custom-slider-list-item:first-child .super-banner-slide,
+html.IsMobile #h-live-casino-panel .custom-slider-list-item:first-child .super-banner-slide{
+  margin-left:0;
+}
+html.IsMobile #virtuals-casino-panel .custom-slider-list-item:last-child .super-banner-slide,
+html.IsMobile #h-casino-panel .custom-slider-list-item:last-child .super-banner-slide,
+html.IsMobile #h-live-casino-panel .custom-slider-list-item:last-child .super-banner-slide{
+  margin-right:0;
+}
+html.IsMobile #virtuals-casino-panel .super-banner .custom-slider-list:not(:empty),
+html.IsMobile #h-casino-panel .super-banner .custom-slider-list:not(:empty),
+html.IsMobile #h-live-casino-panel .super-banner .custom-slider-list:not(:empty){
+  margin:0;
+}
+
+.sb-src-components-sbtech-cas-widget-grid-_index__game-show-more{
+  margin:0;
+}
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-grid-_index__game-show-more-button{
+  position: relative;
+  padding: 0;
+}
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-grid-_index__game-show-more-button{
+  position: relative;
+  padding: 0;
+}
+.sb-src-components-sbtech-cas-widget-grid-_index__game-show-more-button{
+  text-decoration: none;
+  color: #fff;
+  display: block;
+  font-size: 14px;
+  line-height: 28px;
+  height: 28px;
+  position: relative;
+  padding: 0;
+  &:after{
+    content: 'view more';
+    font-size: 14px;
+    line-height: 28px;
+    font-weight: bold;
+    background: $brand-primary;
+    font-family: $brand-font--header;
+    text-transform:uppercase;
+    color: #fff;
+    display:block;
+    position:absolute;
+    top:0;bottom:0;width:100%;
+  }
+  &:hover{
+    background:$brand-primary--hover;
+    &:after{
+      background:$brand-primary--hover;
+    }
+  }
+}
+html.IsMobile .super-banner-slide-generic .super-banner-image-container,
+html.IsTablet .super-banner-slide-generic .super-banner-image-container{
+  width:100%;
+}
+html.IsMobile .super-banner-slide-generic,
+html.IsTablet .super-banner-slide-generic{
+  height: 190px;
+  width: 294px;
+}
+.custom-slider-container{
+  padding-bottom:0px;
+}
+
+.sb-src-components-sbtech-cas-component-gamegrid-_index__title,
+.sb-src-components-sbtech-cas-component-gamegrid-_index__limits,
+.sb-src-components-sbtech-cas-component-gamegrid-_index__live .sb-src-components-sbtech-cas-component-gamegrid-_index__card .sb-src-components-sbtech-cas-component-gamegrid-_index__live-params-hover .sb-src-components-sbtech-cas-component-gamegrid-_index__action--active {
+    color: white;
+}

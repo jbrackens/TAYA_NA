@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_common_action_buttons",
+  "info": {
+    "displayName": "ActionButton",
+    "icon": "play",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "required": true,
+      "default": "Button label text"
+    },
+    "actionType": {
+      "type": "enumeration",
+      "enum": [
+        "toggle-registration-form",
+        "toggle-login-form",
+        "toggle-contact-support",
+        "toggle-player-protection-page",
+        "open-all-games-page",
+        "set-game-category",
+        "open-game"
+      ],
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,46 @@
+name: Cron - Update the GeoLite2-Country DB
+
+on:
+  schedule:
+   - cron: "0 3 * * WED" # At 03:00 UTC on Wednesday.
+   - cron: "0 3 * * SAT" # At 03:00 UTC on Saturday.
+
+permissions:
+  contents: write
+
+jobs:
+  fetch_db:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch database
+        run: ./.github/scripts/fetch-geolite2-db.sh -k ${{ secrets.MAXMIND_LICENSE_KEY }}
+
+      - name: Create commit
+        run: |
+          git add packages/gstech-backend/server/modules/core/geoip/GeoLite2-Country.mmdb
+          git commit -m "Cron - Update GeoLite2 Country Database"
+          git push origin dev
+
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "username": "GitHub Cron",
+              "icon_url": "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "♻️ Updated the GeoLite2-Country database"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.GH_RELEASES_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

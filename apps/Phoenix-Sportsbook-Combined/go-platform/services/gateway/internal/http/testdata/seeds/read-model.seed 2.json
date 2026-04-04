@@ -1,0 +1,90 @@
+{
+  "fixtures": [
+    {
+      "id": "f:seed:1001",
+      "tournament": "Premier League",
+      "homeTeam": "Liverpool",
+      "awayTeam": "Arsenal",
+      "startsAt": "2030-03-03T15:00:00Z"
+    },
+    {
+      "id": "f:seed:1002",
+      "tournament": "La Liga",
+      "homeTeam": "Barcelona",
+      "awayTeam": "Atletico Madrid",
+      "startsAt": "2030-03-04T20:00:00Z"
+    }
+  ],
+  "markets": [
+    {
+      "id": "m:seed:2001",
+      "fixtureId": "f:seed:1001",
+      "name": "Match Winner",
+      "status": "open",
+      "startsAt": "2030-03-03T15:00:00Z",
+      "selections": [
+        {
+          "id": "home",
+          "name": "Liverpool",
+          "odds": 1.9,
+          "active": true
+        },
+        {
+          "id": "draw",
+          "name": "Draw",
+          "odds": 3.45,
+          "active": true
+        },
+        {
+          "id": "away",
+          "name": "Arsenal",
+          "odds": 3.8,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    },
+    {
+      "id": "m:seed:2002",
+      "fixtureId": "f:seed:1002",
+      "name": "Both Teams To Score",
+      "status": "open",
+      "startsAt": "2030-03-04T20:00:00Z",
+      "selections": [
+        {
+          "id": "yes",
+          "name": "Yes",
+          "odds": 1.77,
+          "active": true
+        },
+        {
+          "id": "no",
+          "name": "No",
+          "odds": 2.1,
+          "active": true
+        }
+      ],
+      "minStakeCents": 100,
+      "maxStakeCents": 100000
+    }
+  ],
+  "punters": [
+    {
+      "id": "u:seed:3001",
+      "email": "seed.user.one@phoenix.local",
+      "status": "active",
+      "countryCode": "US",
+      "createdAt": "2026-03-02T00:00:00Z",
+      "lastLoginAt": "2026-03-02T00:00:00Z"
+    },
+    {
+      "id": "u:seed:3002",
+      "email": "seed.user.two@phoenix.local",
+      "status": "active",
+      "countryCode": "US",
+      "createdAt": "2026-03-02T00:00:00Z",
+      "lastLoginAt": "2026-03-02T00:00:00Z"
+    }
+  ]
+}

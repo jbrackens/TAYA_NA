@@ -1,0 +1,180 @@
+#!groovy
+
+void withDockerHubAuthentication(Closure<Void> block) {
+  // Logging into DockerHub is needed to increase the limits for pulling the images
+  docker.withRegistry(/* empty = Docker Hub */ '', env.DOCKER_HUB_CREDENTIALS) {
+    block()
+  }
+}
+
+void withGithubStatusUpdates(Closure<Void> block) {
+  gitStatusWrapper(
+    description: env.STAGE_NAME,
+    gitHubContext: env.GITHUB_NOTIFICATION_CONTEXT,
+    account: env.GITHUB_ACCOUNT,
+    repo: env.GITHUB_REPO,
+    credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+    targetUrl: env.RUN_DISPLAY_URL
+  ) {
+    block()
+  }
+}
+
+void notifyGithub(String description) {
+  githubNotify(
+    description: description,
+    context: env.GITHUB_NOTIFICATION_CONTEXT,
+    account: env.GITHUB_ACCOUNT,
+    repo: env.GITHUB_REPO,
+    credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+    targetUrl: env.RUN_DISPLAY_URL,
+    status: 'SUCCESS'
+  )
+}
+
+void withAwsEcrDockerRegistry(Closure<Void> block) {
+  docker.withRegistry("https://${env.AWS_ECR_HOST}", "ecr:${env.AWS_ECR_REGION}:${env.AWS_ECR_CREDENTIALS_ID}") {
+    block()
+  }
+}
+
+properties(
+  env.BRANCH_NAME == 'develop'
+    ? [disableConcurrentBuilds()]
+    : []
+)
+
+pipeline {
+  agent {
+    label 'ecs-ec2-java'
+  }
+
+  environment { 
+    DOCKER_HUB_CREDENTIALS = 'docker-hub-read-only'
+
+    // CI_UNIQUE_CONTAINER_ID suffix is necessary to make sure that container names are unique within the Jenkins host.
+    // See dev/docker-compose.yml for how it's used.
+    CI_UNIQUE_CONTAINER_ID = "_${env.BUILD_TAG.replaceAll('%..', '_').replaceAll(' ', '-')}"
+
+    // github status notifications
+    GITHUB_ACCOUNT = 'flipadmin'
+    GITHUB_REPO = 'gmx-site-extensions'
+    GITHUB_API_TOKEN_CREDENTIALS_ID = 'CICD-GitHub-API-token'
+    GITHUB_NOTIFICATION_CONTEXT = 'Jenkins Build'
+
+    // build
+    SBT_HOME = tool name: 'sbt', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
+    PATH = "${env.SBT_HOME}/bin:${env.HOME}/.local/bin:${env.PATH}"
+
+    // AWS (except ECR)
+    AWS_REGION = 'eu-central-1'
+
+    // AWS ECR
+    AWS_ECR_ACCOUNT_ID = '259420793117'
+    AWS_ECR_CREDENTIALS_ID = 'ecr-fs-mgmt'
+    AWS_ECR_REGION = 'eu-west-1'
+    AWS_ECR_HOST = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        withGithubStatusUpdates {
+          script {
+            currentBuild.displayName = "#${env.BUILD_NUMBER} for ${env.BRANCH_NAME}"
+          }
+          checkout scm
+        }
+      }
+    }
+
+    stage('Update dependencies') {
+      steps {
+        withGithubStatusUpdates {
+          // -batch to prevent sbt from waiting on user input in case the project model is invalid
+          sh 'sbt -batch update'
+        }
+      }
+    }
+
+// TODO enable after: https://flipsports.atlassian.net/browse/DO-767
+
+//    stage('Scan dependencies for vulnerabilities') {
+//      steps {
+//        withGithubStatusUpdates {
+//          sh 'sbt dependencyCheckAggregate'
+//        }
+//      }
+//    }
+
+    stage('Check formatting & code style') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt scalafmtCheckAll scalastyle'
+        }
+      }
+    }
+
+    stage('Compile production code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt compile'
+        }
+      }
+    }
+
+    stage('Compile test code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt test:compile'
+        }
+      }
+    }
+
+    stage('Check scalafix rules') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "scalafixAll --check"'
+        }
+      }
+    }
+
+    stage('Run unit & integration tests') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt test:test'
+        }
+      }
+    }
+
+    stage('Docker build') {
+      steps {
+        withGithubStatusUpdates {
+          withDockerHubAuthentication {
+            sh "sbt docker:publishLocal"
+          }
+        }
+      }
+    }
+    stage('Upload to ECR') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          withAwsEcrDockerRegistry {
+            sh "sbt docker:publish"
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      // This is to ensure that the name of the last executed stage
+      // doesn't linger in GitHub's CI status once the pipeline is complete.
+      notifyGithub('Complete')
+    }
+  }
+}

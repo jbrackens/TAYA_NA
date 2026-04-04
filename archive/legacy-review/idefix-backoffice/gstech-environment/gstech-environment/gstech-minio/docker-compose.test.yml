@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  gstech-minio.test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-minio.test
+    container_name: gstech-minio.test
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: server /export
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

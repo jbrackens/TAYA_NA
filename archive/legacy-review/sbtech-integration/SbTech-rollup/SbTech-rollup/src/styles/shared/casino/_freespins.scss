@@ -1,0 +1,127 @@
+$fs-title-color: white !default;
+$fs-title-background: black !default;
+$fs-game-color: white !default;
+$fs-game-background:  black !default;
+.sb-src-components-sbtech-cas-widget-freespins-components-Popup-_index__popup-container{
+  background:#f5f5f5;
+  border-radius:0px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-Popup-_index__popup-title{
+  display:inline-block;
+  color:$fs-title-color;
+  background:$fs-title-background;
+  font-family:'Poppins';
+  text-transform:uppercase;
+  font-weight:bold;
+  line-height:1.7;
+  padding:0 0.5em;
+  flex:unset;
+  width:100%;
+  text-align:center;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-Popup-_index__btn-close{
+  background:$brand-base;
+  border-radius:0px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-Popup-_index__btn-close:hover{
+  background:#000000;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__game__link{
+  border-radius:0px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__content .sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__heading{
+  display:inline-block;
+  background:$fs-game-background;
+  color:$fs-game-color;
+  font-family:'Poppins';
+  text-transform:uppercase;
+  font-weight:bold;
+  line-height:1.7;
+  padding:0 0.5em;
+  margin-top:0;
+  font-size:16px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__content .sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__message{
+  color:$brand-base;
+  padding-left:6px;
+  font-size:14px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__content{
+  border:none;
+  padding:10px;
+  margin:0;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-Popup-_index__popup-header{
+  padding:0;
+}
+.sb-src-components-sbtech-cas-widget-freespins-_index__freespins-popup{
+  padding:0 !important;
+}
+.sb-src-components-sbtech-cas-widget-freespins-_index__game-list{
+  margin:0;
+  padding:1px;
+  height: unset !important;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__container{
+  background:white;
+  margin-bottom:1px;
+  padding:0;
+}
+
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__game__link img{
+  width:90px;
+  height:90px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__game__link{
+  height:90px;
+}
+.sb-src-components-sbtech-cas-widget-freespins-components-FreeSpinsGame-_index__game{
+  flex-basis:90px;
+  width:90px;
+}
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item[data-id='FreeSpinsButton'] {
+    background-color:$fs-title-background;
+    background-image:$fs-icon;
+    background-repeat:no-repeat;
+    background-position: 5px 0px;
+    background-size:auto 100%;
+    display: inline-block;
+    height: 26px;
+    width: 70px;
+}
+
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__synthetic-top-menu{
+    width: 110px;
+}
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-wrapper .sb-src-components-sbtech-cas-component-scrollable-list-_index__wrapper {
+    width: calc(100% - 220px);
+}
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="FreeSpinsButton"]:after{
+    display:none;
+}
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-item .sb-src-components-sbtech-cas-widget-topmenu-_index__counter {
+    position: relative;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    border-radius: 0;
+    width: unset;
+    height: 26px;
+    font-size: 14px;
+    line-height: 28px;
+    text-align: center;
+    background: unset;
+    color: $brand-base;
+    padding-left: 35px;
+}
+.sb-src-components-sbtech-cas-component-gamegrid-_index__card .sb-src-components-sbtech-cas-component-gamegrid-_index__free-spin-game-tile-icon {
+    top:0;
+    left:0;
+}
+
+.sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="TopMenuSearch"], .sb-src-components-sbtech-cas-widget-topmenu-_index__top-menu-outer-container [data-text="FreeSpinsButton"]{
+  margin:0;
+}

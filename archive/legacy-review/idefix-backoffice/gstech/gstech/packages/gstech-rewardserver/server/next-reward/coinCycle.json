@@ -1,0 +1,257 @@
+[
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 40,
+    "type": "iron",
+    "trigger_phase": 1200
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 40,
+    "type": "iron",
+    "trigger_phase": 1200
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 40,
+    "type": "iron",
+    "trigger_phase": 1200
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 30,
+    "type": "iron",
+    "trigger_phase": 900
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 10,
+    "type": "iron",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  },
+  {
+    "coins": 50,
+    "type": "iron",
+    "trigger_phase": 1500
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 20,
+    "type": "iron",
+    "trigger_phase": 600
+  },
+  {
+    "coins": 1,
+    "type": "gold",
+    "trigger_phase": 300
+  }
+]

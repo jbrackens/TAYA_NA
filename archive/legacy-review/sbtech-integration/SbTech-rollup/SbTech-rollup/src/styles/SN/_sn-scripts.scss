@@ -1,0 +1,33 @@
+.IsDesktop a[href="/live-betting-overview-mobile/"]{
+  display:none;
+}
+.IsMobile a.desktop-only{
+  display:none;
+}
+
+#league-list,
+#league-view,
+#all-leagues-per-country,
+#racing-branch-panel{
+  &.page.current{
+    display:flex;
+    flex-direction:column;
+  }
+  #banner-under-odds.banner-above{
+    order:-1;
+  }
+}
+#banner-under-odds{
+  font-size:0;
+  padding:2px 0;
+  img{
+    width:100%;
+  }
+}
+
+.viprewards app-rewards-products{
+  .section-container + .ag-panel-heading,
+  .cashout-container{
+    display:none;
+  }
+}

@@ -1,0 +1,13 @@
+@namespace("phoenix.dataapi.shared")
+protocol SharedProtocol {
+    record Header {
+        string correlationId;
+        timestamp_ms receivedAtUtc = 0;
+        string source;
+    }
+
+    enum FixtureStatus {
+        PreGame, Postponed, InPlay, PostGame, GameAbandoned, BreakInPlay, Unknown
+    }
+
+}

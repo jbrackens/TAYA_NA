@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prod-ld-jobs
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - app_name: auto-blur-s3-cj
+        helm_dir: auto-blur-s3/casinojefe
+        helm_chart: helm/cronjob-app
+        ecr_repo: auto-blur-s3
+      - app_name: auto-blur-s3-ld
+        helm_dir: auto-blur-s3/luckydino
+        helm_chart: helm/cronjob-app
+        ecr_repo: auto-blur-s3
+  template:
+    metadata:
+      annotations:
+        argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/write-back-method: git
+        argocd-image-updater.argoproj.io/image-list: "appimage=743851384875.dkr.ecr.eu-central-1.amazonaws.com/{{ecr_repo}}"
+        argocd-image-updater.argoproj.io/appimage.update-strategy: latest
+        argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:v[0-9]([0-9])?([0-9])?-*"
+        argocd-image-updater.argoproj.io/appimage.ignore-tags: "beta-*"
+        argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
+        argocd-image-updater.argoproj.io/appimage.helm.image-tag: image.tag
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: luckydino-prd-deployments
+        notifications.argoproj.io/subscribe.on-deployed.slack: luckydino-prd-deployments
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      name: prod-{{app_name}}
+    spec:
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: prod
+      source:
+        repoURL: "git@github.com:LuckyDino/gstech-argocd.git"
+        path: "{{helm_chart}}"
+        targetRevision: HEAD
+        helm:
+          valueFiles:
+            - ../{{helm_dir}}/common.yaml
+            - ../{{helm_dir}}/prod.yaml
+      project: prod-apps
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

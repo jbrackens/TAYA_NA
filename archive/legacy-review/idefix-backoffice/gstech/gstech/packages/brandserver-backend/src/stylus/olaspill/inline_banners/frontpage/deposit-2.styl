@@ -1,0 +1,41 @@
+#banner_frontpage_deposit-2
+  frontpageBanner()
+  background #1862b2
+  position relative
+  &:after,&:before
+    content ''
+    position absolute
+    cdn-background '/images/banners/halftones.png'
+    height 345px
+    width 470px
+    top 0
+  &:after
+    right 0
+    transform scaleX(-1)
+  &:before
+    left 0
+  &__promo
+    width 365px
+  &_wrapper
+    max-width 1400px
+    margin 0 auto
+    display flex
+    justify-content space-around
+  &_image
+    background-repeat no-repeat
+    cdn-background-image2x '/images/banners/2nddeposit/common/bonus.png' '/images/banners/2nddeposit/common/bonus@2x.png' 365px 265px
+    background-size contain
+    width 365px
+    height 265px
+    margin 10px auto
+    @media only screen and (max-width:380px)
+      width 300px
+  &_item1
+    @media only screen and (min-width:600px)
+      display inline !important
+      cdn-background-image2x '/images/banners/2nddeposit/common/ola_throne.png' '/images/banners/2nddeposit/common/ola_throne@2x.png' 588px 433px
+      background-repeat no-repeat
+      width 588px
+      height 345px
+      margin-left -200px
+      margin-right -200px

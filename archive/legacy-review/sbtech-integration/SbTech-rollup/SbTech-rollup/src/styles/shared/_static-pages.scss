@@ -1,0 +1,151 @@
+.page-main-image{
+  margin:0px 0px 1px;
+  box-sizing: border-box;
+}
+.page-main-image img{
+  max-width:100%;
+  margin: auto;
+  display:block;
+}
+.page-main-image a{
+  display: block;
+  width: 100%;
+  text-align: center;
+ }
+
+.page-heading{
+  display: block;
+  position: relative;
+  padding: 10px;
+  clear: both;
+  font-size: 1.0769em;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-style: solid;
+  color: #fff;
+  border-width: 1px 0 1px 0;
+  border-top-color: $brand-heading-color;
+  border-bottom-color: $brand-heading-color;
+  background-color: $brand-heading-color;
+  box-sizing: border-box;
+ }
+
+.page-content{
+  padding:20px 10px;
+  margin:1px 0px;
+  background:$center-bg;
+  box-sizing: border-box;
+}
+.page-content p+p{
+  margin-top:1em;
+  margin-bottom:1.25em;
+}
+.page-content p{
+  margin-top:1.25em;
+  margin-bottom:1em;
+  line-height: 1.5;
+}
+.page-content ul{
+  margin-bottom:1.2em;
+  margin-left:20px;
+}
+.page-content b,
+.page-content strong {
+  font-weight: bolder;
+}
+.page-content small {
+  font-size: 80%;
+}
+.page-content sub,
+.page-content sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+.page-content sub {
+  bottom: -0.25em;
+}
+
+.page-content sup {
+  top: -0.5em;
+}
+.page-content h1      { font-size: 2em;margin-top:1em;margin-bottom:0.75em;}
+.page-content h2      { font-size: 1.5em;margin-top:1em;margin-bottom:0.75em;}
+.page-content h3      { font-size: 1.17em;}
+.page-content h4      { font-size: 1em;}
+.page-content h5      { font-size: 0.83em;}
+.page-content h6      { font-size: 0.75em;}
+
+.page-content li{
+  margin:2px 0.75em;
+  list-style-type: disc;
+}
+.page-content li > ul{
+  margin:5px;
+}
+.page-content li > ul li{
+  margin:2px 10px;
+  list-style-type: circle;
+}
+.page-content a{
+color:$brand-primary;
+}
+
+.page-content{
+  table{
+    text-align:center;
+    margin-bottom:1em;
+  }
+  td, th{
+    line-height:2em;
+    padding:0 1em;
+      border:1px solid white
+  }
+}
+
+.page-content .cta-button{
+ @include brand-button(15);
+ margin:1em;
+}
+
+.page-header-links{
+ padding: 10px 15px 0 15px;
+}
+.page-header-links span{
+ margin:0 10px;
+}
+.page-header-links span:first-of-type{
+  margin-left:0px;
+}
+
+.IsMobile{
+  .page-main-image,
+  .page-heading,
+  .page-content{
+    margin:1px 1px;
+  }
+}
+
+.freeHtmlContent h4, .staticContentPage h4, .rulesPage h4{
+  background:$brand-primary;
+}
+
+.page-content.rules-page{
+  padding:0;
+  .sectionSubHeading .icon.header_title_icon{
+    display:none;
+  }
+}
+.page-content section:nth-of-type(n+1){
+  margin-top:2em;
+}
+.page-content a.ag-button{
+  color:white;
+}
+
+.page-content *{
+  box-sizing: border-box;
+}

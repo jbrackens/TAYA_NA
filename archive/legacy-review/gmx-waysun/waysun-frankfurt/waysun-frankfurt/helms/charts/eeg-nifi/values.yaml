@@ -1,0 +1,257 @@
+nameOverride: nifi
+global:
+  storageClass: &storageClass nifi-cbs
+  reclaimPolicy: Retain
+  affinity: &nodes-affinity
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - processing-nodes
+          weight: 1
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - processing-nodes
+  resources:
+    nifiRegistry: &resources-registry
+     limits:
+       cpu: 1000m
+       memory: 2048Mi
+     requests:
+       cpu: 1000m
+       memory: 2048Mi
+    nifi: &resources-nifi
+     limits:
+       cpu: 1000m
+       memory: 2048Mi
+     requests:
+       cpu: 1000m
+       memory: 2048Mi
+    logs: &resources-logs
+      requests:
+        cpu: 10m
+        memory: 10Mi
+      limits:
+        cpu: 100m
+        memory: 50Mi
+
+nifi-registry:
+  replicaCount: 1
+
+  image:
+    repository: apache/nifi-registry
+    pullPolicy: Always
+    tag: "1.15.3"
+  nameOverride: "nifi-registry"
+  fullnameOverride: "nifi-registry"
+
+  serviceAccount:
+    create: true
+    name: "nifi-registry"
+
+  service:
+    type: NodePort
+    port: 18080
+
+  ingress:
+    enabled: false
+
+  ## Persist data to a persistent volume
+  persistence:
+    enabled: true
+    database:
+      storageClass: *storageClass
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    flowStorage:
+      storageClass: *storageClass
+      accessMode: ReadWriteOnce
+      size: 10Gi
+
+  resources: *resources-registry
+  affinity: *nodes-affinity
+  flowProvider:
+    git:
+      enabled: false
+      config:
+        enabled: false
+    postgres:
+      enabled: false
+
+  tests:
+    images:
+      busybox:
+        image: busybox
+        tag: 1.33.1
+
+
+replicaCount: 2
+image:
+  repository: apache/nifi
+  tag: "1.15.3"
+  pullPolicy: "Always"
+
+securityContext:
+  runAsUser: 1000
+  fsGroup: 1000
+
+sts:
+  # Parallel podManagementPolicy for faster bootstrap and teardown. Default is OrderedReady.
+  podManagementPolicy: Parallel
+  AntiAffinity: other
+  useHostNetwork: false
+  hostPort: null
+  pod:
+    annotations:
+      security.alpha.kubernetes.io/sysctls: net.ipv4.ip_local_port_range=10000 65000
+      #prometheus.io/scrape: "true"
+  serviceAccount:
+    create: true
+    name: nifi
+    annotations: {}
+  hostAliases: []
+
+
+properties:
+  # https://nifi.apache.org/docs/nifi-docs/html/administration-guide.html#nifi_sensitive_props_key
+  sensitiveKey: changeMechangeMe # Must have at least 12 characters
+  algorithm: NIFI_PBKDF2_AES_GCM_256
+  # use externalSecure for when inbound SSL is provided by nginx-ingress or other external mechanism
+  externalSecure: true
+  isNode: true
+  httpPort: 8080
+  webProxyHost: # <clusterIP>:<NodePort> (If Nifi service is NodePort or LoadBalancer)
+  clusterPort: 6007
+  provenanceStorage: "8 GB"
+  siteToSite:
+    port: 10000
+  # use properties.safetyValve to pass explicit 'key: value' pairs that overwrite other configuration
+  safetyValve:
+    #nifi.variable.registry.properties: "${NIFI_HOME}/example1.properties, ${NIFI_HOME}/example2.properties"
+    nifi.web.http.network.interface.default: eth0
+    # listen to loopback interface so "kubectl port-forward ..." works
+    nifi.web.http.network.interface.lo: lo
+
+auth:
+  admin: CN=admin, OU=NIFI
+  SSL:
+    keystorePasswd: changeMe
+    truststorePasswd: changeMe
+
+  # Automaticaly disabled if OIDC or LDAP enabled
+  singleUser:
+    username: username
+    password: changemechangeme # Must to have at least 12 characters
+
+  ldap:
+    enabled: false
+  oidc:
+    enabled: false
+
+openldap:
+  enabled: false
+
+# headless service
+headless:
+  type: ClusterIP
+
+# ui service
+service:
+  type: NodePort
+  httpPort: 8080
+  processors:
+    enabled: false
+
+ingress:
+  enabled: false
+
+jvmMemory: 2g
+
+# Separate image for tailing each log separately and checking zookeeper connectivity
+sidecar:
+  image: busybox
+  tag: "1.32.0"
+  imagePullPolicy: "IfNotPresent"
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: true
+  storageClass: *storageClass
+
+  accessModes:  [ReadWriteOnce]
+  ## Storage Capacities for persistent volumes
+  configStorage:
+    size: 10Gi
+  authconfStorage:
+    size: 10Gi
+  # Storage capacity for the 'data' directory, which is used to hold things such as the flow.xml.gz, configuration, state, etc.
+  dataStorage:
+    size: 10Gi
+  # Storage capacity for the FlowFile repository
+  flowfileRepoStorage:
+    size: 10Gi
+  # Storage capacity for the Content repository
+  contentRepoStorage:
+    size: 10Gi
+  # Storage capacity for the Provenance repository. When changing this, one should also change the properties.provenanceStorage value above, also.
+  provenanceRepoStorage:
+    size: 10Gi
+  # Storage capacity for nifi logs
+  logStorage:
+    size: 10Gi
+
+## Configure resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+##
+resources: *resources-nifi
+
+logresources: *resources-logs
+
+## Enables setting your own affinity. Mutually exclusive with sts.AntiAffinity
+## You need to set the value of sts.AntiAffinity other than "soft" and "hard"
+affinity: *nodes-affinity
+
+openshift:
+  scc:
+    enabled: false
+  route:
+    enabled: false
+    #host: www.test.com
+    #path: /nifi
+
+ca:
+  enabled: false
+
+
+# ------------------------------------------------------------------------------
+# Zookeeper:
+# ------------------------------------------------------------------------------
+zookeeper:
+  enabled: false
+  ## If the Zookeeper Chart is disabled a URL and port are required to connect
+  url: "zookeeper.streaming"
+  port: 2181
+
+registry:
+  enabled: false
+  url: "nifi-registry.processing"
+  port: 18080
+
+# Configure metrics
+metrics:
+  prometheus:
+    enabled: true
+    # Port used to expose Prometheus metrics
+    port: 9092
+    serviceMonitor:
+      enabled: false
+      labels: {}

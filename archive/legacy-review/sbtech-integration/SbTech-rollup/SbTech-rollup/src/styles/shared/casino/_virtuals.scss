@@ -1,0 +1,19 @@
+
+@media screen and (min-width: 960px){
+  #virtuals-casino-panel .sb-src-components-sbtech-cas-component-gamegrid-_index__fullcard .sb-src-components-sbtech-cas-component-gamegrid-_index__cell {
+      width: 20%;
+      padding-top: 20%;
+  }
+}
+
+.IsMobile, .IsTablet{
+  #virtuals-casino-panel{
+    .custom-slider-list-item{
+      width:100%;
+      max-width:770px;
+    }
+    .super-banner-slide{
+      width:100%;
+    }
+  }
+}

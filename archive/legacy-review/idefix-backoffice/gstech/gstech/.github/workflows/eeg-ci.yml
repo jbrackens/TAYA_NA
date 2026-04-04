@@ -1,0 +1,678 @@
+name: CI
+on:
+  push:
+    branches: [master, dev, beta]
+  pull_request:
+    branches: [master, dev, feature/*, fix/*]
+
+env:
+  role-to-assume: ${{ secrets.EEG_AWS_ROLE_TO_ASSUME }}
+  role-external-id: ${{ secrets.EEG_AWS_ROLE_EXTERNAL_ID }}
+  role-duration-seconds: 3600
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  AWS-ACCESS-KEY-ID: ${{ secrets.EEG_AWS_ACCESS_KEY_ID }}
+  AWS-SECRET-ACCESS-KEY: ${{ secrets.EEG_AWS_SECRET_ACCESS_KEY }}
+  PUBLIC_ALIAS: 'x1y4u7f1'
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  BUILDER_DOCKERFILE: ./packages/gstech-backend/Dockerfile
+  BUILDER_CACHE: /home/runner/.builder-cache
+  YARN_CACHE_FOLDER: /home/runner/.cache/yarn
+  ENV_REDIS_CACHE: /home/runner/gstech-redis.tar.gz
+  ENV_PGAFF_CACHE: /home/runner/gstech-postgres-affmore.tar.gz
+  ENV_PGIDX_CACHE: /home/runner/gstech-postgres-idefix.tar.gz
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{ github.ref }}-${
+      github.event_name == 'pull_request' &&
+      format('PR-{0}', github.event.pull_request.number) ||
+      'push'
+    }
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  ValidateYarnCache:
+    name: Validate Yarn Cache
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EOF
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Setup Node
+        id: setup-node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        if: steps.setup-node.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile --ignore-scripts --no-bin-links
+
+  ValidateBuilderCache:
+    name: Validate Builder Cache
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EOF
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Check docker builder cache
+        id: check-docker-builder-cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILDER_CACHE }}
+          key: builder-${{ hashFiles('package.json', 'lerna.json', 'yarn.lock', '.yarnrc', '.node-version') }}
+          lookup-only: true
+
+      - name: Set up Docker Buildx
+        if: steps.check-docker-builder-cache.outputs.cache-hit != 'true'
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker Builder Image
+        if: steps.check-docker-builder-cache.outputs.cache-hit != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ env.BUILDER_DOCKERFILE }}
+          target: builder
+          push: false
+          cache-to: type=local,dest=${{ env.BUILDER_CACHE }},compression=zstd,compression-level=22
+
+  ValidateEnvironmentCache:
+    name: Validate Env Cache
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        repository:
+          - img: gstech-redis
+            tar: gstech-redis
+            tag: latest
+          - img: gstech-postgres
+            tar: gstech-postgres-idefix
+            tag: idefix
+          - img: gstech-postgres
+            tar: gstech-postgres-affmore
+            tag: affmore
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EOF
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::743851384875:role/luckydino-ecr-push-role
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: true
+          registry-type: public
+
+      - name: Check ${{ matrix.repository.tar }} digest
+        id: repo-digest
+        run: |
+          last_digest=$(aws ecr-public describe-images \
+            --repository-name $ECR_REPOSITORY \
+            --image-ids imageTag=$ECR_TAG \
+            --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageDigest' \
+            --output text)
+          echo "last_digest=$last_digest" >> $GITHUB_OUTPUT
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.repository.img }}
+          ECR_TAG: ${{ matrix.repository.tag }}
+
+      - name: Query ${{ matrix.repository.tar }} cache
+        id: query-cache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/${{ matrix.repository.tar }}.tar.gz
+          key: env-${{ matrix.repository.img }}-${{ matrix.repository.tag }}-${{ steps.repo-digest.outputs.last_digest }}
+          lookup-only: true
+
+      - name: Login to Docker Hub
+        if: steps.query-cache.outputs.cache-hit != 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Pull & Cache ${{ matrix.repository.tar }}
+        if: steps.query-cache.outputs.cache-hit != 'true'
+        run: |
+          docker pull $ECR_REGISTRY/$PUBLIC_ALIAS/$ECR_REPOSITORY:$ECR_TAG
+          docker save $ECR_REGISTRY/$PUBLIC_ALIAS/$ECR_REPOSITORY:$ECR_TAG | gzip > /home/runner/${{ matrix.repository.tar }}.tar.gz
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ matrix.repository.img }}
+          ECR_TAG: ${{ matrix.repository.tag }}
+
+  Lint:
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: [ValidateYarnCache]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EOF
+
+      - name: Check if build deps are installed
+        id: check-build-deps-exists
+        run: command -v g++ && command -v make
+        continue-on-error: true
+
+      - name: Install build deps
+        if: steps.check-build-deps-exists.outputs.run != '0'
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+
+      - name: restore cache
+        uses: actions/cache@v4
+        with:
+          path: .eslintcache
+          key: lint-${{ github.ref }}-${{ hashFiles('**/.eslintrc', '**/.eslintignore', '**/yarn.lock') }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Bootstrap dependencies
+        run: yarn bootstrap
+
+      - name: Check Lint
+        run: $(yarn bin eslint) ${{ runner.debug != '1' && '--quiet' || '' }} .
+
+      - name: Start Flow Server
+        run: $(yarn bin flow) start --merge-timeout 0 --file-watcher none --wait --wait-for-recheck true
+
+      - name: Check Flow Status
+        run: $(yarn bin flow) status
+
+  tests-gstech-backend:
+    name: Test gstech-backend
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: [ValidateYarnCache, ValidateBuilderCache, ValidateEnvironmentCache]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EAGER=${{ runner.debug != '1' && '&' || '' }}
+          EOF
+
+      - name: Load docker builder cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.BUILDER_CACHE }}
+          key: builder-${{ hashFiles('package.json', 'lerna.json', 'yarn.lock', '.yarnrc', '.node-version') }}
+          fail-on-cache-miss: true
+
+      - name: Fetch cached redis image
+        id: cached-redis-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_REDIS_CACHE }}
+          key: env-gstech-redis
+          restore-keys: env-gstech-redis-
+
+      - name: Fetch cached affmore postgres image
+        id: cached-pgaff-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGAFF_CACHE }}
+          key: env-gstech-postgres-affmore
+          restore-keys: env-gstech-postgres-affmore-
+
+      - name: Fetch cached idefix postgres image
+        id: cached-pgidx-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGIDX_CACHE }}
+          key: env-gstech-postgres-idefix
+          restore-keys: env-gstech-postgres-idefix
+
+      - name: Load cached env images
+        run: |
+          docker load -i ${{ env.ENV_REDIS_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGAFF_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGIDX_CACHE }} ${{ env.EAGER }}
+
+      - name: Build Docker Builder Image
+        run: |
+          docker build \
+            --target builder \
+            --cache-from type=local,src=${{ env.BUILDER_CACHE }} \
+            --tag builder \
+            --file ${{ env.BUILDER_DOCKERFILE }} \
+            . ${{ env.EAGER }}
+
+      - name: Check if build deps are installed
+        id: check-build-deps-exists
+        run: command -v g++ && command -v make
+        continue-on-error: true
+
+      - name: Install build deps
+        if: steps.check-build-deps-exists.outputs.run != '0'
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Create Environment
+        run: yarn env:wait
+
+      - name: Migrate Database
+        run: yarn workspace gstech-backend migrate
+
+      - name: Test gstech-backend
+        run: yarn workspace gstech-backend docker:test --remove-orphans
+
+  tests-with-no-dependencies:
+    name: Tests with no dependencies
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: [ValidateYarnCache, ValidateBuilderCache, ValidateEnvironmentCache]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EAGER=${{ runner.debug != '1' && '&' || '' }}
+          EOF
+
+      - name: Load docker builder cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.BUILDER_CACHE }}
+          key: builder-${{ hashFiles('package.json', 'lerna.json', 'yarn.lock', '.yarnrc', '.node-version') }}
+          fail-on-cache-miss: true
+
+      - name: Fetch cached redis image
+        id: cached-redis-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_REDIS_CACHE }}
+          key: env-gstech-redis
+          restore-keys: env-gstech-redis-
+
+      - name: Fetch cached affmore postgres image
+        id: cached-pgaff-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGAFF_CACHE }}
+          key: env-gstech-postgres-affmore
+          restore-keys: env-gstech-postgres-affmore-
+
+      - name: Fetch cached idefix postgres image
+        id: cached-pgidx-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGIDX_CACHE }}
+          key: env-gstech-postgres-idefix
+          restore-keys: env-gstech-postgres-idefix
+
+      - name: Load cached env images
+        run: |
+          docker load -i ${{ env.ENV_REDIS_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGAFF_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGIDX_CACHE }} ${{ env.EAGER }}
+
+      - name: Build Docker Builder Image
+        run: |
+          docker build \
+            --target builder \
+            --cache-from type=local,src=${{ env.BUILDER_CACHE }} \
+            --tag builder \
+            --file ${{ env.BUILDER_DOCKERFILE }} \
+            . ${{ env.EAGER }}
+
+      - name: Check if build deps are installed
+        id: check-build-deps-exists
+        run: command -v g++ && command -v make
+        continue-on-error: true
+
+      - name: Install build deps
+        if: steps.check-build-deps-exists.outputs.run != '0'
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Create Environment
+        run: yarn env:wait
+
+      - name: Test affmore-backend
+        run: yarn workspace affmore-backend docker:test --remove-orphans
+
+      - name: Test gstech-campaignserver
+        run: yarn workspace gstech-campaignserver docker:test --remove-orphans
+
+      - name: Test gstech-compliance
+        run: yarn workspace gstech-compliance docker:test --remove-orphans
+
+      - name: Test gstech-rewardserver
+        run: yarn workspace gstech-rewardserver docker:test --remove-orphans
+
+      - name: Test gstech-reverseproxy # DECOMMISSIONED
+        if: false
+        run: yarn workspace gstech-reverseproxy docker:test --remove-orphans
+
+  tests-with-gstech-backend:
+    name: Tests with gstech-backend
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: [ValidateYarnCache, ValidateBuilderCache, ValidateEnvironmentCache]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EAGER=${{ runner.debug != '1' && '&' || '' }}
+          EOF
+
+      - name: Load docker builder cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.BUILDER_CACHE }}
+          key: builder-${{ hashFiles('package.json', 'lerna.json', 'yarn.lock', '.yarnrc', '.node-version') }}
+          fail-on-cache-miss: true
+
+      - name: Fetch cached redis image
+        id: cached-redis-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_REDIS_CACHE }}
+          key: env-gstech-redis
+          restore-keys: env-gstech-redis-
+
+      - name: Fetch cached affmore postgres image
+        id: cached-pgaff-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGAFF_CACHE }}
+          key: env-gstech-postgres-affmore
+          restore-keys: env-gstech-postgres-affmore-
+
+      - name: Fetch cached idefix postgres image
+        id: cached-pgidx-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGIDX_CACHE }}
+          key: env-gstech-postgres-idefix
+          restore-keys: env-gstech-postgres-idefix
+
+      - name: Load cached env images
+        run: |
+          docker load -i ${{ env.ENV_REDIS_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGAFF_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGIDX_CACHE }} ${{ env.EAGER }}
+
+      - name: Build Docker Builder Image
+        run: |
+          docker build \
+            --target builder \
+            --cache-from type=local,src=${{ env.BUILDER_CACHE }} \
+            --tag builder \
+            --file ${{ env.BUILDER_DOCKERFILE }} \
+            . ${{ env.EAGER }}
+
+      - name: Check if build deps are installed
+        id: check-build-deps-exists
+        run: command -v g++ && command -v make
+        continue-on-error: true
+
+      - name: Install build deps
+        if: steps.check-build-deps-exists.outputs.run != '0'
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Create Environment
+        run: yarn env:wait
+
+      - name: Start gstech-backend
+        run: yarn workspace gstech-backend docker:start --remove-orphans --wait
+        env:
+          CI_DEP: true
+
+      - name: Test gstech-walletserver
+        run: yarn workspace gstech-walletserver docker:test --remove-orphans
+
+      - name: Test gstech-paymentserver
+        run: yarn workspace gstech-paymentserver docker:test --remove-orphans
+
+      - name: Test lotto-backend
+        run: yarn workspace lotto-backend docker:test --remove-orphans
+
+  tests-brandserver:
+    name: Test brandserver
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    needs: [ValidateYarnCache, ValidateBuilderCache, ValidateEnvironmentCache]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Init runtime env vars
+        run: |
+          cat << EOF >> $GITHUB_ENV
+          RUNNER_DEBUG=${{ runner.debug }}
+          NODE_NO_WARNINGS=${{ runner.debug != '1' && '1' || '0' }}
+          EAGER=${{ runner.debug != '1' && '&' || '' }}
+          EOF
+
+      - name: Load docker builder cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.BUILDER_CACHE }}
+          key: builder-${{ hashFiles('package.json', 'lerna.json', 'yarn.lock', '.yarnrc', '.node-version') }}
+          fail-on-cache-miss: true
+
+      - name: Fetch cached redis image
+        id: cached-redis-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_REDIS_CACHE }}
+          key: env-gstech-redis
+          restore-keys: env-gstech-redis-
+
+      - name: Fetch cached affmore postgres image
+        id: cached-pgaff-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGAFF_CACHE }}
+          key: env-gstech-postgres-affmore
+          restore-keys: env-gstech-postgres-affmore-
+
+      - name: Fetch cached idefix postgres image
+        id: cached-pgidx-image
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.ENV_PGIDX_CACHE }}
+          key: env-gstech-postgres-idefix
+          restore-keys: env-gstech-postgres-idefix
+
+      - name: Load cached env images
+        run: |
+          docker load -i ${{ env.ENV_REDIS_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGAFF_CACHE }} ${{ env.EAGER }}
+          docker load -i ${{ env.ENV_PGIDX_CACHE }} ${{ env.EAGER }}
+
+      - name: Build Docker Builder Image
+        run: |
+          docker build \
+            --target builder \
+            --cache-from type=local,src=${{ env.BUILDER_CACHE }} \
+            --tag builder \
+            --file ${{ env.BUILDER_DOCKERFILE }} \
+            . ${{ env.EAGER }}
+
+      - name: Check if build deps are installed
+        id: check-build-deps-exists
+        run: command -v g++ && command -v make
+        continue-on-error: true
+
+      - name: Install build deps
+        if: steps.check-build-deps-exists.outputs.run != '0'
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'yarn'
+
+      - name: Print State Info
+        uses: hmarr/debug-action@v3
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build Secondary Service Images
+        run: |
+          docker build -f packages/gstech-campaignserver/Dockerfile -t gstech-campaignserver . ${{ env.EAGER }}
+          docker build -f packages/gstech-rewardserver/Dockerfile -t gstech-rewardserver . ${{ env.EAGER }}
+          docker build -f packages/gstech-compliance/Dockerfile -t gstech-compliance . ${{ env.EAGER }}
+
+      - name: Create Environment
+        run: yarn env:wait
+
+      - name: Migrate Databases
+        run: yarn migrate --scope="{gstech-backend,gstech-rewardserver,gstech-campaignserver}"
+
+      - name: Clean DB
+        run: yarn workspace gstech-rewardserver data:clean
+
+      - name: Import data to gstech-rewardserver
+        run: yarn workspace gstech-rewardserver data:import
+
+      - name: Import data to gstech-campaignserver
+        run: yarn workspace gstech-campaignserver data:mock-import
+
+      - name: Start gstech-backend
+        run: yarn workspace gstech-backend docker:start --remove-orphans --wait
+        env:
+          CI_DEP: true
+
+      - name: Start gstech-campaignserver
+        run: yarn workspace gstech-campaignserver docker:start --remove-orphans --wait
+        env:
+          CI_DEP: true
+
+      - name: Start gstech-rewardserver
+        run: yarn workspace gstech-rewardserver docker:start --remove-orphans --wait
+
+      - name: Start gstech-complianceserver
+        run: yarn workspace gstech-compliance docker:start --remove-orphans --wait
+
+      - name: Test brandserver-backend
+        run: yarn workspace brandserver-backend npm-run-all 'docker:test:** -- --remove-orphans'

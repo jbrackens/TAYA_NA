@@ -1,0 +1,247 @@
+.betSlip-tab-switch-btns-holder{
+  li{
+    font-weight:bold;
+    text-transform: uppercase;
+    font-family: $brand-font--header;
+  }
+}
+.selectFreeBetHolder{
+  .filter-custom .filter-label{
+    background:#cccccc;
+  }
+  .filter-custom .filter-input-value,
+  .filter-custom .filter-input-value:focus{
+    border-radius:0px;
+  }
+  .filter-label-trigger:before, .filter-label-trigger:after{
+    background:$brand-base;
+  }
+}
+
+.my-bets-block .cashout-only-filter .switchLabel{
+  color:#282828;
+}
+
+.betting-slip .betslip-maxbet-button {
+  display:inline-block;
+  width:122px;
+  font-family:$brand-font--header;
+  border-radius:0px;
+  margin-bottom:10px;
+  a{
+    line-height:2em;
+  }
+}
+
+.betting-slip .betting_slip__maxbetMessage::before{
+  display:none;
+}
+
+.panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns > li,
+html.IsMobile .panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns > li,
+html.IsTablet .panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns > li{
+  border-color:#999999;
+}
+
+
+.betSlip-row-wrapper .overlay .negative, .betSlip-row-wrapper .overlayContainer .negative{
+  border-radius:0px;
+}
+
+.accept-odds-messageType a .message{
+  color:#282828;
+}
+
+.betting-slip .heading, .betting-slip .ukSlipHeading{
+  padding:0 12px;
+  line-height:2;
+}
+
+.betSlip-tab-switch-btns-holder ul.tab-switch-btns > li{
+  line-height:3em;
+}
+
+.betSlip-row-content .positive.purchase-list-state{
+  color:$brand-base !important;
+}
+.unislip .accept-odds-message{
+  color:$brand-base;
+}
+
+
+
+.betting-slip #idBetsPurchaseActions .flatBtn{
+  @include brand-button(15);
+}
+
+sb-comp .rj-yourbet__free-bet-name,
+sb-comp .rj-yourbet__message--change,
+.accept-odds-message{
+  color:$brand-base;
+}
+
+// recolour accepted tick
+.betSlip-purchase-icon .i-c-betslip-purchase{
+  background-image:url('https://nfl-predictor-static-content-dev.s3.amazonaws.com/assets/purchase-accepted.svg');
+}
+
+.betting-slip .ukSlipHeading .icon {
+  background-image: url("/imgs/i-v2/o/arrows/alt/arrow-down-small.svg");
+  transform:none;
+}
+.betting-slip .ukSlipHeading.collapsed .icon{
+  transform:rotate(-90deg);
+}
+
+.purchase-list-status.accepted{
+  background:$accept;
+  color:white;
+  .betSlip-row-content .positive.purchase-list-state{
+    color:white !important;
+  }
+}
+
+.betting_slip__maxbetMessage{
+  background:white;
+  padding:10px;
+}
+.IsDesktop .betSlip-btn-lnk:not(.betSlip-preview-btn):hover{
+  color:$brand-primary;
+}
+.betting-slip #EditMyBetsButton.lnk_btn.green_btn{
+  @include brand-button(15,true);
+}
+
+.i-o-betslip-slip{
+  background-image:url("/imgs/i-v2/o/account-mobile/openbets.svg");
+}
+.betSlip-close{
+  display:none;
+}
+html.IsMobile .betSlip-tab-switch-btns-holder.tab-switch-btns-holder,
+html.IsTablet .betSlip-tab-switch-btns-holder.tab-switch-btns-holder{
+  padding-right:0;
+}
+
+.betSlip-tab-switch-btns-holder.tab-switch-btns-holder{
+  border-top:1px solid $brand-grey;
+  border-bottom:1px solid $brand-grey;
+  background:white;
+}
+.panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns > li{
+  color:#282828;
+  border:none;
+  border-radius:0px;
+  &.tab-switch-active{
+    background:$brand-secondary;
+    .tab-switch-btn{
+      color:$brand-base;
+    }
+  }
+  .tab-switch-btn{
+    color:$brand-base;
+  }
+}
+
+.IsDesktop .panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns > li:hover .tab-switch-btn{
+  color:#282828;
+}
+.betting-slip .tabSwitch > a.active{
+  font-weight:bold;
+  color:$brand-base;
+}
+.tabSwitch > a.active, .tabSwitch > div > a.active{
+  border-color:$brand-secondary;
+}
+.tabSwitch > a, .tabSwitch > div > a{
+  border-color:$sidebar-bg;
+}
+.betting-slip .tabSwitch.betslipTabSwitch{
+  background:white;
+}
+
+.betting-slip .tabSwitch > a:not(.active):not(.inactive){
+  color:#282828;
+  &:hover{
+    color:#282828;
+    font-weight:bold;
+  }
+}
+
+.betting-slip .tabSwitch > a:not(.active){
+  border-bottom:3px solid $brand-grey;
+}
+.betting-slip .tabSwitch > a.inactive{
+  opacity:1;
+  color:#cccccc;
+}
+.IsDesktop .accept-new-odds-settings{
+  border:none;
+}
+.accept-new-odds-settings{
+  line-height:40px;
+}
+.IsDesktop .accept-new-odds-settings-btn{
+  background:#cccccc;
+  border-radius:0px;
+}
+
+.betSlip-bet-coef,
+.betSlip-bet-coef strong{
+  font-weight:bold;
+}
+.betting-slip.single #idBetsSelections .betSlip-head-row,
+.betSlip-head-row{
+  margin-bottom:0px;
+}
+
+.betting-slip .stakeboxActions{
+  width:120px;
+  input.stakebox{
+    height:40px;
+    width:40px;
+  }
+  .stakeboxActionsBtn{
+    width:40px;
+  }
+}
+
+.betSlip-stake .betSlip-stake-return{
+    top:-3px;
+}
+.betSlip-row-stake{
+  position:relative;
+  .betslip-maxbet-button{
+    height: 40px;
+    width: 40px;
+    line-height: 10px;
+    font-size: 10px;
+    position: absolute;
+    top: 0;
+    left: 121px;
+    a{
+      line-height:1.4;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:40px;
+    }
+  }
+}
+
+.myBet__cashout .preloader-text{
+  color:white;
+}
+a.myBet__cashoutBtn{
+  border-radius:0px;
+}
+.my-bets-block .btn-loader-wrap .preloader-with-text{
+  background:transparent;
+}
+.my-bets-block .myBet__cashout .flatBtn.positive,
+.open-bets-block .myBet__cashout .flatBtn.positive,
+.my-bets-block .myBet__cashout a.flatBtn.positive,
+.open-bets-block .myBet__cashout a.flatBtn.positive{
+  background:$brand-accept;
+  text-transform:uppercase;
+}

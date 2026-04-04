@@ -1,0 +1,50 @@
+#!groovy
+pipeline {
+    agent { label 'ecs-ec2-java' }
+    environment {
+        //project variables
+        ENV = "master"
+        PROJECT_NAME = "gmx-service-user"
+        SUBPROJECT_NAME = "user-service"
+
+        //git status
+        GITHUB_CONTEXT = "pipeline/${env.SUBPROJECT_NAME}/${env.ENV}"
+        GITHUB_ACCOUNT = "flipadmin"
+        GITHUB_REPO = "gmx-service-users"
+        GITHUB_API_TOKEN = "CICD-GitHub-API-token"
+
+        //build
+        SBT_HOME = tool name: 'sbt', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
+        PATH = "${env.SBT_HOME}/bin:${env.PATH}"
+
+        // ECR
+        AWS_ECR_ACCOUNT_ID = "461765575148"
+        AWS_ECR_REGION = "eu-west-1"
+        AWS_ECR = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build with tests [SBT]') {
+            steps {
+                gitStatusWrapper(description: "${env.STAGE_NAME}", gitHubContext: "${env.GITHUB_CONTEXT}", account: "${env.GITHUB_ACCOUNT}", repo: "${env.GITHUB_REPO}", credentialsId: "${env.GITHUB_API_TOKEN}") {
+                    sh "sbt clean scalafmtCheck compile test"
+                }
+            }
+        }
+        stage('Upload to ECR [SBT]') {
+            steps {
+                gitStatusWrapper(description: "${env.STAGE_NAME}", gitHubContext: "${env.GITHUB_CONTEXT}", account: "${env.GITHUB_ACCOUNT}", repo: "${env.GITHUB_REPO}", credentialsId: "${env.GITHUB_API_TOKEN}") {
+                    script {
+                        docker.withRegistry("https://${env.AWS_ECR}", "ecr:${env.AWS_ECR_REGION}:ecr-gmx-user") {
+                            sh "sbt -Ddocker.repository=${env.AWS_ECR} docker:publish"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

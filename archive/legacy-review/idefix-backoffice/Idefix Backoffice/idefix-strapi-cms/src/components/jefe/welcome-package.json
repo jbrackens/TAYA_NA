@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_jefe_welcome_packages",
+  "info": {
+    "displayName": "Welcome Package",
+    "icon": "television",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "steps": {
+      "type": "component",
+      "repeatable": true,
+      "component": "jefe.deposit-step",
+      "max": 3,
+      "min": 1,
+      "required": true
+    }
+  }
+}

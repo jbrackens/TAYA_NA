@@ -1,0 +1,784 @@
+# =============================================================================
+# Phoenix Platform — Full Demo Stack
+# =============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml --env-file .env.demo up -d
+#
+# This overlay adds the full Phoenix backend plus the real player frontend and
+# Talon backoffice on top of the infrastructure
+# defined in docker-compose.yml (postgres, redis, kafka, kafka-init, kafka-ui).
+#
+# Single-machine demo only. Not for production.
+# =============================================================================
+
+services:
+
+  # ---------- migrate: run all SQL migrations before services start ----------
+  migrate:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: ${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./migrations:/migrations:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        echo "==> Running migrations (UP sections only)..."
+        for f in /migrations/*.sql; do
+          echo "  applying $$(basename $$f)"
+          if grep -q '^-- Up$$' "$$f"; then
+            sed -n '/^-- Up$$/,/^-- Down$$/{ /^-- Down$$/d; /^-- Up$$/d; p; }' "$$f" | psql -v ON_ERROR_STOP=1
+          else
+            psql -v ON_ERROR_STOP=1 -f "$$f"
+          fi
+        done
+        echo "==> Migrations complete."
+    networks:
+      - phoenix-net
+    restart: "no"
+
+  # ---------- API Gateway ----------
+  phoenix-gateway:
+    build:
+      context: ./phoenix-gateway
+      dockerfile: Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      PHOENIX_USER_URL: ${PHOENIX_USER_URL}
+      PHOENIX_WALLET_URL: ${PHOENIX_WALLET_URL}
+      PHOENIX_MARKET_ENGINE_URL: ${PHOENIX_MARKET_ENGINE_URL}
+      PHOENIX_BETTING_ENGINE_URL: ${PHOENIX_BETTING_ENGINE_URL}
+      PHOENIX_EVENTS_URL: ${PHOENIX_EVENTS_URL}
+      PHOENIX_RETENTION_URL: ${PHOENIX_RETENTION_URL}
+      PHOENIX_SOCIAL_URL: ${PHOENIX_SOCIAL_URL}
+      PHOENIX_COMPLIANCE_URL: ${PHOENIX_COMPLIANCE_URL}
+      PHOENIX_ANALYTICS_URL: ${PHOENIX_ANALYTICS_URL}
+      PHOENIX_SETTLEMENT_URL: ${PHOENIX_SETTLEMENT_URL}
+      PHOENIX_NOTIFICATION_URL: ${PHOENIX_NOTIFICATION_URL}
+      PHOENIX_CMS_URL: ${PHOENIX_CMS_URL}
+      STELLA_ENGAGEMENT_URL: ${STELLA_ENGAGEMENT_URL}
+      PHOENIX_PREDICTION_URL: ${PHOENIX_PREDICTION_URL}
+      PHOENIX_AUDIT_URL: ${PHOENIX_AUDIT_URL}
+      PHOENIX_SUPPORT_NOTES_URL: ${PHOENIX_SUPPORT_NOTES_URL}
+      PHOENIX_CONFIG_URL: ${PHOENIX_CONFIG_URL}
+      PHOENIX_REALTIME_URL: ${PHOENIX_REALTIME_URL}
+      HTTP_ALLOWED_ORIGINS: ${HTTP_ALLOWED_ORIGINS}
+      WEBSOCKET_ALLOWED_ORIGINS: ${WEBSOCKET_ALLOWED_ORIGINS}
+      WEBSOCKET_REALTIME_PROXY_ENABLED: ${WEBSOCKET_REALTIME_PROXY_ENABLED}
+    ports:
+      - "8080:8080"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Dedicated Realtime Fanout ----------
+  phoenix-realtime:
+    platform: linux/arm64
+    build:
+      context: .
+      dockerfile: phoenix-realtime/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      phoenix-wallet:
+        condition: service_healthy
+      phoenix-market-engine:
+        condition: service_healthy
+      phoenix-events:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      PHOENIX_MARKET_ENGINE_URL: ${PHOENIX_MARKET_ENGINE_URL}
+      PHOENIX_EVENTS_URL: ${PHOENIX_EVENTS_URL}
+      PHOENIX_WALLET_URL: ${PHOENIX_WALLET_URL}
+    ports:
+      - "8018:8018"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8018/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Legacy Thin Demo Frontend (fallback only) ----------
+  phoenix-demo-web:
+    profiles: ["legacy-demo-web"]
+    build:
+      context: ./phoenix-demo-web
+      dockerfile: Dockerfile
+    depends_on:
+      phoenix-gateway:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Real Player Frontend ----------
+  phoenix-player-web:
+    build:
+      context: ../Phoenix-Sportsbook-Combined/phoenix-frontend-brand-viegg
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        module_name: app-darkstormlabs
+      secrets:
+        - npmrc
+    depends_on:
+      phoenix-gateway:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      HOSTNAME: 0.0.0.0
+      ENV_NAME: ${INVESTOR_DEMO_ENV_NAME}
+      API_GLOBAL_ENDPOINT: ${INVESTOR_DEMO_GATEWAY_PUBLIC_URL}
+      GO_GATEWAY_ENDPOINT: ${INVESTOR_DEMO_GATEWAY_PUBLIC_URL}
+      CANONICAL_GATEWAY_ENDPOINT: ${INVESTOR_DEMO_GATEWAY_PUBLIC_URL}
+      WS_GLOBAL_ENDPOINT: ${INVESTOR_DEMO_GATEWAY_PUBLIC_WS_URL}
+      CDN_URL: ${INVESTOR_DEMO_CDN_URL}
+      GEOCOMPLY_ENV: ${INVESTOR_DEMO_GEOCOMPLY_ENV}
+      GEOCOMPLY_MOBILE_SERVICE_URL: ${INVESTOR_DEMO_GEOCOMPLY_MOBILE_SERVICE_URL}
+      GEOCOMPLY_OOBEE_URL: ${INVESTOR_DEMO_GEOCOMPLY_OOBEE_URL}
+      SPORTSBOOK_INTEGRATION_MODE: ${INVESTOR_DEMO_PLAYER_INTEGRATION_MODE}
+      PREDICTION_MARKETS_ENABLED: ${INVESTOR_DEMO_PREDICTION_MARKETS_ENABLED}
+    command: ["sh", "-c", "HOST=0.0.0.0 HOSTNAME=0.0.0.0 yarn start:app-darkstormlabs"]
+    ports:
+      - "${INVESTOR_DEMO_PLAYER_PORT:-3100}:3000"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ---------- Talon Backoffice ----------
+  phoenix-talon-web:
+    build:
+      context: ../Phoenix-Sportsbook-Combined/talon-backoffice
+      dockerfile: docker/frontend.Dockerfile
+      args:
+        module_name: office
+      secrets:
+        - npmrc
+    depends_on:
+      phoenix-gateway:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      HOSTNAME: 0.0.0.0
+      ENV_NAME: ${INVESTOR_DEMO_ENV_NAME}
+      API_GLOBAL_ENDPOINT: ${INVESTOR_DEMO_GATEWAY_PUBLIC_URL}
+      WS_GLOBAL_ENDPOINT: ${INVESTOR_DEMO_GATEWAY_PUBLIC_WS_URL}
+      CDN_URL: ${INVESTOR_DEMO_CDN_URL}
+    command: ["sh", "-c", "HOST=0.0.0.0 HOSTNAME=0.0.0.0 yarn start:office"]
+    ports:
+      - "${INVESTOR_DEMO_TALON_PORT:-3101}:3000"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ---------- User Service ----------
+  phoenix-user:
+    build:
+      context: ./phoenix-user
+      dockerfile: Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8001:8001"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Wallet Service ----------
+  phoenix-wallet:
+    build:
+      context: .
+      dockerfile: phoenix-wallet/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      OUTBOX_ENABLED: ${OUTBOX_ENABLED}
+      OUTBOX_POLL_INTERVAL: ${OUTBOX_POLL_INTERVAL}
+      OUTBOX_BATCH_SIZE: ${OUTBOX_BATCH_SIZE}
+    ports:
+      - "8002:8002"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Market Engine ----------
+  phoenix-market-engine:
+    build:
+      context: ./phoenix-market-engine
+      dockerfile: Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8003:8003"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Betting Engine ----------
+  phoenix-betting-engine:
+    build:
+      context: .
+      dockerfile: phoenix-betting-engine/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      MARKET_ENGINE_URL: ${PHOENIX_MARKET_ENGINE_URL}
+      WALLET_URL: ${PHOENIX_WALLET_URL}
+      COMPLIANCE_URL: ${PHOENIX_COMPLIANCE_URL}
+      GEOLOCATION_ENFORCEMENT_MODE: ${PHOENIX_BETTING_GEOLOCATION_ENFORCEMENT_MODE}
+    ports:
+      - "8004:8004"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8004/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Events Service ----------
+  phoenix-events:
+    build:
+      context: .
+      dockerfile: phoenix-events/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8005:8005"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8005) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Retention / Loyalty ----------
+  phoenix-retention:
+    build:
+      context: .
+      dockerfile: phoenix-retention/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8006:8006"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8006/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Social ----------
+  phoenix-social:
+    build:
+      context: .
+      dockerfile: phoenix-social/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8007:8007"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8007) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Compliance ----------
+  phoenix-compliance:
+    build:
+      context: .
+      dockerfile: phoenix-compliance/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8008:8008"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8008) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Analytics ----------
+  phoenix-analytics:
+    build:
+      context: .
+      dockerfile: phoenix-analytics/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8009:8009"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8009) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Settlement ----------
+  phoenix-settlement:
+    build:
+      context: .
+      dockerfile: phoenix-settlement/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      PHOENIX_WALLET_URL: ${PHOENIX_WALLET_URL}
+      PHOENIX_BETTING_ENGINE_URL: ${PHOENIX_BETTING_ENGINE_URL}
+    ports:
+      - "8010:8010"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8010) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Notification ----------
+  phoenix-notification:
+    build:
+      context: .
+      dockerfile: phoenix-notification/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM}
+    ports:
+      - "8011:8011"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8011) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- CMS ----------
+  phoenix-cms:
+    build:
+      context: .
+      dockerfile: phoenix-cms/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8012:8012"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8012) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Stella Engagement ----------
+  stella-engagement:
+    build:
+      context: .
+      dockerfile: stella-engagement/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_ADDR: ${REDIS_ADDR}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+    ports:
+      - "8013:8013"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8013) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Prediction Markets ----------
+  phoenix-prediction:
+    build:
+      context: .
+      dockerfile: phoenix-prediction/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      phoenix-wallet:
+        condition: service_healthy
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      OUTBOX_ENABLED: ${OUTBOX_ENABLED}
+      OUTBOX_POLL_INTERVAL: ${OUTBOX_POLL_INTERVAL}
+      OUTBOX_BATCH_SIZE: ${OUTBOX_BATCH_SIZE}
+      WALLET_URL: ${PHOENIX_WALLET_URL}
+    ports:
+      - "8014:8014"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8014/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Audit Service ----------
+  phoenix-audit:
+    build:
+      context: .
+      dockerfile: phoenix-audit/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+    ports:
+      - "8015:8015"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8015) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Support Notes Service ----------
+  phoenix-support-notes:
+    build:
+      context: .
+      dockerfile: phoenix-support-notes/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+    ports:
+      - "8016:8016"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8016) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Config Service ----------
+  phoenix-config:
+    build:
+      context: .
+      dockerfile: phoenix-config/Dockerfile
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+    ports:
+      - "8017:8017"
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '(echo > /dev/tcp/localhost/8017) 2>/dev/null' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- Outbox Worker ----------
+  phoenix-outbox-worker:
+    build:
+      context: ./phoenix-common
+      dockerfile: Dockerfile.outbox-worker
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      kafka:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      KAFKA_BROKERS: ${KAFKA_BROKERS}
+      OUTBOX_POLL_INTERVAL: ${OUTBOX_POLL_INTERVAL}
+      OUTBOX_BATCH_SIZE: ${OUTBOX_BATCH_SIZE}
+    networks:
+      - phoenix-net
+    restart: unless-stopped
+
+secrets:
+  npmrc:
+    file: ${HOME}/.npmrc

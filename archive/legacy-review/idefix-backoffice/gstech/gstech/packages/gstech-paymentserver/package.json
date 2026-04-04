@@ -1,0 +1,19 @@
+{
+  "name": "gstech-paymentserver",
+  "version": "2.7.1",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "pretty": "prettier -c '**/*.js'",
+    "start": "LOGGER_LEVEL=debug nodemon .",
+    "serve": "node .",
+    "test": "NODE_ENV=test mocha --timeout 60000 --require '../gstech-core/modules/setup-test' 'server/**/*.spec.js'",
+    "test:grep": "NODE_ENV=test mocha --timeout 60000 --require '../gstech-core/modules/setup-test' 'server/**/*.spec.js' -g",
+    "test:igrep": "LOGGER_LEVEL=info yarn test:grep",
+    "mocha": "NODE_ENV=test mocha --timeout 60000 --require '../gstech-core/modules/setup-test'",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from gstech-paymentserver.test",
+    "docker:start": "docker compose up --build -d"
+  }
+}

@@ -1,0 +1,1300 @@
+<!--
+    PA Sport XML DTD
+    
+
+    XML HorseRacingCard DTD
+
+    $Revision: 2.18 $
+    $Date: 2008/10/08 07:49:44 $
+
+    (c) Press Association Limited [2002]
+-->
+
+<!--
+    id Entity
+
+    defines an attribute 'id' to hold the internal database id
+    (of a meeting, race, horse etc
+-->
+<!ENTITY % id 
+    'id CDATA #REQUIRED'
+>
+
+<!--
+    HorseRacingCard Element
+
+    A horse racing card for one or more meetings.
+
+    Elements:
+    Meeting+        The meeting(s)
+-->
+<!ELEMENT HorseRacingCard (
+    Meeting+
+)>
+
+<!--
+    Meeting Element
+
+    A horse racing meeting with zero or more races.
+
+    Elements:
+    WeatherForecast?Forecasted weather for meeting
+    Inspection?     Present if the meeting is subject to an inspection
+    Abandoned?      Present if the meeting has been abandoned
+    DrawAdvantage?  Draw Advantage details (where appropriate)
+    AdvancedGoing?  The advanced going for the meeting.
+    Message*        Other textual messages associated with meeting
+    Race*           The race(s)
+    MultiBet*       Multi-race bets available on this meeting
+
+    Attributes:
+    id              The internal identifier for the meeting
+    country         The country where the meeting is being held
+    course          The course where the meeting is being held
+    date            Date when the meeting starts
+                    (format ISO 8601:1988 yyyymmdd)
+
+    status          Whether or not the meeting is:
+                    Dormant    - the meeting is going ahead as planned
+                    Inspection - the meeting is subject to an inspection
+                    Abandoned  - the meeting has been abandoned
+
+    decStage        Declaration stage of races at the meeting (summarised)
+                    Early  - All races at early declaration stage
+                    Final  - All races at final declaration stage
+                    Mixed  - Mixture of early / final races
+                    This attribute is absent for abandoned meetings.
+-->
+<!ELEMENT Meeting (
+    WeatherForecast?, Inspection?, Abandoned?, DrawAdvantage?,
+    AdvancedGoing?, Message*, Race*, MultiBet*
+)>
+<!ATTLIST Meeting
+    %id; 
+    country CDATA #REQUIRED
+    course CDATA #REQUIRED
+    date CDATA #REQUIRED
+    status (Dormant | Inspection | Abandoned) "Dormant"
+    decStage (Early | Mixed | Final) #IMPLIED
+>
+
+<!--
+    WeatherForecast Element
+
+    Forecasted weather for meeting
+-->
+<!ELEMENT WeatherForecast (#PCDATA)>
+
+<!--
+    Inspection Element
+    
+    Gives details of a planned inspection
+ 
+    Attributes:
+    date            The date of the inspection (format ISO 8601:1988 yyyymmdd)
+    time            The time of the inspection
+                    (format ISO 8601:1988 hhmm+/-hhmm)
+-->
+<!ELEMENT Inspection EMPTY>
+<!ATTLIST Inspection
+    date CDATA #REQUIRED
+    time CDATA #REQUIRED
+>
+
+<!--
+    Abandoned Element
+    
+    Gives the reason for a meeting being abandoned
+-->
+<!ELEMENT Abandoned (#PCDATA)>
+
+<!--
+    Draw Advantage Element
+
+    Generalised comment about advantage gained from stalls position
+-->
+<!ELEMENT DrawAdvantage (#PCDATA)>
+
+<!--
+    Race Element
+    
+    Defines a horse race
+
+    Elements:
+    Title?          The title of the race
+    AddedMoney?     The money added to the prize fund for the race
+    PenaltyValue?   The prize money awarded to the winner
+    Prizes?         All prize money awarded for the race
+    Fees?           Fees associated with the race
+    Eligibility?    The horses eligible in the race
+    Distance?       The distance of the race
+    WeightsRaised?  Amount weights raised (at overnight stage)
+    LastWinner?     The winner of corresponding race last year
+    Conditions?     The conditions for the race (penalty weights etc)
+    Televised?      Television coverage details
+    RaceFlags?      Optional extra info breaking down type of race etc.
+    Preview*        Preview text comment(s)
+    Selections?     Selections (tips) for race
+    DrawBias?       The effect of the draw in this race (Flat races only)
+    Rating*         Race ratings
+    Message*        Other textual messages associated with race
+    Tote*           Tote bets applicable to this race
+    Horse*          The horse(s)
+    
+    Attributes:
+    id              The internal identifier for the race
+    date            The date of the race (format ISO 8601:1988 yyyymmdd)
+    time            The time of the race (format ISO 8601:1988 hhmm+/-hhmm)
+    raceType        Type of race (Flat, Hurdle, Chase, National Hunt Flat)
+    trackType       The type of surface being raced on
+    handicap        Whether or not this race is a handicap
+    trifecta        Whether or not this race has a trifecta associated with it
+    showcase        Whether or not this is a showcase race
+    class           The class of the race
+    decStage        Declaration stage of the race
+                    Early - used for early declarations (fourday etc)
+                    Final - used for final declarations (overnight etc)
+    maxRunners      Maximum field size
+    numFences       Number of fences to be jumped
+-->
+<!ELEMENT Race (
+    Title?, AddedMoney?, PenaltyValue?, Prizes?, Fees?,
+    Eligibility?, Distance?, WeightsRaised?,
+    LastWinner?, Conditions?, Televised?, RaceFlags?,
+    Preview*, Selections?, DrawBias?, Rating*, Message*, Tote*, Horse*
+)>
+<!ATTLIST Race
+    %id; 
+    date CDATA #REQUIRED
+    time CDATA #REQUIRED
+    raceType (Flat | Hurdle | Chase | N_H_Flat) #REQUIRED
+    trackType (Turf | Fibresand | Polytrack | Equitrack |
+               Dirt | Sand | AllWeather) #REQUIRED
+    handicap (No | Yes) #IMPLIED
+    trifecta (No | Yes) #IMPLIED
+    showcase (No | Yes) #IMPLIED
+    class CDATA #IMPLIED
+    decStage (Early | Final) #IMPLIED
+    maxRunners CDATA #IMPLIED
+    numFences CDATA #IMPLIED
+>
+
+<!--
+    Title Element
+-->
+<!ELEMENT Title (#PCDATA)>
+
+<!--
+    AddedMoney Element
+
+    Attributes:
+    currency        The currency of the prize money
+    amount          Amount of added prize money
+-->
+<!ELEMENT AddedMoney EMPTY>
+<!ATTLIST AddedMoney
+    currency CDATA #REQUIRED
+    amount CDATA #REQUIRED
+>
+
+<!--
+    PenaltyValue Element
+
+    Attributes:
+    currency        The currency of the prize money
+    amount          Penalty value amount
+-->
+<!ELEMENT PenaltyValue EMPTY>
+<!ATTLIST PenaltyValue
+    currency CDATA #REQUIRED
+    amount CDATA #REQUIRED
+>
+
+<!--
+    Prizes Element
+
+    Attributes:
+    currency        The currency of the prize money(s)
+-->
+<!ELEMENT Prizes (Prize+)>
+<!ATTLIST Prizes
+    currency CDATA #REQUIRED
+>
+
+<!--
+    Prize Element
+
+    Attributes:
+    position        Finishing position the prize is for
+    amount          Prize amount (currency specified in parent element)
+-->
+<!ELEMENT Prize EMPTY>
+<!ATTLIST Prize
+    position CDATA #REQUIRED
+    amount CDATA #REQUIRED
+>
+
+<!--
+    Fees Element
+
+    Attributes:
+    currency        The currency of the prize money
+-->
+<!ELEMENT Fees (Fee+)>
+<!ATTLIST Fees
+    currency CDATA #REQUIRED
+>
+
+<!--
+    Fee Element
+
+    Attributes:
+    type            Type of fee
+    amount          Fee amount (currency specified in parent element)
+    count           Number of entries paying this fee
+-->
+<!ELEMENT Fee EMPTY>
+<!ATTLIST Fee
+    type CDATA #REQUIRED
+    amount CDATA #REQUIRED
+    count CDATA #REQUIRED
+>
+
+<!--
+    Eligibility Element
+
+    Attribute:
+    type            The type of horses eligible for the race.
+                    Example: 3yo plus
+-->
+<!ELEMENT Eligibility EMPTY>
+<!ATTLIST Eligibility
+    type CDATA #REQUIRED
+>
+
+<!--
+    Distance Element
+
+    The distance of the race.
+
+    Attributes:
+    units           The units in which the value is specified
+    value           The value of the distance in the specified units
+    text            Textual representation of distance e.g. 2m 110y
+-->
+<!ELEMENT Distance EMPTY>
+<!ATTLIST Distance
+    units CDATA #REQUIRED
+    value CDATA #REQUIRED
+    text CDATA #REQUIRED
+>
+
+<!--
+    WeightsRaised Element
+
+    Attributes:
+    units           The units in which the value is specified
+    value           The value of the weight in the specified units
+-->
+<!ELEMENT WeightsRaised EMPTY>
+<!ATTLIST WeightsRaised
+    units CDATA #REQUIRED
+    value CDATA #REQUIRED
+>
+
+<!--
+    LastWinner Element
+
+    The winner of the race last year (if there was a corresponding race)
+
+    Elements:
+    Horse*          The winner(s) details (if race run)
+
+    Attributes:
+    year            The year of the corresponding race
+    noRace          Reason if race was not run
+    ran             The number of horses that raced
+-->
+<!ELEMENT LastWinner (
+    Horse*
+)>
+<!ATTLIST LastWinner
+    year CDATA #REQUIRED
+    noRace CDATA #IMPLIED
+    ran CDATA #IMPLIED
+>
+
+<!--
+    Conditions Element
+
+    The conditions for the race (penalty weights etc)
+-->
+<!ELEMENT Conditions (#PCDATA)>
+
+<!--
+    Televised Element
+
+    Television coverage details
+-->
+<!ELEMENT Televised (Channel+)>
+
+<!--
+    Channel Element
+
+    TV Channel details
+
+    Attributes:
+    name            TV Channel name
+-->
+<!ELEMENT Channel EMPTY>
+<!ATTLIST Channel
+    name CDATA #REQUIRED
+>
+
+<!--
+    RaceFlags Element
+
+    Container for RaceFlag elements
+-->
+<!ELEMENT RaceFlags (RaceFlag+)>
+
+<!--
+    RaceFlag Element
+
+    Flag used to indicate type of race (e.g. Claimer)
+
+    Attributes:
+    name            name of flag
+-->
+<!ELEMENT RaceFlag EMPTY>
+<!ATTLIST RaceFlag
+    name CDATA #REQUIRED
+>
+
+<!--
+    Horse Element
+
+    Elements:
+    Cloth           The saddlecloth number for the horse
+    Drawn?          The stall the horse starts from (Flat races only)
+    FormFigures*    Recent form (figures) for the horse
+    LastRunDays*    Number of days since the horse last ran
+    RaceHistoryStat*The race history for the horse
+    Age             The age of the horse (in years)
+    Weight          The weight carried by the horse
+    WeightPenalty?  Extra weight incurred through recent win
+    Trainer         Details of the trainer of the horse
+    Owner?          Details of the owner of the horse
+    Breeder?        Details of the breeder of the horse
+    Jockey?         Details of the jockey of the horse
+    JockeyColours?  Details of the jockey's colours (silks)
+    Tackle*         The tackle which the horse will be wearing
+    Career*         The career performance for the horse
+    Colour*         The colour(s) of the horse
+    Sex?            The sex of the horse
+    Breeding*       The lineage of the horse
+    Lineage?        Lineage comment for horse
+    FoalDate?       Date horse was foaled
+    Comment?        Textual comment for the horse
+    ForecastPrice?  The betting forecast price for the horse
+    StartingPrice?  Starting price of horse (used in LastWinner context)
+    Rating*         Ratings associated with this horse
+    Reserve?        Reserve details IF this horse is a reserve
+    Ballot?         Ballot order details
+    LongHandicap?   The long handicap details for this horse (if applicable)
+    Medication?     Medication taken by the horse in the form race
+    Travelled?      Distance travelled by horse to course
+    FormRace*       Previous race form for this horse
+    PinSticker*     Pin sticker comments
+    Analysis?       Analysis of horses chance of winning
+    Message*        Other textual messages associated with horse
+
+    Attributes:
+    id              The internal identifier for the horse
+    name            The name of the horse
+    bred            The country of breeding of the horse
+
+-->
+<!ELEMENT Horse (
+    Cloth, Drawn?, FormFigures*, LastRunDays*, RaceHistoryStat*,
+    Age, Weight, WeightPenalty?, Trainer, Owner?, Breeder?, Jockey?,
+    JockeyColours?, Tackle*, Career*, Colour*, Sex?, Breeding*, Lineage?,
+    FoalDate?, Comment?, (ForecastPrice | StartingPrice)?,
+    Rating*, Reserve?, Ballot?, LongHandicap?,
+    Medication?, Travelled?, FormRace*, PinSticker*, Analysis?, Message*
+)>
+<!ATTLIST Horse
+    %id; 
+    name CDATA #REQUIRED
+    bred CDATA #REQUIRED
+    status ( Runner | Doubtful ) "Runner"
+>
+
+<!--
+    Cloth Element
+
+    Saddlecloth or racecard number of horse
+
+    In races where two or more horses have been "coupled" together,
+    these horses share the same "number" but have an additional letter
+    to be able to tell them apart. For example 1 and 1a.
+-->
+<!ELEMENT Cloth EMPTY>
+<!ATTLIST Cloth
+    number CDATA #REQUIRED
+    coupled CDATA #IMPLIED
+>
+
+<!--
+    Medication Element
+
+    Some countries permit the use of medication for the horse
+
+    Attribute:
+    value           The type of medication. 
+                    This can contain combinations of:
+                    A-Adjunct Bleeder Medication
+                    B-Bute
+                    C-First Time Bute
+                    L-Lasix
+                    M-First Time Lasix
+-->
+<!ELEMENT Medication EMPTY>
+<!ATTLIST Medication
+    value CDATA #REQUIRED
+>
+
+<!--
+    Drawn Element
+
+    Attribute:
+    stall           The stall this horse will start from
+-->
+<!ELEMENT Drawn EMPTY>
+<!ATTLIST Drawn
+    stall CDATA #REQUIRED
+>
+
+<!--
+    FormFigures Element
+
+    Attributes:
+    type            The type of the form figures
+    figures         The list of form figures depicting previous runs.
+
+    Supported types:
+    'FlatSix'       Flat form figures (maximum of six races)
+    'JumpSix'       Jump form figures (maximum of six races)
+    'FlatAll'       Flat form figures (all races)
+    'JumpAll'       Jump form figures (all races)
+-->
+<!ELEMENT FormFigures EMPTY>
+<!ATTLIST FormFigures
+    type (FlatSix | JumpSix | FlatAll | JumpAll) #REQUIRED
+    figures CDATA #REQUIRED
+>
+
+<!--
+    LastRunDays Element
+
+    Attributes:
+    type            The type of race (Flat or Jump)
+    days            Days since last ran over specified code of racing
+-->
+<!ELEMENT LastRunDays EMPTY>
+<!ATTLIST LastRunDays
+    type (Flat | Jump) #REQUIRED
+    days CDATA #REQUIRED
+>
+
+<!--
+    RaceHistoryStat Element
+
+    Attributes:
+    type            The type of the statistic
+    value           Statistic value (e.g. number of wins at course)
+
+    Supported types:
+    Course          Won at this course
+    CourseDistance  Won at this course and distance
+    Distance        Won at this distance
+    BeatenFavourite Beaten favourite in last race
+-->
+<!ELEMENT RaceHistoryStat EMPTY>
+<!ATTLIST RaceHistoryStat
+    type (Course | CourseDistance | Distance | BeatenFavourite) #REQUIRED
+    value CDATA #IMPLIED
+>
+
+<!--
+    Trainer Element
+
+    Element:
+    PersonForm      indicates how well the trainer is currently doing
+
+    Attributes:
+    id              Identifier for trainer
+    name            The name of the trainer
+    nationality     The nationality of the trainer eg IRE
+    location        Where the trainer is based
+-->
+<!ELEMENT Trainer (PersonForm?)>
+<!ATTLIST Trainer
+    %id; 
+    name CDATA #REQUIRED
+    nationality CDATA #IMPLIED
+    location CDATA #IMPLIED
+>
+
+<!--
+    Owner Element
+
+    Attributes:
+    name            The name of the owner
+-->
+<!ELEMENT Owner EMPTY>
+<!ATTLIST Owner
+    name CDATA #REQUIRED
+>
+
+<!--
+    Breeder Element
+
+    Attributes:
+    name            The name of the breeder
+-->
+<!ELEMENT Breeder EMPTY>
+<!ATTLIST Breeder
+    name CDATA #REQUIRED
+>
+
+<!--
+    Jockey Element
+
+    Elements:
+    Allowance       Weight claimed by jockey
+    PersonForm      indicates how well the jockey is currently doing
+
+    Attributes:
+    id              Identifier for jockey
+    name            The name of the jockey
+-->
+<!ELEMENT Jockey (
+    Allowance?, PersonForm?
+)>
+<!ATTLIST Jockey
+    id CDATA #REQUIRED
+    name CDATA #REQUIRED
+>
+
+<!--
+    Allowance Element
+
+    Attributes:
+    units           The units in which the element value is specified
+    value           The value of the weight in the specified units
+-->
+<!ELEMENT Allowance EMPTY>
+<!ATTLIST Allowance
+    units CDATA #REQUIRED
+    value CDATA #REQUIRED
+>
+
+<!--
+    Age Element
+
+    Attribute:
+    years           The age of the horse in years.
+-->
+<!ELEMENT Age EMPTY>
+<!ATTLIST Age
+    years CDATA #REQUIRED
+>
+
+<!--
+    LongHandicap Element
+
+    Elements:
+    Weight          The long handicap weight for this horse
+-->
+<!ELEMENT LongHandicap (
+    Weight
+)>
+
+<!--
+    Weight Element
+
+    Attributes:
+    units           The units in which the value is specified
+    value           The value of the weight in the specified units
+    text            Textual representation of weight e.g. 11 8 (11st 8lbs)
+-->
+<!ELEMENT Weight EMPTY>
+<!ATTLIST Weight
+    units CDATA #REQUIRED
+    value CDATA #REQUIRED
+    text CDATA #REQUIRED
+>
+
+<!--
+    WeightPenalty Element
+
+    Attributes:
+    units           The units in which the element value is specified
+    value           The value of the weight in the specified units
+-->
+<!ELEMENT WeightPenalty EMPTY>
+<!ATTLIST WeightPenalty
+    units CDATA #REQUIRED
+    value CDATA #REQUIRED
+>
+
+<!--
+    JockeyColours Element
+
+    Attributes:
+    filename        The name of the graphics file which represents the colours
+    description     Textual description of jockey colours
+
+-->
+<!ELEMENT JockeyColours EMPTY>
+<!ATTLIST JockeyColours
+    filename CDATA #REQUIRED
+    description CDATA #REQUIRED
+>
+
+<!--
+    Tackle Element
+
+    Attributes:
+    type            Type of head gear being worn
+    count           Times worn: 1 = 1st time, 2 = 2nd time etc.
+
+    Headgear examples:
+    "Hood", "Visor", "Blinkers", "Eyeshield",
+    "Eyecover", "Tonguestrap", "Cheek pieces"
+-->
+<!ELEMENT Tackle EMPTY>
+<!ATTLIST Tackle
+    type CDATA #REQUIRED
+    count CDATA #IMPLIED
+>
+
+<!--
+    Career Element
+
+    Attributes:
+    type            Flat or Jump career
+    runs            Number of runs
+    wins            Number of wins
+    places          Number of times placed (excluding wins)
+    currency        Currency for prize money (GBP)
+    prizeMoney      Amount of prize money won
+-->
+<!ELEMENT Career EMPTY>
+<!ATTLIST Career
+    type (Flat | Jump) #REQUIRED
+    runs CDATA #REQUIRED
+    wins CDATA #REQUIRED
+    places CDATA #REQUIRED
+    currency CDATA #REQUIRED
+    prizeMoney CDATA #REQUIRED
+>
+
+<!--
+    Colour Element
+
+    Attributes:
+    type            Colour of horse (e.g. ch = chestnut)
+-->
+<!ELEMENT Colour EMPTY>
+<!ATTLIST Colour
+    type CDATA #REQUIRED
+>
+
+<!--
+    Sex Element
+
+    Attributes:
+    type           f = filly, c = colt, m = mare, h = horse,
+                   g = gelding, r = ridgling
+-->
+<!ELEMENT Sex EMPTY>
+<!ATTLIST Sex
+    type (f | c | m | h | g | r) #REQUIRED
+>
+
+<!--
+    Breeding Element
+
+    Attributes:
+    type            Sire (father), Dam (mother), DamSire (maternal grandfather)
+    name            The name of the horse
+    bred            The country of breeding of the horse
+    yearBorn        When the horse was born (if known) 
+-->
+<!ELEMENT Breeding EMPTY>
+<!ATTLIST Breeding
+    type (Sire | Dam | DamSire) #REQUIRED
+    name CDATA #REQUIRED
+    bred CDATA #REQUIRED
+    yearBorn CDATA #IMPLIED
+>
+
+<!--
+    Lineage Element
+
+    Lineage comment indicating pedigree
+-->
+<!ELEMENT Lineage (#PCDATA)>
+
+<!--
+    FoalDate Element
+
+    Date the horse was foaled
+
+    Attribute:
+    date            Date the horse was foaled (format yyyymmdd)
+-->
+<!ELEMENT FoalDate EMPTY>
+<!ATTLIST FoalDate
+    date CDATA #REQUIRED
+>
+
+<!--
+    ForecastPrice Element
+
+    Elements:
+    Price           The forecast price for the horse
+-->
+<!ELEMENT ForecastPrice (
+    Price
+)>
+
+<!--
+    Price Element
+
+    Attributes:
+    numerator       Numerator of price
+    denominator     Denominator of price
+
+    Example
+    <Price numerator="5" denominator="2" />
+-->
+<!ELEMENT Price EMPTY>
+<!ATTLIST Price
+    numerator CDATA #REQUIRED
+    denominator CDATA #REQUIRED
+>
+
+<!--
+    FormLine Element
+
+    Holds details of a race that this horse ran in.
+
+    Elements:
+    Comment         The comment for this form line
+
+    Attributes:
+    country         The country where the meeting was held
+    course          The course where the meeting was held
+    date            Date of the meeting (format ISO 8601:1988 yyyymmdd)
+    going           The going at the meeting
+-->
+<!ELEMENT FormLine (
+    Comment
+)>
+<!ATTLIST FormLine
+    course CDATA #REQUIRED
+    country CDATA #REQUIRED
+    date CDATA #REQUIRED
+    going CDATA #REQUIRED
+>
+
+<!--
+    Comment Element
+-->
+<!ELEMENT Comment (#PCDATA)>
+
+<!--
+    Rating Element
+
+    Holds rating information.
+
+    Attributes:
+    type            Type of rating e.g. Official.
+    value           Rating value e.g. 57.
+-->
+<!ELEMENT Rating EMPTY>
+<!ATTLIST Rating
+    type CDATA #REQUIRED
+    value CDATA #REQUIRED
+>
+
+<!--
+    Reserve Element
+
+    Indicates that the runner is a reserve in the race.
+
+    Attributes:
+    ordering        1 = 1st reserve, 2 = 2nd reserve etc.
+-->
+<!ELEMENT Reserve EMPTY>
+<!ATTLIST Reserve
+    ordering CDATA #REQUIRED
+>
+
+<!--
+    Ballot Element
+
+    Specifies order in which horses will be ballotted out from a race.
+
+    Attributes:
+    ordering        Ballot ordering (1 = first to go)
+-->
+<!ELEMENT Ballot EMPTY>
+<!ATTLIST Ballot
+    ordering CDATA #REQUIRED
+>
+
+<!--
+    Travelled Element
+
+    Distance travelled by horse to course
+
+    Attributes:
+    units           The units in which the value is specified
+    value           The value of the distance in the specified units
+-->
+<!ELEMENT Travelled EMPTY>
+<!ATTLIST Travelled
+    units CDATA #REQUIRED
+    value CDATA #REQUIRED
+>
+
+<!--
+    FormRace Element
+
+    Contains information regarding a horses previous race.
+
+    Elements:
+    Distance        The distance of the form race
+    WinningTime?    The winners time for the form race
+    PrizeMoney?     The prize money for the form race
+    Result          The finishing position for the horse (if applicable)
+    Casualty        Reason why the horse failed to complete (if applicable)
+    Weight?         The weight carried by the horse in the form race
+    CloseUp?        Comment describing the way the horse ran in the form race
+    StartingPrice?  The price returned for the horse in the form race
+    Jockey?         Jockey for the horse in the form race
+    Medication?     Medication taken by the horse in the form race
+    FormHorse*      Other horses that finished in the frame for this form race
+
+    Attributes:
+    country         The country where the meeting is being held
+    course          The course where the meeting is being held
+    date            Date of meeting (format ISO 8601:1988 yyyymmdd)
+    raceDesc        Abbreviated description of race e.g. nov ch = novice chase
+    class           The class of the race (A-H)
+    going           Going conditions for the race
+    ran             Number of horses that raced in the race.
+-->
+<!ELEMENT FormRace (
+    Distance, WinningTime?, PrizeMoney?, (Result | Casualty),
+    Weight?, CloseUp?, StartingPrice?, Jockey?, Medication?, FormHorse*
+)>
+<!ATTLIST FormRace
+    country CDATA #REQUIRED
+    course CDATA #REQUIRED
+    date CDATA #REQUIRED
+    raceDesc CDATA #REQUIRED
+    class CDATA #IMPLIED
+    going CDATA #IMPLIED
+    ran CDATA #REQUIRED
+>
+
+<!--
+    WinningTime Element
+
+    Attributes:
+    time            Time taken (format ISO 8601:1988 mmss.ss)         
+-->
+<!ELEMENT WinningTime EMPTY>
+<!ATTLIST WinningTime
+    time CDATA #REQUIRED
+>
+
+<!--
+    PrizeMoney Element
+
+    Attributes:
+    value           The prize money for the race    
+    currency        The currency used
+-->
+<!ELEMENT PrizeMoney EMPTY>
+<!ATTLIST PrizeMoney
+    value CDATA #REQUIRED
+    currency CDATA #REQUIRED
+>
+
+<!--
+    Result Element
+
+    Attributes:
+    finishPos       Initial finishing position (first past post)
+    disqualified    Indicates if horse was disqualified
+    amendedPos      Amended position (after Stewards Inquiry)
+    firstQuarter    The position of the horse at the first quarter        
+    secondQuarter   The position of the horse at the second quarter        
+    thirdQuarter    The position of the horse at the third quarter
+    btnDistance     Beaten distance (context dependant see below) 
+    FormRace context:
+        If the horse won the race, btnDistance is how far
+        it won the race by.
+        If the horse was beaten, btnDistance is how far it finished
+        behind the winner.
+
+    FormHorse context:
+        If the FormHorse won the race, btnDistance is absent.
+        If the FormHorse was placed, btnDistance is how far it finished
+        behind the horse in front.
+-->
+<!ELEMENT Result EMPTY>
+<!ATTLIST Result
+    finishPos CDATA #REQUIRED
+    disqualified (No | Yes) "No"
+    amendedPos CDATA #IMPLIED
+    firstQuarter CDATA #IMPLIED
+    secondQuarter CDATA #IMPLIED
+    thirdQuarter CDATA #IMPLIED
+    btnDistance CDATA #IMPLIED
+>
+
+<!--
+    Casualty Element
+
+    A casualty is a horse that failed to complete the race.
+
+    Attributes:
+    reason          Reason horse failed to complete race
+-->
+<!ELEMENT Casualty EMPTY>
+<!ATTLIST Casualty
+    reason (Fell |
+            PulledUp |
+            UnseatedRider |
+            BroughtDown |
+            Refused |
+            CarriedOut |
+            RanOut |
+            SlippedUp |
+            HitRails |
+            RefusedToRace) #REQUIRED
+>
+
+<!--
+    CloseUp Element
+
+    The "closeup" describes the way the horse ran in the race
+
+    Attributes:
+    comment         Description of how horse ran
+                    e.g. "held up in touch, ridden before 3 out, weakened"
+-->
+<!ELEMENT CloseUp EMPTY>
+<!ATTLIST CloseUp
+    comment CDATA #REQUIRED
+>
+
+<!--
+    StartingPrice Element
+
+    Starting price of a horse
+
+    Elements:
+    Price           The starting price of the horse
+    Favourite?      Position of horse within starting price market
+-->
+<!ELEMENT StartingPrice (
+    Price, Favourite?
+)>
+
+<!--
+    Favourite Element
+
+    Attributes:
+    position        Position in market, 1 = favourite, 2 = 2nd favourite etc.
+    joint           Number sharing this position in market (2 = jt, 3 = co etc)
+-->
+<!ELEMENT Favourite EMPTY>
+<!ATTLIST Favourite
+    position CDATA #REQUIRED
+    joint CDATA #REQUIRED
+>
+
+<!--
+    FormHorse Element
+
+    Used to list other placed horses in the FormRace.
+
+    Element:
+    Result          Details of where this horse finished
+    Weight?         The weight carried by this horse
+    Jockey?         The jockey for this horse
+
+    Attributes:
+    id              id reference for this horse
+    name            The name of the horse
+    bred            The country of breeding of the horse
+-->
+<!ELEMENT FormHorse (
+    Result, Weight?, Jockey?
+)>
+<!ATTLIST FormHorse
+    id CDATA #REQUIRED
+    name CDATA #REQUIRED
+    bred CDATA #REQUIRED
+>
+
+<!--
+    AdvancedGoing Element
+
+    Indication of expected going at the meeting
+-->
+<!ELEMENT AdvancedGoing (#PCDATA)>
+
+<!--
+    Message Element
+
+    Used to hold additional textual information.
+
+    Attribute:
+    type            Indicates type of message
+-->
+<!ELEMENT Message (#PCDATA)>
+<!ATTLIST Message
+    type CDATA #REQUIRED
+>
+
+<!--
+    Preview Element
+
+    Contains preview text about the race
+
+    Attributes:
+    type            the type of preview (Short or Long)
+-->
+<!ELEMENT Preview (#PCDATA)>
+<!ATTLIST Preview
+    type (Short | Long) #REQUIRED
+>
+
+<!--
+    Selections Element
+
+    Container element for race selections (aka tips)
+
+    Element:
+    Pick+           One or more picks in the race (usually three)
+-->
+<!ELEMENT Selections (Pick+)>
+
+<!--
+    Pick Element
+
+    The pick references a horse running in the race, and the type
+    denotes it's presumed chance of winning.
+
+    The 1st choice is known as the "Selection".
+    The 2nd choice is known as the "Danger".
+    The 3rd choice is known as the "Alternative".
+
+    Attributes:
+    type            the type of pick
+    id              id reference for this horse
+    name            The name of the horse
+    bred            The country of breeding of the horse
+-->
+<!ELEMENT Pick EMPTY>
+<!ATTLIST Pick
+    type (Selection | Danger | Alternative) #REQUIRED
+    id CDATA #REQUIRED
+    name CDATA #REQUIRED
+    bred CDATA #REQUIRED
+>
+
+<!--
+    PinSticker Element
+
+    A pinsticker is a descriptive comment about the horse.
+    It gets its name from a method of selecting winners.
+
+    Attributes:
+    type            the type of pinsticker (Short or Long)
+-->
+<!ELEMENT PinSticker (#PCDATA)>
+<!ATTLIST PinSticker
+    type (Short | Long) #REQUIRED
+>
+
+<!--
+    Analysis Element
+
+    Container element for quick guide to a horses chance of winning
+
+-->
+<!ELEMENT Analysis (QuickGuide+)>
+
+<!--
+    QuickGuide Element
+
+    Indicates whether conditions are ideal for the horse.
+
+    Attributes:
+    type            see below
+    value           see below
+    scale           used in conjunction with "Yes" value
+
+    The "type" attribute can be one of the following:
+    "Form"     whether the horse is in form
+    "Course"   whether the horse is suited by the course
+    "Distance" whether the horse is suited by the distance
+    "Going"    whether the horse is suited by the going
+    
+    The "value" attribute must be one of:
+    "No"       condition not true - Cross
+    "Yes"      condition true     - Tick (scale indicates how many ticks)
+    "Unknown"  don't know yet     - Question mark
+    "NoData"   no data available  - Dash
+-->
+<!ELEMENT QuickGuide EMPTY>
+<!ATTLIST QuickGuide
+    type (Form | Distance | Course | Going) #REQUIRED
+    value (No | Yes | Unknown | NoData) #REQUIRED
+    scale (0 | 1 | 2 | 3) "0"
+>
+
+<!--
+    PersonForm Element
+
+    This element is used as a child of trainer or jockey to indicate
+    how well that person has done during the specified time period.
+
+    Attributes:
+    type            the type of
+    lastDays        the length of the period (in days)
+    runs            the number of runners/rides during the specified period
+    wins            the number of winners during the specified period
+-->
+<!ELEMENT PersonForm EMPTY>
+<!ATTLIST PersonForm
+    lastDays CDATA #REQUIRED
+    runs CDATA #REQUIRED
+    wins CDATA #REQUIRED
+>
+
+<!--
+    DrawBias Element
+
+    The bias (or advantage) gained from the stall position.
+
+    Attribute:
+    value           side favoured by the draw
+
+    The "value" attribute must be one of:
+    "Low"  - Draw favours horses drawn low
+    "High" - Draw favours horses drawn high
+    "None" - No advantage in the draw
+-->
+<!ELEMENT DrawBias EMPTY>
+<!ATTLIST DrawBias
+    value (Low | High | None) #REQUIRED
+>
+
+<!--
+    Tote Element
+
+    Indicates which Tote "race" bets are available on the parent Race element
+
+    Attributes:
+    type            type of bet - Exacta, Trifecta etc
+    currency        the currency of the bet e.g. USD
+    stake           unit stake for the bet
+-->
+<!ELEMENT Tote EMPTY>
+<!ATTLIST Tote
+    type (Exacta | Quinella | Trifecta | Superfecta) #REQUIRED
+    currency CDATA #REQUIRED
+    stake CDATA #IMPLIED
+>
+
+<!--
+    MultiBet Element
+
+    This element contains details of multi-race bets.
+    These bets may be "pool" based (e.g. Jackpot)
+    or based on starting prices (e.g. Place Six).
+
+    Element:
+    PoolDetails?    Present for "pool" based bets.
+    CarryForward?   Present for "pool" based bets but only if the pool
+                    has not been completely won, and is being carried over
+                    to a future meeting.
+    MultiBetLeg*    Specifies races and leg results
+    MultiBetConsolation*
+                    Details of any bet consolations
+
+    Attributes:
+    type            Type of multibet
+    currency        The currency paid in e.g. GBP
+    dividend        The amount paid.
+                    Where a pool is not won the dividend will contain "0.00"
+    stake           Unit stake
+-->
+<!ELEMENT MultiBet (
+    CarryForward?, MultiBetLeg*
+)>
+<!ATTLIST MultiBet
+    type ( DailyDouble | Pick3 | Pick4 | Pick6 | Jackpot | Placepot | Quadpot ) #REQUIRED
+    currency CDATA #REQUIRED
+    dividend CDATA #IMPLIED
+    stake CDATA #IMPLIED
+>
+<!--
+    CarryForward Element
+
+    This element contains details of pool based bets
+    that have not been entirely won. The remaining prize pool
+    is carried forward to a future meeting (or race) as specified below.
+
+    Attributes:
+    currency        The currency paid in e.g. GBP
+    pool            The prize pool being carried forward.
+    date            Date carried forward to.
+    time            The time of race carried forward to (if applicable)
+    course          The course carried forward to (if applicable)
+    country         The country of the specified course (if applicable)
+-->
+<!ELEMENT CarryForward EMPTY>
+<!ATTLIST CarryForward
+    currency CDATA #REQUIRED
+    pool CDATA #REQUIRED
+    date CDATA #REQUIRED
+    time CDATA #IMPLIED
+    course CDATA #IMPLIED
+    country CDATA #IMPLIED
+>
+<!--
+    MultiBetLeg element
+
+    Used to specify which races comprise a multi-race bet.
+
+    Attributes:
+    leg             leg number
+    raceId          id of the race
+-->
+<!ELEMENT MultiBetLeg EMPTY>
+<!ATTLIST MultiBetLeg
+    leg CDATA #REQUIRED
+    raceId CDATA #REQUIRED
+>

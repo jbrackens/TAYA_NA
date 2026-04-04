@@ -1,0 +1,26 @@
+@require 'banners/_banner_sprites'
+@require 'inline_banners/game/nonloggedin.styl'
+
+#leaderboard-wrapper
+  width 320px
+  margin 0 auto
+  border 0
+  padding 0
+  background-color $uniform-bg-link-background
+
+.notification-31, .notification-62
+  .button
+    position relative
+    bottom 10px
+    width auto
+    height 38px
+    padding-left 48px
+    line-height 29px
+    &:before
+      position absolute
+      left 5px
+      content ""
+      display block
+      float left
+      banner_sprite: $referafriend_common_fblogo
+

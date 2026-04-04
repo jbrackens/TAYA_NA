@@ -1,0 +1,91 @@
+{
+  "type": "record",
+  "name": "WalletTransactionData",
+  "namespace": "net.flipsports.gmx.rewardcalculator.api",
+  "fields": [
+    {
+      "name": "wallet_transaction_id",
+      "type": "long"
+    },
+    {
+      "name": "customer_id",
+      "type": "int"
+    },
+    {
+      "name": "customer_name",
+      "type": "string"
+    },
+    {
+      "name": "country",
+      "type": "string"
+    },
+    {
+      "name": "creation_date",
+      "type": "string"
+    },
+    {
+      "name": "update_date",
+      "type": "string"
+    },
+    {
+      "name": "site_name",
+      "type": "string"
+    },
+    {
+      "name": "is_first_deposit",
+      "type": "string"
+    },
+    {
+      "name": "operation_type_id",
+      "type": "string"
+    },
+    {
+      "name": "operation_master_group",
+      "type": "string"
+    },
+    {
+      "name": "operation_Group_description",
+      "type": "string"
+    },
+    {
+      "name": "operation_description",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": "string"
+    },
+    {
+      "name": "currency_code",
+      "type": "string"
+    },
+    {
+      "name": "amount_user_currency",
+      "type": "string"
+    },
+    {
+      "name": "amount_gbp",
+      "type": "string"
+    },
+    {
+      "name": "amount_eur",
+      "type": "string"
+    },
+    {
+      "name": "bonus",
+      "type": "string"
+    },
+    {
+      "name": "loading_update_date",
+      "type": "string"
+    },
+    {
+      "name": "account_total",
+      "type": "string"
+    },
+    {
+      "name": "notes",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+livenessProbe:
+  httpGet:
+    path: /api/status
+    port: 3000
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /api/status
+    port: 3000
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/brandserver-backend
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "20m"
+  limits:
+    memory: "256Mi"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3000
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+env:
+  METRICS_PORT: 4001
+  LOGGER_HOST: http://loki-write.monitoring.svc.cluster.local:3100
+  LOGGER_SERVICE: olaspill-backend

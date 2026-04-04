@@ -1,0 +1,287 @@
+services:
+  # PostgreSQL 16 - Primary relational database
+  postgres:
+    image: postgres:16-alpine
+    container_name: "${COMPOSE_STACK_NAME:-phoenix}-postgres"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c max_connections=200"
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Kafka 7.6.0 - Event streaming with KRaft mode (no Zookeeper)
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: "${COMPOSE_STACK_NAME:-phoenix}-kafka"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # KRaft Controller Configuration
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-MkU3OEVBNTcwNTJENDM2Qk}
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Listener Configuration
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:${KAFKA_HOST_PORT:-9092}
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # Auto-create topics
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # Log retention (7 days)
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+      # Performance tuning
+      KAFKA_NUM_NETWORK_THREADS: 8
+      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
+    ports:
+      - "${KAFKA_HOST_PORT:-9092}:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server=localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Kafka Topic Initialization Service
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: "${COMPOSE_STACK_NAME:-phoenix}-kafka-init"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_CONNECT: kafka:29092
+    command: >
+      bash -c "
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.wallet.transactions --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.wallet.balance-updated --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.user.events --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.market.updates --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.market.created --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.market.provider-synced --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.market.odds-updated --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.market.status-changed --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.market.settled --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.event.created --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.event.upserted --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.event.live-score-updated --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.event.completed --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.bet.placed --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.bet.updated --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.bet.settled --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.bet.cashed-out --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.notification.send --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic phoenix.analytics.events --partitions 6 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic stella.achievements --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic stella.aggregations --partitions 3 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic stella.validation --partitions 3 --replication-factor 1
+      "
+    networks:
+      - phoenix-net
+    restart: on-failure
+
+  # Redis 7 - In-memory cache and session store
+  redis:
+    image: redis:7-alpine
+    container_name: "${COMPOSE_STACK_NAME:-phoenix}-redis"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: redis-server --appendonly yes --appendfsync everysec
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - phoenix-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Kafka UI - Web-based Kafka cluster management (port 8090)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: "${COMPOSE_STACK_NAME:-phoenix}-kafka-ui"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: phoenix-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+    ports:
+      - "${KAFKA_UI_PORT:-8090}:8080"
+    networks:
+      - phoenix-net
+    restart: unless-stopped
+
+  # ============================================================================
+  # MICROSERVICE DEFINITIONS - Uncomment to enable local service development
+  # Each service depends on infrastructure (postgres, kafka, redis)
+  # All services require Go 1.21+ and appropriate Dockerfiles in service directories
+  # ============================================================================
+
+  # phoenix-gateway:
+  #   build:
+  #     context: ./phoenix-gateway
+  #     dockerfile: Dockerfile
+  #   container_name: phoenix-gateway
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   environment:
+  #     LOG_LEVEL: ${LOG_LEVEL}
+  #     HTTP_PORT: 8080
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_NAME: ${DB_NAME}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     KAFKA_BROKERS: kafka:29092
+  #     REDIS_URL: ${REDIS_URL}
+  #     ENVIRONMENT: development
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - phoenix-net
+  #   restart: unless-stopped
+
+  # phoenix-user:
+  #   build:
+  #     context: ./phoenix-user
+  #     dockerfile: Dockerfile
+  #   container_name: phoenix-user
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   environment:
+  #     LOG_LEVEL: ${LOG_LEVEL}
+  #     HTTP_PORT: 8001
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_NAME: ${DB_NAME}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     KAFKA_BROKERS: kafka:29092
+  #     KAFKA_USER_EVENTS_TOPIC: phoenix.user.events
+  #     REDIS_URL: ${REDIS_URL}
+  #     ENVIRONMENT: development
+  #   ports:
+  #     - "8001:8001"
+  #   networks:
+  #     - phoenix-net
+  #   restart: unless-stopped
+
+  # phoenix-wallet:
+  #   build:
+  #     context: ./phoenix-wallet
+  #     dockerfile: Dockerfile
+  #   container_name: phoenix-wallet
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   environment:
+  #     LOG_LEVEL: ${LOG_LEVEL}
+  #     HTTP_PORT: 8002
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_NAME: ${DB_NAME}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     KAFKA_BROKERS: kafka:29092
+  #     KAFKA_WALLET_TOPIC: phoenix.wallet.transactions
+  #     REDIS_URL: ${REDIS_URL}
+  #     ENVIRONMENT: development
+  #   ports:
+  #     - "8002:8002"
+  #   networks:
+  #     - phoenix-net
+  #   restart: unless-stopped
+
+  # phoenix-market-engine:
+  #   build:
+  #     context: ./phoenix-market-engine
+  #     dockerfile: Dockerfile
+  #   container_name: phoenix-market-engine
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   environment:
+  #     LOG_LEVEL: ${LOG_LEVEL}
+  #     HTTP_PORT: 8003
+  #     DB_HOST: postgres
+  #     DB_PORT: 5432
+  #     DB_NAME: ${DB_NAME}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     KAFKA_BROKERS: kafka:29092
+  #     KAFKA_MARKET_UPDATES_TOPIC: phoenix.market.updates
+  #     KAFKA_BET_PLACED_TOPIC: phoenix.bet.placed
+  #     KAFKA_BET_SETTLED_TOPIC: phoenix.bet.settled
+  #     REDIS_URL: ${REDIS_URL}
+  #     ENVIRONMENT: development
+  #   ports:
+  #     - "8003:8003"
+  #   networks:
+  #     - phoenix-net
+  #   restart: unless-stopped
+
+networks:
+  phoenix-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  kafka_data:
+    driver: local
+  redis_data:
+    driver: local

@@ -1,0 +1,45 @@
+version: "3"
+services:
+  cms:
+    container_name: cms
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Reference: https://docs.strapi.io/developer-docs/latest/setup-deployment-guides/installation/docker.html#development-and-or-staging-environments
+    environment:
+      # sqlite is also supported.
+      DATABASE_CLIENT: "postgres"
+      DATABASE_TYPE: "postgres"
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASWORD: postgres
+      DATABASE_NAME: postgres
+      DATABASE_SSL: "false"
+      HOST: "0.0.0.0"
+      PORT: 3000
+      STRAPI_TELEMETRY_DISABLED: "true"
+      NODE_ENV: "production"
+      JWT_SECRET: "WTELsVz4GFit/3s+vBQXpg=="
+      ADMIN_JWT_SECRET: "IwdFrXVN414k8HquzgY9YA=="
+      API_TOKEN_SALT: "6Enq97Oennj3pYsI="
+      APP_KEYS: "36umiwVedT+a0OSXCEadAF38uuapzBcYEH2lRgglwiI="
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    image: docker.io/library/postgres:14-alpine
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    volumes:
+      - db_data_v2:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+volumes:
+  db_data_v2: {}

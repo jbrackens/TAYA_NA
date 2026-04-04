@@ -1,0 +1,1069 @@
+{
+    "bucket": {
+        "createdTimestamp": 1576776073532,
+        "identifier": "5fc38c20-c26a-5864-b6db-50dcda176743",
+        "name": "EventNotification",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "5fc38c20-c26a-5864-b6db-50dcda176743",
+        "bucketName": "EventNotification",
+        "createdTimestamp": 1576776247629,
+        "description": "",
+        "identifier": "0ee0d960-8470-5fe5-8679-59affde9807b",
+        "modifiedTimestamp": 1582086075380,
+        "name": "Main Flow",
+        "type": "Flow",
+        "versionCount": 4
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "a002c567-0017-3660-87ad-1fe06a12a6e7",
+                    "name": "[WARN]Error extracting event type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "6683cf0e-08b1-3efc-96f5-6a82fa43d2d5",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "59aad011-5f32-3ac0-9aaf-64efc49cc5ad",
+                    "name": "Extract Event Type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "59aad011-5f32-3ac0-9aaf-64efc49cc5ad",
+                    "name": "Extract Event Type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "456eff07-1933-3df6-b102-a79a579eee42",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "split"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "dd8d6a8a-6de8-3998-b9c6-9143ee646357",
+                    "name": "SplitJson",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "dd8d6a8a-6de8-3998-b9c6-9143ee646357",
+                    "name": "SplitJson",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "e0895a9f-fa67-3b9b-9fa9-2068c875d9e9",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "6a0b0e0b-2e4d-3ebc-a6ef-85a9ff6a06c3",
+                    "name": "gmx-messaging.notification-events",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "d9e30ba0-3b9b-30ee-9934-b753d1c5f1bf",
+                    "name": "[ERROR]Error parsing data from KAFKA!",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "8e587d6e-d730-3d8a-8d1f-62b836b1b806",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "parse.failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "6a0b0e0b-2e4d-3ebc-a6ef-85a9ff6a06c3",
+                    "name": "gmx-messaging.notification-events",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "d00d539e-4c47-338d-99fd-b0d37e6617ad",
+                    "name": "input",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "10d1acbc-df9a-3bc2-b7d9-5e7b190b4525",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "JIRA"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "600dc8f9-819f-3149-8034-4ebea94aa6d7",
+                    "name": "Route On EventType",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1399.3423992673447,
+                        "y": 236.04521218726563
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "600dc8f9-819f-3149-8034-4ebea94aa6d7",
+                    "name": "Route On EventType",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "a3065ab4-7347-3c56-8d12-f9217251cad5",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "fa8d3d98-dba0-3ddd-a9fc-ebe5f20ebe2d",
+                    "name": "[WARN]Unknown event type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "600dc8f9-819f-3149-8034-4ebea94aa6d7",
+                    "name": "Route On EventType",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "51a1a55c-3a52-3d45-a4aa-146a0d811565",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "matched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "59aad011-5f32-3ac0-9aaf-64efc49cc5ad",
+                    "name": "Extract Event Type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "ad343441-04a4-3fd6-9a34-7bea49b06c1a",
+                    "name": "[ERROR]Error splitting data from Kaffka",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "864248d2-0504-381f-b4c5-05ab47a6e169",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "dd8d6a8a-6de8-3998-b9c6-9143ee646357",
+                    "name": "SplitJson",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 2099.6324130263256,
+                        "y": -372.87518813371327
+                    },
+                    {
+                        "x": 2100.846646424763,
+                        "y": -279.15079238176014
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "d9e30ba0-3b9b-30ee-9934-b753d1c5f1bf",
+                    "name": "[ERROR]Error parsing data from KAFKA!",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "c48870f4-3901-3244-98d3-271188c43695",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "d9e30ba0-3b9b-30ee-9934-b753d1c5f1bf",
+                    "name": "[ERROR]Error parsing data from KAFKA!",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1399.4006791694128,
+                        "y": 23.113862384559383
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "59aad011-5f32-3ac0-9aaf-64efc49cc5ad",
+                    "name": "Extract Event Type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "a0501953-8238-346f-befc-c4858b9cb9fa",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "a002c567-0017-3660-87ad-1fe06a12a6e7",
+                    "name": "[WARN]Error extracting event type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1397.5295975676027,
+                        "y": -184.16719690941397
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "dd8d6a8a-6de8-3998-b9c6-9143ee646357",
+                    "name": "SplitJson",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "9029ae85-2ca7-3164-b2bb-543c04dbfede",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "ad343441-04a4-3fd6-9a34-7bea49b06c1a",
+                    "name": "[ERROR]Error splitting data from Kaffka",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "fa8d3d98-dba0-3ddd-a9fc-ebe5f20ebe2d",
+                    "name": "[WARN]Unknown event type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "16f25cce-8188-3506-adba-2defae17f538",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "600dc8f9-819f-3149-8034-4ebea94aa6d7",
+                    "name": "Route On EventType",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1399.4006791694128,
+                        "y": 156.0536359441297
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "a002c567-0017-3660-87ad-1fe06a12a6e7",
+                    "name": "[WARN]Error extracting event type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "d067813e-e6d6-3b53-9f8b-52746b4f6ac0",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                    "id": "59aad011-5f32-3ac0-9aaf-64efc49cc5ad",
+                    "name": "Extract Event Type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+        "inputPorts": [],
+        "labels": [],
+        "name": "EventNotification",
+        "outputPorts": [],
+        "position": {
+            "x": 1306.391372680664,
+            "y": 1052.4884948730469
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "inputPorts": [],
+                "labels": [],
+                "name": "EventTypeJIRA",
+                "outputPorts": [],
+                "position": {
+                    "x": 858.8811948591159,
+                    "y": 482.6127835971955
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "5fc38c20-c26a-5864-b6db-50dcda176743",
+                    "flowId": "0f1db41b-d906-5d86-9b70-7385dea5961a",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 2
+                }
+            }
+        ],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "600dc8f9-819f-3149-8034-4ebea94aa6d7",
+                "name": "Route On EventType",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 870.0846120708637,
+                    "y": 244.7371731771899
+                },
+                "properties": {
+                    "JIRA": "${event_type:equalsIgnoreCase(\"JIRA\")}",
+                    "Routing Strategy": "Route to Property name"
+                },
+                "propertyDescriptors": {
+                    "JIRA": {
+                        "displayName": "JIRA",
+                        "identifiesControllerService": false,
+                        "name": "JIRA",
+                        "sensitive": false
+                    },
+                    "Routing Strategy": {
+                        "displayName": "Routing Strategy",
+                        "identifiesControllerService": false,
+                        "name": "Routing Strategy",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.RouteOnAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "d9e30ba0-3b9b-30ee-9934-b753d1c5f1bf",
+                "name": "[ERROR]Error parsing data from KAFKA!",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1578.3330966200756,
+                    "y": -389.7984364247289
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Error parsing AVRO!",
+                    "log-prefix": "[EventNotification] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "5 minute",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ff0000"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "59aad011-5f32-3ac0-9aaf-64efc49cc5ad",
+                "name": "Extract Event Type",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 873.559814453125,
+                    "y": 35.5655517578125
+                },
+                "properties": {
+                    "Destination": "flowfile-attribute",
+                    "Null Value Representation": "empty string",
+                    "Path Not Found Behavior": "warn",
+                    "Return Type": "auto-detect",
+                    "event_type": "$.type"
+                },
+                "propertyDescriptors": {
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Null Value Representation": {
+                        "displayName": "Null Value Representation",
+                        "identifiesControllerService": false,
+                        "name": "Null Value Representation",
+                        "sensitive": false
+                    },
+                    "Path Not Found Behavior": {
+                        "displayName": "Path Not Found Behavior",
+                        "identifiesControllerService": false,
+                        "name": "Path Not Found Behavior",
+                        "sensitive": false
+                    },
+                    "Return Type": {
+                        "displayName": "Return Type",
+                        "identifiesControllerService": false,
+                        "name": "Return Type",
+                        "sensitive": false
+                    },
+                    "event_type": {
+                        "displayName": "event_type",
+                        "identifiesControllerService": false,
+                        "name": "event_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.EvaluateJsonPath",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "a002c567-0017-3660-87ad-1fe06a12a6e7",
+                "name": "[WARN]Error extracting event type",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1575.2415438857006,
+                    "y": 30.662173011306265
+                },
+                "properties": {
+                    "log-level": "warn",
+                    "log-message": "Error extracting event type",
+                    "log-prefix": "[EventNotification] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "1 minute",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ffff00"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [
+                    "original"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "dd8d6a8a-6de8-3998-b9c6-9143ee646357",
+                "name": "SplitJson",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 871.1152586713799,
+                    "y": -173.65192419097406
+                },
+                "properties": {
+                    "JsonPath Expression": "$",
+                    "Null Value Representation": "empty string"
+                },
+                "propertyDescriptors": {
+                    "JsonPath Expression": {
+                        "displayName": "JsonPath Expression",
+                        "identifiesControllerService": false,
+                        "name": "JsonPath Expression",
+                        "sensitive": false
+                    },
+                    "Null Value Representation": {
+                        "displayName": "Null Value Representation",
+                        "identifiesControllerService": false,
+                        "name": "Null Value Representation",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.SplitJson",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "6a0b0e0b-2e4d-3ebc-a6ef-85a9ff6a06c3",
+                "name": "gmx-messaging.notification-events",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 868.6664968042169,
+                    "y": -391.12930677649274
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "none",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "gmx-messaging.notification-events.process-engine",
+                    "honor-transactions": "true",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "100",
+                    "message-header-encoding": "UTF-8",
+                    "record-reader": "75ab4fd2-2ec3-3a7b-97a9-62f19d7b8bfb",
+                    "record-writer": "c20c3cb8-2de1-3fc3-8085-329fe3cbc036",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "gmx-messaging.notification-events",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "record-reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "record-reader",
+                        "sensitive": false
+                    },
+                    "record-writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "record-writer",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0s",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "ad343441-04a4-3fd6-9a34-7bea49b06c1a",
+                "name": "[ERROR]Error splitting data from Kaffka",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1573.9439364638256,
+                    "y": -175.64040114640858
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Error splitting data from Kaffka",
+                    "log-prefix": "[EventNotification] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "1 minute",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ff0000"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e773b75d-7469-3e33-8ad6-f448d33f0334",
+                "identifier": "fa8d3d98-dba0-3ddd-a9fc-ebe5f20ebe2d",
+                "name": "[WARN]Unknown event type",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1578.6001864638256,
+                    "y": 246.31222031355236
+                },
+                "properties": {
+                    "log-level": "warn",
+                    "log-message": "Unknown event type: ${event_type}",
+                    "log-prefix": "[EventNotification] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "1 minute",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ffff00"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "5fc38c20-c26a-5864-b6db-50dcda176743",
+        "comments": "decreased number of concurrent messages from kafka, fixed warning logging loop, vb ",
+        "flowIdentifier": "0ee0d960-8470-5fe5-8679-59affde9807b",
+        "timestamp": 1582086075317,
+        "version": 4
+    }
+}

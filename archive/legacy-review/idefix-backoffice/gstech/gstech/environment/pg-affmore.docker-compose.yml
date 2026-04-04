@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  gstech-postgres-12:
+    image: public.ecr.aws/x1y4u7f1/gstech-postgres:affmore
+    platform: linux/amd64
+    container_name: gstech-postgres-affmore
+    expose:
+      - "5433"
+    ports:
+    - "5433:5433"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: affmore
+      PGPORT: 5433
+    command: "postgres -p 5433 -c fsync=off -c full_page_writes=off -c synchronous_commit=OFF"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="AllTests" verbose="1">
+  <test name="AllTests">
+    <packages>
+      <package name="tech.argyll.video.datafeed.*"/>
+    </packages>
+  </test>
+</suite>

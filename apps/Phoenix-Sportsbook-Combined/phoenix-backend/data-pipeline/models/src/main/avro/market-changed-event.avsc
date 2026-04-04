@@ -1,0 +1,99 @@
+{
+  "namespace": "phoenix.dataapi.internal.oddin",
+  "type": "record",
+  "name": "MarketChangedEvent",
+  "fields": [
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "receivedAtUtc",
+      "type": "long"
+    },
+    {
+      "name": "sportId",
+      "type": "string"
+    },
+    {
+      "name": "fixtureId",
+      "type": "string"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "marketName",
+      "type": "string"
+    },
+    {
+      "name": "marketStatus",
+      "type": "string"
+    },
+    {
+      "name": "marketType",
+      "type": "string"
+    },
+    {
+      "name": "marketCategory",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "marketPriority",
+      "type": "int"
+    },
+    {
+      "name": "marketSpecifiers",
+      "type": {
+        "type": "map",
+        "values": "string"
+      }
+    },
+    {
+      "name": "selectionOdds",
+      "type": {
+        "type": "array",
+        "items": {
+          "namespace": "phoenix.dataapi.internal.oddin",
+          "type": "record",
+          "name": "SelectionOdds",
+          "fields": [
+            {
+              "name": "correlationId",
+              "type": "string"
+            },
+            {
+              "name": "sportId",
+              "type": "string"
+            },
+            {
+              "name": "fixtureId",
+              "type": "string"
+            },
+            {
+              "name": "marketId",
+              "type": "string"
+            },
+            {
+              "name": "selectionId",
+              "type": "string"
+            },
+            {
+              "name": "selectionName",
+              "type": "string"
+            },
+            {
+              "name": "odds",
+              "type": ["null", "string"]
+            },
+            {
+              "name": "active",
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

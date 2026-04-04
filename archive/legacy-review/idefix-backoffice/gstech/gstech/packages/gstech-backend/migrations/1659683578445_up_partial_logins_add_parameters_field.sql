@@ -1,0 +1,1 @@
+ALTER TABLE "partial_logins" ADD COLUMN "parameters" jsonb NULL;

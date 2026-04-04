@@ -1,0 +1,123 @@
+{
+  "namespace": "stella.dataapi.aggregation",
+  "name": "AggregationRuleConfiguration",
+  "type": "record",
+  "fields": [
+    {
+      "name": "aggregationFieldName",
+      "type": "string"
+    },
+    {
+      "name": "aggregationGroupByFieldName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "resetFrequency",
+      "type": {
+        "name": "AggregationInterval",
+        "type": "record",
+        "fields": [
+          {
+            "name": "intervalType",
+            "type": {
+              "name": "IntervalType",
+              "type": "enum",
+              "symbols": [
+                "MINUTES",
+                "HOURS",
+                "DAYS",
+                "MONTHS",
+                "NEVER"
+              ]
+            }
+          },
+          {
+            "name": "windowStartDateUTC",
+            "type": "long"
+          },
+          {
+            "name": "intervalDetails",
+            "type": [
+              "null",
+              {
+                "name": "IntervalDetails",
+                "type": "record",
+                "fields": [
+                  {
+                    "name": "length",
+                    "type": "int"
+                  },
+                  {
+                    "name": "windowCountLimit",
+                    "type": [
+                      "null",
+                      "int"
+                    ],
+                    "default": null
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "aggregationConditions",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "AggregationCondition",
+          "type": "record",
+          "fields": [
+            {
+              "name": "eventFieldName",
+              "type": "string"
+            },
+            {
+              "name": "conditionType",
+              "type": {
+                "name": "ConditionType",
+                "type": "enum",
+                "symbols": [
+                  "EQ",
+                  "NEQ",
+                  "LT",
+                  "LE",
+                  "GT",
+                  "GE",
+                  "NN"
+                ]
+              }
+            },
+            {
+              "name": "value",
+              "type": [
+                "null",
+                "string"
+              ],
+              "default": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "aggregationType",
+      "type": {
+        "name": "AggregationType",
+        "type": "enum",
+        "symbols": [
+          "SUM",
+          "MIN",
+          "MAX",
+          "COUNT"
+        ]
+      }
+    }
+  ]
+}

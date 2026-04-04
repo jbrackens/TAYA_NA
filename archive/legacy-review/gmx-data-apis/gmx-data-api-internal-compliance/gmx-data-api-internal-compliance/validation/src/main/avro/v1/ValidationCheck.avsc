@@ -1,0 +1,65 @@
+{
+  "type": "record",
+  "name": "ValidationCheck",
+  "namespace": "net.flipsports.gmx.dataapi.internal.compliance.validation",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "createdDateUTC",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "companyId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "logicalType": "UUID"
+    },
+    {
+      "name": "externalUserId",
+      "type": "string"
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "email",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "operationTrigger",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "sourceMessage",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

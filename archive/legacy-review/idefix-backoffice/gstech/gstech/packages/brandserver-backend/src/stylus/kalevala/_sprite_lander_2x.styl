@@ -1,0 +1,144 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$2cloud_2x_name = '2cloud_2x';
+$2cloud_2x_x = 0px;
+$2cloud_2x_y = 325px;
+$2cloud_2x_offset_x = 0px;
+$2cloud_2x_offset_y = -325px;
+$2cloud_2x_width = 412px;
+$2cloud_2x_height = 161px;
+$2cloud_2x_total_width = 486px;
+$2cloud_2x_total_height = 1651px;
+$2cloud_2x_image = 'sprite_lander@2x.png';
+$2cloud_2x = 0px 325px 0px -325px 412px 161px 486px 1651px 'sprite_lander@2x.png' '2cloud_2x';
+$amount20_2x_name = 'amount20_2x';
+$amount20_2x_x = 0px;
+$amount20_2x_y = 684px;
+$amount20_2x_offset_x = 0px;
+$amount20_2x_offset_y = -684px;
+$amount20_2x_width = 400px;
+$amount20_2x_height = 295px;
+$amount20_2x_total_width = 486px;
+$amount20_2x_total_height = 1651px;
+$amount20_2x_image = 'sprite_lander@2x.png';
+$amount20_2x = 0px 684px 0px -684px 400px 295px 486px 1651px 'sprite_lander@2x.png' 'amount20_2x';
+$amount325_2x_name = 'amount325_2x';
+$amount325_2x_x = 0px;
+$amount325_2x_y = 490px;
+$amount325_2x_offset_x = 0px;
+$amount325_2x_offset_y = -490px;
+$amount325_2x_width = 486px;
+$amount325_2x_height = 190px;
+$amount325_2x_total_width = 486px;
+$amount325_2x_total_height = 1651px;
+$amount325_2x_image = 'sprite_lander@2x.png';
+$amount325_2x = 0px 490px 0px -490px 486px 190px 486px 1651px 'sprite_lander@2x.png' 'amount325_2x';
+$birdy_2x_name = 'birdy_2x';
+$birdy_2x_x = 0px;
+$birdy_2x_y = 191px;
+$birdy_2x_offset_x = 0px;
+$birdy_2x_offset_y = -191px;
+$birdy_2x_width = 148px;
+$birdy_2x_height = 130px;
+$birdy_2x_total_width = 486px;
+$birdy_2x_total_height = 1651px;
+$birdy_2x_image = 'sprite_lander@2x.png';
+$birdy_2x = 0px 191px 0px -191px 148px 130px 486px 1651px 'sprite_lander@2x.png' 'birdy_2x';
+$cloud_2x_name = 'cloud_2x';
+$cloud_2x_x = 0px;
+$cloud_2x_y = 64px;
+$cloud_2x_offset_x = 0px;
+$cloud_2x_offset_y = -64px;
+$cloud_2x_width = 354px;
+$cloud_2x_height = 123px;
+$cloud_2x_total_width = 486px;
+$cloud_2x_total_height = 1651px;
+$cloud_2x_image = 'sprite_lander@2x.png';
+$cloud_2x = 0px 64px 0px -64px 354px 123px 486px 1651px 'sprite_lander@2x.png' 'cloud_2x';
+$meter_2x_name = 'meter_2x';
+$meter_2x_x = 0px;
+$meter_2x_y = 983px;
+$meter_2x_offset_x = 0px;
+$meter_2x_offset_y = -983px;
+$meter_2x_width = 120px;
+$meter_2x_height = 668px;
+$meter_2x_total_width = 486px;
+$meter_2x_total_height = 1651px;
+$meter_2x_image = 'sprite_lander@2x.png';
+$meter_2x = 0px 983px 0px -983px 120px 668px 486px 1651px 'sprite_lander@2x.png' 'meter_2x';
+$more_2x_name = 'more_2x';
+$more_2x_x = 0px;
+$more_2x_y = 0px;
+$more_2x_offset_x = 0px;
+$more_2x_offset_y = 0px;
+$more_2x_width = 80px;
+$more_2x_height = 60px;
+$more_2x_total_width = 486px;
+$more_2x_total_height = 1651px;
+$more_2x_image = 'sprite_lander@2x.png';
+$more_2x = 0px 0px 0px 0px 80px 60px 486px 1651px 'sprite_lander@2x.png' 'more_2x';
+$spritesheet_width = 486px;
+$spritesheet_height = 1651px;
+$spritesheet_image = 'sprite_lander@2x.png';
+$spritesheet_sprites = $2cloud_2x $amount20_2x $amount325_2x $birdy_2x $cloud_2x $meter_2x $more_2x;
+$spritesheet = 486px 1651px 'sprite_lander@2x.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

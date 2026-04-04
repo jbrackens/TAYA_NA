@@ -1,0 +1,11 @@
+h1.stepwise-title{
+	color:$brand-primary;
+	font-family:$brand-font--header;
+	font-weight:bold;
+}
+.stepwise-title{
+	text-align:center;
+}
+.stepwise-registration__checkbox input + label{
+  padding-left:35px;
+}

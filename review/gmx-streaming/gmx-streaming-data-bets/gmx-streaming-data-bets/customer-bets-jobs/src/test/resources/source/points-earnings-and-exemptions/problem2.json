@@ -1,0 +1,168 @@
+[
+  {
+    "MessageCreationDate": 1602872333695,
+    "AccOperation": {
+      "AmountToPay": 37500,
+      "Rate": 1.0,
+      "SiteId": 154,
+      "CustomerId": 12696227,
+      "SQLTicketID": 637384687201895744,
+      "Bets": [
+        {
+          "BetID": 0,
+          "BetTypeID": 7,
+          "BetStake": 10000,
+          "Deposit": 10000,
+          "Gain": 37500,
+          "OveralDeduction": null,
+          "PreviousBalance": 0,
+          "AffectedNumberOfBets": 1,
+          "AmountToPay": 37500,
+          "NewBetStatus": 2,
+          "OldBetStatus": 0,
+          "FreeBetID": 0,
+          "Rule4PercDeduction": null,
+          "ComboBonusPercent": 0.0,
+          "PromotionID": null,
+          "CalulatedOdds": 0.0,
+          "TotalCalulatedOdds": 3.75,
+          "SQLTicketID": 637384687201895745,
+          "EmployeeID": 0,
+          "TaxPercent": 0.0,
+          "IsPartialCashOut": false,
+          "HasWinningSelections": true,
+          "RealBetSQLTicketID": 637384687201895745,
+          "TaxesInformation": null,
+          "CashOutFee": null,
+          "Fold": 0
+        }
+      ],
+      "BetToAcccountCollection": [
+        {
+          "AccountOperationID": 17515030135,
+          "BetID": 637384687201895745
+        }
+      ]
+    },
+    "Purchase": {
+      "Rate": 1.0,
+      "OpenedBetsAccountID": 58223338,
+      "CurrencyID": 27601,
+      "CurrencyCode": "GBP",
+      "SiteID": 154,
+      "ReserveID": 800212886,
+      "SessionID": "7ee70d52-8c25-40f3-9a4f-5638dafa307d",
+      "WebProviderID": 1,
+      "EmployeeID": 0,
+      "Bets": [
+        {
+          "BetID": 0,
+          "Odds": 300,
+          "DBOdds": 300,
+          "ClientOdds": "4.00",
+          "IsLive": false,
+          "NumberOfLines": 1,
+          "NumberOfBets": 1,
+          "ComboSize": 0,
+          "BetTypeID": 7,
+          "BetSubTypeID": 0,
+          "SelectionsMapped": [
+            {
+              "SelectionID": 0,
+              "OrderID": null,
+              "ViewKey": 56
+            }
+          ],
+          "IsEachWay": false,
+          "FreeBetID": 0,
+          "IsRiskFreeBet": false,
+          "BetStatus": 2,
+          "CurrentBetBalance": 37500,
+          "Stake": 35000,
+          "Gain": 40000,
+          "SQLTicketID": 637384687201895745,
+          "HasComboBonus": false,
+          "IsPartialCashOut": 0,
+          "OriginalSQLTicketID": 0,
+          "BetName": null
+        }
+      ],
+      "Selections": [
+        {
+          "EncodedLineID": "0QA79365725#927965540_24L198149Q1711487Q2-1",
+          "SelectionID": 0,
+          "LineID": 927965540,
+          "LineGroupID": 0,
+          "LineTypeID": 24,
+          "EventID": 79365725,
+          "IsRegular": false,
+          "IsLive": false,
+          "Points": null,
+          "DBPoints": null,
+          "Odds": 275,
+          "DBOdds": 300,
+          "ClientOdds": "4.00",
+          "MasterEventID": 0,
+          "BranchID": 61,
+          "Score1": 0,
+          "Score2": 0,
+          "QATypeParameter1": 711487,
+          "QATypeParameter2": -1,
+          "Team1ID": 0,
+          "Team2ID": 0,
+          "LeagueID": 198149,
+          "MasterLeagueID": 27638,
+          "Team1Name": "",
+          "Team2Name": "",
+          "BranchName": "Horse Racing",
+          "LeagueName": "Dundalk",
+          "LineTypeName": "Starting Price",
+          "LineName": "Acquiescent",
+          "EventName": "Irish Stallion Farms EBF Fillies Handicap (70-100)",
+          "EventTypeName": "RaceCard",
+          "EventDate": 1602872100000,
+          "RowTypeID": 0,
+          "EventTypeID": 341,
+          "LiveMasterLeagueID": 0,
+          "YourBet": "Irish Stallion Farms EBF Fillies Handicap (70-100) - Acquiescent",
+          "SelectionStatus": 2,
+          "Result": "Acquiescent 1st Place,Brunelle,Faakhirah 4th Place,Harriet's Force 3rd Place,Pirate Lass,Sindhia 2nd Place,Unforgetable,Windham Belle,",
+          "SplitTypeID": 3
+        }
+      ],
+      "Customer": {
+        "CustomerID": 12696227,
+        "LoginName": null,
+        "LastName": null,
+        "FirstName": null,
+        "ActiveBalance": 26.64,
+        "OpenBalance": "7",
+        "OpenedBetsAccountID": 58223338,
+        "TestCustomer": true
+      },
+      "CombinationPromotions": [],
+      "PurchaseStatus": 2,
+      "CreationDate": 1602871919866,
+      "UpdateDate": 1602872333520,
+      "SQLTicketID": 637384687201895744,
+      "Deposit": 10000,
+      "AdditionalData": "{\"BaseOddsRoundingMode\":0,\"BonusAmountStake\":0.0,\"ComboOddsRoundingMode\":0,\"ForceTwoDigitsForOddsRounding\":false,\"IsActionBet\":0,\"MetaData\":{\"ApplicationKey\":\"C.WebSites.SpNat.ResponsiveApp.2558537\",\"CasinoBonusBalance\":0.0,\"CasinoRealBalance\":0.0,\"CustomerTimeZone\":\"+0100\",\"FullURL\":\"https://www.sportnation.bet/sports/horse-racing/dundalk/20201016/irish-stallion-farms-ebf-fillies-handicap-70-100-19-15/\",\"IsAsianViewModeEnableOnMobile\":false,\"Platform\":\"Mozilla/5.0 (iPhone; CPU iPhone OS 13_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.2 Mobile/15E148 Safari/604.1\",\"Region\":\"\",\"SessionID\":\"il31ojvsfkbwf0ea1hjbjfcb\",\"SportsBalance\":26.64},\"Probabilities\":[{\"Probability\":-1.0,\"SelectionLineID\":927965540}],\"SelectionsData\":[{\"Payout\":0.0,\"SBTechOdds\":300,\"SelectionId\":927965540}],\"SelectionTemplates\":[\"{$EventName} - {$LineName}\"],\"SystemBetIndividualCombinations\":false,\"UseItalianGainRounding\":false}",
+      "Gain": 40000,
+      "FreeBetAmount": null,
+      "OriginalBets": null,
+      "OriginalSelections": null,
+      "SettlementHistory": [
+        {
+          "DateUpdated": 1602872333511,
+          "BetID": 0,
+          "BetTicketID": 637384687201895745,
+          "EmployeeID": 0,
+          "Message": null,
+          "NewBetStatus": 2,
+          "OldBetStatus": 0
+        }
+      ],
+      "Taxes": []
+    }
+  }
+]

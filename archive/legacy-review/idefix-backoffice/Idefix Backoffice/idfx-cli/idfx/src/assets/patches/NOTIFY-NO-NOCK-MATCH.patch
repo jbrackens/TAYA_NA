@@ -1,0 +1,37 @@
+diff --git a/packages/gstech-backend/scripts/setup-test.js b/packages/gstech-backend/scripts/setup-test.js
+index fbb0f327e6..70d7296017 100644
+--- a/packages/gstech-backend/scripts/setup-test.js
++++ b/packages/gstech-backend/scripts/setup-test.js
+@@ -34,3 +34,14 @@ global.clean = {
+   players: cleanUpPlayers,
+   tasks: cleanUpTasks,
+ };
++
++// for debug purposes only
++const nock = require('nock');
++const fs = require('fs');
++nock.emitter.on('no match', (req) => {
++  if (!req.hostname && req.options) {
++    const { host, path, body, method, data } = req.options;
++    console.error(`!!!!NO NOCK MATCH!!!! [${method}] ${host} ${path} > ${body || data}`);
++  }
++});
++
+diff --git a/packages/gstech-core/modules/setup-test.js b/packages/gstech-core/modules/setup-test.js
+index 3a14b08045..3055ac39e7 100644
+--- a/packages/gstech-core/modules/setup-test.js
++++ b/packages/gstech-core/modules/setup-test.js
+@@ -15,3 +15,13 @@ chai.use(chaiSubset);
+ chai.use(chaiDatetime);
+ 
+ global.expect = chai.expect;
++
++// for debug purposes only
++const nock = require('nock');
++const fs = require('fs');
++nock.emitter.on('no match', (req) => {
++  if (!req.hostname && req.options) {
++    const { host, path, body, method } = req.options;
++    console.error(`!!!!NO NOCK MATCH!!!! [${method}] ${host} ${path} > ${body}`);
++  }
++});

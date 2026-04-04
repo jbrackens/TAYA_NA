@@ -1,0 +1,45 @@
+[[source]]
+name = "pypi"
+url = "https://lena-srv01.flipsports.net:4566/repository/pypi-group/simple"
+verify_ssl = true
+
+[packages]
+fastapi = "*"
+psycopg2-binary = "*"
+aioredis = "*"
+ipython = "*"
+uvicorn = "*"
+pynacl = "*"
+python-decouple = "*"
+ujson = "*"
+pyjwt = "*"
+cryptography = "*"
+logstash-formatter = "*"
+aiohttp = "*"
+aiodns = "*"
+gunicorn = "*"
+aioredlock = "*"
+typing-extensions = "*"
+alembic = "*"
+pyyaml = "*"
+pytz = "*"
+requests = "*"
+sqlalchemy = "*"
+orjson = "*"
+starlette = "*"
+uvloop = "*"
+httptools = "*"
+
+[requires]
+python_version = "3.8"
+
+[dev-packages]
+autoflake = "*"
+isort = "*"
+black = "*"
+vulture = "*"
+bandit = "*"
+safety = "*"
+
+[pipenv]
+allow_prereleases = true

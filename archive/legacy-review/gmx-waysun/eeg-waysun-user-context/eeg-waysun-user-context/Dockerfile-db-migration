@@ -1,0 +1,2 @@
+FROM liquibase/liquibase:4.10.0
+COPY ./user-context/conf/liquibase /liquibase/changelog

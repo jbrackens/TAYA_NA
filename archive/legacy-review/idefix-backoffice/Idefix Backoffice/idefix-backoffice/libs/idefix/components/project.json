@@ -1,0 +1,24 @@
+{
+  "name": "idefix-components",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/idefix/components/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/idefix/components/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/idefix/components"],
+      "options": {
+        "jestConfig": "libs/idefix/components/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

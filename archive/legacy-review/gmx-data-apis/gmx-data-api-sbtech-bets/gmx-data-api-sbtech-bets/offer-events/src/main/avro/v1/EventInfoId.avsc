@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "EventInfoId",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.EventsInfo.v1",
+  "fields": [
+    {
+      "name": "EventID",
+      "type": "int",
+      "default": 0
+    }
+  ]
+}

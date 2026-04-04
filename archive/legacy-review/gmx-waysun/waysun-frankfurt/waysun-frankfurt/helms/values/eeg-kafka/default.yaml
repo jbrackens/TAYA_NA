@@ -1,0 +1,91 @@
+global:
+  exporting-resources: &global-exporting-resources
+    limits: &kafka-exporter-limits
+      cpu: 250m
+      memory: 128Mi
+    requests: *kafka-exporter-limits
+
+kafka:
+  replicaCount: 3
+
+  affinity: &nodes-affinity
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - preference:
+            matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - streaming-nodes
+          weight: 1
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                  - streaming-nodes
+  resources:
+    limits:
+      cpu: 500m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 4Gi
+
+  diagnosticMode:
+    enabled: false
+
+  config: ""
+  deleteTopicEnable: true
+  autoCreateTopicsEnable: false
+  auth:
+    clientProtocol: plaintext
+    interBrokerProtocol: plaintext
+  allowPlaintextListener: true
+  interBrokerListenerName: INTERNAL
+  persistence:
+    size: 100Gi
+  logPersistence:
+    size: 100Gi
+
+  metrics:
+    kafka:
+      enabled: true
+      resources: *global-exporting-resources
+      affinity: *nodes-affinity
+      service:
+        type: ClusterIP
+        port: 9308
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "{{ .Values.metrics.kafka.service.port }}"
+          prometheus.io/path: "/metrics"
+    jmx:
+      enabled: true
+      resources: *global-exporting-resources
+      service:
+        type: ClusterIP
+        port: 5556
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "{{ .Values.metrics.jmx.service.port }}"
+          prometheus.io/path: "/metrics"
+  provisioning:
+    enabled: false
+    numPartitions: 1
+    replicationFactor: 1
+    resources: *global-exporting-resources
+    ## @param provisioning.topics Kafka provisioning topics
+    ## - name: topic-name
+    ##   partitions: 1
+    ##   replicationFactor: 1
+    ##   ## https://kafka.apache.org/documentation/#topicconfigs
+    ##   config:
+    ##     max.message.bytes: 64000
+    ##     flush.messages: 1
+    ##
+    topics: []
+  externalZookeeper:
+    servers:
+      - zookeeper.streaming.svc.cluster.local

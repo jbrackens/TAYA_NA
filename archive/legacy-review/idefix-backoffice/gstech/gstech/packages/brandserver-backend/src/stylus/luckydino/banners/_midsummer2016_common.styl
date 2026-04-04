@@ -1,0 +1,78 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$midsummer2016_common_aloha_name = 'midsummer2016_common_aloha';
+$midsummer2016_common_aloha_x = 0px;
+$midsummer2016_common_aloha_y = 0px;
+$midsummer2016_common_aloha_offset_x = 0px;
+$midsummer2016_common_aloha_offset_y = 0px;
+$midsummer2016_common_aloha_width = 213px;
+$midsummer2016_common_aloha_height = 296px;
+$midsummer2016_common_aloha_total_width = 213px;
+$midsummer2016_common_aloha_total_height = 296px;
+$midsummer2016_common_aloha_image = 'midsummer2016_common_a.png';
+$midsummer2016_common_aloha = 0px 0px 0px 0px 213px 296px 213px 296px 'midsummer2016_common_a.png' 'midsummer2016_common_aloha';
+$spritesheet_width = 213px;
+$spritesheet_height = 296px;
+$spritesheet_image = 'midsummer2016_common_a.png';
+$spritesheet_sprites = $midsummer2016_common_aloha;
+$spritesheet = 213px 296px 'midsummer2016_common_a.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

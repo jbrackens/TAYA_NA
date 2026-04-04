@@ -1,0 +1,140 @@
+{
+  "code": 0,
+  "Sports": [
+    {
+      "SportID": 1,
+      "SportName": "Soccer",
+      "Leagues": [
+        {
+          "LeagueID": 40145,
+          "LeagueName": "Poland - Ekstraklasa",
+          "RankID": 751,
+          "CountryID": 175,
+          "Games": [
+            {
+              "GameID": 9381821,
+              "Home": "Legia Warsaw",
+              "Away": "Jagiellonia Bialystok",
+              "GameDate": "2018-02-27T19:30:00",
+              "IsLive": 0,
+              "GameType": 0,
+              "HasLiveStreaming": 1,
+              "Markets": [
+                {
+                  "MarketTypeID": 1,
+                  "Lines": [
+                    {
+                      "LineID": "R343778018",
+                      "LineIntID": 343778018,
+                      "LineGroupID": 49138138,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R343778021",
+                      "LineIntID": 343778021,
+                      "LineGroupID": 49138138,
+                      "LineName": "Draw"
+                    },
+                    {
+                      "LineID": "R343778022",
+                      "LineIntID": 343778022,
+                      "LineGroupID": 49138138,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 2,
+                  "Lines": [
+                    {
+                      "LineID": "R343778019",
+                      "LineIntID": 343778019,
+                      "LineGroupID": 49138138,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R343778023",
+                      "LineIntID": 343778023,
+                      "LineGroupID": 49138138,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 3,
+                  "Lines": [
+                    {
+                      "LineID": "R343778020",
+                      "LineIntID": 343778020,
+                      "LineGroupID": 49138138,
+                      "LineName": "Over"
+                    },
+                    {
+                      "LineID": "R343778024",
+                      "LineIntID": 343778024,
+                      "LineGroupID": 49138138,
+                      "LineName": "Under"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1570002,
+                  "Lines": [
+                    {
+                      "LineID": "R343779951",
+                      "LineIntID": 343779951,
+                      "LineGroupID": 49138414,
+                      "LineName": "Home"
+                    },
+                    {
+                      "LineID": "R343779955",
+                      "LineIntID": 343779955,
+                      "LineGroupID": 49138414,
+                      "LineName": "Away"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 610011,
+                  "Lines": [
+                    {
+                      "LineID": "Q460682301_40145",
+                      "LineIntID": 460682301,
+                      "LineName": "1 or X"
+                    },
+                    {
+                      "LineID": "Q460682302_40145",
+                      "LineIntID": 460682302,
+                      "LineName": "X or 2"
+                    },
+                    {
+                      "LineID": "Q460682303_40145",
+                      "LineIntID": 460682303,
+                      "LineName": "1 or 2"
+                    }
+                  ]
+                },
+                {
+                  "MarketTypeID": 1580013,
+                  "Lines": [
+                    {
+                      "LineID": "Q463226874_40145",
+                      "LineIntID": 463226874,
+                      "LineName": "Yes"
+                    },
+                    {
+                      "LineID": "Q463226875_40145",
+                      "LineIntID": 463226875,
+                      "LineName": "No"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

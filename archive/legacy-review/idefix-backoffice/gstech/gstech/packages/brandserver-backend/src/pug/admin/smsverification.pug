@@ -1,0 +1,38 @@
+.row(data-link='smsverification', style='display: none;')
+  .col-lg-12
+    .panel.panel-default
+      .panel-heading SMS Verification
+      .panel-body
+        .row
+          .col-lg-12
+            form#smsverification-form(role='form')
+              .form-group
+                label Enter mobile phone number
+                input.form-control(type='text', name='phone', autocomplete='off')
+              p
+                button#smsverification-button.btn.btn-success(type='button') Show number info
+        .row
+          .col-lg-12
+            #invalid-phonenumber.alert.alert-warning(style='display: none;')
+            #smsverification-failed.alert.alert-warning(style='display: none;')
+              | Phone number verification failed
+
+        #smsverification-holder.well(style='display: none;')
+          .row
+            .col-lg-6
+              h3 Send verification message manually
+              strong#smsverification-code
+              form.form#smsverification-send-form
+                .input-group
+                  span.input-group-btn
+                    select.form-control#smsverification-lang(name='smsverification-lang')
+                      each lang in languages
+                        option(value=lang.code)=lang.engName
+                  span.input-group-btn
+                    input.btn.btn-success#smsverification-submit(type='submit', value='Send verification message', name='smsverification-submit')
+              .row
+                .col-lg-12
+                  #smsverification-send-failed.alert.alert-warning(style='display: none;')
+                    | Verification SMS send failed
+                  #smsverification-sent(style='display: none;')
+                    b

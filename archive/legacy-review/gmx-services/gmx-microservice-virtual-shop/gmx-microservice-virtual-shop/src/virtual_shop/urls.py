@@ -1,0 +1,45 @@
+from django.conf.urls import url
+
+from virtual_shop.views import (
+    CharityProductsView,
+    CsAdminOrdersView,
+    CsAdminProductsView,
+    CsAdminPurchasedProductsView,
+    CsAdminTagChangeView,
+    CsAdminTagsWhitelistView,
+    MyAccountOrderDetailsView,
+    MyAccountOrdersView,
+    PaymentRequestView,
+    PcBonusesConfigurationView,
+    PcOrderLineView,
+    PcOrderView,
+    ProductsView,
+    PurchasedProductsView,
+    SpecialContinuousProductsView,
+    SpecialProductsView,
+    TagsWhitelistView,
+)
+
+urlpatterns = [
+    url(r"^products$", ProductsView.as_view(), name="products"),
+    url(r"^make_payment", PaymentRequestView.as_view(), name="payment_request"),
+    url(r"^pc/order/(?P<process_id>(.)+)$", PcOrderView.as_view(), name="pc_order"),
+    url(r"^pc/order_line/(?P<order_line_uid>(.)+)$", PcOrderLineView.as_view(), name="pc_order_line"),
+    url(r"^pc/bonuses_configuration", PcBonusesConfigurationView.as_view(), name="pc_bonuses_configuration"),
+    url(r"^purchased", PurchasedProductsView.as_view(), name="purchased"),
+    url(r"^special_products", SpecialProductsView.as_view(), name="special_products"),
+    url(r"^special_continuous_products", SpecialContinuousProductsView.as_view(), name="special_continuous_products"),
+    url(r"^charity_products", CharityProductsView.as_view(), name="charity_products"),
+    url(r"^my_account/orders", MyAccountOrdersView.as_view(), name="my_account_orders"),
+    url(
+        r"^my_account/order/(?P<status_token>(.)+)",
+        MyAccountOrderDetailsView.as_view(),
+        name="my_account_order_details",
+    ),
+    url(r"^tags_whitelist(?P<status_token>(.)+)", TagsWhitelistView.as_view(), name="tags_whitelist"),
+    url(r"^cs_admin_orders", CsAdminOrdersView.as_view(), name="cs_admin_orders"),
+    url(r"^cs_admin_products", CsAdminProductsView.as_view(), name="cs_admin_products"),
+    url(r"^cs_admin_purchased", CsAdminPurchasedProductsView.as_view(), name="cs_admin_purchased"),
+    url(r"^cs_admin_tags", CsAdminTagsWhitelistView.as_view(), name="cs_admin_tags"),
+    url(r"^cs_admin_tag/change", CsAdminTagChangeView.as_view(), name="cs_admin_tag_delete"),
+]

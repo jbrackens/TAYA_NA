@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$imperialopera_common_fellow_left_name = 'imperialopera_common_fellow_left';
+$imperialopera_common_fellow_left_x = 0px;
+$imperialopera_common_fellow_left_y = 0px;
+$imperialopera_common_fellow_left_offset_x = 0px;
+$imperialopera_common_fellow_left_offset_y = 0px;
+$imperialopera_common_fellow_left_width = 207px;
+$imperialopera_common_fellow_left_height = 295px;
+$imperialopera_common_fellow_left_total_width = 886px;
+$imperialopera_common_fellow_left_total_height = 295px;
+$imperialopera_common_fellow_left_image = 'imperialopera_common_b.png';
+$imperialopera_common_fellow_left = 0px 0px 0px 0px 207px 295px 886px 295px 'imperialopera_common_b.png' 'imperialopera_common_fellow_left';
+$imperialopera_common_lady_right_name = 'imperialopera_common_lady_right';
+$imperialopera_common_lady_right_x = 211px;
+$imperialopera_common_lady_right_y = 0px;
+$imperialopera_common_lady_right_offset_x = -211px;
+$imperialopera_common_lady_right_offset_y = 0px;
+$imperialopera_common_lady_right_width = 201px;
+$imperialopera_common_lady_right_height = 295px;
+$imperialopera_common_lady_right_total_width = 886px;
+$imperialopera_common_lady_right_total_height = 295px;
+$imperialopera_common_lady_right_image = 'imperialopera_common_b.png';
+$imperialopera_common_lady_right = 211px 0px -211px 0px 201px 295px 886px 295px 'imperialopera_common_b.png' 'imperialopera_common_lady_right';
+$imperialopera_common_logo_name = 'imperialopera_common_logo';
+$imperialopera_common_logo_x = 416px;
+$imperialopera_common_logo_y = 0px;
+$imperialopera_common_logo_offset_x = -416px;
+$imperialopera_common_logo_offset_y = 0px;
+$imperialopera_common_logo_width = 470px;
+$imperialopera_common_logo_height = 100px;
+$imperialopera_common_logo_total_width = 886px;
+$imperialopera_common_logo_total_height = 295px;
+$imperialopera_common_logo_image = 'imperialopera_common_b.png';
+$imperialopera_common_logo = 416px 0px -416px 0px 470px 100px 886px 295px 'imperialopera_common_b.png' 'imperialopera_common_logo';
+$spritesheet_width = 886px;
+$spritesheet_height = 295px;
+$spritesheet_image = 'imperialopera_common_b.png';
+$spritesheet_sprites = $imperialopera_common_fellow_left $imperialopera_common_lady_right $imperialopera_common_logo;
+$spritesheet = 886px 295px 'imperialopera_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

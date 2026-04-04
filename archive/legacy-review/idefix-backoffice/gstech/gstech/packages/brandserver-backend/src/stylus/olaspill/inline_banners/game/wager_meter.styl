@@ -1,0 +1,86 @@
+#banner_game_wager_meter
+  sidebarBanner()
+  background-color $light_blue
+  width 150px
+  height 500px
+  position relative
+  background-color $warm-purple
+  cdn-background-image2x '/images/meter_bg.png' '/images/meter_bg@2x.png' 150px 451px
+  background-position bottom
+  .promotion-progress-holder
+    position relative
+    height 285px
+    width 150px
+    left 0
+    right 0
+    margin 0 auto
+  @media only screen and (max-width:991px)
+    cdn-background-image2x '/images/meter_m_bg.jpg' '/images/meter_m_bg@2x.jpg' 600px 490px
+    width 100%
+    background-position center bottom
+    background-repeat no-repeat
+  &__promo_button, &__promo_button:hover, &__promo_button:focus
+    font-size 14px
+    padding 4px 12px
+  &__title
+    margin 0 0 4px 0
+    em
+      font-style normal
+      color $pink-purple
+  &__progress
+    cdn-background-image2x '/images/meter_liquid.png' '/images/meter_liquid@2x.png' 150px 245px
+    background-position bottom center
+    background-repeat no-repeat
+    position absolute
+    right 0
+    left 0
+    width 150px
+    bottom 28px
+    height 0
+    z-index 10
+  &__banner
+    font-weight 400 !important
+  &__coin_container
+    background-color $dodger-blue
+    box-shadow: 3px 3px 5px rgba(0,0,0,0.3)
+    width 75px
+    height 39px
+    margin-top 8px
+    border-radius 4px
+    display inline-block
+    color #ffffff
+    headerFont()
+    text-align center
+    position relative
+    &:after
+      position absolute
+      bottom -5px
+      content ''
+      left 0
+      right 0
+      margin 0 auto
+      width 0
+      height 0
+      border-style solid
+      border-width 5px 4px 0 4px
+      border-color $dodger-blue transparent transparent transparent
+      box-shadow: 3px 3px 5px rgba(0,0,0,0.3)
+  &__coins
+    font-size 25px
+    line-height 39px
+    margin-right 2px
+    vertical-align top
+
+  &__coin_iron
+    display inline-block
+    margin-top 5px
+    cdn-background-image2x '/images/iron_coin.png' '/images/iron_coin@2x.png' 23px 29px
+    height 29px
+    width 23px
+
+  &__coin_gold
+    margin-top 5px
+    display inline-block
+    cdn-background-image2x '/images/gold_coin.png' '/images/gold_coin@2x.png' 23px 29px
+    height 29px
+    width 23px

@@ -1,0 +1,95 @@
+{
+  "type": "record",
+  "name": "CustomerDetails",
+  "namespace": "SBTech.Microservices.Regulations.RabbitMQProducers.Models",
+  "fields": [
+    {
+      "name": "CustomerID",
+      "type": "int"
+    },
+    {
+      "name": "CustomerName",
+      "type": "string"
+    },
+    {
+      "name": "LoginName",
+      "type": "string"
+    },
+    {
+      "name": "SiteName",
+      "type": "string"
+    },
+    {
+      "name": "RegistrationDate",
+      "type": "long"
+    },
+    {
+      "name": "RegistrationProduct",
+      "type": "string"
+    },
+    {
+      "name": "FD_Date",
+      "type": "string"
+    },
+    {
+      "name": "FD_Amount",
+      "type": "string"
+    },
+    {
+      "name": "PFA_Date",
+      "type": "long"
+    },
+    {
+      "name": "PFA_Product",
+      "type": "string"
+    },
+    {
+      "name": "DateOfBirth",
+      "type": "long"
+    },
+    {
+      "name": "Gender",
+      "type": "string"
+    },
+    {
+      "name": "CustomerStatus",
+      "type": "string"
+    },
+    {
+      "name": "CustomerLevelID",
+      "type": "int"
+    },
+    {
+      "name": "CurrencyCode",
+      "type": "string"
+    },
+    {
+      "name": "CountryCode",
+      "type": "string"
+    },
+    {
+      "name": "CountryName",
+      "type": "string"
+    },
+    {
+      "name": "City",
+      "type": "string"
+    },
+    {
+      "name": "Address",
+      "type": "string"
+    },
+    {
+      "name": "ZipCode",
+      "type": "string"
+    },
+    {
+      "name": "IsExceptionCustomer",
+      "type": "int"
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "long"
+    }
+  ]
+}

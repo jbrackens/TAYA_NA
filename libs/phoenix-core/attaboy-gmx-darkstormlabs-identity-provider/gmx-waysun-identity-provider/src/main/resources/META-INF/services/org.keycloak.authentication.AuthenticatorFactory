@@ -1,0 +1,3 @@
+stella.identity.auth.authenticator.AlwaysEndSessionAuthenticatorFactory
+stella.identity.auth.authenticator.RequireClientRoleAuthenticatorFactory
+stella.identity.auth.authenticator.AddUserToClientGroupAuthenticatorFactory

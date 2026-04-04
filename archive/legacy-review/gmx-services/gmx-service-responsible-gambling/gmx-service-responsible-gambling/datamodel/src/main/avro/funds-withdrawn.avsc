@@ -1,0 +1,26 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "FundsWithdrawn",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    },
+    {
+      "name": "amount",
+      "type": "bytes",
+      "logicalType": "decimal",
+      "precision": 11,
+      "scale": 2
+    },
+    {
+      "name": "withdrawnAt",
+      "type": "long"
+    },
+    {
+      "name": "brandId",
+      "type": "string"
+    }
+  ]
+}

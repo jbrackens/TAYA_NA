@@ -1,0 +1,92 @@
+name: Release Runtime Profile Gates
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_stabilization:
+        description: "Run Phase 10 stabilization burn-in after runtime profile launch-readiness"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  launch-readiness-runtime-profile:
+    name: Phase 9 Runtime Profile Launch Readiness
+    runs-on: self-hosted
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go-platform/go.work
+          cache: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: |
+            talon-backoffice/yarn.lock
+            phoenix-frontend-brand-viegg/yarn.lock
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Install Yarn Classic
+        run: npm install -g yarn@1.22.22
+
+      - name: Run managed runtime profile launch-readiness gate
+        run: make release-launch-readiness-runtime-profile
+
+      - name: Upload runtime profile launch-readiness artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase9-runtime-profile-launch-readiness
+          path: |
+            revival/30_LAUNCH_READINESS_GATE.md
+            revival/artifacts/launch_readiness_*.md
+            revival/artifacts/launch_*.log
+            revival/artifacts/runtime_gate_profile_*.md
+            revival/artifacts/runtime_profile_*.log
+            .runtime/*.log
+          if-no-files-found: warn
+
+  stabilization-burnin:
+    name: Phase 10 Stabilization Burn-in (Runtime Profile Flow)
+    needs: launch-readiness-runtime-profile
+    if: ${{ success() && (inputs.run_stabilization == true || inputs.run_stabilization == 'true') }}
+    runs-on: self-hosted
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go-platform/go.work
+          cache: true
+
+      - name: Run stabilization burn-in
+        run: make release-stability-burnin
+
+      - name: Upload stabilization artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase10-runtime-profile-stabilization
+          path: |
+            revival/31_POST_LAUNCH_STABILIZATION_BASELINE.md
+            revival/artifacts/stabilization_burnin_*.md
+            revival/artifacts/stability_metrics_*.txt
+            revival/artifacts/stability_auth_*.log
+            revival/artifacts/stability_gateway_*.log
+          if-no-files-found: warn

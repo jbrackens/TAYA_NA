@@ -1,0 +1,71 @@
+{
+  "kind": "singleType",
+  "collectionName": "home_pages",
+  "info": {
+    "singularName": "home-page",
+    "pluralName": "home-pages",
+    "displayName": "Home Page",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "blocks": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        },
+        "translate": {
+          "translate": "translate"
+        }
+      },
+      "type": "dynamiczone",
+      "components": [
+        "articles.text-article",
+        "common.divider",
+        "common.features",
+        "common.heading",
+        "common.markdown",
+        "games.category-games",
+        "games.providers-list",
+        "games.related-games",
+        "games.themes-list",
+        "offers.welcome-offer",
+        "pay-and-play.deposit-form",
+        "jefe.jefe-category-games",
+        "jefe.features",
+        "jefe.welcome-offer",
+        "banners.floating-banner",
+        "jefe.welcome-package",
+        "games.top-games",
+        "vie.features",
+        "vie.welcome-package",
+        "games.live-casino",
+        "olaspill.features",
+        "banners.fullwidth-banner",
+        "banners.hero-banner"
+      ],
+      "required": true
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        },
+        "translate": {
+          "translate": "translate"
+        }
+      },
+      "component": "shared.seo",
+      "required": true
+    }
+  }
+}

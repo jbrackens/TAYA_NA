@@ -1,0 +1,69 @@
+name: Deploy to ECR
+on:
+  release:
+    types: [created]
+
+env:
+  AWS-ACCESS-KEY-ID: ${{ secrets.EEG_AWS_ACCESS_KEY_ID }}
+  AWS-SECRET-ACCESS-KEY: ${{ secrets.EEG_AWS_SECRET_ACCESS_KEY }}
+  role-to-assume: ${{ secrets.EEG_AWS_ROLE_TO_ASSUME }}
+  role-external-id: ${{ secrets.EEG_AWS_ROLE_EXTERNAL_ID }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Do not change
+  REGION: "us-east-1"
+  PUBLIC_ALIAS: "x1y4u7f1"
+
+jobs:
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.REGION }}
+          aws-access-key-id: ${{ env.AWS-ACCESS-KEY-ID }}
+          aws-secret-access-key: ${{ env.AWS-SECRET-ACCESS-KEY }}
+          role-to-assume: ${{ env.role-to-assume }}
+          role-external-id: ${{ env.role-external-id }}
+          role-duration-seconds: 3600
+          role-session-name: GitHubActions
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
+
+      - name: Build, tag, and push gstech-postgres image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: gstech-postgres
+          IMAGE_TAG: ${{ github.ref_name }}
+        run: |
+          docker build -t $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG gstech-postgres/.
+          docker tag $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:idefix
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:idefix
+          docker build -t $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG gstech-postgres-12/.
+          docker tag $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:affmore
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:affmore
+
+      - name: Build, tag, and push redis image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: gstech-redis
+          IMAGE_TAG: ${{ github.ref_name }}
+        run: |
+          docker build -t $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG gstech-redis/.
+          docker tag $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:latest
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:latest
+          docker build -t $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG gstech-redis-7/.
+          docker tag $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:vnext
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$PUBLIC_ALIAS/$REPOSITORY:vnext

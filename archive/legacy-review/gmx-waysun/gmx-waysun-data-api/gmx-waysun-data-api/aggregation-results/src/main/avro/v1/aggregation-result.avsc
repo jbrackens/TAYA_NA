@@ -1,0 +1,50 @@
+{
+  "namespace": "stella.dataapi.aggregation",
+  "name": "AggregationResult",
+  "type": "record",
+  "fields": [
+    {
+      "name": "windowRangeStartUTC",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "windowRangeEndUTC",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "aggregations",
+      "type": {
+        "name": "AggregationValues",
+        "type": "record",
+        "fields": [
+          {
+            "name": "min",
+            "type": "float"
+          },
+          {
+            "name": "max",
+            "type": "float"
+          },
+          {
+            "name": "count",
+            "type": "int"
+          },
+          {
+            "name": "sum",
+            "type": "float"
+          },
+          {
+            "name": "custom",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

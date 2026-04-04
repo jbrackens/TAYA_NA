@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="init">
+        <createTable tableName="achievement_event_details">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_configuration_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_event_details_fields">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="achievement_event_details_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_event_details_fields_achievement_event_details_id"
+                             referencedTableName="achievement_event_details"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="field_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_webhook_details">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_configuration_id" type="uuid">
+                <constraints nullable="true"/>
+            </column>
+            <column name="request_type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_webhook_details_fields">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="achievement_webhook_details_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_webhook_details_fields_achievement_webhook_details_id"
+                             referencedTableName="achievement_webhook_details"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="field_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_events">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="achievement_rule_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="achievement_origin_date" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_by_field_value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_type" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="window_range_start" type="timestamptz">
+                <constraints nullable="true"/>
+            </column>
+            <column name="window_range_end" type="timestamptz">
+                <constraints nullable="true"/>
+            </column>
+            <column name="achievement_event_details_id" type="bigint">
+                <constraints nullable="true"
+                             foreignKeyName="fk_achievement_events_achievement_event_details_id"
+                             referencedTableName="achievement_event_details"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="achievement_webhook_details_id" type="bigint">
+                <constraints nullable="true"
+                             foreignKeyName="fk_achievement_events_achievement_webhook_details_id"
+                             referencedTableName="achievement_webhook_details"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="achievement_events" indexName="idx_project_id">
+            <column name="project_id"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_events" indexName="idx_achievement_rule_id">
+            <column name="achievement_rule_id"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_events" indexName="idx_achievement_origin_date">
+            <column name="achievement_origin_date"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_events" indexName="idx_group_by_field_value">
+            <column name="group_by_field_value"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_events" indexName="idx_window_range_start">
+            <column name="window_range_start"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_events" indexName="idx_window_range_end">
+            <column name="window_range_end"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_events" indexName="idx_search">
+            <column name="project_id"/>
+            <column name="achievement_rule_id"/>
+            <column name="window_range_start"/>
+            <column name="window_range_end"/>
+            <column name="group_by_field_value"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

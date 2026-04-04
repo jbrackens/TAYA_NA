@@ -1,0 +1,37 @@
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform lock files
+.terraform.lock*
+
+# Terragrunt cache
+.terragrunt-cache
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# Terragrunt cache
+.terragrunt-cache
+
+# Terragrunt cache
+.terragrunt-cache
+
+# Keys
+*.pub
+*.priv
+*.pem
+*.idea
+.secret.yaml
+
+# Ignore any .tfvars files that are generated automatically for each Terraform run. Most
+# .tfvars files are managed as part of configuration and so should be included in
+# version control.
+#
+# example.tfvars
+
+
+.backups

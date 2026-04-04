@@ -1,0 +1,15 @@
+module.exports = {
+  HEADER: "Log in",
+  USERNAME: "Username",
+  USERNAME_ERROR: "Please input your username",
+  PASSWORD: "Password",
+  PASSWORD_ERROR: "Please input your password",
+  REMEMBER_ME: "Remember me",
+  FORGOT_PASSWORD: "Forgot Password?",
+  SIGN_IN: "Log In",
+  SIGN_UP: "Sign Up",
+  LOGIN_ERROR: "Error, incorrect username or password",
+  LAST_LOGIN: "Last Login",
+  ERROR_NOT_ELIGIBLE: "You're not eligible to proceed further",
+  RESET_PASSWORD_LINK: "To reset you password click here.",
+};

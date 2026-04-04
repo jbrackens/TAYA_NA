@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phoenix-platform-config
+data:
+  ENVIRONMENT: production
+  LOG_LEVEL: info
+  JWT_ISSUER: phoenix-user
+  JWT_AUDIENCE: phoenix-platform
+  REDIS_ADDR: redis:6379
+  KAFKA_BROKERS: kafka:9092
+  OUTBOX_ENABLED: "false"
+  OUTBOX_POLL_INTERVAL: 1s
+  OUTBOX_BATCH_SIZE: "100"
+  PHOENIX_USER_URL: http://phoenix-user:8001
+  PHOENIX_WALLET_URL: http://phoenix-wallet:8002
+  PHOENIX_MARKET_ENGINE_URL: http://phoenix-market-engine:8003
+  PHOENIX_BETTING_ENGINE_URL: http://phoenix-betting-engine:8004
+  PHOENIX_EVENTS_URL: http://phoenix-events:8005
+  PHOENIX_RETENTION_URL: http://phoenix-retention:8006
+  PHOENIX_SOCIAL_URL: http://phoenix-social:8007
+  PHOENIX_COMPLIANCE_URL: http://phoenix-compliance:8008
+  PHOENIX_ANALYTICS_URL: http://phoenix-analytics:8009
+  PHOENIX_SETTLEMENT_URL: http://phoenix-settlement:8010
+  PHOENIX_NOTIFICATION_URL: http://phoenix-notification:8011
+  PHOENIX_CMS_URL: http://phoenix-cms:8012
+  STELLA_ENGAGEMENT_URL: http://stella-engagement:8013

@@ -1,0 +1,8 @@
+<bet_settlement request_id="4587" product="1" event_id="od:match:12345" timestamp="1611160385772">
+    <outcomes>
+        <market status="-3" specifiers="handicap=1.5" id="2">
+            <outcome result="1" id="2"/>
+            <outcome result="0" id="1"/>
+        </market>
+    </outcomes>
+</bet_settlement>

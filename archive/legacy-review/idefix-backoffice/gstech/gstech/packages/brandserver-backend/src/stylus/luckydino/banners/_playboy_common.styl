@@ -1,0 +1,140 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$playboy_common_bunny_l1_name = 'playboy_common_bunny_l1';
+$playboy_common_bunny_l1_x = 0px;
+$playboy_common_bunny_l1_y = 0px;
+$playboy_common_bunny_l1_offset_x = 0px;
+$playboy_common_bunny_l1_offset_y = 0px;
+$playboy_common_bunny_l1_width = 241px;
+$playboy_common_bunny_l1_height = 241px;
+$playboy_common_bunny_l1_total_width = 614px;
+$playboy_common_bunny_l1_total_height = 557px;
+$playboy_common_bunny_l1_image = 'playboy_common_b.png';
+$playboy_common_bunny_l1 = 0px 0px 0px 0px 241px 241px 614px 557px 'playboy_common_b.png' 'playboy_common_bunny_l1';
+$playboy_common_bunny_l2_name = 'playboy_common_bunny_l2';
+$playboy_common_bunny_l2_x = 0px;
+$playboy_common_bunny_l2_y = 346px;
+$playboy_common_bunny_l2_offset_x = 0px;
+$playboy_common_bunny_l2_offset_y = -346px;
+$playboy_common_bunny_l2_width = 180px;
+$playboy_common_bunny_l2_height = 211px;
+$playboy_common_bunny_l2_total_width = 614px;
+$playboy_common_bunny_l2_total_height = 557px;
+$playboy_common_bunny_l2_image = 'playboy_common_b.png';
+$playboy_common_bunny_l2 = 0px 346px 0px -346px 180px 211px 614px 557px 'playboy_common_b.png' 'playboy_common_bunny_l2';
+$playboy_common_bunny_r1_name = 'playboy_common_bunny_r1';
+$playboy_common_bunny_r1_x = 441px;
+$playboy_common_bunny_r1_y = 0px;
+$playboy_common_bunny_r1_offset_x = -441px;
+$playboy_common_bunny_r1_offset_y = 0px;
+$playboy_common_bunny_r1_width = 173px;
+$playboy_common_bunny_r1_height = 229px;
+$playboy_common_bunny_r1_total_width = 614px;
+$playboy_common_bunny_r1_total_height = 557px;
+$playboy_common_bunny_r1_image = 'playboy_common_b.png';
+$playboy_common_bunny_r1 = 441px 0px -441px 0px 173px 229px 614px 557px 'playboy_common_b.png' 'playboy_common_bunny_r1';
+$playboy_common_bunny_r2_name = 'playboy_common_bunny_r2';
+$playboy_common_bunny_r2_x = 245px;
+$playboy_common_bunny_r2_y = 0px;
+$playboy_common_bunny_r2_offset_x = -245px;
+$playboy_common_bunny_r2_offset_y = 0px;
+$playboy_common_bunny_r2_width = 192px;
+$playboy_common_bunny_r2_height = 209px;
+$playboy_common_bunny_r2_total_width = 614px;
+$playboy_common_bunny_r2_total_height = 557px;
+$playboy_common_bunny_r2_image = 'playboy_common_b.png';
+$playboy_common_bunny_r2 = 245px 0px -245px 0px 192px 209px 614px 557px 'playboy_common_b.png' 'playboy_common_bunny_r2';
+$playboy_common_logo_name = 'playboy_common_logo';
+$playboy_common_logo_x = 0px;
+$playboy_common_logo_y = 245px;
+$playboy_common_logo_offset_x = 0px;
+$playboy_common_logo_offset_y = -245px;
+$playboy_common_logo_width = 398px;
+$playboy_common_logo_height = 97px;
+$playboy_common_logo_total_width = 614px;
+$playboy_common_logo_total_height = 557px;
+$playboy_common_logo_image = 'playboy_common_b.png';
+$playboy_common_logo = 0px 245px 0px -245px 398px 97px 614px 557px 'playboy_common_b.png' 'playboy_common_logo';
+$spritesheet_width = 614px;
+$spritesheet_height = 557px;
+$spritesheet_image = 'playboy_common_b.png';
+$spritesheet_sprites = $playboy_common_bunny_l1 $playboy_common_bunny_l2 $playboy_common_bunny_r1 $playboy_common_bunny_r2 $playboy_common_logo;
+$spritesheet = 614px 557px 'playboy_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

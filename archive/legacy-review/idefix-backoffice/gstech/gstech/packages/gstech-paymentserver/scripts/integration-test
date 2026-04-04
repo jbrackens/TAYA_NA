@@ -1,0 +1,231 @@
+#!/usr/bin/env node
+// @flow
+require('flow-remove-types/register');
+
+const { v1: uuid } = require('uuid');
+const program = require('commander'); // eslint-disable-line
+const request = require('supertest'); // eslint-disable-line
+const opn = require('opn'); // eslint-disable-line
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+
+const logger = require('gstech-core/modules/logger');
+const config = require('../config');
+
+program
+  .command('deposit [method] [amount] [currency]')
+  .description('Execute test deposit. Example: deposit Trustly_Trustly 2000 EUR')
+  .action(async (method, amount, currency, options) => { // eslint-disable-line no-unused-vars
+    let sessionId;
+    let transactionKey;
+
+    await request(config.api.backend.url)
+      .post('/api/v1/test/init-session')
+      .send({
+        currencyId: currency || 'EUR',
+      })
+      .expect((res) => {
+        logger.debug(res.body.player.username);
+        sessionId = res.body.token;
+      })
+      .expect(200);
+
+    await request(config.api.backend.url)
+      .post('/api/LD/v1/deposit')
+      .send({ depositMethod: method, amount: Number(amount), bonusId: 1001 })
+      .set({ 'X-Authentication': true, Authorization: `Token ${sessionId}` })
+      .expect((res) => {
+        if (res.body.error) {
+          logger.warn(res.body.error);
+          process.exit();
+        }
+        transactionKey = res.body.transactionKey;
+      })
+      .expect(200);
+
+    await request(config.api.backend.url)
+      .post('/api/LD/v1/executedeposit')
+      .send({
+        accountId: null,
+        transactionKey,
+        params: {},
+        urls: {
+          ok: `${config.api.backend.url}/api/v1/status?ok`,
+          failure: `${config.api.backend.url}/api/v1/status?fail`,
+        },
+        client: {
+          ipAddress: '10.110.11.11',
+          userAgent: 'Hugo Weaving',
+          isMobile: false,
+        },
+      })
+      .set({ 'X-Authentication': true, Authorization: `Token ${sessionId}` })
+      .expect((res) => {
+        if (res.body.error) {
+          logger.warn(res.body.error);
+          process.exit();
+        }
+
+        const { html, url } = res.body;
+        if (url != null) {
+          opn(url);
+        } else if (html) {
+          const filePath = path.join(os.tmpdir(), 'index.html');
+          fs.writeFileSync(filePath, html, 'utf8');
+          opn(filePath);
+        }
+      })
+      .expect(200);
+
+    process.exit();
+  });
+
+program
+  .command('withdraw [username] [provider] [amount]')
+  .description('Execute test withdraw. Example: withdraw LD_Jack.Sparrow_3000062 Trustly 1000')
+  .action(async (username, provider, amount, options) => { // eslint-disable-line no-unused-vars
+    logger.debug({ username, provider, amount });
+    await request(config.api.backend.url)
+      .post('/api/LD/v1/test-withdraw')
+      .set({ 'X-Authentication': true, Authorization: `Bearer ${username}` })
+      .send({
+        amount,
+        provider,
+      })
+      .expect(200);
+
+    process.exit();
+  });
+
+program
+  .command('identify [provider]')
+  .description('Execute test identification. Example: identify Zimpler')
+  .action(async (provider, options) => { // eslint-disable-line no-unused-vars
+    let player;
+    let sessionId;
+
+    await request(config.api.backend.url)
+      .post('/api/v1/test/init-session')
+      .send({
+        currencyId: 'EUR',
+      })
+      .expect((res) => {
+        logger.debug(res.body.player.username);
+        player = res.body.player;
+        sessionId = res.body.token;
+      })
+      .expect(200);
+
+    await request(config.server.private)
+      .post('/api/v1/identify')
+      .send({ player, identify: { paymentProvider: provider }, brand: { name: 'LuckyDino' }, urls: { ok: `${config.api.backend.url}/api/v1/status?ok`, failure: `${config.api.backend.url}/api/v1/status?fail` } })
+      .set({ 'X-Authentication': true, Authorization: `Token ${sessionId}` })
+      .expect((res) => {
+        if (res.body.error) {
+          logger.warn(res.body.error);
+          process.exit();
+        }
+
+        const { html, url } = res.body;
+        if (url != null) {
+          opn(url);
+        } else if (html) {
+          const filePath = path.join(os.tmpdir(), 'index.html');
+          fs.writeFileSync(filePath, html, 'utf8');
+          opn(filePath);
+        }
+      })
+      .expect(200);
+
+    process.exit();
+  });
+
+program
+  .command('register [method] [country] [amount] [currency]')
+  .description('Execute test registration. Example: register Trustly_Trustly FI 1000 EUR')
+  .action(async (method, country, amount, currency, options) => { // eslint-disable-line no-unused-vars
+    const payAndPlayRequest = {
+      amount: Number(amount),
+      transactionKey: uuid(),
+      player: {
+        countryId: country,
+        currencyId: currency,
+        languageId: 'FI',
+        ipAddress: '192.168.0.1',
+        tcVersion: 0,
+      },
+      paymentMethod: method,
+      urls: { ok: `${config.api.backend.url}/api/v1/status?ok`, failure: `${config.api.backend.url}/api/v1/status?fail` },
+    };
+    await request(config.api.backend.url)
+      .post('/api/KK/v1/payandplay')
+      .send(payAndPlayRequest)
+      .expect((res) => {
+        if (res.body.error) {
+          logger.warn(res.body.error);
+          process.exit();
+        }
+
+        const { html, url } = res.body;
+        if (url != null) {
+          opn(url);
+        } else if (html) {
+          const filePath = path.join(os.tmpdir(), 'index.html');
+          fs.writeFileSync(filePath, html, 'utf8');
+          opn(filePath);
+        }
+      })
+      .expect(200);
+
+    process.exit();
+  });
+
+program
+  .command('login [method] [country] [currency]')
+  .description('Execute test login. Example: login Trustly_Trustly FI EUR')
+  .action(async (method, country, currency, options) => { // eslint-disable-line no-unused-vars
+    const payAndPlayRequest = {
+      amount: 0,
+      transactionKey: uuid(),
+      player: {
+        countryId: country,
+        currencyId: currency,
+        languageId: 'FI',
+        ipAddress: '192.168.0.1',
+        tcVersion: 0,
+      },
+      paymentMethod: method,
+      urls: { ok: `${config.api.backend.url}/api/v1/status?ok`, failure: `${config.api.backend.url}/api/v1/status?fail` },
+    };
+    await request(config.api.backend.url)
+      .post('/api/KK/v1/payandplay')
+      .send(payAndPlayRequest)
+      .expect((res) => {
+        if (res.body.error) {
+          logger.warn(res.body.error);
+          process.exit();
+        }
+
+        const { html, url } = res.body;
+        if (url != null) {
+          opn(url);
+        } else if (html) {
+          const filePath = path.join(os.tmpdir(), 'index.html');
+          fs.writeFileSync(filePath, html, 'utf8');
+          opn(filePath);
+        }
+      })
+      .expect(200);
+
+    process.exit();
+  });
+
+program.on('*', o => logger.error('Invalid command:', o));
+
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+  process.exit();
+}
+
+program.parse(process.argv);

@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  gstech-compliance.test:
+    build:
+      context: ../../
+      dockerfile: packages/gstech-compliance/Dockerfile
+    image: gstech-compliance.test
+    container_name: gstech-compliance.test
+    command: yarn test
+    networks:
+      - gstech
+    environment:
+      CI: "true"
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

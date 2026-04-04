@@ -1,0 +1,52 @@
+.fields-dropzone__photo-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.fields-dropzone__photo-container {
+  position: relative;
+  margin-right: 8px;
+}
+
+.fields-dropzone__photo-container--fixed-height {
+  height: 150px;
+}
+
+.fields-dropzone__photo {
+  max-height: 300px;
+  max-width: 650px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+}
+
+.fields-dropzone__photo--preview {
+  margin-right: 8px;
+  opacity: 0.25;
+}
+
+.fields-dropzone__photo--fixed-height {
+  height: 150px;
+}
+
+.fields-dropzone__remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(0, 0, 0, 0.56);
+  transition-property: background-color;
+  transition-duration: 0.5s;
+  cursor: pointer;
+}
+
+.fields-dropzone__remove:hover {
+  background-color: rgba(0, 0, 0, 0.87);
+}
+
+.fields-dropzone__remove-icon {
+  width: 30px !important;
+  height: 30px !important;
+  fill: rgba(255, 255, 255, 0.87) !important;
+}

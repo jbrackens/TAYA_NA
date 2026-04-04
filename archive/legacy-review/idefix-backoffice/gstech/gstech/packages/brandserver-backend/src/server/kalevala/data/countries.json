@@ -1,0 +1,32 @@
+[
+  {
+    "CountryID": "72",
+    "CountryISO": "EE",
+    "CountryName": "ESTONIA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "77",
+    "CountryISO": "FI",
+    "CountryName": "FINLAND",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "140",
+    "CountryISO": "MT",
+    "CountryName": "MALTA",
+    "CurrencyISO": "EUR"
+  },
+  {
+    "CountryID": "168",
+    "CountryISO": "NO",
+    "CountryName": "NORWAY",
+    "CurrencyISO": "NOK"
+  },
+  {
+    "CountryID": "42",
+    "CountryISO": "CA",
+    "CountryName": "CANADA",
+    "CurrencyISO": "CAD"
+  }
+]

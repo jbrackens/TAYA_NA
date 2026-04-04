@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: phoenix-platform-local
+resources:
+  - ../../base
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: local
+patches:
+  - path: config.patch.yaml
+replicas:
+  - name: phoenix-outbox-worker
+    count: 0

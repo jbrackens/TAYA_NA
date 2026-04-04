@@ -1,0 +1,9 @@
+<market id="1" name="Match winner - {way}way" variant="way:two">
+    <outcomes>
+        <outcome id="1" name="home"></outcome>
+        <outcome id="2" name="away"></outcome>
+    </outcomes>
+    <specifiers>
+        <specifier name="way" type="variable_text"></specifier>
+    </specifiers>
+</market>

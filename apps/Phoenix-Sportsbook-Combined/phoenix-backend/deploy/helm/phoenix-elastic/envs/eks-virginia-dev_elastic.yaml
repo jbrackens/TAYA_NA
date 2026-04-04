@@ -1,0 +1,5 @@
+kibana:
+  ingress:
+    annotations:
+      alb.ingress.kubernetes.io/inbound-cidrs: '212.250.151.149/32,107.22.63.253/32,34.206.153.88/32'  # VPN: fw02-lon.argyll.tech & twingate connectors 13/14
+    hosts: [kibana.dev.phoenix.darkstormlabs.net]

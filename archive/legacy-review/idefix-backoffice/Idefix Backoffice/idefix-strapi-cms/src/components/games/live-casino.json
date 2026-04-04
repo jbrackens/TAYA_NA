@@ -1,0 +1,38 @@
+{
+  "collectionName": "components_games_live_casinos",
+  "info": {
+    "displayName": "Live Casino",
+    "icon": "slideshow",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "buttons": {
+      "type": "component",
+      "repeatable": true,
+      "component": "common.action-button",
+      "max": 2
+    },
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "videos"
+      ]
+    },
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading"
+    }
+  }
+}

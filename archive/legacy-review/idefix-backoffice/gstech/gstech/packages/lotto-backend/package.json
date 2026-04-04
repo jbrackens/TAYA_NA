@@ -1,0 +1,18 @@
+{
+  "name": "lotto-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "pretty": "prettier -c '**/*.js'",
+    "start": "NODE_ENV=development LOGGER_LEVEL=debug nodemon ./server",
+    "serve": "yarn migrate && node ./server",
+    "test": "NODE_ENV=test mocha --exit --require '../gstech-core/modules/setup-test' './server/test-scripts/setup-test' './server/**/*.spec.js'",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from lotto-backend.test",
+    "docker:start": "docker compose up --build -d",
+    "migrate": "node ../gstech-core/modules/migrator.js migrate",
+    "add:migration": "node ../gstech-core/modules/migrator.js create"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "OddinMessage",
+  "fields":[
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "xml",
+      "type": "string"
+    }
+  ]
+}

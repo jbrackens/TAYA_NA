@@ -1,0 +1,34 @@
+nameOverride: "dev-olaspill-client-service"
+fullnameOverride: "dev-olaspill-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+resources:
+  requests:
+    memory: "1.5Gi"
+  limits:
+    memory: "1.5Gi"
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+
+env:
+  SITE_NAME: olaspill
+  NODE_ENV: production
+  PORT: 3000
+  API: http://dev-olaspill-backend-service:3000
+  CAPTCHA_KEY: "6LcfVVclAAAAALRtvgN0zTzKDg4O8bBkw8DQsTfF"

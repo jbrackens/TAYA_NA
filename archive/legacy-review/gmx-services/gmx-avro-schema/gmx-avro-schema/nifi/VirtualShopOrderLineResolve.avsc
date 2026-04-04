@@ -1,0 +1,19 @@
+{
+    "type": "record",
+    "name": "VirtualShopOrderLineResolve",
+    "namespace": "net.flipsports.gmx.nifi",
+    "fields": [
+        {
+            "name": "issue_id",
+            "type": "string"
+        },
+        {
+            "name": "order_line_id",
+            "type": "string"
+        },
+        {
+            "name": "resolved_lines_array",
+            "type": "string"
+        }
+    ]
+}

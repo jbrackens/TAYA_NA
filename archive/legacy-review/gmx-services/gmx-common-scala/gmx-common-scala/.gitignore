@@ -1,0 +1,42 @@
+# General
+######################
+.*
+!.gitignore
+!.sbtopts
+!.scalafmt.conf
+
+# OS generated files
+######################
+.DS_Store*
+
+# Build
+######################
+target/
+.gradle/
+build/
+out/
+
+# Logs
+######################
+*.log
+**/*-log-*.gz
+
+# Eclipse
+######################
+.settings
+.project
+.classpath
+
+# IDEA
+######################
+*.iml
+.idea
+.idea_modules
+
+# Local config #
+######################
+!.env.template
+*.env
+
+# Project specific #
+######################

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="init">
+
+        <createTable tableName="event_configurations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_id" type="uuid">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text"/>
+            <column name="is_active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="event_fields">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_configuration_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_event_fields_event_configurations_id"
+                             referencedTableName="event_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="event_configurations" indexName="idx_event_configurations_project_id">
+            <column name="project_id"/>
+        </createIndex>
+
+        <createIndex tableName="event_configurations" indexName="idx_event_configurations_is_active">
+            <column name="is_active"/>
+        </createIndex>
+
+        <addUniqueConstraint tableName="event_fields" columnNames="event_configuration_id,name"/>
+
+    </changeSet>
+
+</databaseChangeLog>

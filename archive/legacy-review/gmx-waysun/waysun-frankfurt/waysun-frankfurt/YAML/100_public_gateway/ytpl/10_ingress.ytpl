@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.cloud.tencent.com/auto-rewrite: "true"
+    ingress.cloud.tencent.com/direct-access: "false"
+    ingress.cloud.tencent.com/rewrite-support: "true"
+    kubernetes.io/ingress.class: qcloud
+    kubernetes.io/ingress.existLbId: ${CFG_INGRESS_CLB_ID}
+    kubernetes.io/ingress.extensiveParameters: '{"AddressIPVersion":"IPV4"}'
+    kubernetes.io/ingress.http-rules: "null"
+    kubernetes.io/ingress.https-rules: '${TMP_HTTPS_RULES}'
+    kubernetes.io/ingress.qcloud-loadbalance-id: ${CFG_INGRESS_CLB_ID}
+    kubernetes.io/ingress.rule-mix: "true"
+    qcloud_cert_id: ${CFG_QCLOUD_CERT_ID}
+  name: ${CFG_INGRESS_NAME}
+  namespace: ${CFG_K8S_NAMESPACE}
+spec:
+  tls:
+  - hosts:
+    - "${CFG_INGRESS_HOST_NAME}"
+    secretName: "${CFG_INGRESS_CERT_SECRET_NAME}"
+  rules:

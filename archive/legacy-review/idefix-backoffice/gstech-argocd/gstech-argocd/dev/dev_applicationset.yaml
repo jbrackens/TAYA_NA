@@ -1,0 +1,192 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dev-ld-apps
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - app_name: affmore-backend
+        helm_dir: affmore-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: affmore-backend
+      - app_name: affmore-client
+        helm_dir: affmore-client
+        helm_chart: helm/affmore-client-app
+        ecr_repo: affmore-client
+      - app_name: campaignserver-backend
+        helm_dir: campaignserver-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-campaignserver
+      - app_name: campaignserver-client
+        helm_dir: campaignserver-client
+        helm_chart: helm/campaignserver-client-app
+        ecr_repo: gstech-campaignserver-client
+      - app_name: complianceserver
+        helm_dir: complianceserver
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-compliance
+      - app_name: freshspins-backend
+        helm_dir: brandserver-backend/freshspins-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: freshspins-client
+        helm_dir: brandserver-client/freshspins-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: freshspins-worker
+        helm_dir: brandserver-worker/freshspins-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: gstech-backend
+        helm_dir: gstech-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-backend
+      - app_name: gstech-backoffice
+        helm_dir: gstech-backoffice
+        helm_chart: helm/gstech-backoffice-app
+        ecr_repo: gstech-backoffice
+      - app_name: gstech-reporting-job
+        helm_dir: gstech-reporting-job
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-backend
+      - app_name: gstech-worker
+        helm_dir: gstech-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: gstech-backend
+      - app_name: hipspin-backend
+        helm_dir: brandserver-backend/hipspin-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: hipspin-client
+        helm_dir: brandserver-client/hipspin-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: hipspin-worker
+        helm_dir: brandserver-worker/hipspin-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: jefe-backend
+        helm_dir: brandserver-backend/jefe-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: jefe-client
+        helm_dir: brandserver-client/jefe-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: jefe-worker
+        helm_dir: brandserver-worker/jefe-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: justwow-backend
+        helm_dir: brandserver-backend/justwow-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: justwow-client
+        helm_dir: brandserver-client/justwow-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: justwow-worker
+        helm_dir: brandserver-worker/justwow-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: luckydino-backend
+        helm_dir: brandserver-backend/luckydino-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: luckydino-client
+        helm_dir: brandserver-client/luckydino-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: luckydino-worker
+        helm_dir: brandserver-worker/luckydino-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: olaspill-backend
+        helm_dir: brandserver-backend/olaspill-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: olaspill-client
+        helm_dir: brandserver-client/olaspill-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: olaspill-worker
+        helm_dir: brandserver-worker/olaspill-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: paymentserver
+        helm_dir: paymentserver
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-paymentserver
+      - app_name: rewardserver
+        helm_dir: rewardserver
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-rewardserver
+      - app_name: walletserver
+        helm_dir: walletserver
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-walletserver
+      - app_name: vie-backend
+        helm_dir: brandserver-backend/vie-backend
+        helm_chart: helm/luckydino-app
+        ecr_repo: brandserver-backend
+      - app_name: vie-client
+        helm_dir: brandserver-client/vie-client
+        helm_chart: helm/brandserver-client-app
+        ecr_repo: brandserver-client
+      - app_name: vie-worker
+        helm_dir: brandserver-worker/vie-worker
+        helm_chart: helm/brandserver-worker-app
+        ecr_repo: brandserver-backend
+      - app_name: idefix-cms
+        helm_dir: idefix-cms
+        helm_chart: helm/luckydino-app
+        ecr_repo: idefix-cms
+      - app_name: sn-affiliate-site
+        helm_dir: sn-affiliate-site
+        helm_chart: helm/luckydino-app
+        ecr_repo: sn-affiliate-site
+      - app_name: luckydino-strapi-cms
+        helm_dir: luckydino-strapi-cms
+        helm_chart: helm/luckydino-app
+        ecr_repo: luckydino-strapi-cms
+      - app_name: contentserver
+        helm_dir: contentserver
+        helm_chart: helm/luckydino-app
+        ecr_repo: gstech-contentserver
+  template:
+    metadata:
+      annotations:
+        argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/write-back-method: git
+        argocd-image-updater.argoproj.io/image-list: "appimage=743851384875.dkr.ecr.eu-central-1.amazonaws.com/{{ecr_repo}}"
+        argocd-image-updater.argoproj.io/appimage.update-strategy: latest
+        argocd-image-updater.argoproj.io/appimage.allow-tags: "regexp:beta-*"
+        argocd-image-updater.argoproj.io/appimage.helm.image-name: image.repository
+        argocd-image-updater.argoproj.io/appimage.helm.image-tag: image.tag
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: luckydino-nonprd-deployments
+        notifications.argoproj.io/subscribe.on-deployed.slack: luckydino-nonprd-deployments
+        notifications.argoproj.io/subscribe.on-deployed.grafana: new_deploy
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      name: dev-{{app_name}}
+    spec:
+      destination:
+        server: "https://kubernetes.default.svc"
+        namespace: dev
+      source:
+        repoURL: "git@github.com:LuckyDino/gstech-argocd.git"
+        path: "{{helm_chart}}"
+        targetRevision: HEAD
+        helm:
+          valueFiles:
+            - ../{{helm_dir}}/common.yaml
+            - ../{{helm_dir}}/dev.yaml
+      project: dev-apps
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

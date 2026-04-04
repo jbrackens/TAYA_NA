@@ -1,0 +1,31 @@
+
+// adjusting spacing in cneter
+html.IsDesktop .panel-center {
+  .tab-switch-btns-holder{
+    margin:0 0 1px;
+  }
+  .panel-center-inner{
+    padding: 10px 10px 0px 10px
+  }
+  .events-container{
+    padding:1px 0px 0px;
+  }
+  .event-view-scoreboard-image{
+    margin: 0px 0px 1px;
+    border-radius: 0px;
+  }
+  .group-view-carousel{
+      margin: 0px
+  }
+  .event-view{
+    padding: 0px;
+  }
+  .scarousel-container{
+    margin:0;
+  }
+}
+.IsDesktop .rj-personalized-highlights-wrapper,
+.rj-personalized-highlights-wrapper,
+.responsive-sports-personal-highlights-view-blok-container{
+  padding:0;
+}

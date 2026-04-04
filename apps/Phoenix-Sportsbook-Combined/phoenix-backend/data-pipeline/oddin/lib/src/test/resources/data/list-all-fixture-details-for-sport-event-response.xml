@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fixtures_fixture generated_at="2020-09-09T10:45:44">
+    <fixture id="od:match:15061" name="GamersOrigin vs Fnatic Rising" scheduled="2020-09-12T16:00:00" status="not_started">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:746" name="GamersOrigin" abbreviation="GO" qualifier="home"></competitor>
+            <competitor id="od:competitor:371" name="Fnatic Rising" abbreviation="FNCR" qualifier="away"></competitor>
+        </competitors>
+        <extra_info>
+            <info key="best_of" value="1"></info>
+        </extra_info>
+    </fixture>
+</fixtures_fixture>

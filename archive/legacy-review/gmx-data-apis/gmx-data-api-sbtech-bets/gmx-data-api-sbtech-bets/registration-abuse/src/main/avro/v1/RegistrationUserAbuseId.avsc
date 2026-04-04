@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "AbuseId",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.RegistrationUserAbuse.v1",
+  "fields": [
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    }
+  ],
+  "default": null
+}

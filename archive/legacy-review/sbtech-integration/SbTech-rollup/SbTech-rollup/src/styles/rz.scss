@@ -1,0 +1,46 @@
+//
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,900');
+@import 'rz-variables';
+
+
+@import 'shared/accordions';
+@import 'shared/ag-framework';
+@import 'shared/breadcrumbs';
+$casino-jackpot: $brand-base;
+
+$fs-title-color: $brand-primary;
+$fs-title-background: transparent;
+$fs-game-color: $brand-primary;
+$fs-game-background: transparent;
+$fs-icon:url('/img/40352');
+@import 'shared/casino/casino-labels';
+@import 'shared/casino/casino';
+@import 'shared/center-panels';
+@import 'shared/event-view';
+@import 'shared/general';
+@import 'shared/message-block';
+@import 'shared/popup-panel';
+@import 'shared/racing';
+@import 'shared/registration';
+@import 'shared/ag-modal';
+
+$first-five-img: url('/img/35590/');
+$play-btn-img: url('/img/37765/');
+@import 'shared/script-styles';
+$search-results-bg:$brand-base-light;
+@import 'shared/sidebars';
+@import 'shared/spinner';
+@import 'shared/static-pages';
+@import 'shared/superbanner';
+@import 'shared/tab-switch';
+@import 'shared/titles';
+@import 'shared/webpush-overrides';
+
+@import 'shared/branded-header/header-rz.scss';
+
+@import 'RZ/promo-banners';
+@import 'RZ/buttons';
+@import 'RZ/goal-games';
+@import 'RZ/misc';
+@import 'RZ/create-your-bet';
+@import 'RZ/mobile-menus';

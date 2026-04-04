@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "coffee-script": "^1.11.1",
+    "gulp": "^3.8.10",
+    "gulp-clean": "^0.2.4",
+    "gulp-rename": "^1.2.0",
+    "gulp-shell": "^0.5.2",
+    "gulp.spritesmith": "^6.9.0",
+    "lodash": "^2.4.1",
+    "spritesmith": "^3.3.1"
+  }
+}

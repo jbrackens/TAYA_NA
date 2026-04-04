@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  gstech-mongodb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gstech-mongodb
+    container_name: gstech-mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - gstech
+
+networks:
+  gstech:
+    external: true

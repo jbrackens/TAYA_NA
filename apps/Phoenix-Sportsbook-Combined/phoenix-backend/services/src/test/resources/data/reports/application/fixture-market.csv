@@ -1,0 +1,6 @@
+marketId,marketName,fixtureId,name                                 ,startTime, selectionNames
+m:o:m1      ,"Match winner - threeway",f:o:1       ,"MAD Lions vs PSG Talon"             ,2021-05-15T18:00+00:00, s1:selection1 s2:selection2
+m:o:m2      ,"Quadra kill - map 1",f:o:1       ,"MAD Lions vs PSG Talon"             ,2021-05-15T18:00+00:00, s1:selection1
+
+m:o:m21     ,"Match winner - twoway",f:o:2       ,"London Royal Ravens vs Paris Legion",2021-05-13T19:00+00:00, s1:selection1
+m:o:m22     ,"Overtime - map 1",f:o:2       ,"London Royal Ravens vs Paris Legion",2021-05-13T19:00+00:00, s1:selection1

@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: phoenix-platform-staging
+resources:
+  - ../../base
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: staging
+patches:
+  - path: config.patch.yaml
+replicas:
+  - name: phoenix-gateway
+    count: 2
+  - name: phoenix-user
+    count: 2
+  - name: phoenix-wallet
+    count: 2
+  - name: phoenix-market-engine
+    count: 2
+  - name: phoenix-betting-engine
+    count: 2
+  - name: phoenix-events
+    count: 2
+  - name: phoenix-analytics
+    count: 2
+  - name: phoenix-settlement
+    count: 2
+  - name: phoenix-outbox-worker
+    count: 1
+images:
+  - name: ghcr.io/philcali-phoenix/phoenix-gateway
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-user
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-wallet
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-market-engine
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-betting-engine
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-events
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-retention
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-social
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-compliance
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-analytics
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-settlement
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-notification
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-cms
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/stella-engagement
+    newTag: staging
+  - name: ghcr.io/philcali-phoenix/phoenix-outbox-worker
+    newTag: staging

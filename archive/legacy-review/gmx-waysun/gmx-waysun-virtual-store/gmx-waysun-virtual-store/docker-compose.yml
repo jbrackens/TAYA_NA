@@ -1,0 +1,31 @@
+version: '3.1'
+
+services:
+  virtual-store:
+    build: .
+    image: gmx-waysun/virtual-store:latest
+    volumes:
+      - ./src:/app
+      - ./persistence/env.local:/app/.env
+    ports:
+      - "8001:8080"
+    env_file:
+      - local.env
+    command: "wait-for postgres:5432 -t 200 -- python3 manage.py runserver 0.0.0.0:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.virtual_store.rule=PathPrefix(`/virtual_shop/`, `/payment_gateway/`, `/virtual_shop/antstream`, `/virtual_store/`, `/virtual_store_admin/`, `/virtual_store_docs/`, `/static/virtual_store/`)"
+      - "traefik.http.services.virtual_store.loadbalancer.server.port=8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 250M
+        reservations:
+          memory: 100M
+
+networks:
+  default:
+    external:
+      name: gmx-internal
+

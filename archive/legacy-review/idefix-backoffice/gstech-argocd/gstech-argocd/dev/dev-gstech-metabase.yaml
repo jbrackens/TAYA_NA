@@ -1,0 +1,29 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: luckydino-nonprd-deployments
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  name: dev-gstech-metabase
+spec:
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: dev
+
+  source:
+    repoURL: "git@github.com:LuckyDino/gstech-argocd.git"
+    path: helm/luckydino-app
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - ../metabase/common.yaml
+        - ../metabase/dev.yaml
+
+  project: dev-apps
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

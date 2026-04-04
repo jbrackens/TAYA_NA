@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:600,700,800|Roboto:700|Titillium+Web:300,400,700&display=swap');
+@import 'sn-variables';
+$acc-bg: #e8e8e8;
+@import 'shared/accordions';
+@import 'shared/ag-framework';
+$breadcrumb-last-color: $brand-primary;
+@import 'shared/breadcrumbs';
+$casino-jackpot: $brand-base;
+$casino-new:#00b000;
+$casino-hot:#e40a0a;
+$casino-jackpot:#ffbc1d;
+$fs-title-color: black;
+$fs-title-background: #ffbc1d;
+$fs-game-color: white;
+$fs-game-background: $brand-base;;
+$fs-icon:url('/img/49531');
+@import 'shared/casino/casino';
+@import 'shared/center-panels';
+@import 'shared/event-view';
+@import 'shared/general';
+@import 'shared/message-block';
+@import 'shared/popup-panel';
+@import 'shared/plugin-overrides';
+@import 'shared/quick-deposit';
+@import 'shared/racing';
+@import 'shared/registration';
+@import 'shared/event-list';
+
+$first-five-img: url('/img/37055/');
+$play-btn-img: url('/img/39849/');
+$search-results-bg:$brand-light;
+@import 'shared/sidebars';
+@import 'shared/spinner';
+@import 'shared/static-pages';
+@import 'shared/superbanner';
+@import 'shared/tab-switch';
+@import 'shared/titles';
+@import 'shared/webpush-overrides';
+@import 'shared/ag-modal';
+.ag-modal button.modal-negative{
+  color:white;
+  background:#282828;
+  &:hover{
+    background:darken(#282828,5%);
+  }
+}
+@import 'shared/is-in-iframe';
+
+@import 'shared/branded-header/header-sn.scss';
+@import 'SN/action-betting';
+@import 'SN/badge-banners';
+@import 'SN/buttons';
+@import 'SN/betslip';
+@import 'SN/casino';
+@import 'SN/events';
+@import 'SN/general';
+@import 'SN/hamburger';
+@import 'SN/icons';
+@import 'SN/promo-banners';
+@import 'SN/quickbets';
+@import 'SN/racing';
+@import 'SN/super-banner-carousel';
+@import 'SN/headings';
+@import 'SN/tab-switch';
+@import 'SN/titles';
+@import 'SN/verification-flow';
+@import 'SN/virtuals';
+@import 'SN/registration';
+@import 'SN/yourbet';
+
+@import 'SN/rewards';
+@import 'SN/ire';
+@import 'SN/tippy';
+@import 'SN/temp';
+
+@import 'shared/script-styles';
+@import 'SN/sn-scripts';
+
+.greyhounds #racing-next-races{
+  display:block;
+}
+
+
+// rewards nation logo overrides
+/*
+html.IsDesktop #Top_ResponsiveHeader_36360  .page-header-main-logo{
+  margin:10px 0;
+}
+
+html.IsMobile #Top_ResponsiveHeader_36747 .mobile-header-main-logo{
+  width:180px;
+}
+*/
+// temp animated logos
+html.IsTablet .page-header-middle .page-header-center,
+html.IsMobile .page-header-middle .page-header-center{
+  & > .page-header-element{
+    width:100%;
+  }
+}
+html.IsDesktop .page-header-main-logo{
+  width:450px;
+  height:55px;
+  background-position:center;
+}
+html.IsTablet .mobile-header-logo-container,
+html.IsMobile .mobile-header-logo-container{
+  padding:9px 0;
+}
+html.IsTablet .mobile-header-main-logo,
+html.IsMobile .mobile-header-main-logo{
+  width:100%;
+}
+@media (max-width: 400px) {
+    html.IsMobile .mobile-header-main-logo {
+        width:100%;
+    }
+}

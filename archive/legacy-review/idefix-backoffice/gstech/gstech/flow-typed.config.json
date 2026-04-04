@@ -1,0 +1,3 @@
+{
+  "ignore": ["@babel", "jest", "eslint", "eslint-plugin-ft-flow"]
+}

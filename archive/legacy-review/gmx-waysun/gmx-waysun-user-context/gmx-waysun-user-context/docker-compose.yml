@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+  user_context:
+    build: .
+    image: gmx-waysun/user_context:latest
+    volumes:
+      - ./user_context:/app/user_context
+      - ./start.sh:/app/start.sh:ro
+      - ./prestart.sh:/app/prestart.sh:ro
+      - ./Pipfile:/Pipfile:ro
+      - ./Pipfile.lock:/Pipfile.lock:ro
+      - ./gunicorn_conf.py:/app/gunicorn_conf.py:ro
+    env_file:
+      - local.env
+    ports:
+      - "8006:8000"
+#    command: uvicorn user_context.main:app --reload  --host 0.0.0.0 --port 8000 --log-level debug
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user_context.rule=PathPrefix(`/static/user_context/`, `/user_context/`, `/user_context_docs/`)"
+      - "traefik.http.services.user_context.loadbalancer.server.port=8000"
+
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1'
+#          memory: 350M
+#        reservations:
+#          memory: 100M
+
+networks:
+  default:
+    external:
+      name: gmx-internal
+

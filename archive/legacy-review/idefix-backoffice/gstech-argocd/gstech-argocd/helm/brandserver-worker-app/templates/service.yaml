@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "brandserver-worker-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "brandserver-worker-app.labels" . | nindent 4 }}
+{{- if .Values.service.annotations }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+      name: http
+    - name: https
+      port: 443
+      targetPort: {{ .Values.service.port }}
+  selector:
+    {{- include "brandserver-worker-app.selectorLabels" . | nindent 4 }}
+{{- if .Values.prometheus.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "brandserver-worker-app.fullname" . }}-metrics
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "brandserver-worker-app.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+  - port: {{ .Values.service.metricsPort }}
+    name: metrics
+    targetPort: {{ .Values.service.metricsPort }}
+  selector:
+    {{- include "brandserver-worker-app.selectorLabels" . | nindent 4 }}
+{{- end }}

@@ -1,0 +1,28 @@
+[
+  {
+    "statusCode": "InvalidSelection",
+    "statusDescription": "Validation failed: 0QA64618199#755522967_22L197219Q1361021Q2-1 is not valid"
+  },
+  {
+    "statusCode": "ValidationError",
+    "statusDescription": "Missing or invalid PotentialReturns on bet"
+  },
+  {
+    "statusCode": "InternalServerError",
+    "statusDescription": "InternalServerError"
+  },
+  {
+    "statusCode": "OddsNotMatch",
+    "statusDescription": "Bet Odds have changed.",
+    "receivedOdds": 34.0,
+    "newOdds": 41.0
+  },
+  {
+    "statusCode": "OddsValidationError",
+    "statusDescription": "Odds cannot be validated due to a technical error."
+  },
+  {
+    "statusCode": "ServiceNotAvailable",
+    "statusDescription": "Service not available."
+  }
+]

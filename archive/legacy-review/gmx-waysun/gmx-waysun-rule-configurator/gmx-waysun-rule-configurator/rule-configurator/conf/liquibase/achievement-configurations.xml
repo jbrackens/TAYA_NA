@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="achievement_configurations">
+
+        <createTable tableName="achievement_event_configurations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="event_configuration_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_event_configurations_event_configuration_id"
+                             referencedTableName="event_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_event_configuration_fields">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="achievement_event_configuration_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_event_configuration_fields_achievement_event_configuration_id"
+                             referencedTableName="achievement_event_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="field_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operation_type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregation_rule_id" type="uuid"/>
+            <column name="value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="achievement_configurations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="rule_id" type="uuid">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trigger_behaviour" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_type" type="varchar(25)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="achievement_event_configuration_id" type="bigint">
+                <constraints nullable="true"
+                             foreignKeyName="fk_achievement_configurations_achievement_event_configurations_id"
+                             referencedTableName="achievement_event_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="is_active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="achievement_configurations"
+                     indexName="idx_achievement_configurations_project_id">
+            <column name="project_id"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_configurations"
+                     indexName="idx_achievement_configurations_name">
+            <column name="name"/>
+        </createIndex>
+
+        <createIndex tableName="achievement_configurations"
+                     indexName="idx_achievement_configurations_is_active">
+            <column name="is_active"/>
+        </createIndex>
+
+        <createTable tableName="achievement_conditions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="achievement_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_conditions_achievement_configurations_id"
+                             referencedTableName="achievement_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="aggregation_rule_configuration_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_achievement_conditions_aggregation_rule_configurations_id"
+                             referencedTableName="aggregation_rule_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="aggregation_field" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="condition_type" type="varchar(5)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

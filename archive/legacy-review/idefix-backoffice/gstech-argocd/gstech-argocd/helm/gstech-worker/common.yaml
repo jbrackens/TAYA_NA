@@ -1,0 +1,53 @@
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/gstech-backend
+  pullPolicy: Always
+  tag: "latest"
+
+command: yarn workspace gstech-backend worker
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+ingress:
+  enabled: false
+  annotations: {}
+
+  hosts:
+    - host: gstech-worker-service.local
+      paths: []
+  tls: []
+
+resources:
+  requests:
+    memory: "1024Mi"
+    cpu: "300m"
+  limits:
+    memory: "1024Mi"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3001
+
+prometheus:
+  enabled: true
+  path: /metrics
+  interval: 40s
+  portname: metrics
+
+env:
+  METRICS_PORT: 4001
+  LOGGER_HOST: http://loki-write.monitoring.svc.cluster.local:3100
+  LOGGER_SERVICE: gstech-worker

@@ -1,0 +1,20 @@
+@namespace("phoenix.dataapi.shared")
+protocol FixtureResultProtocol {
+
+    import idl "shared-protocol.avdl";
+
+    enum Result {
+        None, Winner, Loser, Placed, Partial
+    }
+
+    record SelectionResult {
+        string selectionId;
+        Result result;
+    }
+
+    record FixtureResult {
+        phoenix.dataapi.shared.Header header;
+        string namespacedMarketId;
+        array <SelectionResult> results;
+    }
+}

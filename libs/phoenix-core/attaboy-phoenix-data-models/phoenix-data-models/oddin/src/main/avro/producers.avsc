@@ -1,0 +1,52 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "Producers",
+  "fields": [
+    {
+      "name": "responseCode",
+      "type": "string"
+    },
+    {
+      "namespace": "phoenix.oddin.data",
+      "name": "producers",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "Producer",
+          "type": "record",
+          "fields": [
+            {
+              "name": "id",
+              "type": "int"
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "name": "apiUrl",
+              "type": "string"
+            },
+            {
+              "name": "active",
+              "type": "boolean"
+            },
+            {
+              "name": "scope",
+              "type": "string"
+            },
+            {
+              "name": "statefulRecoveryWindowInMinutes",
+              "type": "int"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

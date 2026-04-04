@@ -1,0 +1,50 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1555665698952,
+        "description": "",
+        "identifier": "808c6e44-a6a4-581d-9d87-706d15f51901",
+        "modifiedTimestamp": 1574856610284,
+        "name": "TopUpWallet",
+        "type": "Flow",
+        "versionCount": 20
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+        "inputPorts": [],
+        "labels": [],
+        "name": "WalletTopUp",
+        "outputPorts": [],
+        "position": {
+            "x": 901.5535278320312,
+            "y": 220.58718872070312
+        },
+        "processGroups": [],
+        "processors": [],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "",
+        "flowIdentifier": "808c6e44-a6a4-581d-9d87-706d15f51901",
+        "timestamp": 1555665698961,
+        "version": 1
+    }
+}

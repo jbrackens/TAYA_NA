@@ -1,0 +1,23 @@
+[run]
+source =
+    .
+
+[report]
+omit =
+    */manage.py
+    *manage.py
+    oidc/migrations/*
+    profiles/migrations/*
+    project/migrations/*
+    project.settings/*
+    project/settings/__init__.py
+    project/settings/static.py
+    project/urls.py
+    project/wsgi.py
+    common/tests/*
+    virtual_shop/*
+
+
+
+
+

@@ -1,0 +1,98 @@
+{
+  "namespace": "phoenix.dataapi.internal.oddin",
+  "type": "record",
+  "name": "FixtureChangedEvent",
+  "fields": [
+    {
+      "name": "correlationId",
+      "type": "string"
+    },
+    {
+      "name": "receivedAtUtc",
+      "type": "long"
+    },
+    {
+      "name": "sportId",
+      "type": "string"
+    },
+    {
+      "name": "sportName",
+      "type": "string"
+    },
+    {
+      "name": "sportAbbreviation",
+      "type": "string"
+    },
+    {
+      "name": "tournamentId",
+      "type": "string"
+    },
+    {
+      "name": "tournamentName",
+      "type": "string"
+    },
+    {
+      "name": "tournamentStartTimeUtc",
+      "type": "long"
+    },
+    {
+      "name": "fixtureId",
+      "type": "string"
+    },
+    {
+      "name": "fixtureName",
+      "type": "string"
+    },
+    {
+      "name": "startTimeUtc",
+      "type": "long"
+    },
+    {
+      "name": "eventStatus",
+      "type": "string"
+    },
+    {
+      "name": "competitors",
+      "type": {
+        "type": "array",
+        "items": {
+          "namespace": "phoenix.dataapi.internal.oddin",
+          "type": "record",
+          "name": "Competitor",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string"
+            },
+            {
+              "name": "fullName",
+              "type": "string"
+            },
+            {
+              "name": "side",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "currentScore",
+      "type": {
+        "namespace": "phoenix.dataapi.internal.oddin",
+        "type": "record",
+        "name": "MatchScore",
+        "fields": [
+          {
+            "name": "home",
+            "type": "int"
+          },
+          {
+            "name": "away",
+            "type": "int"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+
+{% block github_badge %}{% endblock %}
+
+{% block title %}WALLET REST{% endblock %}
+
+{% block logo %}
+    <!--suppress HtmlUnknownTarget -->
+    <a class="navbar-brand" href="/docs/">WALLET REST Docs</a>
+{% endblock %}
+
+{% block jumbotron %}
+    <div class="jumbotron">
+        <h1>WALLET</h1>
+        <p>
+            List of REST endpoints for communication. It contains list of all REST endpoints. By clicking on "plug" icon,
+            user can test API by sending requests.
+        </p>
+    </div>
+    <div class="jumbotron">
+        <h3>Warning:</h3>
+        <p>
+            Section <strong><code>wallet/order</code></strong> is being used only by WooComerce plugin and in nearest
+            future will be removed/changed.
+        </p>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    <div class="footer">
+        Copyright © 2016 FlipSports Limited.
+    </div>
+{% endblock %}

@@ -1,0 +1,65 @@
+
+// overiding position absolute set in _layouts
+.IsTablet.is-in-iframe[data-mobile-os="ios"] #mainNavigation,
+.IsMobile.is-in-iframe[data-mobile-os="ios"] #mainNavigation,
+.IsTablet.is-in-iframe[data-mobile-os="ios"] .panel-side,
+.IsMobile.is-in-iframe[data-mobile-os="ios"] .panel-side{
+  position:fixed;
+}
+// in on live betting
+.IsMobile.is-in-iframe[data-mobile-os="ios"] body.LBettingOverview .panel-left,
+.IsTablet.is-in-iframe[data-mobile-os="ios"] body.LBettingOverview .panel-left{
+  position:relative;
+}
+// overriding iframe styles set in your_bet_v1
+.IsMobile.is-in-iframe .your-bet-controller,
+.IsTablet.is-in-iframe .your-bet-controller{
+  position:fixed;
+  z-index:10;
+  transform:translate3d(0,100%,0);
+  -webkit-transform:translate3d(0,100%,0);
+  transition:transform 0.2s;
+  transition:transform 0.2s,-webkit-transform 0.2s;
+}
+
+.IsMobile.is-in-iframe .your-bet--active .your-bet-controller,
+.IsTablet.is-in-iframe .your-bet--active .your-bet-controller{
+  -webkit-transform:translate3d(0,0,0);
+  transform:translate3d(0,0,0);
+}
+
+.IsMobile.is-in-iframe .your-bet--active-offset,
+.IsTablet.is-in-iframe .your-bet--active-offset{
+    padding-bottom: 245px;
+}
+
+// overiding iframe styles set in realty_check
+
+html.is-in-iframe .c-reality-check.rj-popup-portal  {
+  position: fixed;
+  .rj-popup-message__wrapper{
+    top: 50% !important;
+  }
+}
+
+//overiding iframe style set in bet_slip_combinator
+.IsMobile[data-mobile-os="ios"]:not(.is-in-iframe),
+.IsMobile.iOS:not(.is-in-iframe)
+{
+    &.is-iphone-x
+    {
+        .print-preview-popup
+        {
+            .rj-popup-message__close-btn
+            {
+                top: 78px;
+            }
+
+            .rj-popup-message__body
+            {
+                padding-top: 68px;
+                padding-bottom: 34px;
+            }
+        }
+    }
+}

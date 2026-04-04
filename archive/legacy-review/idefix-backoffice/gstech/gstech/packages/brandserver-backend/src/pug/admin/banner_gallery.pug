@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(http-equiv="X-UA-Compatible", content="IE=edge,chrome=1,requiresActiveX=true")
+    meta(name='viewport', content='width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0')
+    meta(name='apple-mobile-web-app-capable', content='yes')
+    meta(name='format-detection', content='telephone=no')
+    link(href='//fonts.googleapis.com/css?family=Titillium+Web:400,600,700,900|Oswald:400,600,700|Ubuntu:400,600,700', rel='stylesheet',
+    type='text/css')
+    link(href='//fonts.googleapis.com/css?family=Passion+One:400,700|PT+Sans:400,700|Ubuntu:400,500', rel='stylesheet', type='text/css')
+
+  body(class=wrapperclass)
+    for banner in banners
+      h1
+        a(href=banner.link, target='_blank')=banner.location + ': ' + banner.name
+      div(style='position: relative; clear: both;')
+        !=banner.content

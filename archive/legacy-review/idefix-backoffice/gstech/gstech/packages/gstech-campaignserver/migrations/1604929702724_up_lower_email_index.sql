@@ -1,0 +1,1 @@
+create index "player_email_lower_idx" on players(lower("email"));

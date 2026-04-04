@@ -1,0 +1,102 @@
+[
+  {
+    "Fixture": {
+      "Competition": {
+        "Id": 13745,
+        "Name": "[FIFA] eSports Battle",
+        "Region": {
+          "Id": 3795074,
+          "Name": "FIFA"
+        }
+      },
+      "Competitors": [
+        {
+          "CompetitorType": "Team",
+          "Competitors": [],
+          "HomeAway": "Home",
+          "Id": 1288944,
+          "Name": "Atletico Madrid (NicolasRage)"
+        },
+        {
+          "CompetitorType": "Team",
+          "Competitors": [],
+          "HomeAway": "Away",
+          "Id": 1301010,
+          "Name": "Borussia Dortmund (YoungDaddy)"
+        }
+      ],
+      "FixtureType": "Match",
+      "Id": 8565263,
+      "Name": "Atletico Madrid (NicolasRage) v Borussia Dortmund (YoungDaddy) (Bo1)",
+      "Round": {
+        "Id": 757684,
+        "Name": "Regular Season"
+      },
+      "Season": {
+        "Id": 117073,
+        "Name": "2021 [FIFA] eSports Battle October"
+      },
+      "Sport": {
+        "Id": 10915624,
+        "Name": "eSports"
+      },
+      "StartTimeUtc": "2021-10-08T14:12:00Z",
+      "Status": "Scheduled"
+    },
+    "Header": {
+      "MessageGuid": "e373b43c-4649-46e1-a317-970759cfdcc6",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-08T14:13:44.7671916Z"
+    }
+  },
+  {
+    "Fixture": {
+      "Competition": {
+        "Id": 12233,
+        "Name": "[LoL] Prime League Pro",
+        "Region": {
+          "Id": 3795068,
+          "Name": "LoL"
+        }
+      },
+      "Competitors": [
+        {
+          "CompetitorType": "Team",
+          "Competitors": [],
+          "HomeAway": "Home",
+          "Id": 863929,
+          "Name": "mousesports"
+        },
+        {
+          "CompetitorType": "Team",
+          "Competitors": [],
+          "HomeAway": "Away",
+          "Id": 1122097,
+          "Name": "Unicorns Of Love Sexy Edition"
+        }
+      ],
+      "FixtureType": "Match",
+      "Id": 8571625,
+      "Name": "mousesports v Unicorns Of Love Sexy Edition (Bo5)",
+      "Round": {
+        "Id": 759912,
+        "Name": "Winter Cup"
+      },
+      "Season": {
+        "Id": 117076,
+        "Name": "2021 [LoL] Prime League Pro Winter"
+      },
+      "Sport": {
+        "Id": 10915624,
+        "Name": "eSports"
+      },
+      "StartTimeUtc": "2021-10-19T16:00:00Z",
+      "Status": "Scheduled"
+    },
+    "Header": {
+      "MessageGuid": "07cc4989-b597-42f9-862e-14071dc80ccb",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-20T08:11:06.3964438Z"
+    }
+  }
+]

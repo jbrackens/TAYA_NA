@@ -1,0 +1,11 @@
+### NoDocs ###
+GET        /docs/swagger-ui/*file        controllers.Assets.at(path:String="/public/lib/swagger-ui", file:String)
+###
+# summary: swagger definition
+# description: for swagger UI to consume
+###
+GET        /docs/swagger.json            tech.argyll.gmx.predictorgame.controllers.ApiSpecs.generate
+
+->         /api/v1                       apiV1.Routes
+->         /api/v2                       apiV2.Routes
+->         /api/v3                       apiV3.Routes

@@ -1,0 +1,255 @@
+$cdn_base = 'https://static.olaspill.com'
+$header_height = 60px
+$header_height_phone = 60px
+$game_sidebar = 240px
+
+$pink-purple = #e558e3
+$pinky-purple = #c852b4
+$warm-purple = #802d6a
+$sunflower = #ffc808
+$black = #383838
+$dodger-blue = #3baaff
+$clear-blue = #248dff
+$nice-blue = #1962b2
+$light-navy = #11447c
+$light-light-blue = #ccffff
+$link-color = #ccffff
+
+$blue = $clear-blue
+$dark_bg = #235a98
+$dark_blue = $dodger-blue
+$light_blue = $light-light-blue
+$content_bg = #ffffff
+$cta = $pink-purple
+$cta_primary = $sunflower
+$cta_primary_text = $black
+$cta_secondary = $nice-blue
+$cta_text_secondary = #ffffff
+$gray = $black
+$cta_text = #ffffff
+$header-color = $dodger-blue
+$footer-color = $dodger-blue
+$badge-color = $pink-purple
+
+$body_font = 'Ubuntu',Helvetica,Arial,sans-serif;
+$header_font = 'Passion One', sans-serif;
+$header_font_weight = 700
+
+$jefe-blue = $blue
+$jefe-blue-light = $light_blue
+$jefe-blue-dark = $dark_blue
+
+$default-link-color = $link-color
+
+$dialog_zindex = 20000
+$mobile_tabs_zindex = 20100
+$mobile_menu_height = 44px
+$default-gray = #656565
+$dialog-background = $dodger-blue
+$placeholder-color = #3f3f3f
+$link-green = $jefe-blue
+$bg-white = #ffffff
+
+currencies = ( 'nok' )
+languages = ( 'no' )
+
+image(path, w = auto, h = auto, min_pixel_ratio = 1.5)
+  background-image: url(path)
+
+  s = 'all and (-webkit-min-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(min--moz-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(-o-min-device-pixel-ratio:' + min_pixel_ratio + '/1),'
+  s = s + '(min-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(min-resolution:' + unit(min_pixel_ratio*92, dpi) + '),'
+  s = s + '(min-resolution:' + unit(min_pixel_ratio, dppx) + ')'
+
+  @media s
+    ext = extname(path)
+    path = dirname(path) + '/' + pathjoin(basename(path, ext) + '@2x' + ext)
+    background-image: url(path)
+    if w in (cover contain) and h == auto
+        h = null
+    background-size: w h
+
+headerFont()
+  font-family $header_font
+  font-weight $header_font_weight
+
+force3d()
+  -webkit-transform translate3d(0,0,0)
+  -webkit-backface-visibility hidden
+  -webkit-perspective 1000
+
+cdn_image(resource, width, height)
+  image: $cdn_base + resource, width, height
+
+cdn-background(resource, a = null, b = null, c = null, d = null)
+  background: url($cdn_base + resource) a b c d
+
+cdn-background-image(resource)
+  background-image: url($cdn_base + resource)
+
+cdn-background-image2x(resource, resource2x, width, height)
+  cdn-background-image(resource)
+  @media all and (-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(-o-min-device-pixel-ratio:1.5/1),(min-device-pixel-ratio:1.5),(min-resolution:138dpi),(min-resolution:1.5dppx)
+    cdn-background-image(resource2x)
+    background-size width height
+
+
+background-linear-gradient(startPoint, startColor, startInterval, endColor, endInterval, setBg = true)
+  if setBg
+    background startColor
+  background-image linear-gradient(startPoint, startColor startInterval, endColor endInterval)
+
+
+
+spritex2(key2x)
+  spriteImage(key2x)
+  width ceil(key2x[4] / 2)
+  height ceil(key2x[5] / 2)
+  background-position ceil(key2x[2]/2) ceil(key2x[3]/2)
+  background-size ceil(image-size('../../../public/olaspill/css/' + key2x[8])[0]/2) ceil(image-size('../../../public/olaspill/css/' + key2x[8])[1]/2)
+
+sprite2x(key, key2x)
+  sprite(key, key[0])
+  @media all and (-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(-o-min-device-pixel-ratio:1.5/1),(min-device-pixel-ratio:1.5),(min-resolution:138dpi),(min-resolution:1.5dppx)
+    spritex2(key2x)
+
+banner_sprite($sprite)
+  cdn-background-image: '/g/' + $sprite[8]
+  background-position: $sprite[2] $sprite[3];
+  width: $sprite[4];
+  height: $sprite[5];
+
+validatorFeedback()
+  &.placeholder
+    color $placeholder-color
+
+formFeedback()
+  .button-row
+    position relative
+    display block
+    text-align center
+    margin 1px 0 9px 0
+    &.spacing
+      padding-top 5px
+
+genericbutton()
+  cursor pointer
+  width 40px
+  height 40px
+  border 5px solid #ffffff
+  border-radius 50%
+  background-color $dodger-blue
+  color #ffffff
+  position relative
+  &:after
+    content ''
+    position absolute
+    top 10px
+    left 10px
+
+closebutton()
+  genericbutton()
+  right -20px
+  top -20px
+  position absolute
+  z-index 20
+  @media only screen and (max-width:767px)
+    top 0
+    right 0
+  &:after
+    sprite2x($closebutton, $closebutton_2x)
+
+bannerCommons()
+  position relative
+  overflow hidden
+  box-sizing border-box
+  *, *:after, *:before
+    box-sizing border-box
+  background-repeat no-repeat
+  text-align center
+  font-family $body_font
+
+  &__promo_button, &__promo_button:hover, &__promo_button:focus
+    display inline-block
+    headerFont()
+    font-size 16px
+    line-height 40px
+    text-transform uppercase
+    white-space nowrap
+    padding 4px 24px
+    text-decoration none
+    text-align center
+    border-radius 6px
+    position relative
+    background-color $cta
+    color $cta_text
+    &:active
+      box-shadow(1px 1px 5px rgba(0,0,0,0.15))
+
+  h1,h2,h3,h4,h5,h6
+    headerFont()
+    line-height: 100%;
+    text-transform uppercase
+
+  .banner-cta-button
+    background-color $kalevala_cta_secondary
+    position absolute
+    bottom 10px
+    left 0
+    right 0
+    margin 0 auto
+    width 120px
+    padding 0 12px
+
+  &__promo_button_holder
+    margin-bottom 20px
+
+  .banner_item
+    display none
+    z-index 10
+
+  &__promo
+    overflow hidden
+    position relative
+    width 300px
+    height 345px
+    display flex
+    flex-direction column
+    justify-content space-around
+    z-index 20
+
+sidebarBanner()
+  bannerCommons()
+  width 150px
+  height 460px
+  @media only screen and (max-width:991px)
+    margin 0 auto
+    width 100%
+  text-align center
+  .banner
+    margin-top 40px
+    background-color #9bdbfb
+    width 100%
+    height 100%
+  .banner-wrapper
+    width 100%
+    height 100%
+    background-size 150px 460px
+  h1
+    color #ffffff
+    font-size 20px
+    line-height 15px
+    text-transform uppercase
+  p
+    font-size 11px
+    line-height 16px
+    color #ffffff
+    max-width 120px
+    margin 0 auto
+
+frontpageBanner()
+  bannerCommons()
+  width 100%
+  height 345px

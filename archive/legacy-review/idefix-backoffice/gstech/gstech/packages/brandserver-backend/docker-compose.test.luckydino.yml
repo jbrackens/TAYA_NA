@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  luckydino-backend.test:
+    build:
+      context: ../../
+      dockerfile: packages/brandserver-backend/Dockerfile
+    image: brandserver-backend.test
+    container_name: luckydino-backend.test
+    command: >-
+      sh -c 'yarn workspace brandserver-backend init:luckydino
+      && yarn workspace brandserver-backend spec:common
+      && yarn workspace brandserver-backend spec:luckydino'
+    networks:
+      - gstech
+    environment:
+      CI: 'true'
+      NODE_ENV: test
+      RUNNER_DEBUG: ${RUNNER_DEBUG}
+      NODE_NO_WARNINGS: ${NODE_NO_WARNINGS}
+      SITE_NAME: luckydino
+      API_URL: http://gstech-backend:3001/api/LD/v1/
+      BACKEND_URL: http://gstech-backend:3001
+      REWARD_SERVER_URL: http://gstech-rewardserver:3012/api/v1
+      CAMPAIGN_SERVER_PRIVATE_URL: http://gstech-campaignserver:3014/api/v1
+      COMPLIANCE_SERVER_URL: http://gstech-complianceserver:3009/api/v1
+      SESSION_REDIS_URL: redis://gstech-redis:7006
+      PORT: 3000
+      URL: https://beta.luckydino.com
+      PAYMENT_URL: https://beta-api.luckydino.com
+      LOGGER_FORMAT: nice
+
+networks:
+  gstech:
+    external: true

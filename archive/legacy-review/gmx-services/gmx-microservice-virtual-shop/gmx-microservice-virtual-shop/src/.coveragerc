@@ -1,0 +1,22 @@
+[run]
+omit =
+    manage.py
+    project.settings/*
+    project/settings/__init__.py
+    project/settings/static.py
+    project/urls.py
+    project/wsgi.py
+    project/common.py
+    project/factories.py
+    project/storage.py
+    virtual_shop/tests/*
+    virtual_shop/admin.py
+    virtual_shop/apps.py
+    virtual_shop/filters.py
+    services/factories.py
+    common/management/commands/provision_users.py
+
+
+source =
+    .
+

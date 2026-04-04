@@ -1,0 +1,129 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$footballstar_common_ball_name = 'footballstar_common_ball';
+$footballstar_common_ball_x = 451px;
+$footballstar_common_ball_y = 203px;
+$footballstar_common_ball_offset_x = -451px;
+$footballstar_common_ball_offset_y = -203px;
+$footballstar_common_ball_width = 71px;
+$footballstar_common_ball_height = 70px;
+$footballstar_common_ball_total_width = 679px;
+$footballstar_common_ball_total_height = 600px;
+$footballstar_common_ball_image = 'footballstar_common_b.png';
+$footballstar_common_ball = 451px 203px -451px -203px 71px 70px 679px 600px 'footballstar_common_b.png' 'footballstar_common_ball';
+$footballstar_common_logo_name = 'footballstar_common_logo';
+$footballstar_common_logo_x = 451px;
+$footballstar_common_logo_y = 0px;
+$footballstar_common_logo_offset_x = -451px;
+$footballstar_common_logo_offset_y = 0px;
+$footballstar_common_logo_width = 228px;
+$footballstar_common_logo_height = 199px;
+$footballstar_common_logo_total_width = 679px;
+$footballstar_common_logo_total_height = 600px;
+$footballstar_common_logo_image = 'footballstar_common_b.png';
+$footballstar_common_logo = 451px 0px -451px 0px 228px 199px 679px 600px 'footballstar_common_b.png' 'footballstar_common_logo';
+$footballstar_common_player1_name = 'footballstar_common_player1';
+$footballstar_common_player1_x = 0px;
+$footballstar_common_player1_y = 300px;
+$footballstar_common_player1_offset_x = 0px;
+$footballstar_common_player1_offset_y = -300px;
+$footballstar_common_player1_width = 306px;
+$footballstar_common_player1_height = 300px;
+$footballstar_common_player1_total_width = 679px;
+$footballstar_common_player1_total_height = 600px;
+$footballstar_common_player1_image = 'footballstar_common_b.png';
+$footballstar_common_player1 = 0px 300px 0px -300px 306px 300px 679px 600px 'footballstar_common_b.png' 'footballstar_common_player1';
+$footballstar_common_player2_name = 'footballstar_common_player2';
+$footballstar_common_player2_x = 0px;
+$footballstar_common_player2_y = 0px;
+$footballstar_common_player2_offset_x = 0px;
+$footballstar_common_player2_offset_y = 0px;
+$footballstar_common_player2_width = 447px;
+$footballstar_common_player2_height = 296px;
+$footballstar_common_player2_total_width = 679px;
+$footballstar_common_player2_total_height = 600px;
+$footballstar_common_player2_image = 'footballstar_common_b.png';
+$footballstar_common_player2 = 0px 0px 0px 0px 447px 296px 679px 600px 'footballstar_common_b.png' 'footballstar_common_player2';
+$spritesheet_width = 679px;
+$spritesheet_height = 600px;
+$spritesheet_image = 'footballstar_common_b.png';
+$spritesheet_sprites = $footballstar_common_ball $footballstar_common_logo $footballstar_common_player1 $footballstar_common_player2;
+$spritesheet = 679px 600px 'footballstar_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

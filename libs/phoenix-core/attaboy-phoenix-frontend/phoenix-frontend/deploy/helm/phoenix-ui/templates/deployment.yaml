@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "phoenix-ui.fullname" . }}
+  labels:
+    {{- include "phoenix-ui.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  # We don't use `kubectl rollout` anyway, the history of all the resources is managed by ArgoCD.
+  revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      {{- include "phoenix-ui.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "phoenix-ui.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range $secretName := .Values.imagePullSecrets }}
+        - name: {{ $secretName }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            # User and group 1000 are readily available in `node` image.
+            allowPrivilegeEscalation: false
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          env:
+            - name: API_GLOBAL_ENDPOINT
+              value: "{{ .Values.apiGlobalEndpoint }}"
+            - name: CDN_URL
+              value: "{{ .Values.cdnUrl }}"
+            - name: ENV_NAME
+              value: "{{ .Values.envName }}"
+            - name: GEOCOMPLY_ENV
+              value: "{{ .Values.geocomply.env }}"
+            - name: GEOCOMPLY_MOBILE_SERVICE_URL
+              value: "{{ .Values.geocomply.mobileServiceUrl }}"
+            - name: GEOCOMPLY_OOBEE_URL
+              value: "{{ .Values.geocomply.oobeeUrl }}"
+            - name: SHOW_FOR_SUBMISSION
+              value: "{{ .Values.showForSubmission }}"
+            - name: WS_GLOBAL_ENDPOINT
+              value: "{{ .Values.wsGlobalEndpoint }}"
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+            initialDelaySeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+            initialDelaySeconds: 5

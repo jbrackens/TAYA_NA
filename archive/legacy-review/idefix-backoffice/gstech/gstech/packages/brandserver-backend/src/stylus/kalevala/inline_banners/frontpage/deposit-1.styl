@@ -1,0 +1,84 @@
+#banner_frontpage_deposit-1
+  frontpageBanner()
+  cdn-background-image '/images/banners/1stdeposit/bg.jpg'
+  background-position center top
+  @media only screen and (max-width:767px)
+    cdn-background-image '/images/banners/1stdeposit/bg_mobile.jpg'
+  &__promo_button_holder
+    @media only screen and (max-width:767px)
+      bottom 5px
+  &_campaign
+    width 610px
+    text-align left
+    padding-right 350px
+    margin-top 30px
+    font-size 18px
+    line-height 22px
+    @media only screen and (max-width:767px)
+      width 320px
+      margin 0 auto
+      text-align center
+      padding 145px 0 0 0
+      font-size 16px
+      line-height 18px
+    &_title
+      color $kalevala_blue
+      headerFont()
+      text-transform uppercase
+      font-size 84px
+      line-height 62px
+      margin 0
+      @media only screen and (max-width:767px)
+        font-size 32px
+        line-height 32px
+    &_content
+      h1
+        color #4cc2fb
+        font-size 28px
+        line-height 28px
+        margin 0
+        @media only screen and (max-width:767px)
+          font-size 24px
+          line-height 24px
+      strong
+        color #4cc2fb
+    &:after
+      content ''
+      position absolute
+      background-repeat no-repeat
+      cdn-background-image '/images/banners/1stdeposit/common/bonusamounts.png'
+      width 342px
+      height 175px
+      right 0
+      top 10px
+      @media only screen and (max-width:799px)
+        cdn-background-image '/images/banners/1stdeposit/common_mobile/bonusamounts.png'
+        width 320px
+        height 130px
+        right 0
+        left 0
+        margin 0 auto
+        background-position top center
+        background-size contain
+  &_item1
+    position absolute
+    cdn-background-image '/images/banners/1stdeposit/common/wayne.png'
+    background-repeat no-repeat
+    width 308px
+    height 243px
+    left 5%
+    bottom 0
+    @media only screen and (max-width:1099px)
+      left 0
+    @media only screen and (max-width:767px)
+      display none
+  &_item2
+    position absolute
+    background-repeat no-repeat
+    cdn-background-image '/images/banners/1stdeposit/common/birdy.png'
+    width 102px
+    height 90px
+    right 10%
+    top 30px
+    @media only screen and (max-width:767px)
+      display none

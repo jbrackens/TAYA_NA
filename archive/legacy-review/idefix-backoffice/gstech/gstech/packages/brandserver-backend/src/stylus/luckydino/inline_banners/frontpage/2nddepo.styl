@@ -1,0 +1,46 @@
+#banner_frontpage_2nddepo
+  top_logo_banner()
+  dark_bg_banner()
+  banner-bg $new2nddeposit_bg $new2nddeposit_bg_m
+  .campaign
+    max-width 520px
+  .campaign-banner
+    top 160px
+    @media only screen and (max-width:991px)
+      top 140px
+#banner_frontpage_2nddepo_image
+  banner_sprite: $new2nddeposit_common_text
+  position relative
+  display block
+  margin 0 auto
+  top 30px
+  @media only screen and (max-width:991px)
+    banner_sprite: $new2nddeposit_common_mobile_text
+#banner_frontpage_2nddepo_item1
+  position absolute
+  banner_sprite: $new2nddeposit_common_felix
+  left 10%
+  bottom 0
+  animation reveal-up 1.5s
+  animation-iteration-count 1
+  @media only screen and (max-width:991px)
+    left 20px
+#banner_frontpage_2nddepo_item2
+  position absolute
+  banner_sprite: $new2nddeposit_common_fairy
+  right 10%
+  top 0
+  animation reveal-down-pop 1s 1, 1.8s ease 0s normal none infinite lanternswing
+  animation-direction alternate
+  transform-origin  center top
+  transform-style preserve-3d
+  @media only screen and (max-width:991px)
+    right 20px
+
+  @keyframes reveal-up {
+      0% {transform: translateY(600px);}
+      20% {transform:translateY(0px);}
+      100% {transform:translateY(0px)}
+  }
+
+

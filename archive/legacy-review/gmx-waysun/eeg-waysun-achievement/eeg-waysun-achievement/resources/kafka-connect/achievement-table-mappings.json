@@ -1,0 +1,259 @@
+{
+  "tables": [
+    {
+      "tableName": "achievement_event_details",
+      "whenStructExists": "eventDetails",
+      "mappings": [
+        {
+          "from": {
+            "name": "eventDetails.eventId",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "event_configuration_id",
+            "type": "UUID"
+          }
+        }
+      ]
+    },
+    {
+      "tableName": "achievement_event_details_fields",
+      "whenStructExists": "eventDetails",
+      "foreachStructInArray": "eventDetails.fields",
+      "mappings": [
+        {
+          "from": {
+            "source": "FOREIGN_KEY",
+            "name": "achievement_event_details",
+            "type": "LONG"
+          },
+          "to": {
+            "columnName": "achievement_event_details_id",
+            "type": "LONG"
+          }
+        },
+        {
+          "from": {
+            "name": "name",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "field_name",
+            "type": "STRING"
+          }
+        },
+        {
+          "from": {
+            "name": "valueType",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "value_type",
+            "type": "STRING"
+          }
+        },
+        {
+          "from": {
+            "name": "value",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "value",
+            "type": "STRING"
+          }
+        }
+      ]
+    },
+    {
+      "tableName": "achievement_webhook_details",
+      "whenStructExists": "webhookDetails",
+      "mappings": [
+        {
+          "from": {
+            "name": "webhookDetails.webhookEventDetails.eventId",
+            "type": "STRING",
+            "optional": true
+          },
+          "to": {
+            "columnName": "event_configuration_id",
+            "type": "UUID",
+            "optional": true
+          }
+        },
+        {
+          "from": {
+            "name": "webhookDetails.requestType",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "request_type",
+            "type": "LOWER_CASE_STRING"
+          }
+        },
+        {
+          "from": {
+            "name": "webhookDetails.url",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "url",
+            "type": "STRING"
+          }
+        }
+      ]
+    },
+    {
+      "tableName": "achievement_webhook_details_fields",
+      "whenStructExists": "webhookDetails",
+      "foreachStructInArray": "webhookDetails.webhookEventDetails.fields",
+      "mappings": [
+        {
+          "from": {
+            "source": "FOREIGN_KEY",
+            "name": "achievement_webhook_details",
+            "type": "LONG"
+          },
+          "to": {
+            "columnName": "achievement_webhook_details_id",
+            "type": "LONG"
+          }
+        },
+        {
+          "from": {
+            "name": "name",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "field_name",
+            "type": "STRING"
+          }
+        },
+        {
+          "from": {
+            "name": "valueType",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "value_type",
+            "type": "STRING"
+          }
+        },
+        {
+          "from": {
+            "name": "value",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "value",
+            "type": "STRING"
+          }
+        }
+      ]
+    },
+    {
+      "tableName": "achievement_events",
+      "mappings": [
+        {
+          "from": {
+            "source": "KEY",
+            "name": "projectId",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "project_id",
+            "type": "UUID"
+          }
+        },
+        {
+          "from": {
+            "source": "KEY",
+            "name": "achievementRuleId",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "achievement_rule_id",
+            "type": "UUID"
+          }
+        },
+        {
+          "from": {
+            "name": "messageOriginDateUTC",
+            "type": "LONG"
+          },
+          "to": {
+            "columnName": "achievement_origin_date",
+            "type": "OFFSET_DATE_TIME_UTC"
+          }
+        },
+        {
+          "from": {
+            "name": "groupByFieldValue",
+            "type": "STRING",
+            "optional": true
+          },
+          "to": {
+            "columnName": "group_by_field_value",
+            "type": "STRING",
+            "defaultValue": ""
+          }
+        },
+        {
+          "from": {
+            "name": "actionType",
+            "type": "STRING"
+          },
+          "to": {
+            "columnName": "action_type",
+            "type": "LOWER_CASE_STRING"
+          }
+        },
+        {
+          "from": {
+            "name": "windowRangeStartUTC",
+            "type": "LONG"
+          },
+          "to": {
+            "columnName": "window_range_start",
+            "type": "OFFSET_DATE_TIME_UTC"
+          }
+        },
+        {
+          "from": {
+            "name": "windowRangeEndUTC",
+            "type": "LONG"
+          },
+          "to": {
+            "columnName": "window_range_end",
+            "type": "OFFSET_DATE_TIME_UTC"
+          }
+        },
+        {
+          "from": {
+            "source": "FOREIGN_KEY",
+            "name": "achievement_event_details",
+            "type": "LONG",
+            "optional": true
+          },
+          "to": {
+            "columnName": "achievement_event_details_id",
+            "type": "LONG",
+            "optional": true
+          }
+        },
+        {
+          "from": {
+            "source": "FOREIGN_KEY",
+            "name": "achievement_webhook_details",
+            "type": "LONG",
+            "optional": true
+          },
+          "to": {
+            "columnName": "achievement_webhook_details_id",
+            "type": "LONG",
+            "optional": true
+          }
+        }
+      ]
+    }
+  ]
+}

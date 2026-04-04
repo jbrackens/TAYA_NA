@@ -1,0 +1,157 @@
+{
+  "type": "record",
+  "name": "NotificationEvent",
+  "namespace": "net.flipsports.gmx.dataapi.internal.notificator.notifications",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "type",
+      "type": ["null", {
+        "type": "enum",
+        "name": "NotificationType",
+        "symbols": ["EMAIL", "JIRA", "SMS"]
+      }
+      ]
+    },
+    {
+      "name": "createdDate",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "type": "record",
+          "name": "Jira",
+          "fields": [
+            {
+              "name": "type",
+              "type": ["null", {
+                "type": "enum",
+                "name": "JiraTask",
+                "symbols": ["NONE", "IRISH_USER_REGISTRATION"]
+              }]
+            },
+            {
+              "name": "companyId",
+              "type": ["null", "string"],
+              "default": null,
+              "logicalType": "UUID"
+            },
+            {
+              "name": "externalUserId",
+              "type": "string"
+            },
+            {
+              "name": "userId",
+              "type": ["null", "string"],
+              "default": null
+            },
+            {
+              "name": "email",
+              "type": ["null", "string"],
+              "default": null
+            },
+            {
+              "name": "data",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "Email",
+          "fields": [
+            {
+              "name": "type",
+              "type": ["null", {
+                "type": "enum",
+                "name": "EmailType",
+                "symbols": ["NONE"]
+              }]
+            },
+            {
+              "name": "companyId",
+              "type": ["null", "string"],
+              "default": null,
+              "logicalType": "UUID"
+            },
+            {
+              "name": "externalUserId",
+              "type": "string"
+            },
+            {
+              "name": "userId",
+              "type": ["null", "string"],
+              "default": null
+            },
+            {
+              "name": "email",
+              "type": ["null", "string"],
+              "default": null
+            },
+            {
+              "name": "data",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            }
+          ]
+        },
+        {
+          "type": "record",
+          "name": "Sms",
+          "fields": [
+            {
+              "name": "companyId",
+              "type": ["null", "string"],
+              "default": null,
+              "logicalType": "UUID"
+            },
+            {
+              "name": "externalUserId",
+              "type": "string"
+            },
+            {
+              "name": "userId",
+              "type": ["null", "string"],
+              "default": null
+            },
+            {
+              "name": "email",
+              "type": ["null", "string"],
+              "default": null
+            },
+            {
+              "name": "type",
+              "type": ["null", {
+                "type": "enum",
+                "name": "SmsType",
+                "symbols": ["NONE"]
+              }]
+            },
+            {
+              "name": "data",
+              "type": {
+                "type": "map",
+                "values": "string"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

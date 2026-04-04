@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "projects": {
+    "api": "libs/api",
+    "brand": "apps/brand",
+    "features": "libs/features",
+    "hooks": "libs/hooks",
+    "icons": "libs/icons",
+    "lobby": "libs/lobby",
+    "nonloggedin": "libs/nonloggedin",
+    "types": "libs/types",
+    "ui": "libs/ui",
+    "utils": "libs/utils"
+  }
+}

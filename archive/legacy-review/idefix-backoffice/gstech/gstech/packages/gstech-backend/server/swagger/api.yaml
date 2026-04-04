@@ -1,0 +1,5338 @@
+openapi: 3.0.1
+info:
+  title: Gstech-backend API
+  description: Gstech-backend API
+  version: 0.0.1
+servers:
+  - url: http://localhost:3001/api/v1
+  - url: https://localhost:3001/api/v1
+paths:
+  /status:
+    get:
+      description: healthCheckHandler
+      summary: healthCheckHandler
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+        500:
+          description: 'Health check failed'
+  /login:
+    post:
+      description: loginUserHandler
+      summary: loginUserHandler
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: number
+                  token:
+                    type: string
+                  settings:
+                    type: object
+                    properties:
+                      brands:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/BrandInfo'
+        400:
+          $ref: '#/components/responses/ValidationFailed'
+        403:
+          $ref: '#/components/responses/ErrorResponse'
+  /users/{email}/password:
+    put:
+      description: changePasswordHandler
+      summary: changePasswordHandler
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+                - confirmPassword
+              properties:
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+                confirmPassword:
+                  type: string
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/SuccessResponse'
+        400:
+          description: Invalid data
+  /users/password/reset:
+    post:
+      description: resetPasswordHandler
+      summary: resetPasswordHandler
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newPassword
+                - confirmPassword
+                - email
+                - code
+              properties:
+                newPassword:
+                  type: string
+                confirmPassword:
+                  type: string
+                email:
+                  type: string
+                code:
+                  type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+        400:
+          description: Invalid data
+  /users/{email}/password/reset/code:
+    get:
+      description: sendVerificationCodeHandler
+      summary: sendVerificationCodeHandler
+      tags:
+        - auth
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+        400:
+          description: Unable to process request
+  /users/password/reset/code:
+    post:
+      description: checkVerificationCodeHandler
+      summary: checkVerificationCodeHandler
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - code
+              properties:
+                email:
+                  type: string
+                code:
+                  type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /photos/{photoId}:
+    parameters:
+      - in: path
+        name: photoId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getPhotoHandler
+      summary: getPhotoHandler
+      responses:
+        200:
+          description: Photo
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+    delete:
+      description: removePhotoHandler
+      summary: removePhotoHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - photos
+      responses:
+        200:
+          description: OK
+  /player/go/{brandId}/{username}:
+    get:
+      description: usernameToIdMappingHandler
+      summary: usernameToIdMappingHandler
+      parameters:
+        - $ref: '#/components/parameters/brandId'
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+      responses:
+        302:
+          description: Redirecting to player info endpoint
+  /logout:
+    post:
+      description: logoutUserHandler
+      summary: logoutUserHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - auth
+      responses:
+        403:
+          description: Authentication required
+  /expire-password:
+    post:
+      description: expirePasswordHandler
+      summary: expirePasswordHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - auth
+      responses:
+        403:
+          description: Authentication required
+  /settings:
+    get:
+      description: getSettingsHandler
+      summary: getSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - settings
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isProduction:
+                    type: boolean
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                  tasks:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        "type":
+                          type: string
+                        title:
+                          type: string
+                  brands:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BrandInfo'
+                  paymentProviders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                  brandsSettings:
+                    type: object
+                    properties:
+                      KK/LD/OS/CJ:
+                        type: object
+                        properties:
+                          countries:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                brandId:
+                                  type: string
+                                id:
+                                  type: string
+                                name:
+                                  type: string
+                                minimumAge:
+                                  type: boolean
+                                registrationAllowed:
+                                  type: boolean
+                                loginAllowed:
+                                  type: boolean
+                                blocked:
+                                  type: boolean
+                                riskProfile:
+                                  type: string
+                                monthlyIncomeThreshold:
+                                  type: number
+                          languages:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                name:
+                                  type: string
+  /player/{playerId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayerHandler
+      summary: getPlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerWithUpdate'
+        404:
+          description: Player not found
+    put:
+      description: updatePlayerHandler
+      summary: updatePlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                address:
+                  type: string
+                postCode:
+                  type: string
+                city:
+                  type: string
+                countryId:
+                  type: string
+                  minLength: 2
+                  maxLength: 2
+                dateOfBirth:
+                  type: string
+                  format: date-time
+                mobilePhone:
+                  type: string
+                languageId:
+                  type: string
+                  minLength: 2
+                  maxLength: 2
+                nationalId:
+                  type: string
+                allowEmailPromotions:
+                  type: boolean
+                allowSMSPromotions:
+                  type: boolean
+                activated:
+                  type: boolean
+                testPlayer:
+                  type: boolean
+                placeOfBirth:
+                  type: string
+                nationality:
+                  type: string
+                  minLength: 2
+                  maxLength: 2
+                additionalFields:
+                  type: object
+                reason:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerWithUpdate'
+    delete:
+      description: suspendPlayerHandler
+      summary: suspendPlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - note
+                - reasons
+                - accountClosed
+              properties:
+                note:
+                  type: string
+                reasons:
+                  type: array
+                  items:
+                    type: string
+                    enum: [ 'multiple', 'fake', 'fraudulent', 'suspicious', 'ipcountry', 'gambling_problem', 'data_removal' ]
+                accountClosed:
+                  type: boolean
+      responses:
+        200:
+          description: OK
+        400:
+          description: Not able to suspend player
+  /player:
+    get:
+      description: getPlayersHandler
+      summary: getPlayersHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      parameters:
+        - in: query
+          name: playerIds
+          required: false
+          schema:
+            type: array
+            items:
+              type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerById'
+  /player/gamblingproblem:
+    post:
+      description: registerPlayerWithGamblingProblemHandler
+      summary: registerPlayerWithGamblingProblemHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - player
+              properties:
+                player:
+                  type: object
+                  required:
+                    - email
+                    - firstName
+                    - lastName
+                  properties:
+                    email:
+                      type: string
+                    fistName:
+                      type: string
+                    lastName:
+                      type: string
+                    address:
+                      type: string
+                    postCode:
+                      type: string
+                    city:
+                      type: string
+                    countryId:
+                      type: string
+                      minLength: 2
+                      maxLength: 2
+                    dateOfBirth:
+                      type: string
+                      format: date-time
+                    mobilePhone:
+                      type: string
+                    nationalId:
+                      type: string
+                note:
+                  type: string
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+  /player/{playerId}/financial-info:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getFinancialInfoHandler
+      summary: getFinancialInfoHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+                  bonusBalance:
+                    type: number
+                  totalBalance:
+                    type: number
+                  totalBetAmount:
+                    type: number
+                  totalWinAmount:
+                    type: number
+                  rtp:
+                    type: number
+                  depositCount:
+                    type: number
+                  withdrawalCount:
+                    type: number
+                  totalDepositAmount:
+                    type: number
+                  totalWithdrawalAmount:
+                    type: number
+                  depositCountInSixMonths:
+                    type: number
+                  depositAmountInSixMonths:
+                    type: number
+                  withdrawalCountInSixMonths:
+                    type: number
+                  withdrawalAmountInSixMonths:
+                    type: number
+                  creditedBonusMoney:
+                    type: number
+                  bonusToReal:
+                    type: number
+                  freespins:
+                    type: number
+                  compensations:
+                    type: number
+                  bonusToDepositRatio:
+                    type: number
+                  depositsMinusWithdrawals:
+                    type: number
+                  depositsMinusWithdrawalsInSixMonths:
+                    type: number
+  /player/{playerId}/registration-info:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getRegistrationInfoHandler
+      summary: getRegistrationInfoHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  affiliateId:
+                    type: number
+                  affiliateName:
+                    type: string
+                  affiliateRegistrationCode:
+                    type: string
+                  ipAddress:
+                    type: string
+                  registrationIP:
+                    type: string
+                  registrationCountry:
+                    type: string
+                  registrationTime:
+                    type: string
+                    format: date-time
+                  createdAt:
+                    type: string
+                    format: date-time
+                  lastLogin:
+                    type: string
+                    format: date-time
+        404:
+          description: Info not found
+  /player/search/{tab}:
+    post:
+      description: searchPlayerHandler
+      summary: searchPlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      parameters:
+        - in: path
+          name: tab
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: type
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                brandId:
+                  type: string
+                filters:
+                  type: object
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Player'
+  /player/{playerId}/account-status:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getAccountStatusHandler
+      summary: getAccountStatusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player status
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountStatus'
+    put:
+      description: updateAccountStatusHandler
+      summary: updateAccountStatusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player status
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                verified:
+                  type: boolean
+                allowGameplay:
+                  type: boolean
+                allowTransactions:
+                  type: boolean
+                loginBlocked:
+                  type: boolean
+                accountClosed:
+                  type: boolean
+                accountSuspended:
+                  type: boolean
+                gamblingProblem:
+                  type: boolean
+                riskProfile:
+                  type: string
+                  enum: [ 'low', 'medium_low', 'medium', 'medium_high', 'high' ]
+                reason:
+                  type: string
+                pep:
+                  type: boolean
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountStatus'
+        400:
+          description: Failed to update account status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountStatus'
+  /player/{playerId}/active-limits:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getActiveLimitsHandler
+      summary: getActiveLimitsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player limits
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  selfExclusion/deposit/bet/loss/sessionLength/timeout:
+                    $ref: '#/components/schemas/ActiveLimit'
+  /player/{playerId}/limits:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getLimitsHandler
+      summary: getLimitsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player limits
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    "type":
+                      type: string
+                    periodTime:
+                      type: string
+                    status:
+                      type: string
+                    startTime:
+                      type: string
+                      format: date-time
+                    endTime:
+                      type: string
+                      format: date-time
+                    amount:
+                      type: string
+                    reason:
+                      type: string
+                    isInternal:
+                      type: boolean
+    post:
+      description: setLimitHandler
+      summary: setLimitHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player limits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - values
+              properties:
+                "type":
+                  type: string
+                  enum: [ 'selfExclusion', 'deposit', 'sessionLength', 'bet', 'loss', 'timeout' ]
+                values:
+                  type: object
+                  required:
+                    - reason
+                    - period
+                  properties:
+                    period:
+                      type: string
+                      enum: [ 'daily', 'weekly', 'monthly' ]
+                    duration:
+                      oneOf:
+                        - type: number
+                        - type: string
+                          enum: [ 'indefinite' ]
+                    reason:
+                      type: string
+                    limit:
+                      type: number
+                    isInternal:
+                      type: boolean
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerLimit'
+  /player/{playerId}/limits/closed-accounts:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayersWithClosedAccountsHandler
+      summary: getPlayersWithClosedAccountsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player limits
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    brandId:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    username:
+                      type: string
+  /player/{playerId}/limits/{limitId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: limitId
+        required: true
+        schema:
+          type: number
+    post:
+      description: raiseLimitHandler
+      summary: raiseLimitHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player limits
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+                - period
+              properties:
+                reason:
+                  type: string
+                period:
+                  type: string
+                limit:
+                  type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerLimit'
+
+  /limits/{exclusionKey}:
+    delete:
+      description: cancelLimitHandler
+      summary: cancelLimitHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player limits
+      parameters:
+        - in: path
+          name: exclusionKey
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                delay:
+                  type: boolean
+                reason:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      playerId:
+                        type: number
+                      expires:
+                        type: string
+                        format: date-time
+                      exclusionKey:
+                        type: string
+                        format: uuid
+                  - type: object
+                    properties:
+                      playerId:
+                        type: number
+                      cancelled:
+                        type: string
+                        format: date-time
+  /player/{playerId}/status:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getStatusHandler
+      summary: getStatusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatus'
+  /player/{playerId}/events:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getEventsHandler
+      summary: getEventsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - players
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayerEvent'
+  /player/{playerId}/notes:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getNotesHandler
+      summary: getNotesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player notes
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlayerEvent'
+    post:
+      description: addNoteHandler
+      summary: addNoteHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player notes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerEvent'
+  /player/{playerId}/notes/{noteId}/archive:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: noteId
+        required: true
+        schema:
+          type: number
+    put:
+      description: archiveNoteHandler
+      summary: archiveNoteHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player notes
+      responses:
+        200:
+          description: OK
+  /player/{playerId}/tags:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayerTagsHandler
+      summary: getPlayerTagsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player tags
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    post:
+      description: addPlayerTagHandler
+      summary: addPlayerTagHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tag
+              properties:
+                tag:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /player/{playerId}/tags/{tag}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: tag
+        required: true
+        schema:
+          type: string
+    delete:
+      description: removePlayerTagHandler
+      summary: removePlayerTagHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player tags
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /player/{playerId}/notes/sticky:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayerStickyNoteHandler
+      summary: getPlayerStickyNoteHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player notes
+      responses:
+        200:
+          description: OK
+          content:
+            appliction/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+    post:
+      description: setPlayerStickyNoteHandler
+      summary: setPlayerStickyNoteHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player notes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+  /player/{playerId}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getTransactionsHandler
+      summary: getTransactionsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player transactions
+      parameters:
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/pageIndex'
+        - in: query
+          name: startDate
+          required: true
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: endDate
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    amount:
+                      type: string
+                    bonusAmount:
+                      type: string
+                    bonusBalance:
+                      type: string
+                    realBalance:
+                      type: string
+                    rawAmount:
+                      type: string
+                    rawBonusAmount:
+                      type: string
+                    rawBonusBalance:
+                      type: number
+                    rawRealBalance:
+                      type: number
+                    "type":
+                      type: string
+                    transactionId:
+                      type: integer
+                    date:
+                      type: string
+                      format: date-time
+                    reservedBalance:
+                      type: number
+                    roundId:
+                      type: integer
+                    externalRoundId:
+                      type: string
+                    closed:
+                      type: boolean
+                    externalTransactionId:
+                      type: string
+                    bonus:
+                      type: string
+                    description:
+                      type: string
+    post:
+      description: addPaymentTransactionHandler
+      summary: addPaymentTransactionHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                "type":
+                  type: string
+                  enum: [ 'withdraw', 'compensation', 'correction' ]
+                accountId:
+                  type: number
+                amount:
+                  type: number
+                reason:
+                  type: string
+                noFee:
+                  type: boolean
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatus'
+        400:
+          description: Invalida transaction type/Not enough balance
+  /player/{playerId}/transactions/{transactionKey}/complete:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: transactionKey
+        required: true
+        schema:
+          type: string
+    post:
+      description: completeDepositHandler
+      summary: completeDepositHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player transactions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - externalTransactionId
+                - reason
+              properties:
+                externalTransactionId:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+  /player/{playerId}/payments:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - $ref: '#/components/parameters/pageIndex'
+      - $ref: '#/components/parameters/pageSize'
+      - in: query
+        name: status
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+    get:
+      description: getPaymentsHandler
+      summary: getPaymentsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player payments
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    key:
+                      type: string
+                    date:
+                      type: string
+                      format: date-time
+                    "type":
+                      type: string
+                    paymentId:
+                      type: integer
+                    status:
+                      type: string
+                    statusGroup:
+                      type: string
+                    provider:
+                      type: string
+                    bonus:
+                      type: string
+                    account:
+                      type: string
+                    amount:
+                      type: string
+                    rawAmount:
+                      type: number
+                    paymentFee:
+                      type: string
+                    rawPaymentFee:
+                      type: number
+                    transactionId:
+                      type: string
+                    counterTarget:
+                      type: number
+                    counterValue:
+                      type: number
+                    counterId:
+                      type: number
+                    counterType:
+                      type: string
+  /player/{playerId}/payments/{paymentId}/events:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: paymentId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getPaymentEventsHandler
+      summary: getPaymentEventsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player payments
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                    status:
+                      type: string
+                    message:
+                      type: string
+                    handle:
+                      type: string
+  /player/{playerId}/payment-transactions:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    delete:
+      description: cancelPlayerPendingWithdrawalHandler
+      summary: cancelPlayerPendingWithdrawalHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - playerId
+                - transactionKey
+              properties:
+                playerId:
+                  type: number
+                transactionKey:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - type: object
+                    properties:
+                      cancelled:
+                        type: object
+                        properties:
+                          amount:
+                            type: number
+                          transactionId:
+                            type: number
+                          paymentFee:
+                            type: number
+                      withdrawals:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            transactionKey:
+                              type: string
+                            accountId:
+                              type: number
+                            amount:
+                              type: number
+                            paymentFee:
+                              type: number
+                            account:
+                              type: string
+                            name:
+                              type: string
+                            kycChecked:
+                              type: boolean
+                            created:
+                              type: string
+                              format: date-time
+                  - $ref: '#/components/schemas/PlayerStatus'
+  /player/{playerId}/accounts:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getAccountsHandler
+      summary: getAccountsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  description:
+                    type: string
+                  accounts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        account:
+                          type: string
+                        active:
+                          type: boolean
+                        accountHolder:
+                          type: string
+                        withdrawals:
+                          type: boolean
+                        parameters:
+                          type: object
+                        method:
+                          type: string
+                        created:
+                          type: string
+                          format: date-time
+                        lastUsed:
+                          type: string
+                          format: date-time
+                        kycChecked:
+                          type: boolean
+                        kyc:
+                          type: string
+                        allowWithdrawals:
+                          type: boolean
+                        canWithdraw:
+                          type: boolean
+                        documents:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              expiryDate:
+                                type: string
+                                format: date-time
+                              photoId:
+                                type: integer
+                              content:
+                                type: string
+                              name:
+                                type: string
+    post:
+      description: addAccountHandler
+      summary: addAccountHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - method
+                - account
+                - kycChecked
+              properties:
+                method:
+                  type: string
+                account:
+                  type: string
+                accountHolder:
+                  type: string
+                kycChecked:
+                  type: boolean
+                parameters:
+                  type: object
+                documents:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AccountDocument'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+        400:
+          description: Given payment method not found
+  /player/{playerId}/accounts/{accountId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateAccountHandler
+      summary: updateAccountHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                active:
+                  type: boolean
+                withdrawals:
+                  type: boolean
+                kycChecked:
+                  type: boolean
+                account:
+                  type: string
+                accountHolder:
+                  type: string
+                parameters:
+                  type: object
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  active:
+                    type: boolean
+                  withdrawals:
+                    type: boolean
+                  account:
+                    type: string
+                  accountHolder:
+                    type: string
+                  parameters:
+                    type: object
+                  kycChecked:
+                    type: boolean
+  /player/{playerId}/counters/{counterId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: counterId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateDepositWageringRequirementHandler
+      summary: updateDepositWageringRequirementHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - wageringRequirement
+              properties:
+                wageringRequirement:
+                  type: number
+                reason:
+                  type: string
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+  /player/{playerId}/accounts/{accountId}/documents/{documentId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: number
+      - in: path
+        name: documentId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateAccountDocumentHandler
+      summary: updateAccountDocumentHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                expiryDate:
+                  type: string
+                  format: 'date-time'
+      responses:
+        200:
+          description: OK
+    delete:
+      description: removeAccountDocumentHandler
+      summary: removeAccountDocumentHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      responses:
+        200:
+          description: OK
+  /player/{playerId}/accounts/{accountId}/documents/:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: number
+    post:
+      description: addAccountDocumentHandler
+      summary: addAccountDocumentHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - method
+                - account
+              properties:
+                method:
+                  type: string
+                account:
+                  type: string
+                accountHolder:
+                  type: string
+                kycChecked:
+                  type: boolean
+                parameters:
+                  type: object
+                documents:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AccountDocument'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /withdrawals/{withdrawalId}:
+    get:
+      description: getWithdrawalHandler
+      summary: getWithdrawalHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - withdrawals
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalWithOptions'
+  /withdrawals/{withdrawalId}/events:
+    get:
+      description: getWithdrawalEventsHandler
+      summary: getWithdrawalEventsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - withdrawals
+      parameters:
+        - in: path
+          name: withdrawalId
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    handle:
+                      type: string
+                    status:
+                      type: string
+                    timestamp:
+                      type: string
+                      format: 'date-time'
+                    message:
+                      type: string
+                    userId:
+                      type: integer
+  /player/{playerId}/withdrawals:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getWithdrawalInfoHandler
+      summary: getWithdrawalInfoHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - withdrawals
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawalWithOptions'
+  /player/{playerId}/withdrawals/{withdrawalId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: withdrawalId
+        required: true
+        schema:
+          type: number
+    put:
+      description: acceptWithdrawalHandler
+      summary: acceptWithdrawalHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - withdrawals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalSchema'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  withdrawalId:
+                    type: number
+                  paymentProviderId:
+                    type: number
+                  amount:
+                    type: number
+  /player/{playerId}/withdrawals/{withdrawalId}/delay:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: withdrawalId
+        required: true
+        schema:
+          type: number
+    put:
+      description: acceptWithdrawalWithDelayHandler
+      summary: acceptWithdrawalWithDelayHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - withdrawals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawalSchema'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  withdrawalId:
+                    type: integer
+                  paymentProviderId:
+                    type: integer
+                  amount:
+                    type: number
+  /player/{playerId}/bonuses:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getBonusesHandler
+      summary: getBonusesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bonus:
+                    type: string
+                  status:
+                    type: string
+                  formattedStatus:
+                    type: string
+                  created:
+                    type: string
+                  amount:
+                    type: string
+                  wagering:
+                    type: string
+                  balance:
+                    type: string
+                  id:
+                    type: integer
+                  creditedBy:
+                    type: string
+                    format: 'date-time'
+                  archived:
+                    type: boolean
+    post:
+      description: creditBonusHandler
+      summary: creditBonusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player bonuses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - amount
+              properties:
+                expiryDate:
+                  type: string
+                  format: 'date-time'
+                id:
+                  type: string
+                amount:
+                  type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatus'
+  /player/{playerId}/bonuses/available:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getBonusesAvailableHandler
+      summary: getBonusesAvailableHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    title:
+                      type: string
+  /player/{playerId}/bonuses/{bonusId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: bonusId
+        required: true
+        schema:
+          type: number
+    delete:
+      description: forfeitBonusHandler
+      summary: forfeitBonusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerStatus'
+  /player/{playerId}/frauds/{playerFraudId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: playerFraudId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getPlayerFraudHandler
+      summary: getPlayerFraudHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player fraud
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  fraudKey:
+                    type: string
+                  fraudId:
+                    type: string
+                  points:
+                    type: number
+                  details:
+                    type: object
+                    properties:
+                      "string":
+                        type: string
+                  playerId:
+                    type: integer
+                  title:
+                    type: string
+                  description:
+                    type: string
+                  content:
+                    type: string
+                  handle:
+                    type: string
+    put:
+      description: checkPlayerFraudHandler
+      summary: checkPlayerFraudHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player fraud
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cleared
+              properties:
+                cleared:
+                  type: boolean
+                resolution:
+                  type: string
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+  /player/{playerId}/frauds:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    post:
+      description: createPlayerFraudHandler
+      summary: createPlayerFraudHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player fraud
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fraudKey
+              properties:
+                fraudKey:
+                  type: string
+                fraudId:
+                  type: string
+                note:
+                  type: string
+                checked:
+                  type: boolean
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+  /player/{playerId}/risks:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayerRiskLevelHandler
+      summary: getPlayerRiskLevelHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player risk
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer:
+                    type: number
+                  transaction:
+                    type: number
+                  interface:
+                    type: number
+                  geo:
+                    type: number
+                  total:
+                    type: number
+  /player/{playerId}/risks/{riskType}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: riskType
+        required: true
+        schema:
+          type: string
+    get:
+      description: getPlayerRiskStatusHandler
+      summary: getPlayerRiskStatusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player risk
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    fraudKey:
+                      type: string
+                    name:
+                      type: string
+                    count:
+                      type: integer
+                    contribution:
+                      type: number
+                    latestOccurrence:
+                      type: string
+                      format: date-time
+  /player/{playerId}/risks/{riskType}/log:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: riskType
+        required: true
+        schema:
+          type: string
+    get:
+      description: getPlayerRiskLogHandler
+      summary: getPlayerRiskLogHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player risk
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    createdAt:
+                      type: string
+                      format: 'date-time'
+                    fraudKey:
+                      type: string
+                    name:
+                      type: string
+                    points:
+                      type: number
+                    handle:
+                      type: string
+
+  /player/{playerId}/kyc/request:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getKycDocumentRequestsHandler
+      summary: getKycDocumentRequestsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Kyc'
+                    - type: object
+                      properties:
+                        requestId:
+                          type: integer
+                        handle:
+                          type: string
+    post:
+      description: createKycDocumentRequestHandler
+      summary: createKycDocumentRequestHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tomatically:
+                  type: boolean
+                note:
+                  type: string
+                message:
+                  type: string
+                documents:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - type
+                    properties:
+                      "type":
+                        type: string
+                        enum: [ 'other', 'utility_bill', 'identification', 'payment_method', 'source_of_wealth' ]
+                      accountId:
+                        type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      type: object
+  /player/{playerId}/kyc/{kycDocumentId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: kycDocumentId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getKycDocumentHandler
+      summary: getKycDocumentHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Kyc'
+    put:
+      description: updateKycDocumentHandler
+      summary: updateKycDocumentHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "type":
+                  type: string
+                accountId:
+                  type: number
+                photoId:
+                  type: string
+                expiryDate:
+                  type: string
+                  format: date-time
+                content:
+                  type: string
+                name:
+                  type: string
+                fields:
+                  type: object
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KycDocument'
+  /player/{playerId}/kyc/{kycDocumentId}/verify:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: kycDocumentId
+        required: true
+        schema:
+          type: number
+    put:
+      description: verifyKycDocumentsHandler
+      summary: verifyKycDocumentsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+              properties:
+                "type":
+                  type: string
+                  enum: [ 'other', 'utility_bill', 'identification', 'payment_method', 'source_of_wealth' ]
+                expiryDate:
+                  type: string
+                  format: 'date-time'
+                accountId:
+                  type: integer
+                content:
+                  type: string
+                fields:
+                  type: object
+      responses:
+        200:
+          description: OK
+  /player/{playerId}/kyc:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getKycDocumentsHandler
+      summary: getKycDocumentsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Kyc'
+    post:
+      description: createKycDocumentRequestHandler
+      summary: createKycDocumentRequestHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                photos:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      originalName:
+                        type: string
+                requestId:
+                  type: number
+                documentId:
+                  type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KycDocument'
+  /player/{playerId}/kyc/content:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    post:
+      description: createKycContentDocumentHandler
+      summary: createKycContentDocumentHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                requestId:
+                  type: number
+                documentId:
+                  type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KycDocument'
+  /player/{playerId}/kyc/photo/{kycDocumentId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - in: path
+        name: kycDocumentId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateKycDocumentPhotoHandler
+      summary: updateKycDocumentPhotoHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - kyc documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "type":
+                  type: string
+                accountId:
+                  type: number
+                photoId:
+                  type: string
+                expiryDate:
+                  type: string
+                  format: 'date-time'
+                content:
+                  type: string
+                name:
+                  type: string
+                fields:
+                  type: object
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KycDocument'
+
+  /player/{playerId}/games-summary:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+      - $ref: '#/components/parameters/pageIndex'
+      - $ref: '#/components/parameters/pageSize'
+      - in: query
+        name: startDate
+        required: true
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: endDate
+        required: true
+        schema:
+          type: string
+          format: date-time
+    get:
+      description: getTransactionSummaryHandler
+      summary: getTransactionSummaryHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - transaction summary
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    manufacturer:
+                      type: string
+                    betCount:
+                      type: integer
+                    "type":
+                      type: string
+                    realBets:
+                      type: string
+                    bonusBets:
+                      type: string
+                    realWins:
+                      type: string
+                    bonusWins:
+                      type: string
+                    averageBet:
+                      type: string
+                    biggestWin:
+                      type: string
+
+  /player/{playerId}/questionnaires:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayerAnswersHandler
+      summary: getPlayerAnswersHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - player answers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    answeredAt:
+                      type: string
+                      format: 'date-time'
+                    answers:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          key:
+                            type: string
+                          question:
+                            type: string
+                          answer:
+                            type: string
+
+  /promotions/{brandId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getPromotionsSettingsHandler
+      summary: getPromotionsSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Promotion'
+  /promotions:
+    post:
+      description: createPromotionSettingsHandler
+      summary: createPromotionSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Promotion'
+  /promotions/{promotionId}:
+    parameters:
+      - in: path
+        name: promotionId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updatePromotionSettingsHandler
+      summary: updatePromotionSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromotionUpdate'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Promotion'
+  /promotions/{promotionId}/archive:
+    parameters:
+      - in: path
+        name: promotionId
+        required: true
+        schema:
+          type: number
+    put:
+      description: archivePromotionHandler
+      summary: archivePromotionHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                games:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+  /promotion-games/{promotionId}:
+    parameters:
+      - in: path
+        name: promotionId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getPromotionGamesHandler
+      summary: getPromotionGamesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+    put:
+      description: updatePromotionGamesHandler
+      summary: updatePromotionGamesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+  /promotion-games:
+    post:
+      description: createPromotionGameHandler
+      summary: createPromotionGameHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - promotionId
+                - games
+              properties:
+                promotionId:
+                  type: integer
+                games:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    promotionId:
+                      type: integer
+                    gameId:
+                      type: integer
+  /player/{playerId}/promotions:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getPlayerPromotionsHandler
+      summary: getPlayerPromotionsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - promotions
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    promotion:
+                      type: string
+                    wagered:
+                      type: string
+                    active:
+                      type: boolean
+                    points:
+                      type: number
+
+  /bonuses/{brandId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getAvailableBonusesByBrandHandler
+      summary: getAvailableBonusesByBrandHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bonus'
+  /bonuses/{bonusId}:
+    parameters:
+      - in: path
+        name: bonusId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateBonusHandler
+      summary: updateBonusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BonusDraft'
+      responses:
+        200:
+          description: OK
+  /bonuses:
+    post:
+      description: createBonusHandler
+      summary: createBonusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BonusDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bonus'
+  /bonuses/{bonusId}/archive:
+    parameters:
+      - in: path
+        name: bonusId
+        required: true
+        schema:
+          type: number
+    put:
+      description: archiveBonusHandler
+      summary: archiveBonusHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /bonuses/{bonusId}/limits:
+    parameters:
+      - in: path
+        name: bonusId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getBonusLimitsHandler
+      summary: getBonusLimitsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BonusLimit'
+    put:
+      description: updateBonusLimitsHandler
+      summary: updateBonusLimitsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  currencyId:
+                    type: string
+                  minAmount:
+                    type: number
+                  maxAmount:
+                    type: number
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BonusLimit'
+  /brands/{brandId}/limits:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getAvailableBonusLimitsHandler
+      summary: getAvailableBonusLimitsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - bonuses
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    currencyId:
+                      type: string
+
+  /game-rounds/{roundId}:
+    parameters:
+      - in: path
+        name: roundId
+        required: true
+        schema:
+          type: number
+    put:
+      description: refundGameRoundHandler
+      summary: refundGameRoundHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - game rounds
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameRound'
+    delete:
+      description: closeGameRoundHandler
+      summary: closeGameRoundHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - game rounds
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameRound'
+
+  /locks:
+    get:
+      description: getLocksHandler
+      summary: getLocksHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - locks
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    handle:
+                      type: string
+  /locks/{playerId}/steal:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    put:
+      description: stealPlayerHandler
+      summary: stealPlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - locks
+      responses:
+        200:
+          $ref: '#/components/responses/PlayerIdResponse'
+  /locks/{playerId}:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    put:
+      description: lockPlayerHandler
+      summary: lockPlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - locks
+      responses:
+        200:
+          $ref: '#/components/responses/PlayerIdResponse'
+    delete:
+      description: releasePlayerHandler
+      summary: releasePlayerHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - locks
+      responses:
+        200:
+          $ref: '#/components/responses/PlayerIdResponse'
+
+  /photos:
+    post:
+      description: uploadPhotoHandler
+      summary: uploadPhotoHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - photos
+      requestBody:
+        required: true
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
+      responses:
+        201:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  originalName:
+                    type: string
+  /campaigns:
+    post:
+      description: playerCampaignSearchHandler
+      summary: playerCampaignSearchHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - campaigns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brandId:
+                  type: string
+                operations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      "type":
+                        type: string
+                      operator:
+                        type: string
+                        enum: [ '<', '>', '=', '=<', '=>', 'between' ]
+                      value:
+                        $ref: '#/components/schemas/Any'
+                      currency:
+                        type: string
+                      dates:
+                        type: object
+                        properties:
+                          startDate:
+                            type: string
+                            format: 'date-time'
+                          endDate:
+                            type: string
+                            format: 'date-time'
+                      between:
+                        type: object
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
+  /campaigns/affiliates:
+    get:
+      description: getAffiliatesHandler
+      summary: getAffiliatesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - campaigns
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+  /campaigns/currencies/{brandId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getCurrenciesHandler
+      summary: getCurrenciesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - campaigns
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    symbol:
+                      type: string
+                    defaultConversion:
+                      type: number
+
+  /reports/liabilities:
+    post:
+      description: liabilitiesReportHandler
+      summary: liabilitiesReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                month:
+                  type: string
+                brandId:
+                  type: string
+                paymentProviderName:
+                  type: string
+                pageSize:
+                  type: number
+                  minimum: 1
+                pageIndex:
+                  type: number
+                  minimum: 0
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deposits:
+                    type: number
+                  withdrawals:
+                    type: number
+                  wins:
+                    type: number
+                  bets:
+                    type: number
+                  turnToReal:
+                    type: number
+                  compensations:
+                    type: number
+                  corrections:
+                    type: number
+                  freespins:
+                    type: number
+                  credits:
+                    type: number
+                  debits:
+                    type: number
+                  startBalance:
+                    type: number
+                  endBalance:
+                    type: number
+                  matchingRows:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        brandId:
+                          type: string
+                        brand:
+                          type: string
+                        currencyId:
+                          type: string
+                        startBalance:
+                          type: number
+                        startReservedBalance:
+                          type: number
+                        endBalance:
+                          type: number
+                        endReservedBalance:
+                          type: number
+                        wallet_deposit:
+                          type: number
+                        wallet_withdrawal_processed:
+                          type: number
+                        win:
+                          type: number
+                        bet:
+                          type: number
+                        turn_bonus_to_real:
+                          type: number
+                        wallet_compensation:
+                          type: number
+                        wallet_correction:
+                          type: number
+                        win_freespins:
+                          type: number
+  /reports/users:
+    post:
+      description: activeUsersReportHandler
+      summary: activeUsersReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/FullUser'
+                    - type: object
+                      properties:
+                        passwordExpires:
+                          type: string
+                          format: date-time
+  /reports/results:
+    post:
+      description: resultsReportHandler
+      summary: resultsReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                span:
+                  type: string
+                time:
+                  type: string
+                  format: date-time
+                brandId:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    type:
+                      type: string
+                    bets:
+                      type: string
+                    wins:
+                      type: string
+                    jackpots:
+                      type: string
+                    grossWin:
+                      type: string
+                    RTP:
+                      type: string
+                    turnedReal:
+                      type: string
+                    compensations:
+                      type: string
+                    total:
+                      type: string
+  /reports/game-turnover:
+    post:
+      description: gameTurnoverReportHandler
+      summary: gameTurnoverReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    manufacturer:
+                      type: string
+                    currencyId:
+                      type: string
+                    "type":
+                      type: string
+                    wins:
+                      type: string
+                    bets:
+                      type: string
+                    bonusWins:
+                      type: string
+                    bonusBets:
+                      type: string
+                    jackpots:
+                      type: string
+                    totalWins:
+                      type: string
+                    totalBets:
+                      type: string
+                    rounds:
+                      type: number
+                    payout:
+                      type: number
+  /reports/deposits:
+    post:
+      description: paymentReportHandle
+      summary: paymentReportHandle
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageIndex:
+                  type: integer
+                  minimum: 0
+                pageSize:
+                  type: integer
+                  minimum: 1
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: 'date-time'
+                    status:
+                      type: string
+                    externalTransactionId:
+                      type: string
+                    transactionKey:
+                      type: string
+                    account:
+                      type: string
+                    method:
+                      type: string
+                    currencyId:
+                      type: string
+                    amount:
+                      type: number
+                    name:
+                      type: string
+                    countryId:
+                      type: string
+                    username:
+                      type: string
+  /reports/withdrawals:
+    post:
+      description: withdrawReportHandler
+      summary: withdrawReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: 'date-time'
+                    transactionKey:
+                      type: string
+                    externalTransactionId:
+                      type: string
+                    account:
+                      type: string
+                    method:
+                      type: string
+                    currencyId:
+                      type: string
+                    amount:
+                      type: number
+                    name:
+                      type: string
+                    countryId:
+                      type: string
+                    username:
+                      type: string
+                    handle:
+                      type: string
+                    id:
+                      type: integer
+  /reports/pending-withdrawals:
+    post:
+      description: pendingWithdrawReportHandler
+      summary: pendingWithdrawReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: 'date-time'
+                    account:
+                      type: string
+                    method:
+                      type: string
+                    currencyId:
+                      type: string
+                    status:
+                      type: string
+                    amount:
+                      type: number
+                    name:
+                      type: string
+                    countryId:
+                      type: string
+                    username:
+                      type: string
+  /reports/deposits-summary:
+    post:
+      description: paymentSummaryReportHandle
+      summary: paymentSummaryReportHandle
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          $ref: '#/components/responses/PaymentSummaryReportResponse'
+  /reports/withdrawals-summary:
+    post:
+      description: paymentSummaryReportHandle
+      summary: paymentSummaryReportHandle
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          $ref: '#/components/responses/PaymentSummaryReportResponse'
+  /reports/dormant:
+    post:
+      description: dormantPlayersReportHandler
+      summary: dormantPlayersReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/Player'
+                    - type: object
+                      properties:
+                        lastLogin:
+                          type: string
+                          format: 'date-time'
+  /reports/risk-status:
+    post:
+      description: playerRiskStatusReportHandler
+      summary: playerRiskStatusReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        $ref: '#/components/requestBodies/ReportQueryBody'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    countryId:
+                      type: string
+                    email:
+                      type: string
+                    riskProfile:
+                      type: string
+                    flagged:
+                      type: boolean
+                    locked:
+                      type: boolean
+                    lockTime:
+                      type: string
+                      format: 'date-time'
+  /reports/risk-transaction:
+    post:
+      description: playerRiskTransactionReportHandler
+      summary: playerRiskTransactionReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                month:
+                  type: string
+                brandId:
+                  type: string
+                riskProfile:
+                  type: string
+                  enum: [ 'medium_low', 'medium', 'medium_high', 'high' ]
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    countryId:
+                      type: string
+                    email:
+                      type: string
+                    riskProfile:
+                      type: string
+                    name:
+                      type: string
+                    paymentType:
+                      type: string
+                    amount:
+                      type: number
+                    count:
+                      type: integer
+  /reports/license:
+    post:
+      description: licenseReportHandler
+      summary: licenseReportHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - license
+              properties:
+                month:
+                  type: string
+                license:
+                  type: string
+                country:
+                  type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    "type":
+                      type: string
+                    realBets:
+                      type: string
+                    bonusBets:
+                      type: string
+                    compensations:
+                      type: string
+                    wdWinnings:
+                      type: string
+
+  /users/access-settings:
+    get:
+      description: getCurrentUserAccessSettingsHandler
+      summary: getCurrentUserAccessSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reportingAccess:
+                    type: boolean
+                  administratorAccess:
+                    type: boolean
+                  paymentAccess:
+                    type: boolean
+                  campaignAccess:
+                    type: boolean
+                  riskManager:
+                    type: boolean
+  /users:
+    get:
+      description: getUsersHandler
+      summary: getUsersHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      description: createUserHandler
+      summary: createUserHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/UserDraft'
+                  - type: object
+                    properties:
+                      requirePasswordChange:
+                        type: boolean
+                      hash:
+                        type: string
+  /users/{userId}:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getUserHandler
+      summary: getUserHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullUser'
+    put:
+      description: updateUserHandler
+      summary: updateUserHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullUser'
+  /users/{userId}/access-settings:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getUserAccessSettingsHandler
+      summary: getUserAccessSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAccessSettings'
+    post:
+      description: updateUserAccessSettingsHandler
+      summary: updateUserAccessSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAccessSettings'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAccessSettings'
+  /users/{userId}/log:
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getUserLogHandler
+      summary: getUserLogHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    event:
+                      type: string
+                    time:
+                      type: string
+                      format: 'date-time'
+                    ip:
+                      type: string
+
+  /countries/{brandId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getCountriesSettingsHandler
+      summary: getCountriesSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - countries
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    brandId:
+                      type: string
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    minimumAge:
+                      type: integer
+                    registrationAllowed:
+                      type: boolean
+                    loginAllowed:
+                      type: boolean
+                    blocked:
+                      type: boolean
+                    riskProfile:
+                      type: string
+                    monthlyIncomeThreshold:
+                      type: number
+  /countries/{brandId}/{countryId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+      - $ref: '#/components/parameters/countryId'
+    put:
+      description: updateCountrySettingsHandler
+      summary: updateCountrySettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - countries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CountryDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CountryDraft'
+                  - type: object
+                    properties:
+                      id:
+                        type: integer
+                      brandId:
+                        type: string
+
+  /games:
+    get:
+      description: getGamesSettingsHandler
+      summary: getGamesSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+    post:
+      description: createGameSettingsHandler
+      summary: createGameSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gameDraft:
+                  $ref: '#/components/schemas/GameDraft'
+                profileDrafts:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - brandId
+                    properties:
+                      brandId:
+                        type: string
+                      gameProfileId:
+                        type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+  /games/{gameId}:
+    parameters:
+      - in: path
+        name: gameId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateGameSettingsHandler
+      summary: updateGameSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+  /game-manufacturers:
+    get:
+      description: getGameManufacturersHandler
+      summary: getGameManufacturersHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    parentId:
+                      type: string
+                    active:
+                      type: boolean
+                    license:
+                      type: string
+  /games/{gameId}/profiles:
+    parameters:
+      - in: path
+        name: gameId
+        required: true
+        schema:
+          type: number
+    get:
+      description: getBrandGameProfilesHandler
+      summary: getBrandGameProfilesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    brandId:
+                      type: string
+                    brandName:
+                      type: string
+                    gameProfileId:
+                      type: string
+                    availableProfiles:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          name:
+                            type: string
+    put:
+      description: updateGameProfilesHandler
+      summary: updateGameProfilesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  brandId:
+                    type: string
+                  gameProfileId:
+                    type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    gameId:
+                      type: integer
+                    brandId:
+                      type: string
+                    gameProfileId:
+                      type: integer
+  /games/profiles:
+    get:
+      description: getAvailableGameProfilesHandler
+      summary: getAvailableGameProfilesHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - games
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    brandId:
+                      type: string
+                    brandName:
+                      type: string
+                    availableProfiles:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+  /game-profiles/{brandId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getGameProfileSettingsHandler
+      summary: getGameProfileSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - game profiles
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameProfile'
+  /game-profiles:
+    post:
+      description: createGameProfileSettingsHandler
+      summary: createGameProfileSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - game profiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameProfileDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameProfile'
+  /game-profiles/{gameProfileId}:
+    parameters:
+      - in: path
+        name: gameProfileId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateGameProfileSettingsHandler
+      summary: updateGameProfileSettingsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - game profiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameProfileDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameProfile'
+  /payment-methods-with-limits/{brandId}:
+    parameters:
+      - $ref: '#/components/parameters/brandId'
+    get:
+      description: getAvailablePaymentMethodsByBrandHandler
+      summary: getAvailablePaymentMethodsByBrandHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - payment methods
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    limits:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/PaymentMethodLimitDraft'
+  /payment-methods-with-limits/{paymentMethodId}/limits:
+    parameters:
+      - in: path
+        name: paymentMethodId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updatePaymentMethodsLimitsHandler
+      summary: updatePaymentMethodsLimitsHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - payment methods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethodLimitDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentMethodLimit'
+
+  /risks:
+    get:
+      description: getRisksHandler
+      summary: getRisksHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - risks
+      parameters:
+        - in: query
+          name: manualTrigger
+          required: false
+          schema:
+            type: boolean
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Risk'
+    post:
+      description: createRiskHandler
+      summary: createRiskHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - risks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Risk'
+  /risks/{riskId}:
+    parameters:
+      - in: path
+        name: riskId
+        required: true
+        schema:
+          type: number
+    put:
+      description: updateRiskHandler
+      summary: updateRiskHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - risks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskDraft'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Risk'
+
+  /player/{playerId}/persons:
+    parameters:
+      - $ref: '#/components/parameters/playerId'
+    get:
+      description: getConnectedPlayersHandler
+      summary: getConnectedPlayersHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - persons
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    email:
+                      type: string
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    brandId:
+                      type: string
+                    currencyId:
+                      type: string
+                    riskProfile:
+                      type: string
+                    totalDepositAmount:
+                      type: number
+    post:
+      description: connectPlayersWithPersonHandler
+      summary: connectPlayersWithPersonHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - persons
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playerIds:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+    delete:
+      description: disconnectPlayerFromPersonHandler
+      summary: disconnectPlayerFromPersonHandler
+      security:
+        - ApiAuthorizationToken: [ ]
+      tags:
+        - persons
+      responses:
+        200:
+          $ref: '#/components/responses/OkResponse'
+components:
+  securitySchemes:
+    ApiAuthorizationToken:
+      type: apiKey
+      name: Authorization
+      in: header
+  parameters:
+    brandId:
+      in: path
+      name: brandId
+      required: true
+      schema:
+        type: string
+        enum: [ 'KK', 'OS', 'LD', 'CJ' ]
+    playerId:
+      in: path
+      name: playerId
+      required: true
+      schema:
+        type: number
+    countryId:
+      in: path
+      name: countryId
+      required: true
+      schema:
+        type: string
+        minLength: 2
+        maxLength: 2
+    pageIndex:
+      in: query
+      name: pageIndex
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+    pageSize:
+      in: query
+      name: pageSize
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+  responses:
+    OkResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              ok:
+                type: boolean
+    SuccessResponse:
+      description: Succesfully finished
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+    ValidationFailed:
+      description: Schema validation failed
+    ErrorResponse:
+      description: Processing request failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: number
+              message:
+                type: string
+    PlayerIdResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              playerId:
+                type: integer
+    PaymentSummaryReportResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                title:
+                  type: string
+                "type":
+                  type: string
+                amount:
+                  type: string
+                transactions:
+                  type: number
+  schemas:
+    Any:
+      description: Any type
+    BrandInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        site:
+          type: string
+        url:
+          type: string
+        cdnUrl:
+          type: string
+    Player:
+      type: object
+      properties:
+        id:
+          type: number
+        brandId:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        address:
+          type: string
+        postCode:
+          type: string
+        city:
+          type: string
+        mobilePhone:
+          type: string
+        countryId:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date-time
+        languageId:
+          type: string
+        nationalId:
+          type: string
+        currencyId:
+          type: string
+        allowEmailPromotions:
+          type: boolean
+        allowSMSPromotions:
+          type: boolean
+        gamblingProblem:
+          type: boolean
+        accountClosed:
+          type: boolean
+        accountSuspended:
+          type: boolean
+        testPlayer:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        activated:
+          type: boolean
+        verified:
+          type: boolean
+        tcVersion:
+          type: string
+        placeOfBirth:
+          type: string
+        nationality:
+          type: string
+        additionalFields:
+          type: object
+    PlayerById:
+      allOf:
+        - $ref: '#/components/schemas/Player'
+        - type: object
+          properties:
+            lastLogin:
+              type: string
+              format: date-time
+            kycDocuments:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                  name:
+                    type: string
+            withdrawals:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  amount:
+                    type: number
+            fraudIds:
+              type: array
+              items:
+                type: number
+    PlayerStatus:
+      type: object
+      properties:
+        update:
+          type: object
+          properties:
+            balance:
+              type: object
+              properties:
+                currencyId:
+                  type: string
+                reservedBalance:
+                  type: number
+                realBalance:
+                  type: number
+                bonusBalance:
+                  type: number
+                totalBalance:
+                  type: number
+                formatted:
+                  type: object
+                  properties:
+                    reservedBalance:
+                      type: string
+                    realBalance:
+                      type: string
+                    bonusBalance:
+                      type: string
+                    totalBalance:
+                      type: string
+    PlayerWithUpdate:
+      allOf:
+        - $ref: '#/components/schemas/PlayerById'
+        - $ref: '#/components/schemas/PlayerStatus'
+    AccountStatus:
+      type: object
+      properties:
+        ddPending:
+          type: boolean
+        ddMissing:
+          type: boolean
+        potentialGamblingProblem:
+          type: boolean
+        verified:
+          type: boolean
+        activated:
+          type: boolean
+        allowGameplay:
+          type: boolean
+        allowTransactions:
+          type: boolean
+        loginBlocked:
+          type: boolean
+        accountClosed:
+          type: boolean
+        accountSuspended:
+          type: boolean
+        gamblingProblem:
+          type: boolean
+        riskProfile:
+          type: string
+        depositLimitReached:
+          type: string
+          format: date-time
+        documentsRequested:
+          type: boolean
+        pep:
+          type: boolean
+        modified:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              name:
+                type: string
+    AccountDocument:
+      type: object
+      properties:
+        photoId:
+          type: string
+        name:
+          type: string
+        expiryDate:
+          type: string
+          format: 'date-time'
+        content:
+          type: string
+    ActiveLimit:
+      type: object
+      properties:
+        id:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        expires:
+          type: string
+          format: date-time
+        permanent:
+          type: string
+        exclusionKey:
+          type: string
+        "type":
+          type: string
+        limitValue:
+          type: number
+        limit:
+          type: number
+        amount:
+          type: string
+        periodType:
+          type: string
+        reason:
+          type: string
+        isInternal:
+          type: boolean
+        display:
+          type: string
+        canBeCancelled:
+          type: boolean
+        cancellationDays:
+          type: number
+    PlayerLimit:
+      type: object
+      properties:
+        id:
+          type: number
+        expires:
+          type: string
+        permanent:
+          type: boolean
+        exclusionKey:
+          type: string
+          format: uuid
+        "type":
+          type: string
+          enum: [ 'selfExclusion', 'deposit', 'sessionLength', 'bet', 'loss', 'timeout' ]
+        limitValue:
+          type: integer
+        periodType:
+          type: string
+          enum: [ 'daily', 'weekly', 'monthly' ]
+        isInternal:
+          type: boolean
+    PlayerEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        "type":
+          type: string
+        key:
+          type: string
+        content:
+          type: string
+        details:
+          type: object
+        fraudId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        handle:
+          type: string
+        userId:
+          type: number
+        isSticky:
+          type: boolean
+        title:
+          type: string
+    WithdrawalWithOptions:
+      type: object
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        formattedAmount:
+          type: string
+        accountId:
+          type: integer
+        account:
+          type: string
+        timestamp:
+          type: string
+          format: 'date-time'
+        paymentParameters:
+          type: object
+        canAcceptWithDelay:
+          type: boolean
+        delayedAcceptTime:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        paymentProviders:
+          type: array
+          items:
+            type: object
+            properties:
+              account:
+                type: string
+              id:
+                type: integer
+              name:
+                type: string
+              provider:
+                type: string
+              parameters:
+                type: object
+              priority:
+                type: number
+    WithdrawalSchema:
+      type: object
+      required:
+        - paymentProviderId
+        - amount
+      properties:
+        paymentProviderId:
+          type: number
+        amount:
+          type: number
+        parameters:
+          type: object
+          properties:
+            staticId:
+              type: number
+    Kyc:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+        documentType:
+          type: string
+        "type":
+          type: string
+        expiryDate:
+          type: string
+          format: 'date-time'
+        photoId:
+          type: string
+        name:
+          type: string
+        account:
+          type: string
+        accountId:
+          type: integer
+        content:
+          type: string
+        fields:
+          type: object
+    KycDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+        playerId:
+          type: integer
+        status:
+          type: string
+        "type":
+          type: string
+        expiryDate:
+          type: string
+          format: 'date-time'
+        photoId:
+          type: string
+        name:
+          type: string
+        accountId:
+          type: integer
+        createdAt:
+          type: string
+          format: 'date-time'
+    PromotionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        multiplier:
+          type: number
+        autoStart:
+          type: boolean
+        active:
+          type: boolean
+        allGames:
+          type: boolean
+        calculateRounds:
+          type: boolean
+        minimumContribution:
+          type: number
+          minimum: 0
+    PromotionDraft:
+      allOf:
+        - $ref: '#/components/schemas/PromotionUpdate'
+        - type: object
+          properties:
+            brandId:
+              type: string
+    Promotion:
+      allOf:
+        - $ref: '#/components/schemas/PromotionUpdate'
+        - type: object
+          properties:
+            id:
+              type: integer
+    BonusDraft:
+      type: object
+      properties:
+        name:
+          type: string
+        brandId:
+          type: string
+        archived:
+          type: boolean
+        active:
+          type: boolean
+        depositBonus:
+          type: boolean
+        depositCount:
+          type: integer
+        depositCountMatch:
+          type: boolean
+        wageringRequirementMultiplier:
+          type: number
+        daysUntilExpiration:
+          type: number
+        depositMatchPercentage:
+          type: number
+        creditOnce:
+          type: boolean
+    Bonus:
+      allOf:
+        - $ref: '#/components/schemas/BonusDraft'
+        - type: object
+          properties:
+            id:
+              type: integer
+    BonusLimit:
+      type: object
+      properties:
+        currencyId:
+          type: string
+        bonusId:
+          type: number
+        minAmount:
+          type: number
+        maxAmount:
+          type: number
+    GameRound:
+      type: object
+      properties:
+        id:
+          type: integer
+        timestamp:
+          type: string
+          format: 'date-time'
+        manufacturerSessionId:
+          type: number
+        manufacturerId:
+          type: string
+        externalGameRoundId:
+          type: string
+        gameId:
+          type: integer
+        closed:
+          type: boolean
+    FullUser:
+      type: object
+      properties:
+        id:
+          type: integer
+        hash:
+          type: string
+        email:
+          type: string
+        handle:
+          type: string
+        name:
+          type: string
+        mobilePhone:
+          type: string
+        badLoginCount:
+          type: integer
+        lastBadLogin:
+          type: string
+          format: 'date-time'
+        loginBlocked:
+          type: boolean
+        createdAt:
+          type: string
+          format: 'date-time'
+        lastSeen:
+          type: string
+          format: 'date-time'
+        lastPasswordReset:
+          type: string
+          format: 'date-time'
+        accountClosed:
+          type: boolean
+        administratorAccess:
+          type: boolean
+        reportingAccess:
+          type: boolean
+        campaignAccess:
+          type: boolean
+        requiurePasswordChange:
+          type: boolean
+        paymentAccess:
+          type: boolean
+        riskManager:
+          type: boolean
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        accountClosed:
+          type: boolean
+        administratorAccess:
+          type: boolean
+        reportingAccess:
+          type: boolean
+        loginBlocked:
+          type: boolean
+        requirePasswordChange:
+          type: boolean
+        email:
+          type: string
+        handle:
+          type: string
+        name:
+          type: string
+        mobilePhone:
+          type: string
+        createdAt:
+          type: string
+          format: 'date-time'
+        lastSeen:
+          type: string
+          format: 'date-time'
+        lastPasswordReset:
+          type: string
+          format: 'date-time'
+    UserDraft:
+      type: object
+      required:
+        - name
+        - handle
+        - email
+        - mobilePhone
+      properties:
+        name:
+          type: string
+        handle:
+          type: string
+        email:
+          type: string
+        mobilePhone:
+          type: string
+    UserAccessSettings:
+      type: object
+      properties:
+        accountClosed:
+          type: boolean
+        loginBlocked:
+          type: boolean
+        requirePasswordChange:
+          type: boolean
+        reportingAccess:
+          type: boolean
+        administratorAccess:
+          type: boolean
+        paymentAccess:
+          type: boolean
+        campaignAccess:
+          type: boolean
+        riskManager:
+          type: boolean
+    CountryDraft:
+      type: object
+      properties:
+        minimumAge:
+          type: integer
+        loginAllowed:
+          type: boolean
+        registrationAllowed:
+          type: boolean
+        blocked:
+          type: boolean
+        riskProfile:
+          type: string
+          enum: [ 'low', 'medium_low', 'medium', 'medium_high', 'high' ]
+        monthlyIncomeThreshold:
+          type: number
+    GameDraft:
+      type: object
+      required:
+        - gameId
+        - name
+        - manufacturerId
+        - manufacturerGameId
+        - mobileGame
+        - playForFun
+        - rtp
+        - permalink
+        - archived
+      properties:
+        gameId:
+          type: string
+        name:
+          type: string
+        manufacturerId:
+          type: string
+        manufacturerGameId:
+          type: string
+        mobileGame:
+          type: boolean
+        playForFun:
+          type: boolean
+        rtp:
+          type: number
+        permalink:
+          type: string
+        archived:
+          type: boolean
+    Game:
+      allOf:
+        - $ref: '#/components/schemas/GameDraft'
+        - type: object
+          properties:
+            id:
+              type: number
+    GameProfileDraft:
+      type: object
+      required:
+        - name
+        - brandId
+        - wageringRequirement
+      properties:
+        name:
+          type: string
+        brandId:
+          type: string
+        wageringMultiplier:
+          type: number
+        riskProfile:
+          type: string
+          enum: [ 'low', 'medium_low', 'medium', 'medium_high', 'high' ]
+    GameProfile:
+      allOf:
+        - $ref: '#/components/schemas/GameProfileDraft'
+        - type: object
+          properties:
+            id:
+              type: integer
+    PaymentMethodLimitDraft:
+      type: object
+      properties:
+        brandId:
+          type: string
+        paymentMethodId:
+          type: integer
+        currencyId:
+          type: string
+        minDeposit:
+          type: number
+        maxDeposit:
+          type: number
+        minWithdrawal:
+          type: number
+        maxWithdrawal:
+          type: number
+    PaymentMethodLimit:
+      allOf:
+        - $ref: '#/components/schemas/PaymentMethodLimitDraft'
+        - type: object
+          properties:
+            id:
+              type: integer
+    RiskDraft:
+      type: object
+      properties:
+        "type":
+          type: string
+          enum: [ 'customer', 'transaction', 'interface', 'geo' ]
+        fraudKey:
+          type: string
+        points:
+          type: integer
+        maxCumulativePoints:
+          type: integer
+        requiredRole:
+          type: string
+          enum: [ 'administrator', 'riskManager', 'payments', 'agent' ]
+        active:
+          type: boolean
+        name:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        manualTrigger:
+          type: boolean
+    Risk:
+      allOf:
+        - $ref: '#/components/schemas/RiskDraft'
+        - type: object
+          properties:
+            id:
+              type: integer
+            riskProfiles:
+              type: array
+              items:
+                type: string
+            manualCheck:
+              type: boolean
+  requestBodies:
+    ReportQueryBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              month:
+                type: string
+                format: 'date-time'
+              brandId:
+                type: string
+              paymentProviderName:
+                type: string
+              pageSize:
+                type: integer
+                minimum: 1
+              pageIndex:
+                type: integer
+                minimum: 0

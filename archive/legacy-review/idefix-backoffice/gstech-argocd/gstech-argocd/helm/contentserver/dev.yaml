@@ -1,0 +1,72 @@
+nameOverride: "dev-gstech-contentserver-service"
+fullnameOverride: "dev-gstech-contentserver-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3016
+  metricsPort: 4001
+
+extraTCPPorts:
+  private-api: 3017
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-dev-gstech-contentserver-service
+  hosts:
+  - host: beta-content.luckydino.com
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: dev-gstech-contentserver-service
+      servicePort: 3016
+
+  annotations: {}
+
+  tls: []
+
+env:
+  NODE_ENV: development
+  BACKEND_URL: http://dev-gstech-backend-service:3001
+  REWARD_SERVER_URL: http://dev-gstech-rewardserver-service:3012/api/v1
+  REWARD_SERVER_MANAGEMENT_URL: http://dev-gstech-rewardserver-service:3011/api/v1
+  CAMPAIGN_SERVER_PRIVATE_URL: http://dev-gstech-campaignserver-backend-service:3014/api/v1
+  CAMPAIGN_SERVER_URL: http://dev-gstech-campaignserver-backend-service
+  PAYMENT_SERVER_URL: http://dev-gstech-paymentserver-service:3007/api/v1
+  COMPLIANCE_SERVER_URL: http://dev-gstech-compliance-service:3009/api/v1
+  GAME_SERVER_URL: http://dev-gstech-walletserver-service:3004/api/v1
+  PUBLIC_URL: https://beta-content.luckydino.com
+  KAFKA_ENABLED: "false"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  KAFKA_BRIDGE_ENABLED: "false"
+  METRICS_PORT: 4001
+  # KAFKA_BRIDGE_HOST: b-1.devluckydinokafkafa.pvmgg1.c3.kafka.eu-central-1.amazonaws.com,b-2.devluckydinokafkafa.pvmgg1.c3.kafka.eu-central-1.amazonaws.com,b-3.devluckydinokafkafa.pvmgg1.c3.kafka.eu-central-1.amazonaws.com
+  # KAFKA_BRIDGE_PORT: 9096
+  KAFKA_BRIDGE_HOST: b-1-public.devluckydinokafkafa.pvmgg1.c3.kafka.eu-central-1.amazonaws.com,b-2-public.devluckydinokafkafa.pvmgg1.c3.kafka.eu-central-1.amazonaws.com,b-3-public.devluckydinokafkafa.pvmgg1.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_BRIDGE_PORT: 9196
+  KAFKA_BRIDGE_SSL: "true"
+  KAFKA_BRIDGE_SASL_MECHANISM: scram-sha-512
+  KAFKA_BRIDGE_USERNAME: "eeg"
+  POSTGRES_HOST: db-1.dev.eeg.viegg.net
+  POSTGRES_USER: gstech
+secretEnv:
+  KAFKA_BRIDGE_PASSWORD:
+    dev-gstech-contentserver-service: kafka-password
+  POSTGRES_PASSWORD:
+    dev-gstech-contentserver-service: postgres-password

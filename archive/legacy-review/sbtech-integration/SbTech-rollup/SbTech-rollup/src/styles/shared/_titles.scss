@@ -1,0 +1,39 @@
+
+// sport titles in center panel
+.rj-sport-heading-sport-name{
+  font-weight:800;
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+}
+// only for main heading, so leagues/events not bold
+.rj-ev-list__main-heading .rj-ev-list__heading-title__name{
+  font-weight:800;
+  font-family:$brand-font--header;
+  text-transform:uppercase;
+  // removing styles for the count
+  .rj-ev-list__heading-title__count{
+    font-weight:normal;
+  }
+}
+// hightlights block title
+.panel-center .side-menu-card-list-heading,
+.side-menu-card-list-heading{
+  font-family: $brand-font--header;
+  font-weight:bold;
+  border-bottom:1px solid $brand-grey;
+  background: $brand-base;
+  color:$brand-light;
+  text-transform: uppercase;
+}
+
+.panel-right .heading.sectionSubHeading
+{
+    background: $brand-base;
+    font-family: $brand-font--header;
+    font-weight:800;
+}
+
+.panel-right .betSlip-tab-switch-btns-holder ul.tab-switch-btns > li{
+  font-family: $brand-font--header;
+  font-weight:bold;
+}

@@ -1,0 +1,16 @@
+@namespace("phoenix.dataapi.shared")
+protocol MatchStatusUpdateProtocol {
+    import idl "shared-protocol.avdl";
+
+    record Score {
+        string home;
+        string away;
+    }
+
+    record MatchStatusUpdate {
+        phoenix.dataapi.shared.Header header;
+        string namespacedFixtureId;
+        union { null, Score } score;
+        FixtureStatus matchStatus;
+    }
+}

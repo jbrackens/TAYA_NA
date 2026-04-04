@@ -1,0 +1,11 @@
+apiVersion: v2
+name: eeg-kafka
+description: A Helm chart for Kubernetes deployment of Kafka
+type: application
+version: 0.1.0
+appVersion: "2.8.1-debian-10-r31"
+
+dependencies:
+  - name: kafka
+    version: 14.4.1
+    repository: https://charts.bitnami.com/bitnami

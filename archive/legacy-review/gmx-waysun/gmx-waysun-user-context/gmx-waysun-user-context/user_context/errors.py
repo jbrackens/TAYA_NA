@@ -1,0 +1,26 @@
+import enum
+
+_REGISTRY = list()
+
+
+# noinspection PyPep8Naming
+def ErrorItem(name: str) -> str:
+    _REGISTRY.append(name)
+    return name
+
+
+ERROR_AUTH_WRONG_TOKEN = ErrorItem("ERROR_AUTH_WRONG_TOKEN")
+ERROR_AUTH_UNKNOWN_USER = ErrorItem("ERROR_AUTH_UNKNOWN_USER")
+ERROR_AUTH_WRONG_PERMISSIONS = ErrorItem("ERROR_AUTH_WRONG_PERMISSIONS")
+
+ERROR_VALUE_ERROR = ErrorItem("ERROR_VALUE_ERROR")
+ERROR_UNHANDLED_EXCEPTION = ErrorItem("ERROR_UNHANDLED_EXCEPTION")
+
+ERROR_OBJECT_NOT_FOUND = ErrorItem("ERROR_OBJECT_NOT_FOUND")
+
+ERROR_PARTNER_NOT_FOUND = ErrorItem("ERROR_PARTNER_NOT_FOUND")
+
+ERROR_UNKNOWN_PERMISSIONS_GROUP_NAME = ErrorItem("ERROR_UNKNOWN_PERMISSIONS_GROUP_NAME")
+
+# noinspection PyArgumentList
+ErrorsEnum = enum.Enum("ErrorsEnum", dict(zip(_REGISTRY, _REGISTRY)), module=__name__)

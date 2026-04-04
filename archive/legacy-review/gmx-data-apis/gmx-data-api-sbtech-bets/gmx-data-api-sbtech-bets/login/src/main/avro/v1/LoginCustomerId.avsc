@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "LoginCustomerId",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.Login.v1",
+  "fields": [
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    }
+  ],
+  "default": null
+}

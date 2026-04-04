@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_jefe_features",
+  "info": {
+    "displayName": "Features",
+    "icon": "command",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading",
+      "required": true
+    },
+    "features": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::feature.feature"
+    }
+  }
+}

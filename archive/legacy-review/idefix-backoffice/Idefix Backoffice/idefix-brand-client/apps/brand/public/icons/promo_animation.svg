@@ -1,0 +1,73 @@
+<svg id="trophy" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="1080px" height="1080px" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1080 1080"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    #trophy .fil0 {fill:white}
+
+	
+	#trophy *{
+		-webkit-animation-timing-function: linear;
+		animation-timing-function: linear;
+		animation-fill-mode:forwards;
+		animation-iteration-count: 1;
+	}
+	
+	#trophy #trph1{
+		animation-name:trph1;
+		animation-duration:0.5s;
+		transform-origin:540px 710px;
+		transform:scale(0, 0);
+		animation-delay:0;
+	}
+	
+	@keyframes trph1{
+			0%{transform:scale(0);}
+			50%{transform:scale(1.05);}
+			70%{transform:scale(0.95);}
+			90%{transform:scale(1.02);}
+			100%{transform:scale(1);}
+		}
+	
+	#trophy #trph2{
+		animation-name:trph2;
+		animation-duration:0.3s;
+		transform-origin:540px 650px;
+		animation-delay:0.25s;
+		transform:scale(1, 0);
+	}
+	
+	@keyframes trph2{
+			0%{transform:scale(1, 0);}
+			50%{transform:scale(1, 1.05);}
+			70%{transform:scale(1, 0.95);}
+			90%{transform:scale(1, 1.02);}
+			100%{transform:scale(1, 1);}
+		}
+	#trophy #trph3{
+		animation-name:trph3;
+		animation-duration:.5s;
+		transform-origin:540px 650px;
+		animation-delay:.3s;
+		transform:scale(0, 0);
+		
+	}
+	
+	@keyframes trph3{
+			0%{transform:scale(.3, 0);}
+			40%{transform:scale(.3, 1.05);}
+			60%{transform:scale(1.05, 0.95);}
+			80%{transform:scale(0.95, 1.02);}
+			100%{transform:scale(1, 1);}
+		}
+	
+   ]]>
+  </style>
+ </defs>
+ <g id="trophy">
+  <path id="trph1" class="fil0" d="M497 634c-30,0 -55,24 -55,55l0 8c0,8 6,13 13,13l170 0c7,0 13,-5 13,-13l0 -8c0,-31 -25,-55 -55,-55 -29,0 -57,0 -86,0z"/>
+  <polygon id="trph2" class="fil0"  points="527,591 527,637 553,637 553,591"/>
+   <path id="trph3" class="fil0" d="M480 370c-19,0 -35,15 -37,34l-22 0c-16,0 -30,13 -30,30l0 51c0,30 25,55 56,55 29,90 157,90 186,0 31,0 56,-25 56,-55l0 -51c0,-17 -14,-30 -30,-30l-22 0c-2,-19 -18,-34 -37,-34l-120 0zm-59 59l21 0c0,28 -1,58 0,85 -14,-2 -25,-14 -25,-29l0 -51c0,-3 1,-5 4,-5zm217 0l21 0c3,0 4,2 4,5l0 51c0,15 -11,27 -25,29 1,-28 0,-57 0,-85z"/>
+ </g>
+</svg>

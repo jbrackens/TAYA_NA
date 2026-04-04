@@ -1,0 +1,29 @@
+nameOverride: "prod-gstech-compliance-service"
+fullnameOverride: "prod-gstech-compliance-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3009
+
+ingressClassName: nginx
+
+ingress:
+  enabled: false
+env:
+  NODE_ENV: production
+  REDIS_HOST: redis-complianceserver.prod.eeg.viegg.net
+  REDIS_PORT: 6379
+secretEnv:
+  PRIVATE_KEY:
+    prod-common-secrets: private-key

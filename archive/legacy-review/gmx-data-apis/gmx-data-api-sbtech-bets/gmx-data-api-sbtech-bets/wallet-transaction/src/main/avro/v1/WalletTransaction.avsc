@@ -1,0 +1,159 @@
+{
+  "type": "record",
+  "name": "WalletTransaction",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.WalletTransaction.v1",
+  "fields": [
+    {
+      "name": "MessageCreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "WalletTransactionID",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "CustomerName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Country",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "UpdateDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "SiteName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "IsFirstDeposit",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "OperationTypeID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "OperationMasterGroup",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "OperationGroupDescription",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "OperationDescription",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Status",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "CurrencyCode",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Amount_UserCurrency",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Amount_GBP",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Amount_EUR",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Bonus",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "LoadingUpdateDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "AccountTotal",
+      "type": "double",
+      "default": 0.0
+    },
+    {
+      "name": "Notes",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Source",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "ChildTransactionID",
+      "type": "long",
+      "default": 0
+    }
+  ]
+}

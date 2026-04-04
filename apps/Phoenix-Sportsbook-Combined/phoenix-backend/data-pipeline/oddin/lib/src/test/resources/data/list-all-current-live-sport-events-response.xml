@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schedule generated_at="2020-09-09T10:53:57">
+    <sport_event id="od:match:15866" name="C&#39;s Better vs Your Soul is Mine" scheduled="2020-09-09T10:00:00" status="not_started">
+        <tournament id="od:tournament:654" name="Oceanic Esports League - Season 2" scheduled="2020-08-04T22:00:00">
+            <tournament_length start_date="2020-08-07"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1902" name="C&#39;s Better" abbreviation="C better" qualifier="home"></competitor>
+            <competitor id="od:competitor:1905" name="Your Soul is Mine" abbreviation="Soul" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:16210" name="Forbidden gaming vs LAKERS" scheduled="2020-09-09T10:15:00">
+        <tournament id="od:tournament:752" name="ESEA MDL Season 35 Australia" scheduled="2020-08-30T22:00:00">
+            <tournament_length start_date="2020-09-01"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1295" name="Forbidden gaming" abbreviation="Forbidden gaming" qualifier="home"></competitor>
+            <competitor id="od:competitor:2068" name="LAKERS" abbreviation="LAKERS" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:16193" name="Team Secret vs Nordavind" scheduled="2020-09-09T10:20:00">
+        <tournament id="od:tournament:745" name="Nine to Five #4" scheduled="2020-08-30T22:00:00">
+            <tournament_length start_date="2020-08-31"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:2" name="Team Secret" abbreviation="Secret" qualifier="home"></competitor>
+            <competitor id="od:competitor:102" name="Nordavind" abbreviation="Nordavind" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:16192" name="Sprout vs Wisla Krakow" scheduled="2020-09-09T10:20:00">
+        <tournament id="od:tournament:745" name="Nine to Five #4" scheduled="2020-08-30T22:00:00">
+            <tournament_length start_date="2020-08-31"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:223" name="Sprout" abbreviation="Sprout" qualifier="home"></competitor>
+            <competitor id="od:competitor:579" name="Wisla Krakow" abbreviation="Wisla Krakow" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15713" name="WOLF vs Team Rockets" scheduled="2020-09-09T10:40:00" liveodds="not_available">
+        <tournament id="od:tournament:746" name="Dota 2 tournament Asian Gold Occupation S17" scheduled="2020-08-29T22:00:00">
+            <tournament_length start_date="2020-08-31"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:458" name="WOLF" abbreviation="W" qualifier="home"></competitor>
+            <competitor id="od:competitor:701" name="Team Rockets" abbreviation="TR" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15110" name="Armani vs sOs" scheduled="2020-09-09T10:10:00" liveodds="not_available">
+        <tournament id="od:tournament:731" name="Global StarCraft II League Season 3" scheduled="2020-08-28T22:00:00">
+            <tournament_length start_date="2020-08-29"></tournament_length>
+            <sport id="od:sport:11" name="Starcraft 2" abbreviation="SC2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:340" name="Armani" abbreviation="Armani" qualifier="home"></competitor>
+            <competitor id="od:competitor:346" name="sOs" abbreviation="sOs" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+</schedule>

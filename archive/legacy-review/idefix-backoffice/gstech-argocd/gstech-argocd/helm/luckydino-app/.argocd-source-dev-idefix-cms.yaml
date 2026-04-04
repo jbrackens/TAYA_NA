@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/idefix-cms
+    forcestring: true
+  - name: image.tag
+    value: beta-49c3ee811c334974e2177641bcff375ba9b4455c
+    forcestring: true

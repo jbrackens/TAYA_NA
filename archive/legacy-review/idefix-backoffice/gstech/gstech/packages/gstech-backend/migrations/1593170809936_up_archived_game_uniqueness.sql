@@ -1,0 +1,2 @@
+alter table games drop constraint "games_manufacturerId_manufacturerGameId_key";
+CREATE UNIQUE index "games_manufacturerId_manufacturerGameId_key" ON games("manufacturerId", "manufacturerGameId") WHERE archived=false;

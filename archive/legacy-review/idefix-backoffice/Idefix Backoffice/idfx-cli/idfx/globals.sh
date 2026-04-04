@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -e
+
+export PRJ_ROOT="$(pwd)"
+export BIN_DIR="$PRJ_ROOT/bin"
+export IDFX_="$BIN_DIR/idfx"
+
+export RESOURCE_DIR="$HOME/.idfx"
+export DATA_DIR="$RESOURCE_DIR/data"
+export TMP_DIR="$RESOURCE_DIR/tmp"
+export SIGNALS_DIR="$RESOURCE_DIR/signals"
+export LOGS_DIR="$RESOURCE_DIR/logs"
+export PIDS_FILE="$RESOURCE_DIR/pids"
+export DBG_FILE="$RESOURCE_DIR/debug.log"
+export CONFIG_FILE="$RESOURCE_DIR/config.yml"
+export LOGGER_LOCAL="$LOGS_DIR/gstech.log.json"
+export SQL_FILTER="$RESOURCE_DIR/filter.sql"
+export NGROK_CONF="$RESOURCE_DIR/ngrok.yml"
+export TRANSFORMER_YML="$RESOURCE_DIR/transformer.yml"
+export TRANSFORMER_JSON="$TMP_DIR/transformer.json"
+export PEV_DATA_DIR="$RESOURCE_DIR/pev"
+
+export SRC_DIR="$PRJ_ROOT/src"
+export JOBS_DIR="$SRC_DIR/runner"
+export JOBSPEC_DIR="$JOBS_DIR/specs"
+export INTRCPTR_DIR="$SRC_DIR/interceptor"
+export ASSET_DIR="$SRC_DIR/assets"
+export PATCHES_DIR="$ASSET_DIR/patches"
+export DEBUG_FILES_DIR="$ASSET_DIR/debug-files"
+export IMPORTER_DIR="$SRC_DIR/importer"
+export LAUNCHER_DIR="$SRC_DIR/launcher"
+export GITOPS_DIR="$SRC_DIR/gitops"
+export LOGGING_DIR="$SRC_DIR/logging"
+export LNAV_DIR="$LOGGING_DIR/lnav"
+export WEBOPS_DIR="$SRC_DIR/webops"
+export PEV_DIR="$SRC_DIR/pev"
+export JQ_DIR="$ASSET_DIR/jq"
+export JQ_PARSER="$JQ_DIR/parser.jq"
+export PROGRESS_FNS="$LAUNCHER_DIR/progress-fns.sh"
+export IDFX_SPINNER="$SRC_DIR/spinner.sh"
+
+export NGROK_IDFX_APP_PORT=4040
+export MAILPIT_IDFX_APP_PORT=8025
+export MAILPIT_IDFX_SMTP_PORT=1025
+export BO_IDFX_APP_PORT=3000
+export CAMPA_IDFX_APP_PORT=3300
+export LD_IDFX_APP_PORT=3030
+export CJ_IDFX_APP_PORT=3031
+export KK_IDFX_APP_PORT=3032
+export OS_IDFX_APP_PORT=3033
+export FK_IDFX_APP_PORT=3034
+export SN_IDFX_APP_PORT=3035
+export VB_IDFX_APP_PORT=3036
+export LD_IDFX_SRV_PORT=3020
+export CJ_IDFX_SRV_PORT=3021
+export KK_IDFX_SRV_PORT=3022
+export OS_IDFX_SRV_PORT=3023
+export FK_IDFX_SRV_PORT=3024
+export SN_IDFX_SRV_PORT=3025
+export VB_IDFX_SRV_PORT=3026
+export GSTECH_BACKEND_IDFX_PORT=3001
+export GSTECH_BACKEND_IDFX_WALLET_PORT=3005
+export WALLETSERVER_IDFX_PORT=3003
+export WALLETSERVER_IDFX_API_PORT=3004
+export PAYMENTSERVER_IDFX_PORT=3006
+export PAYMENTSERVER_IDFX_API_PORT=3007
+export COMPLIANCESERVER_IDFX_PORT=3009
+export REWARDSERVER_IDFX_PORT=3012
+export REWARDSERVER_IDFX_MGMT_PORT=3011
+export CAMPAIGNSERVER_IDFX_PORT=3013
+export CAMPAIGNSERVER_IDFX_PRIV_PORT=3014
+
+export SPIN_OUT_FEXT="spin.txt"
+
+export NGROK_API_URL="http://localhost:$NGROK_IDFX_APP_PORT/api"
+
+export KV_ACCOUNT_ID="c67c22ce2d46e55db73d69401ee1ecc2"
+export KV_NAMESPACE_ID="c3cdf8b356254fe28e64d8ad7b33bcbc"
+export KV_AUTH_EMAIL="sean.bugeja@eeg.tech"
+export KV_BASE_URL="https://api.cloudflare.com/client/v4/accounts/$KV_ACCOUNT_ID"
+export KV_API_URL="$KV_BASE_URL/storage/kv/namespaces/$KV_NAMESPACE_ID"
+
+export FNM_VERSION_FILE_STRATEGY=recursive
+
+export INTRCPTR_TMP_DIR="$TMP_DIR/interceptor"
+export INTRCPTR_LAST_STATE="$INTRCPTR_TMP_DIR/last-state"
+export INTRCPTR_STAT_FILE="$INTRCPTR_TMP_DIR/interceptor.json"
+export INTRCPTR_CFKV_FILE="$INTRCPTR_TMP_DIR/cfkv.json"
+export INTRCPTR_REQS_FILE="$INTRCPTR_TMP_DIR/reqs.json"
+export INTRCPTR_TNLS_FILE="$INTRCPTR_TMP_DIR/tnnls.json"
+
+export GUM_SPIN_SHOW_OUTPUT="$(if [[ $IDFX_VERBOSE -ge 2 ]]; then echo "1"; fi)"
+export GUM_SPIN_SPINNER=dot
+export GUM_INPUT_WIDTH=100
+export GUM_FILTER_HEIGHT=15
+export GUM_CHOOSE_ITEM_FOREGROUND="15"
+export GUM_CHOOSE_HEADER_FOREGROUND="15"
+export GUM_CHOOSE_SELECTED_FOREGROUND="12"
+export GUM_CHOOSE_CURSOR_FOREGROUND="12"
+
+export IDFX_NPMLIB=

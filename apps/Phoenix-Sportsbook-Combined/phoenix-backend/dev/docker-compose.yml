@@ -1,0 +1,127 @@
+version: '2'
+services:
+  postgres:
+    image: docker.io/postgres:13.4
+    container_name: postgres
+    ports:
+      - 5432:5432
+    # Note that the *.sh files in local docker-entrypoint-initdb.d folder must be executable to avoid weird issues on Docker for Mac:
+    # the non-executable script would be deemed to be executable by the container entrypoint,
+    # which would then attempt to *execute* rather than *source* the script...
+    # which would, in turn, result in missing permission error and the entire container crashing.
+    volumes:
+      - ./postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./.postgres:/var/lib/postgresql/data
+    environment:
+      # Required password for DB superuser (`postgres`), identical to the user name for consistency;
+      # `backend` user will instead have `backend` password
+      POSTGRES_PASSWORD: postgres
+
+  flyway:
+    image: docker.io/flyway/flyway:8.0
+    depends_on:
+      - postgres
+    container_name: flyway
+    volumes: [ ../services/src/main/resources/db/migration:/flyway/sql ]
+    command: [
+      '-url=jdbc:postgresql://postgres/backend',
+      '-user=backend_flyway',
+      '-password=backend_flyway',
+      '-group=true', # Group all pending migrations in a single DB transaction
+      '-connectRetries=5', # Postgres needs some time to initialize when running for the first time
+      'migrate'
+    ]
+
+# Taken from: https://github.com/confluentinc/cp-all-in-one/blob/6.0.0-post/cp-all-in-one/docker-compose.yml
+  cp-zookeeper:
+    image: docker.io/confluentinc/cp-zookeeper:6.0.0
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  cp-broker:
+    image: docker.io/confluentinc/cp-server:6.0.0
+    hostname: broker
+    container_name: broker
+    depends_on:
+      - cp-zookeeper
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+      - "19092:19092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:29092,PLAINTEXT_HOST://:9092,PLAINTEXT_EXTERNAL://:19092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092,PLAINTEXT_EXTERNAL://host.docker.internal:19092
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+
+  cp-kafka-rest:
+    image: docker.io/confluentinc/cp-kafka-rest:6.0.0
+    hostname: kafka-rest
+    container_name: kafka-rest
+    depends_on:
+      - cp-zookeeper
+      - cp-broker
+    ports:
+      - "8082:8082"
+    environment:
+      KAFKA_REST_HOST_NAME: kafka-rest
+      KAFKA_REST_BOOTSTRAP_SERVERS: 'broker:29092'
+      KAFKA_REST_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_REST_LISTENERS: 'http://0.0.0.0:8082'
+
+  kafka-topics-ui:
+    image: docker.io/landoop/kafka-topics-ui
+    hostname: kafka-topics-ui
+    container_name: kafka-topics-ui
+    ports:
+      - "8085:8085"
+    depends_on:
+      - cp-kafka-rest
+    environment:
+      PORT: 8085
+      KAFKA_REST_PROXY_URL: http://kafka-rest:8082
+      PROXY: "true"
+
+  sftp-server:
+    image: docker.io/atmoz/sftp:latest
+    ports:
+      - "2222:22"
+    # From image documentation: Define users in (1) command arguments, (2) SFTP_USERS environment variable or (3) in file mounted as /etc/sftp/users.conf
+    # (syntax: user:pass[:e][:uid[:gid[:dir1[,dir2]...]]] ...,
+    command: backend:backend:::upload_dir
+
+  keycloak:
+    # This is the same image as used by keycloak-operator v17.0.0
+    image: quay.io/keycloak/keycloak:17.0.0-legacy
+    hostname: keycloak
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: postgres
+      DB_PASSWORD: postgres

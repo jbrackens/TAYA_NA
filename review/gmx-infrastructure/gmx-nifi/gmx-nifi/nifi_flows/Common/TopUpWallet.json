@@ -1,0 +1,253 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+        "link": {
+            "href": "buckets/8e627645-03b8-4783-8c00-7cabb738ca6d",
+            "params": {
+                "rel": "self"
+            }
+        },
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+        "bucketName": "Common",
+        "createdTimestamp": 1555665698952,
+        "description": "",
+        "identifier": "e1828208-4e60-4b3b-ac0b-a9bce226e18c",
+        "link": {
+            "href": "buckets/8e627645-03b8-4783-8c00-7cabb738ca6d/flows/e1828208-4e60-4b3b-ac0b-a9bce226e18c",
+            "params": {
+                "rel": "self"
+            }
+        },
+        "modifiedTimestamp": 1562365154580,
+        "name": "TopUpWallet",
+        "type": "Flow",
+        "versionCount": 13
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "b65c9ac7-f44c-39f6-81a1-bcc8becfffec",
+                    "id": "725a92c3-c922-3a51-9a2f-7bfb20f1da03",
+                    "name": "start",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "identifier": "618ab275-36fa-3f35-8942-5c63ba511a08",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                    "id": "60204f7f-5106-3d7f-8b74-09d1c44705bd",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "358b3be0-92ba-332c-8568-485e88ef645e",
+                    "id": "c47c8439-9d5e-3e92-b349-8ff3060b1056",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "identifier": "97126f10-e3cc-3e3f-beb2-c5b82030eca9",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "b65c9ac7-f44c-39f6-81a1-bcc8becfffec",
+                    "id": "15db71db-49c4-30c4-8c14-0b38f909c620",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+        "inputPorts": [],
+        "labels": [],
+        "name": "WalletTopUp",
+        "outputPorts": [],
+        "position": {
+            "x": 333.07073974609375,
+            "y": 297.10105895996094
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "identifier": "33de8ac3-b117-34df-bf85-7336e4bf1bdd",
+                "inputPorts": [],
+                "labels": [],
+                "name": "FetchCasinoAndSportBetsTopupData",
+                "outputPorts": [],
+                "position": {
+                    "x": 782.1938758382428,
+                    "y": -28.570860375659095
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+                    "flowId": "a113eb92-d0d7-44eb-9aaa-aeedc0b18bb3",
+                    "registryUrl": "http://nifi-registry.gmx.dev.internal:18080",
+                    "version": 11
+                }
+            },
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "identifier": "b65c9ac7-f44c-39f6-81a1-bcc8becfffec",
+                "inputPorts": [],
+                "labels": [],
+                "name": "ProcessExtTopUpUser",
+                "outputPorts": [],
+                "position": {
+                    "x": 786.4922262468222,
+                    "y": 249.05477523109826
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+                    "flowId": "51955533-5bad-403c-a194-72e6b0e6f284",
+                    "registryUrl": "http://nifi-registry.gmx.dev.internal:18080",
+                    "version": 13
+                }
+            }
+        ],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [
+                    "success"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "358b3be0-92ba-332c-8568-485e88ef645e",
+                "identifier": "c47c8439-9d5e-3e92-b349-8ff3060b1056",
+                "name": "LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 799.5217294600968,
+                    "y": 507.41607152954384
+                },
+                "properties": {
+                    "log-level": "info",
+                    "log-message": "Message processed ",
+                    "log-prefix": "[${PROCESS_ID}][WalletTopUp] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 100,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": [],
+        "variables": {
+            "API_ENDPOINT": "http://int-api.gmx.dev.internal",
+            "KAFKA.TOPIC.CASINO_BETS": "casinobets",
+            "KAFKA.TOPIC.SPORT_BETS": "sportbets",
+            "KAFKA_GROUP_ID_SUFIX": "dev_1",
+            "KAFKA_HOST": "zk1.gmx.dev.internal",
+            "KAFKA_PORT": "9092"
+        }
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "8e627645-03b8-4783-8c00-7cabb738ca6d",
+        "comments": "",
+        "flowIdentifier": "e1828208-4e60-4b3b-ac0b-a9bce226e18c",
+        "link": {
+            "href": "buckets/8e627645-03b8-4783-8c00-7cabb738ca6d/flows/e1828208-4e60-4b3b-ac0b-a9bce226e18c/versions/13",
+            "params": {
+                "rel": "content"
+            }
+        },
+        "timestamp": 1562365154578,
+        "version": 13
+    }
+}

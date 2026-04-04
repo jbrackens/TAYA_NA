@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schedule generated_at="2021-04-19T10:34:19">
+    <sport_event id="od:match:28861" name="AGO ROGUE vs G2 Arctic" scheduled="2021-04-20T19:30:00">
+        <tournament id="od:tournament:28861" name="European Masters 2021 Spring Main Event" scheduled="2021-04-13T22:00:00" abbreviation="EM 2021 Spring Main">
+            <tournament_length start_date="2021-04-14"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1281" name="AGO ROGUE" abbreviation="RGO" underage="0" qualifier="home"></competitor>
+            <competitor id="od:competitor:761" name="G2 Arctic" abbreviation="G2AR" underage="-1" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+</schedule>

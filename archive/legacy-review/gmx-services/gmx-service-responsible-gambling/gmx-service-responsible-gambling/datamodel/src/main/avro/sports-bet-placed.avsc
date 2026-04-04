@@ -1,0 +1,43 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "SportsBetPlaced",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    },
+    {
+      "name": "betId",
+      "type": "string"
+    },
+    {
+      "name": "sportId",
+      "type": "string"
+    },
+    {
+      "name": "eventId",
+      "type": "string"
+    },
+    {
+      "name": "marketId",
+      "type": "string"
+    },
+    {
+      "name": "selectionId",
+      "type": "string"
+    },
+    {
+      "name": "liability",
+      "type": "string"
+    },
+    {
+      "name": "placedAt",
+      "type": "long"
+    },
+    {
+      "name": "brandId",
+      "type": "float"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "collectionName": "components_common_markdowns",
+  "info": {
+    "displayName": "Markdown",
+    "icon": "file"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "richtext",
+      "required": true
+    }
+  }
+}

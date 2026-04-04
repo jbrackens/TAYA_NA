@@ -1,0 +1,3302 @@
+[
+  {
+    "betId" : {
+      "value" : "ء§⦈荷ࡰ옰뉂ᖅ節쏻ꀆ፽뾕蒠獮륦鱄"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㸨쓺"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "횋紺"
+      },
+      "selectionId" : "˭",
+      "stake" : {
+        "value" : {
+          "amount" : 0.02,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "뭟볥ཙુ郎앾０鯓"
+  },
+  {
+    "betId" : {
+      "value" : "෯砝ꡧ⚙䊒⛷厢각俀ꑁຑ자"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "촬묃⾦꜡",
+      "stake" : {
+        "value" : {
+          "amount" : 9030085686653142390.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 75.4283
+      }
+    },
+    "winner" : false,
+    "reason" : "셦숶⍌㶧쓃㩳朩䷄寁信팆"
+  },
+  {
+    "betId" : {
+      "value" : ""
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᨏͶ餷"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "鳴"
+      },
+      "selectionId" : "눣災㓻㚝",
+      "stake" : {
+        "value" : {
+          "amount" : 2.47,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "靐㐓猉᧪齿犈ᰋ밯％⻬읳蚙ᧆ껒笈龤毪"
+  },
+  {
+    "betId" : {
+      "value" : "먅测랉귋Խꑩ妋䢤鵈브ቌᎢ㙵䠻糊ჷ聯"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㐒"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "¤"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 1120717048528526126122731.95,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 948.9181
+      }
+    },
+    "winner" : true,
+    "reason" : "阤ԯ塋里洃㆐㐺璏㝗⎁ၫ樇憶⿨䉆"
+  },
+  {
+    "betId" : {
+      "value" : "춀䍒Ꙥ壻ຆ㋦痊锯釗ⲛ鱗Ѿ賶赘旄僙Ꮙ"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "Ȕ炫ꇅ圥"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "셹Ỡ"
+      },
+      "selectionId" : "꥘Ⅺ",
+      "stake" : {
+        "value" : {
+          "amount" : 5289147974941537960.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "맛苈쪮䠨⏛ꆴ鄩ↀ멬귵썽岋솲爡"
+  },
+  {
+    "betId" : {
+      "value" : "쀰鯡ꊅ驉㶠ⱊ개䃓팮"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᣥ푗ᓐ"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "埫虨"
+      },
+      "selectionId" : "ξ隡",
+      "stake" : {
+        "value" : {
+          "amount" : 0.93,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "⏤舔梊㗃ᨫ혵腬쭹鈬๦"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "⯻"
+      },
+      "selectionId" : "돺䅈鞗",
+      "stake" : {
+        "value" : {
+          "amount" : 5791919012664708032.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "ꛬ૷뇡鈖몾虊䭌蜵揦瀎牗"
+  },
+  {
+    "betId" : {
+      "value" : "ආ⇾斍홻掸赊"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "䤃"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "ꔠ",
+      "stake" : {
+        "value" : {
+          "amount" : 7540892926223446529.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 798.0840
+      }
+    },
+    "winner" : true,
+    "reason" : "絡듥匂̛᷋ꙺ袝錟뢊迀搘䦜"
+  },
+  {
+    "betId" : {
+      "value" : "ျ냞㘲拔궿ࢍ鸚鳺까"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㷛嗺"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "芽"
+      },
+      "selectionId" : "낒丢㺛",
+      "stake" : {
+        "value" : {
+          "amount" : 92233720368547758070000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 803.7783
+      }
+    },
+    "winner" : true,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "殨쯼많䐞虹彭哃鮛燖㿏̂搔厖桒樬퇹"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "翑剫"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "뺲ꆌ㕁",
+      "stake" : {
+        "value" : {
+          "amount" : 9223372036854776000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 527.0117
+      }
+    },
+    "winner" : true,
+    "reason" : "࡙懆黦ᶣ嚹蚒ꐃ冝淛袗越幭斃୦冉ꤒ쉟欏晼"
+  },
+  {
+    "betId" : {
+      "value" : "亣ㅕؕ鿻㼷체셠꬏ꖗ킀"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "놁≳귇"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "⣲伐큳",
+      "stake" : {
+        "value" : {
+          "amount" : 59979639892464674329215618098573708065629052921328970023998943076053677248000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 659.3095
+      }
+    },
+    "winner" : false,
+    "reason" : "츴᪰䑖"
+  },
+  {
+    "betId" : {
+      "value" : "쭀"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "ೇ课ᘝਝ",
+      "stake" : {
+        "value" : {
+          "amount" : 0.92,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 660.5902
+      }
+    },
+    "winner" : false,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "섙죀鎜ﹰ鷊灒䘚⋶㩞댈"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "͎힨뤃⻮",
+      "stake" : {
+        "value" : {
+          "amount" : 0.91,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "롂檑ꉿ娩꼝꽬㎍ႅ䯟횻뎭ᮛꑩ気蚞ౙ꠹"
+  },
+  {
+    "betId" : {
+      "value" : "퉉鷧"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᒉ"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "陠섲庺",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "ꁍ鏠選篪뜃ゅ♿ꋇ"
+  },
+  {
+    "betId" : {
+      "value" : "뗭⒫충䃨妥"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "䱜楢"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 3340450773122566062.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 39.8674
+      }
+    },
+    "winner" : true,
+    "reason" : "삻朔芴ﱼ⍀䴱ළĉ㯅룞"
+  },
+  {
+    "betId" : {
+      "value" : "쳥둔꾍ꪊᲆ⡌եꯛﶫᑺ砥ƒ宿⳶綐累癩滇褰䭜"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "⒫֦"
+      },
+      "selectionId" : "㜖▇㥜⯽",
+      "stake" : {
+        "value" : {
+          "amount" : 70287114613489780000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "ꖪᘻ뢅蘄캩섬섎僶ᔁ뿉㴅꺮ጤ浲"
+  },
+  {
+    "betId" : {
+      "value" : "걈惝•뵬삹埽⻼揝寁ㆹ羄肑"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ę"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "ꈪᗕ"
+      },
+      "selectionId" : "룗",
+      "stake" : {
+        "value" : {
+          "amount" : 0.98,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "沜䓐煈㍵ꔖ㎜꺣⟚닿瀞羥쩋ꦝ鈅쁂"
+  },
+  {
+    "betId" : {
+      "value" : "钹阯鬽"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ಛ"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "⶟뜳"
+      },
+      "selectionId" : "⟆",
+      "stake" : {
+        "value" : {
+          "amount" : 7840783798269432771.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "껋쳼䪠惦᪼솲䄦僶嚁"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "脌ꖏ뭋䚴"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "э렉"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 689777815114354332.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 199.8594
+      }
+    },
+    "winner" : true,
+    "reason" : "챔웢権☃墕劈䄘"
+  },
+  {
+    "betId" : {
+      "value" : "縷ཱ纤⡴"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "屸㮞"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "⋩"
+      },
+      "selectionId" : "耘뻫흤Ϻ",
+      "stake" : {
+        "value" : {
+          "amount" : 0.87,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "睔῁ᖞ誤쨴븛ဏ薩"
+  },
+  {
+    "betId" : {
+      "value" : "챮슼屵㴖ꭋ늯꿌"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ȉ"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "陸"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 2592620064683067772580260718629332000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 591.2065
+      }
+    },
+    "winner" : false,
+    "reason" : ""
+  },
+  {
+    "betId" : {
+      "value" : "緯ᠰ찼ꬋ昣릷ť᳉ច貆"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "皦"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "ゔ팋"
+      },
+      "selectionId" : "鼉俷",
+      "stake" : {
+        "value" : {
+          "amount" : 2.25,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 42.9214
+      }
+    },
+    "winner" : false,
+    "reason" : "組껪覍띻힩魑"
+  },
+  {
+    "betId" : {
+      "value" : "ߐⅨꂉ᥄栞ō쿘끵ↁ⡗猇䉰㙛昲챈⤆㦤寇"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "콢虷㞙䬧"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "㟕"
+      },
+      "selectionId" : "ࠀ䉟",
+      "stake" : {
+        "value" : {
+          "amount" : 12325550000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 834.6263
+      }
+    },
+    "winner" : false,
+    "reason" : "놿徬朕ḉ䟢㷛鬶Έ▄싋偫"
+  },
+  {
+    "betId" : {
+      "value" : "峈￷琌踆"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᕢ"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "鬩넲",
+      "stake" : {
+        "value" : {
+          "amount" : 1.31,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 550.4799
+      }
+    },
+    "winner" : true,
+    "reason" : "榎猝㾀聛냃跡꽪固앓낪㎃멗Ⅿᾮ堏௴膒ᗱ"
+  },
+  {
+    "betId" : {
+      "value" : "憴݃緻쨑甁힔潁超뷼⡤"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "读蝰뵾",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 119.2812
+      }
+    },
+    "winner" : true,
+    "reason" : "囡遗䂷訹鋮"
+  },
+  {
+    "betId" : {
+      "value" : "㉷␘脴洜蘐ኟ"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ꔞ㥙"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "㟞瞲"
+      },
+      "selectionId" : "쒕㱲",
+      "stake" : {
+        "value" : {
+          "amount" : 0.50,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "볍"
+  },
+  {
+    "betId" : {
+      "value" : "恵貎︍દ焼ラ趼ࣅ꣘襋ꌉ镝ᎇ⼯輗虖ꬋ"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "틆襳"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "桨䨥"
+      },
+      "selectionId" : "㞁",
+      "stake" : {
+        "value" : {
+          "amount" : 7.67,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 745.8788
+      }
+    },
+    "winner" : false,
+    "reason" : "䴯ڴ켜ゞ폐值"
+  },
+  {
+    "betId" : {
+      "value" : "婾球㄰ܓᷦ♿ሱ햎潏꘤"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "卆ᐏ狞"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "詆",
+      "stake" : {
+        "value" : {
+          "amount" : 1.18,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "ᮊ"
+  },
+  {
+    "betId" : {
+      "value" : "洟귵⎩斨￶옙"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "肑฼"
+      },
+      "selectionId" : "잃䷆",
+      "stake" : {
+        "value" : {
+          "amount" : 19.05,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 852.2036
+      }
+    },
+    "winner" : false,
+    "reason" : "屼寃鬢"
+  },
+  {
+    "betId" : {
+      "value" : "뇌蘧폣"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "꡸陏"
+      },
+      "selectionId" : "鼁",
+      "stake" : {
+        "value" : {
+          "amount" : 3.90,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 473.1987
+      }
+    },
+    "winner" : true,
+    "reason" : "灾쫄"
+  },
+  {
+    "betId" : {
+      "value" : "衵늋漗镛"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "ڟ뵋異",
+      "stake" : {
+        "value" : {
+          "amount" : 0.79,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 510.5265
+      }
+    },
+    "winner" : false,
+    "reason" : "㪖Š胮ᩂ"
+  },
+  {
+    "betId" : {
+      "value" : "垧"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "嘚췮"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "熒"
+      },
+      "selectionId" : "뉃揚敃䡊",
+      "stake" : {
+        "value" : {
+          "amount" : 0.60,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 282.8273
+      }
+    },
+    "winner" : false,
+    "reason" : "涭쌜꧓⌙筇榊蠂"
+  },
+  {
+    "betId" : {
+      "value" : "᲼꥕ㆈ搫绫넑㑥흋레Ţ摵휖蠙䞤嘴"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "禸態"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "憄",
+      "stake" : {
+        "value" : {
+          "amount" : 4187915467292512302.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 882.3415
+      }
+    },
+    "winner" : false,
+    "reason" : "髤啣헷㵯蛂蔁㷊戴뮖괁ﻞꕆ췁賴҇윾"
+  },
+  {
+    "betId" : {
+      "value" : "摗ꩮ㇜蒵桽ุ꼮칈櫽얩ᗤ﷽躇䪋㣤䶬"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 0.39,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 310.6944
+      }
+    },
+    "winner" : true,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "頉鵷쭰"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "囟"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 0.33,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "呤㺕ﻟ躐큑猿鯗ꈝﯬ䲭딏쪸玀㜛㙒"
+  },
+  {
+    "betId" : {
+      "value" : "缞ڱ榵"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "덿잔"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "忬㋬"
+      },
+      "selectionId" : "┆",
+      "stake" : {
+        "value" : {
+          "amount" : 0.40,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 647.4648
+      }
+    },
+    "winner" : false,
+    "reason" : "씲഍"
+  },
+  {
+    "betId" : {
+      "value" : "隍ꕎ脅槽힗"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᒋ؂"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "坁㞃"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 2.03,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "䘈䒣䖗"
+  },
+  {
+    "betId" : {
+      "value" : "䝩ﯩ㓾쳯៯砻い涊덏챔揠氐셌엹䙩옽ౄ"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "꜅獎ᅟ䕇"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "缷",
+      "stake" : {
+        "value" : {
+          "amount" : 54508563242930670000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 381.3877
+      }
+    },
+    "winner" : false,
+    "reason" : "焎ꒆ柠᧴宛젹笇ⰻ"
+  },
+  {
+    "betId" : {
+      "value" : "⭁릗莎ꑎ뀭ᣜ靏쬞㎥鬷駀䇐뒨ꝁ㳡﮻磅ﯽ걡"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "慚㐂"
+      },
+      "selectionId" : "髬臘羈캢",
+      "stake" : {
+        "value" : {
+          "amount" : 1.81,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 818.8178
+      }
+    },
+    "winner" : false,
+    "reason" : "鱔谯社峋ொ䝓蛀ꀀ䂄"
+  },
+  {
+    "betId" : {
+      "value" : "旨婿駓땾햿晒虩짠"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㱑哠쬸"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "헼"
+      },
+      "selectionId" : "覔ㆤ㒵",
+      "stake" : {
+        "value" : {
+          "amount" : 3.36,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "扯擼⌟뱫ﵥ班睛২㞹梭蝓蘁윫녍唂䒣ᬬἲ튟"
+  },
+  {
+    "betId" : {
+      "value" : "冴䁏"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "綷쉹"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "ⶈ뢭餾",
+      "stake" : {
+        "value" : {
+          "amount" : 0.06,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 364.3260
+      }
+    },
+    "winner" : false,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "箢Ů姜蹆ނ烏ǿ輹ト砇窒"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "昵蒰"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "䡖尵黒꾺",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 151.0789
+      }
+    },
+    "winner" : true,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "现ᓅ⌤评䕇奼饀ᇢճ㻯忊賬์堲誈ผ"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "⃖殳뒰澶"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "㲻"
+      },
+      "selectionId" : "鏠ӯ",
+      "stake" : {
+        "value" : {
+          "amount" : 40.26,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "윳藟ᖶ遗"
+  },
+  {
+    "betId" : {
+      "value" : "窯橪쥲⏯遣த될"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "梨ᑝ閨"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "誵",
+      "stake" : {
+        "value" : {
+          "amount" : 2147483648000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 337.6039
+      }
+    },
+    "winner" : true,
+    "reason" : ""
+  },
+  {
+    "betId" : {
+      "value" : "衫务̂븈岆鉯꒴辍끻Ԫ䥊᫈俯"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "䱡挙䬫"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "鴧"
+      },
+      "selectionId" : "禒葵",
+      "stake" : {
+        "value" : {
+          "amount" : 0.52,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "埪㓋愭踩⓶쌉斟曛⬥쉈偿"
+  },
+  {
+    "betId" : {
+      "value" : "ᇰ뵟䌈뺀霠ꂼ怨鴛"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "볥"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "駔"
+      },
+      "selectionId" : "垆ꬴ穠≱",
+      "stake" : {
+        "value" : {
+          "amount" : 0.27,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "쪺妈킔"
+  },
+  {
+    "betId" : {
+      "value" : "悅䤫㤔樘෻⮉獫ᗢ媇︘㷑ꁠ"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "⃱庁鴰"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "椋"
+      },
+      "selectionId" : "̟Æ眰◟",
+      "stake" : {
+        "value" : {
+          "amount" : 9223372036854775808000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "닇聾豖ᝲ꡶폣볧Ꮘ綩픒厫㸓퟊薦ꮷ"
+  },
+  {
+    "betId" : {
+      "value" : "՟"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᔬ"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "請ྚ",
+      "stake" : {
+        "value" : {
+          "amount" : 205759322902104839.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "폹꒍冺軩鞟؉꘩ᒮ듘蚢胸Ṥ冓墶ḧžꭀ"
+  },
+  {
+    "betId" : {
+      "value" : "⎉纚敀ា蘰ᮐﻸ：륖ೞ胦聖㳻"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "㶬"
+      },
+      "selectionId" : "阯",
+      "stake" : {
+        "value" : {
+          "amount" : 1349040305216104081486014767060048000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "䃉灍䞒ꋧ⛗ꕯ"
+  },
+  {
+    "betId" : {
+      "value" : "繞ꠜ嚬ઘ㬷謰ᑕ딋䯹逎裗훋몑"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "렰쉰"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "䬅"
+      },
+      "selectionId" : "ೢ플",
+      "stake" : {
+        "value" : {
+          "amount" : 2.64,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 607.5765
+      }
+    },
+    "winner" : true,
+    "reason" : "鲡ꓰᤤ塚䌇ࣦ언κῐ㉂܀噪圱"
+  },
+  {
+    "betId" : {
+      "value" : "䩹䤴邉趤毇㌓"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "䚴"
+      },
+      "selectionId" : "穙屰彳",
+      "stake" : {
+        "value" : {
+          "amount" : 48703660000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "啜e莓"
+  },
+  {
+    "betId" : {
+      "value" : "퇝猛锋赡戵ᆫ霹؁ﳠ"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "䖵"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "8䷤겥ꡪ炞"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "넌⠦ꫜ"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "滌"
+      },
+      "selectionId" : "⇓",
+      "stake" : {
+        "value" : {
+          "amount" : 3.88,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "쉷늈酧끙≶畠䍁蕸㔘삘鮕᱊Ⓗꎅ豹欺"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "隰ㅚḋ"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 39687970000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 348.3175
+      }
+    },
+    "winner" : false,
+    "reason" : "浘ㄏṐຑᨕ넯롨忮"
+  },
+  {
+    "betId" : {
+      "value" : "爭쇘⃤Ꮇ㵴㨓뤭"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "퍩"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "鼁㓨",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 687.3573
+      }
+    },
+    "winner" : true,
+    "reason" : "㺾쀎䩱฀慐칧죉飲秀삚"
+  },
+  {
+    "betId" : {
+      "value" : "蜤⚼탈俀蚪젒甂ⳍ"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ힱ擟"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "淒"
+      },
+      "selectionId" : "廅",
+      "stake" : {
+        "value" : {
+          "amount" : 6343009798029476773.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "℁桅꧰㸇柀쒠"
+  },
+  {
+    "betId" : {
+      "value" : "们뵱踖ṡ۫씁蓀㱒䏞鏈鉣尃聥"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "샠壕䰍"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "՛ꐛ",
+      "stake" : {
+        "value" : {
+          "amount" : 0.88,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "䍸ؙ퀤ୠ䨫侄"
+  },
+  {
+    "betId" : {
+      "value" : "⯷贉읍⻶့㊲"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "夹籞"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "䙿"
+      },
+      "selectionId" : "Ĉ잏",
+      "stake" : {
+        "value" : {
+          "amount" : 302516540730362103746197914493110483600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 408.6892
+      }
+    },
+    "winner" : true,
+    "reason" : "හ㖶粎䩸襧녣翐㦁졿鉭弿秹⶙᧳"
+  },
+  {
+    "betId" : {
+      "value" : "ݑ⓱焄胣峒퉋బ૙䷚ꦔ躶貕ꭏ䅯䉹筺먕䜵蕃"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "䅀畺绛"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "ꂒ",
+      "stake" : {
+        "value" : {
+          "amount" : 13935722959655046399930212808119720000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 873.0237
+      }
+    },
+    "winner" : false,
+    "reason" : "﬙ꖀᖗ㘺衇勒羯ᇈ᪫䨒갰Ԛ槅烮ꦹࢷ⼚"
+  },
+  {
+    "betId" : {
+      "value" : "疦⌂ଜ"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "䰂ⲧ轿骊"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "ท音ꈻ",
+      "stake" : {
+        "value" : {
+          "amount" : 7298608086149299000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 58.6105
+      }
+    },
+    "winner" : true,
+    "reason" : "䩎⺻毱됷颶偱묈않쮘ꖗ"
+  },
+  {
+    "betId" : {
+      "value" : "퐶淗訏ង覼⇩汰뼮䕆떡⇊㡪"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㫭䍙啮梠"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "ﳂ썀聊",
+      "stake" : {
+        "value" : {
+          "amount" : 0.87,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 597.8504
+      }
+    },
+    "winner" : false,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "帜摺쏤ⓟ矰ᣠ繄録᫃隧뱚㯹↰智긛孢"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "ٖ⌿"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 1.35,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 185.5355
+      }
+    },
+    "winner" : false,
+    "reason" : "௲ꄬ"
+  },
+  {
+    "betId" : {
+      "value" : "벚陞䱏蝌㦋襲阬㳖Ῐ米䑢"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ࠈ"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "퀜",
+      "stake" : {
+        "value" : {
+          "amount" : 3.87,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 602.9330
+      }
+    },
+    "winner" : false,
+    "reason" : "୲\u0098ᰞ⼞瘢퇲ﵩ꟢罟蕻暩迠葳㋌쉪"
+  },
+  {
+    "betId" : {
+      "value" : "큙흰"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "䰱꾙㧢"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "쑡"
+      },
+      "selectionId" : "듆",
+      "stake" : {
+        "value" : {
+          "amount" : 606202200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "䝕Ỡ遣"
+  },
+  {
+    "betId" : {
+      "value" : "⯵ㆤ盬牷屢"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "᜼"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "뛋臻"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 6898964838862733973.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "␈拓渵킼쥐"
+  },
+  {
+    "betId" : {
+      "value" : "筒峙왗尟幢嘭殠憠椦銮壧Þ"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "噐᩵❃掼"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "펙⼙"
+      },
+      "selectionId" : "㹏눂",
+      "stake" : {
+        "value" : {
+          "amount" : 14431656562561283090844186973489510000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 116.9948
+      }
+    },
+    "winner" : true,
+    "reason" : "ú⨫䧬䱮厤퇪㣁貵ꢏ싾鿋䌅탼ᩛ武"
+  },
+  {
+    "betId" : {
+      "value" : "ꎷᏥ즆⇝冘ྫྷ帴㫙༚鬳監"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "譴配"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 1.98,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "臻꽆꡶䪲먛"
+  },
+  {
+    "betId" : {
+      "value" : "罒ꂹά蠓"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "Ə"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "艞犘"
+      },
+      "selectionId" : "憘칩穜",
+      "stake" : {
+        "value" : {
+          "amount" : 1.19,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 335.0836
+      }
+    },
+    "winner" : true,
+    "reason" : "꿔㺔遮ꌁ샣禇犞滽͝"
+  },
+  {
+    "betId" : {
+      "value" : "懶쿦婡㾫Ｅ"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "뒶஦觖"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "ｿ쳩",
+      "stake" : {
+        "value" : {
+          "amount" : 1.09,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 833.9868
+      }
+    },
+    "winner" : true,
+    "reason" : "ꅥ訁䛦毄ᅦۢ䷖옵꜋閭ꬬ"
+  },
+  {
+    "betId" : {
+      "value" : "칭⢶᪸䠊"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㄃ᾡ׈"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "긞",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 29.8502
+      }
+    },
+    "winner" : false,
+    "reason" : "䪃ᵂᲚ⡪읂䐨짧宥滀䓝〇䵗놎"
+  },
+  {
+    "betId" : {
+      "value" : "鿊䱻㈔븎ㆂ䝹睫脎蚔琰蚆鎈ឭᠴ캿Ⱈ"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "ﴍ痖",
+      "stake" : {
+        "value" : {
+          "amount" : 0.37,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 693.6105
+      }
+    },
+    "winner" : true,
+    "reason" : "蓜뤾ゼ㉵諡흚頚妗饕㔪嶼"
+  },
+  {
+    "betId" : {
+      "value" : "̑곁쪌"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "拖岛"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "ꟷ캮"
+      },
+      "selectionId" : "撫룢ᗼ",
+      "stake" : {
+        "value" : {
+          "amount" : 0.33,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 195.3135
+      }
+    },
+    "winner" : false,
+    "reason" : "鍬ꃹ䵭崻톢ꦋ隹榅ꖥ喅"
+  },
+  {
+    "betId" : {
+      "value" : "⹭悍戣趾왅⛏Ⱅ菎삩푆ⵖ漏缎퀣"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "怙"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "፩",
+      "stake" : {
+        "value" : {
+          "amount" : 0.14,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 694.6552
+      }
+    },
+    "winner" : false,
+    "reason" : "ⷖ块넘騄議災厪➊誌ؗ⽋Ⱙ鍆怡㡉爭"
+  },
+  {
+    "betId" : {
+      "value" : "ꥮ㸆㵽슒ﯦ䐹경뀦"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "闻᚜"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "刨"
+      },
+      "selectionId" : "尝",
+      "stake" : {
+        "value" : {
+          "amount" : 65324515834608740500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "崄㫽캋툹駄続뎪調鉞쿁堽"
+  },
+  {
+    "betId" : {
+      "value" : "銍᪉"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "㈙ષ"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "퀸"
+      },
+      "selectionId" : "∾醽寵",
+      "stake" : {
+        "value" : {
+          "amount" : 1.85,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 125.0379
+      }
+    },
+    "winner" : true,
+    "reason" : "룙畞蓚∉鷊⠰"
+  },
+  {
+    "betId" : {
+      "value" : "삥׶剛鹥뮫鿴Ũ䣲㔑쩼瀎꟔⍴꘸壨꒯荞֝"
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "㛻"
+      },
+      "selectionId" : "笚逆鄀嚪",
+      "stake" : {
+        "value" : {
+          "amount" : 0.46,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "獅鑡﯒"
+  },
+  {
+    "betId" : {
+      "value" : "뺢㧜ꬲ얦勐ᾛ"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "떽"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "쑀"
+      },
+      "selectionId" : "톍癕୫",
+      "stake" : {
+        "value" : {
+          "amount" : 1.16,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 808.8503
+      }
+    },
+    "winner" : true,
+    "reason" : "鑼䠥ぉ視Ñ라"
+  },
+  {
+    "betId" : {
+      "value" : "뚮᯺꫍搷㋯켁坬彘䇁ﱹᤠ"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "앫뛐⧏"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "᦭棋腵ㅿ",
+      "stake" : {
+        "value" : {
+          "amount" : 1.06,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 761.8103
+      }
+    },
+    "winner" : true,
+    "reason" : "ួ॥離潽藼烊浮牔᧛깳"
+  },
+  {
+    "betId" : {
+      "value" : "㶛‸㿨늅婛દ"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "騹"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "Ī飜",
+      "stake" : {
+        "value" : {
+          "amount" : 0.28,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "뭆Ბ问䐽뗖諈櫶缠"
+  },
+  {
+    "betId" : {
+      "value" : "𤋮"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "蟷視"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "⼜⪅"
+      },
+      "selectionId" : "깕⛭첈",
+      "stake" : {
+        "value" : {
+          "amount" : 3172900887525496630.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "ꭱ悌턥킈文诛첋鎦鱽␓졫"
+  },
+  {
+    "betId" : {
+      "value" : "ᣖﾔ坐䄹닩⬂\u0011൯Ȁ"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "붠禴삾"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "㤖"
+      },
+      "selectionId" : "䤉㲴怀",
+      "stake" : {
+        "value" : {
+          "amount" : 8.23,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 788.5407
+      }
+    },
+    "winner" : true,
+    "reason" : "㕭ꧮ䆺䶭炋⎵㸔笠⦩똣"
+  },
+  {
+    "betId" : {
+      "value" : "슅쏤怜ᑾଭࡲ"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "죑䛛懊"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "❋暎"
+      },
+      "selectionId" : "紤巢洹斤",
+      "stake" : {
+        "value" : {
+          "amount" : 8192631999513420702.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 592.8674
+      }
+    },
+    "winner" : true,
+    "reason" : "멋⾈∰᷑専ߙ㊍繡鳴谶䗅휐砠彿㳳븤"
+  },
+  {
+    "betId" : {
+      "value" : "夬"
+    },
+    "state" : {
+      "Uninitialized" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "넞퉞"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : ""
+      },
+      "selectionId" : "ﮭ뢴",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "듲⣗杂鿜෯퇈뗆뭶ꄿ澝苻"
+  },
+  {
+    "betId" : {
+      "value" : "㖸紡ᤍ尜懛㇪乔"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "洧",
+      "stake" : {
+        "value" : {
+          "amount" : 2.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 696.6472
+      }
+    },
+    "winner" : false,
+    "reason" : "궞볡惻虹朞藽챰砕獥ꆕ慪藎㥋癊㼃侍"
+  },
+  {
+    "betId" : {
+      "value" : "漜㪓︧䖶냰㘅❕⯤渮ؒഽꌳ｛蔔従"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "麁㩽"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : ""
+      },
+      "selectionId" : "팆ख折",
+      "stake" : {
+        "value" : {
+          "amount" : 1.71,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 333.2210
+      }
+    },
+    "winner" : true,
+    "reason" : "ᠿ"
+  },
+  {
+    "betId" : {
+      "value" : "庰齆環㷶띱ᴿ폹뢦呫䃻"
+    },
+    "state" : {
+      "Resettled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "欘मؕ㠿"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "寺"
+      },
+      "selectionId" : "ᘉ蘧",
+      "stake" : {
+        "value" : {
+          "amount" : 0.07,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 768.5408
+      }
+    },
+    "winner" : true,
+    "reason" : "⁲ᛐ玁ﶾ짟뺖퀇蘶⼢鰊"
+  },
+  {
+    "betId" : {
+      "value" : "쟔︩ᨒ籑鳤８糲㵪ͭ䋥뢍荗圑殀᫻쩜᫟漍孬"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "뗩"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "菭汅"
+      },
+      "selectionId" : "䰥࢓쥜",
+      "stake" : {
+        "value" : {
+          "amount" : 1.19,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "딁⚂ޑ꽋獜⹨摅撧螟㄃셟긳蔭蕛"
+  },
+  {
+    "betId" : {
+      "value" : "䬟ఓ㟝"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "넁"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : ""
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 5420906857364676062.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 776.5601
+      }
+    },
+    "winner" : false,
+    "reason" : "귟㍎⟦幍抖즛苈볹幤閬觛粪쑢"
+  },
+  {
+    "betId" : {
+      "value" : "令潤㨡ᩭൺ잟쿑愘泵ꏝ⩕᡺칱"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "쏔"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "郡"
+      },
+      "selectionId" : "忺뛝⡄",
+      "stake" : {
+        "value" : {
+          "amount" : 15507930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 614.7984
+      }
+    },
+    "winner" : true,
+    "reason" : "핡⒟뎘䨀䎩宺⊑鶙饝粛"
+  },
+  {
+    "betId" : {
+      "value" : "໣❔"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ᨓ"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "腨"
+      },
+      "selectionId" : "간圸",
+      "stake" : {
+        "value" : {
+          "amount" : 4530801830510506235.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "귋↿⭓⼓ī䔧孏ꉋ肵퍋ꚛ赕"
+  },
+  {
+    "betId" : {
+      "value" : "﹯ᗢ➞䵳䂏갠藼⤋⚠"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "뀌"
+      },
+      "selectionId" : "銴䳼넻",
+      "stake" : {
+        "value" : {
+          "amount" : 18894460376891925826244488518591500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 497.5227
+      }
+    },
+    "winner" : false,
+    "reason" : "㽆༾磐톂힑玻﹄次䷐ˊ쇹ⵏ憺ᮞ"
+  },
+  {
+    "betId" : {
+      "value" : "Ǝ"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "ċ蓝䝜䁘"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "䰣嘃"
+      },
+      "selectionId" : "淸",
+      "stake" : {
+        "value" : {
+          "amount" : 0.60,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : "젶꣄膫㎕휮ᗃ楻䖹"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "௤朆᠐ꓡ"
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "帞"
+      },
+      "selectionId" : "",
+      "stake" : {
+        "value" : {
+          "amount" : 5781979248706486265.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 146.3477
+      }
+    },
+    "winner" : true,
+    "reason" : "괍樃뼭಍ﷷ䄒푳ꁅ暏뷙輗ꠈ"
+  },
+  {
+    "betId" : {
+      "value" : "쥏䣀艴"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "茖"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "쒁亮"
+      },
+      "selectionId" : "瑄녺",
+      "stake" : {
+        "value" : {
+          "amount" : 2115637397007205499458242890297749807000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 717.9876
+      }
+    },
+    "winner" : true,
+    "reason" : "퐚啻軧軭뎨筤䠊된ⴰ碙쌊⺆ɢᠫ핿ᶝ큅閷ࢻ"
+  },
+  {
+    "betId" : {
+      "value" : "톒칶"
+    },
+    "state" : {
+      "Pushed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "稃"
+      },
+      "selectionId" : "櫥︱",
+      "stake" : {
+        "value" : {
+          "amount" : 1.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 415.1783
+      }
+    },
+    "winner" : false,
+    "reason" : null
+  },
+  {
+    "betId" : {
+      "value" : ""
+    },
+    "state" : {
+      "Settled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "打鴇"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "Է"
+      },
+      "selectionId" : "앓",
+      "stake" : {
+        "value" : {
+          "amount" : 3.93,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : true,
+    "reason" : "츅᎗⑴ឋ꬛跎⚹ꭺ沯ꍐӎ㚷"
+  },
+  {
+    "betId" : {
+      "value" : "龇剰鰷刨뛶넠"
+    },
+    "state" : {
+      "Cancelled" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "BETGENIUS",
+        "id" : "쑿"
+      },
+      "selectionId" : "⣬",
+      "stake" : {
+        "value" : {
+          "amount" : 922337203685477580800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 48.7797
+      }
+    },
+    "winner" : true,
+    "reason" : "릎䭥羒ⱢꞜ뻠"
+  },
+  {
+    "betId" : {
+      "value" : "㵮褍ᄄ"
+    },
+    "state" : {
+      "Failed" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : ""
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "嗾뽴"
+      },
+      "selectionId" : "樕",
+      "stake" : {
+        "value" : {
+          "amount" : 4998808024379565248.00,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 326.0301
+      }
+    },
+    "winner" : false,
+    "reason" : "餸㣉付理྾⠥螋紝ኡ廵믏࣎◈큀ࡨ璭梇⢥ӳ"
+  },
+  {
+    "betId" : {
+      "value" : "ሏ恘춻輽຺躮撡捊袓넩杝"
+    },
+    "state" : {
+      "Opened" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "䄮"
+      },
+      "marketId" : {
+        "provider" : "PHOENIX",
+        "id" : "჆"
+      },
+      "selectionId" : "ฉ䄝",
+      "stake" : {
+        "value" : {
+          "amount" : 2.82,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 29.3691
+      }
+    },
+    "winner" : true,
+    "reason" : "돓姱眬ĉ㈧皜ﯙ빿"
+  },
+  {
+    "betId" : {
+      "value" : "ℤ"
+    },
+    "state" : {
+      "Voided" : {
+        
+      }
+    },
+    "betData" : {
+      "punterId" : {
+        "value" : "섞"
+      },
+      "marketId" : {
+        "provider" : "ODDIN",
+        "id" : "栁"
+      },
+      "selectionId" : "䠦誢齣ﳏ",
+      "stake" : {
+        "value" : {
+          "amount" : 0.85,
+          "currency" : {
+            
+          }
+        }
+      },
+      "odds" : {
+        "value" : 1.0100
+      }
+    },
+    "winner" : false,
+    "reason" : "䎐ﻖ炠샏ᩑ때㥌뇿璢㈝䓱ꗡ仈"
+  }
+]

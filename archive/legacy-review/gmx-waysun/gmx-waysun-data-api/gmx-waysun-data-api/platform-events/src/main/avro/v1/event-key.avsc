@@ -1,0 +1,16 @@
+{
+  "namespace": "stella.dataapi.platformevents",
+  "type": "record",
+  "name": "EventKey",
+  "fields": [
+    {
+      "name": "projectId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "userId",
+      "type": "string"
+    }
+  ]
+}

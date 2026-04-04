@@ -1,0 +1,19 @@
+replicaCount: 1
+resources:
+  limits:
+    cpu: 500m
+    memory: 2048Mi
+  requests:
+    cpu: 500m
+    memory: 2048Mi
+kafka:
+  bootstrapServers: "PLAINTEXT://kafka.streaming.svc.cluster.local:9092"
+cp-schema-registry:
+  url: "http://cp-schema-registry.streaming.svc.cluster.local:8081"
+eeg_pvc_cfs:
+  capacity: 100Gi
+  host:  10.17.105.17
+  permissionGroupId:  pgroup-5nnsx6up
+  subnetId:  subnet-mqulbblm
+  vpcId:  vpc-fc428r6x
+  region:  eu-frankfurt-1

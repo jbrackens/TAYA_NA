@@ -1,0 +1,6 @@
+dependencies:
+- name: lenses
+  repository: https://helm.repo.lenses.io
+  version: 4.3.19
+digest: sha256:818e092ff66389349cf27d83ee2305667a0da4bd025e1f8bab50556b76308d6a
+generated: "2022-05-20T23:59:00.498555+02:00"

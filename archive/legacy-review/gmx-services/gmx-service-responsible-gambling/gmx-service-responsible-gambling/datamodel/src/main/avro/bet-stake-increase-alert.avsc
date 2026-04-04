@@ -1,0 +1,11 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "BetStakeIncreaseAlert",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    }
+  ]
+}

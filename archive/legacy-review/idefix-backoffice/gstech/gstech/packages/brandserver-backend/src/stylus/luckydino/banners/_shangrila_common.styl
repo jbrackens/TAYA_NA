@@ -1,0 +1,107 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$shangrila_common_logo_name = 'shangrila_common_logo';
+$shangrila_common_logo_x = 0px;
+$shangrila_common_logo_y = 304px;
+$shangrila_common_logo_offset_x = 0px;
+$shangrila_common_logo_offset_y = -304px;
+$shangrila_common_logo_width = 420px;
+$shangrila_common_logo_height = 154px;
+$shangrila_common_logo_total_width = 507px;
+$shangrila_common_logo_total_height = 458px;
+$shangrila_common_logo_image = 'shangrila_common_b.png';
+$shangrila_common_logo = 0px 304px 0px -304px 420px 154px 507px 458px 'shangrila_common_b.png' 'shangrila_common_logo';
+$shangrila_common_monk_name = 'shangrila_common_monk';
+$shangrila_common_monk_x = 0px;
+$shangrila_common_monk_y = 0px;
+$shangrila_common_monk_offset_x = 0px;
+$shangrila_common_monk_offset_y = 0px;
+$shangrila_common_monk_width = 507px;
+$shangrila_common_monk_height = 300px;
+$shangrila_common_monk_total_width = 507px;
+$shangrila_common_monk_total_height = 458px;
+$shangrila_common_monk_image = 'shangrila_common_b.png';
+$shangrila_common_monk = 0px 0px 0px 0px 507px 300px 507px 458px 'shangrila_common_b.png' 'shangrila_common_monk';
+$spritesheet_width = 507px;
+$spritesheet_height = 458px;
+$spritesheet_image = 'shangrila_common_b.png';
+$spritesheet_sprites = $shangrila_common_logo $shangrila_common_monk;
+$spritesheet = 507px 458px 'shangrila_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

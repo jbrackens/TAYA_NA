@@ -1,0 +1,1 @@
+alter table reward_definitions add column internal boolean not null default false;

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="init_currency">
+        <createTable tableName="currencies">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="public_id" type="uuid">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verbose_name" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="symbol" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="associated_projects" type="uuid[]">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="currency_changelog">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="currency_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_currencies_changelog_currency_id"
+                             referencedTableName="currencies"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="user_project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_public_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verbose_name" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="symbol" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="associated_projects" type="uuid[]">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="currencies" indexName="idx_currencies_search_one">
+            <column name="public_id"/>
+        </createIndex>
+
+        <createIndex tableName="currencies" indexName="idx_currencies_search_one_for_project">
+            <column name="public_id"/>
+            <column name="associated_projects"/>
+        </createIndex>
+
+        <createIndex tableName="currencies" indexName="idx_currencies_search_for_project">
+            <column name="associated_projects"/>
+        </createIndex>
+
+        <createIndex tableName="currency_changelog" indexName="idx_currency_changelog_search">
+            <column name="currency_public_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

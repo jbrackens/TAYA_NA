@@ -1,0 +1,189 @@
+
+// styles for banners that apear in caurasells and the promotion page
+.promo-strip-btn{
+  @include brand-button(15, false, 'bottom');
+}
+.ag-promo .promo-strip-btn,
+.super-banner-image-container .promo-strip-btn{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+}
+.promo-terms-text{
+  color:white;
+  font-family:$brand-font--body;
+  font-size:8px;
+  text-align:center;
+  line-height:10px;
+  .IsDesktop &{
+    font-size:11px;
+    line-height:13px;
+  }
+}
+
+.super-banner-image-container .promo-terms-text-container,
+.ag-promo .promo-terms-text-container{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  padding:0px;
+  text-align:center;
+  .promo-terms-text{
+    max-width:400px;
+    margin:0 auto;
+    padding:5px 10px 2px 10px;
+  }
+  .promo-strip-btn{
+    position:relative;
+  }
+  &.bg-fade{
+    padding-top: 5px;
+    background: rgba(0,0,0,0.7);
+  }
+}
+.event-banner-container .event-cta,
+.ag-promo .event-cta{
+  position:relative;
+}
+
+.IsDesktop .casino-panel .super-banner-image-container{
+  .promo-strip-btn{
+    @include brand-button(20, false, 'bottom');
+  }
+  &:hover .promo-strip-btn{
+    background: $brand-primary--hover;
+  }
+}
+
+.super-banner-image-container:hover .promo-strip-btn{
+  background: $brand-primary--hover;
+}
+
+.ag-page {
+    max-width: 1688px;
+    margin: 0 auto;
+}
+
+.ag-row{
+  display:flex;
+  flex-direction:row;
+  .ag-promo-small{
+    flex: 1 1 0;
+    margin-left:4px;
+    &:first-of-type{
+      margin-left:0;
+    }
+  }
+}
+
+.ag-promo {
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-top:4px;
+    font-size:0;
+    &-image {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    a{
+      display:block;
+      position:relative;
+      font-size:0;
+    }
+    &.force-ar a{
+      padding-bottom:50%;
+      overflow:hidden;
+      .ag-promo-image{
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        height: 100%;
+        max-width: none;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .promo-strip-btn{
+        position:absolute;
+        bottom:0;
+        left:0;
+        right:0;
+      }
+    }
+}
+
+.IsMobile{
+  .ag-promo-wide a{
+    padding-bottom:50%;
+    .ag-promo-image{
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      max-width: none;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+  .ag-promo-wide{
+    margin:0;
+  }
+  .ag-row{
+    flex-direction:column;
+    .ag-promo-small{
+      margin:0;
+      flex-basis:100%;
+    }
+    .ag-promot{
+      margin-bottom:5px;
+    }
+  }
+}
+
+html.IsMobile #goal-games-home-panel,
+html.IsTablet #goal-games-home-panel{
+  .super-banner-slide{
+    width:350px;
+    height:240px;
+  }
+  .super-banner-image-container{
+    height:135px;
+  }
+  .goal-game-ribbon{
+    margin-top:95px;
+    font-size:12px;
+    padding:2px 4px;
+  }
+}
+.goal-game-ribbon {
+  background: #d11e1e;
+  color: white;
+  text-transform: uppercase;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 5px 10px;
+  display: inline-block;
+  margin: 0 auto;
+  margin-top: 150px;
+}
+.super-banner-free-html{
+  text-align:center;
+}
+
+.promo-message-block{
+    background: #E2C122;
+    color: #0F192A;
+    margin: 4px 0 0;
+    font-size: 14px;
+    text-align: center;
+    font-weight:900;
+    text-transform:uppercase;
+    line-height:26px;
+    .IsMobile &{
+      margin:0;
+      line-height:16px;
+      padding:5px;
+    }
+}

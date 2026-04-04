@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schedule generated_at="2021-04-19T09:41:50">
+    <sport_event id="od:match:29424" name="Phoenix Gaming vs Aster.Aries" scheduled="2021-04-19T07:00:00" liveodds="not_available">
+        <tournament id="od:tournament:1285" name="Dota Pro Circuit 2021: Season 2 - China Lower Division" scheduled="2021-04-11T22:00:00" abbreviation="DPC CN Lower S2">
+            <tournament_length start_date="2021-04-12"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:2129" name="Phoenix Gaming" abbreviation="Phoenix Gaming" underage="0" qualifier="home"></competitor>
+            <competitor id="od:competitor:651" name="Aster.Aries" abbreviation="Aster.Aries" underage="0" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+</schedule>

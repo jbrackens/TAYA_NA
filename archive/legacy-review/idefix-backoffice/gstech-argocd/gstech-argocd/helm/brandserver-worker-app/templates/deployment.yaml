@@ -1,0 +1,144 @@
+{{- $secretname := .Values.fullnameOverride -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "brandserver-worker-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "brandserver-worker-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "brandserver-worker-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "brandserver-worker-app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "brandserver-worker-app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+      {{- if .Values.emptyDir }}
+        - name: {{ .Values.emptyDir.name }}
+          emptyDir: {}
+      {{- end }}
+      {{- if .Values.persistence }}
+        - name: {{ .Values.persistence.name  }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim }}
+      {{- end }}
+      {{- range $volume := .Values.configmapVolumes }}
+        - name: {{ $volume.name }}
+          configMap:
+            name: {{ $volume.name }}
+      {{- end }}
+      {{- range $volume := .Values.secretVolumes }}
+        - name: {{ $volume.name }}
+          secret:
+            secretName: {{ $volume.name }}
+      {{- end }}
+      containers:
+        - name: {{ include "brandserver-worker-app.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.command }}
+          command: ["sh"]
+          args:
+            - "-c"
+            - {{ .Values.command | quote }}
+          {{- end }}
+          ports:
+           - name: app
+             containerPort: {{ .Values.containerPort }}
+             protocol: TCP
+          {{- if .Values.service.admin }}
+           - name: admin
+             containerPort: {{ .Values.adminPort }}
+             protocol: TCP
+          {{- end }}
+          {{- if .Values.service.https }}
+           - name: https
+             containerPort: {{ .Values.httpsPort }}
+             protocol: TCP
+          {{- end }}
+          {{- range $key, $value := .Values.extraTCPPorts }}
+           - name: {{ $key }}
+             containerPort: {{ $value }}
+             protocol: TCP
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+{{- if .Values.emptyDir }}
+{{ toYaml .Values.emptyDir.mounts | indent 12 }}
+{{- end }}
+            {{- range $volume := .Values.configmapVolumes }}
+            - name: {{ $volume.name }}
+              mountPath: {{ $volume.mountPath }}
+              subPath: {{ $volume.subPath | default "" }}
+            {{- end }}
+            {{- range $volume := .Values.secretVolumes }}
+            - name: {{ $volume.name }}
+              mountPath: {{ $volume.mountPath }}
+              subPath: {{ $volume.subPath | default "" }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          {{- range $key, $value := .Values.env }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+          {{- end }}
+          {{- range $key, $value := .Values.secretEnv }}
+            {{ range $k, $v := $value }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-external-secret" $secretname }}
+                  key: {{ printf "%s" $v }}
+            {{ end}}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                    - {{ include "brandserver-worker-app.fullname" . }}
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

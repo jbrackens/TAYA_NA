@@ -1,0 +1,321 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Brandserver Backend API"
+basePath: "/api"
+tags:
+- name: "limits api"
+schemes:
+- "https"
+- "http"
+paths:
+  /limits:
+    get:
+      tags:
+      - "limits api"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/LimitsResponse"
+        401:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+    post:
+      tags:
+      - "limits api"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: true
+        schema:
+          $ref: "#/definitions/LimitRequest"
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/LimitResponse"
+        401:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+  /limits/{limitId}:
+    delete:
+      tags:
+      - "limits api"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "limitId"
+        type: "string"
+        required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/LimitResponse"
+        401:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+  /limits/{limitId}/anonym:
+    delete:
+      tags:
+      - "limits api"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "limitId"
+        type: "string"
+        required: true
+      responses:
+        200:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        401:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+        500:
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+  /api/subscription-v2:
+    get:
+      tags:
+      - subscription
+      parameters:
+      - in: query
+        name: token
+        type: string
+        required: false
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GetSubscriptionResponse"
+    put:
+      tags:
+      - subscription
+      parameters:
+      - in: query
+        name: token
+        type: string
+        required: false
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/UpdateSubscriptionBody"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+  /api/subscription-v2/snooze:
+    post:
+      tags:
+      - subscription
+      parameters:
+      - in: query
+        name: token
+        type: string
+        required: false
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: "#/definitions/SnoozeSubscriptionBody"
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: "#/definitions/GeneralResponse"
+definitions:
+  LimitsResponse:
+    type: "object"
+    required:
+    - "limits"
+    - "minDepositLimit"
+    properties:
+      minDepositLimit:
+        type: "number"
+        format: "Cents"
+      limits:
+        type: "array"
+        items:
+          type: "object"
+          required:
+          - "limitId"
+          - "expires"
+          - "limitType"
+          - "isPermanent"
+          - "canBeCancelled"
+          - "isInternal"
+          properties:
+            limitId:
+              type: "string"
+              format: "Id"
+            expires:
+              type: "string"
+              format: "datetime"
+            limitType:
+              type: "string"
+              enum:
+              - loss
+              - deposit
+              - play
+              - timeout
+              - pause
+            limitPeriodType:
+              type: "string"
+              enum:
+              - monthly
+              - weekly
+              - daily
+            limitValue:
+              type: "number"
+              format: "Cents or Minutes"
+            limitLeft:
+              type: "number"
+              format: "Cents or Minutes"
+            limitDate:
+              type: "string"
+              format: "DateTime"
+            isPermanent:
+              type: "boolean"
+            canBeCancelled:
+              type: "boolean"
+            isInternal:
+              type: "boolean"
+  LimitRequest:
+    type: "object"
+    required:
+    - "limitLength"
+    - "limitType"
+    properties:
+      limitLength:
+        type: "number"
+        format: "Days"
+      limitType:
+        type: "string"
+        enum:
+        - loss
+        - deposit
+        - play
+        - timeout
+        - pause
+      limitPeriodType:
+        type: "string"
+        enum:
+        - monthly
+        - weekly
+        - daily
+      limitValue:
+        type: "number"
+        format: "Cents or Minutes"
+  LimitResponse:
+    required:
+    - "limitId"
+    - "expires"
+    - "limitType"
+    - "isPermanent"
+    - "canBeCancelled"
+    - "isInternal"
+    properties:
+      limitId:
+        type: "string"
+        format: "Id"
+      expires:
+        type: "string"
+        format: "datetime"
+      limitType:
+        type: "string"
+        enum:
+        - loss
+        - deposit
+        - play
+        - timeout
+        - pause
+      limitPeriodType:
+        type: "string"
+        enum:
+        - monthly
+        - weekly
+        - daily
+      limitValue:
+        type: "number"
+        format: "Cents or Minutes"
+      limitLeft:
+        type: "number"
+        format: "Cents or Minutes"
+      limitDate:
+        type: "string"
+        format: "DateTime"
+      isPermanent:
+        type: "boolean"
+      canBeCancelled:
+        type: "boolean"
+      isInternal:
+        type: "boolean"
+  SubscriptionOptionType:
+    type: string
+    enum: ['all', 'best_offers', 'new_games', 'none']
+  GetSubscriptionResponse:
+    type: object
+    properties:
+      email:
+        type: string
+      playerId:
+        type: number
+      emails:
+        $ref: '#/definitions/SubscriptionOptionType'
+      smses:
+        $ref: '#/definitions/SubscriptionOptionType'
+      emailsSnoozed:
+        type: boolean
+      smsesSnoozed:
+        type: boolean
+  UpdateSubscriptionBody:
+    type: object
+    properties:
+      emails:
+        $ref: '#/definitions/SubscriptionOptionType'
+      smses:
+        $ref: '#/definitions/SubscriptionOptionType'
+  SnoozeSubscriptionBody:
+    type: object
+    required:
+    - "type"
+    properties:
+      "type":
+        type: string
+        enum: ['email', 'sms']
+      revertSnooze:
+        type: boolean
+  GeneralResponse:
+    type: "object"
+    required:
+    - "ok"
+    properties:
+      ok:
+        type: "boolean"
+      result:
+        type: "string"

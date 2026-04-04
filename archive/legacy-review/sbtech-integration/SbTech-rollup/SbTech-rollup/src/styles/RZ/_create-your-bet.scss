@@ -1,0 +1,88 @@
+
+.IsDesktop .your-bet-switch-desktop{
+  background:$brand-base;
+}
+.yourbet-minibetslip-block-root{
+  //background:white;
+}
+.IsDesktop sb-comp{
+  .rj-yourbet__desktop-message{
+    border-radius:0px;
+    margin-top:0px;
+  }
+  .rj-yourbet__desktop-wrapper{
+    margin:0px;
+  }
+  .rj-yourbet__desktop-header{
+    line-height:48px;
+    font-size:14px;
+    text-transform: uppercase;
+    display:block;
+    border-bottom:3px solid $brand-primary;
+    width:50%;
+    text-align:center;
+    font-family: $brand-font--body;
+    font-weight:800;
+    &:after{
+      display:none;
+    }
+  }
+  .rj-yourbet{
+    border-top:0px;
+  }
+  .rj-yourbet__main{
+    padding:12px;
+  }
+  .rj-yourbet__summary-selections{
+    //color:$brand-base;
+  }
+  .rj-yourbet__btn{
+    border-radius:0px;
+  }
+  .rj-yourbet__stake {
+    height:40px;
+  }
+  .rj-yourbet__stake .rj-yourbet__btn{
+    background-color:$brand-base-light;
+    height:40px;
+    width:40px;
+    padding: 0 0 3px 0;
+  }
+  .i-o-yourbet-minus{
+    background-image:url("/imgs/i-v2/o/betslip/alt/minus.svg");
+  }
+  .i-o-yourbet-plus{
+    background-image:url("/imgs/i-v2/o/betslip/alt/plus.svg");
+  }
+
+  .rj-yourbet__stake-input{
+    background-color:#ffffff;
+    width:40px;
+  }
+  .rj-yourbet__footer{
+    padding:0 10px;
+  }
+  .rj-yourbet__stake + .rj-yourbet__btn{
+    @include brand-button(15);
+    margin:15px auto 10px;
+  }
+  .rj-yourbet__desktop-placeholder-description{
+    font-size:14px;
+    height:auto;
+    padding: 1em 1em 2em 1em;
+  }
+  .rj-yourbet__desktop-placeholder-flow{
+    padding:0 10px;
+  }
+}
+
+.IsDesktop .your-bet-switch-desktop{
+  background:$brand-base;
+}
+.IsDesktop .your-bet-switch-desktop .switchLabel{
+  color:white;
+}
+.IsDesktop .market-groups-btns-wrap{
+  background:$brand-base;
+  margin:0px 0px 1px;
+}

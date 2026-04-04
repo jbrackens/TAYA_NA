@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$queensdaytilt_spinosaurus_common_blueknight_right_name = 'queensdaytilt_spinosaurus_common_blueknight_right';
+$queensdaytilt_spinosaurus_common_blueknight_right_x = 0px;
+$queensdaytilt_spinosaurus_common_blueknight_right_y = 137px;
+$queensdaytilt_spinosaurus_common_blueknight_right_offset_x = 0px;
+$queensdaytilt_spinosaurus_common_blueknight_right_offset_y = -137px;
+$queensdaytilt_spinosaurus_common_blueknight_right_width = 253px;
+$queensdaytilt_spinosaurus_common_blueknight_right_height = 239px;
+$queensdaytilt_spinosaurus_common_blueknight_right_total_width = 474px;
+$queensdaytilt_spinosaurus_common_blueknight_right_total_height = 376px;
+$queensdaytilt_spinosaurus_common_blueknight_right_image = 'queensdaytilt_spinosaurus_common_b.png';
+$queensdaytilt_spinosaurus_common_blueknight_right = 0px 137px 0px -137px 253px 239px 474px 376px 'queensdaytilt_spinosaurus_common_b.png' 'queensdaytilt_spinosaurus_common_blueknight_right';
+$queensdaytilt_spinosaurus_common_logo_name = 'queensdaytilt_spinosaurus_common_logo';
+$queensdaytilt_spinosaurus_common_logo_x = 0px;
+$queensdaytilt_spinosaurus_common_logo_y = 0px;
+$queensdaytilt_spinosaurus_common_logo_offset_x = 0px;
+$queensdaytilt_spinosaurus_common_logo_offset_y = 0px;
+$queensdaytilt_spinosaurus_common_logo_width = 474px;
+$queensdaytilt_spinosaurus_common_logo_height = 133px;
+$queensdaytilt_spinosaurus_common_logo_total_width = 474px;
+$queensdaytilt_spinosaurus_common_logo_total_height = 376px;
+$queensdaytilt_spinosaurus_common_logo_image = 'queensdaytilt_spinosaurus_common_b.png';
+$queensdaytilt_spinosaurus_common_logo = 0px 0px 0px 0px 474px 133px 474px 376px 'queensdaytilt_spinosaurus_common_b.png' 'queensdaytilt_spinosaurus_common_logo';
+$queensdaytilt_spinosaurus_common_queen_left_name = 'queensdaytilt_spinosaurus_common_queen_left';
+$queensdaytilt_spinosaurus_common_queen_left_x = 257px;
+$queensdaytilt_spinosaurus_common_queen_left_y = 137px;
+$queensdaytilt_spinosaurus_common_queen_left_offset_x = -257px;
+$queensdaytilt_spinosaurus_common_queen_left_offset_y = -137px;
+$queensdaytilt_spinosaurus_common_queen_left_width = 192px;
+$queensdaytilt_spinosaurus_common_queen_left_height = 206px;
+$queensdaytilt_spinosaurus_common_queen_left_total_width = 474px;
+$queensdaytilt_spinosaurus_common_queen_left_total_height = 376px;
+$queensdaytilt_spinosaurus_common_queen_left_image = 'queensdaytilt_spinosaurus_common_b.png';
+$queensdaytilt_spinosaurus_common_queen_left = 257px 137px -257px -137px 192px 206px 474px 376px 'queensdaytilt_spinosaurus_common_b.png' 'queensdaytilt_spinosaurus_common_queen_left';
+$spritesheet_width = 474px;
+$spritesheet_height = 376px;
+$spritesheet_image = 'queensdaytilt_spinosaurus_common_b.png';
+$spritesheet_sprites = $queensdaytilt_spinosaurus_common_blueknight_right $queensdaytilt_spinosaurus_common_logo $queensdaytilt_spinosaurus_common_queen_left;
+$spritesheet = 474px 376px 'queensdaytilt_spinosaurus_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

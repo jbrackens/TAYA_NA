@@ -1,0 +1,1 @@
+../../k8s-operations/does_keycloak_user_exist.sh

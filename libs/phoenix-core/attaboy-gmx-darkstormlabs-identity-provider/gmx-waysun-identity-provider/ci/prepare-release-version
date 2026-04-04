@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail -u
+export RELEASE_VERSION_SEGMENT_TO_UPDATE=${1-patch} # One of: major, minor. patch is default
+
+if [ $RELEASE_VERSION_SEGMENT_TO_UPDATE == 'major' ]
+then
+  RELEASE_VERSION_TEMPLATE='v${parsedVersion.nextMajorVersion}.0.0'
+elif [ $RELEASE_VERSION_SEGMENT_TO_UPDATE == 'minor' ]
+then
+  RELEASE_VERSION_TEMPLATE='v${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.0'
+else
+  RELEASE_VERSION_TEMPLATE='v${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}'
+fi
+
+RELEASE_VERSION=$(./mvnw build-helper:parse-version \
+  -Dx=$RELEASE_VERSION_TEMPLATE \
+  org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate \
+  -Dexpression=x \
+  -q \
+  -DforceStdout)
+
+git tag $RELEASE_VERSION

@@ -1,0 +1,67 @@
+nameOverride: "prod-sn-affiliate-cms"
+fullnameOverride: "prod-sn-affiliate-cms"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  name: "sn-affiliate-cms"
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-prod-sn-affiliate-cms-s3
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3000
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-sn-affiliate-cms
+  hosts:
+  - host: cms-api.sportnation.bet
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: prod-sn-affiliate-cms
+      servicePort: 3000
+
+  annotations: {}
+
+  tls: []
+
+env:
+  DATABASE_HOST: db-sn-affiliate-cms.prod.eeg.viegg.net
+  DATABASE_PORT: 5432
+  DATABASE_USERNAME: sn_affiliate
+  DATABASE_NAME: sn_affiliate
+  DATABASE_SSL: false
+  HOST: "0.0.0.0"
+  PORT: 3000
+  STRAPI_TELEMETRY_DISABLED: true
+  NODE_ENV: "production"
+  ENABLE_S3_UPLOAD: true
+  AWS_BUCKET_NAME: "prod-sn-affiliate-cms-content"
+  AWS_REGION: "eu-central-1"
+secretEnv:
+  DATABASE_PASSWORD:
+    prod-sn-affiliate-cms: postgres-password
+  JWT_SECRET:
+    prod-sn-affiliate-cms: jwt-secret
+  ADMIN_JWT_SECRET:
+    prod-sn-affiliate-cms: admin-jwt-secret
+  API_TOKEN_SALT:
+    prod-sn-affiliate-cms: api-token-salt
+  APP_KEYS:
+    prod-sn-affiliate-cms: app-keys

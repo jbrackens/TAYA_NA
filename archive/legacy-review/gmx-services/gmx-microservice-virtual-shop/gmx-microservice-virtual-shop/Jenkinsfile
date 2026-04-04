@@ -1,0 +1,247 @@
+#!groovy
+void notifyGithub(String description, String status) {
+  status = status ?: 'SUCCESS'
+  githubNotify(
+    description: description,
+    context: env.GITHUB_NOTIFICATION_CONTEXT,
+    account: env.GITHUB_ACCOUNT,
+    repo: env.GITHUB_REPO,
+    credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+    targetUrl: env.RUN_DISPLAY_URL,
+    status: status
+  )
+}
+
+void withAwsEcrDockerRegistry(Closure<Void> block) {
+  docker.withRegistry("https://${env.AWS_ECR_HOST}", env.AWS_ECR_CREDS_ID) {
+    block()
+  }
+}
+
+
+// build status constants: https://www.jenkins.io/doc/book/glossary/#build-status
+def notifySlack(String branch, String buildStatus) {
+//   if (branch in ['develop', 'master']) {
+
+    // Build status of null means success.
+    buildStatus = buildStatus ?: 'SUCCESS'
+
+    def color
+
+    if (buildStatus == 'STARTED') {
+      color = '#D4DADF'
+    } else if (buildStatus == 'SUCCESS') {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'STABLE') {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'UNSTABLE') {
+      color = '#FFFE89'
+    } else { // FAILED or ABORTED
+      color = '#FF9FA1'
+    }
+
+    def message = "${buildStatus}: <${env.RUN_DISPLAY_URL}|${env.JOB_NAME} #${env.BUILD_NUMBER}>"
+
+    slackSend(color: color, message: message, channel: env.SLACK_NOTIFICATION_CHANNEL)
+//   }
+}
+
+String shOutput(String cmd) {
+  return sh(script: cmd, returnStdout: true).trim()
+}
+
+void withGithubStatusUpdates(Closure<Void> block) {
+  gitStatusWrapper(
+    description: env.STAGE_NAME,
+    gitHubContext: env.GITHUB_NOTIFICATION_CONTEXT,
+    account: env.GITHUB_ACCOUNT,
+    repo: env.GITHUB_REPO,
+    credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+    targetUrl: env.RUN_DISPLAY_URL
+  ) {
+    block()
+  }
+}
+
+properties(
+  env.BRANCH_NAME == 'develop'
+    ? [disableConcurrentBuilds()]
+    : []
+)
+
+pipeline {
+  agent {
+    label 'ecs-ec2-agent-python3.8.8'
+  }
+
+  parameters {
+    booleanParam(name: 'SKIP_SAFETY', defaultValue: false, description: 'Force skip SAFETY')
+  }
+
+  environment {
+    COMMIT_ID = shOutput("git rev-parse HEAD")
+
+    // github status notifications
+    GITHUB_ACCOUNT = 'flipadmin'
+    GITHUB_REPO = 'gmx-microservice-virtual-shop'
+    GITHUB_API_TOKEN_CREDENTIALS_ID = 'CICD-GitHub-API-token'
+    GITHUB_NOTIFICATION_CONTEXT = 'Jenkins Build'
+    GITHUB_API_URL = "https://api.github.com/repos/${env.GITHUB_ACCOUNT}/${env.GITHUB_REPO}"
+    GITHUB_API_REFS_URL = "${env.GITHUB_API_URL}/git/refs"
+    GITHUB_API_TAGS_URL = "${env.GITHUB_API_URL}/git/tags"
+
+    SLACK_NOTIFICATION_CHANNEL = '#ci-gmx-deployment'
+    ECR_IMAGE_TAG_PREFIX = shOutput('date +%Y%m%d_%H%M')
+
+    // AWS ECR
+    AWS_ECR_ACCOUNT_ID = '259420793117'
+    AWS_ECR_REGION = 'eu-west-1'
+    AWS_ECR_HOST = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+    AWS_ECR_CREDS_ID = "ecr:${env.AWS_ECR_REGION}:ecr-fs-mgmt"
+    AWS_ECR_NAME = "gmx-microservices/virt-shop"
+
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        notifySlack(env.BRANCH_NAME, 'STARTED')
+
+        withGithubStatusUpdates {
+          script {
+            currentBuild.displayName = "#${env.BUILD_NUMBER} for ${env.BRANCH_NAME}"
+          }
+          checkout([
+            $class                           : 'GitSCM',
+            branches                         : scm.branches,
+            doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+            extensions                       : [[$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: '']],
+            userRemoteConfigs                : scm.userRemoteConfigs,
+          ])
+        }
+      }
+    }
+
+    stage('Installing deps') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'pipenv install --ignore-pipfile --dev --pre'
+        }
+      }
+    }
+
+    stage('CQ: Autoflake') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'pipenv run ./ci/010_autoflake.sh check'
+        }
+      }
+    }
+
+    stage('CQ: Vulture') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'pipenv run ./ci/020_vulture.sh check'
+        }
+      }
+    }
+
+    stage('CQ: Black') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'pipenv run ./ci/030_black.sh check'
+        }
+      }
+    }
+    stage('CQ: iSort') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'pipenv run ./ci/040_isort.sh check'
+        }
+      }
+    }
+    stage('CQ: Bandit') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'pipenv run ./ci/050_bandit.sh check'
+        }
+      }
+    }
+    stage('CQ: Safety') {
+      when {
+        not {
+          expression { return params.SKIP_SAFETY }
+        }
+      }
+      steps {
+        script {
+          try {
+            sh 'pipenv run ./ci/060_safety.sh check'
+          } catch (err) {
+            currentBuild.result = 'UNSTABLE'
+            notifyGithub("Found unsafe packages! ${err}", 'FAILURE')
+            notifySlack("Found unsafe packages! ${err}", currentBuild.result)
+          }
+        }
+      }
+    }
+
+    stage('Adding build tag to git') {
+      when {
+        anyOf {
+          branch 'develop'
+          branch 'master'
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          withCredentials([
+            usernamePassword(
+              credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+              usernameVariable: 'GITHUB_USERNAME',
+              passwordVariable: 'GITHUB_PASSWORD'
+            )
+          ]) {
+            sh "curl -f -X POST -d '{\"ref\": \"refs/tags/${env.ECR_IMAGE_TAG_PREFIX}\", \"sha\":\"${env.COMMIT_ID}\"}' -H \"Accept: application/vnd.github.v3+json\" -u \"username:${GITHUB_PASSWORD}\" ${env.GITHUB_API_REFS_URL}"
+          }
+        }
+      }
+    }
+
+    stage('Build & Push image - FS AWS') {
+      when {
+        anyOf {
+          branch 'develop'
+          branch 'master'
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          withAwsEcrDockerRegistry {
+            script{
+              docker.build(
+                "${env.AWS_ECR_NAME}:${env.ECR_IMAGE_TAG_PREFIX}"
+              ).push(
+                "${env.ECR_IMAGE_TAG_PREFIX}"
+              )
+            }
+          }
+        }
+      }
+    }
+   }
+
+  post {
+    success {
+      // This is to ensure that the name of the last executed stage
+      // doesn't linger in GitHub's CI status once the pipeline is complete.
+      notifyGithub('Complete', 'SUCCESS')
+    }
+
+    always {
+      notifySlack(env.BRANCH_NAME, currentBuild.result)
+    }
+  }
+}
+

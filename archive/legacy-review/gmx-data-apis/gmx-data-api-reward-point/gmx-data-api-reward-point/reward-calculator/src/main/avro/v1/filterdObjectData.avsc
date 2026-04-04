@@ -1,0 +1,67 @@
+{
+  "type": "record",
+  "name": "FilteredObjectData",
+  "namespace": "net.flipsports.gmx.filtering.api",
+  "fields": [
+        {
+          "name": "external_transaction_id",
+          "type": "string"
+        },
+        {
+              "name": "external_user_id",
+              "type": "string"
+        },
+        {
+          "name": "brand",
+          "type": "long"
+        },
+        {
+          "name": "brandName",
+          "type": "string"
+        },
+        {
+          "name": "betType",
+          "type": "long"
+        },
+        {
+          "name": "betTypeName",
+          "type": "string"
+        },
+        {
+          "name": "betKind",
+          "type": "string"
+        },
+        {
+          "name": "numberOfBets",
+          "type": "long"
+        },
+        {
+          "name": "comboSize",
+          "type": "long"
+        },
+        {
+          "name": "calculatedAmount",
+          "type": "string"
+        },
+        {
+          "name": "betStatus",
+          "type": "long"
+        },
+        {
+          "name": "betStatusName",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "long"
+        },
+        {
+          "name": "additionalMessage",
+          "type": "string"
+        },
+        {
+          "name": "message",
+          "type": "string"
+        }
+    ]
+}

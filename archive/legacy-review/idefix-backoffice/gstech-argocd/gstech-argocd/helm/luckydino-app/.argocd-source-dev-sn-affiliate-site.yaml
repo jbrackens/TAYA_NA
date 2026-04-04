@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.repository
+    value: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/sn-affiliate-site
+    forcestring: true
+  - name: image.tag
+    value: beta-76943a2f1c590b27ea5b9516cb48f42285040ae9
+    forcestring: true

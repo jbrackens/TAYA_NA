@@ -1,0 +1,21 @@
+{
+	"Path": "phoenix-revival/auth",
+	"Main": true,
+	"Dir": "/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/go-platform/services/auth",
+	"GoMod": "/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/go-platform/services/auth/go.mod",
+	"GoVersion": "1.24.0"
+}
+{
+	"Path": "phoenix-revival/gateway",
+	"Main": true,
+	"Dir": "/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/go-platform/services/gateway",
+	"GoMod": "/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/go-platform/services/gateway/go.mod",
+	"GoVersion": "1.24.0"
+}
+{
+	"Path": "phoenix-revival/platform",
+	"Main": true,
+	"Dir": "/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/go-platform/modules/platform",
+	"GoMod": "/Users/johnb/Desktop/PhoenixBotRevival/Phoenix-Sportsbook-Combined/go-platform/modules/platform/go.mod",
+	"GoVersion": "1.24.0"
+}

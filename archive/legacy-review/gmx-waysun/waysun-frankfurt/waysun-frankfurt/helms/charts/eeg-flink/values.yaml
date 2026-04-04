@@ -1,0 +1,70 @@
+configuration:
+  cluster_id: flink-cluster
+  zookeeper_quorum: zookeeper.streaming.svc.cluster.local:2181
+  volume_pvc: cfs-flink-pvc
+  directories:
+    logs: /data/flink-log-dir
+    envLogs: /data/env-log
+    storage: /data/recovery
+    blob: /data/blob-storage
+    rocksdb: /data/rocksdb-logs
+    checkpoints: /data/checkpoints
+    savepoints: /data/savepoints
+    archive:
+      jobmanager: /data/jobmanager-archive
+      historyserver: /data/historyserver-archive
+    web:
+      upload: /data/web-upload-dir
+      log: /data/web-log/web.log
+
+taskManager:
+  numberOfTaskSlots: 2
+  memoryProcessSize: 23500m
+  parallelism: 1
+  replicas: 2
+  deploy_on: streaming-nodes
+  customEnv: {}
+  resources:
+    limits:
+      cpu: 3000m
+      memory: 24Gi
+    requests:
+      cpu: 3000m
+      memory: 24Gi
+
+jobManager:
+  replicas: 2
+  deploy_on: streaming-nodes
+  memoryProcessSize: 800m
+  customEnv: {}
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 1Gi
+
+# this will be added to jobManager and taskManager
+# Example:
+#        - name: EEG_WAYSUN_KAFKA_SCHEMA_REGISTRY_URL
+#          valueFrom:
+#            configMapKeyRef:
+#              key: SCHEMA_REGISTRY_URL
+#              name: common
+#              optional: false
+#        - name: EEG_WAYSUN_KAFKA_BOOTSTRAP
+#          value: kafka.streaming:PORT
+commonCustomEnv: {}
+
+
+eeg_pvc_cfs:
+  capacity: # example: 100Gi
+  host:  # example: 10.17.105.17
+  permissionGroupId:  # example pgroup-5nnsx6up
+  subnetId:  # example  subnet-mqulbblm
+  vpcId:  # example  vpc-fc428r6x
+  region:  # example  eu-frankfurt-1
+  persistentVolumeName: cfs-flink-pv
+  persistentVolumeClaimName: cfs-flink-pvc
+  storageClassName: flink-cfs

@@ -1,0 +1,57 @@
+{
+    "type": "record",
+    "name": "SbTechBonusCode",
+    "namespace": "net.flipsports.gmx.virtualshop.sbtech.api",
+    "fields": [
+        {
+            "name": "company_id",
+            "type": "string"
+        },
+        {
+            "name": "user_sub",
+            "type": "string"
+        },
+        {
+            "name": "external_user_id",
+            "type": "string"
+        },
+        {
+            "name": "bonus_single",
+            "type": ["string", "int", "null"]
+        },
+        {
+            "name":"bonus_multiple",
+            "type":["null",
+                {
+                    "type":"array",
+                    "items":["string","int"]
+                }
+            ],
+            "default": null
+        },
+        {
+            "name": "bonus_value",
+            "type": ["string", "int", "null"]
+        },
+        {
+            "name": "bonus_type",
+            "type": "string"
+        },
+        {
+            "name": "amount",
+            "type": ["string","int"]
+        },
+        {
+            "name": "process_id",
+            "type": "string"
+        },
+        {
+            "name": "order_line_uid",
+            "type": "string"
+        },
+        {
+            "name": "transaction_id",
+            "type": "string"
+        }
+    ]
+}

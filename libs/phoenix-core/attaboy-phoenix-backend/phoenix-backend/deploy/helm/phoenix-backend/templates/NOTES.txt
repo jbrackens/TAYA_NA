@@ -1,0 +1,7 @@
+---
+
+1. Swagger documentation is available under https://dev-api.{{ .Values.ingress.baseDNS }}/docs
+
+2. Tail the logs of the application by running this command:
+  kubectl logs -f -lapp.kubernetes.io/name=phoenix-backend
+---

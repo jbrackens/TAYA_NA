@@ -1,0 +1,88 @@
+nameOverride: "dev-gstech-worker-service"
+fullnameOverride: "dev-gstech-worker-service"
+
+replicaCount: 15
+
+strategy:
+  type: Recreate
+
+autoscaling:
+  enabled: false
+  # minReplicas: 10
+  # maxReplicas: 50
+  # targetCPUUtilizationPercentage: 60
+  # targetMemoryUtilizationPercentage: 60
+
+# podDisruptionBudget:
+#   enabled: true
+#   minAvailable: 2
+
+# terminationGracePeriodSeconds: 600
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-dev-fasttrack-csv-s3
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 3700 # bull-board
+  metricsPort: 4001
+# extraTCPPorts:
+#   private-api: 3005
+
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+
+env:
+  NODE_ENV: development
+  MINIO_HOST: s3.eu-central-1.amazonaws.com
+  MINIO_BUCKET_NAME: bucket-backend.dev.eeg
+  MINIO_REGION: eu-central-1
+  MINIO_PORT: 443
+  MINIO_USE_SSL: "true"
+  REDIS_HOST: redis.dev.eeg.viegg.net
+  REDIS_PORT: 6379
+  POSTGRES_HOST: db-1.dev.eeg.viegg.net
+  POSTGRES_USER: gstech
+  POSTGRES_POOL_SIZE: 100
+  KAFKA_ENABLED: "true"
+  KAFKA_HOST: b-1.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-3.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com,b-2.luckydino-dev-kafka.bq58an.c3.kafka.eu-central-1.amazonaws.com
+  KAFKA_PORT: 9094
+  KAFKA_SSL: "true"
+  GAME_SERVER_URL: http://dev-gstech-walletserver-service:3004/api/v1
+  COMPLIANCE_SERVER_URL: http://dev-gstech-compliance-service:3009/api/v1
+  PAYMENT_SERVER_URL: http://dev-gstech-paymentserver-service:3007/api/v1
+  CAMPAIGN_SERVER_PRIVATE_URL: http://dev-gstech-campaignserver-backend-service:3014/api/v1
+  CONTENT_SERVER_URL: http://dev-gstech-contentserver-service:3017/api/v1
+  notifications_LD: http://dev-luckydino-backend-service:3000
+  notifications_CJ: http://dev-jefe-backend-service:3000
+  notifications_KK: http://dev-justwow-backend-service:3000
+  notifications_OS: http://dev-olaspill-backend-service:3000
+  notifications_FK: http://dev-hipspin-backend-service:3000
+  notifications_SN: http://dev-freshspins-backend-service:3000
+  notifications_VB: http://dev-vie-backend-service:3000
+  AFFILIATE_SYSTEM_URL: http://dev-affmore-backend-service:3034
+  OPTIMOVE_HOST: rds.dev.eeg.viegg.net
+  OPTIMOVE_DATABASE: idefix_optimove
+  OPTIMOVE_USER: idefix
+  FT_MIGRATION_S3: dev-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: us-east-1
+  BULL_BOARD_PATH: /bull
+  BULL_BOARD_PORT: 3700
+secretEnv:
+  POSTGRES_PASSWORD:
+    dev-gstech-worker-service: postgres-password
+  OPTIMOVE_PASSWORD:
+    dev-gstech-worker-service: optimove-postgres-password
+  MINIO_ACCESS_KEY:
+    dev-gstech-backend-service: minio-access-key
+  MINIO_SECRET_KEY:
+    dev-gstech-backend-service: minio-secret-key

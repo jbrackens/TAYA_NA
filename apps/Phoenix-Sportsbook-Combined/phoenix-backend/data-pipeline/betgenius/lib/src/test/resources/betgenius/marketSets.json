@@ -1,0 +1,205 @@
+[
+  {
+    "Header": {
+      "MessageFixtureOrder": 252775807,
+      "MessageGuid": "f0ebe7cb-7ba4-4e32-b803-4ffc1beeb5e6",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-19T18:45:01.9609209Z"
+    },
+    "MarketSet": {
+      "FixtureId": 8571625,
+      "Markets": [
+        {
+          "ExpiryUtc": "2021-10-19T16:00:00Z",
+          "Id": 100000004,
+          "InPlay": true,
+          "MarketType": {
+            "Id": 13124,
+            "IsHandicap": false,
+            "Name": "Match Up Winner"
+          },
+          "Name": "Match Up Winner",
+          "Selections": [
+            {
+              "CompetitorId": 863929,
+              "Decimal": 17.0,
+              "Denominator": 1,
+              "Id": 300000008,
+              "Name": "mousesports",
+              "Numerator": 16,
+              "Outcome": {
+                "Id": 1,
+                "Name": "Home"
+              },
+              "TradingStatus": "Trading"
+            },
+            {
+              "CompetitorId": 1122097,
+              "Decimal": 1.0303,
+              "Denominator": 33,
+              "Id": 300000009,
+              "Name": "Unicorns Of Love Sexy Edition",
+              "Numerator": 1,
+              "Outcome": {
+                "Id": 3,
+                "Name": "Away"
+              },
+              "TradingStatus": "Trading"
+            }
+          ],
+          "Sequence": 0,
+          "TradingStatus": "Suspended"
+        }
+      ]
+    }
+  },
+  {
+    "Header": {
+      "MessageFixtureOrder": 252775806,
+      "MessageGuid": "47aca918-4df5-46a4-aed5-ba32e74b1507",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-19T18:45:00.269457Z"
+    },
+    "MarketSet": {
+      "FixtureId": 8571625,
+      "Markets": [
+        {
+          "ExpiryUtc": "2021-10-19T16:00:00Z",
+          "Id": 100000004,
+          "InPlay": true,
+          "MarketType": {
+            "Id": 13124,
+            "IsHandicap": false,
+            "Name": "Match Up Winner"
+          },
+          "Name": "Match Up Winner",
+          "Selections": [
+            {
+              "CompetitorId": 863929,
+              "Decimal": 17.0,
+              "Denominator": 1,
+              "Id": 300000008,
+              "Name": "mousesports",
+              "Numerator": 16,
+              "Outcome": {
+                "Id": 1,
+                "Name": "Home"
+              },
+              "TradingStatus": "Trading"
+            },
+            {
+              "CompetitorId": 1122097,
+              "Decimal": 1.0303,
+              "Denominator": 33,
+              "Id": 300000009,
+              "Name": "Unicorns Of Love Sexy Edition",
+              "Numerator": 1,
+              "Outcome": {
+                "Id": 3,
+                "Name": "Away"
+              },
+              "TradingStatus": "Trading"
+            }
+          ],
+          "Sequence": 0,
+          "TradingStatus": "Open"
+        }
+      ]
+    }
+  },
+  {
+    "Header": {
+      "MessageFixtureOrder": 247627622,
+      "MessageGuid": "2c312759-1f2a-49b8-a003-6fa1fe044206",
+      "Retry": 0,
+      "TimeStampUtc": "2021-10-13T15:18:50.1555138Z"
+    },
+    "MarketSet": {
+      "FixtureId": 8577226,
+      "Markets": [
+        {
+          "ExpiryUtc": "2021-10-13T15:20:00Z",
+          "Id": 100000002,
+          "InPlay": true,
+          "MarketType": {
+            "Id": 13124,
+            "IsHandicap": false,
+            "Name": "Match Up Winner"
+          },
+          "Name": "Match Up Winner",
+          "Selections": [
+            {
+              "CompetitorId": 836535,
+              "Decimal": 1.5,
+              "Denominator": 2,
+              "Id": 300000004,
+              "Name": "Team Spirit",
+              "Numerator": 1,
+              "Outcome": {
+                "Id": 1,
+                "Name": "Home"
+              },
+              "TradingStatus": "Trading"
+            },
+            {
+              "CompetitorId": 827205,
+              "Decimal": 2.5,
+              "Denominator": 4,
+              "Id": 300000005,
+              "Name": "Fnatic",
+              "Numerator": 6,
+              "Outcome": {
+                "Id": 3,
+                "Name": "Away"
+              },
+              "TradingStatus": "Trading"
+            }
+          ],
+          "Sequence": 0,
+          "TradingStatus": "Suspended"
+        },
+        {
+          "ExpiryUtc": "2021-10-13T15:20:00Z",
+          "Id": 100000001,
+          "InPlay": true,
+          "MarketType": {
+            "Id": 13032,
+            "IsHandicap": false,
+            "Name": "Map 1 Winner"
+          },
+          "Name": "Map 1 Winner",
+          "Selections": [
+            {
+              "CompetitorId": 836535,
+              "Decimal": 1.5714,
+              "Denominator": 7,
+              "Id": 300000002,
+              "Name": "Team Spirit",
+              "Numerator": 4,
+              "Outcome": {
+                "Id": 1,
+                "Name": "Home"
+              },
+              "TradingStatus": "Trading"
+            },
+            {
+              "CompetitorId": 827205,
+              "Decimal": 2.25,
+              "Denominator": 4,
+              "Id": 300000003,
+              "Name": "Fnatic",
+              "Numerator": 5,
+              "Outcome": {
+                "Id": 3,
+                "Name": "Away"
+              },
+              "TradingStatus": "Trading"
+            }
+          ],
+          "Sequence": 0,
+          "TradingStatus": "Suspended"
+        }
+      ]
+    }
+  }
+]

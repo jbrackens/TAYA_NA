@@ -1,0 +1,109 @@
+name: Helm
+
+on:
+  pull_request:
+    paths:
+      - 'helm/**'
+      - '.github/**'
+
+env:
+  KUBECONFORM_VERSION: 0.5.0
+  ARGOCD_VERSION: v2.5.0
+
+jobs:
+  cancel_running_workflows:
+    name: Cancel running workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: cancel running workflows
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - name: Set up Helm
+      uses: mamezou-tech/setup-helmfile@v1.2.0
+      with:
+        helm-version: "v3.6.0"
+
+    - name: Set up pluto
+      uses: FairwindsOps/pluto/github-action@v5.11.1
+
+    - name: Set up kubeconform
+      run: |
+        wget https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz
+        tar xvf kubeconform-linux-amd64.tar.gz
+        sudo cp ./kubeconform /usr/local/bin
+        wget https://raw.githubusercontent.com/yannh/kubeconform/v${KUBECONFORM_VERSION}/scripts/openapi2jsonschema.py
+        chmod +x openapi2jsonschema.py
+        sudo cp openapi2jsonschema.py /usr/local/bin
+
+        export FILENAME_FORMAT='{kind}'
+        openapi2jsonschema.py https://raw.githubusercontent.com/prometheus-community/helm-charts/main/charts/kube-prometheus-stack/charts/crds/crds/crd-servicemonitors.yaml
+        openapi2jsonschema.py https://raw.githubusercontent.com/external-secrets/external-secrets/main/config/crds/bases/external-secrets.io_externalsecrets.yaml
+
+        sudo mkdir -p /etc/kubeconform/
+        sudo mv *.json /etc/kubeconform/
+
+        pip install GitPython yq
+
+    - name: Lint chart manifests on DEV
+      run: ./scripts/run-helm-lint.sh
+      env:
+        APP_ENV: dev
+
+    - name: Lint chart manifests on PROD
+      run: ./scripts/run-helm-lint.sh
+      env:
+        APP_ENV: prod
+
+  diff:
+    name: Diff
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+
+    - uses: twingate/github-action@v1
+      with:
+        service-key: ${{ secrets.TWINGATE_CI_SERVICE_KEY }}
+
+    - name: Install tools
+      run: |
+        npm i -g diff-so-fancy
+
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/download/$ARGOCD_VERSION/argocd-linux-amd64
+        sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+        rm argocd-linux-amd64
+
+        pip install GitPython yq
+
+    - name: Run diff on DEV
+      run: |
+        argocd login $ARGOCD_SERVER --skip-test-tls --grpc-web --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD
+
+        bash scripts/run-argocd-diff.sh
+      env:
+        APP_ENV: dev
+        ARGOCD_SERVER: argocd.dev.eeg.viegg.net
+        ARGOCD_USERNAME: ${{ secrets.DEV_ARGOCD_USERNAME }}
+        ARGOCD_PASSWORD: ${{ secrets.DEV_ARGOCD_PASSWORD }}
+
+    - name: Run diff on PROD
+      run: |
+        argocd login $ARGOCD_SERVER --skip-test-tls --grpc-web --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD
+
+        bash scripts/run-argocd-diff.sh
+      env:
+        APP_ENV: prod
+        ARGOCD_SERVER: argocd.prod.eeg.viegg.net
+        ARGOCD_USERNAME: ${{ secrets.PROD_ARGOCD_USERNAME }}
+        ARGOCD_PASSWORD: ${{ secrets.PROD_ARGOCD_PASSWORD }}

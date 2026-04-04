@@ -1,0 +1,15 @@
+{{- if .Values.enabledFeatures.storageClass }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storageClassName }}
+parameters:
+  pgroupid: {{ .Values.permissionGroupId }}
+  storagetype: SD
+  subnetid: {{ .Values.subnetId }}
+  vpcid: {{ .Values.vpcId }}
+  zone: {{ .Values.region }}
+provisioner: com.tencent.cloud.csi.cfs
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+{{ end }}

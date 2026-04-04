@@ -1,0 +1,19 @@
+<svg id="new" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="1080px" height="1080px" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1080 1080"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    #new .fil0 {fill:#3F3F3F}
+   
+    
+   ]]>
+  </style>
+ </defs>
+
+ <g id="newwrp">
+  <path id="newback" class="fil0" d="M703 503c-7,-6 -11,-19 -10,-29l5 -34c1,-9 -5,-18 -14,-19l-34 -6c-9,-2 -20,-10 -25,-18l-16 -30c-4,-8 -15,-12 -23,-8l-31 15c-8,4 -22,4 -30,0l-31 -15c-8,-4 -19,0 -23,8l-16 30c-5,8 -16,16 -25,18l-34 6c-9,1 -15,10 -14,19l5 34c1,10 -3,23 -10,29l-23 25c-7,7 -7,17 0,24l23 25c7,6 11,19 10,29l-5 34c-1,9 5,18 14,19l34 6c9,2 20,10 25,18l16 30c4,8 15,12 23,8l31 -15c8,-4 22,-4 30,0l31 15c8,4 19,0 23,-8l16 -30c5,-8 16,-16 25,-18l34 -6c9,-1 15,-10 14,-19l-5 -34c-1,-10 3,-23 10,-29l23 -25c7,-7 7,-17 0,-24l-23 -25zm-163 -79c64,0 116,52 116,116 0,64 -52,116 -116,116 -64,0 -116,-52 -116,-116 0,-64 52,-116 116,-116z"/>
+  <path id="newfront" class="fil0" d="M540 411c71,0 129,58 129,129 0,71 -58,129 -129,129 -71,0 -129,-58 -129,-129 0,-71 58,-129 129,-129zm21 222l-42 0 0 -42 42 0 0 42zm0 -71l-42 0 0 -114 42 0 0 114z"/>
+ </g>
+
+</svg>

@@ -1,0 +1,13 @@
+apiVersion: v2
+name: phoenix-data-pipeline
+description: A helm chart to install required Phoenix data pipeline components
+dependencies:
+  - name: strimzi-kafka-operator
+    repository: "https://strimzi.io/charts/"
+    version: 0.26.0
+  - name: cloudflow
+    repository: "https://lightbend.github.io/cloudflow-helm-charts/"
+    version: 2.2.2
+type: application
+version: 0.0.1
+appVersion: 0.0.1

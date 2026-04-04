@@ -1,0 +1,37 @@
+plugins {
+    id 'com.ewerk.gradle.plugins.jaxb2' version '1.0.9'
+}
+
+description = "GMX Platform :: Data Collector :: PA Data Feed Model"
+
+jaxb2 {
+    xjc {
+        'generate-betting' {
+            basePackage = 'net.press.pa.delivery.betting'
+            schema = 'src/main/dtd/HorseRacing.dtd'
+            generatedSourcesDir = 'build/generated-sources/xjc-betting'
+            encoding = 'UTF-8'
+            additionalArgs = '-dtd'
+        }
+    }
+    xjc {
+        'generate-racecard' {
+            basePackage = 'net.press.pa.delivery.racecard'
+            schema = 'src/main/dtd/HorseRacingCard.dtd'
+            generatedSourcesDir = 'build/generated-sources/xjc-racecard'
+            encoding = 'UTF-8'
+            additionalArgs = '-dtd'
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+//            artifactId "${project.parent.name}-${project.name}"
+            artifactId = project.name
+
+            from components.java
+        }
+    }
+}

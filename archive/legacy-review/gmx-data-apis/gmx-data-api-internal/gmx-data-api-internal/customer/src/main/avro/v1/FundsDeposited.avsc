@@ -1,0 +1,86 @@
+[
+  {
+    "type": "record",
+    "name": "FundsDeposited",
+    "namespace": "gmx.dataapi.internal.customer",
+    "fields": [
+      {
+        "name": "messageId",
+        "type": "string",
+        "doc": "Unique identifier of given message"
+      },
+      {
+        "name": "messageOriginDateUTC",
+        "type": "long",
+        "doc": "Message creation date in origin"
+      },
+      {
+        "name": "messageProcessingDateUTC",
+        "type": "long",
+        "doc": "Message processing date in GMX platform"
+      },
+
+      {
+        "name": "brandId",
+        "type": "string",
+        "doc": "Identifier of brand the customer information relates to"
+      },
+      {
+        "name": "customerId",
+        "type": "string",
+        "doc": "Identifier of the customer"
+      },
+
+      {
+        "name": "depositTimeUTC",
+        "type": "long"
+      },
+      {
+        "name": "amount",
+        "type": "string",
+        "doc": "Transferred amount. Value in specified currency, with scale 4 and precision 11."
+      },
+      {
+        "name": "currencyCode",
+        "type": "string"
+      },
+      {
+        "name": "paymentMethod",
+        "type": "string",
+        "doc": "Payment method, e.g. Credit/Debit Card, ApplePay, PayPal, etc. Enumerated values extracted to code for cleaner validation"
+      },
+      {
+        "name": "status",
+        "type": "string",
+        "doc": "Payment method, e.g. Confirmed, Declined, Pending, etc. Enumerated values extracted to code for cleaner validation"
+      },
+      {
+        "name": "paymentAccountIdentifier",
+        "type": [
+          "null",
+          "string"
+        ],
+        "default": null,
+        "doc": "Identifier of 'medium' used in payment, e.g. Card Number. This value is extracted from EPS unstructured logs and should not be relied on."
+      },
+      {
+        "name": "paymentDetails",
+        "type": [
+          "null",
+          "string"
+        ],
+        "default": null,
+        "doc": "Additional information related to specific status and type of transaction, e.g. Decline reason, Gateway Transaction Id. This value is extracted from EPS unstructured logs and should not be relied on."
+      },
+      {
+        "name": "gatewayCorrelationId",
+        "type": [
+          "null",
+          "string"
+        ],
+        "default": null,
+        "doc": "CorrelationID from gateway provider. This value is extracted from EPS unstructured logs and should not be relied on."
+      }
+    ]
+  }
+]

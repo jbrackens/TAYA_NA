@@ -1,0 +1,77 @@
+$modal-negative-color:$brand-base !default;
+.ag-modal{
+  display:none;
+  &[data-status="open"]{
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0.6);
+    z-index:1000;
+  }
+  .modal-container{
+    background:white;
+    width:90%;
+    max-width:500px;
+  }
+  .title-container{
+    width:100%;
+    background:$brand-base;
+    display:block;
+    text-transform: uppercase;
+    font-family: $brand-font--header;
+    color:white;
+    text-align:center;
+    line-height:2;
+    font-size:18px;
+  }
+  .message-container{
+    font-family:$brand-font--body;
+    font-size:14px;
+    color:$brand-base;
+    line-height:1.2;
+    padding:2em;
+    p{
+      margin-bottom:0.2em
+    }
+    ul{
+      list-style-type: disc;
+      margin-left:18px;
+    }
+    li{
+      line-height:1.2em;
+    }
+  }
+  .button-container{
+    width:100%;
+  }
+  button.modal-negative{
+    @include brand-button(15);
+    width:50%;
+    margin:0;
+    float:right;
+    background:$brand-grey;
+    color:$modal-negative-color;
+    border-radius:0px;
+    &:hover{
+      background:darken($brand-grey, 5%);
+    }
+  }
+  button.modal-positive{
+    @include brand-button(15);
+    width:50%;
+    margin:0;
+    float:left;
+    border-radius:0px;
+  }
+}
+.IsMobile .ag-modal{
+  button.modal-positive,
+  button.modal-negative{
+    width:100%;
+  }
+}

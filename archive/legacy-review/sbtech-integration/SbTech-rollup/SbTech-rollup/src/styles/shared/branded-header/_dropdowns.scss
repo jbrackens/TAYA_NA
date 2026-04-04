@@ -1,0 +1,30 @@
+
+// desktop dropdown menues
+.page-header-dropdown-sub-title{
+  font-weight:bold;
+  text-transform:uppercase;
+  padding: 5px 10px;
+}
+
+.page-header-link.page-header-deposit-button{
+  font-weight:bold;
+  text-transform:uppercase;
+}
+.page-header-dropdown-inner{
+  box-shadow:1px 0 10px rgba(0,0,0,0.2);
+}
+
+.page-header .page-header-wrapper-top{
+  .no-dropdown{
+     &:after{
+       display:none;
+     }
+     .page-header-dropdown-item{
+       padding:0;
+     }
+  }
+}
+
+.page-header-dropdown-sub-title{
+  font-family:$brand-font--header;
+}

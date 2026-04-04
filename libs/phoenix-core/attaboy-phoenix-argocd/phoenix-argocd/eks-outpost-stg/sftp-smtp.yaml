@@ -1,0 +1,11 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: sftp-smtp
+spec:
+  destination:
+    namespace: sftp
+  source:
+    repoURL: '259420793117.dkr.ecr.eu-west-1.amazonaws.com'
+    chart: 'sftp-smtp'
+    targetRevision: 'latest'

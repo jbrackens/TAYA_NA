@@ -1,0 +1,11 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: phoenix-ui-office
+spec:
+  destination:
+    namespace: phoenix
+  source:
+    repoURL: '259420793117.dkr.ecr.eu-west-1.amazonaws.com'
+    chart: 'phoenix-ui-office-helm-chart'
+    targetRevision: '0.31.1-build.4-virginia-dev'

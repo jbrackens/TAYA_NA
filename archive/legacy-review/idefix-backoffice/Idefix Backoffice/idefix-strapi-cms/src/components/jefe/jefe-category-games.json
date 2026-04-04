@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_jefe_jefe_category_games",
+  "info": {
+    "displayName": "Category Games",
+    "icon": "expand",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "component",
+      "repeatable": false,
+      "component": "common.heading",
+      "required": true
+    },
+    "category": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::games-category.games-category"
+    }
+  }
+}

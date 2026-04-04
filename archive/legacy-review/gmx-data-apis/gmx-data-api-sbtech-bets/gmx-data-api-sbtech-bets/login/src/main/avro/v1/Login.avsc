@@ -1,0 +1,117 @@
+{
+  "type": "record",
+  "name": "Login",
+  "namespace": "SBTech.Microservices.DataStreaming.DTO.Login.v1",
+  "fields": [
+    {
+      "name": "MessageCreationDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "LoginID",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "CustomerID",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "LoginName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "SiteId",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "Country",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "LoginDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "LogoutDate",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "LoginIP",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "LoginProxyIP",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "UAFamily",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "UAName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "OSCompany",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "OSName",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "DeviceType",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

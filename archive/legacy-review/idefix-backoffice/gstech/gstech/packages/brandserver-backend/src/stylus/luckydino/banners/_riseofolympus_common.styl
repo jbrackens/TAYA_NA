@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$riseofolympus_common_hades_left_name = 'riseofolympus_common_hades_left';
+$riseofolympus_common_hades_left_x = 0px;
+$riseofolympus_common_hades_left_y = 0px;
+$riseofolympus_common_hades_left_offset_x = 0px;
+$riseofolympus_common_hades_left_offset_y = 0px;
+$riseofolympus_common_hades_left_width = 329px;
+$riseofolympus_common_hades_left_height = 300px;
+$riseofolympus_common_hades_left_total_width = 743px;
+$riseofolympus_common_hades_left_total_height = 596px;
+$riseofolympus_common_hades_left_image = 'riseofolympus_common_b.png';
+$riseofolympus_common_hades_left = 0px 0px 0px 0px 329px 300px 743px 596px 'riseofolympus_common_b.png' 'riseofolympus_common_hades_left';
+$riseofolympus_common_logo_name = 'riseofolympus_common_logo';
+$riseofolympus_common_logo_x = 333px;
+$riseofolympus_common_logo_y = 0px;
+$riseofolympus_common_logo_offset_x = -333px;
+$riseofolympus_common_logo_offset_y = 0px;
+$riseofolympus_common_logo_width = 410px;
+$riseofolympus_common_logo_height = 211px;
+$riseofolympus_common_logo_total_width = 743px;
+$riseofolympus_common_logo_total_height = 596px;
+$riseofolympus_common_logo_image = 'riseofolympus_common_b.png';
+$riseofolympus_common_logo = 333px 0px -333px 0px 410px 211px 743px 596px 'riseofolympus_common_b.png' 'riseofolympus_common_logo';
+$riseofolympus_common_zeus_right_name = 'riseofolympus_common_zeus_right';
+$riseofolympus_common_zeus_right_x = 0px;
+$riseofolympus_common_zeus_right_y = 304px;
+$riseofolympus_common_zeus_right_offset_x = 0px;
+$riseofolympus_common_zeus_right_offset_y = -304px;
+$riseofolympus_common_zeus_right_width = 216px;
+$riseofolympus_common_zeus_right_height = 292px;
+$riseofolympus_common_zeus_right_total_width = 743px;
+$riseofolympus_common_zeus_right_total_height = 596px;
+$riseofolympus_common_zeus_right_image = 'riseofolympus_common_b.png';
+$riseofolympus_common_zeus_right = 0px 304px 0px -304px 216px 292px 743px 596px 'riseofolympus_common_b.png' 'riseofolympus_common_zeus_right';
+$spritesheet_width = 743px;
+$spritesheet_height = 596px;
+$spritesheet_image = 'riseofolympus_common_b.png';
+$spritesheet_sprites = $riseofolympus_common_hades_left $riseofolympus_common_logo $riseofolympus_common_zeus_right;
+$spritesheet = 743px 596px 'riseofolympus_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

@@ -1,0 +1,27 @@
+nameOverride: "prod-jefe-client-service"
+fullnameOverride: "prod-jefe-client-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3000
+
+ingress:
+  enabled: false
+
+env:
+  SITE_NAME: jefe
+  NODE_ENV: production
+  PORT: 3000
+  API: http://prod-jefe-backend-service:3000
+  CAPTCHA_KEY: "6LewUFclAAAAAJCNSkYBEXdOadInFBggTz3IDO7K"

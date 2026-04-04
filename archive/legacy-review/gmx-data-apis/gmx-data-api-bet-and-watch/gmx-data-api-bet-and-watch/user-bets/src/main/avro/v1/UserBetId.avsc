@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "UserBetId",
+  "namespace": "net.flipsports.gmx.dataapi.internal.betandwatch.userbets",
+  "fields": [
+    {
+      "name": "externalUserId",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+//
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400,700|Titillium+Web:300,400,700&display=swap');
+
+@import 'fb-variables';
+@import 'shared/accordions';
+.content-box{
+  color:white;
+}
+@import 'shared/ag-framework';
+$breadcrumb-last-color: $brand-primary;
+@import 'shared/breadcrumbs';
+@import 'shared/event-view';
+@import 'shared/general';
+@import 'shared/message-block';
+@import 'shared/registration';
+@import 'shared/spinner';
+@import 'shared/static-pages';
+.page-heading{
+  margin-top:0px;
+}
+@import 'shared/superbanner';
+
+$modal-negative-color:white;
+@import 'shared/ag-modal';
+
+@import 'FB/pages';
+@import 'FB/live-betting';
+@import 'FB/overrides';
+@import 'FB/verification';
+@import 'FB/mobile-nav';
+@import 'FB/casino';
+
+.greyhounds #racing-next-races{
+  display:block;
+}
+
+// account modal
+.self-exclusion-rblock p a, .myacc-block-content-inner p a{
+  color:$brand-primary;
+}
+html.IsDesktop .mobile-only-link{
+  display:none;
+}
+.desktop-only-link{
+  display:none;
+}
+html.IsDesktop .desktop-only-link{
+  display:inline-block;
+}
+
+
+html.IsDesktop #product-blocking-panel.page{
+  padding:10px;
+  box-sizing:border-box;
+}

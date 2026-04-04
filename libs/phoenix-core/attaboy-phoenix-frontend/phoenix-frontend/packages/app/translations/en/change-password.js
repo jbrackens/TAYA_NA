@@ -1,0 +1,13 @@
+module.exports = {
+  TITLE: "Change Password",
+  NEW_PASSWORD: "New password",
+  NEW_PASSWORD_ERROR: "Please input a password",
+  CONFIRM_PASSWORD: "Confirm new password",
+  CONFIRM_PASSWORD_ERROR: "Please input a password",
+  PASSWORDS_DO_NOT_MATCH_ERROR: "Passwords do not match",
+  CHANGE_PASSWORD_BUTTON: "Change Password",
+  CHANGE_PASSWORD_ERROR: "Invalid change password link",
+  SUCCESS: "Success!",
+  SUCCESS_MESSAGE: "Your Password has been changed!",
+  LOGIN: "Login",
+};

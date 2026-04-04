@@ -1,0 +1,589 @@
+{
+    "bucket": {
+        "createdTimestamp": 1576776073532,
+        "identifier": "5fc38c20-c26a-5864-b6db-50dcda176743",
+        "name": "EventNotification",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "5fc38c20-c26a-5864-b6db-50dcda176743",
+        "bucketName": "EventNotification",
+        "createdTimestamp": 1576776319532,
+        "description": "",
+        "identifier": "0f1db41b-d906-5d86-9b70-7385dea5961a",
+        "modifiedTimestamp": 1576776319611,
+        "name": "JIRA",
+        "type": "Flow",
+        "versionCount": 1
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6a4e1b46-56b2-34d4-bc88-e57ee2f85ea6",
+                    "name": "[ERROR] Unable to extract type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "0c1e161e-b9da-3442-9b74-9d2d6bb65cea",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "09b9a348-6046-337e-a10f-25a786163e15",
+                    "name": "Extract JIRA event Type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1081.9012551710007,
+                        "y": 0.7307467623210897
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6a4e1b46-56b2-34d4-bc88-e57ee2f85ea6",
+                    "name": "[ERROR] Unable to extract type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "403e626a-3f14-3621-8d7a-2fa286041bf9",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "09b9a348-6046-337e-a10f-25a786163e15",
+                    "name": "Extract JIRA event Type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1088.004600668558,
+                        "y": 82.4712202713734
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6623fd79-9467-31e8-a5b2-a7e74d1aae7b",
+                    "name": "RouteOnJiraEventType",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "a0aec7e2-da29-3aeb-84c7-61c8782ca71a",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "59d69226-fad2-36db-9793-7dc17b6382b1",
+                    "name": "[ERROR] Unhandled JIRA TYPE",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "09b9a348-6046-337e-a10f-25a786163e15",
+                    "name": "Extract JIRA event Type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "71311026-130e-39ac-91ea-57ad5bf24a7d",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "d00d539e-4c47-338d-99fd-b0d37e6617ad",
+                    "name": "input",
+                    "type": "INPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 1081.9012551710007,
+                        "y": -149.26925323767892
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "09b9a348-6046-337e-a10f-25a786163e15",
+                    "name": "Extract JIRA event Type",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "02a63115-38e3-3283-ac48-a37f6b3d04ee",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6a4e1b46-56b2-34d4-bc88-e57ee2f85ea6",
+                    "name": "[ERROR] Unable to extract type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "41b326e3-7aa0-3cb5-babc-667ec4e15b52",
+                    "id": "2b05c055-5701-3f0a-b3d7-2253c77769d6",
+                    "name": "input",
+                    "type": "INPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "e8289163-3146-300d-9530-812635dfc8ba",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "IRISH_USER_REGISTRATION"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6623fd79-9467-31e8-a5b2-a7e74d1aae7b",
+                    "name": "RouteOnJiraEventType",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "59d69226-fad2-36db-9793-7dc17b6382b1",
+                    "name": "[ERROR] Unhandled JIRA TYPE",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "ca0ed359-353a-3048-87a4-03a558cd2455",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "unmatched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6623fd79-9467-31e8-a5b2-a7e74d1aae7b",
+                    "name": "RouteOnJiraEventType",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "6623fd79-9467-31e8-a5b2-a7e74d1aae7b",
+                    "name": "RouteOnJiraEventType",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "d1429ded-38e8-3d7d-b093-44cff9434fb3",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "matched"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "79178a48-b2d5-3341-8606-b60aea29f154",
+                    "id": "09b9a348-6046-337e-a10f-25a786163e15",
+                    "name": "Extract JIRA event Type",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+        "inputPorts": [
+            {
+                "componentType": "INPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "d00d539e-4c47-338d-99fd-b0d37e6617ad",
+                "name": "input",
+                "position": {
+                    "x": 632.4948505183665,
+                    "y": -255.20043529585888
+                },
+                "type": "INPUT_PORT"
+            }
+        ],
+        "labels": [],
+        "name": "EventTypeJIRA",
+        "outputPorts": [],
+        "position": {
+            "x": 857.7180478864597,
+            "y": 479.12346474953927
+        },
+        "processGroups": [
+            {
+                "comments": "",
+                "componentType": "PROCESS_GROUP",
+                "connections": [],
+                "controllerServices": [],
+                "funnels": [],
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "41b326e3-7aa0-3cb5-babc-667ec4e15b52",
+                "inputPorts": [],
+                "labels": [],
+                "name": "IrishRegistrationJiraType",
+                "outputPorts": [],
+                "position": {
+                    "x": 567.1289369578967,
+                    "y": 320.1209226896006
+                },
+                "processGroups": [],
+                "processors": [],
+                "remoteProcessGroups": [],
+                "variables": {},
+                "versionedFlowCoordinates": {
+                    "bucketId": "5fc38c20-c26a-5864-b6db-50dcda176743",
+                    "flowId": "be635d10-6713-50f7-8592-920fed80ab21",
+                    "registryUrl": "NIFI_REGISTRY_URL",
+                    "version": 1
+                }
+            }
+        ],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "59d69226-fad2-36db-9793-7dc17b6382b1",
+                "name": "[ERROR] Unhandled JIRA TYPE",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1246.9471941798922,
+                    "y": 93.03830889138717
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unknown Jira Type = ${jira_event_type}",
+                    "log-prefix": "[EventNotification][JIRA] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "5 minute",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ff0000"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "6623fd79-9467-31e8-a5b2-a7e74d1aae7b",
+                "name": "RouteOnJiraEventType",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 579.0620071572234,
+                    "y": 91.90413165135959
+                },
+                "properties": {
+                    "IRISH_USER_REGISTRATION": "${jira_event_type:equalsIgnoreCase(\"IRISH_USER_REGISTRATION\")}",
+                    "Routing Strategy": "Route to Property name"
+                },
+                "propertyDescriptors": {
+                    "IRISH_USER_REGISTRATION": {
+                        "displayName": "IRISH_USER_REGISTRATION",
+                        "identifiesControllerService": false,
+                        "name": "IRISH_USER_REGISTRATION",
+                        "sensitive": false
+                    },
+                    "Routing Strategy": {
+                        "displayName": "Routing Strategy",
+                        "identifiesControllerService": false,
+                        "name": "Routing Strategy",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.RouteOnAttribute",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "6a4e1b46-56b2-34d4-bc88-e57ee2f85ea6",
+                "name": "[ERROR] Unable to extract type",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1238.3550310939547,
+                    "y": -140.78752729025345
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to extract/find specific JIRA type",
+                    "log-prefix": "[EventNotification][JIRA] "
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 25,
+                "schedulingPeriod": "1 minute",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ff0000"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "79178a48-b2d5-3341-8606-b60aea29f154",
+                "identifier": "09b9a348-6046-337e-a10f-25a786163e15",
+                "name": "Extract JIRA event Type",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 575.4474792480469,
+                    "y": -137.75097918510437
+                },
+                "properties": {
+                    "Destination": "flowfile-attribute",
+                    "Null Value Representation": "empty string",
+                    "Path Not Found Behavior": "warn",
+                    "Return Type": "auto-detect",
+                    "jira_event_type": "$.payload.type"
+                },
+                "propertyDescriptors": {
+                    "Destination": {
+                        "displayName": "Destination",
+                        "identifiesControllerService": false,
+                        "name": "Destination",
+                        "sensitive": false
+                    },
+                    "Null Value Representation": {
+                        "displayName": "Null Value Representation",
+                        "identifiesControllerService": false,
+                        "name": "Null Value Representation",
+                        "sensitive": false
+                    },
+                    "Path Not Found Behavior": {
+                        "displayName": "Path Not Found Behavior",
+                        "identifiesControllerService": false,
+                        "name": "Path Not Found Behavior",
+                        "sensitive": false
+                    },
+                    "Return Type": {
+                        "displayName": "Return Type",
+                        "identifiesControllerService": false,
+                        "name": "Return Type",
+                        "sensitive": false
+                    },
+                    "jira_event_type": {
+                        "displayName": "jira_event_type",
+                        "identifiesControllerService": false,
+                        "name": "jira_event_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.EvaluateJsonPath",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "5fc38c20-c26a-5864-b6db-50dcda176743",
+        "comments": "",
+        "flowIdentifier": "0f1db41b-d906-5d86-9b70-7385dea5961a",
+        "timestamp": 1576776319535,
+        "version": 1
+    }
+}

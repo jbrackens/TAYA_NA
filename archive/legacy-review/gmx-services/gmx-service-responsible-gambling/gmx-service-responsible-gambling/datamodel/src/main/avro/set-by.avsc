@@ -1,0 +1,15 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "SetBy",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "string"
+    },
+    {
+      "name": "setAt",
+      "type": "long"
+    }
+  ]
+}

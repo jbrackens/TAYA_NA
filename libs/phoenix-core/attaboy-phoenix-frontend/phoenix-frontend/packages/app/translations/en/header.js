@@ -1,0 +1,18 @@
+module.exports = {
+  ESPORTS_LINK: "Esports",
+  STREAM_BETS_LINK: "Stream Bets",
+  PROFILE_LINK: "Profile",
+  LOGIN_LINK: "Login",
+  LOGOUT_LINK: "Logout",
+  SIGN_UP_LINK: "Join Now",
+  PROMOTIONS_LINK: "Promotions",
+  ACCOUNT: "Account",
+  TRANSACTION_HISTORY: "Transaction history",
+  WIN_AND_LOSS_STATISTICS: "Win and loss statistics",
+  RESPONSIBLE_GAMING: "Responsible Gaming",
+  RESPONSIBLE_GAMING_LANDING: "Responsible Gambling 21+",
+  LANDING_PAGE_LOGIN: "Login",
+  LANDING_PAGE_REGISTER: "Register",
+  RG_HISTORY: "RG Limits history",
+  OK: "Ok",
+};

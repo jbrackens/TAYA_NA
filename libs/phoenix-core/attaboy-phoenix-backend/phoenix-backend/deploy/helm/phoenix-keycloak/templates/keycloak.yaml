@@ -1,0 +1,30 @@
+kind: Keycloak
+apiVersion: keycloak.org/v1alpha1
+metadata:
+  name: keycloak
+  labels:
+    app: phoenix-keycloak
+spec:
+  instances: {{ .Values.keycloak.instances }}
+  extensions:
+    - https://github.com/aerogear/keycloak-metrics-spi/releases/download/{{ .Values.keycloakMetricsSpiVersion }}/keycloak-metrics-spi-{{ .Values.keycloakMetricsSpiVersion }}.jar
+  externalAccess:
+    enabled: False
+  externalDatabase:
+    enabled: True
+  podDisruptionBudget:
+    enabled: True
+  multiAvailablityZones: # yes, the typo is in CRD definition
+    enabled: True
+  keycloakDeploymentSpec:
+    experimental:
+      env:
+        - name: JAVA_OPTS
+          value: "-Xms1g -Xmx1g"
+    resources:
+      limits:
+        memory: "2Gi"
+        cpu: "1500m"
+      requests:
+        memory: "2Gi"
+        cpu: "1500m"

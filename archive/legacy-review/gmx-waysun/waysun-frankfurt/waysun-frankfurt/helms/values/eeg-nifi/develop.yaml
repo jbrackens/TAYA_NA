@@ -1,0 +1,53 @@
+global:
+  reclaimPolicy: Delete
+  resources:
+    nifiRegistry: &resources-registry
+     limits:
+       cpu: 500m
+       memory: 2048Mi
+     requests:
+       cpu: 500m
+       memory: 2048Mi
+    nifi: &resources-nifi
+     limits:
+       cpu: 1000m
+       memory: 2048Mi
+     requests:
+       cpu: 1000m
+       memory: 2048Mi
+    logs: &resources-logs
+      requests:
+        cpu: 10m
+        memory: 10Mi
+      limits:
+        cpu: 100m
+        memory: 50Mi
+
+
+nifi-registry:
+  replicaCount: 1
+  resources: *resources-registry
+
+
+replicaCount: 2
+jvmMemory: 8g
+
+persistence:
+  enabled: true
+  configStorage:
+    size: 10Gi
+  authconfStorage:
+    size: 10Gi
+  dataStorage:
+    size: 10Gi
+  flowfileRepoStorage:
+    size: 10Gi
+  contentRepoStorage:
+    size: 10Gi
+  provenanceRepoStorage:
+    size: 10Gi
+  logStorage:
+    size: 10Gi
+
+resources: *resources-nifi
+logresources: *resources-logs

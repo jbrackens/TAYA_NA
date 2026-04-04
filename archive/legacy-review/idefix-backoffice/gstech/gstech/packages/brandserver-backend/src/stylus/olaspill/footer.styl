@@ -1,0 +1,130 @@
+$column_width = 320px
+
+#content-holder
+  display none
+  user-select text
+  position fixed
+  top $header_height
+  left 0
+  right 0
+  bottom 0
+  z-index 10000
+  iframe
+    position absolute
+    width 100%
+    height calc(100vh - 60px)
+  &.visible
+    display block
+  .close-button
+    position fixed
+    display inline
+    closebutton()
+    top 4px
+    right 4px
+    z-index 10003
+
+#footer
+  font-size 10px
+  color #ffffff
+  position relative
+  z-index 9900
+  width 100%
+  background-color $footer-color
+  padding 0 15px 0 15px
+  display flex
+  justify-content space-between
+  margin-top 10px
+  p
+    margin 0 0 10px 0
+    font-size 10px
+  &:after
+    content ''
+    top -30px
+    height 30px
+    cdn-background-image '/images/footer_pattern.png'
+    position absolute
+    left 0
+    right 0
+  @media only screen and (max-width:991px)
+    flex-direction column
+  @media only screen and (max-width:767px)
+    padding-bottom $mobile_menu_height
+
+.footer-nav
+  padding 75px 10px 20px 10px
+  height 100%
+  margin 0 0 0 180px
+  list-style none
+  position relative
+  min-width 250px
+  align-self center
+  @media only screen and (max-width:991px)
+    margin 0 auto
+    text-align center
+  &:before
+    content ''
+    position absolute
+    top 10px
+    left 25px
+    @media only screen and (max-width:991px)
+      right 10px
+    width 160px
+    height 53px
+    cdn_image '/images/logo.png' 160px 53px
+    margin 0 auto
+  &:after
+    content ''
+    position absolute
+    cdn-background-image2x '/images/crown.png'  '/images/crown@2x.png' 165px 165px
+    width 165px
+    height 165px
+    left -150px
+    top 25px
+    @media only screen and (max-width:991px)
+      display none
+  li
+    a
+      padding-left 16px
+      font-size 14px
+      font-weight bold
+      line-height 27px
+      text-align left
+      color $light-light-blue
+      font-family 'PT Sans', sans-serif
+      &:before
+        content "» "
+
+.footer-text-holder
+  flex 1 1 auto
+  padding 30px 0
+  margin 0 auto
+  max-width 80%
+  align-self start
+
+.disclaimer-images
+  display flex
+  justify-content space-around
+  align-self flex-start
+  width 100%
+  @media only screen and (min-width:991px)
+    flex-direction column
+    height 200px
+  max-width 360px
+  align-items center
+  margin 20px auto
+  .agelimit
+    display block
+    sprite2x($agelimit, $agelimit_2x)
+
+  .lga-logo
+    display block
+    sprite2x($mga_logo, $mga_logo_2x)
+
+@media only screen and (max-width:991px)
+  #livechat-compact-container
+    margin-right -90px
+
+@media only screen and (max-width:767px)
+  #livechat-compact-container
+   margin-bottom 0
+   margin-right 0

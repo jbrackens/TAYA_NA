@@ -1,0 +1,24 @@
+--index-url https://lena-srv01.flipsports.net:4566/repository/pypi-group/simple
+
+# Custom
+aws-rest-default==6.1.2
+
+psycopg2-binary>=2.7.5,<3
+django-polymorphic>=2.0.3,<2.2
+django-polymorphic-tree==1.5
+argon2-cffi==19.1.0
+
+django-bootstrap-form==3.3
+django-oidc-provider==0.7.0
+
+django-phonenumber-field>=2.1.0,<2.4
+phonenumbers==8.10.6
+django-nested-inline==0.3.7
+requests-oauthlib==1.2.0
+django-jsonfield==1.0.1
+jsonfield2
+django-redis-sessions==0.6.1
+
+django-filter==2.1.0
+
+mock

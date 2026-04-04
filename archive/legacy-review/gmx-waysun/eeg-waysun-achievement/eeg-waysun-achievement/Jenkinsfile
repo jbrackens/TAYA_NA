@@ -1,0 +1,340 @@
+#!groovy
+
+void notifyGithub(String description) {
+  githubNotify(
+    description: description,
+    context: env.GITHUB_NOTIFICATION_CONTEXT,
+    account: env.GITHUB_ACCOUNT,
+    repo: env.GITHUB_REPO,
+    credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+    targetUrl: env.RUN_DISPLAY_URL,
+    status: 'SUCCESS'
+  )
+}
+
+void withAwsEcrDockerRegistry(Closure<Void> block) {
+  docker.withRegistry("https://${env.AWS_ECR_HOST}", env.AWS_ECR_CREDS_ID) {
+    block()
+  }
+}
+
+void withTencentFrankfurtEcrDockerRegistry(Closure<Void> block) {
+  docker.withRegistry("https://${env.TENCENT_ECR_FRA_HOST}", env.TENCENT_ECR_CREDENTIALS_ID) {
+    block()
+  }
+}
+
+// build status constants: https://www.jenkins.io/doc/book/glossary/#build-status
+def notifySlack(String branch, String buildStatus) {
+
+  if (branch in ['develop', 'master']) {
+
+    // Build status of null means success.
+    buildStatus = buildStatus ?: 'SUCCESS'
+
+    def color
+
+    if (buildStatus == 'STARTED') {
+      color = '#D4DADF'
+    } else if (buildStatus == 'SUCCESS') {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'STABLE') {
+      color = '#BDFFC3'
+    } else if (buildStatus == 'UNSTABLE') {
+      color = '#FFFE89'
+    } else { // FAILED or ABORTED
+      color = '#FF9FA1'
+    }
+
+    def message = "${buildStatus}: <${env.RUN_DISPLAY_URL}|${env.JOB_NAME} #${env.BUILD_NUMBER}>"
+
+    slackSend(color: color, message: message, channel: env.SLACK_NOTIFICATION_CHANNEL)
+  }
+}
+
+String shOutput(String cmd) {
+  return sh(script: cmd, returnStdout: true).trim()
+}
+
+void withGithubStatusUpdates(Closure<Void> block) {
+  gitStatusWrapper(
+    description: env.STAGE_NAME,
+    gitHubContext: env.GITHUB_NOTIFICATION_CONTEXT,
+    account: env.GITHUB_ACCOUNT,
+    repo: env.GITHUB_REPO,
+    credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+    targetUrl: env.RUN_DISPLAY_URL
+  ) {
+    block()
+  }
+}
+
+void withDockerHubAuthentication(Closure<Void> block) {
+  // Logging into DockerHub is needed to increase the limits for pulling the images
+  docker.withRegistry(/* empty = Docker Hub */ '', env.DOCKER_HUB_CREDENTIALS) {
+    block()
+  }
+}
+
+properties(
+  env.BRANCH_NAME == 'develop'
+    ? [disableConcurrentBuilds()]
+    : []
+)
+
+pipeline {
+  agent {
+    label 'ecs-ec2-java11-helm'
+  }
+
+  parameters {
+    string(name: 'developReleaseVersionSegmentToUpdate', defaultValue: 'patch', description: 'Which part of a version should be updated during the builds for develop. One of: major, minor, patch')
+  }
+
+  environment {
+    DOCKER_HUB_CREDENTIALS = 'docker-hub-read-only'
+
+    // github status notifications
+    GITHUB_ACCOUNT = 'flipadmin'
+    GITHUB_REPO = 'eeg-waysun-achievement'
+    GITHUB_API_TOKEN_CREDENTIALS_ID = 'CICD-GitHub-API-token'
+    GITHUB_NOTIFICATION_CONTEXT = 'Jenkins Build'
+    SLACK_NOTIFICATION_CHANNEL = '#gmx-waysun-platform-deployment'
+
+    // build
+    SBT_HOME = tool name: 'sbt', type: 'org.jvnet.hudson.plugins.SbtPluginBuilder$SbtInstallation'
+    PATH = "${env.SBT_HOME}/bin:${env.HOME}/.local/bin:${env.PATH}"
+    DOCKER_IMAGE_NAME = 'stella-achievement'
+    // as agreed, temporarily we push different images using different tags instead of pushing an image with a separate name
+    DOCKER_DB_MIGRATION_IMAGE_VERSION_PREFIX = 'db-migration-'
+
+    // github tags
+    COMMIT_HASH = shOutput("git rev-parse HEAD")
+    GITHUB_API_URL = "https://api.github.com/repos/${env.GITHUB_ACCOUNT}/${env.GITHUB_REPO}"
+    GITHUB_API_REFS_URL = "${env.GITHUB_API_URL}/git/refs"
+
+    // AWS ECR
+    AWS_ECR_ACCOUNT_ID = '259420793117'
+    AWS_ECR_REGION = 'eu-west-1'
+    AWS_ECR_HOST = "${env.AWS_ECR_ACCOUNT_ID}.dkr.ecr.${env.AWS_ECR_REGION}.amazonaws.com"
+    AWS_ECR_CREDS_ID = "ecr:${env.AWS_ECR_REGION}:ecr-fs-mgmt"
+    AWS_ECR_NAME = "gmx-waysun/achievement"
+
+    // TENCENT ECR
+    TENCENT_ECR_FRA_NAME = 'stella/achievement'
+    TENCENT_ECR_FRA_HOST = "waysun-dev.tencentcloudcr.com"
+    TENCENT_ECR_CREDENTIALS_ID = 'tencent-container-repo'
+
+    // Waysun git repository mirror
+    WAYSUN_GIT_CREDENTIALS = 'waysun-git-credentials'
+    WAYSUN_GIT_URL = 'github.com/waysuninc/gmx-waysun-achievement.git'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout([
+          $class                           : 'GitSCM',
+          branches                         : scm.branches,
+          doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+          extensions                       : [[$class: 'CloneOption', noTags: false, shallow: false, depth: 0, reference: '']],
+          userRemoteConfigs                : scm.userRemoteConfigs,
+        ])
+      }
+    }
+
+    stage('Update dependencies') {
+      steps {
+        withGithubStatusUpdates {
+          // -batch to prevent sbt from waiting on user input in case the project model is invalid
+          sh 'sbt -batch update'
+        }
+      }
+    }
+
+    stage('Check formatting & code style') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt scalafmtSbtCheck scalafmtCheckAll scalastyle'
+        }
+      }
+    }
+
+    stage('Compile production code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt -J-Xss4M compile'
+        }
+      }
+    }
+
+    stage('Compile test code') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt -J-Xss4M test:compile it:compile'
+        }
+      }
+    }
+
+    stage('Check scalafix rules') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt "scalafixAll --check"'
+        }
+      }
+    }
+
+    stage('Run tests') {
+      steps {
+        withGithubStatusUpdates {
+          sh 'sbt test'
+        }
+      }
+    }
+
+    stage('Run integration tests') {
+      steps {
+        withGithubStatusUpdates {
+          withDockerHubAuthentication {
+            sh 'sbt it:test'
+          }
+        }
+      }
+    }
+
+    stage('Create tag') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          sh './ci/prepare-release-version ' + params.developReleaseVersionSegmentToUpdate
+          script {
+            // note we don't allow to have two tags assigned to the same commit
+            env.TAG_VERSION = shOutput('git describe --exact-match --abbrev=0 --tags')
+            env.RELEASE_VERSION = env.TAG_VERSION.startsWith("v") ? env.TAG_VERSION.substring(1) : env.TAG_VERSION
+            env.DB_MIGRATION_RELEASE_VERSION = env.DOCKER_DB_MIGRATION_IMAGE_VERSION_PREFIX + env.RELEASE_VERSION
+          }
+          echo "Creating a tag: ${env.TAG_VERSION}"
+          withCredentials([usernamePassword(
+            credentialsId: env.GITHUB_API_TOKEN_CREDENTIALS_ID,
+            usernameVariable: 'GITHUB_USERNAME',
+            passwordVariable: 'GITHUB_PASSWORD')
+          ]) {
+            sh "curl -f -X POST -d '{\"ref\": \"refs/tags/${env.TAG_VERSION}\", \"sha\":\"${env.COMMIT_HASH}\"}' -H \"Accept: application/vnd.github.v3+json\" -u \"username:${GITHUB_PASSWORD}\" ${env.GITHUB_API_REFS_URL}"
+          }
+        }
+      }
+    }
+
+    stage('Build docker image') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          withDockerHubAuthentication {
+            sh 'sbt achievement/docker:publishLocal'
+          }
+        }
+      }
+    }
+
+    stage('Build database migration docker image') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          withDockerHubAuthentication {
+            sh "docker build -t ${env.DOCKER_IMAGE_NAME}:${env.DB_MIGRATION_RELEASE_VERSION} -f Dockerfile-db-migration ."
+          }
+        }
+      }
+    }
+
+    stage('Push docker image - FS AWS') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          withAwsEcrDockerRegistry {
+            sh "docker tag ${env.DOCKER_IMAGE_NAME}:${env.RELEASE_VERSION} ${env.AWS_ECR_NAME}:${env.RELEASE_VERSION}"
+            script {
+              docker.image("${env.AWS_ECR_NAME}:${env.RELEASE_VERSION}").push()
+            }
+
+            sh "docker tag ${env.DOCKER_IMAGE_NAME}:${env.DB_MIGRATION_RELEASE_VERSION} ${env.AWS_ECR_NAME}:${env.DB_MIGRATION_RELEASE_VERSION}"
+            script {
+              docker.image("${env.AWS_ECR_NAME}:${env.DB_MIGRATION_RELEASE_VERSION}").push()
+            }
+          }
+        }
+      }
+    }
+
+
+    stage('Push docker image - Tencent FRA') {
+      when {
+        branch 'develop'
+      }
+      steps {
+        withGithubStatusUpdates {
+          withTencentFrankfurtEcrDockerRegistry {
+            sh "docker tag ${env.DOCKER_IMAGE_NAME}:${env.RELEASE_VERSION} ${env.TENCENT_ECR_FRA_NAME}:${env.RELEASE_VERSION}"
+            script {
+              docker.image("${env.TENCENT_ECR_FRA_NAME}:${env.RELEASE_VERSION}").push()
+            }
+
+            sh "docker tag ${env.DOCKER_IMAGE_NAME}:${env.DB_MIGRATION_RELEASE_VERSION} ${env.TENCENT_ECR_FRA_NAME}:${env.DB_MIGRATION_RELEASE_VERSION}"
+            script {
+              docker.image("${env.TENCENT_ECR_FRA_NAME}:${env.DB_MIGRATION_RELEASE_VERSION}").push()
+            }
+          }
+        }
+      }
+    }
+
+    stage('Updating Waysun GitRepo') {
+      when {
+        anyOf {
+          branch 'develop'
+          branch 'master'
+        }
+      }
+      steps {
+        withGithubStatusUpdates {
+          withCredentials([
+            usernamePassword(
+              credentialsId: env.WAYSUN_GIT_CREDENTIALS,
+              usernameVariable: 'GITHUB_USERNAME',
+              passwordVariable: 'GITHUB_PASSWORD'
+            )
+          ]) {
+            sh 'git config --global user.email "waysun-jenkins@waysuninc.com"'
+            sh 'git config --global user.name "waysun-jenkins"'
+            withCredentials([sshUserPrivateKey(credentialsId: 'github', keyFileVariable: 'SSH_KEY')]) {
+              sh 'GIT_SSH_COMMAND="ssh -i $SSH_KEY" git checkout ' + env.BRANCH_NAME
+              sh 'GIT_SSH_COMMAND="ssh -i $SSH_KEY" git pull origin ' + env.BRANCH_NAME
+            }
+            sh 'git remote add waysun https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@' + env.WAYSUN_GIT_URL
+            sh "git push -u waysun ${env.BRANCH_NAME}:${env.BRANCH_NAME}"
+          }
+        }
+      }
+    }
+  }
+
+  post {
+    success {
+      // This is to ensure that the name of the last executed stage
+      // doesn't linger in GitHub's CI status once the pipeline is complete.
+      notifyGithub('Complete')
+    }
+
+    always {
+      notifySlack(env.BRANCH_NAME, currentBuild.result)
+    }
+  }
+}

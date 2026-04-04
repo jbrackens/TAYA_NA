@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+    <preConditions>
+        <dbms type="postgresql"/>
+    </preConditions>
+
+    <changeSet author="stella" id="project-1.0">
+
+        <sqlFile path="create-update_updated_at_column-trigger.sql"
+                 splitStatements="false"
+                 stripComments="false"
+                 encoding="utf8"
+                 relativeToChangelogFile="true"
+                 endDelimiter=";"/>
+
+        <createTable tableName="stella_project">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="realm_id" type="varchar(36)">
+                <constraints nullable="false" foreignKeyName="fk_stella_project_realm_realm_id" referencedTableName="realm"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="project_public_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="stella_project" indexName="idx_project_id_realm_id">
+            <column name="id"/>
+            <column name="realm_id"/>
+        </createIndex>
+
+        <createIndex tableName="stella_project" indexName="idx_project_public_id_realm_id" unique="true">
+            <column name="project_public_id"/>
+            <column name="realm_id"/>
+        </createIndex>
+
+        <createIndex tableName="stella_project" indexName="idx_project_public_id" unique="true">
+            <column name="project_public_id"/>
+        </createIndex>
+
+        <sql>
+            DROP TRIGGER IF EXISTS trg_stella_project_update_updated_at ON stella_project;
+            CREATE TRIGGER trg_stella_project_update_updated_at BEFORE UPDATE ON stella_project FOR EACH ROW EXECUTE PROCEDURE
+            update_updated_at_column();
+            CREATE UNIQUE INDEX idx_project_name_in_realm_unique ON stella_project (realm_id, LOWER(name));
+        </sql>
+        <rollback>
+            DROP INDEX idx_project_name_in_realm_unique ON stella_project;
+            DROP TRIGGER trg_stella_project_update_updated_at ON stella_project;
+        </rollback>
+    </changeSet>
+
+    <changeSet author="stella" id="stella_client_project">
+
+        <createTable tableName="stella_client_project">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="project_id" type="bigint">
+                <constraints nullable="false" foreignKeyName="fk_stella_client_project_project_id" referencedTableName="stella_project"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="client_id" type="varchar(36)">
+                <constraints nullable="false" foreignKeyName="fk_stella_client_project_client_id" referencedTableName="CLIENT"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="is_primary" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="stella_client_project" indexName="idx_project_id_client_id" unique="true">
+            <column name="project_id"/>
+            <column name="client_id"/>
+        </createIndex>
+
+        <sql>
+            CREATE UNIQUE INDEX idx_client_id_single_primary_project ON stella_client_project (client_id, is_primary) WHERE (is_primary is true);
+        </sql>
+        <rollback>
+            DROP INDEX idx_client_id_single_primary_project ON stella_client_project;
+        </rollback>
+    </changeSet>
+
+    <changeSet id="project-kid-association" author="stella">
+        <addColumn tableName="stella_project">
+            <column name="kid" type="varchar(255)"/>
+        </addColumn>
+
+        <createIndex indexName="uq_project_kid" tableName="stella_project" unique="true">
+            <column name="realm_id"/>
+            <column name="kid"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

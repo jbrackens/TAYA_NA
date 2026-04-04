@@ -1,0 +1,7 @@
+  - host: "${CFG_INGRESS_HOST_NAME}"
+    http:
+      paths:
+      - backend:
+          serviceName: "${TMP_SERVICE_NAME}"
+          servicePort: ${TMP_SERVICE_PORT}
+        path: "${TMP_SERVICE_PATH}"

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-config-setup-scripts
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    # We use a smaller weight than for keycloak-config-setup pod so that the config map is created before the pod.
+    "helm.sh/hook-weight": "50"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+data:
+  # .Files don't allow for access outside of the chart directory (see https://github.com/helm/helm/issues/3276),
+  # hence we needed to symlink the script inside the chart.
+  {{ (.Files.Glob "scripts/setup_keycloak_oidc_json_secret.sh").AsConfig | nindent 2 }}

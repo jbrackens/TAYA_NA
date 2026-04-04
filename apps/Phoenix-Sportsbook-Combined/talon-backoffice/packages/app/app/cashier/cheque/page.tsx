@@ -1,0 +1,252 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { withdraw } from '../../lib/api/wallet-client';
+
+export default function ChequeWithdrawalPage() {
+  const { user } = useAuth();
+  const [amount, setAmount] = useState('');
+  const [payeeName, setPayeeName] = useState('');
+  const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!user?.id) {
+      setError('User not authenticated');
+      return;
+    }
+
+    if (!amount || !payeeName || !address) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      setError('Please enter a valid amount');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await withdraw(user.id, {
+        amount: amountNum,
+        payment_method: 'cheque',
+      });
+
+      setSuccess(true);
+      setAmount('');
+      setPayeeName('');
+      setAddress('');
+
+      setTimeout(() => {
+        setSuccess(false);
+      }, 5000);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Withdrawal failed';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
+    minHeight: '100vh',
+    padding: '24px',
+    background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    maxWidth: '600px',
+    margin: '0 auto',
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontSize: '28px',
+    fontWeight: '700',
+    color: '#e2e8f0',
+    marginBottom: '32px',
+  };
+
+  const formStyle: React.CSSProperties = {
+    backgroundColor: '#0f1225',
+    border: '1px solid #1a1f3a',
+    borderRadius: '8px',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  };
+
+  const formGroupStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#cbd5e1',
+  };
+
+  const inputStyle: React.CSSProperties = {
+    padding: '10px 12px',
+    backgroundColor: '#0a0e18',
+    border: '1px solid #1a1f3a',
+    borderRadius: '4px',
+    color: '#e2e8f0',
+    fontSize: '13px',
+    fontFamily: 'inherit',
+  };
+
+  const textareaStyle: React.CSSProperties = {
+    ...inputStyle,
+    minHeight: '100px',
+    fontFamily: 'inherit',
+    resize: 'vertical',
+  };
+
+  const submitButtonStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    backgroundColor: '#f97316',
+    color: '#0f1225',
+    border: 'none',
+    borderRadius: '4px',
+    fontWeight: '600',
+    fontSize: '14px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    opacity: loading ? 0.6 : 1,
+  };
+
+  const errorStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+    border: '1px solid #f87171',
+    borderRadius: '4px',
+    color: '#f87171',
+    fontSize: '13px',
+  };
+
+  const successStyle: React.CSSProperties = {
+    padding: '12px 16px',
+    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+    border: '1px solid #86efac',
+    borderRadius: '4px',
+    color: '#86efac',
+    fontSize: '13px',
+  };
+
+  return (
+    <div style={containerStyle}>
+      <div style={contentStyle}>
+        <h1 style={titleStyle}>Cheque Withdrawal</h1>
+
+        <div style={formStyle}>
+          {error && <div style={errorStyle}>{error}</div>}
+          {success && (
+            <div style={successStyle}>
+              Withdrawal request submitted successfully. Please allow 5-7 business days for processing.
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Amount (USD)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount"
+                style={inputStyle}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#f97316';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(249, 115, 22, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#1a1f3a';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+                disabled={loading}
+              />
+            </div>
+
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Payee Name</label>
+              <input
+                type="text"
+                value={payeeName}
+                onChange={(e) => setPayeeName(e.target.value)}
+                placeholder="Name on cheque"
+                style={inputStyle}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#f97316';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(249, 115, 22, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#1a1f3a';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+                disabled={loading}
+              />
+            </div>
+
+            <div style={formGroupStyle}>
+              <label style={labelStyle}>Mailing Address</label>
+              <textarea
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Full mailing address"
+                style={textareaStyle}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#f97316';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(249, 115, 22, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#1a1f3a';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={submitButtonStyle}
+              onMouseEnter={(e) => {
+                if (!loading) {
+                  e.currentTarget.style.backgroundColor = '#ea580c';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f97316';
+              }}
+            >
+              {loading ? 'Processing...' : 'Request Cheque'}
+            </button>
+          </form>
+
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '16px' }}>
+            <p style={{ margin: '0 0 8px 0' }}>
+              Cheque withdrawals typically take 5-7 business days to arrive.
+            </p>
+            <p style={{ margin: 0 }}>
+              A fee may apply depending on your withdrawal amount.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

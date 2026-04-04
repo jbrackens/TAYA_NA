@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "action": "market.updated",
+      "actorId": "admin-ops-1",
+      "details": "Changed market visibility",
+      "id": "al:local:001",
+      "occurredAt": "2026-03-02T09:10:00Z",
+      "targetId": "m:local:001"
+    }
+  ],
+  "pagination": {
+    "hasNext": false,
+    "page": 1,
+    "pageSize": 10,
+    "total": 1
+  }
+}

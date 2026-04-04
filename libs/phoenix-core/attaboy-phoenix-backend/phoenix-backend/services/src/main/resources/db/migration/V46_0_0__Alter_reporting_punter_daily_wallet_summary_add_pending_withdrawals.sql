@@ -1,0 +1,1 @@
+ALTER TABLE reporting_punter_daily_wallet_summary ADD COLUMN pending_withdrawals DECIMAL NOT NULL DEFAULT 0;

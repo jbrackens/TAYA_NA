@@ -1,0 +1,130 @@
+
+// casino titles
+//.sb-src-components-sbtech-cas-widget-grid-_index__grid-header,
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-header,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-header{
+  display:flex;
+  flex-direction: row;
+  height:30px;
+  margin: 1px;
+  width: calc(100% - 2px);
+}
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-header .sb-src-components-sbtech-cas-widget-grid-_index__grid-title{
+  padding:0;
+  font-size:13px;
+}
+//.sb-src-components-sbtech-cas-widget-grid-_index__grid-title,
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-title,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-title{
+  flex-grow:1;
+  display: flex;
+  width: 100%;
+}
+//.sb-src-components-sbtech-cas-widget-grid-_index__grid-actions{
+[data-cas-device-type="desktop"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-actions,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-actions{
+  flex-grow:0;
+  flex-shrink:0;
+  display: flex;
+  width: unset;
+}
+
+//padding to make title same height as buttons and dropdown
+.sb-src-components-sbtech-cas-widget-grid-_index__grid-title{
+  @include brand-header( 16px );
+  padding: 7px 12px 7px 29px;
+  border:none;
+  margin:0;
+  line-height: 16px;
+}
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-header{
+  align-items:center;
+  margin: 2px 0px;
+  min-height:30px;
+  background:$brand-base;
+  .sb-src-components-sbtech-cas-widget-grid-_index__grid-title{
+    margin-left:10px;
+  }
+}
+html.IsMobile .sb-src-components-sbtech-cas-widget-grid-_index__grid-title:before{
+  left:-8px;
+}
+
+//casino buttons (must change dropdown too)
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-wrapper{
+  height:30px;
+  margin:0;
+}
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-wrapper{
+  height:30px;
+  margin:0 2px;
+}
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-selected,
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-selected{
+  line-height:30px;
+  margin-bottom:0;
+  border-radius:0px;
+  background:$brand-base;
+  color:white;
+}
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-list,
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-list{
+  border-radius:0px;
+  top: 100%;
+}
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-item-current:first-child:after{
+  border-radius:0;
+}
+
+//lets button and dropdown sit on the same line
+.sb-src-components-sbtech-cas-widget-grid-_index__grid-sort-wrapper{
+  vertical-align:top;
+}
+.sb-src-components-sbtech-cas-widget-grid-_index__grid-action-button{
+    [data-cas-device-type="desktop"] &,
+    [data-cas-device-type="tablet"] &{
+      @include brand-button(15);
+      height:unset;
+      margin:0;
+      margin-left:2px;
+      min-width:unset;
+      border-radius:0px;
+    }
+    [data-cas-device-type="mobile"] &{
+      @include brand-button(15);
+      height:unset;
+      border-radius:0px;
+      font-size:12px;
+    }
+}
+
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-list,
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-item{
+  background: white;
+  color:$brand-base;
+}
+
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-item-current [data-a10n-component="Dropdown-Option-Value"]:after,
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-item-selected [data-a10n-component="MultiSelect-Option-Value"]:after,
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-item-current:after,
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-item-selected:after{
+  display:none;
+}
+
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-item-current,
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-item-selected{
+  color:$brand-primary;
+}
+
+.sb-src-components-sbtech-cas-component-multiselect-_index__multiselect-item:hover,
+.sb-src-components-sbtech-cas-component-dropdown-_index__dropdown-item:hover{
+  background:white;
+  color:$brand-secondary;
+}
+
+[data-cas-device-type="mobile"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-header .sb-src-components-sbtech-cas-widget-grid-_index__grid-title,
+[data-cas-device-type="tablet"] .sb-src-components-sbtech-cas-widget-grid-_index__grid-header .sb-src-components-sbtech-cas-widget-grid-_index__grid-title{
+  margin-top:0px;
+  font-size:16px;
+  line-height:30px;
+}

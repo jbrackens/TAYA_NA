@@ -1,0 +1,17 @@
+# $schema: "https://json.schemastore.org/prettierrc"
+
+trailingComma: 'all'
+tabWidth: 2
+semi: true
+singleQuote: true
+printWidth: 100
+plugins: ['prettier-plugin-hermes-parser']
+overrides:
+  - files: ['*.js']
+    options:
+      parser: babel-flow
+      # doesn't seem to support range formatting :(
+      # parser: hermes
+  - files: ['**/gstech-backend/scripts/(1099|1205)*.js']
+    options:
+      printWidth: 180

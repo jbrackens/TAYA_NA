@@ -1,0 +1,44 @@
+on:
+  release:
+    types: [created]
+    branches: [master]
+  schedule:
+    - cron:  '* */8 * * *'
+
+name: Push images to Amazon ECR + deploy on Docker Swarm
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-central-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: jannehietamaki/amazon-ecr-login@v6
+
+    - name: Deploy to Docker swarm
+      uses: jannehietamaki/docker-deployment-action@v9
+      with:
+        remote_docker_host: github@18.196.213.70
+        ssh_private_key: ${{ secrets.DOCKER_SSH_PRIVATE_KEY }}
+        ssh_public_key: ${{ secrets.DOCKER_SSH_PUBLIC_KEY }}
+        ssh_port: 12221
+        deployment_mode: docker-swarm
+        pre_deployment_command: docker login --username ${{ steps.login-ecr.outputs.username }} --password ${{ steps.login-ecr.outputs.password }} ${{ steps.login-ecr.outputs.registry }}
+        deploy_path: /home/github/deploy
+        copy_stack_file: true
+        docker_prune: true
+        stack_file_name: aws.yaml
+        keep_files: 5
+        args: --with-registry-auth gstech

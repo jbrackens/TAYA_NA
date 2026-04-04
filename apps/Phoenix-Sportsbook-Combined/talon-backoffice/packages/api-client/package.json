@@ -1,0 +1,27 @@
+{
+  "name": "@phoenix-ui/api-client",
+  "version": "1.0.0",
+  "description": "Type-safe API client for Phoenix Sportsbook backend",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.esm.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "phoenix",
+    "sportsbook",
+    "api-client",
+    "typescript"
+  ],
+  "author": "Phoenix Team",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

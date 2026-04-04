@@ -1,0 +1,82 @@
+{
+  "type": "record",
+  "name": "SlackNotification",
+  "namespace": "gmx.dataapi.internal.customer",
+  "fields": [
+    {
+      "name": "uuid",
+      "type": "string",
+      "logicalType": "UUID"
+    },
+    {
+      "name": "createdDateUTC",
+      "type": [
+        "null",
+        "long"
+      ],
+      "default": null
+    },
+    {
+      "name": "companyId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null,
+      "logicalType": "UUID"
+    },
+    {
+      "name": "externalUserId",
+      "type": "string"
+    },
+    {
+      "name": "channel",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "message",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "notificationTrigger",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "Priority",
+      "type": [
+        "null",
+        {
+          "type": "enum",
+          "name": "Priority",
+          "symbols": [
+            "lowest",
+            "low",
+            "medium",
+            "high",
+            "highest"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "operationTarget",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    }
+  ]
+}

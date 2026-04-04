@@ -1,0 +1,17 @@
+module.exports = {
+  HEADER: "Audit logs",
+  HEADER_DATE: "Date",
+  HEADER_PUNTER: "User",
+  HEADER_TYPE: "Type",
+  HEADER_ACTION: "Action",
+  HEADER_DETAILS: "Details",
+  CELL_TYPE_CREATION: "Account",
+  CELL_TYPE_ADJUSTMENT: "Adjustment",
+  CELL_TYPE_UNKNOWN: "Unknown",
+  CELL_ACTION_ACCOUNT_CREATION: "Account Created",
+  CELL_ACTION_ACCOUNT_CLOSURE: "Account Closed",
+  CELL_RESULT_UNKNOWN: "Unknown",
+  CELL_DETAILS_LABEL_NONE: "None",
+  CELL_DETAILS_LABEL_RESULT: "Result",
+  CELL_DETAILS_LABEL_DIFFERENCE: "Difference",
+};

@@ -1,0 +1,74 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n static %}{% load humanize %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}" />{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+
+<div class="module">
+    <h2>Select date:</h2>
+    {% for item in report_data %}
+        <h3>{{ item.year }}</h3><p>
+        {% for month in item.data %}
+                {% if selected_report_id == month.report_id %}
+                    <a href="{{ month.link }}" style="background-color: #ffffc4; padding: 1px; border: 1px solid; margin: 1px 5px;">{{ month.value }}</a>
+                {% else %}
+                    <a href="{{ month.link }}" style="padding: 1px; margin: 1px 5px;">{{ month.value }}</a>
+                {% endif %}
+        {% endfor %}</p>
+        <hr>
+    {% endfor %}
+</div>
+
+<div class="module">
+    <h2> BPR report for {{ year_str }}.{{ month_str }}</h2>
+    <table class="table">
+        <thead>
+            <th style="text-align: center">Date</th>
+            <th style="text-align: center">User</th>
+            <th style="text-align: center">Wallet</th>
+            <th style="text-align: center">TR IX</th>
+            <th style="text-align: center">Title</th>
+            <th style="text-align: center">Amount</th>
+        </thead>
+        <tbody>
+        {% for object in object_list %}
+            <tr>
+                <td style="min-width: 150px; max-width: 150px; text-align: center">
+                    <code>{{ object.operation_date|date:"Y.m.d H:i:s" }}</code>
+                </td>
+                <td style="min-width: 270px; max-width: 270px; text-align: center">
+                    <code>{{ object.wallet__user__username }}</code>
+                </td>
+                <td style="min-width: 250px; max-width: 250px;">
+                    <a href="{% url 'admin:wallet_wallet_change' object.wallet__id %}">
+                    <code style="text-decoration: underline">{{ object.wallet__id }}</code>
+                    </a>
+                </td>
+                <td style="min-width: 250px; max-width: 250px; text-align: center">
+                    <code>{{ object.src_transaction_id }}</code>
+                </td>
+                <td style="min-width: 320px; max-width: 320px; text-align: center">
+                    <code>{{ object.src_title }}</code>
+                </td>
+                <td style="min-width: 200px; max-width: 200px; text-align: right">
+                    <code>{{ object.amount|intcomma }}</code>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center">
+                    No data
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

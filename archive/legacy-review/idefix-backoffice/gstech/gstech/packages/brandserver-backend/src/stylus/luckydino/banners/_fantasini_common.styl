@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$fantasini_common_dagger_name = 'fantasini_common_dagger';
+$fantasini_common_dagger_x = 354px;
+$fantasini_common_dagger_y = 0px;
+$fantasini_common_dagger_offset_x = -354px;
+$fantasini_common_dagger_offset_y = 0px;
+$fantasini_common_dagger_width = 287px;
+$fantasini_common_dagger_height = 263px;
+$fantasini_common_dagger_total_width = 641px;
+$fantasini_common_dagger_total_height = 404px;
+$fantasini_common_dagger_image = 'fantasini_common_b.png';
+$fantasini_common_dagger = 354px 0px -354px 0px 287px 263px 641px 404px 'fantasini_common_b.png' 'fantasini_common_dagger';
+$fantasini_common_lady_name = 'fantasini_common_lady';
+$fantasini_common_lady_x = 0px;
+$fantasini_common_lady_y = 0px;
+$fantasini_common_lady_offset_x = 0px;
+$fantasini_common_lady_offset_y = 0px;
+$fantasini_common_lady_width = 350px;
+$fantasini_common_lady_height = 299px;
+$fantasini_common_lady_total_width = 641px;
+$fantasini_common_lady_total_height = 404px;
+$fantasini_common_lady_image = 'fantasini_common_b.png';
+$fantasini_common_lady = 0px 0px 0px 0px 350px 299px 641px 404px 'fantasini_common_b.png' 'fantasini_common_lady';
+$fantasini_common_logo_name = 'fantasini_common_logo';
+$fantasini_common_logo_x = 0px;
+$fantasini_common_logo_y = 303px;
+$fantasini_common_logo_offset_x = 0px;
+$fantasini_common_logo_offset_y = -303px;
+$fantasini_common_logo_width = 601px;
+$fantasini_common_logo_height = 101px;
+$fantasini_common_logo_total_width = 641px;
+$fantasini_common_logo_total_height = 404px;
+$fantasini_common_logo_image = 'fantasini_common_b.png';
+$fantasini_common_logo = 0px 303px 0px -303px 601px 101px 641px 404px 'fantasini_common_b.png' 'fantasini_common_logo';
+$spritesheet_width = 641px;
+$spritesheet_height = 404px;
+$spritesheet_image = 'fantasini_common_b.png';
+$spritesheet_sprites = $fantasini_common_dagger $fantasini_common_lady $fantasini_common_logo;
+$spritesheet = 641px 404px 'fantasini_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

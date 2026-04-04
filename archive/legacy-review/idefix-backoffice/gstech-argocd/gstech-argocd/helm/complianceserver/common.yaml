@@ -1,0 +1,67 @@
+livenessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: 3009
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: 3009
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+
+image:
+  repository: 743851384875.dkr.ecr.eu-central-1.amazonaws.com/gstech-compliance
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+ingress:
+  enabled: false
+  annotations: {}
+
+  hosts:
+    - host: gstech-compliance-service.local
+      paths: []
+  tls: []
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "1024Mi"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Container
+containerPort: 3009
+
+env:
+  METRICS_PORT: 4001
+  LOGGER_HOST: http://loki-write.monitoring.svc.cluster.local:3100
+  LOGGER_SERVICE: complianceserver
+
+prometheus:
+  enabled: false
+  path: /metrics
+  interval: 40s
+  portname: metrics

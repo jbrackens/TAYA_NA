@@ -1,0 +1,2 @@
+;select trace_id as tid from idefix_log where log_line = log_top_line()
+:eval :filter-expr :trace_id = \'$tid\'

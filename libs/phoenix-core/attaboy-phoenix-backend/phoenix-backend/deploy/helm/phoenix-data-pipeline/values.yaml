@@ -1,0 +1,6 @@
+# We're overriding values of a subchart, hence top-level per-subchart sections are necessary:
+# https://helm.sh/docs/chart_template_guide/subcharts_and_globals/#overriding-values-from-a-parent-chart
+cloudflow:
+  kafkaClusters:
+    default:
+      bootstrapServers: "phoenix-strimzi-kafka-bootstrap.cloudflow:9092"

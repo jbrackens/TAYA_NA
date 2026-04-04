@@ -1,0 +1,55 @@
+{
+  "balances": {
+    "u:seed:3001": 500000,
+    "u:seed:3002": 350000
+  },
+  "ledger": {
+    "u:seed:3001": [
+      {
+        "entryId": "wl:seed:000001",
+        "userId": "u:seed:3001",
+        "type": "credit",
+        "amountCents": 500000,
+        "balanceCents": 500000,
+        "idempotencyKey": "seed-balance-u3001",
+        "reason": "deterministic seed wallet balance",
+        "transactionTime": "2026-03-02T00:00:00Z"
+      }
+    ],
+    "u:seed:3002": [
+      {
+        "entryId": "wl:seed:000002",
+        "userId": "u:seed:3002",
+        "type": "credit",
+        "amountCents": 350000,
+        "balanceCents": 350000,
+        "idempotencyKey": "seed-balance-u3002",
+        "reason": "deterministic seed wallet balance",
+        "transactionTime": "2026-03-02T00:00:00Z"
+      }
+    ]
+  },
+  "idempotencyMap": {
+    "u:seed:3001:seed-balance-u3001": {
+      "entryId": "wl:seed:000001",
+      "userId": "u:seed:3001",
+      "type": "credit",
+      "amountCents": 500000,
+      "balanceCents": 500000,
+      "idempotencyKey": "seed-balance-u3001",
+      "reason": "deterministic seed wallet balance",
+      "transactionTime": "2026-03-02T00:00:00Z"
+    },
+    "u:seed:3002:seed-balance-u3002": {
+      "entryId": "wl:seed:000002",
+      "userId": "u:seed:3002",
+      "type": "credit",
+      "amountCents": 350000,
+      "balanceCents": 350000,
+      "idempotencyKey": "seed-balance-u3002",
+      "reason": "deterministic seed wallet balance",
+      "transactionTime": "2026-03-02T00:00:00Z"
+    }
+  },
+  "sequence": 2
+}

@@ -1,0 +1,58 @@
+
+/*
+
+This is hidden as the app was rejected from the app store.
+The css below hid links to the casino pages.
+It also showed a message on casino pages explaining why we cant show casino games
+
+// hide casino links for iphone app
+.is-in-iframe[data-mobile-os="ios"]{
+  a,
+  .page-header-main-navi-link,
+  .rj-hamburger-tabs-01-link,
+  .qnav-cross-button-wrapper,
+  .qnav-item-inner,
+  .side-menu-card{
+    &[href*="/casino"],
+    &[href*="/live-casino"],
+    &[href*="/virtuals"]{
+      display:none;
+    }
+  }
+
+  .qnav-cross-button{
+   display:none;
+  }
+  .qnav-container-has-cross-btn{
+    padding-right:0;
+  }
+  .panel-left-nav .rj-hamburger-tabs-01-outer:nth-of-type(3) {
+    display: none;
+  }
+  .rj-hamburger-tabs-01-container{
+    background:#282828;
+  }
+  .ag-next-horse-race-container{
+    .ag-racing-next-row-title{
+      width:133px;
+    }
+    .ag-racing-next-row li{
+      min-width:unset;
+    }
+  }
+  li.ng-star-inserted a[href*="virtuals"] {
+    display: none;
+  }
+  #virtuals-casino-panel .responsive-block,
+  #h-live-casino-panel .responsive-block,
+  #h-casino-panel .responsive-block{
+    display:none;
+  }
+  #master-container-Center_HTMLBlock_39950{
+    display:none;
+  }
+  .ios-notice.message-block{
+   display:block;
+  }
+}
+*/

@@ -1,0 +1,37 @@
+[[source]]
+url = 'https://lena-srv01.flipsports.net:4566/repository/pypi-group/simple'
+verify_ssl = true
+
+[packages]
+aws-rest-default = "==7.1.21+darkstormlabs"
+django-oidc-provider = "~=0.7.0"
+phonenumberslite = "~=8.12.7"
+django-phonenumber-field = "~=4.0.0"
+pynacl = "~=1.4.0"
+ujson = "~=4.0.1"
+django-inline-actions = "~=2.3.0"
+w3lib = "~=1.22.0"
+pyjwt = "~=1.7.1"
+urlmatch = "~=1.0.1"
+
+[requires]
+python_version = "3.8"
+
+[dev-packages]
+autoflake = "*"
+isort = "*"
+black = "*"
+vulture = "*"
+bandit = "*"
+safety = "*"
+python-dotenv = "*"
+lupa = "*"
+fakeredis = "*"
+coverage = "*"
+factory-boy = "*"
+faker-e164 = "*"
+faker = "*"
+freezegun = "*"
+
+[pipenv]
+allow_prereleases = true

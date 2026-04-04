@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "fixtureId": "f:100",
+      "fixtureName": "Wisla Krakow vs Dignitas",
+      "startTime": "2026-03-02T12:00:00Z",
+      "markets": [
+        {
+          "marketId": "m:100",
+          "marketName": "Match winner",
+          "selectionOdds": []
+        }
+      ],
+      "competitors": {
+        "home": {
+          "competitorId": "c:1",
+          "name": "Wisla Krakow",
+          "abbreviation": "WIS",
+          "qualifier": "home",
+          "score": 0
+        },
+        "away": {
+          "competitorId": "c:2",
+          "name": "Dignitas",
+          "abbreviation": "DIG",
+          "qualifier": "away",
+          "score": 0
+        }
+      },
+      "tournament": {
+        "name": "Spring Sweet Spring #2",
+        "sportId": "s:1",
+        "startTime": "2026-03-02T00:00:00Z",
+        "tournamentId": "t:1"
+      },
+      "status": "OPEN"
+    }
+  ],
+  "totalCount": 1,
+  "itemsPerPage": 20,
+  "currentPage": 1,
+  "hasNextPage": false
+}

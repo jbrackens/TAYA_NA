@@ -1,0 +1,858 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-gateway
+  template:
+    metadata:
+      labels:
+        app: phoenix-gateway
+    spec:
+      containers:
+        - name: phoenix-gateway
+          image: ghcr.io/philcali-phoenix/phoenix-gateway:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-gateway
+spec:
+  selector:
+    app: phoenix-gateway
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-user
+  template:
+    metadata:
+      labels:
+        app: phoenix-user
+    spec:
+      containers:
+        - name: phoenix-user
+          image: ghcr.io/philcali-phoenix/phoenix-user:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8001
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-user
+spec:
+  selector:
+    app: phoenix-user
+  ports:
+    - port: 8001
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-wallet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-wallet
+  template:
+    metadata:
+      labels:
+        app: phoenix-wallet
+    spec:
+      containers:
+        - name: phoenix-wallet
+          image: ghcr.io/philcali-phoenix/phoenix-wallet:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8002
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-wallet
+spec:
+  selector:
+    app: phoenix-wallet
+  ports:
+    - port: 8002
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-market-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-market-engine
+  template:
+    metadata:
+      labels:
+        app: phoenix-market-engine
+    spec:
+      containers:
+        - name: phoenix-market-engine
+          image: ghcr.io/philcali-phoenix/phoenix-market-engine:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8003
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-market-engine
+spec:
+  selector:
+    app: phoenix-market-engine
+  ports:
+    - port: 8003
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-betting-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-betting-engine
+  template:
+    metadata:
+      labels:
+        app: phoenix-betting-engine
+    spec:
+      containers:
+        - name: phoenix-betting-engine
+          image: ghcr.io/philcali-phoenix/phoenix-betting-engine:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8004
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-betting-engine
+spec:
+  selector:
+    app: phoenix-betting-engine
+  ports:
+    - port: 8004
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-events
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-events
+  template:
+    metadata:
+      labels:
+        app: phoenix-events
+    spec:
+      containers:
+        - name: phoenix-events
+          image: ghcr.io/philcali-phoenix/phoenix-events:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8005
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-events
+spec:
+  selector:
+    app: phoenix-events
+  ports:
+    - port: 8005
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-retention
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-retention
+  template:
+    metadata:
+      labels:
+        app: phoenix-retention
+    spec:
+      containers:
+        - name: phoenix-retention
+          image: ghcr.io/philcali-phoenix/phoenix-retention:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8006
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-retention
+spec:
+  selector:
+    app: phoenix-retention
+  ports:
+    - port: 8006
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-social
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-social
+  template:
+    metadata:
+      labels:
+        app: phoenix-social
+    spec:
+      containers:
+        - name: phoenix-social
+          image: ghcr.io/philcali-phoenix/phoenix-social:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8007
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-social
+spec:
+  selector:
+    app: phoenix-social
+  ports:
+    - port: 8007
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-compliance
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-compliance
+  template:
+    metadata:
+      labels:
+        app: phoenix-compliance
+    spec:
+      containers:
+        - name: phoenix-compliance
+          image: ghcr.io/philcali-phoenix/phoenix-compliance:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8008
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-compliance
+spec:
+  selector:
+    app: phoenix-compliance
+  ports:
+    - port: 8008
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-analytics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-analytics
+  template:
+    metadata:
+      labels:
+        app: phoenix-analytics
+    spec:
+      containers:
+        - name: phoenix-analytics
+          image: ghcr.io/philcali-phoenix/phoenix-analytics:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8009
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-analytics
+spec:
+  selector:
+    app: phoenix-analytics
+  ports:
+    - port: 8009
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-settlement
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-settlement
+  template:
+    metadata:
+      labels:
+        app: phoenix-settlement
+    spec:
+      containers:
+        - name: phoenix-settlement
+          image: ghcr.io/philcali-phoenix/phoenix-settlement:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8010
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-settlement
+spec:
+  selector:
+    app: phoenix-settlement
+  ports:
+    - port: 8010
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-notification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-notification
+  template:
+    metadata:
+      labels:
+        app: phoenix-notification
+    spec:
+      containers:
+        - name: phoenix-notification
+          image: ghcr.io/philcali-phoenix/phoenix-notification:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8011
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-notification
+spec:
+  selector:
+    app: phoenix-notification
+  ports:
+    - port: 8011
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-cms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-cms
+  template:
+    metadata:
+      labels:
+        app: phoenix-cms
+    spec:
+      containers:
+        - name: phoenix-cms
+          image: ghcr.io/philcali-phoenix/phoenix-cms:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8012
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix-cms
+spec:
+  selector:
+    app: phoenix-cms
+  ports:
+    - port: 8012
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stella-engagement
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stella-engagement
+  template:
+    metadata:
+      labels:
+        app: stella-engagement
+    spec:
+      containers:
+        - name: stella-engagement
+          image: ghcr.io/philcali-phoenix/stella-engagement:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          ports:
+            - containerPort: 8013
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stella-engagement
+spec:
+  selector:
+    app: stella-engagement
+  ports:
+    - port: 8013
+      targetPort: http
+      protocol: TCP
+      name: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix-outbox-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phoenix-outbox-worker
+  template:
+    metadata:
+      labels:
+        app: phoenix-outbox-worker
+    spec:
+      containers:
+        - name: phoenix-outbox-worker
+          image: ghcr.io/philcali-phoenix/phoenix-outbox-worker:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /usr/local/bin/phoenix-outbox-worker
+          envFrom:
+            - configMapRef:
+                name: phoenix-platform-config
+            - secretRef:
+                name: phoenix-platform-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

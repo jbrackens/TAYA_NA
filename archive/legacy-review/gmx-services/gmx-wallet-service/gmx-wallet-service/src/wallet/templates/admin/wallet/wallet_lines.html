@@ -1,0 +1,61 @@
+{% load humanize %}
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th style="text-align: center;">Date</th>
+            <th style="text-align: center;">Type</th>
+            <th style="text-align: center;">SubType</th>
+            <th style="text-align: center;">TX ID</th>
+            <th style="text-align: center;">Partner</th>
+            <th style="text-align: center;">Title</th>
+            <th style="text-align: center;">Before</th>
+            <th style="text-align: center;">Amount</th>
+            <th style="text-align: center;">After</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in lines %}
+            <tr>
+                <td>
+                    <code>{{ line.operation_date|date:"Y.m.d H:i:s" }}</code>
+                </td>
+                <td style="width: 50px;text-align: center">
+                    <code style="padding: 2px; border: 1px solid #777; background-color: #f8f8f8; border-radius: 5px">{{ line.operation_type }}</code>
+                </td>
+                <td style="width: 50px;text-align: center">
+                    <code style="padding: 2px; border: 1px solid #777; background-color: #f8f8f8; border-radius: 5px">{{ line.operation_subtype }}</code>
+                </td>
+                <td style="width: 250px;text-align: center">
+                    <code>{{ line.src_transaction_id }}</code>
+                </td>
+                <td style="width: 300px;text-align: center">
+                    <code>{{ line.partner__username }}</code>
+                </td>
+                <td style="width: 350px;">
+                    <code>{{ line.src_title }}</code>
+                </td>
+            {% if line.amount >= 0 %}
+                <td style="background-color: rgba(0, 150, 0, 0.20); text-align: right; width:130px;">
+            {% else %}
+                <td style="background-color: rgba(150, 0, 0, 0.20); text-align: right; width:130px;">
+            {% endif %}
+                    <code>{% if line.balance_before.is_zero %}0.00000000{% else %}{{ line.balance_before|intcomma }}{% endif %}</code>
+                </td>
+            {% if line.amount >= 0 %}
+                <td style="background-color: rgba(0, 150, 0, 0.25); text-align: right; width:130px;">
+            {% else %}
+                <td style="background-color: rgba(150, 0, 0, 0.25); text-align: right; width:130px;">
+            {% endif %}
+                    <code>{% if line.amount.is_zero %}0.00000000{% else %}{{ line.amount|intcomma }}{% endif %}</code>
+                </td>
+            {% if line.amount >= 0 %}
+                <td style="background-color: rgba(0, 150, 0, 0.20); text-align: right; width:130px;">
+            {% else %}
+                <td style="background-color: rgba(150, 0, 0, 0.20); text-align: right; width:130px;">
+            {% endif %}
+                    <code>{% if line.balance_after.is_zero %}0.00000000{% else %}{{ line.balance_after|intcomma }}{% endif %}</code>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

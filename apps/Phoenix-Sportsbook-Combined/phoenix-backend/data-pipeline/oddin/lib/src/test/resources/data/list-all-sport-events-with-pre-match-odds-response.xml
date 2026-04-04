@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schedule generated_at="2020-09-04T15:30:53">
+    <sport_event id="od:match:15970" name="Pittsburgh Knights vs eUnited" scheduled="2020-09-04T22:00:00" liveodds="not_available" status="started">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:625" name="Pittsburgh Knights" abbreviation="Pittsburgh Knights" qualifier="home"></competitor>
+            <competitor id="od:competitor:284" name="eUnited" abbreviation="eUnited" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15964" name="NRG Esports vs Alpine Esports" scheduled="2020-09-04T22:00:00" liveodds="not_available">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:124" name="NRG Esports" abbreviation="NRG" qualifier="home"></competitor>
+            <competitor id="od:competitor:1774" name="Alpine Esports" abbreviation="AlpineE" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15242" name="MaNa vs Couguar" scheduled="2020-09-05T17:40:00" liveodds="not_available">
+        <tournament id="od:tournament:737" name="DH SC2 Masters 2020 Fall: Europe" scheduled="2020-08-25T22:00:00">
+            <tournament_length start_date="2020-08-26"></tournament_length>
+            <sport id="od:sport:11" name="Starcraft 2" abbreviation="SC2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:880" name="MaNa" abbreviation="MaNa" qualifier="home"></competitor>
+            <competitor id="od:competitor:1893" name="Couguar" abbreviation="Couguar" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15971" name="Kansas City Pioneers vs Plot Twist" scheduled="2020-09-04T22:00:00" liveodds="not_available">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1773" name="Kansas City Pioneers" abbreviation="KCP" qualifier="home"></competitor>
+            <competitor id="od:competitor:1776" name="Plot Twist" abbreviation="PT" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15965" name="The Peeps vs Xset" scheduled="2020-09-04T22:00:00" liveodds="not_available">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:126" name="The Peeps" abbreviation="The Peeps" qualifier="home"></competitor>
+            <competitor id="od:competitor:1900" name="Xset" abbreviation="Xset" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15966" name="Team Envy vs Version1" scheduled="2020-09-04T22:00:00" liveodds="not_available">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:260" name="Team Envy" abbreviation="Envy" qualifier="home"></competitor>
+            <competitor id="od:competitor:1901" name="Version1" abbreviation="Version1" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15968" name="G2 Esports vs Omelette" scheduled="2020-09-04T22:00:00" liveodds="not_available">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:15" name="G2 Esports" abbreviation="G2" qualifier="home"></competitor>
+            <competitor id="od:competitor:1775" name="Omelette" abbreviation="Omelette" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15874" name="Shine vs JyJ" scheduled="2020-09-06T10:30:00" liveodds="not_available">
+        <tournament id="od:tournament:753" name="AfreecaTV Starleague Season 10" scheduled="2020-09-05T22:00:00">
+            <sport id="od:sport:14" name="Starcraft 1" abbreviation="SC1"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:2035" name="Shine" abbreviation="Shine" qualifier="home"></competitor>
+            <competitor id="od:competitor:2036" name="JyJ" abbreviation="JyJ" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15875" name="Snow vs Yoon" scheduled="2020-09-08T10:00:00" liveodds="not_available">
+        <tournament id="od:tournament:753" name="AfreecaTV Starleague Season 10" scheduled="2020-09-05T22:00:00">
+            <sport id="od:sport:14" name="Starcraft 1" abbreviation="SC1"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1078" name="Snow" abbreviation="Snow" qualifier="home"></competitor>
+            <competitor id="od:competitor:2037" name="Yoon" abbreviation="Yoon" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15967" name="Rogue vs Charlotte Phoenix" scheduled="2020-09-04T22:00:00" liveodds="not_available">
+        <tournament id="od:tournament:705" name="RLCS Season X - Fall: The Grid NA" scheduled="2020-08-19T22:00:00">
+            <tournament_length start_date="2020-08-20"></tournament_length>
+            <sport id="od:sport:12" name="Rocket League" abbreviation="RocketLeague"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:19" name="Rogue" abbreviation="Rogue" qualifier="home"></competitor>
+            <competitor id="od:competitor:542" name="Charlotte Phoenix" abbreviation="Charlotte Phoenix" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+</schedule>

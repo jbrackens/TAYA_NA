@@ -1,0 +1,56 @@
+configuration:
+  zookeeper_quorum: zookeeper.streaming.svc.cluster.local:2181
+  directories:
+    logs: /data/flink-log-dir
+    envLogs: /data/env-log
+    storage: /data/recovery
+    blob: /data/blob-storage
+    rocksdb: /data/rocksdb-logs
+    checkpoints: /data/checkpoints
+    savepoints: /data/savepoints
+    archive:
+      jobmanager: /data/jobmanager-archive
+      historyserver: /data/historyserver-archive
+    web:
+      upload: /data/web-upload-dir
+      log: /data/web-log/web.log
+
+taskManager:
+  numberOfTaskSlots: 6
+  memoryProcessSize: 23500m
+  parallelism: 4
+  replicas: 2
+  deploy_on: streaming-nodes
+  resources:
+    limits:
+      cpu: 4
+      memory: 24Gi
+    requests:
+      cpu: 3
+      memory: 24Gi
+
+jobManager:
+  replicas: 2
+  deploy_on: streaming-nodes
+  memoryProcessSize: 800m
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 1Gi
+
+eeg_pvc_cfs:
+  capacity: # example: 100Gi
+  host:  # example: 10.17.105.17
+  permissionGroupId:  # example pgroup-5nnsx6up
+  subnetId:  # example  subnet-mqulbblm
+  vpcId:  # example  vpc-fc428r6x
+  region:  # example  eu-frankfurt-1
+
+commonCustomEnv:
+  - name: "EEG_WAYSUN_KAFKA_SCHEMA_REGISTRY_URL"
+    value: "http://cp-schema-registry.streaming.svc.cluster.local:8081"
+  - name: "EEG_WAYSUN_KAFKA_BOOTSTRAP"
+    value: "kafka.streaming.svc.cluster.local:9092"

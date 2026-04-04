@@ -1,0 +1,64 @@
+nameOverride: "prod-gstech-metabase-service"
+fullnameOverride: "prod-gstech-metabase-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+image:
+  repository: metabase/metabase
+  pullPolicy: Always
+  tag: "v0.50.23"
+
+service:
+  enabled: true
+  port: 3000
+
+ingressClassName: nginx
+
+resources:
+  requests:
+    memory: "6G"
+    cpu: "2"
+  limits:
+    memory: "6G"
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-gstech-metabase-service
+  hosts:
+  - host: reporting.luckydino.com
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: prod-gstech-metabase-service
+      servicePort: 3000
+
+  namespace: prod
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600s"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600s"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600s"
+    nginx.ingress.kubernetes.io/client-max-body-size: "20m"
+    nginx.ingress.kubernetes.io/whitelist-source-range: 173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22
+
+  tls: []
+
+env:
+  MB_DB_TYPE: postgres
+  MB_DB_DBNAME: metabase
+  MB_DB_PORT: 5432
+  MB_DB_USER: metabase
+  MB_DB_HOST: rds-metabase.prod.eeg.viegg.net
+  JAVA_TIMEZONE: Europe/Malta
+secretEnv:
+  MB_DB_PASS:
+    prod-gstech-metabase-service: postgres-password

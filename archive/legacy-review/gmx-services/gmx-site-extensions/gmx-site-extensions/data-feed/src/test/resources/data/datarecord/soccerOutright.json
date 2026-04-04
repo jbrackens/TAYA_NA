@@ -1,0 +1,122 @@
+[
+  {
+    "key": {
+      "type": "Event",
+      "id": "75775799"
+    },
+    "value": {
+      "messageId": "3dd53208-892f-42d9-9209-cf4a3bd673b4",
+      "messageOriginDateUTC": 1611923664,
+      "messageProcessingDateUTC": 1611924774678,
+      "payload": {
+        "id": "75775799",
+        "sportId": "1",
+        "sportName": "Soccer",
+        "countryId": "116",
+        "countryCode": "KK",
+        "countryName": "Scotland",
+        "leagueId": "40818",
+        "leagueName": "Scotland - Premiership",
+        "eventType": "Outright",
+        "eventName": "Scotland - Premiership 2020/21 - Winner",
+        "startTime": 1612018800,
+        "status": "NotStarted",
+        "isDisabled": false,
+        "isLive": false,
+        "participants": [
+          {
+            "id": "615",
+            "name": "Hamilton Accies",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "-999",
+            "name": "Other",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "496",
+            "name": "Motherwell",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "34920",
+            "name": "Livingston",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "1063",
+            "name": "Ross County",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "493",
+            "name": "Dundee Utd",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "22242",
+            "name": "Saint Johnstone",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "614",
+            "name": "St Mirren",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "486",
+            "name": "Celtic",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "495",
+            "name": "Rangers",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "494",
+            "name": "Hibernian",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "489",
+            "name": "Kilmarnock",
+            "details": {
+              "venueRole": null
+            }
+          },
+          {
+            "id": "1658",
+            "name": "Aberdeen",
+            "details": {
+              "venueRole": null
+            }
+          }
+        ]
+      }
+    }
+  }
+]

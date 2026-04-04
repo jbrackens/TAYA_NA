@@ -1,0 +1,15 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "himedia-plugin-virtual-pointer": {
+      "PACKAGE_NAME": "com.hm.green"
+    }
+  },
+  "dependent_plugins": {}
+}

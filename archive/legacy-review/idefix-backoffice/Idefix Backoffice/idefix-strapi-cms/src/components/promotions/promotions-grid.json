@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_promotions_promotions_grids",
+  "info": {
+    "displayName": "Promotions Grid",
+    "icon": "apps"
+  },
+  "options": {},
+  "attributes": {
+    "promotions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::promotion.promotion"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+<Events>
+    <Event DateTimeGMT="14/06/2018 15:00:00" Branch="Soccer" Sport="Soccer" BranchID="1" League="World Cup 2018"
+           LeagueID="14823" ID="23215078" IsOption="0" EventType="157" MEID="8839912">
+        <Participants>
+            <Participant1 Name="Russia" Home_Visiting="Home"/>
+            <Participant2 Name="Saudi Arabia" Home_Visiting="Visiting"/>
+        </Participants>
+        <Spread Home_Odds="6" Home_Points="0" Away_Points="0" Away_Odds="6" Home_LineID="R318275780"
+                Away_LineID="R318275784"/>
+    </Event>
+</Events>

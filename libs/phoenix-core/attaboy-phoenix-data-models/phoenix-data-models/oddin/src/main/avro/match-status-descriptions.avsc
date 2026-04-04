@@ -1,0 +1,32 @@
+{
+  "namespace": "phoenix.oddin.data",
+  "type": "record",
+  "name": "MatchStatusDescriptions",
+  "fields": [
+    {
+      "name": "responseCode",
+      "type": "string"
+    },
+    {
+      "namespace": "phoenix.oddin.data",
+      "name": "matchStatuses",
+      "type": {
+        "type": "array",
+        "items": {
+          "name": "MatchStatus",
+          "type": "record",
+          "fields": [
+            {
+              "name": "id",
+              "type": "int"
+            },
+            {
+              "name": "description",
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+name: Clean PR Caches
+on:
+  pull_request:
+    types: [closed]
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  REPO: ${{ github.repository }}
+  PR_KEY: 'refs/pull/${{ github.event.pull_request.number }}/merge'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Cleanup
+        run: ./.github/scripts/cleanup-cache.sh pr
+

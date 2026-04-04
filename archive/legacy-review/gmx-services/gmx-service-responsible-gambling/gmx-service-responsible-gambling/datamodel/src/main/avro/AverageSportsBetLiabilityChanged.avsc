@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "namespace": "gmx.dataapi.internal.bet",
+  "name": "AverageSportsBetLiabilityChanged",
+  "fields": [
+    {
+      "name": "averageStake",
+      "type": "string"
+    },
+    {
+      "name": "changedAtUtc",
+      "type": "long"
+    }
+  ]
+}

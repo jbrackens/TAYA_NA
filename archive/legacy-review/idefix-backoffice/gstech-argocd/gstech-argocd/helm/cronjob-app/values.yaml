@@ -1,0 +1,25 @@
+image:
+  pullPolicy: IfNotPresent
+  tag: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+rbac:
+  create: false
+
+podSecurityPolicy:
+  create: false
+
+env: {}
+
+secretEnv: {}

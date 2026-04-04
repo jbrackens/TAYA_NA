@@ -1,0 +1,6 @@
+dependencies:
+- name: nifi-registry
+  repository: https://dysnix.github.io/charts/
+  version: 0.3.8
+digest: sha256:a673a3e9ad5db64a9197a1a512f744dc083a4f3d20b4844e9923a55f4b80c083
+generated: "2022-03-16T15:58:34.718515+01:00"

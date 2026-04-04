@@ -1,0 +1,7 @@
+module.exports = {
+  TITLE: "Session Reminder",
+  OK: "Ok",
+  CURRENT_TIME: "Current Time",
+  SESSION_DURATION: "Session Duration",
+  MINUTES: "Minutes"
+};

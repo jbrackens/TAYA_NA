@@ -1,0 +1,38 @@
+{{ $secretname := include "cronjob-app.fullname" . }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "cronjob-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "cronjob-app.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: {{ include "cronjob-app.serviceAccountName" . }}
+          containers:
+          - name: {{ include "cronjob-app.fullname" . }}-job
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            command: ["sh"]
+            args:
+              - "-c"
+              - {{ .Values.command | quote }}
+            env:
+            {{- range $key, $value := .Values.env }}
+              - name: "{{ $key }}"
+                value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.secretEnv }}
+              {{ range $k, $v := $value }}
+              - name: {{ $key }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $secretname }}
+                    key: {{ printf "%s" $v }}
+              {{ end}}
+            {{- end }}
+          restartPolicy: OnFailure

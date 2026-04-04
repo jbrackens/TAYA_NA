@@ -1,0 +1,44 @@
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <property name="JSON_LOGGING" value="${JSON_LOGGING:-true}"/>
+    <if condition='property("JSON_LOGGING").equals("true")'>
+        <then>
+            <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                    <providers>
+                        <timestamp/>
+                        <logLevel/>
+                        <threadName/>
+                        <loggerName/>
+                        <mdc/>
+                        <message/>
+                        <arguments/>
+                        <stackTrace/>
+                        <stackHash/>
+                    </providers>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                    <Pattern>%date{"yyyy-MM-dd HH:mm:ss,SSSZZZZ"} %-5level [%X{correlation_uuid}] [%-20.20thread] %logger{10} - %message%n%xException</Pattern>
+                </encoder>
+            </appender>
+        </else>
+    </if>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <logger name="net.flipsports.gmx" level="DEBUG"/>
+    <logger name="akka.actor" level="DEBUG"/>
+    <logger name="akka.stream" level="DEBUG"/>
+
+</configuration>

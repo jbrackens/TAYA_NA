@@ -1,0 +1,1 @@
+INSERT INTO risks ("type", "fraudKey", "points", "maxCumulativePoints", "title", "description", "riskProfiles") VALUES ('customer', 'big_wd_deposit_not_wagered', 30, 30, 'Withdrawal with not wagered deposit', 'Player withdraws having not wagered deposit and the last deposit was big', null);

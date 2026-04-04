@@ -1,0 +1,27 @@
+| Package | Current | Latest | Workspace | Type | Class |
+|---|---|---|---|---|---|
+| @commitlint/cli | 8.3.5 | 20.4.3 | phoenix-ui | devDependencies | major |
+| @commitlint/config-conventional | 8.3.4 | 20.4.3 | phoenix-ui | devDependencies | major |
+| @fingerprintjs/fingerprintjs | 3.3.3 | 5.1.0 | @phoenix-ui/utils | dependencies | major |
+| @reduxjs/toolkit | 1.5.0 | 2.11.2 | @phoenix-ui/app | devDependencies | major |
+| @reduxjs/toolkit | 1.5.0 | 2.11.2 | @phoenix-ui/office | devDependencies | major |
+| @testing-library/jest-dom | 5.11.9 | 6.9.1 | phoenix-ui | devDependencies | major |
+| @testing-library/jest-dom | 5.11.9 | 6.9.1 | @phoenix-ui/office | devDependencies | major |
+| @testing-library/react | 11.2.5 | 16.3.2 | phoenix-ui | devDependencies | major |
+| @testing-library/react | 11.2.5 | 16.3.2 | @phoenix-ui/office | devDependencies | major |
+| @testing-library/react-hooks | 3.7.0 | 8.0.1 | phoenix-ui | devDependencies | major |
+| @testing-library/react-hooks | 3.7.0 | 8.0.1 | @phoenix-ui/office | devDependencies | major |
+| @testing-library/user-event | 7.2.1 | 14.6.1 | phoenix-ui | devDependencies | major |
+| @testing-library/user-event | 7.2.1 | 14.6.1 | @phoenix-ui/office | devDependencies | major |
+| @types/cors | 2.8.10 | 2.8.19 | @phoenix-ui/mock-server | devDependencies | patch |
+| @types/express | 4.17.11 | 5.0.6 | @phoenix-ui/mock-server | devDependencies | major |
+| @types/jest | 24.0.23 | 30.0.0 | phoenix-ui | devDependencies | major |
+| @types/jest | 24.0.23 | 30.0.0 | @phoenix-ui/app | devDependencies | major |
+| @types/jest | 24.0.23 | 30.0.0 | @phoenix-ui/office | devDependencies | major |
+| @types/js-cookie | 2.2.6 | 3.0.6 | @phoenix-ui/office | devDependencies | major |
+| @types/jsonwebtoken | 7.2.8 | 9.0.10 | @phoenix-ui/app | devDependencies | major |
+| @types/jsonwebtoken | 7.2.8 | 9.0.10 | @phoenix-ui/mock-server | devDependencies | major |
+| @types/jsonwebtoken | 7.2.8 | 9.0.10 | @phoenix-ui/office | devDependencies | major |
+| @types/lodash | 4.14.161 | 4.17.24 | phoenix-ui | devDependencies | minor |
+| @types/node | 10.12.18 | 25.3.5 | phoenix-ui | devDependencies | major |
+| @types/node | 14.14.31 | 25.3.5 | @phoenix-ui/app | devDependencies | major |

@@ -1,0 +1,12 @@
+<odds_change timestamp="1604863214564" event_id="od:match:19816" product="1" request_id="14526">
+    <odds>
+        <market id="27" specifiers="threshold=36|map=3" status="-1">
+            <outcome id="5" active="0"></outcome>
+            <outcome id="4" active="0"></outcome>
+        </market>
+        <market id="34" specifiers="map=1|threshold=54.5" status="-1">
+            <outcome id="5" active="0"></outcome>
+            <outcome id="4" active="0"></outcome>
+        </market>
+    </odds>
+</odds_change>

@@ -1,0 +1,739 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1556897367250,
+        "description": "",
+        "identifier": "ac51e628-b451-5fc6-ab82-6396c442ce9a",
+        "modifiedTimestamp": 1556899128851,
+        "name": "CsvSplitToJSON",
+        "type": "Flow",
+        "versionCount": 2
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "f8bf603a-d45b-3b2f-9431-64c48a0ebbb2",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "5f91b28d-fc69-37a0-bed9-f233c9cc68b8",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "87933cf7-76a5-3e50-8f5b-895ecdc01f27",
+                    "name": "SplitRecord 10.000",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 221.8148005939637,
+                        "y": -439.8165508356993
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "ad7597ff-3e69-3bf1-a6fa-6f04727b82d1",
+                    "name": "SplitRecord 100",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "fbb11414-0359-3e6f-982f-83c56a3ba1d4",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "a8831d65-2956-3301-ac61-8a0146961edd",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "4afb4ebd-b6b2-3d3b-8ea0-a4d53573da81",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "87eed181-916d-3942-b437-9dcb207dc233",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "splits"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "79086d70-a8ac-3b77-ba7c-2b0941c04a48",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "ddd07c21-54b9-329a-bc2b-edeb98d2aa05",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "855f6c7c-98b6-361a-920c-dda3380c03f9",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "79086d70-a8ac-3b77-ba7c-2b0941c04a48",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "a8831d65-2956-3301-ac61-8a0146961edd",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "fa5928c8-e6ac-3173-9166-ba1a6c036ee3",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "ad7597ff-3e69-3bf1-a6fa-6f04727b82d1",
+                    "name": "SplitRecord 100",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 220.90861162911995,
+                        "y": -650.321616753668
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "87933cf7-76a5-3e50-8f5b-895ecdc01f27",
+                    "name": "SplitRecord 10.000",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "62a652f1-08a4-3f65-9069-7f8b5fedff67",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "f8bf603a-d45b-3b2f-9431-64c48a0ebbb2",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "ad7597ff-3e69-3bf1-a6fa-6f04727b82d1",
+                    "name": "SplitRecord 100",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "db49a8fa-eecf-395f-9f69-03421a4ed882",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "splits"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "87933cf7-76a5-3e50-8f5b-895ecdc01f27",
+                    "name": "SplitRecord 10.000",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "79086d70-a8ac-3b77-ba7c-2b0941c04a48",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "1f1ccce0-320a-3774-8300-5dc66b8bad0e",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "splits"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "ad7597ff-3e69-3bf1-a6fa-6f04727b82d1",
+                    "name": "SplitRecord 100",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "87933cf7-76a5-3e50-8f5b-895ecdc01f27",
+                    "name": "SplitRecord 10.000",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "fb463f19-2796-32bb-b693-b36b58d2f42a",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    ""
+                ],
+                "source": {
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "84fd3e03-91f2-366f-ba94-bf70cbf42040",
+                    "name": "start",
+                    "type": "INPUT_PORT"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 223.63038286935432,
+                        "y": -233.5278850642149
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "79086d70-a8ac-3b77-ba7c-2b0941c04a48",
+                    "name": "SplitRecord",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "5708716e-6119-3a02-b82d-c4414d5a9cfb",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "partitioningAttribute": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                    "id": "ddd07c21-54b9-329a-bc2b-edeb98d2aa05",
+                    "name": "LogMessage",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+        "inputPorts": [
+            {
+                "componentType": "INPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "84fd3e03-91f2-366f-ba94-bf70cbf42040",
+                "name": "start",
+                "position": {
+                    "x": 416.9999840729788,
+                    "y": -752.1606289844957
+                },
+                "type": "INPUT_PORT"
+            }
+        ],
+        "labels": [],
+        "name": "CsvSplitToJSON",
+        "outputPorts": [
+            {
+                "componentType": "OUTPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "4afb4ebd-b6b2-3d3b-8ea0-a4d53573da81",
+                "name": "output",
+                "position": {
+                    "x": 418.9999840729788,
+                    "y": -19.160628984495702
+                },
+                "type": "OUTPUT_PORT"
+            }
+        ],
+        "position": {
+            "x": 172.49650322478192,
+            "y": -599.7522602649722
+        },
+        "processGroups": [],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [
+                    "original"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "ad7597ff-3e69-3bf1-a6fa-6f04727b82d1",
+                "name": "SplitRecord 100",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 361.30807660808796,
+                    "y": -429.64562048243704
+                },
+                "properties": {
+                    "Record Reader": "4da625b8-bfb1-3f98-80fe-ad42b9d2e451",
+                    "Record Writer": "50d37a07-c665-3fbe-8f01-da05966f3ce4",
+                    "Records Per Split": "100"
+                },
+                "propertyDescriptors": {
+                    "Record Reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "Record Reader",
+                        "sensitive": false
+                    },
+                    "Record Writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "Record Writer",
+                        "sensitive": false
+                    },
+                    "Records Per Split": {
+                        "displayName": "Records Per Split",
+                        "identifiesControllerService": false,
+                        "name": "Records Per Split",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.SplitRecord",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [
+                    "original"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "79086d70-a8ac-3b77-ba7c-2b0941c04a48",
+                "name": "SplitRecord",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 362.9392411588692,
+                    "y": -224.0682889394683
+                },
+                "properties": {
+                    "Record Reader": "4da625b8-bfb1-3f98-80fe-ad42b9d2e451",
+                    "Record Writer": "50d37a07-c665-3fbe-8f01-da05966f3ce4",
+                    "Records Per Split": "1"
+                },
+                "propertyDescriptors": {
+                    "Record Reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "Record Reader",
+                        "sensitive": false
+                    },
+                    "Record Writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "Record Writer",
+                        "sensitive": false
+                    },
+                    "Records Per Split": {
+                        "displayName": "Records Per Split",
+                        "identifiesControllerService": false,
+                        "name": "Records Per Split",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.SplitRecord",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [
+                    "original"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "87933cf7-76a5-3e50-8f5b-895ecdc01f27",
+                "name": "SplitRecord 10.000",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 360.49569867840046,
+                    "y": -640.6557523183745
+                },
+                "properties": {
+                    "Record Reader": "dc15e7f3-36eb-32e7-919a-9555997a4e09",
+                    "Record Writer": "50d37a07-c665-3fbe-8f01-da05966f3ce4",
+                    "Records Per Split": "10000"
+                },
+                "propertyDescriptors": {
+                    "Record Reader": {
+                        "displayName": "Record Reader",
+                        "identifiesControllerService": true,
+                        "name": "Record Reader",
+                        "sensitive": false
+                    },
+                    "Record Writer": {
+                        "displayName": "Record Writer",
+                        "identifiesControllerService": true,
+                        "name": "Record Writer",
+                        "sensitive": false
+                    },
+                    "Records Per Split": {
+                        "displayName": "Records Per Split",
+                        "identifiesControllerService": false,
+                        "name": "Records Per Split",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.SplitRecord",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "f8bf603a-d45b-3b2f-9431-64c48a0ebbb2",
+                "name": "LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -268.67847542016057,
+                    "y": -639.9874811889615
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Error durring 10.000 Split",
+                    "log-prefix": "[CSVSplitToJSON][${filename}]"
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 1000,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "a8831d65-2956-3301-ac61-8a0146961edd",
+                "name": "LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -267.67847542016057,
+                    "y": -429.9874811889615
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Error durring 100 Split",
+                    "log-prefix": "[CSVSplitToJSON][${filename}]"
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 1000,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "e1a4d3ad-ceb4-39dc-9d32-fc4f26c02946",
+                "identifier": "ddd07c21-54b9-329a-bc2b-edeb98d2aa05",
+                "name": "LogMessage",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": -265.67847542016057,
+                    "y": -222.9874811889615
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Error durring 1 Split",
+                    "log-prefix": "[CSVSplitToJSON][${filename}]"
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 1000,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "",
+        "flowIdentifier": "ac51e628-b451-5fc6-ab82-6396c442ce9a",
+        "timestamp": 1556897367288,
+        "version": 1
+    }
+}

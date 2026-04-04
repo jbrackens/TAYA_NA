@@ -1,0 +1,4750 @@
+<?xml version='1.0' encoding='UTF-8'?><definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://casinomodule.com/api" xmlns:ns2="http://www.w3.org/2007/05/addressing/metadata" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://casinomodule.com/api">
+  <types>
+<xs:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://casinomodule.com/api" xmlns:ns2="http://www.w3.org/2007/05/addressing/metadata" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://jaxb.dev.java.net/array" version="1.0">
+
+      
+  <xs:complexType final="#all" name="stringArray">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="item" nillable="true" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+    
+</xs:schema>
+<xs:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://casinomodule.com/api" xmlns:ns2="http://www.w3.org/2007/05/addressing/metadata" xmlns:ns1="http://jaxb.dev.java.net/array" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://casinomodule.com/api" version="1.0">
+
+      
+  <xs:import namespace="http://jaxb.dev.java.net/array"/>
+
+      
+  <xs:element name="CasinoSOAPException" nillable="true" type="tns:faultBean"/>
+
+      
+  <xs:element name="GetExchangeRatesResponse" type="tns:GetExchangeRatesResponse"/>
+
+      
+  <xs:element name="GetPlayerBetLimitForGameResponse" type="tns:GetPlayerBetLimitForGameResponse"/>
+
+      
+  <xs:element name="SetCurrencyExchangeRateResponse" type="tns:SetCurrencyExchangeRateResponse"/>
+
+      
+  <xs:element name="activateBonusProgramForPlayer" type="tns:activateBonusProgramForPlayer"/>
+
+      
+  <xs:element name="activateBonusProgramForPlayerResponse" type="tns:activateBonusProgramForPlayerResponse"/>
+
+      
+  <xs:element name="confirmDeposit" type="tns:confirmDeposit"/>
+
+      
+  <xs:element name="confirmDepositResponse" type="tns:confirmDepositResponse"/>
+
+      
+  <xs:element name="confirmWithdrawal" type="tns:confirmWithdrawal"/>
+
+      
+  <xs:element name="confirmWithdrawalResponse" type="tns:confirmWithdrawalResponse"/>
+
+      
+  <xs:element name="convertPlayerToNewCurrency" type="tns:convertPlayerToNewCurrency"/>
+
+      
+  <xs:element name="convertPlayerToNewCurrencyResponse" type="tns:convertPlayerToNewCurrencyResponse"/>
+
+      
+  <xs:element name="depositUserFrequentPlayerPoints" type="tns:depositUserFrequentPlayerPoints"/>
+
+      
+  <xs:element name="depositUserFrequentPlayerPointsResponse" type="tns:depositUserFrequentPlayerPointsResponse"/>
+
+      
+  <xs:element name="depositUserMoneyBypassDepositBonusProgramsV3" type="tns:depositUserMoneyBypassDepositBonusProgramsV3"/>
+
+      
+  <xs:element name="depositUserMoneyBypassDepositBonusProgramsV3Response" type="tns:depositUserMoneyBypassDepositBonusProgramsV3Response"/>
+
+      
+  <xs:element name="depositUserMoneyV3" type="tns:depositUserMoneyV3"/>
+
+      
+  <xs:element name="depositUserMoneyV3Response" type="tns:depositUserMoneyV3Response"/>
+
+      
+  <xs:element name="executeNamedQuery" type="tns:executeNamedQuery"/>
+
+      
+  <xs:element name="executeNamedQueryMatrix" type="tns:executeNamedQueryMatrix"/>
+
+      
+  <xs:element name="executeNamedQueryMatrixResponse" type="tns:executeNamedQueryMatrixResponse"/>
+
+      
+  <xs:element name="executeNamedQueryResponse" type="tns:executeNamedQueryResponse"/>
+
+      
+  <xs:element name="finishUnfinishedGameRoundsForAllPlayers" type="tns:finishUnfinishedGameRoundsForAllPlayers"/>
+
+      
+  <xs:element name="finishUnfinishedGameRoundsForAllPlayersResponse" type="tns:finishUnfinishedGameRoundsForAllPlayersResponse"/>
+
+      
+  <xs:element name="finishUnfinishedGameRoundsForPlayerV3" type="tns:finishUnfinishedGameRoundsForPlayerV3"/>
+
+      
+  <xs:element name="finishUnfinishedGameRoundsForPlayerV3Response" type="tns:finishUnfinishedGameRoundsForPlayerV3Response"/>
+      
+      
+  <xs:element name="finishGameRounds" type="tns:finishGameRounds"/>
+
+      
+  <xs:element name="finishGameRoundsResponse" type="tns:finishGameRoundsResponse"/>
+
+      
+  <xs:element name="forfeitBonusForPlayer" type="tns:forfeitBonusForPlayer"/>
+
+      
+  <xs:element name="forfeitBonusForPlayerResponse" type="tns:forfeitBonusForPlayerResponse"/>
+
+      
+  <xs:element name="forfeitFreeRounds" type="tns:forfeitFreeRounds"/>
+
+      
+  <xs:element name="forfeitFreeRoundsResponse" type="tns:forfeitFreeRoundsResponse"/>
+      
+      
+  <xs:element name="getAllFrequentPlayerPoints" type="tns:getAllFrequentPlayerPoints"/>
+
+      
+  <xs:element name="getAllFrequentPlayerPointsResponse" type="tns:getAllFrequentPlayerPointsResponse"/>
+
+      
+  <xs:element name="getAllTournamentsV2" type="tns:getAllTournamentsV2"/>
+
+      
+  <xs:element name="getAllTournamentsV2Response" type="tns:getAllTournamentsV2Response"/>
+
+      
+  <xs:element name="getBonusTransactionSummary" type="tns:getBonusTransactionSummary"/>
+
+      
+  <xs:element name="getBonusTransactionSummaryResponse" type="tns:getBonusTransactionSummaryResponse"/>
+
+      
+  <xs:element name="getBonusTransactionSummaryV2" type="tns:getBonusTransactionSummaryV2"/>
+      
+  <xs:element name="getBonusTransactionSummaryV2Response" type="tns:getBonusTransactionSummaryV2Response"/>
+
+      
+  <xs:element name="getCurrentJackpot" type="tns:getCurrentJackpot"/>
+
+      
+  <xs:element name="getCurrentJackpotResponse" type="tns:getCurrentJackpotResponse"/>
+
+      
+  <xs:element name="getCurrentOverview" type="tns:getCurrentOverview"/>
+
+      
+  <xs:element name="getCurrentOverviewResponse" type="tns:getCurrentOverviewResponse"/>
+
+      
+  <xs:element name="getDepositBonusAmountForPlayer" type="tns:getDepositBonusAmountForPlayer"/>
+
+      
+  <xs:element name="getDepositBonusAmountForPlayerResponse" type="tns:getDepositBonusAmountForPlayerResponse"/>
+
+      
+  <xs:element name="getExchangeRates" type="tns:getExchangeRates"/>
+
+      
+  <xs:element name="getFrequentPlayerPointsTransactions" type="tns:getFrequentPlayerPointsTransactions"/>
+
+      
+  <xs:element name="getFrequentPlayerPointsTransactionsResponse" type="tns:getFrequentPlayerPointsTransactionsResponse"/>
+
+      
+  <xs:element name="getGameInfo" type="tns:getGameInfo"/>
+
+      
+  <xs:element name="getGameInfoResponse" type="tns:getGameInfoResponse"/>
+
+      
+  <xs:element name="getStaticContentServerInfo" type="tns:getStaticContentServerInfo"/>
+
+      
+  <xs:element name="getStaticContentServerInfoResponse" type="tns:getStaticContentServerInfoResponse"/>
+
+      
+  <xs:element name="getGameStatistics" type="tns:getGameStatistics"/>
+
+      
+  <xs:element name="getGameStatisticsResponse" type="tns:getGameStatisticsResponse"/>
+
+      
+  <xs:element name="getGameTrackingHTML" type="tns:getGameTrackingHTML"/>
+
+      
+  <xs:element name="getGameTrackingHTMLResponse" type="tns:getGameTrackingHTMLResponse"/>
+      
+      
+  <xs:element name="getGameTrackingHTMLEmbeddable" type="tns:getGameTrackingHTMLEmbeddable"/>
+
+      
+  <xs:element name="getGameTrackingHTMLEmbeddableResponse" type="tns:getGameTrackingHTMLEmbeddableResponse"/>
+
+      
+  <xs:element name="getGameWalletInfo" type="tns:getGameWalletInfo"/>
+
+      
+  <xs:element name="getGameWalletInfoResponse" type="tns:getGameWalletInfoResponse"/>
+
+      
+  <xs:element name="getGamesV2" type="tns:getGamesV2"/>
+
+      
+  <xs:element name="getGamesV2Response" type="tns:getGamesV2Response"/>
+
+      
+  <xs:element name="getIndividualJackpotInfo" type="tns:getIndividualJackpotInfo"/>
+
+      
+  <xs:element name="getIndividualJackpotInfoResponse" type="tns:getIndividualJackpotInfoResponse"/>
+
+      
+  <xs:element name="getLeaderBoard" type="tns:getLeaderBoard"/>
+
+      
+  <xs:element name="getLeaderBoardResponse" type="tns:getLeaderBoardResponse"/>
+
+      
+  <xs:element name="getPlayerBetLimitForGame" type="tns:getPlayerBetLimitForGame"/>
+
+      
+  <xs:element name="getPlayerGameBetLimits" type="tns:getPlayerGameBetLimits"/>
+
+      
+  <xs:element name="getPlayerGameBetLimitsResponse" type="tns:getPlayerGameBetLimitsResponse"/>
+
+      
+  <xs:element name="getPlayerLimits" type="tns:getPlayerLimits"/>
+
+      
+  <xs:element name="getPlayerLimitsResponse" type="tns:getPlayerLimitsResponse"/>
+
+      
+  <xs:element name="getTime" type="tns:getTime"/>
+
+      
+  <xs:element name="getTimeResponse" type="tns:getTimeResponse"/>
+
+      
+  <xs:element name="getTotalBalance" type="tns:getTotalBalance"/>
+
+      
+  <xs:element name="getTotalBalanceResponse" type="tns:getTotalBalanceResponse"/>
+
+      
+  <xs:element name="getTournamentDetailsV3" type="tns:getTournamentDetailsV3"/>
+
+      
+  <xs:element name="getTournamentDetailsV3Response" type="tns:getTournamentDetailsV3Response"/>
+
+      
+  <xs:element name="getTournamentResult" type="tns:getTournamentResult"/>
+
+      
+  <xs:element name="getTournamentResultResponse" type="tns:getTournamentResultResponse"/>
+
+      
+  <xs:element name="getUserBonusInfoDetailV5" type="tns:getUserBonusInfoDetailV5"/>
+
+      
+  <xs:element name="getUserBonusInfoDetailV5Response" type="tns:getUserBonusInfoDetailV5Response"/>
+      
+      
+  <xs:element name="getUserBonusInfoDetailV6" type="tns:getUserBonusInfoDetailV6"/>
+
+      
+  <xs:element name="getUserBonusInfoDetailV6Response" type="tns:getUserBonusInfoDetailV6Response"/>
+
+      
+  <xs:element name="getUserBonusInfoV4" type="tns:getUserBonusInfoV4"/>
+
+      
+  <xs:element name="getUserBonusInfoV4Response" type="tns:getUserBonusInfoV4Response"/>
+
+      
+  <xs:element name="getUserFreeRoundGames" type="tns:getUserFreeRoundGames"/>
+
+      
+  <xs:element name="getUserFreeRoundGamesResponse" type="tns:getUserFreeRoundGamesResponse"/>
+
+      
+  <xs:element name="getUserFreeRoundInformation" type="tns:getUserFreeRoundInformation"/>
+
+      
+  <xs:element name="getUserFreeRoundInformationResponse" type="tns:getUserFreeRoundInformationResponse"/>
+
+      
+  <xs:element name="getUserFrequentPlayerPointsAwarded" type="tns:getUserFrequentPlayerPointsAwarded"/>
+
+      
+  <xs:element name="getUserFrequentPlayerPointsAwardedResponse" type="tns:getUserFrequentPlayerPointsAwardedResponse"/>
+
+      
+  <xs:element name="getUserFrequentPlayerPointsBalance" type="tns:getUserFrequentPlayerPointsBalance"/>
+
+      
+  <xs:element name="getUserFrequentPlayerPointsBalanceResponse" type="tns:getUserFrequentPlayerPointsBalanceResponse"/>
+
+      
+  <xs:element name="getUserGameHistory" type="tns:getUserGameHistory"/>
+
+      
+  <xs:element name="getUserGameHistoryResponse" type="tns:getUserGameHistoryResponse"/>
+
+      
+  <xs:element name="getUserGameStatistics" type="tns:getUserGameStatistics"/>
+
+      
+  <xs:element name="getUserGameStatisticsResponse" type="tns:getUserGameStatisticsResponse"/>
+
+      
+  <xs:element name="getUserMoneyBalanceV3" type="tns:getUserMoneyBalanceV3"/>
+
+      
+  <xs:element name="getUserMoneyBalanceV3Response" type="tns:getUserMoneyBalanceV3Response"/>
+
+      
+  <xs:element name="getUserTournamentsV2" type="tns:getUserTournamentsV2"/>
+
+      
+  <xs:element name="getUserTournamentsV2Response" type="tns:getUserTournamentsV2Response"/>
+
+      
+  <xs:element name="getUserWageredAmountV2" type="tns:getUserWageredAmountV2"/>
+
+      
+  <xs:element name="getUserWageredAmountV2Response" type="tns:getUserWageredAmountV2Response"/>
+
+      
+  <xs:element name="giveUserManualBonusV5" type="tns:giveUserManualBonusV5"/>
+
+      
+  <xs:element name="giveUserManualBonusV5Response" type="tns:giveUserManualBonusV5Response"/>
+
+      
+  <xs:element name="giveFreeRounds" type="tns:giveFreeRounds"/>
+
+      
+  <xs:element name="giveFreeRoundsResponse" type="tns:giveFreeRoundsResponse"/>
+            
+      
+  <xs:element name="giveFreeRoundsV2" type="tns:giveFreeRoundsV2"/>
+
+      
+  <xs:element name="giveFreeRoundsResponseV2" type="tns:giveFreeRoundsResponseV2"/>
+
+      
+  <xs:element name="hasUserUnfinishedRound" type="tns:hasUserUnfinishedRound"/>
+
+      
+  <xs:element name="hasUserUnfinishedRoundResponse" type="tns:hasUserUnfinishedRoundResponse"/>
+
+      
+  <xs:element name="isUserInTournament" type="tns:isUserInTournament"/>
+
+      
+  <xs:element name="isUserInTournamentResponse" type="tns:isUserInTournamentResponse"/>
+
+      
+  <xs:element name="isUserSessionAlive" type="tns:isUserSessionAlive"/>
+
+      
+  <xs:element name="isUserSessionAliveResponse" type="tns:isUserSessionAliveResponse"/>
+
+      
+  <xs:element name="loginUser" type="tns:loginUser"/>
+
+      
+  <xs:element name="loginUserDetailed" type="tns:loginUserDetailed"/>
+
+      
+  <xs:element name="loginUserDetailedResponse" type="tns:loginUserDetailedResponse"/>
+
+      
+  <xs:element name="loginUserResponse" type="tns:loginUserResponse"/>
+
+      
+  <xs:element name="logoutUser" type="tns:logoutUser"/>
+
+      
+  <xs:element name="logoutUserResponse" type="tns:logoutUserResponse"/>
+
+      
+  <xs:element name="ping" type="tns:ping"/>
+
+      
+  <xs:element name="pingResponse" type="tns:pingResponse"/>
+
+      
+  <xs:element name="refreshUserSession" type="tns:refreshUserSession"/>
+
+      
+  <xs:element name="refreshUserSessionResponse" type="tns:refreshUserSessionResponse"/>
+
+      
+  <xs:element name="registerTestUser" type="tns:registerTestUser"/>
+
+      
+  <xs:element name="registerTestUserResponse" type="tns:registerTestUserResponse"/>
+
+      
+  <xs:element name="registerUser" type="tns:registerUser"/>
+
+      
+  <xs:element name="registerUserResponse" type="tns:registerUserResponse"/>
+
+      
+  <xs:element name="removePlayerBetLimitForGame" type="tns:removePlayerBetLimitForGame"/>
+
+      
+  <xs:element name="removePlayerBetLimitForGameResponse" type="tns:removePlayerBetLimitForGameResponse"/>
+
+      
+  <xs:element name="removePlayerLimit" type="tns:removePlayerLimit"/>
+
+      
+  <xs:element name="removePlayerLimitResponse" type="tns:removePlayerLimitResponse"/>
+
+      
+  <xs:element name="renameUser" type="tns:renameUser"/>
+
+      
+  <xs:element name="renameUserResponse" type="tns:renameUserResponse"/>
+
+      
+  <xs:element name="setCurrencyExchangeRate" type="tns:setCurrencyExchangeRate"/>
+
+      
+  <xs:element name="setPlayerBetLimitForGames" type="tns:setPlayerBetLimitForGames"/>
+
+      
+  <xs:element name="setPlayerBetLimitForGamesResponse" type="tns:setPlayerBetLimitForGamesResponse"/>
+
+      
+  <xs:element name="setPlayerBlockLimitEndDate" type="tns:setPlayerBlockLimitEndDate"/>
+
+      
+  <xs:element name="setPlayerBlockLimitEndDateResponse" type="tns:setPlayerBlockLimitEndDateResponse"/>
+
+      
+  <xs:element name="setPlayerLimitV3" type="tns:setPlayerLimitV3"/>
+
+      
+  <xs:element name="setPlayerLimitV3Response" type="tns:setPlayerLimitV3Response"/>
+
+      
+  <xs:element name="setPlayersBonusProgramExclusionStatus" type="tns:setPlayersBonusProgramExclusionStatus"/>
+
+      
+  <xs:element name="setPlayersBonusProgramExclusionStatusResponse" type="tns:setPlayersBonusProgramExclusionStatusResponse"/>
+
+      
+  <xs:element name="withdrawUserFrequentPlayerPoints" type="tns:withdrawUserFrequentPlayerPoints"/>
+
+      
+  <xs:element name="withdrawUserFrequentPlayerPointsResponse" type="tns:withdrawUserFrequentPlayerPointsResponse"/>
+
+      
+  <xs:element name="withdrawUserMoneyV3" type="tns:withdrawUserMoneyV3"/>
+
+      
+  <xs:element name="withdrawUserMoneyV3Response" type="tns:withdrawUserMoneyV3Response"/>
+
+      
+  <xs:element name="forfeitFreeRoundsV2" type="tns:forfeitFreeRoundsV2"/>
+      
+      
+  <xs:element name="forfeitFreeRoundsResponseV2" type="tns:forfeitFreeRoundsResponseV2"/>
+
+      
+  <xs:complexType name="depositUserFrequentPlayerPoints">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="amount" type="xs:double"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="depositUserFrequentPlayerPointsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="depositUserFrequentPlayerPointsReturn" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="faultBean">
+        
+    <xs:sequence>
+          
+      <xs:element name="errorCode" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="msg" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserBonusInfoV4">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="accountType" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserBonusInfoV4Response">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getUserBonusInfoV4Return" type="tns:bonusInfoV4"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusInfoV4">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusInfoV3">
+            
+        <xs:sequence/>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusInfoV3">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusInfoV2">
+            
+        <xs:sequence>
+              
+          <xs:element minOccurs="0" name="realBonusBalance" type="tns:moneyData"/>
+            
+        </xs:sequence>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusInfoV2">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="accountBalance" type="tns:moneyData"/>
+          
+      <xs:element name="bonusAvailable" type="xs:boolean"/>
+          
+      <xs:element minOccurs="0" name="cashinWageredAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="creditWageredAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="creditWageredGameRounds" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="remainingCashinWageringAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="remainingCreditWageringAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="remainingCreditWageringGameRounds" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="reservationBalance" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalBonus" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalCash" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalSecurity" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="moneyData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="amount" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="amountCurrencyISOCode" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="convertPlayerToNewCurrency">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="newPlayerCurrency" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="convertPlayerToNewCurrencyResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="convertPlayerToNewCurrencyReturn" type="tns:conversionResult"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="conversionResult">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="bonusDetails" type="tns:bonusDetails"/>
+          
+      <xs:element minOccurs="0" name="newUserId" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="oldUserId" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="totalBalance" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDetails">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusInfo">
+            
+        <xs:sequence>
+              
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="bonusDepositions" nillable="true" type="tns:bonusDepositionData"/>
+            
+        </xs:sequence>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusInfo">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="accountBalance" type="tns:moneyData"/>
+          
+      <xs:element name="bonusAvailable" type="xs:boolean"/>
+          
+      <xs:element minOccurs="0" name="reservationBalance" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalBonus" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalCash" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalRequirement" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="totalSecurity" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="wageredAmount" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDepositionData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="amount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="bonusId" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="bonusName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="bonusType" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="created" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="id" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="remainingRequirement" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getPlayerBetLimitForGame">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="gameId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="GetPlayerBetLimitForGameResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getPlayerBetLimitForGameReturn" nillable="true" type="tns:playerBetLimitForGameData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="playerBetLimitForGameData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="gameId" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="id" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="limit" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyISOCode" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="toDate" type="xs:dateTime"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="renameUser">
+        
+    <xs:sequence>
+          
+      <xs:element name="oldUserName" type="xs:string"/>
+          
+      <xs:element name="newUserName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="renameUserResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="finishUnfinishedGameRoundsForAllPlayers">
+        
+    <xs:sequence>
+          
+      <xs:element name="refundBetActivePlayers" type="xs:boolean"/>
+          
+      <xs:element name="refundBetInactivePlayers" type="xs:boolean"/>
+          
+      <xs:element name="comments" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="numberOfDays" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="finishUnfinishedGameRoundsForAllPlayersResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="finishUnfinishedGameRoundsForAllPlayersReturn" nillable="true" type="tns:finishedGameRoundInfo"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="finishedGameRoundInfoBase">
+        
+    <xs:sequence>
+          
+      <xs:element name="betAmountInCasinoCurrency" type="xs:double"/>
+          
+      <xs:element name="bonusPartOfBetAmountInCasinoCurrency" type="xs:double"/>
+          
+      <xs:element name="bonusPartOfWinAmountInCasinoCurrency" type="xs:double"/>
+          
+      <xs:element minOccurs="0" name="gameId" type="xs:string"/>
+          
+      <xs:element name="gameRoundId" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="reasonIfStatusFailed" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="status" type="xs:boolean"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+          
+      <xs:element name="winAmountInCasinoCurrency" type="xs:double"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+      
+  <xs:complexType name="finishedGameRoundInfo">
+        
+    <xs:complexContent>
+          
+      <xsd:extension base="tns:finishedGameRoundInfoBase">
+          </xsd:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+      
+      
+  <xs:complexType name="finishedGameRoundInfoV2">
+        
+    <xs:complexContent>
+          
+      <xsd:extension base="tns:finishedGameRoundInfoBase">
+            
+        <xs:sequence>
+              
+          <xs:element name="realBonusPartOfBetAmountInCasinoCurrency" type="xs:double"/>
+            
+        </xs:sequence>
+         
+      </xsd:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+      
+
+      
+  <xs:complexType name="finishUnfinishedGameRoundsForPlayerV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="refundBetActivePlayers" type="xs:boolean"/>
+          
+      <xs:element name="refundBetInactivePlayers" type="xs:boolean"/>
+          
+      <xs:element name="comments" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="numberOfDays" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="finishUnfinishedGameRoundsForPlayerV3Response">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="finishUnfinishedGameRoundsForPlayerV3Return" nillable="true" type="tns:finishedGameRoundInfo"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="finishGameRounds">
+        
+    <xs:sequence>
+          
+      <xs:element name="refundBetActivePlayers" type="xs:boolean"/>
+          
+      <xs:element name="refundBetInactivePlayers" type="xs:boolean"/>
+          
+      <xs:element name="comments" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="gameRoundIds" nillable="true" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+      
+  <xs:complexType name="finishGameRoundsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="finishGameRoundsReturn" nillable="true" type="tns:finishedGameRoundInfoV2"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayerBlockLimitEndDate">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="endDateOfBlock" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayerBlockLimitEndDateResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="ping">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="pingResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="pingReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameTrackingHTML">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="gameRoundId" type="xs:long"/>
+          
+      <xs:element name="language" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameTrackingHTMLResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getGameTrackingHTMLReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameTrackingHTMLEmbeddable">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="gameRoundId" type="xs:long"/>
+          
+      <xs:element name="language" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameTrackingHTMLEmbeddableResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getGameTrackingHTMLEmbeddableReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+      
+      
+  <xs:complexType name="getFrequentPlayerPointsTransactions">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element name="toDate" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getFrequentPlayerPointsTransactionsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getFrequentPlayerPointsTransactionsReturn" nillable="true" type="tns:frequentPlayerPointsTransactionData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="frequentPlayerPointsTransactionData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="amount" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="date" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="type" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="forfeitBonusForPlayer">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="bonusDepositionId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="forfeitBonusForPlayerResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="forfeitFreeRounds">
+        
+    <xs:sequence>
+          
+      <xs:element name="externalReferenceId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="forfeitFreeRoundsResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+      
+  <xs:complexType name="confirmWithdrawal">
+        
+    <xs:sequence>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="confirmWithdrawalResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="confirmWithdrawalReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getBonusTransactionSummary">
+        
+    <xs:sequence>
+          
+      <xs:element name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element name="toDate" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getBonusTransactionSummaryV2">
+        
+    <xs:complexContent>
+          
+      <xsd:extension base="tns:getBonusTransactionSummary">
+          </xsd:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getBonusTransactionSummaryResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getBonusTransactionSummaryReturn" nillable="true" type="tns:bonusTransactionData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getBonusTransactionSummaryV2Response">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getBonusTransactionSummaryV2Return" nillable="true" type="tns:bonusTransactionDataV2"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusTransactionData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="affiliateCode" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="bonusAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="bonusProgramName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="transactionDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusTransactionDataV2">
+        
+    <xs:complexContent>
+          
+      <xsd:extension base="tns:bonusTransactionData">
+            
+        <xs:sequence>
+              
+          <xs:element minOccurs="0" name="bonusProgramId" type="xs:int"/>
+              
+          <xs:element minOccurs="0" name="bonusProgramDescription" type="xs:string"/>
+              
+          <xs:element minOccurs="0" name="bonusProgramPromotionCode" type="xs:string"/>
+              
+          <xs:element minOccurs="0" name="bonusProgramExternalGroupingReferenceId" type="xs:string"/>
+            
+        </xs:sequence>
+          
+      </xsd:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="loginUserDetailed">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="extra" nillable="true" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="currencyISOCode" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="loginUserDetailedResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="loginUserDetailedReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGamesV2">
+        
+    <xs:sequence>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGamesV2Response">
+      
+    <xs:sequence>
+        
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getGamesV2Return" nillable="true" type="tns:gameDataV2"/>
+      
+    </xs:sequence>
+    
+  </xs:complexType>
+
+      
+  <xs:complexType name="gameDataV2">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="fullName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="gameGroupId" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="gameGroupName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="gameId" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="name" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="logoutUser">
+        
+    <xs:sequence>
+          
+      <xs:element name="sessionId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="logoutUserResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getPlayerGameBetLimits">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getPlayerGameBetLimitsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getPlayerGameBetLimitsReturn" nillable="true" type="tns:playerBetLimitForGameData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="depositUserMoneyBypassDepositBonusProgramsV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="amount" type="xs:decimal"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="depositUserMoneyBypassDepositBonusProgramsV3Response">
+        
+    <xs:sequence>
+          
+      <xs:element name="depositUserMoneyBypassDepositBonusProgramsV3Return" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getPlayerLimits">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getPlayerLimitsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getPlayerLimitsReturn" nillable="true" type="tns:playerLimitData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="playerLimitData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="currentValue" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="id" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="limit" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyISOCode" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="toDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="type" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserGameStatistics">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element name="toDate" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserGameStatisticsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getUserGameStatisticsReturn" nillable="true" type="tns:userGameStatisticsData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="userGameStatisticsData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="bet" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="gameId" type="xs:string"/>
+          
+      <xs:element name="rounds" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="userId" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="win" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTotalBalance">
+        
+    <xs:sequence>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTotalBalanceResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getTotalBalanceReturn" nillable="true" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="activateBonusProgramForPlayer">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="promotionCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="activateBonusProgramForPlayerResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="activateBonusProgramForPlayerReturn" type="tns:bonusPromotionCodeActivationDetails"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusPromotionCodeActivationDetails">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="bonusActivationDetailsArr" nillable="true" type="tns:bonusActivationDetails"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusActivationDetails">
+        
+    <xs:sequence>
+          
+      <xs:element name="activated" type="xs:boolean"/>
+          
+      <xs:element minOccurs="0" name="bonusProgramId" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="reason" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameWalletInfo">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameWalletInfoResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getGameWalletInfoReturn" nillable="true" type="tns:gameWalletInfo"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="gameWalletInfo">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="accountID" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="gameWalletType" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyBalance" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getDepositBonusAmountForPlayer">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="amount" type="xs:double"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getDepositBonusAmountForPlayerResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="getDepositBonusAmountForPlayerReturn" type="xs:double"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTournamentResult">
+        
+    <xs:sequence>
+          
+      <xs:element name="occurrenceId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTournamentResultResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getTournamentResultReturn" nillable="true" type="tns:tournamentStandingData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="tournamentStandingData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="bet" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="displayName" type="xs:string"/>
+          
+      <xs:element name="qualified" type="xs:boolean"/>
+          
+      <xs:element minOccurs="0" name="rounds" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="score" type="xs:double"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="win" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getIndividualJackpotInfo">
+        
+    <xs:sequence>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getIndividualJackpotInfoResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getIndividualJackpotInfoReturn" nillable="true" type="tns:jackpotData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="jackpotData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="currentJackpotValue" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="jackpotName" type="xs:string"/>
+          
+      <xs:element name="jackpotPayoutCount" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="jackpotType" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="lastPayoutDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="totalJackpotAmountPaidout" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="executeNamedQuery">
+        
+    <xs:sequence>
+          
+      <xs:element name="queryName" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="args" nillable="true" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="executeNamedQueryResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="executeNamedQueryReturn" nillable="true" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameInfo">
+        
+    <xs:sequence>
+          
+      <xs:element name="gameId" type="xs:string"/>
+          
+      <xs:element name="lang" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameInfoResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getGameInfoReturn" nillable="true" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getStaticContentServerInfo">
+        
+    <xs:sequence>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getStaticContentServerInfoResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getStaticContentServerInfoReturn" nillable="true" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="depositUserMoneyV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="amount" type="xs:decimal"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="depositUserMoneyV3Response">
+        
+    <xs:sequence>
+          
+      <xs:element name="depositUserMoneyV3Return" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFrequentPlayerPointsAwarded">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="startTime" type="xs:dateTime"/>
+          
+      <xs:element name="endTime" type="xs:dateTime"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFrequentPlayerPointsAwardedResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="getUserFrequentPlayerPointsAwardedReturn" type="xs:double"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserTournamentsV2">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element name="toDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="channel" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserTournamentsV2Response">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getUserTournamentsV2Return" nillable="true" type="tns:casinoTournamentOccurrenceDataV2"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="casinoTournamentOccurrenceDataV2">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="bonusMoneyExpiryDate" type="xs:dateTime"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="channels" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="endDate" type="xs:dateTime"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="games" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="leaderboardEndDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="leaderboardStartDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="name" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="occurenceId" type="xs:integer"/>
+          
+      <xs:element minOccurs="0" name="startDate" type="xs:dateTime"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="withdrawUserFrequentPlayerPoints">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="amount" type="xs:double"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="withdrawUserFrequentPlayerPointsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="withdrawUserFrequentPlayerPointsReturn" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="refreshUserSession">
+        
+    <xs:sequence>
+          
+      <xs:element name="sessionId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="refreshUserSessionResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserWageredAmountV2">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="accountType" type="xs:string"/>
+          
+      <xs:element name="from" type="xs:dateTime"/>
+          
+      <xs:element name="to" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserWageredAmountV2Response">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getUserWageredAmountV2Return" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameStatistics">
+        
+    <xs:sequence>
+          
+      <xs:element name="from" type="xs:dateTime"/>
+          
+      <xs:element name="to" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getGameStatisticsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getGameStatisticsReturn" nillable="true" type="tns:userGameStatisticsData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFrequentPlayerPointsBalance">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFrequentPlayerPointsBalanceResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getUserFrequentPlayerPointsBalanceReturn" type="xs:decimal"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="loginUser">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="currencyISOCode" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="loginUserResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="loginUserReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayerBetLimitForGames">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" name="gameIds" nillable="true" type="xs:string"/>
+          
+      <xs:element name="limit" type="xs:double"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayerBetLimitForGamesResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setCurrencyExchangeRate">
+        
+    <xs:sequence>
+          
+      <xs:element name="currencyIsoCode" type="xs:string"/>
+          
+      <xs:element name="currencyRate" type="xs:decimal"/>
+          
+      <xs:element name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="SetCurrencyExchangeRateResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserMoneyBalanceV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="accountType" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserMoneyBalanceV3Response">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getUserMoneyBalanceV3Return" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="isUserSessionAlive">
+        
+    <xs:sequence>
+          
+      <xs:element name="sessionId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="isUserSessionAliveResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="isUserSessionAliveReturn" type="xs:boolean"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getExchangeRates">
+        
+    <xs:sequence>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="startDate" type="xs:dateTime"/>
+          
+      <xs:element name="endDate" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="GetExchangeRatesResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getExchangeRatesReturn" nillable="true" type="tns:currencyExchangeRateData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="currencyExchangeRateData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="crossRateWithCasinoCurrency" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="currencyID" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="endDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="startDate" type="xs:dateTime"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="hasUserUnfinishedRound">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="since" type="xs:dateTime"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="hasUserUnfinishedRoundResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="hasUserUnfinishedRoundReturn" type="xs:boolean"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getAllFrequentPlayerPoints">
+        
+    <xs:sequence>
+          
+      <xs:element name="minAmountOfPoints" type="xs:int"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getAllFrequentPlayerPointsResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getAllFrequentPlayerPointsReturn" nillable="true" type="tns:frequentPlayerPointsData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="frequentPlayerPointsData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="frequentPlayerPoints" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="isUserInTournament">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="occurrenceId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="isUserInTournamentResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="isUserInTournamentReturn" type="xs:boolean"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="giveUserManualBonusV5">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="accountType" type="xs:string"/>
+          
+      <xs:element name="bonusAmount" type="xs:decimal"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="wagerRequirement" type="xs:float"/>
+          
+      <xs:element name="expireDate" type="xs:dateTime"/>
+          
+      <xs:element name="comment" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="giveUserManualBonusV5Response">
+        
+    <xs:sequence>
+          
+      <xs:element name="giveUserManualBonusV5Return" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+        
+  <xs:complexType name="giveFreeRounds">
+            
+    <xs:sequence>
+                
+      <xs:element name="merchantId" type="xs:string"/>
+                
+      <xs:element name="merchantPassword" type="xs:string"/>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="userNames" type="xs:string"/>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="gameIds" type="xs:string"/>
+                
+      <xs:element name="numberOfFreeRounds" type="xs:int"/>
+                
+      <xs:element name="wagerRequirement" type="xs:int"/>
+                
+      <xs:element name="freeRoundValidity" type="xs:dateTime"/>
+                
+      <xs:element minOccurs="0" name="bonusMoneyValidity" type="xs:dateTime"/>
+                
+      <xs:element minOccurs="0" name="bonusMoneyValidityInDays" type="xs:int"/>
+                
+      <xs:element name="externalReferenceId" type="xs:string"/>
+                
+      <xs:element minOccurs="0" name="externalGroupingReferenceId" type="xs:string"/>
+                
+      <xs:element minOccurs="0" name="betLevel" type="xs:int"/>
+                
+      <xs:element minOccurs="0" name="bonusWallet" type="xs:string"/>
+                
+      <xs:element minOccurs="0" name="automaticForfeitValue" type="xs:decimal"/>
+                
+      <xs:element minOccurs="0" name="coinValueLevel" type="xs:int"/>
+                
+      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+
+        
+  <xs:complexType name="giveFreeRoundsResponse">
+            
+    <xs:sequence/>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="giveFreeRoundsV2">
+            
+    <xs:sequence>
+                
+      <xs:element name="merchantId" type="xs:string"/>
+                
+      <xs:element name="merchantPassword" type="xs:string"/>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="userNames" type="xs:string"/>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="1" name="gameIds" type="xs:string"/>
+                
+      <xs:element name="numberOfFreeRounds" type="xs:int"/>
+                
+      <xs:element name="wagerRequirement" type="xs:int"/>
+                
+      <xs:element name="freeRoundValidity" type="xs:dateTime"/>
+                
+      <xs:element minOccurs="0" name="bonusMoneyValidity" type="xs:dateTime"/>
+                
+      <xs:element minOccurs="0" name="bonusMoneyValidityInDays" type="xs:int"/>
+                
+      <xs:element name="externalReferenceId" type="xs:string"/>
+                
+      <xs:element minOccurs="0" name="externalGroupingReferenceId" type="xs:string"/>
+                
+      <xs:element minOccurs="0" name="betLevel" type="xs:int"/>
+                
+      <xs:element minOccurs="0" name="automaticForfeitValue" type="xs:decimal"/>
+                
+      <xs:element minOccurs="0" name="coinValueLevel" type="xs:int"/>
+                
+      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="giveFreeRoundsResponseV2">
+            
+    <xs:sequence>
+                
+      <xs:element minOccurs="0" name="giveFreeRoundsV2" type="tns:freeRoundResponse"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="freeRoundResponse">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="appliedLevels" nillable="true" type="tns:appliedLevels"/>
+                
+      <xs:element minOccurs="0" name="userResponseInfo" nillable="true" type="tns:userResponseInfo"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="appliedLevels">
+            
+    <xs:sequence>
+                
+      <xs:element name="gameId" type="xs:string"/>
+                
+      <xs:element minOccurs="0" name="betLevel" type="xs:int"/>
+                
+      <xs:element minOccurs="0" name="coinLevel" type="xs:int"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="success">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="userName" nillable="true" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="failure">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="userName" nillable="true" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="notRegisterdUsers">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="userName" nillable="true" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="seamlessWalletError">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="userName" nillable="true" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="technicalError">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="userName" nillable="true" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="testUsers">
+            
+    <xs:sequence>
+                
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="userName" nillable="true" type="xs:string"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+        
+  <xs:complexType name="userResponseInfo">
+        	
+    <xs:sequence>
+                
+      <xs:element minOccurs="0" name="success" nillable="true" type="tns:success"/>
+                
+      <xs:element minOccurs="0" name="failure" nillable="true" type="tns:failure"/>
+                
+      <xs:element minOccurs="0" name="notRegisterdUsers" nillable="true" type="tns:notRegisterdUsers"/>
+                
+      <xs:element minOccurs="0" name="seamlessWalletError" nillable="true" type="tns:seamlessWalletError"/>
+                
+      <xs:element minOccurs="0" name="technicalError" nillable="true" type="tns:technicalError"/>
+                
+      <xs:element minOccurs="0" name="testUsers" nillable="true" type="tns:testUsers"/>
+            
+    </xs:sequence>
+        
+  </xs:complexType>
+        
+
+        
+  <xs:complexType name="getUserBonusInfoDetailV5">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="accountType" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserBonusInfoDetailV5Response">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getUserBonusInfoDetailV5Return" type="tns:bonusDetailsV5"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDetailsV5">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusDetailsV4">
+            
+        <xs:sequence/>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDetailsV4">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusInfoV2">
+            
+        <xs:sequence>
+              
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="bonusDepositions" nillable="true" type="tns:bonusDepositionDataV4"/>
+            
+        </xs:sequence>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserBonusInfoDetailV6">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="accountType" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserBonusInfoDetailV6Response">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getUserBonusInfoDetailV6Return" type="tns:bonusDetailsV6"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDetailsV6">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusInfoV2">
+            
+        <xs:sequence>
+              
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="bonusDepositions" nillable="true" type="tns:bonusDepositionDataV5"/>
+            
+        </xs:sequence>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDepositionDataV5">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusDepositionDataV4">
+            
+        <xs:sequence>
+              
+          <xs:element minOccurs="0" name="bonusProgramDescription" type="xs:string"/>
+              
+          <xs:element minOccurs="0" name="bonusGroupId" type="xs:string"/>
+              
+          <xs:element minOccurs="0" name="bonusProgramPromotionCode" type="xs:string"/>
+              
+          <xs:element minOccurs="0" name="externalReferenceId" type="xs:string"/>
+            
+        </xs:sequence>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+      
+      
+  <xs:complexType name="bonusDepositionDataV4">
+        
+    <xs:complexContent>
+          
+      <xs:extension base="tns:bonusDepositionDataV3">
+            
+        <xs:sequence>
+              
+          <xs:element minOccurs="0" name="casinoCurrencyAutoForfeitAmount" type="tns:moneyData"/>
+            
+        </xs:sequence>
+          
+      </xs:extension>
+        
+    </xs:complexContent>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="bonusDepositionDataV3">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="amount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="bonusId" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="bonusName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="bonusType" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="cashinExpirationDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="cashinWageredAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="created" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="creditWageredAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="creditWageredGameRounds" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="id" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="remainingCashinWageringAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="remainingCreditWageringAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="remainingCreditWageringGameRounds" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="registerTestUser">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="extra" nillable="true" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="registerTestUserResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="registerTestUserReturn" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getCurrentJackpot">
+        
+    <xs:sequence>
+          
+      <xs:element name="jackpotId" type="xs:string"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getCurrentJackpotResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getCurrentJackpotReturn" nillable="true" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getCurrentOverview">
+        
+    <xs:sequence>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="channel" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getCurrentOverviewResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getCurrentOverviewReturn" type="tns:casinoOverviewData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="casinoOverviewData">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="channels" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="currentCompetitionEnds" type="xs:dateTime"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="jackpots" nillable="true" type="tns:jackpotOverviewData"/>
+          
+      <xs:element minOccurs="0" name="mostPopularGame" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="nextCompetitionStarts" type="xs:dateTime"/>
+          
+      <xs:element name="nrOfFunPlayers" type="xs:int"/>
+          
+      <xs:element name="nrOfPlayers" type="xs:int"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="winners" nillable="true" type="tns:winnerData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="jackpotOverviewData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="currentJackpotValue" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="jackpotName" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="winnerData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="casinoMoneyWinAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="playerMoneyWinAmount" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="winCountry" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="winGameId" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="winTime" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="winUserName" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayerLimitV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="playerLimitId" type="xs:string"/>
+          
+      <xs:element name="playerLimitType" type="xs:string"/>
+          
+      <xs:element name="limit" type="xs:decimal"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayerLimitV3Response">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayersBonusProgramExclusionStatus">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" name="userNames" nillable="true" type="xs:string"/>
+          
+      <xs:element name="exclusionStatus" type="xs:boolean"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="setPlayersBonusProgramExclusionStatusResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTime">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTimeResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="getTimeReturn" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserGameHistory">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="nLast" type="xs:int"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserGameHistoryResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getUserGameHistoryReturn" nillable="true" type="tns:gameRoundData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="gameRoundData">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="casinoCurrencyBet" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="casinoCurrencyWin" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="dateEnded" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="dateStarted" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="gameId" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="gameRoundId" type="xs:long"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyBet" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyCreditsAfter" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyWin" type="tns:moneyData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="executeNamedQueryMatrix">
+        
+    <xs:sequence>
+          
+      <xs:element name="queryName" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="args" nillable="true" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="executeNamedQueryMatrixResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="executeNamedQueryMatrixReturn" nillable="true" type="ns1:stringArray"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getAllTournamentsV2">
+        
+    <xs:sequence>
+          
+      <xs:element name="fromDate" type="xs:dateTime"/>
+          
+      <xs:element name="toDate" type="xs:dateTime"/>
+          
+      <xs:element name="currency" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="channel" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getAllTournamentsV2Response">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getAllTournamentsV2Return" nillable="true" type="tns:casinoTournamentOccurrenceDataV2"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="removePlayerLimit">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="playerLimitId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="removePlayerLimitResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFreeRoundGames">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFreeRoundInformation">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFreeRoundInformationResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getUserFreeRoundInformationReturn" nillable="true" type="tns:freeRoundInformation"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="freeRoundInformation">
+        
+    <xs:sequence>
+          
+      <xs:element name="bonusProgramId" type="xs:integer"/>
+          
+      <xs:element name="bonusProgramName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="bonusProgramDescription" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="bonusPromotionCode" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="externalReferenceId" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="bonusGroupId" nillable="true" type="xs:string"/>
+          
+      <xs:element name="betLevel" type="xs:integer"/>
+          
+      <xs:element name="coinValueLevel" type="xs:integer"/>
+          
+      <xs:element minOccurs="0" name="playerCurrencyTotalWin" nillable="true" type="tns:moneyData"/>
+          
+      <xs:element name="freeRoundsLeft" type="xs:integer"/>
+          
+      <xs:element name="freeRoundsOriginallyAwarded" type="xs:integer"/>
+          
+      <xs:element name="multiplier" type="xs:integer"/>
+          
+      <xs:element name="gameNames" type="xs:string"/>
+          
+      <xs:element name="gameIds" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="expirationDateAbsolute" nillable="true" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="expirationDateRelative" nillable="true" type="xs:integer"/>
+          
+      <xs:element name="status" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getUserFreeRoundGamesResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getUserFreeRoundGamesReturn" nillable="true" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="confirmDeposit">
+        
+    <xs:sequence>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="confirmDepositResponse">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="confirmDepositReturn" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTournamentDetailsV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="tournamentOccurrenceId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="playerCurrency" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getTournamentDetailsV3Response">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="getTournamentDetailsV3Return" type="tns:casinoTournamentOccurrenceDetailsV3"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="casinoTournamentOccurrenceDetailsV3">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="bonusMoneyExpiryDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="endDate" type="xs:dateTime"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="games" nillable="true" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="leaderboardEndDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="leaderboardStartDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="minBetDenomination" type="xs:decimal"/>
+          
+      <xs:element minOccurs="0" name="minNoOfRounds" type="xs:int"/>
+          
+      <xs:element minOccurs="0" name="name" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="occurenceId" type="xs:integer"/>
+          
+      <xs:element minOccurs="0" name="prizeModelType" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="prizeModels" nillable="true" type="tns:prizeModelDetails"/>
+          
+      <xs:element minOccurs="0" name="scoreType" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="startDate" type="xs:dateTime"/>
+          
+      <xs:element minOccurs="0" name="wageringRequirement" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="prizeModelDetails">
+        
+    <xs:sequence>
+          
+      <xs:element minOccurs="0" name="maxPlayers" type="xs:int"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="prizeShares" nillable="true" type="tns:prizeShareDetails"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="prizeShareDetails">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="amounts" nillable="true" type="tns:moneyData"/>
+          
+      <xs:element minOccurs="0" name="percentage" type="xs:double"/>
+          
+      <xs:element minOccurs="0" name="placement" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="removePlayerBetLimitForGame">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="playerBetLimitForGameId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="removePlayerBetLimitForGameResponse">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="registerUser">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="extra" nillable="true" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="registerUserResponse">
+        
+    <xs:sequence>
+          
+      <xs:element name="registerUserReturn" type="xs:int"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getLeaderBoard">
+        
+    <xs:sequence>
+          
+      <xs:element name="tournamentOccurrenceId" type="xs:long"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="getLeaderBoardResponse">
+        
+    <xs:sequence>
+          
+      <xs:element maxOccurs="unbounded" minOccurs="0" name="getLeaderBoardReturn" nillable="true" type="tns:tournamentStandingData"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="withdrawUserMoneyV3">
+        
+    <xs:sequence>
+          
+      <xs:element name="userName" type="xs:string"/>
+          
+      <xs:element name="merchantTxId" type="xs:string"/>
+          
+      <xs:element name="amount" type="xs:decimal"/>
+          
+      <xs:element name="currencyISOCode" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="withdrawUserMoneyV3Response">
+        
+    <xs:sequence>
+          
+      <xs:element name="withdrawUserMoneyV3Return" type="xs:long"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+      
+      
+  <xs:complexType name="forfeitFreeRoundsV2">
+        
+    <xs:sequence>
+          
+      <xs:element name="externalReferenceId" type="xs:string"/>
+          
+      <xs:element name="merchantId" type="xs:string"/>
+          
+      <xs:element name="merchantPassword" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="userName" type="xs:string"/>
+          
+      <xs:element minOccurs="0" name="comment" type="xs:string"/>
+          
+      <xs:element name="forfeitFreeRoundsBonusMoney" type="xs:boolean"/>
+        
+    </xs:sequence>
+      
+  </xs:complexType>
+
+      
+  <xs:complexType name="forfeitFreeRoundsResponseV2">
+        
+    <xs:sequence/>
+      
+  </xs:complexType>
+
+
+</xs:schema>
+  </types>
+  <message name="removePlayerLimitResponse">
+    <part element="tns:removePlayerLimitResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getBonusTransactionSummaryV2Response">
+    <part element="tns:getBonusTransactionSummaryV2Response" name="parameters">
+    </part>
+  </message>
+  <message name="convertPlayerToNewCurrencyResponse">
+    <part element="tns:convertPlayerToNewCurrencyResponse" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayerBlockLimitEndDateResponse">
+    <part element="tns:setPlayerBlockLimitEndDateResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getGameStatistics">
+    <part element="tns:getGameStatistics" name="parameters">
+    </part>
+  </message>
+  <message name="getAllFrequentPlayerPointsResponse">
+    <part element="tns:getAllFrequentPlayerPointsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getCurrentJackpotResponse">
+    <part element="tns:getCurrentJackpotResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserWageredAmountV2">
+    <part element="tns:getUserWageredAmountV2" name="parameters">
+    </part>
+  </message>
+  <message name="registerUserResponse">
+    <part element="tns:registerUserResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getGameTrackingHTMLResponse">
+    <part element="tns:getGameTrackingHTMLResponse" name="parameters">
+    </part>
+  </message>
+  <message name="finishUnfinishedGameRoundsForPlayerV3Response">
+    <part element="tns:finishUnfinishedGameRoundsForPlayerV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="getUserTournamentsV2">
+    <part element="tns:getUserTournamentsV2" name="parameters">
+    </part>
+  </message>
+  <message name="getBonusTransactionSummaryV2">
+    <part element="tns:getBonusTransactionSummaryV2" name="parameters">
+    </part>
+  </message>
+  <message name="getUserBonusInfoDetailV6">
+    <part element="tns:getUserBonusInfoDetailV6" name="parameters">
+    </part>
+  </message>
+  <message name="getUserBonusInfoDetailV5">
+    <part element="tns:getUserBonusInfoDetailV5" name="parameters">
+    </part>
+  </message>
+  <message name="hasUserUnfinishedRoundResponse">
+    <part element="tns:hasUserUnfinishedRoundResponse" name="parameters">
+    </part>
+  </message>
+  <message name="registerTestUser">
+    <part element="tns:registerTestUser" name="parameters">
+    </part>
+  </message>
+  <message name="getExchangeRates">
+    <part element="tns:getExchangeRates" name="parameters">
+    </part>
+  </message>
+  <message name="isUserSessionAliveResponse">
+    <part element="tns:isUserSessionAliveResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getGameTrackingHTMLEmbeddable">
+    <part element="tns:getGameTrackingHTMLEmbeddable" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayerBetLimitForGames">
+    <part element="tns:setPlayerBetLimitForGames" name="parameters">
+    </part>
+  </message>
+  <message name="isUserInTournament">
+    <part element="tns:isUserInTournament" name="parameters">
+    </part>
+  </message>
+  <message name="giveFreeRoundsV2">
+    <part element="tns:giveFreeRoundsV2" name="parameters">
+    </part>
+  </message>
+  <message name="getIndividualJackpotInfoResponse">
+    <part element="tns:getIndividualJackpotInfoResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFreeRoundGames">
+    <part element="tns:getUserFreeRoundGames" name="parameters">
+    </part>
+  </message>
+  <message name="getDepositBonusAmountForPlayerResponse">
+    <part element="tns:getDepositBonusAmountForPlayerResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getPlayerLimitsResponse">
+    <part element="tns:getPlayerLimitsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserBonusInfoDetailV6Response">
+    <part element="tns:getUserBonusInfoDetailV6Response" name="parameters">
+    </part>
+  </message>
+  <message name="getExchangeRatesResponse">
+    <part element="tns:GetExchangeRatesResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getTime">
+    <part element="tns:getTime" name="parameters">
+    </part>
+  </message>
+  <message name="getTournamentDetailsV3Response">
+    <part element="tns:getTournamentDetailsV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayersBonusProgramExclusionStatus">
+    <part element="tns:setPlayersBonusProgramExclusionStatus" name="parameters">
+    </part>
+  </message>
+  <message name="withdrawUserFrequentPlayerPointsResponse">
+    <part element="tns:withdrawUserFrequentPlayerPointsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="executeNamedQueryMatrixResponse">
+    <part element="tns:executeNamedQueryMatrixResponse" name="parameters">
+    </part>
+  </message>
+  <message name="executeNamedQueryMatrix">
+    <part element="tns:executeNamedQueryMatrix" name="parameters">
+    </part>
+  </message>
+  <message name="giveUserManualBonusV5Response">
+    <part element="tns:giveUserManualBonusV5Response" name="parameters">
+    </part>
+  </message>
+  <message name="giveFreeRoundsResponse">
+    <part element="tns:giveFreeRoundsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserGameHistoryResponse">
+    <part element="tns:getUserGameHistoryResponse" name="parameters">
+    </part>
+  </message>
+  <message name="pingResponse">
+    <part element="tns:pingResponse" name="parameters">
+    </part>
+  </message>
+  <message name="activateBonusProgramForPlayerResponse">
+    <part element="tns:activateBonusProgramForPlayerResponse" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayerLimitV3Response">
+    <part element="tns:setPlayerLimitV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="withdrawUserMoneyV3">
+    <part element="tns:withdrawUserMoneyV3" name="parameters">
+    </part>
+  </message>
+  <message name="getTournamentDetailsV3">
+    <part element="tns:getTournamentDetailsV3" name="parameters">
+    </part>
+  </message>
+  <message name="confirmDeposit">
+    <part element="tns:confirmDeposit" name="parameters">
+    </part>
+  </message>
+  <message name="getTournamentResultResponse">
+    <part element="tns:getTournamentResultResponse" name="parameters">
+    </part>
+  </message>
+  <message name="registerUser">
+    <part element="tns:registerUser" name="parameters">
+    </part>
+  </message>
+  <message name="giveFreeRoundsResponseV2">
+    <part element="tns:giveFreeRoundsResponseV2" name="parameters">
+    </part>
+  </message>
+  <message name="getGameTrackingHTMLEmbeddableResponse">
+    <part element="tns:getGameTrackingHTMLEmbeddableResponse" name="parameters">
+    </part>
+  </message>
+  <message name="removePlayerBetLimitForGame">
+    <part element="tns:removePlayerBetLimitForGame" name="parameters">
+    </part>
+  </message>
+  <message name="ping">
+    <part element="tns:ping" name="parameters">
+    </part>
+  </message>
+  <message name="forfeitFreeRoundsV2">
+    <part element="tns:forfeitFreeRoundsV2" name="parameters">
+    </part>
+  </message>
+  <message name="convertPlayerToNewCurrency">
+    <part element="tns:convertPlayerToNewCurrency" name="parameters">
+    </part>
+  </message>
+  <message name="confirmDepositResponse">
+    <part element="tns:confirmDepositResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getPlayerBetLimitForGame">
+    <part element="tns:getPlayerBetLimitForGame" name="parameters">
+    </part>
+  </message>
+  <message name="finishUnfinishedGameRoundsForAllPlayers">
+    <part element="tns:finishUnfinishedGameRoundsForAllPlayers" name="parameters">
+    </part>
+  </message>
+  <message name="registerTestUserResponse">
+    <part element="tns:registerTestUserResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getTotalBalanceResponse">
+    <part element="tns:getTotalBalanceResponse" name="parameters">
+    </part>
+  </message>
+  <message name="forfeitFreeRoundsResponseV2">
+    <part element="tns:forfeitFreeRoundsResponseV2" name="parameters">
+    </part>
+  </message>
+  <message name="getPlayerGameBetLimits">
+    <part element="tns:getPlayerGameBetLimits" name="parameters">
+    </part>
+  </message>
+  <message name="getUserMoneyBalanceV3Response">
+    <part element="tns:getUserMoneyBalanceV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="forfeitBonusForPlayer">
+    <part element="tns:forfeitBonusForPlayer" name="parameters">
+    </part>
+  </message>
+  <message name="getBonusTransactionSummary">
+    <part element="tns:getBonusTransactionSummary" name="parameters">
+    </part>
+  </message>
+  <message name="activateBonusProgramForPlayer">
+    <part element="tns:activateBonusProgramForPlayer" name="parameters">
+    </part>
+  </message>
+  <message name="forfeitBonusForPlayerResponse">
+    <part element="tns:forfeitBonusForPlayerResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getGamesV2Response">
+    <part element="tns:getGamesV2Response" name="parameters">
+    </part>
+  </message>
+  <message name="getTimeResponse">
+    <part element="tns:getTimeResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserGameStatistics">
+    <part element="tns:getUserGameStatistics" name="parameters">
+    </part>
+  </message>
+  <message name="getGameWalletInfoResponse">
+    <part element="tns:getGameWalletInfoResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFrequentPlayerPointsBalanceResponse">
+    <part element="tns:getUserFrequentPlayerPointsBalanceResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getIndividualJackpotInfo">
+    <part element="tns:getIndividualJackpotInfo" name="parameters">
+    </part>
+  </message>
+  <message name="getGameWalletInfo">
+    <part element="tns:getGameWalletInfo" name="parameters">
+    </part>
+  </message>
+  <message name="getDepositBonusAmountForPlayer">
+    <part element="tns:getDepositBonusAmountForPlayer" name="parameters">
+    </part>
+  </message>
+  <message name="loginUser">
+    <part element="tns:loginUser" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFrequentPlayerPointsBalance">
+    <part element="tns:getUserFrequentPlayerPointsBalance" name="parameters">
+    </part>
+  </message>
+  <message name="refreshUserSession">
+    <part element="tns:refreshUserSession" name="parameters">
+    </part>
+  </message>
+  <message name="finishGameRoundsResponse">
+    <part element="tns:finishGameRoundsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="withdrawUserFrequentPlayerPoints">
+    <part element="tns:withdrawUserFrequentPlayerPoints" name="parameters">
+    </part>
+  </message>
+  <message name="getBonusTransactionSummaryResponse">
+    <part element="tns:getBonusTransactionSummaryResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFrequentPlayerPointsAwarded">
+    <part element="tns:getUserFrequentPlayerPointsAwarded" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayersBonusProgramExclusionStatusResponse">
+    <part element="tns:setPlayersBonusProgramExclusionStatusResponse" name="parameters">
+    </part>
+  </message>
+  <message name="depositUserMoneyV3">
+    <part element="tns:depositUserMoneyV3" name="parameters">
+    </part>
+  </message>
+  <message name="giveUserManualBonusV5">
+    <part element="tns:giveUserManualBonusV5" name="parameters">
+    </part>
+  </message>
+  <message name="loginUserResponse">
+    <part element="tns:loginUserResponse" name="parameters">
+    </part>
+  </message>
+  <message name="refreshUserSessionResponse">
+    <part element="tns:refreshUserSessionResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFrequentPlayerPointsAwardedResponse">
+    <part element="tns:getUserFrequentPlayerPointsAwardedResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getStaticContentServerInfo">
+    <part element="tns:getStaticContentServerInfo" name="parameters">
+    </part>
+  </message>
+  <message name="getUserMoneyBalanceV3">
+    <part element="tns:getUserMoneyBalanceV3" name="parameters">
+    </part>
+  </message>
+  <message name="isUserSessionAlive">
+    <part element="tns:isUserSessionAlive" name="parameters">
+    </part>
+  </message>
+  <message name="setCurrencyExchangeRate">
+    <part element="tns:setCurrencyExchangeRate" name="parameters">
+    </part>
+  </message>
+  <message name="hasUserUnfinishedRound">
+    <part element="tns:hasUserUnfinishedRound" name="parameters">
+    </part>
+  </message>
+  <message name="getAllFrequentPlayerPoints">
+    <part element="tns:getAllFrequentPlayerPoints" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayerBetLimitForGamesResponse">
+    <part element="tns:setPlayerBetLimitForGamesResponse" name="parameters">
+    </part>
+  </message>
+  <message name="removePlayerLimit">
+    <part element="tns:removePlayerLimit" name="parameters">
+    </part>
+  </message>
+  <message name="depositUserFrequentPlayerPointsResponse">
+    <part element="tns:depositUserFrequentPlayerPointsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserGameHistory">
+    <part element="tns:getUserGameHistory" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayerLimitV3">
+    <part element="tns:setPlayerLimitV3" name="parameters">
+    </part>
+  </message>
+  <message name="getCurrentOverview">
+    <part element="tns:getCurrentOverview" name="parameters">
+    </part>
+  </message>
+  <message name="getCurrentJackpot">
+    <part element="tns:getCurrentJackpot" name="parameters">
+    </part>
+  </message>
+  <message name="finishGameRounds">
+    <part element="tns:finishGameRounds" name="parameters">
+    </part>
+  </message>
+  <message name="getPlayerGameBetLimitsResponse">
+    <part element="tns:getPlayerGameBetLimitsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getGameInfoResponse">
+    <part element="tns:getGameInfoResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getAllTournamentsV2">
+    <part element="tns:getAllTournamentsV2" name="parameters">
+    </part>
+  </message>
+  <message name="getUserWageredAmountV2Response">
+    <part element="tns:getUserWageredAmountV2Response" name="parameters">
+    </part>
+  </message>
+  <message name="getFrequentPlayerPointsTransactionsResponse">
+    <part element="tns:getFrequentPlayerPointsTransactionsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserGameStatisticsResponse">
+    <part element="tns:getUserGameStatisticsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFreeRoundInformation">
+    <part element="tns:getUserFreeRoundInformation" name="parameters">
+    </part>
+  </message>
+  <message name="setCurrencyExchangeRateResponse">
+    <part element="tns:SetCurrencyExchangeRateResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getLeaderBoardResponse">
+    <part element="tns:getLeaderBoardResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getCurrentOverviewResponse">
+    <part element="tns:getCurrentOverviewResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getLeaderBoard">
+    <part element="tns:getLeaderBoard" name="parameters">
+    </part>
+  </message>
+  <message name="setPlayerBlockLimitEndDate">
+    <part element="tns:setPlayerBlockLimitEndDate" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFreeRoundInformationResponse">
+    <part element="tns:getUserFreeRoundInformationResponse" name="parameters">
+    </part>
+  </message>
+  <message name="finishUnfinishedGameRoundsForPlayerV3">
+    <part element="tns:finishUnfinishedGameRoundsForPlayerV3" name="parameters">
+    </part>
+  </message>
+  <message name="getUserTournamentsV2Response">
+    <part element="tns:getUserTournamentsV2Response" name="parameters">
+    </part>
+  </message>
+  <message name="getGameTrackingHTML">
+    <part element="tns:getGameTrackingHTML" name="parameters">
+    </part>
+  </message>
+  <message name="getPlayerBetLimitForGameResponse">
+    <part element="tns:GetPlayerBetLimitForGameResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getAllTournamentsV2Response">
+    <part element="tns:getAllTournamentsV2Response" name="parameters">
+    </part>
+  </message>
+  <message name="depositUserFrequentPlayerPoints">
+    <part element="tns:depositUserFrequentPlayerPoints" name="parameters">
+    </part>
+  </message>
+  <message name="getUserBonusInfoV4">
+    <part element="tns:getUserBonusInfoV4" name="parameters">
+    </part>
+  </message>
+  <message name="isUserInTournamentResponse">
+    <part element="tns:isUserInTournamentResponse" name="parameters">
+    </part>
+  </message>
+  <message name="renameUser">
+    <part element="tns:renameUser" name="parameters">
+    </part>
+  </message>
+  <message name="forfeitFreeRounds">
+    <part element="tns:forfeitFreeRounds" name="parameters">
+    </part>
+  </message>
+  <message name="getGamesV2">
+    <part element="tns:getGamesV2" name="parameters">
+    </part>
+  </message>
+  <message name="finishUnfinishedGameRoundsForAllPlayersResponse">
+    <part element="tns:finishUnfinishedGameRoundsForAllPlayersResponse" name="parameters">
+    </part>
+  </message>
+  <message name="loginUserDetailedResponse">
+    <part element="tns:loginUserDetailedResponse" name="parameters">
+    </part>
+  </message>
+  <message name="depositUserMoneyBypassDepositBonusProgramsV3">
+    <part element="tns:depositUserMoneyBypassDepositBonusProgramsV3" name="parameters">
+    </part>
+  </message>
+  <message name="logoutUser">
+    <part element="tns:logoutUser" name="parameters">
+    </part>
+  </message>
+  <message name="getFrequentPlayerPointsTransactions">
+    <part element="tns:getFrequentPlayerPointsTransactions" name="parameters">
+    </part>
+  </message>
+  <message name="getUserBonusInfoDetailV5Response">
+    <part element="tns:getUserBonusInfoDetailV5Response" name="parameters">
+    </part>
+  </message>
+  <message name="renameUserResponse">
+    <part element="tns:renameUserResponse" name="parameters">
+    </part>
+  </message>
+  <message name="removePlayerBetLimitForGameResponse">
+    <part element="tns:removePlayerBetLimitForGameResponse" name="parameters">
+    </part>
+  </message>
+  <message name="CasinoSOAPException">
+    <part element="tns:CasinoSOAPException" name="fault">
+    </part>
+  </message>
+  <message name="loginUserDetailed">
+    <part element="tns:loginUserDetailed" name="parameters">
+    </part>
+  </message>
+  <message name="confirmWithdrawal">
+    <part element="tns:confirmWithdrawal" name="parameters">
+    </part>
+  </message>
+  <message name="getUserFreeRoundGamesResponse">
+    <part element="tns:getUserFreeRoundGamesResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getTotalBalance">
+    <part element="tns:getTotalBalance" name="parameters">
+    </part>
+  </message>
+  <message name="withdrawUserMoneyV3Response">
+    <part element="tns:withdrawUserMoneyV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="getGameStatisticsResponse">
+    <part element="tns:getGameStatisticsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getPlayerLimits">
+    <part element="tns:getPlayerLimits" name="parameters">
+    </part>
+  </message>
+  <message name="logoutUserResponse">
+    <part element="tns:logoutUserResponse" name="parameters">
+    </part>
+  </message>
+  <message name="executeNamedQuery">
+    <part element="tns:executeNamedQuery" name="parameters">
+    </part>
+  </message>
+  <message name="getUserBonusInfoV4Response">
+    <part element="tns:getUserBonusInfoV4Response" name="parameters">
+    </part>
+  </message>
+  <message name="forfeitFreeRoundsResponse">
+    <part element="tns:forfeitFreeRoundsResponse" name="parameters">
+    </part>
+  </message>
+  <message name="executeNamedQueryResponse">
+    <part element="tns:executeNamedQueryResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getGameInfo">
+    <part element="tns:getGameInfo" name="parameters">
+    </part>
+  </message>
+  <message name="confirmWithdrawalResponse">
+    <part element="tns:confirmWithdrawalResponse" name="parameters">
+    </part>
+  </message>
+  <message name="getStaticContentServerInfoResponse">
+    <part element="tns:getStaticContentServerInfoResponse" name="parameters">
+    </part>
+  </message>
+  <message name="depositUserMoneyBypassDepositBonusProgramsV3Response">
+    <part element="tns:depositUserMoneyBypassDepositBonusProgramsV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="getTournamentResult">
+    <part element="tns:getTournamentResult" name="parameters">
+    </part>
+  </message>
+  <message name="depositUserMoneyV3Response">
+    <part element="tns:depositUserMoneyV3Response" name="parameters">
+    </part>
+  </message>
+  <message name="giveFreeRounds">
+    <part element="tns:giveFreeRounds" name="parameters">
+    </part>
+  </message>
+  <portType name="casino">
+    <operation name="getTime">
+      <input message="tns:getTime" ns2:Action="http://casinomodule.com/api/casino/getTimeRequest">
+    </input>
+      <output message="tns:getTimeResponse" ns2:Action="http://casinomodule.com/api/casino/getTimeResponse">
+    </output>
+    </operation>
+    <operation name="getPlayerBetLimitForGame">
+      <input message="tns:getPlayerBetLimitForGame" ns2:Action="http://casinomodule.com/api/casino/getPlayerBetLimitForGameRequest">
+    </input>
+      <output message="tns:getPlayerBetLimitForGameResponse" ns2:Action="http://casinomodule.com/api/casino/getPlayerBetLimitForGameResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getPlayerBetLimitForGame/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getPlayerGameBetLimits">
+      <input message="tns:getPlayerGameBetLimits" ns2:Action="http://casinomodule.com/api/casino/getPlayerGameBetLimitsRequest">
+    </input>
+      <output message="tns:getPlayerGameBetLimitsResponse" ns2:Action="http://casinomodule.com/api/casino/getPlayerGameBetLimitsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getPlayerGameBetLimits/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="removePlayerBetLimitForGame">
+      <input message="tns:removePlayerBetLimitForGame" ns2:Action="http://casinomodule.com/api/casino/removePlayerBetLimitForGameRequest">
+    </input>
+      <output message="tns:removePlayerBetLimitForGameResponse" ns2:Action="http://casinomodule.com/api/casino/removePlayerBetLimitForGameResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/removePlayerBetLimitForGame/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getGameTrackingHTML">
+      <input message="tns:getGameTrackingHTML" ns2:Action="http://casinomodule.com/api/casino/getGameTrackingHTMLRequest">
+    </input>
+      <output message="tns:getGameTrackingHTMLResponse" ns2:Action="http://casinomodule.com/api/casino/getGameTrackingHTMLResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getGameTrackingHTML/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getGameTrackingHTMLEmbeddable">
+      <input message="tns:getGameTrackingHTMLEmbeddable" ns2:Action="http://casinomodule.com/api/casino/getGameTrackingHTMLEmbeddableRequest">
+    </input>
+      <output message="tns:getGameTrackingHTMLEmbeddableResponse" ns2:Action="http://casinomodule.com/api/casino/getGameTrackingHTMLEmbeddableResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getGameTrackingHTML/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="depositUserMoneyBypassDepositBonusProgramsV3">
+      <input message="tns:depositUserMoneyBypassDepositBonusProgramsV3" ns2:Action="http://casinomodule.com/api/casino/depositUserMoneyBypassDepositBonusProgramsV3Request">
+    </input>
+      <output message="tns:depositUserMoneyBypassDepositBonusProgramsV3Response" ns2:Action="http://casinomodule.com/api/casino/depositUserMoneyBypassDepositBonusProgramsV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/depositUserMoneyBypassDepositBonusProgramsV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserFrequentPlayerPointsBalance">
+      <input message="tns:getUserFrequentPlayerPointsBalance" ns2:Action="http://casinomodule.com/api/casino/getUserFrequentPlayerPointsBalanceRequest">
+    </input>
+      <output message="tns:getUserFrequentPlayerPointsBalanceResponse" ns2:Action="http://casinomodule.com/api/casino/getUserFrequentPlayerPointsBalanceResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserFrequentPlayerPointsBalance/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserFrequentPlayerPointsAwarded">
+      <input message="tns:getUserFrequentPlayerPointsAwarded" ns2:Action="http://casinomodule.com/api/casino/getUserFrequentPlayerPointsAwardedRequest">
+    </input>
+      <output message="tns:getUserFrequentPlayerPointsAwardedResponse" ns2:Action="http://casinomodule.com/api/casino/getUserFrequentPlayerPointsAwardedResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserFrequentPlayerPointsAwarded/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="withdrawUserFrequentPlayerPoints">
+      <input message="tns:withdrawUserFrequentPlayerPoints" ns2:Action="http://casinomodule.com/api/casino/withdrawUserFrequentPlayerPointsRequest">
+    </input>
+      <output message="tns:withdrawUserFrequentPlayerPointsResponse" ns2:Action="http://casinomodule.com/api/casino/withdrawUserFrequentPlayerPointsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/withdrawUserFrequentPlayerPoints/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="depositUserFrequentPlayerPoints">
+      <input message="tns:depositUserFrequentPlayerPoints" ns2:Action="http://casinomodule.com/api/casino/depositUserFrequentPlayerPointsRequest">
+    </input>
+      <output message="tns:depositUserFrequentPlayerPointsResponse" ns2:Action="http://casinomodule.com/api/casino/depositUserFrequentPlayerPointsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/depositUserFrequentPlayerPoints/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getFrequentPlayerPointsTransactions">
+      <input message="tns:getFrequentPlayerPointsTransactions" ns2:Action="http://casinomodule.com/api/casino/getFrequentPlayerPointsTransactionsRequest">
+    </input>
+      <output message="tns:getFrequentPlayerPointsTransactionsResponse" ns2:Action="http://casinomodule.com/api/casino/getFrequentPlayerPointsTransactionsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getFrequentPlayerPointsTransactions/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="finishUnfinishedGameRoundsForPlayerV3">
+      <input message="tns:finishUnfinishedGameRoundsForPlayerV3" ns2:Action="http://casinomodule.com/api/casino/finishUnfinishedGameRoundsForPlayerV3Request">
+    </input>
+      <output message="tns:finishUnfinishedGameRoundsForPlayerV3Response" ns2:Action="http://casinomodule.com/api/casino/finishUnfinishedGameRoundsForPlayerV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/finishUnfinishedGameRoundsForPlayerV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="finishGameRounds">
+      <input message="tns:finishGameRounds" ns2:Action="http://casinomodule.com/api/casino/finishGameRoundsRequest">
+    </input>
+      <output message="tns:finishGameRoundsResponse" ns2:Action="http://casinomodule.com/api/casino/finishGameRoundsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/finishGameRounds/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="finishUnfinishedGameRoundsForAllPlayers">
+      <input message="tns:finishUnfinishedGameRoundsForAllPlayers" ns2:Action="http://casinomodule.com/api/casino/finishUnfinishedGameRoundsForAllPlayersRequest">
+    </input>
+      <output message="tns:finishUnfinishedGameRoundsForAllPlayersResponse" ns2:Action="http://casinomodule.com/api/casino/finishUnfinishedGameRoundsForAllPlayersResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/finishUnfinishedGameRoundsForAllPlayers/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="setPlayersBonusProgramExclusionStatus">
+      <input message="tns:setPlayersBonusProgramExclusionStatus" ns2:Action="http://casinomodule.com/api/casino/setPlayersBonusProgramExclusionStatusRequest">
+    </input>
+      <output message="tns:setPlayersBonusProgramExclusionStatusResponse" ns2:Action="http://casinomodule.com/api/casino/setPlayersBonusProgramExclusionStatusResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/setPlayersBonusProgramExclusionStatus/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getDepositBonusAmountForPlayer">
+      <input message="tns:getDepositBonusAmountForPlayer" ns2:Action="http://casinomodule.com/api/casino/getDepositBonusAmountForPlayerRequest">
+    </input>
+      <output message="tns:getDepositBonusAmountForPlayerResponse" ns2:Action="http://casinomodule.com/api/casino/getDepositBonusAmountForPlayerResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getDepositBonusAmountForPlayer/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="ping">
+      <input message="tns:ping" ns2:Action="http://casinomodule.com/api/casino/pingRequest">
+    </input>
+      <output message="tns:pingResponse" ns2:Action="http://casinomodule.com/api/casino/pingResponse">
+    </output>
+    </operation>
+    <operation name="registerUser">
+      <input message="tns:registerUser" ns2:Action="http://casinomodule.com/api/casino/registerUserRequest">
+    </input>
+      <output message="tns:registerUserResponse" ns2:Action="http://casinomodule.com/api/casino/registerUserResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/registerUser/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="loginUser">
+      <input message="tns:loginUser" ns2:Action="http://casinomodule.com/api/casino/loginUserRequest">
+    </input>
+      <output message="tns:loginUserResponse" ns2:Action="http://casinomodule.com/api/casino/loginUserResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/loginUser/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="logoutUser">
+      <input message="tns:logoutUser" ns2:Action="http://casinomodule.com/api/casino/logoutUserRequest">
+    </input>
+      <output message="tns:logoutUserResponse" ns2:Action="http://casinomodule.com/api/casino/logoutUserResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/logoutUser/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getGamesV2">
+      <input message="tns:getGamesV2" ns2:Action="http://casinomodule.com/api/casino/getGamesV2Request">
+    </input>
+      <output message="tns:getGamesV2Response" ns2:Action="http://casinomodule.com/api/casino/getGamesV2Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getGamesV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="renameUser">
+      <input message="tns:renameUser" ns2:Action="http://casinomodule.com/api/casino/renameUserRequest">
+    </input>
+      <output message="tns:renameUserResponse" ns2:Action="http://casinomodule.com/api/casino/renameUserResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/renameUser/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getGameInfo">
+      <input message="tns:getGameInfo" ns2:Action="http://casinomodule.com/api/casino/getGameInfoRequest">
+    </input>
+      <output message="tns:getGameInfoResponse" ns2:Action="http://casinomodule.com/api/casino/getGameInfoResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getGameInfo/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getStaticContentServerInfo">
+      <input message="tns:getStaticContentServerInfo" ns2:Action="http://casinomodule.com/api/casino/getStaticContentServerInfoRequest">
+    </input>
+      <output message="tns:getStaticContentServerInfoResponse" ns2:Action="http://casinomodule.com/api/casino/getStaticContentServerInfoResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getStaticContentServerInfo/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="registerTestUser">
+      <input message="tns:registerTestUser" ns2:Action="http://casinomodule.com/api/casino/registerTestUserRequest">
+    </input>
+      <output message="tns:registerTestUserResponse" ns2:Action="http://casinomodule.com/api/casino/registerTestUserResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/registerTestUser/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="loginUserDetailed">
+      <input message="tns:loginUserDetailed" ns2:Action="http://casinomodule.com/api/casino/loginUserDetailedRequest">
+    </input>
+      <output message="tns:loginUserDetailedResponse" ns2:Action="http://casinomodule.com/api/casino/loginUserDetailedResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/loginUserDetailed/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="activateBonusProgramForPlayer">
+      <input message="tns:activateBonusProgramForPlayer" ns2:Action="http://casinomodule.com/api/casino/activateBonusProgramForPlayerRequest">
+    </input>
+      <output message="tns:activateBonusProgramForPlayerResponse" ns2:Action="http://casinomodule.com/api/casino/activateBonusProgramForPlayerResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/activateBonusProgramForPlayer/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getCurrentJackpot">
+      <input message="tns:getCurrentJackpot" ns2:Action="http://casinomodule.com/api/casino/getCurrentJackpotRequest">
+    </input>
+      <output message="tns:getCurrentJackpotResponse" ns2:Action="http://casinomodule.com/api/casino/getCurrentJackpotResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getCurrentJackpot/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="depositUserMoneyV3">
+      <input message="tns:depositUserMoneyV3" ns2:Action="http://casinomodule.com/api/casino/depositUserMoneyV3Request">
+    </input>
+      <output message="tns:depositUserMoneyV3Response" ns2:Action="http://casinomodule.com/api/casino/depositUserMoneyV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/depositUserMoneyV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="withdrawUserMoneyV3">
+      <input message="tns:withdrawUserMoneyV3" ns2:Action="http://casinomodule.com/api/casino/withdrawUserMoneyV3Request">
+    </input>
+      <output message="tns:withdrawUserMoneyV3Response" ns2:Action="http://casinomodule.com/api/casino/withdrawUserMoneyV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/withdrawUserMoneyV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserBonusInfoV4">
+      <input message="tns:getUserBonusInfoV4" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoV4Request">
+    </input>
+      <output message="tns:getUserBonusInfoV4Response" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoV4Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoV4/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserBonusInfoDetailV5">
+      <input message="tns:getUserBonusInfoDetailV5" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoDetailV5Request">
+    </input>
+      <output message="tns:getUserBonusInfoDetailV5Response" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoDetailV5Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoDetailV5/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserBonusInfoDetailV6">
+      <input message="tns:getUserBonusInfoDetailV6" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoDetailV6Request">
+    </input>
+      <output message="tns:getUserBonusInfoDetailV6Response" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoDetailV6Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserBonusInfoDetailV6/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getBonusTransactionSummary">
+      <input message="tns:getBonusTransactionSummary" ns2:Action="http://casinomodule.com/api/casino/getBonusTransactionSummaryRequest">
+    </input>
+      <output message="tns:getBonusTransactionSummaryResponse" ns2:Action="http://casinomodule.com/api/casino/getBonusTransactionSummaryResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getBonusTransactionSummary/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getBonusTransactionSummaryV2">
+      <input message="tns:getBonusTransactionSummaryV2" ns2:Action="http://casinomodule.com/api/casino/getBonusTransactionSummaryV2Request">
+    </input>
+      <output message="tns:getBonusTransactionSummaryV2Response" ns2:Action="http://casinomodule.com/api/casino/getBonusTransactionSummaryV2Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getBonusTransactionSummaryV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="giveUserManualBonusV5">
+      <input message="tns:giveUserManualBonusV5" ns2:Action="http://casinomodule.com/api/casino/giveUserManualBonusV5Request">
+    </input>
+      <output message="tns:giveUserManualBonusV5Response" ns2:Action="http://casinomodule.com/api/casino/giveUserManualBonusV5Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/giveUserManualBonusV5/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="giveFreeRounds">
+      <input message="tns:giveFreeRounds" ns2:Action="http://casinomodule.com/api/casino/giveFreeRoundsRequest">
+    </input>
+      <output message="tns:giveFreeRoundsResponse" ns2:Action="http://casinomodule.com/api/casino/giveFreeRoundsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/giveFreeRoundsRequest/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="giveFreeRoundsV2">
+      <input message="tns:giveFreeRoundsV2" ns2:Action="http://casinomodule.com/api/casino/giveFreeRoundsRequestV2">
+    </input>
+      <output message="tns:giveFreeRoundsResponseV2" ns2:Action="http://casinomodule.com/api/casino/giveFreeRoundsResponseV2">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/giveFreeRoundsRequestV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getIndividualJackpotInfo">
+      <input message="tns:getIndividualJackpotInfo" ns2:Action="http://casinomodule.com/api/casino/getIndividualJackpotInfoRequest">
+    </input>
+      <output message="tns:getIndividualJackpotInfoResponse" ns2:Action="http://casinomodule.com/api/casino/getIndividualJackpotInfoResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getIndividualJackpotInfo/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserMoneyBalanceV3">
+      <input message="tns:getUserMoneyBalanceV3" ns2:Action="http://casinomodule.com/api/casino/getUserMoneyBalanceV3Request">
+    </input>
+      <output message="tns:getUserMoneyBalanceV3Response" ns2:Action="http://casinomodule.com/api/casino/getUserMoneyBalanceV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserMoneyBalanceV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getTotalBalance">
+      <input message="tns:getTotalBalance" ns2:Action="http://casinomodule.com/api/casino/getTotalBalanceRequest">
+    </input>
+      <output message="tns:getTotalBalanceResponse" ns2:Action="http://casinomodule.com/api/casino/getTotalBalanceResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getTotalBalance/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="isUserInTournament">
+      <input message="tns:isUserInTournament" ns2:Action="http://casinomodule.com/api/casino/isUserInTournamentRequest">
+    </input>
+      <output message="tns:isUserInTournamentResponse" ns2:Action="http://casinomodule.com/api/casino/isUserInTournamentResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/isUserInTournament/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="isUserSessionAlive">
+      <input message="tns:isUserSessionAlive" ns2:Action="http://casinomodule.com/api/casino/isUserSessionAliveRequest">
+    </input>
+      <output message="tns:isUserSessionAliveResponse" ns2:Action="http://casinomodule.com/api/casino/isUserSessionAliveResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/isUserSessionAlive/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="refreshUserSession">
+      <input message="tns:refreshUserSession" ns2:Action="http://casinomodule.com/api/casino/refreshUserSessionRequest">
+    </input>
+      <output message="tns:refreshUserSessionResponse" ns2:Action="http://casinomodule.com/api/casino/refreshUserSessionResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/refreshUserSession/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getTournamentDetailsV3">
+      <input message="tns:getTournamentDetailsV3" ns2:Action="http://casinomodule.com/api/casino/getTournamentDetailsV3Request">
+    </input>
+      <output message="tns:getTournamentDetailsV3Response" ns2:Action="http://casinomodule.com/api/casino/getTournamentDetailsV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getTournamentDetailsV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getLeaderBoard">
+      <input message="tns:getLeaderBoard" ns2:Action="http://casinomodule.com/api/casino/getLeaderBoardRequest">
+    </input>
+      <output message="tns:getLeaderBoardResponse" ns2:Action="http://casinomodule.com/api/casino/getLeaderBoardResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getLeaderBoard/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserTournamentsV2">
+      <input message="tns:getUserTournamentsV2" ns2:Action="http://casinomodule.com/api/casino/getUserTournamentsV2Request">
+    </input>
+      <output message="tns:getUserTournamentsV2Response" ns2:Action="http://casinomodule.com/api/casino/getUserTournamentsV2Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserTournamentsV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getTournamentResult">
+      <input message="tns:getTournamentResult" ns2:Action="http://casinomodule.com/api/casino/getTournamentResultRequest">
+    </input>
+      <output message="tns:getTournamentResultResponse" ns2:Action="http://casinomodule.com/api/casino/getTournamentResultResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getTournamentResult/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getAllTournamentsV2">
+      <input message="tns:getAllTournamentsV2" ns2:Action="http://casinomodule.com/api/casino/getAllTournamentsV2Request">
+    </input>
+      <output message="tns:getAllTournamentsV2Response" ns2:Action="http://casinomodule.com/api/casino/getAllTournamentsV2Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getAllTournamentsV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getCurrentOverview">
+      <input message="tns:getCurrentOverview" ns2:Action="http://casinomodule.com/api/casino/getCurrentOverviewRequest">
+    </input>
+      <output message="tns:getCurrentOverviewResponse" ns2:Action="http://casinomodule.com/api/casino/getCurrentOverviewResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getCurrentOverview/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserGameStatistics">
+      <input message="tns:getUserGameStatistics" ns2:Action="http://casinomodule.com/api/casino/getUserGameStatisticsRequest">
+    </input>
+      <output message="tns:getUserGameStatisticsResponse" ns2:Action="http://casinomodule.com/api/casino/getUserGameStatisticsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserGameStatistics/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserWageredAmountV2">
+      <input message="tns:getUserWageredAmountV2" ns2:Action="http://casinomodule.com/api/casino/getUserWageredAmountV2Request">
+    </input>
+      <output message="tns:getUserWageredAmountV2Response" ns2:Action="http://casinomodule.com/api/casino/getUserWageredAmountV2Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserWageredAmountV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserGameHistory">
+      <input message="tns:getUserGameHistory" ns2:Action="http://casinomodule.com/api/casino/getUserGameHistoryRequest">
+    </input>
+      <output message="tns:getUserGameHistoryResponse" ns2:Action="http://casinomodule.com/api/casino/getUserGameHistoryResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserGameHistory/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getAllFrequentPlayerPoints">
+      <input message="tns:getAllFrequentPlayerPoints" ns2:Action="http://casinomodule.com/api/casino/getAllFrequentPlayerPointsRequest">
+    </input>
+      <output message="tns:getAllFrequentPlayerPointsResponse" ns2:Action="http://casinomodule.com/api/casino/getAllFrequentPlayerPointsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getAllFrequentPlayerPoints/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="executeNamedQueryMatrix">
+      <input message="tns:executeNamedQueryMatrix" ns2:Action="http://casinomodule.com/api/casino/executeNamedQueryMatrixRequest">
+    </input>
+      <output message="tns:executeNamedQueryMatrixResponse" ns2:Action="http://casinomodule.com/api/casino/executeNamedQueryMatrixResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/executeNamedQueryMatrix/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="executeNamedQuery">
+      <input message="tns:executeNamedQuery" ns2:Action="http://casinomodule.com/api/casino/executeNamedQueryRequest">
+    </input>
+      <output message="tns:executeNamedQueryResponse" ns2:Action="http://casinomodule.com/api/casino/executeNamedQueryResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/executeNamedQuery/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="confirmDeposit">
+      <input message="tns:confirmDeposit" ns2:Action="http://casinomodule.com/api/casino/confirmDepositRequest">
+    </input>
+      <output message="tns:confirmDepositResponse" ns2:Action="http://casinomodule.com/api/casino/confirmDepositResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/confirmDeposit/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="confirmWithdrawal">
+      <input message="tns:confirmWithdrawal" ns2:Action="http://casinomodule.com/api/casino/confirmWithdrawalRequest">
+    </input>
+      <output message="tns:confirmWithdrawalResponse" ns2:Action="http://casinomodule.com/api/casino/confirmWithdrawalResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/confirmWithdrawal/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getGameStatistics">
+      <input message="tns:getGameStatistics" ns2:Action="http://casinomodule.com/api/casino/getGameStatisticsRequest">
+    </input>
+      <output message="tns:getGameStatisticsResponse" ns2:Action="http://casinomodule.com/api/casino/getGameStatisticsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getGameStatistics/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserFreeRoundGames">
+      <input message="tns:getUserFreeRoundGames" ns2:Action="http://casinomodule.com/api/casino/getUserFreeRoundGamesRequest">
+    </input>
+      <output message="tns:getUserFreeRoundGamesResponse" ns2:Action="http://casinomodule.com/api/casino/getUserFreeRoundGamesResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserFreeRoundGames/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getUserFreeRoundInformation">
+      <input message="tns:getUserFreeRoundInformation" ns2:Action="http://casinomodule.com/api/casino/getUserFreeRoundInformationRequest">
+    </input>
+      <output message="tns:getUserFreeRoundInformationResponse" ns2:Action="http://casinomodule.com/api/casino/getUserFreeRoundInformationResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getUserFreeRoundInformation/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getPlayerLimits">
+      <input message="tns:getPlayerLimits" ns2:Action="http://casinomodule.com/api/casino/getPlayerLimitsRequest">
+    </input>
+      <output message="tns:getPlayerLimitsResponse" ns2:Action="http://casinomodule.com/api/casino/getPlayerLimitsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getPlayerLimits/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="setPlayerLimitV3">
+      <input message="tns:setPlayerLimitV3" ns2:Action="http://casinomodule.com/api/casino/setPlayerLimitV3Request">
+    </input>
+      <output message="tns:setPlayerLimitV3Response" ns2:Action="http://casinomodule.com/api/casino/setPlayerLimitV3Response">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/setPlayerLimitV3/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="setPlayerBlockLimitEndDate">
+      <input message="tns:setPlayerBlockLimitEndDate" ns2:Action="http://casinomodule.com/api/casino/setPlayerBlockLimitEndDateRequest">
+    </input>
+      <output message="tns:setPlayerBlockLimitEndDateResponse" ns2:Action="http://casinomodule.com/api/casino/setPlayerBlockLimitEndDateResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/setPlayerBlockLimitEndDate/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="removePlayerLimit">
+      <input message="tns:removePlayerLimit" ns2:Action="http://casinomodule.com/api/casino/removePlayerLimitRequest">
+    </input>
+      <output message="tns:removePlayerLimitResponse" ns2:Action="http://casinomodule.com/api/casino/removePlayerLimitResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/removePlayerLimit/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="convertPlayerToNewCurrency">
+      <input message="tns:convertPlayerToNewCurrency" ns2:Action="http://casinomodule.com/api/casino/convertPlayerToNewCurrencyRequest">
+    </input>
+      <output message="tns:convertPlayerToNewCurrencyResponse" ns2:Action="http://casinomodule.com/api/casino/convertPlayerToNewCurrencyResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/convertPlayerToNewCurrency/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="setCurrencyExchangeRate">
+      <input message="tns:setCurrencyExchangeRate" ns2:Action="http://casinomodule.com/api/casino/setCurrencyExchangeRateRequest">
+    </input>
+      <output message="tns:setCurrencyExchangeRateResponse" ns2:Action="http://casinomodule.com/api/casino/setCurrencyExchangeRateResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/setCurrencyExchangeRate/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="hasUserUnfinishedRound">
+      <input message="tns:hasUserUnfinishedRound" ns2:Action="http://casinomodule.com/api/casino/hasUserUnfinishedRoundRequest">
+    </input>
+      <output message="tns:hasUserUnfinishedRoundResponse" ns2:Action="http://casinomodule.com/api/casino/hasUserUnfinishedRoundResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/hasUserUnfinishedRound/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getExchangeRates">
+      <input message="tns:getExchangeRates" ns2:Action="http://casinomodule.com/api/casino/getExchangeRatesRequest">
+    </input>
+      <output message="tns:getExchangeRatesResponse" ns2:Action="http://casinomodule.com/api/casino/getExchangeRatesResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getExchangeRates/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="forfeitBonusForPlayer">
+      <input message="tns:forfeitBonusForPlayer" ns2:Action="http://casinomodule.com/api/casino/forfeitBonusForPlayerRequest">
+    </input>
+      <output message="tns:forfeitBonusForPlayerResponse" ns2:Action="http://casinomodule.com/api/casino/forfeitBonusForPlayerResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/forfeitBonusForPlayer/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="forfeitFreeRounds">
+      <input message="tns:forfeitFreeRounds" ns2:Action="http://casinomodule.com/api/casino/forfeitFreeRoundsRequest">
+    </input>
+      <output message="tns:forfeitFreeRoundsResponse" ns2:Action="http://casinomodule.com/api/casino/forfeitFreeRoundsResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/forfeitFreeRoundsRequest/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="getGameWalletInfo">
+      <input message="tns:getGameWalletInfo" ns2:Action="http://casinomodule.com/api/casino/getGameWalletInfoRequest">
+    </input>
+      <output message="tns:getGameWalletInfoResponse" ns2:Action="http://casinomodule.com/api/casino/getGameWalletInfoResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/getGameWalletInfo/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="setPlayerBetLimitForGames">
+      <input message="tns:setPlayerBetLimitForGames" ns2:Action="http://casinomodule.com/api/casino/setPlayerBetLimitForGamesRequest">
+    </input>
+      <output message="tns:setPlayerBetLimitForGamesResponse" ns2:Action="http://casinomodule.com/api/casino/setPlayerBetLimitForGamesResponse">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/setPlayerBetLimitForGames/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+    <operation name="forfeitFreeRoundsV2">
+      <input message="tns:forfeitFreeRoundsV2" ns2:Action="http://casinomodule.com/api/casino/forfeitFreeRoundsRequestV2">
+    </input>
+      <output message="tns:forfeitFreeRoundsResponseV2" ns2:Action="http://casinomodule.com/api/casino/forfeitFreeRoundsResponseV2">
+    </output>
+      <fault message="tns:CasinoSOAPException" name="CasinoSOAPException" ns2:Action="http://casinomodule.com/api/casino/forfeitFreeRoundsRequestV2/Fault/CasinoSOAPException">
+    </fault>
+    </operation>
+  </portType>
+</definitions>

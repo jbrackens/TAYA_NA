@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# This needs to be symlinked from .git/hooks/prepare-commit-msg in the repo.
+
+set -u
+
+commit_message_file=$1
+source_of_commit=${2-}
+
+case $source_of_commit in
+  ""|commit|message) true ;;  # $source_of_commit will be empty e.g. when pure "git commit" without any parameters is called.
+  *) exit 0 ;;  # Don't handle the "merge", "squash" and "template" cases.
+esac
+
+# Check if we're on any branch.
+git symbolic-ref --quiet HEAD &>/dev/null || exit 0
+
+branch_name=$(git symbolic-ref --short HEAD)
+if [[ "$branch_name" = *GMV3* ]]; then
+  echo
+  echo 'Warn: `GMV3` is no longer a valid JIRA project id, use `PHXD` for new branches!'
+  echo
+fi
+
+ticket_id_regex='(CR|DO|GMV3|IHD|INC|PHXB|PHXD)-[0-9]+'
+ticket_id=$(echo "$branch_name" | grep -Eio "^(.*/)?${ticket_id_regex}" | sed 's!^.*/!!' | sed 's/GMV3/PHXD/i' | tr '[:lower:]' '[:upper:]')
+
+if [[ $ticket_id ]]; then
+  message=$(<$commit_message_file)
+  # Don't prepend ticket id in case it's already at the beginning of the message.
+  # Also, don't prepend if it's a fixup or squash commit
+  if [[ $message != "[$ticket_id]"* ]] && [[ $message != "fixup!"* ]] && [[ $message != "squash!"* ]] ; then
+    echo "[$ticket_id] $message" > "$1"
+  fi
+fi

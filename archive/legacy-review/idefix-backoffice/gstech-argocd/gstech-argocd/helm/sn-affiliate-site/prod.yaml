@@ -1,0 +1,53 @@
+nameOverride: "prod-sn-affiliate-site"
+fullnameOverride: "prod-sn-affiliate-site"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  name: "sn-affiliate-site"
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-sn-affiliate-site
+  hosts:
+  - host: sportnation.bet
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: prod-sn-affiliate-site
+      servicePort: 80
+  - host: www.sportnation.bet
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: prod-sn-affiliate-site
+      servicePort: 80
+
+  annotations: {}
+
+  tls: []
+
+env:
+  REACT_APP_STRAPI_URL: https://sn-affiliate-cms.prod.eeg.viegg.net/api/
+  REACT_APP_STRAPI_HOST_URL: https://sn-affiliate-cms.prod.eeg.viegg.net
+secretEnv:
+  REACT_APP_STRAPI_API_KEY:
+    prod-sn-affiliate-site: api-key

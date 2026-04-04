@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="logback-main-shared.xml"/>
+
+    <logger name="akka.cluster.sharding" level="WARN"/>
+    <logger name="akka.cluster.singleton" level="WARN"/>
+    <logger name="akka.persistence" level="DEBUG"/>
+    <logger name="akka.projection" level="WARN"/>
+    <!-- In local runs, we've got a few ActorSystems named `Phoenix` running in a single JVM,
+         which leads to a lot of `Cannot register module [Phoenix/<something>], a module with that name already exists`
+         warnings coming from ModuleRegistry. Since these warnings are hard to circumvent,
+         don't bring much value and don't affect Kubernetes environments, let's just silence them in local runs. -->
+    <logger name="kamon.module.ModuleRegistry" level="${logback.level.kamon.module.ModuleRegistry:-INFO}"/>
+    <logger name="net.schmizz.sshj" level="WARN"/>
+
+    <!-- TODO (PHXD-1058): remove after tests -->
+    <logger name="phoenix.core.scheduler" level="DEBUG"/>
+    <!-- TODO (PHXD-1561): think about persisting external communication for contacting support -->
+    <logger name="phoenix.geocomply.infrastructure.akka.AkkaGeoComplyService" level="DEBUG"/>
+    <logger name="phoenix.payments.infrastructure.PxpPaymentsService" level="DEBUG"/>
+    <!-- TODO (PHXD-1350): for pxp integration purposes only   -->
+    <logger name="phoenix.payments.infrastructure.http.TapirXMLAdapter" level="DEBUG"/>
+    <logger name="phoenix.punters.idcomply.infrastructure.AkkaHttpIdComplyService" level="DEBUG"/>
+    <logger name="phoenix.reports" level="DEBUG"/>
+</configuration>

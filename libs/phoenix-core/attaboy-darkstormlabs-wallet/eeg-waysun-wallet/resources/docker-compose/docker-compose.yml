@@ -1,0 +1,51 @@
+version: '3.8'
+
+x-images:
+  - &liquibase-image liquibase/liquibase:4.10.0
+  - &stella-wallet-image stella-wallet:latest
+
+services:
+
+  stella-wallet-liquibase:
+    image: *liquibase-image
+    restart: on-failure
+    volumes: [ ../../wallet/conf/liquibase:/liquibase/changelog]
+    command: [
+        '--changeLogFile=changelog/changelog.xml',
+        '--url=jdbc:postgresql://postgres/wallet',
+        '--username=wallet_liquibase',
+        '--password=wallet_liquibase',
+        'update'
+    ]
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 500M
+        reservations:
+          memory: 200M
+
+  stella-wallet:
+    image: *stella-wallet-image
+    depends_on:
+      stella-wallet-liquibase:
+        condition: service_completed_successfully
+    env_file:
+      - local.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wallet.rule=PathPrefix(`/wallet/`, `/wallet_docs/`)"
+      - "traefik.http.services.wallet.loadbalancer.server.port=${WALLET_PORT:-15000}"
+
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 200M
+
+networks:
+  default:
+    external:
+      name: gmx-internal # a network used in gmx-traefik

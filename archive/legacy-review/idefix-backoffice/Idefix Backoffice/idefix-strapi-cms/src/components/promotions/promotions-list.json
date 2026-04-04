@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_promotions_promotions_lists",
+  "info": {
+    "displayName": "Promotions List",
+    "icon": "bulletList",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "promotions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::promotion.promotion"
+    }
+  }
+}

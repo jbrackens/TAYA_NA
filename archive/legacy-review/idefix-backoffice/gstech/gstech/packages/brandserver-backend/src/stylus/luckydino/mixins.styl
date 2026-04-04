@@ -1,0 +1,251 @@
+@require 'xmas_mixin'
+$sidebar = 392px
+$sidebar_small = 264px
+$game_sidebar = 266px
+$header_height = 60px
+$header_height_phone = 43px
+$my_account_height = 560px
+
+$dialog_zindex = 10000
+$mobile_tabs_zindex = 10100
+$default-gray = #656565
+$uniform-background = #339999
+$dinoblue-background = #28a7c6
+$uniform-bg-link-background = #33cccc
+$uniform-bg-link-color = #ddffff
+$placeholder-color = #4a4a4a
+$link-green = #79d32c
+$bg-white = #f6f6f6
+$light-blue = #00b7d0
+$logo-200 = '/images/logo/logo-200.png'
+$sidebar-bg = '/images/bg-box.png'
+
+currencies = ( 'sek' 'usd' 'eur' 'gbp' 'nok' 'cad')
+languages = ( 'fi' 'sv' 'en' 'de' 'no')
+
+
+image(path, w = auto, h = auto, min_pixel_ratio = 1.5)
+  background-image: url(path)
+
+  s = 'all and (-webkit-min-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(min--moz-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(-o-min-device-pixel-ratio:' + min_pixel_ratio + '/1),'
+  s = s + '(min-device-pixel-ratio:' + min_pixel_ratio + '),'
+  s = s + '(min-resolution:' + unit(min_pixel_ratio*92, dpi) + '),'
+  s = s + '(min-resolution:' + unit(min_pixel_ratio, dppx) + ')'
+
+  @media s
+    ext = extname(path)
+    path = dirname(path) + '/' + pathjoin(basename(path, ext) + '@2x' + ext)
+    background-image: url(path)
+    if w in (cover contain) and h == auto
+        h = null
+    background-size: w h
+
+force3d()
+  -webkit-transform translate3d(0,0,0)
+  -webkit-backface-visibility hidden
+  -webkit-perspective 1000
+
+cdn_image(resource, width, height)
+  image: 'https://static.luckydino.com' + resource, width, height
+
+cdn-background(resource, a = null, b = null, c = null, d = null)
+  background: url('https://static.luckydino.com' + resource) a b c d
+
+cdn-background-image(resource)
+  background-image: url('https://static.luckydino.com' + resource)
+
+background-linear-gradient(startPoint, startColor, startInterval, endColor, endInterval, setBg = true)
+  if setBg
+    background startColor
+  background-image linear-gradient(startPoint, startColor startInterval, endColor endInterval)
+
+sprite2x(key, key2x)
+  sprite(key)
+
+  @media all and (-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(-o-min-device-pixel-ratio:1.5/1),(min-device-pixel-ratio:1.5),(min-resolution:138dpi),(min-resolution:1.5dppx)
+    spriteImage(key2x)
+    width ceil(key2x[4] / 2)
+    height ceil(key2x[5] / 2)
+    background-position ceil(key2x[2]/2) ceil(key2x[3]/2)
+    background-size ceil(image-size('../../../public/luckydino/css/' + key2x[8])[0]/2) ceil(image-size('../../../public/luckydino/css/' + key2x[8])[1]/2)
+
+banner_sprite($sprite)
+  cdn-background-image: '/g/' + $sprite[8]
+  background-position: $sprite[2] $sprite[3];
+  width: $sprite[4];
+  height: $sprite[5];
+
+top_logo_banner_image()
+  top 60px
+
+bannerStyles()
+  font-family: 'Titillium Web', sans-serif;
+  font-size 14px
+  box-sizing border-box
+  *, *:after, *:before
+    box-sizing border-box
+  background-repeat no-repeat
+  text-align center
+  overflow hidden
+  force3d()
+  position relative
+  width 100%
+  height 300px
+  max-width 1800px
+  margin 0 auto
+  .button, .button:hover, .button:focus
+    padding 4px 24px
+    display inline-block
+    vertical-align top
+    font-weight bold
+    font-size 18px
+    text-transform uppercase
+    white-space nowrap
+    color #000
+    border-radius 2px
+    text-decoration none
+    background-linear-gradient(to bottom, #aeef1f, 0%, #4cc300, 100%)
+
+  .background
+    top_logo_banner 0
+    position absolute
+    width 100%
+    height 300px
+    background-repeat no-repeat
+    background-position center center
+    .viewport
+      position relative
+      height 300px
+      width 100%
+      max-width 1800px
+      overflow hidden
+      @media only screen and (max-width:767px)
+        display none
+  .campaign
+    position absolute
+    top 0
+    width 100%
+    bottom 0
+    left 0
+    right 0
+    margin 0 auto
+    z-index 20
+    text-align center
+    @media only screen and (max-width:1199px)
+      width 420px
+    h1
+      position absolute
+      width 100%
+      top 0
+      text-transform uppercase
+      font 18px 'Titillium Web', sans-serif
+      font-weight bold
+    h3
+      position absolute
+      bottom 60px
+      width 100%
+      font-size 18px
+      font 18px 'Titillium Web', sans-serif
+      text-transform uppercase
+      font-weight bold
+      margin 0
+  .button-holder
+    width 100%
+    text-align center
+    position absolute
+    bottom 20px
+
+top_logo_banner()
+  .campaign-title
+    display none
+  .campaign-banner
+    top 180px
+  .button-holder
+    bottom 40px
+
+dark_bg_banner()
+  .campaign-title
+    text-shadow -1px 1px 0px rgba(0, 0, 0, 0.35)
+    color white
+  .campaign-banner
+    text-shadow -1px 1px 0px rgba(0, 0, 0, 0.35)
+    color white
+
+banner-bg(resource, resource_m)
+  bannerStyles()
+  .background
+    background-size 1800px 300px
+    cdn-background-image: resource
+    @media only screen and (max-width:767px)
+      background-size 767px 300px
+      cdn-background-image: resource_m
+
+validatorFeedback()
+  &.validation-error
+    color #ee2222
+  &.validation-empty
+    color $placeholder-color
+  &.placeholder
+    color #c6c6c6
+
+formFeedback()
+  .button-row
+    position relative
+    display block
+    text-align center
+    margin 1px 0 9px 0
+    .spinner
+      display none
+      position absolute
+      margin-top 6px
+      width 32px
+      height 32px
+      top 0
+      right 0px
+
+    &.spacing
+      padding-top 5px
+
+paymentMethods()
+  &.CreditCard
+    sprite2x($CreditCard, $CreditCard_2x)
+  &.MasterCard
+    sprite2x($CreditCard_Mastercard, $CreditCard_Mastercard_2x)
+  &.Giftcard
+    sprite2x($CreditCard_Mastercard, $CreditCard_Mastercard_2x)
+  &.VisaVoucher
+    sprite2x($CreditCard_VISA, $CreditCard_VISA_2x)
+  &.CreditCard_VISA
+    sprite2x($CreditCard_VISA, $CreditCard_VISA_2x)
+  &.BankTransfer
+    sprite2x($BankTransfer, $BankTransfer_2x)
+  &.Zimpler
+    sprite2x($MobilePayments, $MobilePayments_2x)
+  &.CreditCard_MasterCard
+    sprite2x($CreditCard_Mastercard, $CreditCard_Mastercard_2x)
+  &.EcoCard
+    sprite2x($EcoCard, $EcoCard_2x)
+  &.Moneta
+    sprite2x($Moneta, $Moneta_2x)
+  &.Skrill
+    sprite2x($Moneybookers, $Moneybookers_2x)
+  &.Neteller
+    sprite2x($Neteller, $Neteller_2x)
+  &.PaySafecard
+    sprite2x($PaySafecard, $PaySafecard_2x)
+  &.EPG_PaySafeCard
+    sprite2x($PaySafecard, $PaySafecard_2x)
+  &.InstantBank
+    sprite2x($Sofort, $Sofort_2x)
+  &.Ukash
+    sprite2x($Ukash, $Ukash_2x)
+  &.Poli
+    sprite2x($Poli, $Poli_2x)
+  &.SiruMobile
+    sprite2x($Siru, $Siru_2x)
+  &.Siirto
+    sprite2x($Siirto, $Siirto_2x)
+  &.Trustly
+    sprite2x($Trustly, $Trustly_2x)

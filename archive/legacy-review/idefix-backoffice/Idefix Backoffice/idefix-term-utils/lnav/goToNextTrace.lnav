@@ -1,0 +1,3 @@
+;select trace_id as currtid from idefix_log where log_line = log_top_line()
+;select log_line as trg from idefix_log where trace_id is not $currtid and trace_id is not null and log_line > log_top_line() limit 1
+:eval :goto $trg

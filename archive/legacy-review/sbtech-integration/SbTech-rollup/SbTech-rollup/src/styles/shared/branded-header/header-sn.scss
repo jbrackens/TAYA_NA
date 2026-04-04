@@ -1,0 +1,46 @@
+$header-grey:#4a4a4a;
+$brand-header-button-color: $brand-base;
+$brand-header-button-background: $brand-secondary;
+
+@import 'new-header';
+
+
+@import 'dropdowns';
+@import 'hamburger';
+@import 'mobile_sn';
+
+
+.branded-header__button{
+  &--login{
+    color:#989898;
+    background:none;
+    &:hover {
+      color: white;
+      background:none;
+    }
+  }
+}
+
+.mobile-header-open-bets-count-number {
+  color: $brand-primary;
+}
+
+.page-header-link:not(.page-header-big-button-link), .page-header-text, .page-header-chat {
+  border: none;
+}
+
+// override for sbtech override - remove if fixed
+html.IsDesktop .branded-header__button{
+  line-height: 30px;
+}
+
+// fix from clientIncludeIn writing to dom
+html.IsTablet body.notlogged .page-header-cell.page-header-right .page-header-element:last-of-type,
+html.IsMobile body.notlogged .page-header-cell.page-header-right .page-header-element:last-of-type{
+    display:none;
+}
+html.IsDesktop .page-header-main-logo{
+  width: 250px;
+  height: 52px;
+  margin: 5px 0 15px;
+}

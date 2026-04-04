@@ -1,0 +1,17 @@
+{
+  "name": "himedia-plugin-virtual-pointer",
+  "version": "0.1.4",
+  "description": "Cordova plugin to inject a virtual pointer for use with Himedia",
+  "cordova": {
+    "id": "himedia-plugin-virtual-pointer",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "James Mintram",
+  "license": "REQUIRED"
+}

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -e
+
+args=("$@")
+for ((i = 0; i < $#; i++)); do
+	if [[ "${args[$i]}" =~ -(V+) ]]; then
+		export IDFX_VERBOSE=$((${#BASH_REMATCH} - 1))
+		# shellcheck disable=SC2184
+		unset args[$i]
+	fi
+done
+export flag_verbose="$IDFX_VERBOSE"
+if [[ -n "$flag_verbose" && -z "$IDFX_VERBOSE_MSG_SHOWN" ]]; then
+	echo "$(tput setaf 1)--- VERBOSE MODE [$flag_verbose] ---$(tput sgr0)" > /dev/tty
+	export IDFX_VERBOSE_MSG_SHOWN=1
+fi
+
+ORIG_DIR=$(pwd)
+
+function get_script_dir {
+	SOURCE="${BASH_SOURCE[0]}"
+	while [ -h "$SOURCE" ]; do
+		DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+		SOURCE="$(readlink "$SOURCE" 2>/dev/null)"
+		[[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+	done
+	DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+	echo "$DIR"
+}
+
+cd "$(dirname "$(get_script_dir)")" || exit
+
+./run.sh "${args[@]}"
+
+cd "$ORIG_DIR" || exit

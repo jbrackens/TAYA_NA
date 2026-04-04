@@ -1,0 +1,11 @@
+kind: Application
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: phoenix-backend
+spec:
+  destination:
+    namespace: phoenix
+  source:
+    repoURL: '259420793117.dkr.ecr.eu-west-1.amazonaws.com'
+    chart: 'phoenix-backend-helm-chart'
+    targetRevision: '0.8.2-8-4cdc816f-virginia-dev'

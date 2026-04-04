@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oddin-ingestion-slick-config
+type: Opaque
+stringData:
+  "slick.conf": |
+    slick {
+      profile = "slick.jdbc.PostgresProfile$"
+      db {
+        url = "jdbc:postgresql://phoenix-dev-postgres-10-15.ckgpv7woygmf.eu-central-1.rds.amazonaws.com:5432/phoenix_dev?reWriteBatchedInserts=true"
+        user = "[changeme]"
+        password = "[changeme]"
+        driver = "org.postgresql.Driver"
+        numThreads = 5
+        maxConnections = 5
+        minConnections = 1
+      }
+    }

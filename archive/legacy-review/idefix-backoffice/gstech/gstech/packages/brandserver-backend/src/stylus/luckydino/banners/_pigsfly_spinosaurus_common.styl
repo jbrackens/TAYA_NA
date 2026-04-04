@@ -1,0 +1,100 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$pigsfly_spinosaurus_common_logo_name = 'pigsfly_spinosaurus_common_logo';
+$pigsfly_spinosaurus_common_logo_x = 0px;
+$pigsfly_spinosaurus_common_logo_y = 304px;
+$pigsfly_spinosaurus_common_logo_offset_x = 0px;
+$pigsfly_spinosaurus_common_logo_offset_y = -304px;
+$pigsfly_spinosaurus_common_logo_width = 340px;
+$pigsfly_spinosaurus_common_logo_height = 167px;
+$pigsfly_spinosaurus_common_logo_total_width = 474px;
+$pigsfly_spinosaurus_common_logo_total_height = 471px;
+$pigsfly_spinosaurus_common_logo_image = 'pigsfly_spinosaurus_common_a.png';
+$pigsfly_spinosaurus_common_logo = 0px 304px 0px -304px 340px 167px 474px 471px 'pigsfly_spinosaurus_common_a.png' 'pigsfly_spinosaurus_common_logo';
+$pigsfly_spinosaurus_common_pig_name = 'pigsfly_spinosaurus_common_pig';
+$pigsfly_spinosaurus_common_pig_x = 245px;
+$pigsfly_spinosaurus_common_pig_y = 0px;
+$pigsfly_spinosaurus_common_pig_offset_x = -245px;
+$pigsfly_spinosaurus_common_pig_offset_y = 0px;
+$pigsfly_spinosaurus_common_pig_width = 229px;
+$pigsfly_spinosaurus_common_pig_height = 297px;
+$pigsfly_spinosaurus_common_pig_total_width = 474px;
+$pigsfly_spinosaurus_common_pig_total_height = 471px;
+$pigsfly_spinosaurus_common_pig_image = 'pigsfly_spinosaurus_common_a.png';
+$pigsfly_spinosaurus_common_pig = 245px 0px -245px 0px 229px 297px 474px 471px 'pigsfly_spinosaurus_common_a.png' 'pigsfly_spinosaurus_common_pig';
+$pigsfly_spinosaurus_common_rocket_name = 'pigsfly_spinosaurus_common_rocket';
+$pigsfly_spinosaurus_common_rocket_x = 0px;
+$pigsfly_spinosaurus_common_rocket_y = 0px;
+$pigsfly_spinosaurus_common_rocket_offset_x = 0px;
+$pigsfly_spinosaurus_common_rocket_offset_y = 0px;
+$pigsfly_spinosaurus_common_rocket_width = 241px;
+$pigsfly_spinosaurus_common_rocket_height = 300px;
+$pigsfly_spinosaurus_common_rocket_total_width = 474px;
+$pigsfly_spinosaurus_common_rocket_total_height = 471px;
+$pigsfly_spinosaurus_common_rocket_image = 'pigsfly_spinosaurus_common_a.png';
+$pigsfly_spinosaurus_common_rocket = 0px 0px 0px 0px 241px 300px 474px 471px 'pigsfly_spinosaurus_common_a.png' 'pigsfly_spinosaurus_common_rocket';
+$spritesheet_width = 474px;
+$spritesheet_height = 471px;
+$spritesheet_image = 'pigsfly_spinosaurus_common_a.png';
+$spritesheet_sprites = $pigsfly_spinosaurus_common_logo $pigsfly_spinosaurus_common_pig $pigsfly_spinosaurus_common_rocket;
+$spritesheet = 474px 471px 'pigsfly_spinosaurus_common_a.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="aggregation_rule_configurations">
+
+        <createTable tableName="aggregation_rule_configurations">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="rule_id" type="uuid">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_configuration_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_aggregation_rule_configurations_event_configurations_id"
+                             referencedTableName="event_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="reset_frequency_interval" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="window_start_date" type="timestamptz">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reset_frequency_length" type="integer"/>
+            <column name="window_count_limit" type="integer"/>
+            <column name="aggregation_type" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregation_field_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregation_group_by_field_name" type="varchar(250)"/>
+            <column name="is_active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>
+            <!-- liquibase ignore <constraints checkConstraint=... clause-->
+            ALTER TABLE aggregation_rule_configurations ADD CONSTRAINT reset_frequency_length
+            CHECK(reset_frequency_length > 0)
+        </sql>
+
+        <createIndex tableName="aggregation_rule_configurations"
+                     indexName="idx_aggregation_rule_configurations_project_id">
+            <column name="project_id"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_rule_configurations"
+                     indexName="idx_aggregation_rule_configurations_is_active">
+            <column name="is_active"/>
+        </createIndex>
+
+        <createTable tableName="aggregation_rule_conditions">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="aggregation_rule_configuration_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="fk_aggregation_rule_conditions_aggregation_rule_configurations_id"
+                             referencedTableName="aggregation_rule_configurations"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="event_field_name" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="condition_type" type="varchar(5)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="value" type="varchar(250)"/>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

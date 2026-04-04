@@ -1,0 +1,684 @@
+{
+    "bucket": {
+        "createdTimestamp": 1555593150284,
+        "identifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "name": "Common",
+        "permissions": {
+            "canDelete": true,
+            "canRead": true,
+            "canWrite": true
+        }
+    },
+    "flow": {
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "bucketName": "Common",
+        "createdTimestamp": 1555593151586,
+        "description": "",
+        "identifier": "b7f081fe-f1d7-54cc-b26a-c45e010a5d77",
+        "modifiedTimestamp": 1574850740276,
+        "name": "FetchCustomerDetails",
+        "type": "Flow",
+        "versionCount": 9
+    },
+    "flowContents": {
+        "comments": "",
+        "componentType": "PROCESS_GROUP",
+        "connections": [
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "ab2e25e6-0508-380f-8279-cdb6f8a76b65",
+                    "name": "PublishKafka(parse_error)",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "cce54f7e-897f-3d31-8830-d5f1e89c3ece",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "dff1dfaf-e9c4-3fea-87ca-297b5fdce42a",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [
+                    {
+                        "x": 2529.0474686518614,
+                        "y": 412.1520011146979
+                    },
+                    {
+                        "x": 2178.990478515625,
+                        "y": 412.97021484375
+                    },
+                    {
+                        "x": 1823.7711181640625,
+                        "y": 412.97021484375
+                    }
+                ],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "ab2e25e6-0508-380f-8279-cdb6f8a76b65",
+                    "name": "PublishKafka(parse_error)",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "ab4c6833-8906-3fa3-b8f5-84979b531036",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "ffeb984f-518a-327a-986a-2abc093ec125",
+                    "name": "LogError - republish error",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "53ed4db5-7964-3709-a1f0-6fb86eb5d17d",
+                    "name": "output",
+                    "type": "OUTPUT_PORT"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "6a8a5e3f-d2f3-3256-963b-8ca88e32b522",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "dff1dfaf-e9c4-3fea-87ca-297b5fdce42a",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 10000,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "ffeb984f-518a-327a-986a-2abc093ec125",
+                    "name": "LogError - republish error",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "994c25d7-00b5-36c4-8d09-1f14585de952",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "failure"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "ab2e25e6-0508-380f-8279-cdb6f8a76b65",
+                    "name": "PublishKafka(parse_error)",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            },
+            {
+                "backPressureDataSizeThreshold": "1 GB",
+                "backPressureObjectThreshold": 1,
+                "bends": [],
+                "componentType": "CONNECTION",
+                "destination": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "dff1dfaf-e9c4-3fea-87ca-297b5fdce42a",
+                    "name": "ConvertAvroToJSON",
+                    "type": "PROCESSOR"
+                },
+                "flowFileExpiration": "0 sec",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "490a8a14-3b80-3613-b5ba-d2dd81a3865c",
+                "labelIndex": 1,
+                "loadBalanceCompression": "DO_NOT_COMPRESS",
+                "loadBalanceStrategy": "DO_NOT_LOAD_BALANCE",
+                "name": "",
+                "prioritizers": [],
+                "selectedRelationships": [
+                    "success"
+                ],
+                "source": {
+                    "comments": "",
+                    "groupId": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                    "id": "b50fd68d-b33b-3c32-9de6-6db51c4550be",
+                    "name": "ConsumeKafka",
+                    "type": "PROCESSOR"
+                },
+                "zIndex": 0
+            }
+        ],
+        "controllerServices": [],
+        "funnels": [],
+        "identifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+        "inputPorts": [],
+        "labels": [
+            {
+                "componentType": "LABEL",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "height": 97.59437561035156,
+                "identifier": "f722b7e3-545e-3581-87a0-20847599297a",
+                "position": {
+                    "x": 1023.9628951386226,
+                    "y": 729.6044915960524
+                },
+                "style": {
+                    "background-color": "#a0ffa0"
+                },
+                "width": 282.22962951660156
+            }
+        ],
+        "name": "FetchCustomerDetails",
+        "outputPorts": [
+            {
+                "comments": "",
+                "componentType": "OUTPUT_PORT",
+                "concurrentlySchedulableTaskCount": 1,
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "53ed4db5-7964-3709-a1f0-6fb86eb5d17d",
+                "name": "output",
+                "position": {
+                    "x": 1046.5112112847594,
+                    "y": 751.3293086273097
+                },
+                "type": "OUTPUT_PORT"
+            }
+        ],
+        "position": {
+            "x": 1285.4021192588486,
+            "y": 300.3879575958616
+        },
+        "processGroups": [],
+        "processors": [
+            {
+                "autoTerminatedRelationships": [
+                    "success"
+                ],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "ab2e25e6-0508-380f-8279-cdb6f8a76b65",
+                "name": "PublishKafka(parse_error)",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 1649.8731358365692,
+                    "y": 495.5757059468125
+                },
+                "properties": {
+                    "ack.wait.time": "5 secs",
+                    "acks": "0",
+                    "bootstrap.servers": "${KAFKA_BROKER}",
+                    "compression.type": "none",
+                    "key-attribute-encoding": "utf-8",
+                    "max.block.ms": "5 sec",
+                    "max.request.size": "1 MB",
+                    "message-header-encoding": "UTF-8",
+                    "partitioner.class": "org.apache.kafka.clients.producer.internals.DefaultPartitioner",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "${kafka.topic}_parse_error",
+                    "use-transactions": "false"
+                },
+                "propertyDescriptors": {
+                    "ack.wait.time": {
+                        "displayName": "Acknowledgment Wait Time",
+                        "identifiesControllerService": false,
+                        "name": "ack.wait.time",
+                        "sensitive": false
+                    },
+                    "acks": {
+                        "displayName": "Delivery Guarantee",
+                        "identifiesControllerService": false,
+                        "name": "acks",
+                        "sensitive": false
+                    },
+                    "attribute-name-regex": {
+                        "displayName": "Attributes to Send as Headers (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "attribute-name-regex",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "compression.type": {
+                        "displayName": "Compression Type",
+                        "identifiesControllerService": false,
+                        "name": "compression.type",
+                        "sensitive": false
+                    },
+                    "kafka-key": {
+                        "displayName": "Kafka Key",
+                        "identifiesControllerService": false,
+                        "name": "kafka-key",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max.block.ms": {
+                        "displayName": "Max Metadata Wait Time",
+                        "identifiesControllerService": false,
+                        "name": "max.block.ms",
+                        "sensitive": false
+                    },
+                    "max.request.size": {
+                        "displayName": "Max Request Size",
+                        "identifiesControllerService": false,
+                        "name": "max.request.size",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "partitioner.class": {
+                        "displayName": "Partitioner class",
+                        "identifiesControllerService": false,
+                        "name": "partitioner.class",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "use-transactions": {
+                        "displayName": "Use Transactions",
+                        "identifiesControllerService": false,
+                        "name": "use-transactions",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ffffa0"
+                },
+                "type": "org.apache.nifi.processors.kafka.pubsub.PublishKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-kafka-2-0-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "b50fd68d-b33b-3c32-9de6-6db51c4550be",
+                "name": "ConsumeKafka",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 983.7447778792848,
+                    "y": 256.7082750072684
+                },
+                "properties": {
+                    "Communications Timeout": "60 secs",
+                    "auto.offset.reset": "earliest",
+                    "bootstrap.servers": "${KAFKA_HOST}:${KAFKA_PORT}",
+                    "group.id": "nifi.customer_details",
+                    "honor-transactions": "true",
+                    "key-attribute-encoding": "utf-8",
+                    "max-uncommit-offset-wait": "1 secs",
+                    "max.poll.records": "1",
+                    "message-header-encoding": "UTF-8",
+                    "security.protocol": "PLAINTEXT",
+                    "topic": "${KAFKA.TOPIC.CUSTOMER_DETAILS}",
+                    "topic_type": "names"
+                },
+                "propertyDescriptors": {
+                    "Communications Timeout": {
+                        "displayName": "Communications Timeout",
+                        "identifiesControllerService": false,
+                        "name": "Communications Timeout",
+                        "sensitive": false
+                    },
+                    "auto.offset.reset": {
+                        "displayName": "Offset Reset",
+                        "identifiesControllerService": false,
+                        "name": "auto.offset.reset",
+                        "sensitive": false
+                    },
+                    "bootstrap.servers": {
+                        "displayName": "Kafka Brokers",
+                        "identifiesControllerService": false,
+                        "name": "bootstrap.servers",
+                        "sensitive": false
+                    },
+                    "group.id": {
+                        "displayName": "Group ID",
+                        "identifiesControllerService": false,
+                        "name": "group.id",
+                        "sensitive": false
+                    },
+                    "header-name-regex": {
+                        "displayName": "Headers to Add as Attributes (Regex)",
+                        "identifiesControllerService": false,
+                        "name": "header-name-regex",
+                        "sensitive": false
+                    },
+                    "honor-transactions": {
+                        "displayName": "Honor Transactions",
+                        "identifiesControllerService": false,
+                        "name": "honor-transactions",
+                        "sensitive": false
+                    },
+                    "kerberos-credentials-service": {
+                        "displayName": "Kerberos Credentials Service",
+                        "identifiesControllerService": true,
+                        "name": "kerberos-credentials-service",
+                        "sensitive": false
+                    },
+                    "key-attribute-encoding": {
+                        "displayName": "Key Attribute Encoding",
+                        "identifiesControllerService": false,
+                        "name": "key-attribute-encoding",
+                        "sensitive": false
+                    },
+                    "max-uncommit-offset-wait": {
+                        "displayName": "Max Uncommitted Time",
+                        "identifiesControllerService": false,
+                        "name": "max-uncommit-offset-wait",
+                        "sensitive": false
+                    },
+                    "max.poll.records": {
+                        "displayName": "Max Poll Records",
+                        "identifiesControllerService": false,
+                        "name": "max.poll.records",
+                        "sensitive": false
+                    },
+                    "message-demarcator": {
+                        "displayName": "Message Demarcator",
+                        "identifiesControllerService": false,
+                        "name": "message-demarcator",
+                        "sensitive": false
+                    },
+                    "message-header-encoding": {
+                        "displayName": "Message Header Encoding",
+                        "identifiesControllerService": false,
+                        "name": "message-header-encoding",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.keytab": {
+                        "displayName": "Kerberos Keytab",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.keytab",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.principal": {
+                        "displayName": "Kerberos Principal",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.principal",
+                        "sensitive": false
+                    },
+                    "sasl.kerberos.service.name": {
+                        "displayName": "Kerberos Service Name",
+                        "identifiesControllerService": false,
+                        "name": "sasl.kerberos.service.name",
+                        "sensitive": false
+                    },
+                    "security.protocol": {
+                        "displayName": "Security Protocol",
+                        "identifiesControllerService": false,
+                        "name": "security.protocol",
+                        "sensitive": false
+                    },
+                    "ssl.context.service": {
+                        "displayName": "SSL Context Service",
+                        "identifiesControllerService": true,
+                        "name": "ssl.context.service",
+                        "sensitive": false
+                    },
+                    "topic": {
+                        "displayName": "Topic Name(s)",
+                        "identifiesControllerService": false,
+                        "name": "topic",
+                        "sensitive": false
+                    },
+                    "topic_type": {
+                        "displayName": "Topic Name Format",
+                        "identifiesControllerService": false,
+                        "name": "topic_type",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_2_0",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-avro-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "dff1dfaf-e9c4-3fea-87ca-297b5fdce42a",
+                "name": "ConvertAvroToJSON",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 986.5591861696676,
+                    "y": 497.72231748396416
+                },
+                "properties": {
+                    "Avro schema": "{\n  \"type\": \"record\",\n  \"name\": \"UserRequestData\",\n  \"namespace\": \"net.flipsports.gmx.rewardcalculator.api\",\n  \"fields\": [\n    {\n      \"name\": \"external_user_id\",\n      \"type\": \"string\"\n    },\n    {\n      \"name\": \"company_id\",\n      \"type\": \"string\",\n      \"logicalType\": \"UUID\"\n    },\n    {\n      \"name\": \"email\",\n      \"type\": \"string\"\n    }\n  ]\n}",
+                    "JSON container options": "none",
+                    "Wrap Single Record": "false"
+                },
+                "propertyDescriptors": {
+                    "Avro schema": {
+                        "displayName": "Avro schema",
+                        "identifiesControllerService": false,
+                        "name": "Avro schema",
+                        "sensitive": false
+                    },
+                    "JSON container options": {
+                        "displayName": "JSON container options",
+                        "identifiesControllerService": false,
+                        "name": "JSON container options",
+                        "sensitive": false
+                    },
+                    "Wrap Single Record": {
+                        "displayName": "Wrap Single Record",
+                        "identifiesControllerService": false,
+                        "name": "Wrap Single Record",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 0,
+                "schedulingPeriod": "0 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {},
+                "type": "org.apache.nifi.processors.avro.ConvertAvroToJSON",
+                "yieldDuration": "1 sec"
+            },
+            {
+                "autoTerminatedRelationships": [],
+                "bulletinLevel": "WARN",
+                "bundle": {
+                    "artifact": "nifi-standard-nar",
+                    "group": "org.apache.nifi",
+                    "version": "1.9.2"
+                },
+                "comments": "",
+                "componentType": "PROCESSOR",
+                "concurrentlySchedulableTaskCount": 1,
+                "executionNode": "ALL",
+                "groupIdentifier": "0fd7a5c2-ec1a-3324-abf5-5a22fc70ac5b",
+                "identifier": "ffeb984f-518a-327a-986a-2abc093ec125",
+                "name": "LogError - republish error",
+                "penaltyDuration": "30 sec",
+                "position": {
+                    "x": 2355.340453810904,
+                    "y": 494.84700966148944
+                },
+                "properties": {
+                    "log-level": "error",
+                    "log-message": "Unable to republish message to parse failue for message offset ${kafka.offset} from ${kafka.topic}",
+                    "log-prefix": "[FetchCasinoAndSportBetsTopupData]"
+                },
+                "propertyDescriptors": {
+                    "log-level": {
+                        "displayName": "Log Level",
+                        "identifiesControllerService": false,
+                        "name": "log-level",
+                        "sensitive": false
+                    },
+                    "log-message": {
+                        "displayName": "Log message",
+                        "identifiesControllerService": false,
+                        "name": "log-message",
+                        "sensitive": false
+                    },
+                    "log-prefix": {
+                        "displayName": "Log prefix",
+                        "identifiesControllerService": false,
+                        "name": "log-prefix",
+                        "sensitive": false
+                    }
+                },
+                "runDurationMillis": 1000,
+                "schedulingPeriod": "300 sec",
+                "schedulingStrategy": "TIMER_DRIVEN",
+                "style": {
+                    "background-color": "#ffa0a0"
+                },
+                "type": "org.apache.nifi.processors.standard.LogMessage",
+                "yieldDuration": "1 sec"
+            }
+        ],
+        "remoteProcessGroups": []
+    },
+    "snapshotMetadata": {
+        "author": "anonymous",
+        "bucketIdentifier": "82014e99-747a-5eda-bf6f-5c7443a09fc7",
+        "comments": "flow variables and simpler flow",
+        "flowIdentifier": "b7f081fe-f1d7-54cc-b26a-c45e010a5d77",
+        "timestamp": 1555602824522,
+        "version": 2
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "ComplianceCustomerId",
+  "namespace": "net.flipsports.gmx.dataapi.internal.compliance.validation",
+  "fields": [
+    {
+      "name": "externalUserId",
+      "type": "string"
+    }
+  ]
+}

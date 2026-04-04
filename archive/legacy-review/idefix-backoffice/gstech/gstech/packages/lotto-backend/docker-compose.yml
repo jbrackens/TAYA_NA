@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  lotto-backend:
+    build:
+      context: ../../
+      dockerfile: packages/lotto-backend/Dockerfile
+    image: lotto-backend
+    container_name: lotto-backend
+    ports:
+      - "4008:3020"
+    networks:
+      - gstech
+    restart: always
+    deploy:
+      restart_policy:
+        condition: on-failure
+    environment:
+      NODE_ENV: development
+      REDIS_HOST: gstech-redis
+      POSTGRES_HOST: gstech-postgres
+      WALLET_URL: http://gstech-backend:3005/api/v1/wallet
+      BACKEND_URL: http://gstech-backend:3001
+
+networks:
+  gstech:
+    external: true

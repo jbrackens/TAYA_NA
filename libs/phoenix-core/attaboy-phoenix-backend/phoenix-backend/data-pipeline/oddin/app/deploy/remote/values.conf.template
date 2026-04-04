@@ -1,0 +1,13 @@
+cloudflow {
+  streamlets {
+    oddin-ingestor {
+      config-parameters {
+        oddin-access-token = "[changeme]"
+        oddin-rest-endpoint = "https://api-mq.integration.oddin.gg"
+      }
+      config {
+        akka.loglevel = "INFO"
+      }
+    }
+  }
+}

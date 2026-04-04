@@ -1,0 +1,319 @@
+$brand-header-button-color: $brand-light !default;
+$brand-header-button-background: $brand-primary !default;
+
+html.IsTablet,
+html.IsMobile {
+  .panel-top-inner{
+    background:#282828;
+  }
+  .page-header-middle, .page-header-top{
+    flex-direction:row;
+    display:flex;
+  }
+  .page-header-top{
+    justify-content: space-between;
+    .page-header-dropdown-text{
+      line-height:24px;
+      margin-top:10px;
+    }
+    .mobile-header-dropdown-item{
+      padding:0 10px;
+      line-height:24px;
+    }
+    .page-header-link,
+    .mobile-header-link{
+      margin-right:5px;
+      line-height:24px;
+    }
+    .branded-header__button{
+      margin:0;
+    }
+    .page-header-right{
+      flex: 1 1 50%;
+      order:2;
+      margin-right:0px;
+      text-align:right;
+      line-height:24px;
+      & > div{
+        text-align:right;
+      }
+    }
+    .page-header-center{
+      display:none;
+      flex: 0 0 0px;
+    }
+    .page-header-left{
+      flex: 1 1 50%;
+      order:0;
+      margin-left:0px;
+      line-height:24px;
+      & > div{
+        text-align:left;
+        margin-left:5px;
+      }
+    }
+  }
+  .page-header-middle{
+    .page-header-left{
+      flex: 0 0 60px;
+      order:0;
+    }
+    .page-header-center{
+      flex: 1 1 200px;
+      order:1;
+      text-align:center;
+      padding:0;
+    }
+    .page-header-right{
+      flex: 0 0 60px;
+      order:2;
+    }
+  }
+  .notlogged .page-header-top{
+    .page-header-center,
+    .page-header-left{
+      flex-basis:0;
+      margin:0;
+      display:none;
+    }
+    .page-header-right{
+      flex: 1 1 100%;
+      order:2;
+      display:flex;
+      margin:0;
+      & > div{
+        flex:1 1 0;
+        display:flex;
+        &:empty{
+          display:none;
+        }
+      }
+      .branded-header__button--login{
+        background:$brand-header-button-background;
+        color:$brand-header-button-color;
+        width:calc(100% - 1px);
+      }
+      .branded-header__button--join{
+        background:$brand-header-button-background;
+        color:$brand-header-button-color;
+        width:100%;
+      }
+    }
+  }
+  .page-header-dropdown-wrap{
+    padding:0;
+  }
+  .mobile-header-open-bets-link{
+    font-size:0;
+    .mobile-header-open-bets-count{
+        font-size:12px;
+        margin-left: 12px;
+        &:before{
+            content:'';
+            display:inline-block;
+            background-image:url("/imgs/i-v2/o/account-mobile/openbets.svg");
+            background-size:contain;
+            background-repeat:no-repeat;
+            height:13px;
+            width:13px;
+            position: absolute;
+            top: 6px;
+            left: 0px;
+        }
+    }
+    &.mobile-header-link .mobile-header-custom-link-text{
+        line-height:24px;
+        padding-left: 6px;
+    }
+  }
+  .mobile-header-dropdown-balance-currency{
+    margin-right:-2px
+  }
+}
+
+.IsTablet{
+  .mobile-header-main-logo{
+    height:55px;
+    width:200px;
+    padding:0;
+  }
+  .mobile-header-logo-container{
+    padding:0;
+  }
+}
+
+.IsMobile{
+  .mobile-header-main-logo{
+    width:145px;
+  }
+  .loggedin .page-header-top{
+    .page-header-right,
+    .page-header-left{
+      flex-direction:row;
+      flex:1 1 auto;
+      justify-content: space-between;
+    }
+  }
+}
+
+html.IsMobile .loggedin .page-header-right, html.IsTablet .loggedin .page-header-right{
+  padding:0;
+}
+.IsTablet sb-block:not(#top-panel-block-1) .page-header-wrapper:not(.page-header-wrapper-bottom):not(.page-header-wrapper-middle),
+.IsMobile sb-block:not(#top-panel-block-1) .page-header-wrapper:not(.page-header-wrapper-bottom):not(.page-header-wrapper-middle){
+display:none;
+}
+.IsTablet sb-block:not(#top-panel-block-1) .page-header-wrapper-middle,
+.IsMobile sb-block:not(#top-panel-block-1) .page-header-wrapper-middle{
+  .page-header-left{
+    display:none;
+  }
+  .page-header-right{
+    display:none;
+  }
+  .page-header-center{
+    padding:0px;
+    width:100%;
+    & > .page-header-element{
+      width: 100%;
+      overflow-y: scroll;
+    }
+    .main_navigation{
+      display: flex;
+      flex-wrap: nowrap;
+      font-family:$brand-font--header;
+      font-weight:bold;
+      text-transform: uppercase;
+      & > li{
+        white-space: nowrap;
+        flex-shrink:0;
+      }
+    }
+    .page-header-main-navi-link{
+      font-size: 12px;
+    }
+  }
+}
+html.IsMobile .page-header-wrapper-top, html.IsTablet .page-header-wrapper-top{
+  .mobile-login-element{
+    width:auto;
+    height:auto;
+    padding:0 12px;
+    font-size:12px;
+    line-height:24px;
+    margin:0px;
+  }
+}
+.IsTablet,
+.IsMobile{
+  .page-header-wrapper-bottom .page-header-left{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow: auto;
+    max-width: 100%;
+  }
+  .page-header-wrapper-bottom .page-header-left .page-header-element{
+    font-size:10px;
+  }
+
+  .page-header-wrapper-bottom .page-header-left .page-header-link,
+  .page-header-wrapper-bottom .page-header-left .page-header-text{
+    white-space:nowrap;
+    span{
+      margin:0;
+    }
+  }
+}
+
+@media (max-width: 400px) {
+    html.IsMobile .mobile-header-main-logo {
+        width: 145px;
+    }
+}
+
+.IsMobile .page-header{
+  position:unset;
+}
+
+
+html.IsMobile .loggedin .page-header-top .page-header-right{
+  margin-right:0px;
+  .page-header-deposit-button{
+    margin-left:0px;
+    margin-right:0px;
+  }
+}
+
+.IsMobile .notlogged .page-header-top{
+  .page-header-right, .page-header-left{
+    margin:0;
+  }
+  .page-header-center{
+    margin:0 auto;
+  }
+}
+
+
+//reward points in header
+
+#header-reward-element{
+  color:white;
+  margin-left:15px;
+  ag-available-points{
+    color:$brand-primary;
+    margin:10px;
+  }
+}
+html.IsMobile #header-reward-element{
+  padding:0;
+  font-size:0px;
+  margin:0;
+  line-height:24px;
+  padding-left: 13px;
+  display:flex;
+  flex-direction:row;
+  &:after{
+    top: 5px;
+    right: unset;
+    left:0;
+    height: 14px;
+    width: 14px;
+    position: absolute;
+    display: block;
+  }
+  &:before{
+    content: ' RWP';
+    font-size:12px;
+    order:2;
+    display:inline;
+  }
+  ag-available-points{
+      font-size:12px;
+      margin:0 5px;
+      color:white;
+  }
+}
+
+.mobile-header-dropdown-item, .mobile-header-link{
+  font-family: $brand-font--body;
+}
+
+.mobile-header-open-bets-link.mobile-header-link .mobile-header-custom-link-text{
+  padding:0px;
+}
+
+// mobile 'hover' fix
+.page-header-link.page-header-deposit-button:hover{
+  color:white;
+}
+
+.IsMobile .mobile-header-open-bets-link.mobile-header-link .mobile-header-custom-link-text{
+  padding:0;
+  line-height:26px;
+}
+.mobile-login-element{
+  font-weight:bold;
+  text-transform: uppercase;
+  font-size:15px;
+}

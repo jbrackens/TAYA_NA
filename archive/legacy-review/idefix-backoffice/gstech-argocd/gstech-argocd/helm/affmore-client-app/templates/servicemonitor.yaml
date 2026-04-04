@@ -1,0 +1,27 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "affmore-client-app.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "affmore-client-app.name" . }}
+    chart: {{ include "affmore-client-app.chart" . }}
+    release: prometheus-operator
+    heritage: {{ .Release.Service }}
+spec:
+  endpoints:
+  - interval: {{ .Values.prometheus.interval }}
+    path: {{ .Values.prometheus.path }}
+    port: {{ .Values.prometheus.portname }}
+{{- if .Values.prometheus.relabelings }}
+    relabelings:
+{{ toYaml .Values.prometheus.relabelings | indent 6 }}
+{{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace | quote }}
+  selector:
+    matchLabels:
+      {{- include "affmore-client-app.labels" . | nindent 6 }}
+{{- end }}

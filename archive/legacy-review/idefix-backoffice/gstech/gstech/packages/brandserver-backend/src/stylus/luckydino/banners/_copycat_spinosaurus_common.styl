@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$copycat_spinosaurus_common_cat_l_name = 'copycat_spinosaurus_common_cat_l';
+$copycat_spinosaurus_common_cat_l_x = 0px;
+$copycat_spinosaurus_common_cat_l_y = 189px;
+$copycat_spinosaurus_common_cat_l_offset_x = 0px;
+$copycat_spinosaurus_common_cat_l_offset_y = -189px;
+$copycat_spinosaurus_common_cat_l_width = 183px;
+$copycat_spinosaurus_common_cat_l_height = 166px;
+$copycat_spinosaurus_common_cat_l_total_width = 550px;
+$copycat_spinosaurus_common_cat_l_total_height = 355px;
+$copycat_spinosaurus_common_cat_l_image = 'copycat_spinosaurus_common_b.png';
+$copycat_spinosaurus_common_cat_l = 0px 189px 0px -189px 183px 166px 550px 355px 'copycat_spinosaurus_common_b.png' 'copycat_spinosaurus_common_cat_l';
+$copycat_spinosaurus_common_cat_r_name = 'copycat_spinosaurus_common_cat_r';
+$copycat_spinosaurus_common_cat_r_x = 187px;
+$copycat_spinosaurus_common_cat_r_y = 189px;
+$copycat_spinosaurus_common_cat_r_offset_x = -187px;
+$copycat_spinosaurus_common_cat_r_offset_y = -189px;
+$copycat_spinosaurus_common_cat_r_width = 169px;
+$copycat_spinosaurus_common_cat_r_height = 141px;
+$copycat_spinosaurus_common_cat_r_total_width = 550px;
+$copycat_spinosaurus_common_cat_r_total_height = 355px;
+$copycat_spinosaurus_common_cat_r_image = 'copycat_spinosaurus_common_b.png';
+$copycat_spinosaurus_common_cat_r = 187px 189px -187px -189px 169px 141px 550px 355px 'copycat_spinosaurus_common_b.png' 'copycat_spinosaurus_common_cat_r';
+$copycat_spinosaurus_common_logo_name = 'copycat_spinosaurus_common_logo';
+$copycat_spinosaurus_common_logo_x = 0px;
+$copycat_spinosaurus_common_logo_y = 0px;
+$copycat_spinosaurus_common_logo_offset_x = 0px;
+$copycat_spinosaurus_common_logo_offset_y = 0px;
+$copycat_spinosaurus_common_logo_width = 550px;
+$copycat_spinosaurus_common_logo_height = 185px;
+$copycat_spinosaurus_common_logo_total_width = 550px;
+$copycat_spinosaurus_common_logo_total_height = 355px;
+$copycat_spinosaurus_common_logo_image = 'copycat_spinosaurus_common_b.png';
+$copycat_spinosaurus_common_logo = 0px 0px 0px 0px 550px 185px 550px 355px 'copycat_spinosaurus_common_b.png' 'copycat_spinosaurus_common_logo';
+$spritesheet_width = 550px;
+$spritesheet_height = 355px;
+$spritesheet_image = 'copycat_spinosaurus_common_b.png';
+$spritesheet_sprites = $copycat_spinosaurus_common_cat_l $copycat_spinosaurus_common_cat_r $copycat_spinosaurus_common_logo;
+$spritesheet = 550px 355px 'copycat_spinosaurus_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

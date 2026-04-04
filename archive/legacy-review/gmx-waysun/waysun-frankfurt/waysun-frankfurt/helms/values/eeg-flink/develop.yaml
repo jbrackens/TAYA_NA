@@ -1,0 +1,31 @@
+taskManager:
+  memoryProcessSize: 23500m
+  replicas: 2
+  deploy_on: streaming-nodes
+  resources:
+    limits:
+      cpu: 4
+      memory: 24Gi
+    requests:
+      cpu: 3
+      memory: 24Gi
+
+jobManager:
+  replicas: 2
+  deploy_on: streaming-nodes
+  memoryProcessSize: 800m
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 1Gi
+
+eeg_pvc_cfs:
+  capacity: 100Gi
+  host: 10.17.105.17
+  permissionGroupId:  pgroup-5nnsx6up
+  subnetId:  subnet-mqulbblm
+  vpcId:  vpc-fc428r6x
+  region:  eu-frankfurt-1

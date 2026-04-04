@@ -1,0 +1,133 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$de-lander_icon_bounty_name = 'de-lander_icon_bounty';
+$de-lander_icon_bounty_x = 0px;
+$de-lander_icon_bounty_y = 64px;
+$de-lander_icon_bounty_offset_x = 0px;
+$de-lander_icon_bounty_offset_y = -64px;
+$de-lander_icon_bounty_width = 100px;
+$de-lander_icon_bounty_height = 100px;
+$de-lander_icon_bounty_total_width = 114px;
+$de-lander_icon_bounty_total_height = 580px;
+$de-lander_icon_bounty_image = 'sprite_lander_de.png';
+$de-lander_icon_bounty = 0px 64px 0px -64px 100px 100px 114px 580px 'sprite_lander_de.png' 'de-lander_icon_bounty';
+$de-lander_icon_cashrewards_name = 'de-lander_icon_cashrewards';
+$de-lander_icon_cashrewards_x = 0px;
+$de-lander_icon_cashrewards_y = 168px;
+$de-lander_icon_cashrewards_offset_x = 0px;
+$de-lander_icon_cashrewards_offset_y = -168px;
+$de-lander_icon_cashrewards_width = 100px;
+$de-lander_icon_cashrewards_height = 100px;
+$de-lander_icon_cashrewards_total_width = 114px;
+$de-lander_icon_cashrewards_total_height = 580px;
+$de-lander_icon_cashrewards_image = 'sprite_lander_de.png';
+$de-lander_icon_cashrewards = 0px 168px 0px -168px 100px 100px 114px 580px 'sprite_lander_de.png' 'de-lander_icon_cashrewards';
+$de-lander_icon_depositbonus_name = 'de-lander_icon_depositbonus';
+$de-lander_icon_depositbonus_x = 0px;
+$de-lander_icon_depositbonus_y = 272px;
+$de-lander_icon_depositbonus_offset_x = 0px;
+$de-lander_icon_depositbonus_offset_y = -272px;
+$de-lander_icon_depositbonus_width = 100px;
+$de-lander_icon_depositbonus_height = 100px;
+$de-lander_icon_depositbonus_total_width = 114px;
+$de-lander_icon_depositbonus_total_height = 580px;
+$de-lander_icon_depositbonus_image = 'sprite_lander_de.png';
+$de-lander_icon_depositbonus = 0px 272px 0px -272px 100px 100px 114px 580px 'sprite_lander_de.png' 'de-lander_icon_depositbonus';
+$de-lander_icon_guarantee_name = 'de-lander_icon_guarantee';
+$de-lander_icon_guarantee_x = 0px;
+$de-lander_icon_guarantee_y = 376px;
+$de-lander_icon_guarantee_offset_x = 0px;
+$de-lander_icon_guarantee_offset_y = -376px;
+$de-lander_icon_guarantee_width = 100px;
+$de-lander_icon_guarantee_height = 100px;
+$de-lander_icon_guarantee_total_width = 114px;
+$de-lander_icon_guarantee_total_height = 580px;
+$de-lander_icon_guarantee_image = 'sprite_lander_de.png';
+$de-lander_icon_guarantee = 0px 376px 0px -376px 100px 100px 114px 580px 'sprite_lander_de.png' 'de-lander_icon_guarantee';
+$de-lander_icon_jefewheel_name = 'de-lander_icon_jefewheel';
+$de-lander_icon_jefewheel_x = 0px;
+$de-lander_icon_jefewheel_y = 480px;
+$de-lander_icon_jefewheel_offset_x = 0px;
+$de-lander_icon_jefewheel_offset_y = -480px;
+$de-lander_icon_jefewheel_width = 114px;
+$de-lander_icon_jefewheel_height = 100px;
+$de-lander_icon_jefewheel_total_width = 114px;
+$de-lander_icon_jefewheel_total_height = 580px;
+$de-lander_icon_jefewheel_image = 'sprite_lander_de.png';
+$de-lander_icon_jefewheel = 0px 480px 0px -480px 114px 100px 114px 580px 'sprite_lander_de.png' 'de-lander_icon_jefewheel';
+$de-lander_or_name = 'de-lander_or';
+$de-lander_or_x = 0px;
+$de-lander_or_y = 0px;
+$de-lander_or_offset_x = 0px;
+$de-lander_or_offset_y = 0px;
+$de-lander_or_width = 60px;
+$de-lander_or_height = 60px;
+$de-lander_or_total_width = 114px;
+$de-lander_or_total_height = 580px;
+$de-lander_or_image = 'sprite_lander_de.png';
+$de-lander_or = 0px 0px 0px 0px 60px 60px 114px 580px 'sprite_lander_de.png' 'de-lander_or';
+$spritesheet_width = 114px;
+$spritesheet_height = 580px;
+$spritesheet_image = 'sprite_lander_de.png';
+$spritesheet_sprites = $de-lander_icon_bounty $de-lander_icon_cashrewards $de-lander_icon_depositbonus $de-lander_icon_guarantee $de-lander_icon_jefewheel $de-lander_or;
+$spritesheet = 114px 580px 'sprite_lander_de.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

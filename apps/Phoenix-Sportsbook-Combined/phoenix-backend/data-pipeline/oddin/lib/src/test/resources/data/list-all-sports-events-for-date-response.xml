@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schedule generated_at="2020-09-09T10:49:07">
+    <sport_event id="od:match:14537" name="Cream Real Betis Latam vs W7M" scheduled="2020-09-10T01:00:00" liveodds="not_available">
+        <tournament id="od:tournament:704" name="CLUTCH Season 3" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1554" name="Cream Real Betis Latam" abbreviation="Cream Real Betis Latam" qualifier="home"></competitor>
+            <competitor id="od:competitor:471" name="W7M" abbreviation="W7M" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:16187" name="Nexus Gaming vs Team Secret" scheduled="2020-09-10T15:00:00" liveodds="not_available">
+        <tournament id="od:tournament:747" name="Legend Series Season 6" scheduled="2020-08-30T22:00:00">
+            <tournament_length start_date="2020-08-31"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:850" name="Nexus Gaming" abbreviation="NexG" qualifier="home"></competitor>
+            <competitor id="od:competitor:2" name="Team Secret" abbreviation="Secret" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:16188" name="Nemiga Gaming vs Winstrike Team" scheduled="2020-09-10T18:00:00" liveodds="not_available">
+        <tournament id="od:tournament:747" name="Legend Series Season 6" scheduled="2020-08-30T22:00:00">
+            <tournament_length start_date="2020-08-31"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:270" name="Nemiga Gaming" abbreviation="Nemiga Gaming" qualifier="home"></competitor>
+            <competitor id="od:competitor:26" name="Winstrike Team" abbreviation="WT" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15051" name="LDLC OL vs  Samsung Morning Stars" scheduled="2020-09-10T18:00:00">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:751" name="LDLC OL" abbreviation="LDLC" qualifier="home"></competitor>
+            <competitor id="od:competitor:1062" name=" Samsung Morning Stars" abbreviation="SMS" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15053" name="FC Schalke 04 Evolution vs  Samsung Morning Stars" scheduled="2020-09-10T20:00:00">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1982" name="FC Schalke 04 Evolution" abbreviation="S04E" qualifier="home"></competitor>
+            <competitor id="od:competitor:1062" name=" Samsung Morning Stars" abbreviation="SMS" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15049" name="FC Schalke 04 Evolution vs LDLC OL" scheduled="2020-09-10T16:00:00">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1982" name="FC Schalke 04 Evolution" abbreviation="S04E" qualifier="home"></competitor>
+            <competitor id="od:competitor:751" name="LDLC OL" abbreviation="LDLC" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15419" name="Chaos Esports Club vs 100 Thieves" scheduled="2020-09-10T19:00:00">
+        <tournament id="od:tournament:717" name="ESL Pro League Season 12: North America" scheduled="2020-08-31T22:00:00">
+            <tournament_length start_date="2020-09-01"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:272" name="Chaos Esports Club" abbreviation="Chaos Esports Club" qualifier="home"></competitor>
+            <competitor id="od:competitor:249" name="100 Thieves" abbreviation="100 Thieves" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15054" name="K1CK Neosurf vs LDLC OL" scheduled="2020-09-10T21:00:00">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1428" name="K1CK Neosurf" abbreviation="K1CK" qualifier="home"></competitor>
+            <competitor id="od:competitor:751" name="LDLC OL" abbreviation="LDLC" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15052" name="K1CK Neosurf vs FC Schalke 04 Evolution" scheduled="2020-09-10T19:00:00">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1428" name="K1CK Neosurf" abbreviation="K1CK" qualifier="home"></competitor>
+            <competitor id="od:competitor:1982" name="FC Schalke 04 Evolution" abbreviation="S04E" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15469" name="G2 Esports vs ENCE" scheduled="2020-09-10T19:00:00">
+        <tournament id="od:tournament:716" name="ESL Pro League Season 12: Europe" scheduled="2020-08-31T22:00:00">
+            <tournament_length start_date="2020-09-01"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:15" name="G2 Esports" abbreviation="G2" qualifier="home"></competitor>
+            <competitor id="od:competitor:268" name="ENCE" abbreviation="ENCE" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15987" name="CR4ZY vs Havan Liberty Gaming" scheduled="2020-09-10T20:00:00" liveodds="not_available">
+        <tournament id="od:tournament:757" name="BTS Pro Series Season 3: Americas" scheduled="2020-09-06T22:00:00">
+            <tournament_length start_date="2020-09-07"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:219" name="CR4ZY" abbreviation="CR4ZY" qualifier="home"></competitor>
+            <competitor id="od:competitor:1563" name="Havan Liberty Gaming" abbreviation="⁠HL" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15986" name="Infamous vs Infinity Esports" scheduled="2020-09-10T02:00:00">
+        <tournament id="od:tournament:757" name="BTS Pro Series Season 3: Americas" scheduled="2020-09-06T22:00:00">
+            <tournament_length start_date="2020-09-07"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:256" name="Infamous" abbreviation="Infamous" qualifier="home"></competitor>
+            <competitor id="od:competitor:1038" name="Infinity Esports" abbreviation="Infinity Esports" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15985" name="4 Zoomers vs Team Brasil" scheduled="2020-09-10T00:00:00">
+        <tournament id="od:tournament:757" name="BTS Pro Series Season 3: Americas" scheduled="2020-09-06T22:00:00">
+            <tournament_length start_date="2020-09-07"></tournament_length>
+            <sport id="od:sport:2" name="Dota 2" abbreviation="Dota2"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1257" name="4 Zoomers" abbreviation="4 Zoomers" qualifier="home"></competitor>
+            <competitor id="od:competitor:1899" name="Team Brasil" abbreviation="Team Brasil" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15468" name="BIG vs Heroic" scheduled="2020-09-10T15:30:00">
+        <tournament id="od:tournament:716" name="ESL Pro League Season 12: Europe" scheduled="2020-08-31T22:00:00">
+            <tournament_length start_date="2020-09-01"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:218" name="BIG" abbreviation="BIG" qualifier="home"></competitor>
+            <competitor id="od:competitor:220" name="Heroic" abbreviation="Heroic" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15050" name=" Samsung Morning Stars vs K1CK Neosurf" scheduled="2020-09-10T17:00:00">
+        <tournament id="od:tournament:696" name="European Masters Summer 2020" scheduled="2020-08-16T22:00:00">
+            <tournament_length start_date="2020-08-17"></tournament_length>
+            <sport id="od:sport:1" name="League of Legends" abbreviation="LoL"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:1062" name=" Samsung Morning Stars" abbreviation="SMS" qualifier="home"></competitor>
+            <competitor id="od:competitor:1428" name="K1CK Neosurf" abbreviation="K1CK" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+    <sport_event id="od:match:15467" name="Natus Vincere vs AGO" scheduled="2020-09-10T12:00:00">
+        <tournament id="od:tournament:716" name="ESL Pro League Season 12: Europe" scheduled="2020-08-31T22:00:00">
+            <tournament_length start_date="2020-09-01"></tournament_length>
+            <sport id="od:sport:3" name="Counter-Strike: Global Offensive" abbreviation="CS:GO"></sport>
+        </tournament>
+        <competitors>
+            <competitor id="od:competitor:25" name="Natus Vincere" abbreviation="NaVi" qualifier="home"></competitor>
+            <competitor id="od:competitor:425" name="AGO" abbreviation="AGO" qualifier="away"></competitor>
+        </competitors>
+    </sport_event>
+</schedule>

@@ -1,0 +1,25 @@
+<configuration scan="true" scanPeriod="3 seconds">
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%date{"yyyy-MM-dd HH:mm:ss,SSSZZZZ"} %-5level [%-20.20thread] %logger{10} - %message%n%xException</Pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <logger name="slick.jdbc" level="INFO" />
+    <!--<logger name="slick.jdbc.JdbcBackend.statement" level="DEBUG" />-->
+    <!--<logger name="slick.jdbc.JdbcBackend.parameter" level="DEBUG" />-->
+    <!--<logger name="slick.jdbc.JdbcBackend.benchmark" level="DEBUG" />-->
+
+    <logger name="tech.argyll.gmx.predictorgame" level="INFO" />
+
+</configuration>

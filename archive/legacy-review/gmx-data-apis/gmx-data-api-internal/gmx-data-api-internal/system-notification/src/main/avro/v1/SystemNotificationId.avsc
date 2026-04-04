@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "SystemNotificationId",
+  "namespace": "net.eeg.gmx.dataapi.internal.systemnotification",
+  "fields": [
+    {
+      "name": "externalUserId",
+      "type": "string"
+    }
+  ]
+}

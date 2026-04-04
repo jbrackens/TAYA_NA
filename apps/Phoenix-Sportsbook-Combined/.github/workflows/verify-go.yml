@@ -1,0 +1,42 @@
+name: Verify Go Parity
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify-go:
+    name: verify-go
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go-platform/go.work
+          cache: true
+
+      - name: Run Go quality gate
+        run: make verify-go
+
+      - name: Upload Go quality-gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-go-quality-gate
+          path: |
+            revival/178_SB501_PROVIDER_CONFORMANCE_REPORT.md
+            revival/179_SB502_CANONICAL_REGRESSION_PACK_REPORT.md
+            revival/180_SB503_PROVIDER_CHAOS_SUITE_REPORT.md
+            revival/artifacts/provider_conformance_*.md
+            revival/artifacts/provider_conformance_*.log
+            revival/artifacts/regression_pack_*.md
+            revival/artifacts/regression_pack_*.log
+            revival/artifacts/provider_chaos_suite_*.md
+            revival/artifacts/provider_chaos_suite_*.json
+            revival/artifacts/provider_chaos_suite_*.log
+            revival/artifacts/reconciliation_parity_report_historical_*.md
+          if-no-files-found: warn

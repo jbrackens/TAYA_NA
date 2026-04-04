@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$spartacus_common_gladiator_name = 'spartacus_common_gladiator';
+$spartacus_common_gladiator_x = 0px;
+$spartacus_common_gladiator_y = 0px;
+$spartacus_common_gladiator_offset_x = 0px;
+$spartacus_common_gladiator_offset_y = 0px;
+$spartacus_common_gladiator_width = 348px;
+$spartacus_common_gladiator_height = 279px;
+$spartacus_common_gladiator_total_width = 672px;
+$spartacus_common_gladiator_total_height = 577px;
+$spartacus_common_gladiator_image = 'spartacus_common_b.png';
+$spartacus_common_gladiator = 0px 0px 0px 0px 348px 279px 672px 577px 'spartacus_common_b.png' 'spartacus_common_gladiator';
+$spartacus_common_lady_name = 'spartacus_common_lady';
+$spartacus_common_lady_x = 0px;
+$spartacus_common_lady_y = 283px;
+$spartacus_common_lady_offset_x = 0px;
+$spartacus_common_lady_offset_y = -283px;
+$spartacus_common_lady_width = 258px;
+$spartacus_common_lady_height = 294px;
+$spartacus_common_lady_total_width = 672px;
+$spartacus_common_lady_total_height = 577px;
+$spartacus_common_lady_image = 'spartacus_common_b.png';
+$spartacus_common_lady = 0px 283px 0px -283px 258px 294px 672px 577px 'spartacus_common_b.png' 'spartacus_common_lady';
+$spartacus_common_logo_name = 'spartacus_common_logo';
+$spartacus_common_logo_x = 352px;
+$spartacus_common_logo_y = 0px;
+$spartacus_common_logo_offset_x = -352px;
+$spartacus_common_logo_offset_y = 0px;
+$spartacus_common_logo_width = 320px;
+$spartacus_common_logo_height = 170px;
+$spartacus_common_logo_total_width = 672px;
+$spartacus_common_logo_total_height = 577px;
+$spartacus_common_logo_image = 'spartacus_common_b.png';
+$spartacus_common_logo = 352px 0px -352px 0px 320px 170px 672px 577px 'spartacus_common_b.png' 'spartacus_common_logo';
+$spritesheet_width = 672px;
+$spritesheet_height = 577px;
+$spritesheet_image = 'spartacus_common_b.png';
+$spritesheet_sprites = $spartacus_common_gladiator $spartacus_common_lady $spartacus_common_logo;
+$spritesheet = 672px 577px 'spartacus_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

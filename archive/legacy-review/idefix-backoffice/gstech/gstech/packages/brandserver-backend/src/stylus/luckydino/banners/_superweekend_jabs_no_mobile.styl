@@ -1,0 +1,78 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$superweekend_jabs_no_mobile_logo_jabs_name = 'superweekend_jabs_no_mobile_logo_jabs';
+$superweekend_jabs_no_mobile_logo_jabs_x = 0px;
+$superweekend_jabs_no_mobile_logo_jabs_y = 0px;
+$superweekend_jabs_no_mobile_logo_jabs_offset_x = 0px;
+$superweekend_jabs_no_mobile_logo_jabs_offset_y = 0px;
+$superweekend_jabs_no_mobile_logo_jabs_width = 320px;
+$superweekend_jabs_no_mobile_logo_jabs_height = 71px;
+$superweekend_jabs_no_mobile_logo_jabs_total_width = 320px;
+$superweekend_jabs_no_mobile_logo_jabs_total_height = 71px;
+$superweekend_jabs_no_mobile_logo_jabs_image = 'superweekend_jabs_no_mobile_a.png';
+$superweekend_jabs_no_mobile_logo_jabs = 0px 0px 0px 0px 320px 71px 320px 71px 'superweekend_jabs_no_mobile_a.png' 'superweekend_jabs_no_mobile_logo_jabs';
+$spritesheet_width = 320px;
+$spritesheet_height = 71px;
+$spritesheet_image = 'superweekend_jabs_no_mobile_a.png';
+$spritesheet_sprites = $superweekend_jabs_no_mobile_logo_jabs;
+$spritesheet = 320px 71px 'superweekend_jabs_no_mobile_a.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

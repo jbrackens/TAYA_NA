@@ -1,0 +1,26 @@
+{
+  "name": "gstech-rewardserver",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "bootstrap": "yarn link gstech-core",
+    "pretty": "prettier -c '**/*.js'",
+    "start": "KAFKA_ENABLED=true nodemon .",
+    "serve": "yarn migrate && node .",
+    "test": "NODE_ENV=test mocha --exit --timeout 15000 --require '../gstech-core/modules/setup-test' './server/**/*.spec.js'",
+    "mocha": "NODE_ENV=test mocha --exit --timeout 15000 --require '../gstech-core/modules/setup-test'",
+    "lint": "eslint '**/*.js'",
+    "flow": "flow",
+    "docker:test": "docker compose -f docker-compose.test.yml down && docker compose -f docker-compose.test.yml up --build --exit-code-from gstech-rewardserver.test",
+    "docker:start": "docker compose up --build -d",
+    "migrate": "node ../gstech-core/modules/migrator.js migrate",
+    "add:migration": "node ../gstech-core/modules/migrator.js create",
+    "data:clean": "node ./scripts/jobRunner.js run '../jobs/cleanData.js'",
+    "data:import": "node ./scripts/jobRunner.js run '../jobs/import.js'",
+    "data:import-blurhashes": "node ./scripts/jobRunner.js run '../jobs/importBlurhashes.js'",
+    "data:games:enable": "node ./scripts/jobRunner.js run '../jobs/enableGames.js'",
+    "data:fake": "node ./scripts/jobRunner.js run '../jobs/fakeData.js'",
+    "script:runner": "node ./scripts/jobRunner.js run ",
+    "evolution:migration": "flow-node ./scripts/27-import-evo-oss-games.js"
+  }
+}

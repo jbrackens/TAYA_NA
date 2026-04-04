@@ -1,0 +1,162 @@
+{
+  "currentPage": 1,
+  "data": [
+    {
+      "competitors": {
+        "away": {
+          "competitorId": "c:f_local_001:away",
+          "name": "Team Beta",
+          "qualifier": "away",
+          "score": 0
+        },
+        "home": {
+          "competitorId": "c:f_local_001:home",
+          "name": "Team Alpha",
+          "qualifier": "home",
+          "score": 0
+        }
+      },
+      "fixtureId": "f:local:001",
+      "fixtureName": "Team Alpha vs Team Beta",
+      "isLive": false,
+      "market": {
+        "currentLifecycle": {
+          "changeReason": {
+            "status": "ACTIVE",
+            "type": "DATA_SUPPLIER_CHANGE"
+          },
+          "type": "BETTABLE"
+        },
+        "marketCategory": "MATCH_WINNER",
+        "marketId": "m:local:001",
+        "marketName": "Match Winner",
+        "marketType": "MATCH_WINNER",
+        "selectionOdds": [
+          {
+            "active": true,
+            "displayOdds": {
+              "american": "-125",
+              "decimal": 1.8,
+              "fractional": "4/5"
+            },
+            "selectionId": "home",
+            "selectionName": "Team Alpha"
+          },
+          {
+            "active": true,
+            "displayOdds": {
+              "american": "+120",
+              "decimal": 2.2,
+              "fractional": "6/5"
+            },
+            "selectionId": "away",
+            "selectionName": "Team Beta"
+          },
+          {
+            "active": true,
+            "displayOdds": {
+              "american": "+215",
+              "decimal": 3.15,
+              "fractional": "43/20"
+            },
+            "selectionId": "draw",
+            "selectionName": "Draw"
+          }
+        ],
+        "specifiers": {
+          "variant": "way:two",
+          "way": "two"
+        }
+      },
+      "sport": {
+        "abbreviation": "FOOT",
+        "displayToPunters": true,
+        "name": "Football",
+        "sportId": "s:football"
+      },
+      "startTime": "2026-04-10T20:00:00Z",
+      "status": "NOT_STARTED",
+      "tournament": {
+        "name": "Premier League",
+        "sportId": "s:football",
+        "startTime": "2026-04-10T20:00:00Z",
+        "tournamentId": "t:premier-league"
+      }
+    },
+    {
+      "competitors": {
+        "away": {
+          "competitorId": "c:f_local_001:away",
+          "name": "Team Beta",
+          "qualifier": "away",
+          "score": 0
+        },
+        "home": {
+          "competitorId": "c:f_local_001:home",
+          "name": "Team Alpha",
+          "qualifier": "home",
+          "score": 0
+        }
+      },
+      "fixtureId": "f:local:001",
+      "fixtureName": "Team Alpha vs Team Beta",
+      "isLive": false,
+      "market": {
+        "currentLifecycle": {
+          "changeReason": {
+            "status": "ACTIVE",
+            "type": "DATA_SUPPLIER_CHANGE"
+          },
+          "type": "BETTABLE"
+        },
+        "marketCategory": "OVER_UNDER_2_5_GOALS",
+        "marketId": "m:local:002",
+        "marketName": "Over/Under 2.5 Goals",
+        "marketType": "OVER_UNDER_2_5_GOALS",
+        "selectionOdds": [
+          {
+            "active": true,
+            "displayOdds": {
+              "american": "-105",
+              "decimal": 1.95,
+              "fractional": "19/20"
+            },
+            "selectionId": "over",
+            "selectionName": "Over 2.5"
+          },
+          {
+            "active": true,
+            "displayOdds": {
+              "american": "-111",
+              "decimal": 1.9,
+              "fractional": "9/10"
+            },
+            "selectionId": "under",
+            "selectionName": "Under 2.5"
+          }
+        ],
+        "specifiers": {
+          "line": "2.5",
+          "variant": "goals"
+        }
+      },
+      "sport": {
+        "abbreviation": "FOOT",
+        "displayToPunters": true,
+        "name": "Football",
+        "sportId": "s:football"
+      },
+      "startTime": "2026-04-10T20:00:00Z",
+      "status": "NOT_STARTED",
+      "tournament": {
+        "name": "Premier League",
+        "sportId": "s:football",
+        "startTime": "2026-04-10T20:00:00Z",
+        "tournamentId": "t:premier-league"
+      }
+    }
+  ],
+  "hasNextPage": false,
+  "itemsPerPage": 20,
+  "totalCount": 2
+}

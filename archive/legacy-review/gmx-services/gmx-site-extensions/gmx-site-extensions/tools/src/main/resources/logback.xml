@@ -1,0 +1,21 @@
+<configuration>
+  <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+    <resetJUL>true</resetJUL>
+  </contextListener>
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>%date{"yyyy-MM-dd HH:mm:ss,SSSZZZZ"} %-5level [%-20.20thread] %logger{10} [%X{executionId}] - %message%n%xException</Pattern>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+  </root>
+
+  <!-- Logging for all datafeed.* -->
+  <logger name="gmx.widget.siteextentions.tools.*" level="INFO"/>
+
+</configuration>

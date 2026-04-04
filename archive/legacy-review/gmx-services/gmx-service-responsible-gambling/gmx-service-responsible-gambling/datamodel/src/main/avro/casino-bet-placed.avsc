@@ -1,0 +1,31 @@
+{
+  "namespace": "gmx.data",
+  "type": "record",
+  "name": "CasinoBetPlaced",
+  "fields": [
+    {
+      "name": "customerId",
+      "type": "string"
+    },
+    {
+      "name": "betId",
+      "type": "string"
+    },
+    {
+      "name": "gameId",
+      "type": "string"
+    },
+    {
+      "name": "liability",
+      "type": "string"
+    },
+    {
+      "name": "placedAt",
+      "type": "long"
+    },
+    {
+      "name": "brandId",
+      "type": "string"
+    }
+  ]
+}

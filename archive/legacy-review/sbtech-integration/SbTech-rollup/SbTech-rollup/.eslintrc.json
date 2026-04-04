@@ -1,0 +1,19 @@
+{
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": "healthier",
+    "parserOptions": {
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "rules": {
+      "no-unused-vars": "warn",
+      "one-var": "off",
+      "no-void": "off",
+      "dot-notation": "off",
+      "prefer-const": "off",
+      "no-eval": "warn"
+    }
+}

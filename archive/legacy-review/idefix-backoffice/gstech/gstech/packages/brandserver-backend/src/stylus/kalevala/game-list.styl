@@ -1,0 +1,140 @@
+
+.items-block
+  width 100%
+  overflow hidden
+  padding 0px 0px 110px 0px
+  h2
+    position relative
+    line-height 40px
+    font-size 16px
+    color #ffffff
+    text-transform uppercase
+    margin 11px 10px 11px 0
+    padding-left 11px
+    background-color $kalevala_light_blue
+
+  .game-filter
+    text-decoration none
+    width 150px
+    height 150px
+    margin 0 10px 10px 0
+    cdn_image: '/images/thumb_single.png' 150px 150px
+    .game-thumbnail
+      display block
+      width 150px
+      height 150px
+      position relative
+      img
+        width 150px
+        height 150px
+      .game-thumbnail-jackpot-value
+        position absolute
+        bottom 20px
+        left 0
+        right 0
+        bottom 20px
+        height 20px
+        color #ffffff
+        background-color #ffc641
+        text-align center
+        line-height 20px
+        font-family 'Ubuntu',Helvetica,Arial,sans-serif
+        font-weight 700
+
+    &.double
+      width 310px
+      height 150px
+      cdn_image: '/images/thumb_double.png' 310px 150px
+      .game-thumbnail
+        display block
+        width 310px
+        height 150px
+        img
+          width 310px
+          height 150px
+
+    &.max
+      width 310px
+      height 310px
+      cdn_image: '/images/thumb_max.png' 310px 310px
+      .game-thumbnail
+        display block
+        width 310px
+        height 310px
+        img
+          width 310px
+          height 310px
+        .game-thumbnail-jackpot-value-max
+          position absolute
+          left 0
+          right 0
+          bottom 30px
+          height 36px
+          line-height 36px
+          color #ffffff
+          font-family 'Ubuntu',Helvetica,Arial,sans-serif
+          font-weight 700
+          text-shadow 1px 1px rgba(0,0,0,0.75)
+          text-align center
+          font-size 36px
+    color #c4fd34
+    display inline-block
+    vertical-align top
+    position relative
+    font-size 10px
+    line-height 15px
+    text-align left
+    &:hover
+      box-shadow(1px 2px 4px rgba(0,0,0,0.3))
+    &:active
+      box-shadow(0px 1px 2px rgba(0,0,0,0.3))
+    &.inactive
+      display none
+    .image
+      position relative
+      img
+        display block
+        width 100%
+        height auto
+
+    .title
+      display block
+      text-transform uppercase
+    .description
+      position absolute
+      padding 0 5px
+      color #ffffff
+      bottom 0
+      left 0
+      right 0
+      height 20px
+      line-height 20px
+      background-color $kalevala_cta_secondary
+      white-space nowrap
+
+#game-grid .group
+  margin-bottom 30px
+
+.game-ribbon
+  position absolute
+  z-index 2
+  top 5px
+  right 5px
+  overflow hidden
+  text-indent -9999px
+  &.new
+    sprite2x($new, $new_2x)
+  &.jackpot
+    sprite2x($jackpot, $jackpot_2x)
+  &.maintenance
+    top 0
+    left 0
+    right 0
+    bottom 0
+    background-color rgba(0,0,0,0.35)
+    &:after
+      content ''
+      sprite2x($maintenance-badge, $maintenance-badge_2x)
+      position absolute
+      top 0
+      left 0

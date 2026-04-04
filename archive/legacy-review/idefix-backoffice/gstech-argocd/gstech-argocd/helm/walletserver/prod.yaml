@@ -1,0 +1,51 @@
+nameOverride: "prod-gstech-walletserver-service"
+fullnameOverride: "prod-gstech-walletserver-service"
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+service:
+  enabled: true
+  port: 3003
+
+extraTCPPorts:
+  private-api: 3004
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-gstech-walletserver-service
+  hosts:
+  - host: wallet.luckydino.com
+    paths:
+    - path: /
+      pathType: Prefix
+      serviceName: prod-gstech-walletserver-service
+      servicePort: 3003
+
+  annotations: {}
+
+  tls: []
+
+env:
+  NODE_ENV: production
+  PORT: 3003
+  REDIS_HOST: redis-walletserver.prod.eeg.viegg.net
+  REDIS_PORT: 6379
+  WALLET_URL: http://prod-gstech-backend-service:3005/api/v1/wallet
+  WALLET_SERVER_URL: https://wallet.luckydino.com/api/v1
+  BACKEND_URL: http://prod-gstech-backend-service:3001
+  LOTTO_BACKEND_URL: http://prod-lotto-backend-service:3040/api/v1/lottocasino
+secretEnv:
+  PRIVATE_KEY:
+    prod-common-secrets: private-key

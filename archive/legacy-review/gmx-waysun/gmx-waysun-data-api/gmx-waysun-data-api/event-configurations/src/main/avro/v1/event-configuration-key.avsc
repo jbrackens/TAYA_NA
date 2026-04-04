@@ -1,0 +1,21 @@
+{
+  "namespace": "stella.dataapi.eventconfigurations",
+  "type": "record",
+  "name": "EventConfigurationKey",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "projectId",
+      "type": "string",
+      "logicalType": "uuid"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    }
+  ]
+}

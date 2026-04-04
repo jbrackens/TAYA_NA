@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: flink-jobmanager
+    k8s-app: flink-jobmanager
+    qcloud-app: flink-jobmanager
+  name: flink-jobmanager
+spec:
+  replicas: {{ .Values.jobManager.replicas }}
+  revisionHistoryLimit: 10
+  serviceName: "flink-jobmanager-headless"
+  selector:
+    matchLabels:
+      app: flink-jobmanager
+      k8s-app: flink-jobmanager
+      qcloud-app: flink-jobmanager
+  template:
+    metadata:
+      labels:
+        app: flink-jobmanager
+        k8s-app: flink-jobmanager
+        qcloud-app: flink-jobmanager
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - {{ .Values.jobManager.deploy_on }}
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nodes-type
+                operator: In
+                values:
+                - {{ .Values.jobManager.deploy_on }}
+      containers:
+      - args:
+        - jobmanager
+        - $(POD_IP)
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        {{- if .Values.jobManager.customEnv }}
+{{ toYaml .Values.jobManager.customEnv | indent 8 }}
+        {{end}}
+        {{- if .Values.commonCustomEnv }}
+{{ toYaml .Values.commonCustomEnv | indent 8 }}
+        {{end}}
+        image: apache/flink:1.10.3-scala_2.12
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 6
+          httpGet:
+            path: /
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 300
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: jobmanager
+        resources:
+          limits:
+            cpu: {{.Values.jobManager.resources.limits.cpu}}
+            memory: {{.Values.jobManager.resources.limits.memory}}
+          requests:
+            cpu: {{.Values.jobManager.resources.requests.cpu}}
+            memory: {{.Values.jobManager.resources.requests.memory}}
+        securityContext:
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: flink-pvc-volume
+        - mountPath: /opt/flink/conf
+          name: flink-config-volume
+        - mountPath: /opt/flink/usrlib
+          name: flink-pvc-volume
+          subPath: flink-userlib
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: qcloudregistrykey
+      initContainers:
+      - args:
+        - -c
+        - mkdir -p /data/flink-log-dir
+                   /data/recovery
+                   /data/rocksdb-logs
+                   /data/checkpoints
+                   /data/savepoints
+                   /data/blob-storage
+                   /data/jobmanager-archive
+                   /data/web-upload-dir
+                   /data/historyserver-archive
+                   /data/env-log
+                   /data/web-log
+          && chmod -R 777 /data
+        command:
+        - sh
+        image: busybox:1.28
+        imagePullPolicy: Always
+        name: setup-dirs
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 250m
+            memory: 256Mi
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: flink-pvc-volume
+      restartPolicy: Always
+      volumes:
+      - name: flink-pvc-volume
+        persistentVolumeClaim:
+          claimName: {{.Values.configuration.volume_pvc}}
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: flink-conf.yaml
+            mode: 438
+            path: flink-conf.yaml
+          - key: log4j-console.properties
+            mode: 438
+            path: log4j-console.properties
+          name: flink-config
+        name: flink-config-volume

@@ -1,0 +1,8 @@
+from decouple import config
+
+PROCESS_CONTROLLER_HOST = config("PROCESS_CONTROLLER_HOST")
+OIDC_HOST = config("OIDC_HOST")
+
+ALLOW_AUTO_CREDITING = config("ALLOW_AUTO_CREDITING", default=False, cast=bool)
+
+NOTIFICATION_PRIORITY_MEDIUM = config("NOTIFICATION_PRIORITY_MEDIUM", default="medium")

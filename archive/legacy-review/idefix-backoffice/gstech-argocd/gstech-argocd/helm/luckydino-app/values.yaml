@@ -1,0 +1,67 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  enabled: false
+  type: ClusterIP
+  port: 80
+  metricsPort: 4001
+
+ingress:
+  enabled: false
+  annotations: {}
+
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+
+resources: {}
+
+verticalAutoscaler:
+  enabled: false
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+minAvailable: 1
+
+nodeSelector: {}
+
+tolerations: []
+
+rbac:
+  create: false
+
+podSecurityPolicy:
+  create: false
+
+prometheus:
+  enabled: true
+  interval: 30s
+  path: "/metrics"
+  port: metrics
+
+secretEnv: []

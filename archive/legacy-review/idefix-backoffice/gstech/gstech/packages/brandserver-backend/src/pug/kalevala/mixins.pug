@@ -1,0 +1,57 @@
+mixin ie(condition)
+  | <!--[!{condition}]>
+  block
+  | <![endif]-->
+
+mixin footer_disclaimer()
+  !=localize('footer', {}, {format: 'markdown'})
+
+mixin lga_logo()
+  a.lga-logo(href='https://www.authorisation.mga.org.mt/verification.aspx?lang=EN&company=ee35b7a7-6dfb-4589-aa6d-04a7698e1e62&details=1', target='_blank', rel='nofollow')
+
+mixin spinner_grey(enabled)
+  .spinner-holder
+    .spinner(style=enabled ? '': 'display:none;')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(30deg) translate(0,-60px);transform:rotate(30deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(60deg) translate(0,-60px);transform:rotate(60deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(90deg) translate(0,-60px);transform:rotate(90deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(120deg) translate(0,-60px);transform:rotate(120deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(150deg) translate(0,-60px);transform:rotate(150deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(180deg) translate(0,-60px);transform:rotate(180deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(210deg) translate(0,-60px);transform:rotate(210deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(240deg) translate(0,-60px);transform:rotate(240deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(270deg) translate(0,-60px);transform:rotate(270deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(300deg) translate(0,-60px);transform:rotate(300deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);')
+
+
+mixin spinner_blue(enabled)
+  +spinner_grey(enabled)
+
+mixin spinner_dark(enabled)
+  +spinner_grey(enabled)
+
+mixin spinner_big(enabled)
+  .spinner-holder
+    .spinner.big(style=enabled ? '': 'display:none;')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(0deg) translate(0,-60px);transform:rotate(0deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(30deg) translate(0,-60px);transform:rotate(30deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(60deg) translate(0,-60px);transform:rotate(60deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(90deg) translate(0,-60px);transform:rotate(90deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(120deg) translate(0,-60px);transform:rotate(120deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(150deg) translate(0,-60px);transform:rotate(150deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(180deg) translate(0,-60px);transform:rotate(180deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(210deg) translate(0,-60px);transform:rotate(210deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(240deg) translate(0,-60px);transform:rotate(240deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(270deg) translate(0,-60px);transform:rotate(270deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(300deg) translate(0,-60px);transform:rotate(300deg) translate(0,-60px);')
+      div(style='top:80px;left:93px;width:14px;height:40px;-webkit-transform:rotate(330deg) translate(0,-60px);transform:rotate(330deg) translate(0,-60px);')
+
+mixin translation(key)
+  div(style='display:none', data-translation=key)=localize(key)
+
+mixin formFeedback()
+  span.form-feedback
+    span.feedback-content
+      p

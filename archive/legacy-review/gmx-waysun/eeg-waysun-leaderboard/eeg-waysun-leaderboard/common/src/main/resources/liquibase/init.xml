@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
+
+    <changeSet author="flipsports.com" id="init">
+
+        <createTable tableName="aggregation_results">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="project_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aggregation_rule_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_by_field_value" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="window_range_start" type="timestamptz">
+                <constraints nullable="true"/>
+            </column>
+            <column name="window_range_end" type="timestamptz">
+                <constraints nullable="true"/>
+            </column>
+            <column name="min" type="real">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max" type="real">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sum" type="real">
+                <constraints nullable="false"/>
+            </column>
+            <column name="custom" type="varchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamptz" defaultValue="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="aggregation_results" indexName="idx_project_id">
+            <column name="project_id"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_aggregation_rule_id">
+            <column name="aggregation_rule_id"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_group_by_field_value">
+            <column name="group_by_field_value"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_window_range_start">
+            <column name="window_range_start"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_window_range_end">
+            <column name="window_range_end"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_min">
+            <column name="min"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_max">
+            <column name="max"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_count">
+            <column name="count"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_sum">
+            <column name="sum"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_custom">
+            <column name="custom"/>
+        </createIndex>
+
+        <createIndex tableName="aggregation_results" indexName="idx_search">
+            <column name="aggregation_rule_id"/>
+            <column name="window_range_start"/>
+            <column name="window_range_end"/>
+            <column name="project_id"/>
+            <column name="group_by_field_value"/>
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>

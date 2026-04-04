@@ -1,0 +1,2 @@
+FROM liquibase/liquibase:4.9.0
+COPY ./rule-configurator/conf/liquibase /liquibase/changelog

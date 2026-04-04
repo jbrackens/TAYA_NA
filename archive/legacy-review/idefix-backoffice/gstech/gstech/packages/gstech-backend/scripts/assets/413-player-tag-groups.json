@@ -1,0 +1,161 @@
+{
+  "kyc-pending": [{ "tag": "kycpending", "count": 10113 }],
+  "pass-sow": [{ "tag": "pass-sow", "count": 4 }],
+  "fraud": [{ "tag": "Fraud", "count": 1 }],
+  "anonymized": [{ "tag": "anonymized", "count": 61 }],
+  "incomplete-registration": [{ "tag": "incomplete_registration", "count": 4 }],
+  "check-history": [{ "tag": "checkhistory", "count": 1 }],
+  "data-delete": [
+    { "tag": "delete", "count": 174 },
+    { "tag": "Delete", "count": 23 },
+    { "tag": "datadelete", "count": 16 },
+    { "tag": "DataDelete", "count": 5 },
+    { "tag": "#delete", "count": 3 },
+    { "tag": "Datadelete", "count": 1 },
+    { "tag": "#Datadelete", "count": 1 },
+    { "tag": "datedelete", "count": 1 },
+    { "tag": "data-delete", "count": 2 }
+  ],
+  "3rd-party-deposit": [
+    { "tag": "3rdpartydeposit", "count": 816 },
+    { "tag": "3rdparty", "count": 226 },
+    { "tag": "3rdpartydepo", "count": 140 },
+    { "tag": "3rdParty", "count": 5 },
+    { "tag": "3rdPartyDepo", "count": 5 },
+    { "tag": "3rdpaty", "count": 4 },
+    { "tag": "3partydepo", "count": 3 },
+    { "tag": "3rdpartdeposit", "count": 3 },
+    { "tag": "3rdPartyDeposit", "count": 3 },
+    { "tag": "thirdpartydeposit", "count": 23 },
+    { "tag": "THIRDPARTYDEPOSIT", "count": 10 },
+    { "tag": "thirdpartydepo", "count": 3 },
+    { "tag": "THIRDPARTYDEPO", "count": 3 },
+    { "tag": "Thirdpartydeposit", "count": 3 },
+    { "tag": "3rdpartry", "count": 2 },
+    { "tag": "3rdPartydepo", "count": 2 },
+    { "tag": "3party", "count": 1 },
+    { "tag": "3partydeposit", "count": 1 },
+    { "tag": "3-partydeposit", "count": 1 },
+    { "tag": "3rd", "count": 1 },
+    { "tag": "3rdarty", "count": 1 },
+    { "tag": "3rdpartdepsoit", "count": 1 },
+    { "tag": "3RDPARTY", "count": 1 },
+    { "tag": "3rd party DEP", "count": 1 },
+    { "tag": "3rdPartyDep", "count": 1 },
+    { "tag": "3rdPARTYDEPO", "count": 1 },
+    { "tag": "3RDPARTYDEPO", "count": 1 },
+    { "tag": "3rd party deposit", "count": 1 },
+    { "tag": "3rdpartyDeposit", "count": 1 },
+    { "tag": "3rd Party Deposit", "count": 1 },
+    { "tag": "3RDPARTYDEPOSIT", "count": 1 },
+    { "tag": "3rdpartydepost", "count": 1 },
+    { "tag": "3rdpartytupas", "count": 1 },
+    { "tag": "3rparty", "count": 1 },
+    { "tag": "3rpartydeposit", "count": 1 },
+    { "tag": "thirdpartydeposit", "count": 1 },
+    { "tag": "THIRD PARTY DEPOSIT", "count": 1 },
+    { "tag": "THIRDPARTYDEPOSIT7", "count": 1 },
+    { "tag": "thirdparty", "count": 2 },
+    { "tag": "if3rdparty", "count": 1 }
+  ],
+  "campaign-abuser": [
+    { "tag": "campaign-abuser", "count": 1809 },
+    { "tag": "Campaign-abuser", "count": 117 },
+    { "tag": "campaign_abuser", "count": 1 },
+    { "tag": "campaing-abuser", "count": 1 }
+  ],
+  "test-account": [
+    { "tag": "Test", "count": 3 },
+    { "tag": "Testaccount", "count": 3 },
+    { "tag": "TestAccount", "count": 3 },
+    { "tag": "test", "count": 2 },
+    { "tag": "test_account", "count": 2 },
+    { "tag": "Test_account", "count": 2 },
+    { "tag": "brite_test", "count": 2 },
+    { "tag": "Skrill_test_account", "count": 1 }
+  ],
+  "pep-scan": [
+    { "tag": "Pepscan", "count": 7821 },
+    { "tag": "pepscan", "count": 1331 },
+    { "tag": "Pepcan", "count": 1 },
+    { "tag": "Pepsan", "count": 1 }
+  ],
+  "pep": [
+    { "tag": "Pep", "count": 3 },
+    { "tag": "Confirmed PEP status", "count": 1 }
+  ],
+  "bonus-abuser": [
+    { "tag": "bonushawk", "count": 35 },
+    { "tag": "bonus-abuser", "count": 1 }
+  ],
+  "affiliate": [
+    { "tag": "Affiliate", "count": 40 },
+    { "tag": "affiliate", "count": 29 },
+    { "tag": "AFFILIATE", "count": 1 }
+  ],
+  "sofort-chargeback": [
+    { "tag": "Soffort_chargeback", "count": 1 },
+    { "tag": "Sofort_chergeback", "count": 1 },
+    { "tag": "Sofort_chargeback", "count": 29 },
+    { "tag": "sofort_chargeback", "count": 3 },
+    { "tag": "Sofort chargeback", "count": 2 }
+  ],
+  "payments-allow-all": [
+    { "tag": "payments-allow-all", "count": 2 },
+    { "tag": "#payments-allow-all", "count": 1 }
+  ],
+  "streamer": [
+    { "tag": "StreamerBR", "count": 1 },
+    { "tag": "streamer", "count": 2 }
+  ],
+  "all-payments": [
+    { "tag": "#all-payments", "count": 1 },
+    { "tag": "all-payments", "count": 1 }
+  ],
+  "influencer": [
+    { "tag": "Influencer", "count": 1 },
+    { "tag": "influenceracc", "count": 1 }
+  ],
+  "name-changed": [
+    { "tag": "namechange", "count": 1 },
+    { "tag": "namechanged", "count": 1 }
+  ],
+  "partner": [
+    { "tag": "Partner", "count": 1 },
+    { "tag": "PeruPartner", "count": 1 }
+  ],
+  "notarize": [
+    { "tag": "FK_MAIREHELENA.RINNE_3818678", "count": 1 },
+    { "tag": "https://eegtech.atlassian.net/browse/ECE-894", "count": 1 },
+    {
+      "tag": "https://idefix.luckydino.com/api/v1/player/go/LD/LD_Roelof.Wind_3577522",
+      "count": 1
+    },
+    { "tag": "https://www.twitch.tv/", "count": 1 },
+    { "tag": "test@luckydino.com", "count": 1 },
+    { "tag": "viivi@luckydino.com", "count": 1 },
+    { "tag": "Chat ID: Q5YU3GKK1Y", "count": 1 },
+    { "tag": "†m", "count": 1 },
+    { "tag": "q1", "count": 1 },
+    { "tag": "w", "count": 1 },
+    { "tag": "9", "count": 1 },
+    { "tag": "100%", "count": 1 },
+    { "tag": "account", "count": 1 },
+    { "tag": "Auditor", "count": 1 },
+    { "tag": "#emil", "count": 1 },
+    { "tag": "fakedetails", "count": 1 },
+    { "tag": "jeton", "count": 1 },
+    { "tag": "Latvianconartist", "count": 1 },
+    { "tag": "Possible", "count": 1 },
+    { "tag": "PotVIPLATAM", "count": 1 },
+    { "tag": "POTVIPLATAM", "count": 1 },
+    { "tag": "rakin", "count": 1 },
+    { "tag": "RealMoney", "count": 1 },
+    { "tag": "Skrill_chargeback", "count": 1 },
+    { "tag": "Sofort_missing_funds", "count": 1 },
+    { "tag": "test_tag", "count": 1 },
+    { "tag": "VIP", "count": 1 },
+    { "tag": "ziguera", "count": 1 }
+  ]
+}
+

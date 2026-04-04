@@ -1,0 +1,52 @@
+nameOverride: "prod-gstech-reporting-job-service"
+fullnameOverride: "prod-gstech-reporting-job-service"
+
+replicaCount: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+serviceAccount:
+  create: true
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::743851384875:role/luckydino-prod-fasttrack-csv-s3
+
+service:
+  enabled: false
+
+env:
+  NODE_ENV: production
+  MINIO_HOST: s3.eu-west-1.amazonaws.com
+  MINIO_PORT: 443
+  MINIO_USE_SSL: "true"
+  MINIO_BUCKET_NAME: bucket-backend.prod.eeg
+  MINIO_REGION: eu-west-1
+  REDIS_HOST: redis-backend.prod.eeg.viegg.net
+  REDIS_PORT: 6379
+  POSTGRES_HOST: db-1.prod.eeg.viegg.net
+  POSTGRES_USER: gstech
+  GAME_SERVER_URL: http://prod-gstech-walletserver-service:3004/api/v1
+  AFFILIATE_SYSTEM_URL: http://prod-affmore-backend-service:3034
+  COMPLIANCE_SERVER_URL: http://prod-gstech-compliance-service:3009/api/v1
+  PAYMENT_SERVER_URL: http://prod-gstech-paymentserver-service:3007/api/v1
+  CAMPAIGN_SERVER_PRIVATE_URL: http://prod-gstech-campaignserver-backend-service:3014/api/v1
+  CAMPAIGN_SERVER_AUTH_TOKEN: 'GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]'
+  CONTENT_SERVER_AUTH_TOKEN: 'GS[uHZY3vWFfrH7htZK3YQ1JgIxfHGr3qIqdo4n71LGPvXShG34oI4Ea+ttRBnvEnt6rL+VqTHDlMf00xcnlf/vrzYWlo89ukHbdZYGRQ==]'
+  CONTENT_SERVER_URL: http://prod-gstech-contentserver-service:3017/api/v1
+  FT_MIGRATION_S3: prod-fasttrack-csv-content
+  FT_MIGRATION_S3_REGION: eu-west-1
+secretEnv:
+  POSTGRES_PASSWORD:
+    prod-gstech-reporting-job-service: postgres-password
+  MINIO_ACCESS_KEY:
+    prod-gstech-backend-service: minio-access-key
+  MINIO_SECRET_KEY:
+    prod-gstech-backend-service: minio-secret-key
+  PRIVATE_KEY:
+    prod-common-secrets: private-key

@@ -1,0 +1,39 @@
+plugins {
+    id "org.flywaydb.flyway" version "5.1.4"
+}
+
+description = "GMX Platform :: Predictor Game :: Domain"
+
+dependencies {
+    compileOnly "com.typesafe.slick:slick-codegen_${scalaDepVersion}:${slickVersion}"
+
+    compile 'org.postgresql:postgresql:42.2.4'
+
+    compile "com.typesafe.slick:slick_${scalaDepVersion}:${slickVersion}"
+    compile "com.typesafe.slick:slick-hikaricp_${scalaDepVersion}:${slickVersion}"
+
+    implementation "com.typesafe.play:play-json_${scalaDepVersion}:2.6.9"
+}
+
+def props = new Properties()
+file("../.env.template").withInputStream { props.load(it) }
+
+flyway {
+    url = props.getProperty('DB_DATABASEURL')
+    user = props.getProperty('DB_USERNAME')
+    password = props.getProperty('DB_PASSWORD')
+    schemas = ['predictor']
+}
+
+def generatedSources = project.projectDir.absolutePath + "/src/gen/scala"
+
+task generateSlick(type: SlickCodeGenerator,
+        constructorArgs: [generatedSources,
+                          "tech.argyll.gmx.predictorgame",
+                          "CustomSlickCodeGenerator"])
+
+compileScala {
+    source generatedSources
+}
+
+sourceSets.main.scala.srcDir new File(generatedSources)

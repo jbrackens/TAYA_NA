@@ -1,0 +1,1 @@
+INSERT INTO risks ("type", "fraudKey", "points", "maxCumulativePoints", "title", "description", "riskProfiles") VALUES ('customer', 'sanction_list_check', 30, 30, 'Person is named on sactions list', 'Person is named on one or more sactions list', null);

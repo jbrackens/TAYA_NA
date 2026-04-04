@@ -1,0 +1,1 @@
+alter type player_counter_type add value 'deposit_campaign';

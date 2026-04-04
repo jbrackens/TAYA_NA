@@ -1,0 +1,5 @@
+
+GET        /info/build         net.flipsports.gmx.widget.argyll.betandwatch.webgateway.BuildInfoController.getBuildInfo()
+GET        /info/health        net.flipsports.gmx.widget.argyll.betandwatch.webgateway.BuildInfoController.getBuildInfo()
+
+->         /api/v1             apiV1.Routes

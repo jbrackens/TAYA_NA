@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "name": "settle_win",
+      "userId": "u-rec-fixture-1",
+      "seedCents": 5000,
+      "stakeCents": 1000,
+      "odds": 2.0,
+      "placedSelectionId": "home",
+      "winningSelectionId": "home",
+      "postLifecycle": "none",
+      "expected": {
+        "totalCreditsCents": 7000,
+        "totalDebitsCents": 1000,
+        "netMovementCents": 6000,
+        "entryCount": 3,
+        "distinctUserCount": 1
+      }
+    },
+    {
+      "name": "settle_loss_refund",
+      "userId": "u-rec-fixture-2",
+      "seedCents": 5000,
+      "stakeCents": 1000,
+      "odds": 2.0,
+      "placedSelectionId": "home",
+      "winningSelectionId": "away",
+      "postLifecycle": "refund",
+      "expected": {
+        "totalCreditsCents": 6000,
+        "totalDebitsCents": 1000,
+        "netMovementCents": 5000,
+        "entryCount": 3,
+        "distinctUserCount": 1
+      }
+    },
+    {
+      "name": "cancel_placed",
+      "userId": "u-rec-fixture-3",
+      "seedCents": 5000,
+      "stakeCents": 1000,
+      "odds": 2.0,
+      "placedSelectionId": "home",
+      "postLifecycle": "cancel",
+      "expected": {
+        "totalCreditsCents": 6000,
+        "totalDebitsCents": 1000,
+        "netMovementCents": 5000,
+        "entryCount": 3,
+        "distinctUserCount": 1
+      }
+    }
+  ]
+}

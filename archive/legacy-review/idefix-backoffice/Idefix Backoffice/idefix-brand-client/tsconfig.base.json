@@ -1,0 +1,57 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@brandserver-client/api": [
+        "libs/api/src/index.ts"
+      ],
+      "@brandserver-client/features/*": [
+        "libs/features/src/*"
+      ],
+      "@brandserver-client/hooks": [
+        "libs/hooks/src/index.ts"
+      ],
+      "@brandserver-client/icons": [
+        "libs/icons/src/index.ts"
+      ],
+      "@brandserver-client/lobby": [
+        "libs/lobby/src/index.ts"
+      ],
+      "@brandserver-client/my-account": [
+        "libs/my-account/src/index.ts"
+      ],
+      "@brandserver-client/nonloggedin": [
+        "libs/nonloggedin/src/index.ts"
+      ],
+      "@brandserver-client/types": [
+        "libs/types/src/index.ts"
+      ],
+      "@brandserver-client/ui": [
+        "libs/ui/src/index.ts"
+      ],
+      "@brandserver-client/utils": [
+        "libs/utils/src/index.ts"
+      ]
+    }
+  },
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
+}

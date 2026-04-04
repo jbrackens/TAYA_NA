@@ -1,0 +1,1 @@
+ALTER TABLE clicks ALTER COLUMN "userAgent" DROP NOT NULL;

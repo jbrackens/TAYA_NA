@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phoenix-platform-config
+data:
+  ENVIRONMENT: local
+  LOG_LEVEL: debug
+  OUTBOX_ENABLED: "false"
+  OUTBOX_POLL_INTERVAL: 1s
+  OUTBOX_BATCH_SIZE: "100"

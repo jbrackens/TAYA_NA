@@ -1,0 +1,159 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "backend:attach",
+      "port": "${BACKEND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "backend-crontab:attach",
+      "port": "${BACKEND_CRON_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "backend-worker:attach",
+      "port": "${BACKEND_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "affmore:attach",
+      "port": "${AFFMORE_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "paymentserver:attach",
+      "port": "${PAYMENT_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "walletserver:attach",
+      "port": "${WALLET_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "campaignserver:attach",
+      "port": "${CAMPAIGN_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "rewardserver:attach",
+      "port": "${REWARD_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "LD:brandserver-backend:attach",
+      "port": "${LD_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "CJ:brandserver-backend:attach",
+      "port": "${CJ_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "VB:brandserver-backend:attach",
+      "port": "${VB_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "KK:brandserver-backend:attach",
+      "port": "${KK_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "FK:brandserver-backend:attach",
+      "port": "${FK_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "OS:brandserver-backend:attach",
+      "port": "${OS_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "SN:brandserver-backend:attach",
+      "port": "${SN_BRAND_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "LD:brandserver-worker:attach",
+      "port": "${LD_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "CJ:brandserver-worker:attach",
+      "port": "${CJ_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "VB:brandserver-worker:attach",
+      "port": "${VB_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "KK:brandserver-worker:attach",
+      "port": "${KK_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "FK:brandserver-worker:attach",
+      "port": "${FK_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "OS:brandserver-worker:attach",
+      "port": "${OS_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "SN:brandserver-worker:attach",
+      "port": "${SN_WORKER_DBG_PORT}",
+      "skipFiles": ["**/node_modules/**", "<node_internals>/**/*.js"]
+    }
+  ]
+}

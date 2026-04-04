@@ -1,0 +1,18 @@
+{
+  "EUR": {
+    "bonusvaluemultiplier": 1,
+    "depletion": 2,
+    "minimumdeposit": 20,
+    "deposit50": 50,
+    "bonusamount100": 200,
+    "reloadtuesdaybonus": 100,
+    "bonusamount200": 400,
+    "withdrawalfee": 3,
+    "freewithdrawalspermonth": 1,
+    "withdrawalfeemin": 250,
+    "withdrawalfeemax": 2500,
+    "withdrawalmin": 2000,
+    "fee": 2,
+    "maxbonusbet": 5
+  }
+}

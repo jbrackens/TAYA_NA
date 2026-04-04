@@ -1,0 +1,157 @@
+
+//messages
+.rj-message--info{
+  background: $center-bg;
+  color:$brand-primary;
+}
+
+// weird carousel overlay
+.scarousel-btn.scarousel-btn-next:before{
+  display: none;
+}
+
+// custom filter radius isnt set by input radius
+.filter-custom{
+    .filter-label{
+      border-radius:0px;
+    }
+}
+
+// radius for general inputs
+.user-info__input input {
+  border-radius: 0px;
+}
+
+.user-info__checkbox{
+  .user-info-checkbox-check{
+    &::before{
+      border-radius: 0px;
+    }
+  }
+}
+
+.page-terms a {
+  color: $brand-primary;
+}
+
+//override from 4.1 update, remove once live
+.sub-level-1 .sub-level-2 .sports-list-sub-item .sports-list-item-text,
+.sub-level-1 .sports-list-sub-item .sports-list-item-text{
+  text-indent:0;
+}
+// verride from old styles, removed once live.
+.IsDesktop .panel-center .calendar-carousel{
+  padding:0;
+}
+
+// sbtechs rj buttons overide their own userinfo buttons
+.IsDesktop button.user-info-p__button,
+button.user-info-p__button {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 50%;
+  font-size: 15px;
+  padding: 0px;
+  line-height:30px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 0px;
+  color: $brand-light;
+  background-color:$brand-primary;
+  font-weight: bold;
+  text-transform:uppercase;
+  &:active, &:hover {
+    background-color: $brand-primary--hover;
+    color:white;
+  }
+  &--bright{
+    background-color:#9b9b9b;
+    &:active, &:hover {
+      background-color: darken(#9b9b9b, 5%);
+    }
+  }
+}
+.rj-popup-message__button{
+  padding:0.5em;
+}
+
+.inbox__add,
+.IsDesktop .inbox__add{
+  display:none;
+}
+
+.sports-list-item .sports-list-item-text{
+  height:20px;
+  white-space: normal;
+}
+
+.myacc-block-content-inner .user-info__tab.user-info__tab--active{
+  color:white;
+}
+.myacc-block-content-inner .user-info__tab{
+  color:#282828;
+}
+
+html.IsMobile .bet-search-form, html.IsTablet .bet-search-form{
+  padding:10px 0 10px 56px;
+}
+
+
+//reality checkl
+
+.c-reality-check .rj-popup-message__header-content .c-reality-check__group-text{
+  background:#eeeeee;
+}
+
+
+//betslip visibility on live betting tablet and mobile
+html.IsMobile body.LBettingOverview #betslipNotificationWrap { z-index: 3; }
+html.IsTablet body.LBettingOverview #betslipNotificationWrap { z-index: 3; }
+
+//scroll live betting fix overflow
+html.IsTablet .content-main { overflow-y: auto }
+
+//hide registration gif success text bottom
+.stepwise-registration__message.stepwise-registration__message-uk { display: none; }
+
+.myacc-nav-item.self-exclusion{
+  display:none;
+}
+
+
+// added by sbtech
+html.IsTablet #betslipNotificationWrap {
+        position: fixed;
+}
+
+
+// this allows long specials and outrights to be on two lines
+.IsDesktop .rj-ev-list__prelive-outright__button-holder .rj-ev-list__bet-btn{
+  margin-bottom:2px;
+}
+.IsTablet .rj-ev-list__prelive-outright__button-holder, .IsMobile .rj-ev-list__prelive-outright__button-holder{
+  padding:0;
+  .rj-ev-list__bet-btn{
+    margin-bottom:2px;
+  }
+}
+.rj-ev-list__prelive-outright__wrap .rj-ev-list__bet-btn__inner{
+  display:flex;
+  flex-direction:row;
+  min-height:50px;
+}
+.rj-ev-list__prelive-outright__wrap .rj-ev-list__bet-btn__content.rj-ev-list__bet-btn__text{
+  line-height:25px;
+  width:calc(100% - 80px);
+  max-width:unset;
+  white-space:initial;
+  align-self:center;
+}
+.rj-ev-list__prelive-outright__wrap .rj-ev-list__bet-btn__content.rj-ev-list__bet-btn__odd{
+  line-height:50px;
+  width:80px;
+  max-width:unset;
+}
+.IsMobile .rj-ev-list__view-all-btn__wrap, .IsTablet .rj-ev-list__view-all-btn__wrap, .IsTablet .rj-ev-list__prelive-outright__wrap .rj-ev-list__view-all-btn__wrap, .IsMobile .rj-ev-list__prelive-outright__wrap .rj-ev-list__view-all-btn__wrap{
+  padding:2px 2px 0 2px;
+}

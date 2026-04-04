@@ -1,0 +1,104 @@
+$gmb-red: #ce3833;
+$gmb-red--hover: #b22f2b;
+
+
+$brand-primary:$gmb-red;
+$brand-primary--hover: $gmb-red--hover;
+
+$brand-grey:#000000;
+$brand-grey-btn:#282828;
+$brand-light:#9b9b9b;
+
+$brand-base: #000000;
+
+$alert: $gmb-red;
+$brand-alert: $gmb-red;
+
+$brand-font--header:'CircularStdBook',Tahoma,Arial,Helvetica,sans-serif;
+$brand-font--body:'CircularStdBook',Tahoma,Arial,Helvetica,sans-serif;
+
+%brand-button{
+  border-radius:0px;
+  color:#ffffff;
+  background-color:$brand-primary;
+  padding:12px 22px;
+  font-size:14px;
+  display:inline-block;
+  text-decoration:none;
+  margin:5px 0;
+  border:none;
+  &.hover{
+    background:$brand-primary--hover;
+  }
+  &.button-center{
+    display:inline-block;
+    left:50%;
+    transform:translateX(-50%);
+    position:relative;
+  }
+}
+
+@mixin brand-button($font-size, $stripe: false, $place: false){
+  color:white;
+  background-color:$brand-primary;
+  font-family:$brand-font--header;
+  font-weight:bold;
+  font-size:$font-size + px;
+  //height:$font-size * 2px;
+  line-height:$font-size * 2px;
+  display:inline-block;
+  padding:0 $font-size + px;
+  text-align:center;
+  text-decoration:none;
+  border:none;
+  border-radius:0;
+  @if $stripe == true{
+    width: 100%;
+    box-sizing:border-box;
+  }
+  &:hover{
+    background:$brand-primary--hover;
+  }
+}
+
+@mixin brand-header($font-size:14px, $bold:true){
+      font-family: $brand-font--header;
+      background:$brand-grey;
+      font-weight:  700;
+      padding: 10px 12px 10px 29px;
+      font-size: $font-size;
+      margin: 1px 0;
+      position: relative;
+      color: #fff;
+      &:before {
+        position: absolute;
+        top: 50%;
+        left: 14px;
+        -webkit-transform: translateY(-50%);
+        transform: translateY(-50%);
+        height: $font-size + 6;
+        width: 3px;
+        content: "";
+        border-radius: 2px;
+        background-color: $brand-primary;
+      }
+}
+//empty mixins as all buttomns are square for sn
+@mixin button-top(){
+
+}
+@mixin button-bottom(){
+
+}
+@mixin force-ar($percentage:56.5%){
+  padding-bottom:$percentage;
+  overflow:hidden;
+  .ag-promo-image{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    max-width: none;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}

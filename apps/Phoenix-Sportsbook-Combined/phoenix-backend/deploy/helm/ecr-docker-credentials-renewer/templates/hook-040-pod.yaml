@@ -1,0 +1,18 @@
+# Note that we need this piece as both a Helm hook (to make sure that the ECR secret is populated
+# for the very first Helm releases before the cron job has a chance to run),
+# and as a cron job (to make sure the ECR secret is up to date also between the Helm releases).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ecr-docker-credentials-renewer
+  labels:
+    app: ecr-docker-credentials-renewer
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "30"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  serviceAccountName: ecr-docker-credentials-renewer
+  containers:
+    - {{ include "ecr-docker-credentials-renewer.container" . | nindent 6 }}

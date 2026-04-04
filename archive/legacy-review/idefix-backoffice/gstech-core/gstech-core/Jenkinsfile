@@ -1,0 +1,71 @@
+pipeline {
+    agent any
+    parameters {
+        booleanParam(defaultValue: false, description: 'Skip CI process?', name: 'ci_skip')
+    }
+    environment {
+        ci_skip = "false"
+    }
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+    }
+    stages {
+        stage ("Pre-Checks") {
+            steps {
+                script {
+                    checkout scm
+                    result = sh (script: "git log -1 | grep '.*\\[ci skip\\].*'", returnStatus: true)
+                    if (result == 0) {
+                        echo ("'ci skip' spotted in git commit. Aborting.")
+                        ci_skip = "true"
+                    }
+                }
+            }
+        }
+        stage('Checks') {
+            when {
+                expression {
+                    ci_skip == "false"
+                }
+            }
+            steps {
+                sh 'yarn install'
+                sh 'yarn flow'
+                sh 'yarn lint'
+            }
+        }
+        stage('Tests') {
+            when {
+                expression {
+                    ci_skip == "false"
+                }
+            }
+            steps {
+                sh 'yarn test'
+            }
+        }
+        stage('Bump version') {
+            when {
+                expression {
+                    ci_skip == "false"
+                }
+            }
+            steps {
+                sh 'if git log -1 | grep "Merge pull request"; then npm version minor -m "Bumped version number to %s [ci skip]"; else npm version patch -m "Bumped version number to %s [ci skip]"; fi'
+                sh 'git push origin HEAD:master'
+                sh 'git push --tags'
+            }
+        }
+        stage('Propagate') {
+            when {
+                expression {
+                    ci_skip == "false"
+                }
+            }
+            steps {
+                sh './propagate.sh gstech-backend'
+                sh './propagate.sh brandserver-backend'
+            }
+        }
+    }
+}

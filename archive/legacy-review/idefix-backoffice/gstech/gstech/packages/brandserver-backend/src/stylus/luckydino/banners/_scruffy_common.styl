@@ -1,0 +1,118 @@
+/*
+Stylus variables are information about icon's compiled state, stored under its original file name
+
+.icon-home {
+  width: $icon_home_width;
+}
+
+The large array-like variables contain all information about a single icon
+$icon_home = x y offset_x offset_y width height total_width total_height image_path;
+
+At the bottom of this section, we provide information about the spritesheet itself
+$spritesheet = width height image $spritesheet_sprites;
+*/
+$scruffy_common_duck_l_name = 'scruffy_common_duck_l';
+$scruffy_common_duck_l_x = 0px;
+$scruffy_common_duck_l_y = 0px;
+$scruffy_common_duck_l_offset_x = 0px;
+$scruffy_common_duck_l_offset_y = 0px;
+$scruffy_common_duck_l_width = 206px;
+$scruffy_common_duck_l_height = 284px;
+$scruffy_common_duck_l_total_width = 671px;
+$scruffy_common_duck_l_total_height = 284px;
+$scruffy_common_duck_l_image = 'scruffy_common_b.png';
+$scruffy_common_duck_l = 0px 0px 0px 0px 206px 284px 671px 284px 'scruffy_common_b.png' 'scruffy_common_duck_l';
+$scruffy_common_duck_r_name = 'scruffy_common_duck_r';
+$scruffy_common_duck_r_x = 210px;
+$scruffy_common_duck_r_y = 0px;
+$scruffy_common_duck_r_offset_x = -210px;
+$scruffy_common_duck_r_offset_y = 0px;
+$scruffy_common_duck_r_width = 195px;
+$scruffy_common_duck_r_height = 269px;
+$scruffy_common_duck_r_total_width = 671px;
+$scruffy_common_duck_r_total_height = 284px;
+$scruffy_common_duck_r_image = 'scruffy_common_b.png';
+$scruffy_common_duck_r = 210px 0px -210px 0px 195px 269px 671px 284px 'scruffy_common_b.png' 'scruffy_common_duck_r';
+$scruffy_common_logo_name = 'scruffy_common_logo';
+$scruffy_common_logo_x = 409px;
+$scruffy_common_logo_y = 0px;
+$scruffy_common_logo_offset_x = -409px;
+$scruffy_common_logo_offset_y = 0px;
+$scruffy_common_logo_width = 262px;
+$scruffy_common_logo_height = 195px;
+$scruffy_common_logo_total_width = 671px;
+$scruffy_common_logo_total_height = 284px;
+$scruffy_common_logo_image = 'scruffy_common_b.png';
+$scruffy_common_logo = 409px 0px -409px 0px 262px 195px 671px 284px 'scruffy_common_b.png' 'scruffy_common_logo';
+$spritesheet_width = 671px;
+$spritesheet_height = 284px;
+$spritesheet_image = 'scruffy_common_b.png';
+$spritesheet_sprites = $scruffy_common_duck_l $scruffy_common_duck_r $scruffy_common_logo;
+$spritesheet = 671px 284px 'scruffy_common_b.png' $spritesheet_sprites;
+
+/*
+The provided mixins are intended to be used with the array-like variables
+
+.icon-home {
+  spriteWidth($icon_home)
+}
+
+.icon-email {
+  sprite($icon_email)
+}
+
+Example usage in HTML:
+
+`display: block` sprite:
+<div class="icon-home"></div>
+
+To change `display` (e.g. `display: inline-block;`), we suggest using a common CSS class:
+
+// CSS
+.icon {
+  display: inline-block;
+}
+
+// HTML
+<i class="icon icon-home"></i>
+*/
+spriteWidth($sprite) {
+  width: $sprite[4];
+}
+
+spriteHeight($sprite) {
+  height: $sprite[5];
+}
+
+spritePosition($sprite) {
+  background-position: $sprite[2] $sprite[3];
+}
+
+spriteImage($sprite) {
+  background-image: url($sprite[8]);
+}
+
+sprite($sprite) {
+  spriteImage($sprite)
+  spritePosition($sprite)
+  spriteWidth($sprite)
+  spriteHeight($sprite)
+}
+
+/*
+The `sprites` mixin generates identical output to the CSS template
+  but can be overridden inside of Stylus
+
+This must be run when you have at least 2 sprites.
+  If run with a single sprite, then there will be reference errors.
+
+sprites($spritesheet_sprites);
+*/
+sprites($sprites) {
+  for $sprite in $sprites {
+    $sprite_name = $sprite[9];
+    .{$sprite_name} {
+      sprite($sprite);
+    }
+  }
+}

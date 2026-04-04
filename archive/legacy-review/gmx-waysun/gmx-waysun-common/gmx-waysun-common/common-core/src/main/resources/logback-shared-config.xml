@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+
+    <property name="logging.use-json" value="${LOGGING_USE_JSON:-false}"/>
+    <if condition='property("logging.use-json").equals("true")'>
+        <then>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                    <providers>
+                        <timestamp/>
+                        <logLevel/>
+                        <threadName/>
+                        <loggerName/>
+                        <mdc/>
+                        <message/>
+                        <arguments/>
+                        <stackTrace/>
+                        <stackHash/>
+                    </providers>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>logs/application.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>30</maxHistory>
+                    <totalSizeCap>3GB</totalSizeCap>
+                </rollingPolicy>
+                <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                    <Pattern>%date{"yyyy-MM-dd HH:mm:ss,SSSZZZZ"} %-5level [%-21.21thread] [%X{correlationId}]
+                        %logger{10} - %message%n%xException
+                    </Pattern>
+                </encoder>
+            </appender>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                    <Pattern>%date{"yyyy-MM-dd HH:mm:ss,SSSZZZZ"} %-5level [%-21.21thread] [%X{correlationId}]
+                        %logger{10} - %message%n%xException
+                    </Pattern>
+                </encoder>
+            </appender>
+        </else>
+    </if>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</included>

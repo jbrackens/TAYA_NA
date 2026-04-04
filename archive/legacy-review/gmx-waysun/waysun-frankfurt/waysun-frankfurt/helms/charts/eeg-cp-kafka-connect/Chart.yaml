@@ -1,0 +1,10 @@
+apiVersion: v2
+appVersion: "1.0"
+description: A Helm chart for Confluent Kafka Connect on Kubernetes - EEG modified
+name: eeg-cp-kafka-connect
+version: 0.1.0
+dependencies:
+  - name: eeg-pvc-cfs
+    version: 0.2.0
+    repository: https://waysun-dev.tencentcloudcr.com/chartrepo/stella
+    alias: eeg_pvc_cfs

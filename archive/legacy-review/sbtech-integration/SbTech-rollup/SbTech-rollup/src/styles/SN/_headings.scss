@@ -1,0 +1,62 @@
+.betting-slip .heading,
+.betting-slip .ukSlipHeading
+{
+  color:white;
+  background:$brand-base;
+  font-weight:bold;
+  text-transform:uppercase;
+  font-family:$brand-font--header;
+}
+
+h1.page-heading{
+  display:none;
+}
+
+html.IsDesktop .panel-right-inner .heading.sectionSubHeading{
+  border-bottom:1px solid $sidebar-bg;
+}
+.title-block{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+  .title-container{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-right:35px;
+  }
+  img{
+    height:100%;
+  }
+  h2{
+    @include branded-heading(white, $brand-base, 24px);
+  }
+  &.yellow{
+    background:$brand-secondary;
+  }
+  &.black{
+    background:$brand-base;
+    h2{
+      @include branded-heading($brand-base, $brand-secondary, 24px);
+    }
+  }
+  &.orange{
+    background:$brand-primary;
+  }
+}
+@media screen and (max-width:600px){
+  .title-block{
+    height:120px;
+    align-items: flex-start;
+    h2{
+      @include branded-heading(white, $brand-base, 16px);
+    }
+    &.black{
+      h2{
+        @include branded-heading($brand-base, $brand-secondary, 24px);
+      }
+    }
+  }
+}

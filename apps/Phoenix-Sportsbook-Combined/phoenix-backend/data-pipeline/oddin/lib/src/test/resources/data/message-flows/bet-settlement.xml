@@ -1,0 +1,251 @@
+<bet_settlement timestamp="1611149525569" event_id="od:match:23273" product="1" request_id="5025">
+    <outcomes>
+        <market id="7" specifiers="map=1|round=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=19" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=12" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="round=21|map=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="round=7|map=1" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=4" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=16" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="round=6|map=1" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="12" specifiers="map=1|threshold=6" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=-8.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="24" specifiers="threshold=18.5|map=1" status="-3">
+            <outcome id="5" result="1"></outcome>
+            <outcome id="4" result="0"></outcome>
+        </market>
+        <market id="24" specifiers="map=1|threshold=28.5" status="-3">
+            <outcome id="5" result="0"></outcome>
+            <outcome id="4" result="1"></outcome>
+        </market>
+        <market id="24" specifiers="map=1|threshold=22.5" status="-3">
+            <outcome id="5" result="1"></outcome>
+            <outcome id="4" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="round=5|map=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=24" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="5" specifiers="map=1" status="-3">
+            <outcome id="59" result="0"></outcome>
+            <outcome id="58" result="0"></outcome>
+            <outcome id="57" result="0"></outcome>
+            <outcome id="56" result="0"></outcome>
+            <outcome id="55" result="0"></outcome>
+            <outcome id="54" result="0"></outcome>
+            <outcome id="53" result="0"></outcome>
+            <outcome id="52" result="0"></outcome>
+            <outcome id="51" result="0"></outcome>
+            <outcome id="50" result="0"></outcome>
+            <outcome id="49" result="0"></outcome>
+            <outcome id="48" result="0"></outcome>
+            <outcome id="47" result="0"></outcome>
+            <outcome id="46" result="0"></outcome>
+            <outcome id="45" result="0"></outcome>
+            <outcome id="44" result="0"></outcome>
+            <outcome id="43" result="0"></outcome>
+            <outcome id="42" result="0"></outcome>
+            <outcome id="41" result="0"></outcome>
+            <outcome id="40" result="0"></outcome>
+            <outcome id="39" result="0"></outcome>
+            <outcome id="38" result="1"></outcome>
+            <outcome id="37" result="0"></outcome>
+            <outcome id="36" result="0"></outcome>
+            <outcome id="35" result="0"></outcome>
+            <outcome id="34" result="0"></outcome>
+            <outcome id="33" result="0"></outcome>
+            <outcome id="32" result="0"></outcome>
+            <outcome id="31" result="0"></outcome>
+            <outcome id="30" result="0"></outcome>
+            <outcome id="29" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=18" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="round=25|map=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=9" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="28" specifiers="map=1" status="-3">
+            <outcome id="7" result="1"></outcome>
+            <outcome id="6" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=15" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="24" specifiers="map=1|threshold=20.5" status="-3">
+            <outcome id="5" result="1"></outcome>
+            <outcome id="4" result="0"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=5.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="21" specifiers="variant=way:two|map=1|way=two" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="25" specifiers="map=1" status="-3">
+            <outcome id="61" result="0"></outcome>
+            <outcome id="60" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=22" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="24" specifiers="threshold=24.5|map=1" status="-3">
+            <outcome id="5" result="1"></outcome>
+            <outcome id="4" result="0"></outcome>
+        </market>
+        <market id="12" specifiers="map=1|threshold=12" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="10" specifiers="round=1|map=1|order=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="12" specifiers="map=1|threshold=3" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=17" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="2" specifiers="handicap=-1.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="37" specifiers="side=home" status="-3">
+            <outcome id="7" result="0"></outcome>
+            <outcome id="6" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="round=10|map=1" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=2.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=13" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="6" specifiers="variant=way:two|map=1|way=two" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="22" specifiers="variant=way:three|map=1|way=three" status="-3">
+            <outcome id="3" result="0"></outcome>
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=11.5" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=20" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="24" specifiers="map=1|threshold=26.5" status="-3">
+            <outcome id="5" result="0"></outcome>
+            <outcome id="4" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=8" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=-11.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=-5.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="round=2|map=1" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=23" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=3" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=11" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="6" specifiers="variant=way:three|map=1|way=three" status="-3">
+            <outcome id="3" result="0"></outcome>
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="7" specifiers="map=1|round=14" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=8.5" status="-3">
+            <outcome id="2" result="1"></outcome>
+            <outcome id="1" result="0"></outcome>
+        </market>
+        <market id="12" specifiers="threshold=9|map=1" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="11" specifiers="map=1|handicap=-2.5" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+        <market id="10" specifiers="map=1|order=2|round=16" status="-3">
+            <outcome id="2" result="0"></outcome>
+            <outcome id="1" result="1"></outcome>
+        </market>
+    </outcomes>
+</bet_settlement>

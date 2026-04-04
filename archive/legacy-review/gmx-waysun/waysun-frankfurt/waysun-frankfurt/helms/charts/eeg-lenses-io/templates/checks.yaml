@@ -1,0 +1,82 @@
+{{- if not .Values.secrets.license }}
+  {{- fail "value for .Values.secrets.license must be provided" }}
+{{- end }}
+
+{{- if not .Values.secrets.login.username }}
+  {{- fail "value for .Values.secrets.login.username must be provided" }}
+{{- end }}
+{{- if not .Values.secrets.login.password }}
+  {{- fail "value for .Values.secrets.login.password must be provided" }}
+{{- end }}
+
+{{- if not .Values.secrets.database.username }}
+  {{- fail "value for .Values.secrets.database.username must be provided" }}
+{{- end }}
+{{- if not .Values.secrets.database.password }}
+  {{- fail "value for .Values.secrets.database.password must be provided" }}
+{{- end }}
+
+{{- if not .Values.lenses.lenses.topics.suffix }}
+  {{- fail "value for .Values.lenses.lenses.topics.suffix must be provided" }}
+{{- end }}
+{{- if not .Values.lenses.lenses.storage.postgres.host }}
+  {{- fail "value for .Values.lenses.lenses.storage.postgres.host must be provided" }}
+{{- end }}
+
+{{- if not .Values.lenses.lenses.connectClusters.clusters }}
+  {{- fail "value for .Values.lenses.lenses.connectClusters.clusters must be provided" }}
+{{- end }}
+{{- range $i, $cluster := .Values.lenses.lenses.connectClusters.clusters }}
+  {{- range $j, $host := $cluster.hosts }}
+    {{- if not $host.url }}
+      {{- fail "value for .Values.lenses.lenses.connectClusters.clusters[].hosts[].url must be provided" }}
+    {{- end }}
+    {{- if not $host.metrics.url }}
+      {{- fail "value for .Values.lenses.lenses.connectClusters.clusters[].hosts[].url must be provided" }}
+    {{- end }}
+  {{- end }}
+{{- end}}
+
+{{- if not .Values.lenses.lenses.schemaRegistries.hosts }}
+  {{- fail "value for .Values.lenses.lenses.schemaRegistries.hosts must be provided" }}
+{{- end }}
+{{- range $i, $registry := .Values.lenses.lenses.schemaRegistries.hosts }}
+  {{- if not $registry.host }}
+    {{- fail "value for .Values.lenses.lenses.schemaRegistries.hosts[].host must be provided" }}
+  {{- end }}
+  {{- if not $registry.metrics.url }}
+    {{- fail "value for .Values.lenses.lenses.schemaRegistries.hosts[].metrics.url must be provided" }}
+  {{- end }}
+{{- end}}
+
+{{- if not .Values.lenses.lenses.zookeepers.hosts }}
+  {{- fail "value for .Values.lenses.lenses.zookeepers.hosts must be provided" }}
+{{- end }}
+{{- range $i, $zookeeper := .Values.lenses.lenses.zookeepers.hosts }}
+  {{- if not $zookeeper.host }}
+    {{- fail "value for .Values.lenses.lenses.zookeepers.hosts[].host must be provided" }}
+  {{- end }}
+  {{- if not $zookeeper.metrics.url }}
+    {{- fail "value for .Values.lenses.lenses.zookeepers.hosts[].metrics.url must be provided" }}
+  {{- end }}
+{{- end}}
+
+{{- if not .Values.lenses.lenses.kafka.bootstrapServers }}
+  {{- fail "value for .Values.lenses.lenses.kafka.bootstrapServers  must be provided" }}
+{{- end }}
+{{- range $i, $kafka := .Values.lenses.lenses.zookeepers.hosts }}
+  {{- if not $kafka.host }}
+    {{- fail "value for .Values.lenses.lenses.kafka.bootstrapServers [].host must be provided" }}
+  {{- end }}
+{{- end}}
+
+
+{{- if not .Values.ingress.clb_id }}
+  {{- fail "value for .Values.ingress.clb_id  must be provided" }}
+{{- end }}
+{{- if not .Values.ingress.qcloud_cert_id }}
+  {{- fail "value for .Values.ingress.qcloud_cert_id  must be provided" }}
+{{- end }}
+{{- if not .Values.ingress.domain }}
+  {{- fail "value for .Values.ingress.domain  must be provided" }}
+{{- end }}

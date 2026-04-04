@@ -1,0 +1,92 @@
+nameOverride: "prod-affmore-backend-service"
+fullnameOverride: "prod-affmore-backend-service"
+
+replicaCount: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+podAnnotations: {}
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+
+service:
+  enabled: true
+  port: 3033
+
+extraTCPPorts:
+  private-api: 3034
+
+ingressClassName: nginx
+
+ingress:
+  enabled: true
+
+  name: alb-ingress-prod-affmore-backend-service
+  hosts:
+  - host: backoffice.affmore.com
+    paths:
+    - path: /api/
+      pathType: Prefix
+      serviceName: prod-affmore-backend-service
+      servicePort: 3033
+    - path: /click/
+      pathType: Prefix
+      serviceName: prod-affmore-backend-service
+      servicePort: 3033
+    - path: /clk/
+      pathType: Prefix
+      serviceName: prod-affmore-backend-service
+      servicePort: 3033
+    - path: /ref/
+      pathType: Prefix
+      serviceName: prod-affmore-backend-service
+      servicePort: 3033
+    - path: /
+      pathType: Prefix
+      serviceName: prod-affmore-client-service
+      servicePort: 3050
+
+  annotations: {}
+  tls: []
+
+env:
+  NODE_ENV: production
+  POSTGRES_HOST: rds-affmore.prod.eeg.viegg.net
+  POSTGRES_USER: affmore
+  BACKEND_URL: http://prod-gstech-backend-service:3001
+  REDIS_HOST: redis-affmore-backend.prod.eeg.viegg.net
+  REDIS_PORT: 6379
+  LOGGER_ENABLED: "false"
+  MINIO_HOST: s3.eu-west-1.amazonaws.com
+  MINIO_BUCKET_NAME: luckydino-prod-affmore
+  MINIO_PORT: 443
+  MINIO_USE_SSL: "true"
+  MINIO_REGION: eu-west-1
+  CF_CERTS_URL: https://backoffice.affmore.com/cdn-cgi/access/certs
+  TC_VERSION: 10
+  # CRON_DISABLED: 'true'
+  AFFILIATE_AUTH_SECRET: "GS[ys2+L6BMK6c/LIcRXCdd9ZSA3ht81NmK5gIW+I9fmxsaNMr1GHJHTUxWjJturinpcBkT2Mpl8HjaTV3OCpPYFnLgT32rQ8w1/pOGoiui7jVM0NdsVg==]"
+  USER_AUTH_SECRET: "GS[qXM/Ij6JKY/ThIV/FOQUJiUaPCrEL4mMk7XVoHAHK9pTRma4vweILlE9xr3nZg86hA/Ka+KxN0Hb343BzJZ0sekN/liqYLGWAksjvMVJp+OEci5LMA==]"
+secretEnv:
+  POSTGRES_PASSWORD:
+    prod-affmore-backend-service: postgres-password
+  MINIO_ACCESS_KEY:
+    prod-affmore-backend-service: minio-access-key
+  MINIO_SECRET_KEY:
+    prod-affmore-backend-service: minio-secret-key
+  PRIVATE_KEY:
+    prod-common-secrets: private-key
+  GOOGLE_CLIENT_ID:
+    prod-affmore-backend-service: google-client-id
+  GOOGLE_CLIENT_SECRET:
+    prod-affmore-backend-service: google-client-secret

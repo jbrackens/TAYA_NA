@@ -1,0 +1,193 @@
+version: "3.1"
+
+services:
+  reverseproxy:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/gstech-reverseproxy
+    ports:
+      - 3000:3000
+    networks:
+      - gstech
+    deploy:
+      mode: global
+
+  docker-maintenance:
+    image: docker
+    command: sh -c "while true; do docker image prune -af; docker system prune -af; sleep 86400; done"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      mode: global
+
+  datadog:
+    image: datadog/agent:latest
+    networks:
+    - gstech
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+    environment:
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+      DD_APM_ENABLED: "true"
+      DD_DOGSTATSD_NON_LOCAL_TRAFFIC: "true"
+    deploy:
+      mode: global
+
+  gstech-campaignserver:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/gstech-campaignserver
+    command: sh -c "yarn migrate && yarn workspace gstech-campaignserver serve"
+    secrets:
+      - PRIVATE_KEY
+    environment:
+      DD_SERVICE_NAME: gstech-campaignserver
+      DD_TRACE_AGENT_HOSTNAME: datadog
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+      POSTGRES_HOST: db-lb-cee6395c7fc98a0a.elb.eu-central-1.amazonaws.com
+      POSTGRES_USER: gstech
+      POSTGRES_PASSWORD: 'GS[ajWC23hCNKX9f0RwpnB3BQQg9/yD+qdm/7gydfOSHtXJKZX/uBhLEKI1r7cyayRkYMOESDSV2EFoFuL2s3I=]'
+      REDIS_HOST: gstech-redis-1-0001-001.elpgdc.0001.euc1.cache.amazonaws.com,gstech-redis-1-0001-002.elpgdc.0001.euc1.cache.amazonaws.com,gstech-redis-1-0001-003.elpgdc.0001.euc1.cache.amazonaws.com
+      REDIS_PORT: 6379
+      CAMPAIGN_SERVER_URL: https://admin.luckydino.com/api/v1
+      BACKEND_URL: https://binder.luckydino.com
+      REWARD_SERVER_URL: http://gstech-rewardserver:3012/api/v1
+      REWARD_SERVER_MANAGEMENT_URL: http://gstech-rewardserver:3011/api/v1
+      POSTGRES_POOL_SIZE: 40
+      KAFKA_ENABLED: 'true'
+      KAFKA_HOST: b-2.gstech-kafka.z3z9ml.c2.kafka.eu-central-1.amazonaws.com,b-3.gstech-kafka.z3z9ml.c2.kafka.eu-central-1.amazonaws.com,b-1.gstech-kafka.z3z9ml.c2.kafka.eu-central-1.amazonaws.com
+      KAFKA_PORT: 9092
+      NODE_ENV: production
+      REWARD_SERVER_AUTH_TOKEN: 'GS[fPcXPQo5QKmJmzfcAbL1eqz6JZJwnT94otkZ5CP6EBWwqRBhB0r9TgMVRpRttQnV/dEE+L2MAbfulWpy2OmaEKZnqB/RTmvQ2ZNbaZWlfwFgGLMlUCo=]'
+      CAMPAIGN_SERVER_AUTH_TOKEN: 'GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]'
+      CF_CERTS_URL: https://admin.luckydino.com/cdn-cgi/access/certs
+    networks:
+      - gstech
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 1
+
+  gstech-campaignserver-client:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/gstech-campaignserver-client
+    environment:
+      DD_SERVICE_NAME: gstech-campaignserver-client
+      DD_TRACE_AGENT_HOSTNAME: datadog
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+      NODE_ENV: production
+      ENDPOINT: http://gstech-campaignserver:3013/api/v1
+      DD_SERVICE_NAME: gstech-campaignserver-client
+    networks:
+      - gstech
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+
+  gstech-rewardserver:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/gstech-rewardserver
+    command: sh -c "yarn migrate && yarn workspace gstech-rewardserver serve"
+    secrets:
+      - PRIVATE_KEY
+    environment:
+      DD_SERVICE_NAME: gstech-rewardserver
+      DD_TRACE_AGENT_HOSTNAME: datadog
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+      POSTGRES_HOST: db-lb-cee6395c7fc98a0a.elb.eu-central-1.amazonaws.com
+      POSTGRES_PASSWORD: 'GS[ajWC23hCNKX9f0RwpnB3BQQg9/yD+qdm/7gydfOSHtXJKZX/uBhLEKI1r7cyayRkYMOESDSV2EFoFuL2s3I=]'
+      POSTGRES_USER: gstech
+      REDIS_HOST: gstech-redis-1-0001-001.elpgdc.0001.euc1.cache.amazonaws.com,gstech-redis-1-0001-002.elpgdc.0001.euc1.cache.amazonaws.com,gstech-redis-1-0001-003.elpgdc.0001.euc1.cache.amazonaws.com
+      REDIS_PORT: 6379
+      BACKEND_URL: https://binder.luckydino.com
+      KAFKA_ENABLED: 'true'
+      KAFKA_HOST: b-2.gstech-kafka.z3z9ml.c2.kafka.eu-central-1.amazonaws.com,b-3.gstech-kafka.z3z9ml.c2.kafka.eu-central-1.amazonaws.com,b-1.gstech-kafka.z3z9ml.c2.kafka.eu-central-1.amazonaws.com
+      KAFKA_PORT: 9092
+      NODE_ENV: production
+      POSTGRES_POOL_SIZE: 50
+      REWARD_SERVER_AUTH_TOKEN: 'GS[fPcXPQo5QKmJmzfcAbL1eqz6JZJwnT94otkZ5CP6EBWwqRBhB0r9TgMVRpRttQnV/dEE+L2MAbfulWpy2OmaEKZnqB/RTmvQ2ZNbaZWlfwFgGLMlUCo=]'
+      CAMPAIGN_SERVER_AUTH_TOKEN: 'GS[xZ/zWD5Fzs0NLQ+Ry9W/uxO6rManr2j6zu0REYhLJhhs69FemQMPgnJYOLzPkUjo34EVy3tBtYF8VauC6oVetz+X76J00hjV8yTCwL5w9IBFGCYLGA==]'
+    networks:
+      - gstech
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 1
+
+  gstech-complianceserver:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/gstech-compliance
+    secrets:
+      - PRIVATE_KEY
+    environment:
+      NODE_ENV: production
+      DD_SERVICE_NAME: gstech-complianceserver
+      DD_TRACE_AGENT_HOSTNAME: datadog
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+    networks:
+      - gstech
+    deploy:
+      replicas: 0
+      update_config:
+        parallelism: 1
+
+  affmore-client:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/affmore-client
+    environment:
+      NODE_ENV: production
+      ENDPOINT: https://affmore-backend:3034/api/v1
+      DD_SERVICE_NAME: affmore-client
+      DD_TRACE_AGENT_HOSTNAME: datadog
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+    networks:
+      - gstech
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: any
+
+  affmore-backend:
+    image: 016960740957.dkr.ecr.eu-central-1.amazonaws.com/affmore-backend
+    command: sh -c "yarn migrate && yarn workspace affmore-backend serve"
+    environment:
+      NODE_ENV: production
+      DD_SERVICE_NAME: affmore-backend
+      DD_API_KEY: fdd782f6729ff6ffd2bba540ecf4fdae
+      DD_TRACE_AGENT_HOSTNAME: datadog
+      POSTGRES_HOST: db-lb-cee6395c7fc98a0a.elb.eu-central-1.amazonaws.com
+      POSTGRES_USER: affmore
+      POSTGRES_PASSWORD: 'GS[NWnqNpV4/6byC56p6wwkOJBsusvxDAnW/MPzG8hzG1Fw3vp0TRgBlH4iitJRawAGm+F6oYLQshy+Qg==]'
+      BACKEND_URL: https://binder.luckydino.com
+      REDIS_HOST: gstech-redis-1-0001-001.elpgdc.0001.euc1.cache.amazonaws.com,gstech-redis-1-0001-002.elpgdc.0001.euc1.cache.amazonaws.com,gstech-redis-1-0001-003.elpgdc.0001.euc1.cache.amazonaws.com
+      REDIS_PORT: 6379
+      LOGGER_ENABLED: 'false'
+      MINIO_HOST: s3.eu-central-1.amazonaws.com
+      MINIO_BUCKET_NAME: s3-files.affmore.com
+      MINIO_PORT: 443
+      MINIO_USE_SSL: 'true'
+      MINIO_ACCESS_KEY: AKIAQH4XQLZOXTKBZO5J
+      MINIO_SECRET_KEY: 'GS[hfO42rXE8JexmQGVRjgxwH59nCyiz+tSLut603k4KLPc2QazPnoWmK+lLsWQguHKBYpSo0BTZW4xvcK3CtcqTyLh1C2N38Q7IA1H4kld+Wg=]'
+      CF_CERTS_URL: https://affmore.com/cdn-cgi/access/certs
+      AFFILIATE_AUTH_SECRET: 'GS[ys2+L6BMK6c/LIcRXCdd9ZSA3ht81NmK5gIW+I9fmxsaNMr1GHJHTUxWjJturinpcBkT2Mpl8HjaTV3OCpPYFnLgT32rQ8w1/pOGoiui7jVM0NdsVg==]'
+      USER_AUTH_SECRET: 'GS[qXM/Ij6JKY/ThIV/FOQUJiUaPCrEL4mMk7XVoHAHK9pTRma4vweILlE9xr3nZg86hA/Ka+KxN0Hb343BzJZ0sekN/liqYLGWAksjvMVJp+OEci5LMA==]'
+      TC_VERSION: 10
+      IDEFIX_CLIENT_URL: https://idefix.luckydino.com
+      # CRON_DISABLED: 'true'
+    secrets:
+      - PRIVATE_KEY
+    networks:
+      - gstech
+    healthcheck:
+      test: ['CMD', 'wget', 'http://localhost:3033/api/v1/status', '-q', '-O', '-']
+      retries: 5
+    deploy:
+      replicas: 0
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: any
+
+networks:
+  gstech:
+
+secrets:
+  PRIVATE_KEY:
+    external: true

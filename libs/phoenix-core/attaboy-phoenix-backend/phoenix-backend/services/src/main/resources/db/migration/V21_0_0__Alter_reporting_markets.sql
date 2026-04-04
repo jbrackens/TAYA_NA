@@ -1,0 +1,1 @@
+ALTER TABLE reporting_markets ADD COLUMN name character varying NOT NULL;

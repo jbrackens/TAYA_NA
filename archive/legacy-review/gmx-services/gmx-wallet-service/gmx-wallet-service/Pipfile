@@ -1,0 +1,14 @@
+[[source]]
+name = "pypi"
+url = "https://lena-srv01.flipsports.net:4566/repository/pypi-group/simple"
+verify_ssl = true
+
+[packages]
+psycopg2-binary = "*"
+aws-rest-default = "*"
+django-filter = "*"
+kafka-python = "~=1.4.6"
+avro-python3 = "~=1.9.0"
+
+[requires]
+python_version = "3.7"

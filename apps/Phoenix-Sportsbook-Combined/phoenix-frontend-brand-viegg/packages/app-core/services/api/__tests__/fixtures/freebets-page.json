@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "freebetId": "fb:local:000001",
+      "playerId": "u:local:001",
+      "campaignId": "campaign:welcome",
+      "currency": "USD",
+      "totalAmountCents": 2500,
+      "remainingAmountCents": 1250,
+      "minOddsDecimal": 1.5,
+      "appliesToSportIds": ["s:football"],
+      "appliesToTournamentIds": ["t:premier-league"],
+      "expiresAt": "2026-03-07T20:00:00Z",
+      "status": "active",
+      "createdAt": "2026-03-01T12:00:00Z",
+      "updatedAt": "2026-03-04T12:00:00Z"
+    }
+  ],
+  "totalCount": 1
+}

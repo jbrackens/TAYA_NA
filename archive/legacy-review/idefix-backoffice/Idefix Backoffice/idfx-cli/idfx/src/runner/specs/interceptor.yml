@@ -1,0 +1,9 @@
+"INTERCEPTOR":
+  shell: ./start.sh interceptor
+  cwd: <CONFIG_DIR>
+  stop:
+    send-keys:
+      - <C-c>
+# "test":
+#   shell: ./start.sh test
+#   cwd: <CONFIG_DIR>

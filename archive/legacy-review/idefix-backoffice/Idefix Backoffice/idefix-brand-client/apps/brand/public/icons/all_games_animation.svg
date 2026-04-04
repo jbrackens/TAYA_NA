@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg"  width="400px" height="400px" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+viewBox="0 0 1080 1080"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <style type="text/css">
+   <![CDATA[
+    .str0 {stroke:black;stroke-width:1.04173}
+    .fil1 {fill:none}
+    .fil0 {fill:white}
+	
+	
+	*{
+		-webkit-animation-timing-function: linear;
+		animation-timing-function: linear;
+		animation-fill-mode:forwards;
+		animation-iteration-count: 1;
+	}
+	#wrpAllAnm .rct1_mv,#wrpAllAnm .rct2_mv,#wrpAllAnm .rct3_mv,#wrpAllAnm .rct4_mv{
+	animation-name: rct_scl;
+	animation-duration:0.7s;
+	transform:scale(0);
+	transform-origin:540px 540px; 
+	}
+	
+	.rct2_mv{animation-delay:0.1s; }
+	.rct3_mv{animation-delay:0.13s; }
+	.rct4_mv{animation-delay:0.16s; }
+	
+	
+		@keyframes rct_scl{
+			0%{transform:scale(0);}
+			50%{transform:scale(1.05);}
+			70%{transform:scale(0.95);}
+			90%{transform:scale(1.02);}
+			100%{transform:scale(1);}
+		}
+	
+   ]]>
+  </style>
+  
+    
+ </defs>
+ <g id="wrpAllAnm">
+<rect fill-opacity="0" width="1080" height="1080"></rect>
+
+	  <path id="rct1" class="rct1_mv fil0" d="M532 506c0,14 -11,25 -25,25 0,0 -133,0 -133,0 -14,0 -25,-11 -25,-25 0,0 0,-133 0,-133 0,-14 11,-25 25,-25 0,0 133,0 133,0 14,0 25,11 25,25 0,0 0,133 0,133z"/>
+	  <path id="rct2" class="rct2_mv fil0" d="M731 506c0,14 -11,25 -25,25 0,0 -134,0 -134,0 -13,0 -25,-11 -25,-25 0,0 0,-133 0,-133 0,-14 12,-25 25,-25 0,0 134,0 134,0 14,0 25,11 25,25 0,0 0,133 0,133z"/>
+	  <path id="rct3" class="rct3_mv fil0" d="M532 707c0,14 -11,25 -25,25 0,0 -133,0 -133,0 -14,0 -25,-11 -25,-25 0,0 0,-133 0,-133 0,-14 11,-25 25,-25 0,0 134,0 134,0 13,0 25,11 25,25 0,0 -1,133 -1,133z"/>
+	  <path id="rct4" class="rct4_mv fil0" d="M731 707c0,14 -11,25 -25,25 0,0 -134,0 -134,0 -13,0 -25,-11 -25,-25 0,0 1,-133 1,-133 0,-14 11,-25 25,-25 0,0 133,0 133,0 14,0 25,11 25,25 0,0 0,133 0,133z"/>
+</g>
+
+</svg>

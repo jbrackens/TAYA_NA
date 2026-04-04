@@ -1,0 +1,1 @@
+INSERT INTO risks ("type", "fraudKey", "points", "maxCumulativePoints", "title", "description", "riskProfiles") VALUES ('customer', 'deposit_limit_reached', 40, 40, 'Deosit limit fraud trigger', 'Deosit limit fraud trigger reached', null);

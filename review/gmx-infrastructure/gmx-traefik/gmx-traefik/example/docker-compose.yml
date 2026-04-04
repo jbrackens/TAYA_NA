@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  whoami:
+    image: "containous/whoami"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Path(`/whoami`)"
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+  example:
+    # Example with stripping path
+    image: nginx
+    environment:
+     - NGINX_PORT=80
+    labels:
+       - "traefik.enable=true"
+       - "traefik.http.routers.example.rule=Path(`/nginx`)"
+       - "traefik.http.services.example.loadbalancer.server.port=80"
+       - "traefik.http.routers.example.middlewares=example-stripprefix"
+       - "traefik.http.middlewares.example-stripprefix.stripprefix.prefixes=/nginx"
+networks:
+  default:
+    external:
+      name: gmx-internal

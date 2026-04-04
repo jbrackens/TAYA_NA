@@ -1,0 +1,38 @@
+@namespace("phoenix.dataapi.shared")
+protocol MarketChangeProtocol {
+
+    import idl "shared-protocol.avdl";
+
+    enum MarketStatus {
+        Settled, Cancelled, NotBettable, Bettable
+    }
+
+    record OddData {
+        string id;
+        string selectionName;
+        union { null, string } odds;
+        boolean active;
+    }
+
+    record Specifiers {
+        union { null, string } value;
+        union { null, string } `map`;
+        union { null, string } unit;
+    }
+
+    record Market {
+        string namespacedId;
+        string name;
+        MarketStatus status;
+        string type;
+        union { null, string } category;
+        Specifiers specifiers;
+        array<OddData> odds;
+    }
+
+    record MarketChange {
+        phoenix.dataapi.shared.Header header;
+        string namespacedFixtureId;
+        Market market;
+    }
+}
