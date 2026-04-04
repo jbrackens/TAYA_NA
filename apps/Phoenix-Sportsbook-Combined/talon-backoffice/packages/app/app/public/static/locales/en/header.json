@@ -1,0 +1,19 @@
+{
+  "TAB_SPORTS_HOME": "Sports Home",
+  "TAB_LIVE": "Live",
+  "TAB_STARTING_SOON": "Starting Soon",
+  "LOGIN_LINK": "Login",
+  "SIGN_UP_LINK": "Join Now",
+  "SEARCH_PLACEHOLDER": "Search events...",
+  "SEARCH_ESC_CLOSE": "Press ESC to close",
+  "SEARCH_QUICK_BROWSE": "Quick browse",
+  "SEARCH_RESULT": "result",
+  "SEARCH_RESULT_PLURAL": "results",
+  "SEARCH_SEARCHING": "Searching...",
+  "SEARCH_START_TYPING": "Start typing to search events",
+  "SEARCH_STATUS_LIVE": "LIVE",
+  "SEARCH_STATUS_FT": "FT",
+  "SEARCH_STATUS_UPCOMING": "Upcoming",
+  "SEARCH_NO_RESULTS": "No results for \"{{query}}\"",
+  "SEARCH_TRY_DIFFERENT": "Try a different search term"
+}

@@ -1,0 +1,19 @@
+{
+  "TAB_SPORTS_HOME": "Sport Home",
+  "TAB_LIVE": "Live",
+  "TAB_STARTING_SOON": "Bald beginnend",
+  "LOGIN_LINK": "Anmelden",
+  "SIGN_UP_LINK": "Registrieren",
+  "SEARCH_PLACEHOLDER": "Events suchen...",
+  "SEARCH_ESC_CLOSE": "ESC zum Schlie\u00dfen",
+  "SEARCH_QUICK_BROWSE": "Schnellsuche",
+  "SEARCH_RESULT": "Ergebnis",
+  "SEARCH_RESULT_PLURAL": "Ergebnisse",
+  "SEARCH_SEARCHING": "Suche...",
+  "SEARCH_START_TYPING": "Tippen Sie, um Events zu suchen",
+  "SEARCH_STATUS_LIVE": "LIVE",
+  "SEARCH_STATUS_FT": "Ende",
+  "SEARCH_STATUS_UPCOMING": "Bevorstehend",
+  "SEARCH_NO_RESULTS": "Keine Ergebnisse f\u00fcr \"{{query}}\"",
+  "SEARCH_TRY_DIFFERENT": "Versuchen Sie einen anderen Suchbegriff"
+}
