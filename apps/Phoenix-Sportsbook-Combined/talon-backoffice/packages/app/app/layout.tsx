@@ -21,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>Phoenix Sportsbook</title>
+        <title>TAYA NA! Sportsbook</title>
         <meta
           name="description"
           content="The ultimate sports betting platform"

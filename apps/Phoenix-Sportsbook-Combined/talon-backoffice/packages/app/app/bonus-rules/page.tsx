@@ -111,7 +111,7 @@ const fallbackContent: BonusContent = {
     },
     {
       heading: "9. Terms Modification",
-      body: "Phoenix Sportsbook reserves the right to modify bonus terms, eligibility, or promotional offers at any time. Bonuses in progress will not be affected by future changes.",
+      body: "TAYA NA! Sportsbook reserves the right to modify bonus terms, eligibility, or promotional offers at any time. Bonuses in progress will not be affected by future changes.",
     },
     {
       heading: "10. Support",

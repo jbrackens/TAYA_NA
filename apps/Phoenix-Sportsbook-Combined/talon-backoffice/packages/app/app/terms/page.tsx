@@ -11,7 +11,7 @@ export default function TermsPage() {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using Phoenix Sportsbook, you agree to be bound by
+            By accessing or using TAYA NA! Sportsbook, you agree to be bound by
             these Terms and Conditions. If you do not agree, you must not use
             the platform.
           </p>
@@ -70,7 +70,7 @@ export default function TermsPage() {
         <section>
           <h2>7. Limitation of Liability</h2>
           <p>
-            Phoenix Sportsbook is provided "as is" without warranties of any
+            TAYA NA! Sportsbook is provided "as is" without warranties of any
             kind. We are not liable for any losses incurred through the use of
             the platform, including but not limited to losses from technical
             failures, interrupted service, or incorrect odds display.

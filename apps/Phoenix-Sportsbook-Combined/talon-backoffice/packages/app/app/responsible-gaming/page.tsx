@@ -460,7 +460,7 @@ export default function ResponsibleGamingPage() {
             </h2>
             <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
               <p style={{ marginBottom: 12 }}>
-                Phoenix Sportsbook is committed to protecting our patrons. We
+                TAYA NA! Sportsbook is committed to protecting our patrons. We
                 implement the following measures:
               </p>
               <ul

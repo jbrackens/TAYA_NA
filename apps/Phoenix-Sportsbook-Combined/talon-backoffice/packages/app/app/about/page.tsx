@@ -5,13 +5,13 @@ export default function AboutPage() {
     <>
       <style dangerouslySetInnerHTML={{ __html: legalStyles }} />
       <div className="legal-page">
-        <h1>About Phoenix Sportsbook</h1>
+        <h1>About TAYA NA! Sportsbook</h1>
         <p className="legal-updated">Last updated: April 2026</p>
 
         <section>
           <h2>Who We Are</h2>
           <p>
-            Phoenix Sportsbook is a next-generation sports betting platform
+            TAYA NA! Sportsbook is a next-generation sports betting platform
             built for speed, transparency, and responsible play. We combine
             real-time odds from global markets with a modern interface designed
             around the bettor's experience.
@@ -42,7 +42,7 @@ export default function AboutPage() {
         <section>
           <h2>Licensing &amp; Regulation</h2>
           <p>
-            Phoenix Sportsbook operates under applicable gaming licenses and
+            TAYA NA! Sportsbook operates under applicable gaming licenses and
             regulatory frameworks. All wagering activity is subject to the terms
             of service and applicable laws of the jurisdiction in which you are
             located.

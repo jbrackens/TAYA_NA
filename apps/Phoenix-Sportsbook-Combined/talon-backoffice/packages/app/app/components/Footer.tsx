@@ -69,7 +69,7 @@ export default function Footer() {
               el.style.color = "#cbd5e1";
             }}
           >
-            About Phoenix
+            About TAYA NA!
           </Link>
         </div>
 

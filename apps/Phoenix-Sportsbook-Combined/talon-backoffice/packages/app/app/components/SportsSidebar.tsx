@@ -184,10 +184,8 @@ export const SportsSidebar: React.FC = () => {
     <aside className="ps-sidebar">
       {/* Brand */}
       <div className="ps-sidebar-brand">
-        <div className="ps-sidebar-logo">P</div>
-        <div className="ps-sidebar-title">
-          Phoenix<span>.</span>
-        </div>
+        <div className="ps-sidebar-logo">T</div>
+        <div className="ps-sidebar-title">TAYA NA!</div>
       </div>
 
       {/* Quick Links */}

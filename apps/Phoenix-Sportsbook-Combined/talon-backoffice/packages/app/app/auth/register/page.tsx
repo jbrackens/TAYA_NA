@@ -729,7 +729,7 @@ export default function RegisterPage() {
                   fontSize: "13px",
                 }}
               >
-                The Phoenix Sportsbook platform is committed to responsible
+                The TAYA NA! Sportsbook platform is committed to responsible
                 gambling. If you experience gambling-related problems, please
                 contact our support team.
               </p>

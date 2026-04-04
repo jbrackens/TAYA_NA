@@ -340,7 +340,7 @@ function AuthenticatedHome() {
       {/* Hero */}
       <div className="home-hero">
         <h1>
-          Welcome to <span className="accent">Phoenix</span>
+          Welcome to <span className="accent">TAYA NA!</span>
         </h1>
         <p>Live odds, instant bets, real-time results.</p>
       </div>

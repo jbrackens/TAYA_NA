@@ -108,7 +108,7 @@ export default function LandingPage() {
         <div className="landing-hero-content">
           <p className="landing-eyebrow">{t("HERO_EYEBROW")}</p>
           <h1 className="landing-h1">
-            {t("HERO_TITLE_START")} <span className="accent">Phoenix</span>
+            {t("HERO_TITLE_START")} <span className="accent">TAYA NA!</span>
           </h1>
           <p className="landing-subtitle">{t("HERO_SUBTITLE")}</p>
           <div className="landing-cta-row">
