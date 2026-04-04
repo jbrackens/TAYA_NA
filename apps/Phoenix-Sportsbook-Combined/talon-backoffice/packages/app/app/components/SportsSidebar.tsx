@@ -302,6 +302,12 @@ export const SportsSidebar: React.FC = () => {
                         ? "#39ff14"
                         : "#2a3158",
                       transition: "color 0.15s",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 44,
+                      height: 44,
+                      margin: -12,
                     }}
                   >
                     {favorites.has(sport.sportId) ? "★" : "☆"}
