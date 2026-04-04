@@ -1,26 +1,39 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useBetslip } from '../hooks/useBetslip';
-import { placeBet, placeParlay, getUserBets, getCashoutOffer, cashoutBet } from '../lib/api/betting-client';
-import type { PlaceBetRequest, PlaceParlayRequest, UserBet, CashoutOffer } from '../lib/api/betting-client';
-import type { BetSelection } from './BetslipProvider';
-import { useAppSelector } from '../lib/store/hooks';
-import { selectOddsFormat } from '../lib/store/settingsSlice';
-import { formatOdds } from '../lib/utils/odds';
-import { useToast } from './ToastProvider';
-import { useAuth } from '../hooks/useAuth';
+import React, { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { useBetslip } from "../hooks/useBetslip";
+import {
+  placeBet,
+  placeParlay,
+  getUserBets,
+  getCashoutOffer,
+  cashoutBet,
+} from "../lib/api/betting-client";
+import {
+  PlaceBetRequest,
+  PlaceParlayRequest,
+  UserBet,
+  CashoutOffer,
+} from "../lib/api/betting-client";
+import { BetSelection } from "./BetslipProvider";
+import { useAppSelector } from "../lib/store/hooks";
+import { selectOddsFormat } from "../lib/store/settingsSlice";
+import { formatOdds } from "../lib/utils/odds";
+import { useToast } from "./ToastProvider";
+import { useAuth } from "../hooks/useAuth";
+import { geoComplianceService } from "../lib/services/geocomply";
+import { logger } from "../lib/logger";
 
 const QUICK_STAKES = [5, 10, 25, 50, 100];
 
-type BetState = 'idle' | 'confirming' | 'placing' | 'success' | 'error';
+type BetState = "idle" | "confirming" | "placing" | "success" | "error";
 
 export const BetslipPanel: React.FC = () => {
-  const { t } = useTranslation('betslip');
-  const [activeTab, setActiveTab] = useState<'betslip' | 'open'>('betslip');
-  const [betState, setBetState] = useState<BetState>('idle');
-  const [betError, setBetError] = useState<string>('');
+  const { t } = useTranslation("betslip");
+  const [activeTab, setActiveTab] = useState<"betslip" | "open">("betslip");
+  const [betState, setBetState] = useState<BetState>("idle");
+  const [betError, setBetError] = useState<string>("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Providers are always mounted in layout.tsx
@@ -29,26 +42,45 @@ export const BetslipPanel: React.FC = () => {
   const toast = useToast();
   const { user } = useAuth();
 
-  const { selections, stakePerLeg, parlayMode, totalStake, potentialReturn } = betslip;
+  const {
+    selections,
+    stakePerLeg,
+    parlayMode,
+    totalStake,
+    potentialReturn,
+  } = betslip;
 
   const handlePlaceBet = useCallback(async () => {
-    if (betState === 'idle') {
+    if (betState === "idle") {
       // First click → show confirmation
-      setBetState('confirming');
+      setBetState("confirming");
       return;
     }
 
-    if (betState !== 'confirming') return;
+    if (betState !== "confirming") return;
 
-    setBetState('placing');
-    setBetError('');
+    setBetState("placing");
+    setBetError("");
 
     try {
       const userId = user?.id;
       if (!userId) {
-        setBetError(t('LOG_IN_TO_BET'));
-        setBetState('error');
-        setTimeout(() => setBetState('idle'), 3000);
+        setBetError(t("LOG_IN_TO_BET"));
+        setBetState("error");
+        setTimeout(() => setBetState("idle"), 3000);
+        return;
+      }
+
+      // Geolocation compliance check
+      const geoResult = await geoComplianceService.checkLocation();
+      if (!geoResult.allowed) {
+        const geoMsg =
+          geoResult.errorMessage ||
+          "Betting is not available in your current location.";
+        logger.warn("Betslip", "Geo check failed", geoResult);
+        setBetError(geoMsg);
+        setBetState("error");
+        setTimeout(() => setBetState("idle"), 4000);
         return;
       }
 
@@ -79,27 +111,27 @@ export const BetslipPanel: React.FC = () => {
         }
       }
 
-      setBetState('success');
-      toast.success(t('PLACE_BET'), t('BET_CONFIRMED'));
+      setBetState("success");
+      toast.success(t("PLACE_BET"), t("BET_CONFIRMED"));
       // Clear betslip after successful placement
       setTimeout(() => {
         betslip?.clearAll();
-        setBetState('idle');
+        setBetState("idle");
       }, 2000);
-    } catch (err: unknown) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMsg = message || t('PLACE_BET_FAILED');
+      const errorMsg = message || t("PLACE_BET_FAILED");
       setBetError(errorMsg);
-      setBetState('error');
-      toast.error('Bet Failed', errorMsg);
+      setBetState("error");
+      toast.error("Bet Failed", errorMsg);
       // Reset to idle after showing error
-      setTimeout(() => setBetState('idle'), 3000);
+      setTimeout(() => setBetState("idle"), 3000);
     }
   }, [betState, parlayMode, selections, totalStake, stakePerLeg, betslip]);
 
   const cancelConfirmation = useCallback(() => {
-    setBetState('idle');
-    setBetError('');
+    setBetState("idle");
+    setBetError("");
   }, []);
 
   // Helper function to render the betslip content (used by both desktop and mobile)
@@ -108,53 +140,77 @@ export const BetslipPanel: React.FC = () => {
       {selections.length === 0 ? (
         <div className="ps-betslip-empty">
           <div className="ps-betslip-empty-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ opacity: 0.4 }}
+            >
               <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-              <path d="M13 5v2" /><path d="M13 17v2" /><path d="M13 11v2" />
+              <path d="M13 5v2" />
+              <path d="M13 17v2" />
+              <path d="M13 11v2" />
             </svg>
           </div>
-          <div className="ps-betslip-empty-text">
-            {t('NO_BETS_MESSAGE')}
-          </div>
+          <div className="ps-betslip-empty-text">{t("NO_BETS_MESSAGE")}</div>
         </div>
       ) : (
         <>
           {/* Single/Parlay Toggle */}
           {selections.length > 1 && (
-            <div style={{
-              display: 'flex', padding: '8px 12px', gap: 4,
-              borderBottom: '1px solid #1a1f3a'
-            }}>
+            <div
+              style={{
+                display: "flex",
+                padding: "8px 12px",
+                gap: 4,
+                borderBottom: "1px solid #1a1f3a",
+              }}
+            >
               <button
-                className={`ps-betslip-tab ${!parlayMode ? 'active' : ''}`}
+                className={`ps-betslip-tab ${!parlayMode ? "active" : ""}`}
                 onClick={() => betslip?.setParlayMode(false)}
-                style={{ flex: 1, borderBottom: 'none', padding: '8px 0' }}
+                style={{ flex: 1, borderBottom: "none", padding: "8px 0" }}
               >
-                {t('SINGLE')}
+                {t("SINGLE")}
               </button>
               <button
-                className={`ps-betslip-tab ${parlayMode ? 'active' : ''}`}
+                className={`ps-betslip-tab ${parlayMode ? "active" : ""}`}
                 onClick={() => betslip?.setParlayMode(true)}
-                style={{ flex: 1, borderBottom: 'none', padding: '8px 0' }}
+                style={{ flex: 1, borderBottom: "none", padding: "8px 0" }}
               >
-                {t('MULTI')}
+                {t("MULTI")}
               </button>
             </div>
           )}
 
           {/* Selections */}
-          <div style={{ flex: 1, overflowY: 'auto' }}>
+          <div style={{ flex: 1, overflowY: "auto" }}>
             {selections.map((sel: BetSelection) => (
               <div key={sel.id} className="ps-betslip-selection">
                 <div className="ps-betslip-selection-header">
                   <div>
-                    <div className="ps-betslip-selection-name">{sel.selectionName}</div>
-                    <div className="ps-betslip-selection-market">{sel.marketName}</div>
-                    <div className="ps-betslip-selection-match">{sel.matchName}</div>
+                    <div className="ps-betslip-selection-name">
+                      {sel.selectionName}
+                    </div>
+                    <div className="ps-betslip-selection-market">
+                      {sel.marketName}
+                    </div>
+                    <div className="ps-betslip-selection-match">
+                      {sel.matchName}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
                     <span className="ps-betslip-selection-odds">
-                      {typeof sel.odds === 'number' ? formatOdds(sel.odds, oddsFormat) : sel.odds}
+                      {typeof sel.odds === "number"
+                        ? formatOdds(sel.odds, oddsFormat)
+                        : sel.odds}
                     </span>
                     <button
                       className="ps-betslip-remove"
@@ -187,13 +243,17 @@ export const BetslipPanel: React.FC = () => {
             {/* Stake Input */}
             <div className="ps-betslip-stake-row">
               <span className="ps-betslip-stake-label">
-                {parlayMode ? t('TOTAL_STAKE') : t('STAKE')}
+                {parlayMode ? t("TOTAL_STAKE") : t("STAKE")}
               </span>
               <input
                 type="number"
                 className="ps-betslip-stake-input"
                 value={stakePerLeg}
-                onChange={(e) => betslip?.setStakePerLeg(Math.max(0, parseFloat(e.target.value) || 0))}
+                onChange={(e) =>
+                  betslip?.setStakePerLeg(
+                    Math.max(0, parseFloat(e.target.value) || 0),
+                  )
+                }
                 min="0"
                 step="0.01"
               />
@@ -202,88 +262,137 @@ export const BetslipPanel: React.FC = () => {
             {/* Summary */}
             <div className="ps-betslip-summary">
               <div className="ps-betslip-summary-row">
-                <span className="ps-betslip-summary-label">{t('TOTAL_STAKE')}</span>
-                <span className="ps-betslip-summary-value">${totalStake.toFixed(2)}</span>
+                <span className="ps-betslip-summary-label">
+                  {t("TOTAL_STAKE")}
+                </span>
+                <span className="ps-betslip-summary-value">
+                  ${totalStake.toFixed(2)}
+                </span>
               </div>
               <div className="ps-betslip-summary-row">
-                <span className="ps-betslip-summary-label">{t('POSSIBLE_RETURN')}</span>
-                <span className="ps-betslip-summary-value green">${potentialReturn.toFixed(2)}</span>
+                <span className="ps-betslip-summary-label">
+                  {t("POSSIBLE_RETURN")}
+                </span>
+                <span className="ps-betslip-summary-value green">
+                  ${potentialReturn.toFixed(2)}
+                </span>
               </div>
             </div>
 
             {/* Bet Error */}
-            {betState === 'error' && betError && (
-              <div style={{
-                padding: '8px 12px', borderRadius: 8, marginBottom: 8,
-                background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-                color: '#f87171', fontSize: 12, fontWeight: 500,
-              }}>
+            {betState === "error" && betError && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  marginBottom: 8,
+                  background: "rgba(239,68,68,0.1)",
+                  border: "1px solid rgba(239,68,68,0.2)",
+                  color: "#f87171",
+                  fontSize: 12,
+                  fontWeight: 500,
+                }}
+              >
                 {betError}
               </div>
             )}
 
             {/* Bet Success */}
-            {betState === 'success' && (
-              <div style={{
-                padding: '8px 12px', borderRadius: 8, marginBottom: 8,
-                background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)',
-                color: '#22c55e', fontSize: 12, fontWeight: 600, textAlign: 'center',
-              }}>
-                {t('PLACE_BET')}
+            {betState === "success" && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  marginBottom: 8,
+                  background: "rgba(34,197,94,0.1)",
+                  border: "1px solid rgba(34,197,94,0.2)",
+                  color: "#22c55e",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textAlign: "center",
+                }}
+              >
+                {t("PLACE_BET")}
               </div>
             )}
 
             {/* Confirmation bar */}
-            {betState === 'confirming' && (
-              <div style={{
-                padding: '10px 12px', borderRadius: 8, marginBottom: 8,
-                background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)',
-                fontSize: 12, color: '#f97316', fontWeight: 500, textAlign: 'center',
-              }}>
-                {t('CONFIRM_BET', { type: parlayMode ? 'parlay' : selections.length > 1 ? `${selections.length} bets` : 'bet', amount: totalStake.toFixed(2) })}
+            {betState === "confirming" && (
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  marginBottom: 8,
+                  background: "rgba(249,115,22,0.08)",
+                  border: "1px solid rgba(249,115,22,0.2)",
+                  fontSize: 12,
+                  color: "#f97316",
+                  fontWeight: 500,
+                  textAlign: "center",
+                }}
+              >
+                {t("CONFIRM_BET", {
+                  type: parlayMode
+                    ? "parlay"
+                    : selections.length > 1
+                    ? `${selections.length} bets`
+                    : "bet",
+                  amount: totalStake.toFixed(2),
+                })}
               </div>
             )}
 
             {/* Place Bet / Confirm */}
-            {betState === 'confirming' ? (
-              <div style={{ display: 'flex', gap: 8 }}>
+            {betState === "confirming" ? (
+              <div style={{ display: "flex", gap: 8 }}>
                 <button
                   className="ps-btn-clear"
                   onClick={cancelConfirmation}
                   style={{ flex: 1 }}
                 >
-                  {t('CLEAR_ALL')}
+                  {t("CLEAR_ALL")}
                 </button>
                 <button
                   className="ps-btn-place-bet"
                   onClick={handlePlaceBet}
                   style={{ flex: 2 }}
                 >
-                  {t('PLACE_BET')}
+                  {t("PLACE_BET")}
                 </button>
               </div>
             ) : (
               <button
                 className="ps-btn-place-bet"
-                disabled={totalStake <= 0 || betState === 'placing' || betState === 'success'}
+                disabled={
+                  totalStake <= 0 ||
+                  betState === "placing" ||
+                  betState === "success"
+                }
                 onClick={handlePlaceBet}
               >
-                {betState === 'placing'
-                  ? t('PLACING')
-                  : betState === 'success'
-                    ? t('PLACED')
-                    : `${t('PLACE_BET')}${selections.length > 1 && !parlayMode ? ` (${selections.length} bets)` : ''}`
-                }
+                {betState === "placing"
+                  ? t("PLACING")
+                  : betState === "success"
+                  ? t("PLACED")
+                  : `${t("PLACE_BET")}${
+                      selections.length > 1 && !parlayMode
+                        ? ` (${selections.length} bets)`
+                        : ""
+                    }`}
               </button>
             )}
 
             {/* Clear */}
-            {betState !== 'confirming' && (
+            {betState !== "confirming" && (
               <button
                 className="ps-btn-clear"
-                onClick={() => { betslip?.clearAll(); setBetState('idle'); setBetError(''); }}
+                onClick={() => {
+                  betslip?.clearAll();
+                  setBetState("idle");
+                  setBetError("");
+                }}
               >
-                {t('CLEAR_ALL')}
+                {t("CLEAR_ALL")}
               </button>
             )}
           </div>
@@ -298,27 +407,33 @@ export const BetslipPanel: React.FC = () => {
       <aside className="ps-betslip">
         {/* Header */}
         <div className="ps-betslip-header">
-          <span className="ps-betslip-title">{t('BETSLIP')}</span>
+          <span className="ps-betslip-title">{t("BETSLIP")}</span>
           <span className="ps-betslip-count">{selections.length}</span>
         </div>
 
         {/* Tabs: Betslip / Open Bets */}
         <div className="ps-betslip-tabs">
           <button
-            className={`ps-betslip-tab ${activeTab === 'betslip' ? 'active' : ''}`}
-            onClick={() => setActiveTab('betslip')}
+            className={`ps-betslip-tab ${
+              activeTab === "betslip" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("betslip")}
           >
-            {t('BETSLIP')} ({selections.length})
+            {t("BETSLIP")} ({selections.length})
           </button>
           <button
-            className={`ps-betslip-tab ${activeTab === 'open' ? 'active' : ''}`}
-            onClick={() => setActiveTab('open')}
+            className={`ps-betslip-tab ${activeTab === "open" ? "active" : ""}`}
+            onClick={() => setActiveTab("open")}
           >
-            {t('OPEN_BETS')}
+            {t("OPEN_BETS")}
           </button>
         </div>
 
-        {activeTab === 'betslip' ? renderBetslipContent() : <OpenBetsTab oddsFormat={oddsFormat} />}
+        {activeTab === "betslip" ? (
+          renderBetslipContent()
+        ) : (
+          <OpenBetsTab oddsFormat={oddsFormat} />
+        )}
       </aside>
 
       {/* Mobile Floating Action Button */}
@@ -326,48 +441,68 @@ export const BetslipPanel: React.FC = () => {
         className="ps-betslip-fab"
         onClick={() => setMobileOpen(true)}
         style={{
-          position: 'fixed',
+          position: "fixed",
           bottom: 16,
           right: 16,
           width: 56,
           height: 56,
-          borderRadius: '50%',
-          border: 'none',
-          background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-          color: 'white',
+          borderRadius: "50%",
+          border: "none",
+          background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
+          color: "white",
           fontSize: 24,
-          cursor: 'pointer',
-          boxShadow: '0 8px 24px rgba(249,115,22,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          cursor: "pointer",
+          boxShadow: "0 8px 24px rgba(249,115,22,0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           zIndex: 40,
-          transition: 'all 0.3s ease',
+          transition: "all 0.3s ease",
         }}
-        title={t('OPEN_BETSLIP')}
+        title={t("OPEN_BETSLIP")}
       >
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <div
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-            <path d="M13 5v2" /><path d="M13 17v2" /><path d="M13 11v2" />
+            <path d="M13 5v2" />
+            <path d="M13 17v2" />
+            <path d="M13 11v2" />
           </svg>
           {selections.length > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: -4,
-              right: -4,
-              background: '#ef4444',
-              color: 'white',
-              borderRadius: '50%',
-              width: 20,
-              height: 20,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 12,
-              fontWeight: 700,
-              border: '2px solid #f97316',
-            }}>
+            <span
+              style={{
+                position: "absolute",
+                top: -4,
+                right: -4,
+                background: "#ef4444",
+                color: "white",
+                borderRadius: "50%",
+                width: 20,
+                height: 20,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 12,
+                fontWeight: 700,
+                border: "2px solid #f97316",
+              }}
+            >
               {selections.length}
             </span>
           )}
@@ -380,14 +515,14 @@ export const BetslipPanel: React.FC = () => {
           className="ps-betslip-drawer-backdrop"
           onClick={() => setMobileOpen(false)}
           style={{
-            position: 'fixed',
+            position: "fixed",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
+            background: "rgba(0, 0, 0, 0.5)",
             zIndex: 50,
-            animation: 'fadeIn 0.3s ease',
+            animation: "fadeIn 0.3s ease",
           }}
         />
       )}
@@ -396,61 +531,69 @@ export const BetslipPanel: React.FC = () => {
       <div
         className="ps-betslip-drawer"
         style={{
-          position: 'fixed',
+          position: "fixed",
           bottom: 0,
           left: 0,
           right: 0,
-          maxHeight: '80vh',
-          background: '#0f1225',
-          borderTop: '1px solid #1a1f3a',
-          borderRadius: '16px 16px 0 0',
+          maxHeight: "80vh",
+          background: "#0f1225",
+          borderTop: "1px solid #1a1f3a",
+          borderRadius: "16px 16px 0 0",
           zIndex: 51,
-          display: 'flex',
-          flexDirection: 'column',
-          transform: mobileOpen ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.3s ease',
-          boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.4)',
+          display: "flex",
+          flexDirection: "column",
+          transform: mobileOpen ? "translateY(0)" : "translateY(100%)",
+          transition: "transform 0.3s ease",
+          boxShadow: "0 -4px 16px rgba(0, 0, 0, 0.4)",
         }}
       >
         {/* Drag Handle Bar */}
-        <div style={{
-          padding: '12px 0',
-          display: 'flex',
-          justifyContent: 'center',
-          borderBottom: '1px solid #1a1f3a',
-        }}>
-          <div style={{
-            width: 40,
-            height: 4,
-            borderRadius: 2,
-            background: '#374163',
-          }} />
+        <div
+          style={{
+            padding: "12px 0",
+            display: "flex",
+            justifyContent: "center",
+            borderBottom: "1px solid #1a1f3a",
+          }}
+        >
+          <div
+            style={{
+              width: 40,
+              height: 4,
+              borderRadius: 2,
+              background: "#374163",
+            }}
+          />
         </div>
 
         {/* Header with Close Button */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '12px 16px',
-          borderBottom: '1px solid #1a1f3a',
-        }}>
-          <span style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: '#f1f5f9',
-          }}>
-            {t('BETSLIP')} ({selections.length})
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "12px 16px",
+            borderBottom: "1px solid #1a1f3a",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 16,
+              fontWeight: 600,
+              color: "#f1f5f9",
+            }}
+          >
+            {t("BETSLIP")} ({selections.length})
           </span>
           <button
             onClick={() => setMobileOpen(false)}
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#4a5580',
+              background: "none",
+              border: "none",
+              color: "#4a5580",
               fontSize: 20,
-              cursor: 'pointer',
-              padding: '4px 8px',
+              cursor: "pointer",
+              padding: "4px 8px",
             }}
             title="Close"
           >
@@ -459,18 +602,22 @@ export const BetslipPanel: React.FC = () => {
         </div>
 
         {/* Betslip Content */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {renderBetslipContent()}
         </div>
       </div>
 
       {/* Embedded Styles */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @media (min-width: 1200px) {
           .ps-betslip-fab {
             display: none !important;
@@ -506,7 +653,9 @@ export const BetslipPanel: React.FC = () => {
         .ps-betslip-fab:active {
           transform: scale(0.95);
         }
-      `}} />
+      `,
+        }}
+      />
     </>
   );
 };
@@ -514,12 +663,18 @@ export const BetslipPanel: React.FC = () => {
 // ─── Open Bets Sub-Component ────────────────────────────────
 
 const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
-  const { t } = useTranslation('betslip');
+  const { t } = useTranslation("betslip");
   const [openBets, setOpenBets] = useState<UserBet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cashoutOffers, setCashoutOffers] = useState<Record<string, CashoutOffer>>({});
+  const [cashoutOffers, setCashoutOffers] = useState<
+    Record<string, CashoutOffer>
+  >({});
   const [cashingOut, setCashingOut] = useState<string | null>(null);
-  const [cashoutMsg, setCashoutMsg] = useState<{ betId: string; msg: string; type: 'success' | 'error' } | null>(null);
+  const [cashoutMsg, setCashoutMsg] = useState<{
+    betId: string;
+    msg: string;
+    type: "success" | "error";
+  } | null>(null);
   const toast = useToast();
   const { user } = useAuth();
 
@@ -532,7 +687,9 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
     const load = async () => {
       try {
         const bets = await getUserBets(user.id);
-        const active = (bets || []).filter((b) => b.status === 'OPENED' || b.status === 'PENDING');
+        const active = (bets || []).filter(
+          (b) => b.status === "OPENED" || b.status === "PENDING",
+        );
         setOpenBets(active);
 
         // Fetch cashout offers for each bet
@@ -541,7 +698,9 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
           try {
             const offer = await getCashoutOffer(bet.betId);
             if (offer.available) offers[bet.betId] = offer;
-          } catch { /* no cashout available */ }
+          } catch {
+            /* no cashout available */
+          }
         }
         setCashoutOffers(offers);
       } catch {
@@ -558,15 +717,15 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
     setCashoutMsg(null);
     try {
       await cashoutBet(betId);
-      setCashoutMsg({ betId, msg: 'Cashed out!', type: 'success' });
-      toast.success('Cashout Successful!', 'Your bet has been cashed out.');
+      setCashoutMsg({ betId, msg: "Cashed out!", type: "success" });
+      toast.success("Cashout Successful!", "Your bet has been cashed out.");
       // Remove from open bets
       setOpenBets((prev) => prev.filter((b) => b.betId !== betId));
-    } catch (err: unknown) {
+    } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMsg = message || 'Cashout failed';
-      setCashoutMsg({ betId, msg: errorMsg, type: 'error' });
-      toast.error('Cashout Failed', errorMsg);
+      const errorMsg = message || "Cashout failed";
+      setCashoutMsg({ betId, msg: errorMsg, type: "error" });
+      toast.error("Cashout Failed", errorMsg);
     } finally {
       setCashingOut(null);
       setTimeout(() => setCashoutMsg(null), 3000);
@@ -575,8 +734,15 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
 
   if (loading) {
     return (
-      <div style={{ padding: 20, textAlign: 'center', color: '#4a5580', fontSize: 13 }}>
-        {t('LOADING')}
+      <div
+        style={{
+          padding: 20,
+          textAlign: "center",
+          color: "#4a5580",
+          fontSize: 13,
+        }}
+      >
+        {t("LOADING")}
       </div>
     );
   }
@@ -585,39 +751,71 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
     return (
       <div className="ps-betslip-empty">
         <div className="ps-betslip-empty-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
-            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ opacity: 0.4 }}
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
-        <div className="ps-betslip-empty-text">
-          {t('NO_BETS_MESSAGE')}
-        </div>
+        <div className="ps-betslip-empty-text">{t("NO_BETS_MESSAGE")}</div>
       </div>
     );
   }
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto' }}>
+    <div style={{ flex: 1, overflowY: "auto" }}>
       {openBets.map((bet) => {
         const offer = cashoutOffers[bet.betId];
         const msg = cashoutMsg?.betId === bet.betId ? cashoutMsg : null;
         return (
-          <div key={bet.betId} style={{
-            padding: '12px 16px', borderBottom: '1px solid #1a1f3a',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>
-                {bet.selection?.selectionName || 'Selection'}
+          <div
+            key={bet.betId}
+            style={{
+              padding: "12px 16px",
+              borderBottom: "1px solid #1a1f3a",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: 4,
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>
+                {bet.selection?.selectionName || "Selection"}
               </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#f97316' }}>
-                {bet.selection?.odds ? formatOdds(bet.selection.odds, oddsFormat) : '-'}
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#f97316" }}>
+                {bet.selection?.odds
+                  ? formatOdds(bet.selection.odds, oddsFormat)
+                  : "-"}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#4a5580' }}>
-              <span>{t('STAKE_LABEL')} ${bet.stake.toFixed(2)}</span>
-              <span>{t('RETURN_LABEL')} ${bet.potentialReturn.toFixed(2)}</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 11,
+                color: "#4a5580",
+              }}
+            >
+              <span>
+                {t("STAKE_LABEL")} ${bet.stake.toFixed(2)}
+              </span>
+              <span>
+                {t("RETURN_LABEL")} ${bet.potentialReturn.toFixed(2)}
+              </span>
             </div>
-            <div style={{ fontSize: 10, color: '#374163', marginTop: 4 }}>
+            <div style={{ fontSize: 10, color: "#374163", marginTop: 4 }}>
               {bet.status} &middot; {new Date(bet.createdAt).toLocaleString()}
             </div>
 
@@ -627,22 +825,36 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
                 onClick={() => handleCashout(bet.betId)}
                 disabled={cashingOut === bet.betId}
                 style={{
-                  width: '100%', marginTop: 8, padding: '8px', borderRadius: 6,
-                  fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                  background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)',
-                  color: '#22c55e', transition: 'all 0.15s',
+                  width: "100%",
+                  marginTop: 8,
+                  padding: "8px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  background: "rgba(34,197,94,0.1)",
+                  border: "1px solid rgba(34,197,94,0.3)",
+                  color: "#22c55e",
+                  transition: "all 0.15s",
                 }}
               >
-                {cashingOut === bet.betId ? t('CASHING_OUT') : `${t('CASH_OUT')} $${offer.cashoutValue.toFixed(2)}`}
+                {cashingOut === bet.betId
+                  ? t("CASHING_OUT")
+                  : `${t("CASH_OUT")} $${offer.cashoutValue.toFixed(2)}`}
               </button>
             )}
 
             {/* Cashout result message */}
             {msg && (
-              <div style={{
-                marginTop: 6, fontSize: 11, fontWeight: 600, textAlign: 'center',
-                color: msg.type === 'success' ? '#22c55e' : '#f87171',
-              }}>
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  textAlign: "center",
+                  color: msg.type === "success" ? "#22c55e" : "#f87171",
+                }}
+              >
                 {msg.msg}
               </div>
             )}
