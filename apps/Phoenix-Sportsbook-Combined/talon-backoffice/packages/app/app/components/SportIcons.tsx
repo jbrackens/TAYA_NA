@@ -4,6 +4,7 @@ import React from "react";
 import {
   CircleDot,
   Circle,
+  LifeBuoy,
   Trophy,
   Swords,
   Target,
@@ -41,7 +42,7 @@ const icons: Record<string, React.FC> = {
   soccer: () => <CircleDot {...defaultProps} />,
   football: () => <Circle {...defaultProps} />,
   "american-football": () => <Circle {...defaultProps} />,
-  basketball: () => <Circle {...defaultProps} />,
+  basketball: () => <LifeBuoy {...defaultProps} />,
   tennis: () => <Disc3 {...defaultProps} />,
   baseball: () => <Target {...defaultProps} />,
   "ice-hockey": () => <Gauge {...defaultProps} />,
