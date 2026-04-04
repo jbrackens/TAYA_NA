@@ -177,15 +177,22 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 		stdhttp.Error(w, `{"error":{"code":"service_unavailable","message":"auth service unreachable"}}`, stdhttp.StatusBadGateway)
 	}
 
-	mux.HandleFunc("/api/v1/auth/", func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	authHandler := func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		if r.Method == stdhttp.MethodOptions {
 			w.WriteHeader(stdhttp.StatusNoContent)
 			return
 		}
+		// Rewrite /auth/* → /api/v1/auth/* so the auth service receives the right path
+		if strings.HasPrefix(r.URL.Path, "/auth/") {
+			r.URL.Path = "/api/v1" + r.URL.Path
+		}
 		proxy.ServeHTTP(w, r)
-	})
-	log.Printf("auth proxy registered: /api/v1/auth/* → %s", authURL)
+	}
+	mux.HandleFunc("/api/v1/auth/", authHandler)
+	mux.HandleFunc("/auth/", authHandler)
+	log.Printf("auth proxy registered: /auth/* and /api/v1/auth/* → %s", authURL)
 }
