@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export default function PrivacyPage() {
   return (
@@ -11,71 +11,79 @@ export default function PrivacyPage() {
         <section>
           <h2>1. Information We Collect</h2>
           <p>
-            We collect information you provide when creating an account (name, email, date
-            of birth, address), payment information for deposits and withdrawals, and
-            usage data including betting history, device information, and IP address.
+            We collect information you provide when creating an account (name,
+            email, date of birth, address), payment information for deposits and
+            withdrawals, and usage data including betting history, device
+            information, and IP address.
           </p>
         </section>
 
         <section>
           <h2>2. How We Use Your Information</h2>
           <p>
-            Your data is used to operate your account, process transactions, comply with
-            regulatory obligations (KYC/AML), provide customer support, improve our
-            services, and communicate important account updates.
+            Your data is used to operate your account, process transactions,
+            comply with regulatory obligations (KYC/AML), provide customer
+            support, improve our services, and communicate important account
+            updates.
           </p>
         </section>
 
         <section>
           <h2>3. Data Sharing</h2>
           <p>
-            We do not sell your personal information. We may share data with payment
-            processors, identity verification providers, regulatory authorities as
-            required by law, and service providers who assist in operating the platform.
+            We do not sell your personal information. We may share data with
+            payment processors, identity verification providers, regulatory
+            authorities as required by law, and service providers who assist in
+            operating the platform.
           </p>
         </section>
 
         <section>
           <h2>4. Data Security</h2>
           <p>
-            We use industry-standard encryption and security measures to protect your data.
-            All financial transactions are encrypted in transit and at rest. Access to
-            personal data is restricted to authorized personnel only.
+            We use industry-standard encryption and security measures to protect
+            your data. All financial transactions are encrypted in transit and
+            at rest. Access to personal data is restricted to authorized
+            personnel only.
           </p>
         </section>
 
         <section>
           <h2>5. Cookies &amp; Tracking</h2>
           <p>
-            We use essential cookies for authentication and session management. Analytics
-            cookies help us understand how the platform is used. You can manage cookie
-            preferences in your browser settings.
+            We use essential cookies for authentication and session management.
+            Analytics cookies help us understand how the platform is used. You
+            can manage cookie preferences in your browser settings.
           </p>
         </section>
 
         <section>
           <h2>6. Your Rights</h2>
           <p>
-            Depending on your jurisdiction, you may have the right to access, correct, or
-            delete your personal data, object to processing, and request data portability.
-            To exercise these rights, contact our privacy team.
+            Depending on your jurisdiction, you may have the right to access,
+            correct, or delete your personal data, object to processing, and
+            request data portability. To exercise these rights, contact our
+            privacy team.
           </p>
         </section>
 
         <section>
           <h2>7. Data Retention</h2>
           <p>
-            We retain account data for the duration of your account and for a period
-            thereafter as required by regulatory obligations. Transaction records are
-            retained for a minimum of 5 years.
+            We retain account data for the duration of your account and for a
+            period thereafter as required by regulatory obligations. Transaction
+            records are retained for a minimum of 5 years.
           </p>
         </section>
 
         <section>
           <h2>8. Contact</h2>
           <p>
-            Privacy inquiries can be sent to{' '}
-            <a href="mailto:privacy@phoenixsportsbook.com">privacy@phoenixsportsbook.com</a>.
+            Privacy inquiries can be sent to{" "}
+            <a href="mailto:privacy@phoenixsportsbook.com">
+              privacy@phoenixsportsbook.com
+            </a>
+            .
           </p>
         </section>
       </div>
@@ -102,7 +110,7 @@ const legalStyles = `
     font-size: 14px; line-height: 1.7; color: #94a3b8;
   }
   .legal-page a {
-    color: #f97316; text-decoration: none;
+    color: #39ff14; text-decoration: none;
   }
   .legal-page a:hover { text-decoration: underline; }
 `;

@@ -80,9 +80,9 @@ function TabNavigation({
             padding: "12px 16px",
             border: "none",
             backgroundColor: "transparent",
-            color: activeTabIndex === index ? "#f97316" : "#64748b",
+            color: activeTabIndex === index ? "#39ff14" : "#64748b",
             borderBottom:
-              activeTabIndex === index ? "2px solid #f97316" : "none",
+              activeTabIndex === index ? "2px solid #39ff14" : "none",
             cursor: "pointer",
             fontSize: "14px",
             fontWeight: "500",
@@ -116,7 +116,7 @@ const labelStyle = {
 
 const btnStyle = {
   padding: "10px 20px",
-  backgroundColor: "#f97316",
+  backgroundColor: "#39ff14",
   color: "#ffffff",
   border: "none",
   borderRadius: "4px",
@@ -694,8 +694,8 @@ export default function ProfilePage() {
                       profile?.kycStatus === "approved"
                         ? "verified"
                         : profile?.kycStatus === "pending"
-                        ? "pending"
-                        : "failed"
+                          ? "pending"
+                          : "failed"
                     }
                   />
                 </div>

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 export interface Column<T> {
   key: string;
@@ -20,58 +20,58 @@ export default function DataTable<T extends { id?: string | number }>({
   columns,
   data,
   loading = false,
-  emptyMessage = 'No data available',
+  emptyMessage = "No data available",
 }: DataTableProps<T>) {
   const tableStyle: React.CSSProperties = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    backgroundColor: '#0f1225',
+    width: "100%",
+    borderCollapse: "collapse",
+    backgroundColor: "#0f1225",
   };
 
   const theadStyle: React.CSSProperties = {
-    backgroundColor: '#0f1225',
-    borderBottom: '1px solid #1a1f3a',
+    backgroundColor: "#0f1225",
+    borderBottom: "1px solid #1a1f3a",
   };
 
   const thStyle: React.CSSProperties = {
-    padding: '12px 16px',
-    textAlign: 'left',
-    fontSize: '12px',
-    fontWeight: '700',
-    color: '#94a3b8',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    padding: "12px 16px",
+    textAlign: "left",
+    fontSize: "12px",
+    fontWeight: "700",
+    color: "#94a3b8",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
   };
 
-  const tbodyStyle: React.CSSProperties = {
-  };
+  const tbodyStyle: React.CSSProperties = {};
 
   const getTrStyle = (index: number): React.CSSProperties => {
     return {
-      backgroundColor: index % 2 === 0 ? '#0f1225' : 'rgba(255, 255, 255, 0.02)',
-      borderBottom: '1px solid #1a1f3a',
-      transition: 'background-color 0.2s',
+      backgroundColor:
+        index % 2 === 0 ? "#0f1225" : "rgba(255, 255, 255, 0.02)",
+      borderBottom: "1px solid #1a1f3a",
+      transition: "background-color 0.2s",
     };
   };
 
   const tdStyle: React.CSSProperties = {
-    padding: '12px 16px',
-    fontSize: '14px',
-    color: '#cbd5e1',
+    padding: "12px 16px",
+    fontSize: "14px",
+    color: "#cbd5e1",
   };
 
   const emptyStyle: React.CSSProperties = {
-    padding: '32px 16px',
-    textAlign: 'center',
-    color: '#64748b',
-    fontSize: '14px',
+    padding: "32px 16px",
+    textAlign: "center",
+    color: "#64748b",
+    fontSize: "14px",
   };
 
   const skeletonLineStyle: React.CSSProperties = {
-    height: '16px',
-    backgroundColor: '#1a1f3a',
-    borderRadius: '4px',
-    marginBottom: '8px',
+    height: "16px",
+    backgroundColor: "#1a1f3a",
+    borderRadius: "4px",
+    marginBottom: "8px",
   };
 
   if (loading) {
@@ -144,17 +144,19 @@ export default function DataTable<T extends { id?: string | number }>({
             style={getTrStyle(rowIdx)}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLTableRowElement;
-              el.style.backgroundColor = 'rgba(249, 115, 22, 0.08)';
+              el.style.backgroundColor = "rgba(57, 255, 20, 0.08)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLTableRowElement;
               el.style.backgroundColor =
-                rowIdx % 2 === 0 ? '#0f1225' : 'rgba(255, 255, 255, 0.02)';
+                rowIdx % 2 === 0 ? "#0f1225" : "rgba(255, 255, 255, 0.02)";
             }}
           >
             {columns.map((col) => (
               <td key={col.key} style={tdStyle}>
-                {col.render ? col.render(item) : (item[col.key as keyof T] as React.ReactNode)}
+                {col.render
+                  ? col.render(item)
+                  : (item[col.key as keyof T] as React.ReactNode)}
               </td>
             ))}
           </tr>

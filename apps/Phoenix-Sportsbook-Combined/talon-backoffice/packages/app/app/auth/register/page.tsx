@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { register as registerUser } from '../../lib/api';
+import { useState } from "react";
+import Link from "next/link";
+import { register as registerUser } from "../../lib/api";
 
 interface FormData {
   // Step 1: Account
@@ -32,25 +32,25 @@ interface Errors {
 export default function RegisterPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    dateOfBirth: '',
-    phone: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: '',
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
+    dateOfBirth: "",
+    phone: "",
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "",
     acceptTerms: false,
   });
   const [errors, setErrors] = useState<Errors>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const validateEmail = (email: string): boolean => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,27 +61,27 @@ export default function RegisterPage() {
     const newErrors: Errors = {};
 
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = "Username is required";
     } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
+      newErrors.username = "Username must be at least 3 characters";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = "Password must be at least 8 characters";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -92,19 +92,19 @@ export default function RegisterPage() {
     const newErrors: Errors = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = "First name is required";
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = "Last name is required";
     }
 
     if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = 'Date of birth is required';
+      newErrors.dateOfBirth = "Date of birth is required";
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = "Phone number is required";
     }
 
     setErrors(newErrors);
@@ -115,23 +115,23 @@ export default function RegisterPage() {
     const newErrors: Errors = {};
 
     if (!formData.street.trim()) {
-      newErrors.street = 'Street address is required';
+      newErrors.street = "Street address is required";
     }
 
     if (!formData.city.trim()) {
-      newErrors.city = 'City is required';
+      newErrors.city = "City is required";
     }
 
     if (!formData.state.trim()) {
-      newErrors.state = 'State is required';
+      newErrors.state = "State is required";
     }
 
     if (!formData.zip.trim()) {
-      newErrors.zip = 'ZIP code is required';
+      newErrors.zip = "ZIP code is required";
     }
 
     if (!formData.country.trim()) {
-      newErrors.country = 'Country is required';
+      newErrors.country = "Country is required";
     }
 
     setErrors(newErrors);
@@ -142,7 +142,7 @@ export default function RegisterPage() {
     const newErrors: Errors = {};
 
     if (!formData.acceptTerms) {
-      newErrors.acceptTerms = 'You must accept the terms and conditions';
+      newErrors.acceptTerms = "You must accept the terms and conditions";
     }
 
     setErrors(newErrors);
@@ -176,20 +176,22 @@ export default function RegisterPage() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const checked = (e.target as HTMLInputElement).checked;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
 
     // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
@@ -200,8 +202,8 @@ export default function RegisterPage() {
     }
 
     setIsLoading(true);
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       const response = await registerUser({
@@ -221,95 +223,97 @@ export default function RegisterPage() {
         },
       });
 
-      setSuccessMessage('Account created successfully! Redirecting to login...');
+      setSuccessMessage(
+        "Account created successfully! Redirecting to login...",
+      );
       setTimeout(() => {
-        window.location.href = '/auth/login';
+        window.location.href = "/auth/login";
       }, 2000);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      setErrorMessage(message || 'Registration failed. Please try again.');
+      setErrorMessage(message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    marginBottom: '16px',
-    backgroundColor: '#0a0f1d',
-    border: '1px solid #1a1f3a',
-    borderRadius: '4px',
-    color: '#e2e8f0',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
+    width: "100%",
+    padding: "10px 12px",
+    marginBottom: "16px",
+    backgroundColor: "#0a0f1d",
+    border: "1px solid #1a1f3a",
+    borderRadius: "4px",
+    color: "#e2e8f0",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
   };
 
   const errorStyle: React.CSSProperties = {
-    color: '#ef4444',
-    fontSize: '12px',
-    marginTop: '-12px',
-    marginBottom: '12px',
+    color: "#ef4444",
+    fontSize: "12px",
+    marginTop: "-12px",
+    marginBottom: "12px",
   };
 
   const buttonStyle: React.CSSProperties = {
-    padding: '10px 16px',
-    backgroundColor: '#f97316',
-    border: 'none',
-    color: '#ffffff',
-    borderRadius: '4px',
-    cursor: 'pointer',
+    padding: "10px 16px",
+    backgroundColor: "#39ff14",
+    border: "none",
+    color: "#ffffff",
+    borderRadius: "4px",
+    cursor: "pointer",
     fontWeight: 600,
-    fontSize: '14px',
-    transition: 'all 0.2s ease',
+    fontSize: "14px",
+    transition: "all 0.2s ease",
   };
 
   const secondaryButtonStyle: React.CSSProperties = {
-    padding: '10px 16px',
-    backgroundColor: '#0f3460',
-    border: '1px solid #1a1f3a',
-    color: '#a0a0a0',
-    borderRadius: '4px',
-    cursor: 'pointer',
+    padding: "10px 16px",
+    backgroundColor: "#0f3460",
+    border: "1px solid #1a1f3a",
+    color: "#a0a0a0",
+    borderRadius: "4px",
+    cursor: "pointer",
     fontWeight: 600,
-    fontSize: '14px',
-    transition: 'all 0.2s ease',
+    fontSize: "14px",
+    transition: "all 0.2s ease",
   };
 
   return (
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-        padding: '20px',
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+        padding: "20px",
       }}
     >
       <div
         style={{
-          width: '100%',
-          maxWidth: '500px',
-          padding: '40px',
-          backgroundColor: '#0f1225',
-          border: '1px solid #1a1f3a',
-          borderRadius: '8px',
+          width: "100%",
+          maxWidth: "500px",
+          padding: "40px",
+          backgroundColor: "#0f1225",
+          border: "1px solid #1a1f3a",
+          borderRadius: "8px",
         }}
       >
         <div
           style={{
-            textAlign: 'center',
-            marginBottom: '32px',
+            textAlign: "center",
+            marginBottom: "32px",
           }}
         >
           <h1
             style={{
-              margin: '0 0 8px 0',
-              fontSize: '28px',
+              margin: "0 0 8px 0",
+              fontSize: "28px",
               fontWeight: 700,
-              color: '#ffffff',
+              color: "#ffffff",
             }}
           >
             Create Account
@@ -317,8 +321,8 @@ export default function RegisterPage() {
           <p
             style={{
               margin: 0,
-              fontSize: '14px',
-              color: '#a0a0a0',
+              fontSize: "14px",
+              color: "#a0a0a0",
             }}
           >
             Step {currentStep} of 4
@@ -328,9 +332,9 @@ export default function RegisterPage() {
         {/* Progress bar */}
         <div
           style={{
-            display: 'flex',
-            gap: '8px',
-            marginBottom: '32px',
+            display: "flex",
+            gap: "8px",
+            marginBottom: "32px",
           }}
         >
           {[1, 2, 3, 4].map((step) => (
@@ -338,10 +342,10 @@ export default function RegisterPage() {
               key={step}
               style={{
                 flex: 1,
-                height: '4px',
-                backgroundColor: step <= currentStep ? '#f97316' : '#1a1f3a',
-                borderRadius: '2px',
-                transition: 'all 0.3s ease',
+                height: "4px",
+                backgroundColor: step <= currentStep ? "#39ff14" : "#1a1f3a",
+                borderRadius: "2px",
+                transition: "all 0.3s ease",
               }}
             />
           ))}
@@ -351,13 +355,13 @@ export default function RegisterPage() {
         {errorMessage && (
           <div
             style={{
-              padding: '12px',
-              marginBottom: '20px',
-              backgroundColor: '#7f1d1d',
-              border: '1px solid #991b1b',
-              borderRadius: '4px',
-              color: '#fca5a5',
-              fontSize: '13px',
+              padding: "12px",
+              marginBottom: "20px",
+              backgroundColor: "#7f1d1d",
+              border: "1px solid #991b1b",
+              borderRadius: "4px",
+              color: "#fca5a5",
+              fontSize: "13px",
             }}
           >
             {errorMessage}
@@ -367,13 +371,13 @@ export default function RegisterPage() {
         {successMessage && (
           <div
             style={{
-              padding: '12px',
-              marginBottom: '20px',
-              backgroundColor: '#064e3b',
-              border: '1px solid #047857',
-              borderRadius: '4px',
-              color: '#86efac',
-              fontSize: '13px',
+              padding: "12px",
+              marginBottom: "20px",
+              backgroundColor: "#064e3b",
+              border: "1px solid #047857",
+              borderRadius: "4px",
+              color: "#86efac",
+              fontSize: "13px",
             }}
           >
             {successMessage}
@@ -385,10 +389,10 @@ export default function RegisterPage() {
           <div>
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -406,10 +410,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -427,10 +431,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -448,10 +452,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -465,7 +469,9 @@ export default function RegisterPage() {
               placeholder="Confirm your password"
               style={inputStyle}
             />
-            {errors.confirmPassword && <div style={errorStyle}>{errors.confirmPassword}</div>}
+            {errors.confirmPassword && (
+              <div style={errorStyle}>{errors.confirmPassword}</div>
+            )}
           </div>
         )}
 
@@ -474,10 +480,10 @@ export default function RegisterPage() {
           <div>
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -491,14 +497,16 @@ export default function RegisterPage() {
               placeholder="First name"
               style={inputStyle}
             />
-            {errors.firstName && <div style={errorStyle}>{errors.firstName}</div>}
+            {errors.firstName && (
+              <div style={errorStyle}>{errors.firstName}</div>
+            )}
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -516,10 +524,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -532,14 +540,16 @@ export default function RegisterPage() {
               onChange={handleInputChange}
               style={inputStyle}
             />
-            {errors.dateOfBirth && <div style={errorStyle}>{errors.dateOfBirth}</div>}
+            {errors.dateOfBirth && (
+              <div style={errorStyle}>{errors.dateOfBirth}</div>
+            )}
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -562,10 +572,10 @@ export default function RegisterPage() {
           <div>
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -583,10 +593,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -604,10 +614,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -625,10 +635,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -646,10 +656,10 @@ export default function RegisterPage() {
 
             <label
               style={{
-                display: 'block',
-                marginBottom: '8px',
-                color: '#e2e8f0',
-                fontSize: '14px',
+                display: "block",
+                marginBottom: "8px",
+                color: "#e2e8f0",
+                fontSize: "14px",
                 fontWeight: 600,
               }}
             >
@@ -672,47 +682,67 @@ export default function RegisterPage() {
           <div>
             <div
               style={{
-                backgroundColor: '#0a0f1d',
-                border: '1px solid #1a1f3a',
-                borderRadius: '4px',
-                padding: '16px',
-                marginBottom: '20px',
-                maxHeight: '300px',
-                overflowY: 'auto',
+                backgroundColor: "#0a0f1d",
+                border: "1px solid #1a1f3a",
+                borderRadius: "4px",
+                padding: "16px",
+                marginBottom: "20px",
+                maxHeight: "300px",
+                overflowY: "auto",
               }}
             >
               <h3
                 style={{
-                  margin: '0 0 12px 0',
-                  color: '#e2e8f0',
-                  fontSize: '16px',
+                  margin: "0 0 12px 0",
+                  color: "#e2e8f0",
+                  fontSize: "16px",
                   fontWeight: 600,
                 }}
               >
                 Terms and Conditions
               </h3>
-              <p style={{ margin: '0 0 12px 0', color: '#a0a0a0', fontSize: '13px' }}>
-                By creating an account, you agree to our Terms and Conditions and Privacy Policy.
-                You must be at least 18 years old to use this platform.
+              <p
+                style={{
+                  margin: "0 0 12px 0",
+                  color: "#a0a0a0",
+                  fontSize: "13px",
+                }}
+              >
+                By creating an account, you agree to our Terms and Conditions
+                and Privacy Policy. You must be at least 18 years old to use
+                this platform.
               </p>
-              <p style={{ margin: '0 0 12px 0', color: '#a0a0a0', fontSize: '13px' }}>
-                You agree to provide accurate and complete information during registration and to
-                keep your account information up to date.
+              <p
+                style={{
+                  margin: "0 0 12px 0",
+                  color: "#a0a0a0",
+                  fontSize: "13px",
+                }}
+              >
+                You agree to provide accurate and complete information during
+                registration and to keep your account information up to date.
               </p>
-              <p style={{ margin: '0 0 12px 0', color: '#a0a0a0', fontSize: '13px' }}>
-                The Phoenix Sportsbook platform is committed to responsible gambling. If you
-                experience gambling-related problems, please contact our support team.
+              <p
+                style={{
+                  margin: "0 0 12px 0",
+                  color: "#a0a0a0",
+                  fontSize: "13px",
+                }}
+              >
+                The Phoenix Sportsbook platform is committed to responsible
+                gambling. If you experience gambling-related problems, please
+                contact our support team.
               </p>
-              <p style={{ margin: 0, color: '#a0a0a0', fontSize: '13px' }}>
+              <p style={{ margin: 0, color: "#a0a0a0", fontSize: "13px" }}>
                 For full terms, please visit our website.
               </p>
             </div>
 
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '20px',
+                display: "flex",
+                alignItems: "center",
+                marginBottom: "20px",
               }}
             >
               <input
@@ -722,44 +752,52 @@ export default function RegisterPage() {
                 checked={formData.acceptTerms}
                 onChange={handleInputChange}
                 style={{
-                  width: '18px',
-                  height: '18px',
-                  marginRight: '12px',
-                  cursor: 'pointer',
+                  width: "18px",
+                  height: "18px",
+                  marginRight: "12px",
+                  cursor: "pointer",
                 }}
               />
               <label
                 htmlFor="acceptTerms"
                 style={{
-                  color: '#e2e8f0',
-                  fontSize: '14px',
-                  cursor: 'pointer',
+                  color: "#e2e8f0",
+                  fontSize: "14px",
+                  cursor: "pointer",
                 }}
               >
                 I agree to the Terms and Conditions
               </label>
             </div>
-            {errors.acceptTerms && <div style={errorStyle}>{errors.acceptTerms}</div>}
+            {errors.acceptTerms && (
+              <div style={errorStyle}>{errors.acceptTerms}</div>
+            )}
 
             <div
               style={{
-                backgroundColor: '#0a0f1d',
-                border: '1px solid #1a1f3a',
-                borderRadius: '4px',
-                padding: '12px',
-                marginBottom: '20px',
+                backgroundColor: "#0a0f1d",
+                border: "1px solid #1a1f3a",
+                borderRadius: "4px",
+                padding: "12px",
+                marginBottom: "20px",
               }}
             >
-              <p style={{ margin: 0, color: '#a0a0a0', fontSize: '12px' }}>
-                <strong style={{ color: '#e2e8f0' }}>Account Summary:</strong>
+              <p style={{ margin: 0, color: "#a0a0a0", fontSize: "12px" }}>
+                <strong style={{ color: "#e2e8f0" }}>Account Summary:</strong>
               </p>
-              <p style={{ margin: '4px 0', color: '#a0a0a0', fontSize: '12px' }}>
+              <p
+                style={{ margin: "4px 0", color: "#a0a0a0", fontSize: "12px" }}
+              >
                 Username: {formData.username}
               </p>
-              <p style={{ margin: '4px 0', color: '#a0a0a0', fontSize: '12px' }}>
+              <p
+                style={{ margin: "4px 0", color: "#a0a0a0", fontSize: "12px" }}
+              >
                 Email: {formData.email}
               </p>
-              <p style={{ margin: '4px 0', color: '#a0a0a0', fontSize: '12px' }}>
+              <p
+                style={{ margin: "4px 0", color: "#a0a0a0", fontSize: "12px" }}
+              >
                 Name: {formData.firstName} {formData.lastName}
               </p>
             </div>
@@ -769,9 +807,9 @@ export default function RegisterPage() {
         {/* Navigation Buttons */}
         <div
           style={{
-            display: 'flex',
-            gap: '12px',
-            marginTop: '32px',
+            display: "flex",
+            gap: "12px",
+            marginTop: "32px",
           }}
         >
           <button
@@ -780,16 +818,16 @@ export default function RegisterPage() {
             style={{
               ...secondaryButtonStyle,
               opacity: currentStep === 1 ? 0.5 : 1,
-              cursor: currentStep === 1 ? 'not-allowed' : 'pointer',
+              cursor: currentStep === 1 ? "not-allowed" : "pointer",
               flex: 1,
             }}
             onMouseEnter={(e) => {
               if (currentStep > 1) {
-                e.currentTarget.style.backgroundColor = '#1a2a4a';
+                e.currentTarget.style.backgroundColor = "#1a2a4a";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#0f3460';
+              e.currentTarget.style.backgroundColor = "#0f3460";
             }}
           >
             Previous
@@ -800,39 +838,43 @@ export default function RegisterPage() {
             style={{
               ...buttonStyle,
               opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
+              cursor: isLoading ? "not-allowed" : "pointer",
               flex: 1,
             }}
             onMouseEnter={(e) => {
               if (!isLoading) {
-                e.currentTarget.style.backgroundColor = '#ea580c';
+                e.currentTarget.style.backgroundColor = "#ea580c";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#f97316';
+              e.currentTarget.style.backgroundColor = "#39ff14";
             }}
           >
-            {isLoading ? 'Processing...' : currentStep === 4 ? 'Create Account' : 'Next'}
+            {isLoading
+              ? "Processing..."
+              : currentStep === 4
+                ? "Create Account"
+                : "Next"}
           </button>
         </div>
 
         {/* Login Link */}
         <div
           style={{
-            textAlign: 'center',
-            marginTop: '20px',
-            color: '#a0a0a0',
-            fontSize: '14px',
+            textAlign: "center",
+            marginTop: "20px",
+            color: "#a0a0a0",
+            fontSize: "14px",
           }}
         >
           Already have an account?
           <Link
             href="/auth/login"
             style={{
-              color: '#f97316',
-              textDecoration: 'none',
+              color: "#39ff14",
+              textDecoration: "none",
               fontWeight: 600,
-              marginLeft: '4px',
+              marginLeft: "4px",
             }}
           >
             Sign in here

@@ -26,10 +26,8 @@ export default function TransactionsPage() {
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [txType, setTxType] = useState<TxType>("all");
   const [page, setPage] = useState(1);
-  const [
-    response,
-    setResponse,
-  ] = useState<GetTransactionsPaginatedResponse | null>(null);
+  const [response, setResponse] =
+    useState<GetTransactionsPaginatedResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -134,15 +132,9 @@ export default function TransactionsPage() {
           <div className="tx-filter-group">
             <label className="tx-filter-label">Date Range</label>
             <div className="tx-filter-buttons">
-              {([
-                "all",
-                "24h",
-                "week",
-                "month",
-                "3m",
-                "6m",
-                "year",
-              ] as const).map((r) => (
+              {(
+                ["all", "24h", "week", "month", "3m", "6m", "year"] as const
+              ).map((r) => (
                 <button
                   key={r}
                   className={`tx-filter-btn ${dateRange === r ? "active" : ""}`}
@@ -154,16 +146,16 @@ export default function TransactionsPage() {
                   {r === "all"
                     ? "All Time"
                     : r === "24h"
-                    ? "Last 24h"
-                    : r === "week"
-                    ? "Last Week"
-                    : r === "month"
-                    ? "Last Month"
-                    : r === "3m"
-                    ? "Last 3 Months"
-                    : r === "6m"
-                    ? "Last 6 Months"
-                    : "Last Year"}
+                      ? "Last 24h"
+                      : r === "week"
+                        ? "Last Week"
+                        : r === "month"
+                          ? "Last Month"
+                          : r === "3m"
+                            ? "Last 3 Months"
+                            : r === "6m"
+                              ? "Last 6 Months"
+                              : "Last Year"}
                 </button>
               ))}
             </div>
@@ -172,13 +164,15 @@ export default function TransactionsPage() {
           <div className="tx-filter-group">
             <label className="tx-filter-label">Type</label>
             <div className="tx-filter-buttons">
-              {([
-                "all",
-                "deposit",
-                "withdrawal",
-                "bet_placement",
-                "bet_settlement",
-              ] as const).map((t) => (
+              {(
+                [
+                  "all",
+                  "deposit",
+                  "withdrawal",
+                  "bet_placement",
+                  "bet_settlement",
+                ] as const
+              ).map((t) => (
                 <button
                   key={t}
                   className={`tx-filter-btn ${txType === t ? "active" : ""}`}
@@ -190,12 +184,12 @@ export default function TransactionsPage() {
                   {t === "all"
                     ? "All"
                     : t === "deposit"
-                    ? "Deposit"
-                    : t === "withdrawal"
-                    ? "Withdrawal"
-                    : t === "bet_placement"
-                    ? "Bet Placement"
-                    : "Bet Settlement"}
+                      ? "Deposit"
+                      : t === "withdrawal"
+                        ? "Withdrawal"
+                        : t === "bet_placement"
+                          ? "Bet Placement"
+                          : "Bet Settlement"}
                 </button>
               ))}
             </div>
@@ -232,12 +226,12 @@ export default function TransactionsPage() {
                             {tx.type === "deposit"
                               ? "Deposit"
                               : tx.type === "withdrawal"
-                              ? "Withdrawal"
-                              : tx.type === "bet_placement"
-                              ? "Bet Placement"
-                              : tx.type === "bet_settlement"
-                              ? "Bet Settlement"
-                              : tx.type}
+                                ? "Withdrawal"
+                                : tx.type === "bet_placement"
+                                  ? "Bet Placement"
+                                  : tx.type === "bet_settlement"
+                                    ? "Bet Settlement"
+                                    : tx.type}
                           </span>
                         </td>
                         <td>
@@ -312,7 +306,7 @@ const transactionsStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .tx-back:hover { border-color: #f97316; color: #f97316; }
+  .tx-back:hover { border-color: #39ff14; color: #39ff14; }
 
   .tx-filters { margin-bottom: 24px; }
   .tx-filter-group { margin-bottom: 16px; }
@@ -330,7 +324,7 @@ const transactionsStyles = `
   }
 
   .tx-filter-btn.active, .tx-filter-btn:hover {
-    border-color: #f97316; color: #f97316;
+    border-color: #39ff14; color: #39ff14;
   }
 
   .tx-card {
@@ -370,8 +364,8 @@ const transactionsStyles = `
   }
 
   .tx-type {
-    display: inline-block; padding: 4px 8px; background: rgba(249,115,22,0.1);
-    border-radius: 4px; color: #f97316; font-weight: 600; font-size: 12px;
+    display: inline-block; padding: 4px 8px; background: rgba(57,255,20,0.1);
+    border-radius: 4px; color: #39ff14; font-weight: 600; font-size: 12px;
   }
 
   .tx-credit { color: #22c55e; font-weight: 700; }
@@ -394,7 +388,7 @@ const transactionsStyles = `
   }
 
   .tx-page-btn:hover:not(:disabled) {
-    border-color: #f97316; color: #f97316;
+    border-color: #39ff14; color: #39ff14;
   }
 
   .tx-page-btn:disabled {

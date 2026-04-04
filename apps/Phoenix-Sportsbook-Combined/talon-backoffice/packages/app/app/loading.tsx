@@ -1,7 +1,9 @@
 export default function Loading() {
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .loading-container {
           display: flex;
           flex-direction: column;
@@ -32,12 +34,12 @@ export default function Loading() {
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+          background: linear-gradient(135deg, #39ff14 0%, #ea580c 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           animation: pulseLogo 2s ease-in-out infinite;
-          box-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
+          box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
         }
 
         .phoenix-letter {
@@ -90,7 +92,9 @@ export default function Loading() {
             background-position: -200% 0;
           }
         }
-      `}} />
+      `,
+        }}
+      />
 
       <div className="loading-container">
         <div className="loading-content">

@@ -252,8 +252,8 @@ export default function SecurityPage() {
                 {twoFaLoading
                   ? "Updating..."
                   : twoFaEnabled
-                  ? "Disable 2FA"
-                  : "Enable 2FA"}
+                    ? "Disable 2FA"
+                    : "Enable 2FA"}
               </button>
             </div>
           </div>
@@ -350,7 +350,7 @@ const securityStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .sec-back:hover { border-color: #f97316; color: #f97316; }
+  .sec-back:hover { border-color: #39ff14; color: #39ff14; }
 
   .sec-tabs {
     display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #1a1f3a;
@@ -363,7 +363,7 @@ const securityStyles = `
   }
 
   .sec-tab.active {
-    color: #f97316; border-bottom-color: #f97316;
+    color: #39ff14; border-bottom-color: #39ff14;
   }
 
   .sec-card {
@@ -396,7 +396,7 @@ const securityStyles = `
   }
 
   .sec-input:focus {
-    border-color: #f97316;
+    border-color: #39ff14;
   }
 
   .sec-error {
@@ -406,7 +406,7 @@ const securityStyles = `
   }
 
   .sec-submit {
-    padding: 12px 16px; background: #f97316; border: none;
+    padding: 12px 16px; background: #39ff14; border: none;
     border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; transition: opacity 0.15s;
   }
@@ -444,7 +444,7 @@ const securityStyles = `
   }
 
   .sec-twofa-btn.enable {
-    background: #f97316; color: #fff;
+    background: #39ff14; color: #101114;
   }
 
   .sec-twofa-btn.enable:hover { opacity: 0.9; }
@@ -478,8 +478,8 @@ const securityStyles = `
   }
 
   .sec-session-badge {
-    display: inline-block; padding: 4px 8px; background: rgba(249,115,22,0.1);
-    border-radius: 4px; color: #f97316; font-size: 12px; font-weight: 600;
+    display: inline-block; padding: 4px 8px; background: rgba(57,255,20,0.1);
+    border-radius: 4px; color: #39ff14; font-size: 12px; font-weight: 600;
   }
 
   .sec-session-logout {

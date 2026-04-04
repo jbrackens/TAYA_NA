@@ -117,13 +117,13 @@ const globalStyles = `
   }
   .ps-sidebar-logo {
     width: 36px; height: 36px; border-radius: 10px;
-    background: linear-gradient(135deg, #f97316, #ef4444);
+    background: linear-gradient(135deg, #39ff14, #2ed600);
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; font-weight: 800; color: #fff;
-    box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+    box-shadow: 0 4px 12px rgba(57,255,20,0.3);
   }
   .ps-sidebar-title { font-size: 18px; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em; }
-  .ps-sidebar-title span { color: #f97316; }
+  .ps-sidebar-title span { color: #39ff14; }
 
   .ps-sidebar-section { padding: 12px 0; }
   .ps-sidebar-section-label {
@@ -137,7 +137,7 @@ const globalStyles = `
     background: none; border-top: none; border-bottom: none; border-right: none; width: 100%; text-align: left;
   }
   .ps-sidebar-item:hover { background: #161a35; color: #e2e8f0; }
-  .ps-sidebar-item.active { background: #1a2040; color: #f97316; border-left-color: #f97316; }
+  .ps-sidebar-item.active { background: #1a2040; color: #39ff14; border-left-color: #39ff14; }
   .ps-sidebar-item-left { display: flex; align-items: center; gap: 10px; }
   .ps-sidebar-item-icon { width: 20px; text-align: center; font-size: 15px; }
   .ps-sidebar-badge {
@@ -162,7 +162,7 @@ const globalStyles = `
     cursor: pointer; transition: all 0.15s;
   }
   .ps-topbar-tab:hover { background: #161a35; color: #94a3b8; }
-  .ps-topbar-tab.active { background: #1a2040; color: #f97316; }
+  .ps-topbar-tab.active { background: #1a2040; color: #39ff14; }
 
   .ps-topbar-right { display: flex; align-items: center; gap: 12px; }
 
@@ -197,26 +197,26 @@ const globalStyles = `
   }
 
   .ps-btn-login {
-    padding: 8px 18px; border-radius: 8px; border: 1.5px solid #f97316;
-    background: transparent; color: #f97316; font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 8px; border: 1.5px solid #39ff14;
+    background: transparent; color: #39ff14; font-size: 13px; font-weight: 600;
     cursor: pointer; transition: all 0.15s;
   }
-  .ps-btn-login:hover { background: rgba(249,115,22,0.1); }
+  .ps-btn-login:hover { background: rgba(57,255,20,0.1); }
   .ps-btn-signup {
     padding: 8px 18px; border-radius: 8px; border: none;
-    background: linear-gradient(135deg, #f97316, #ef4444); color: #fff;
+    background: linear-gradient(135deg, #39ff14, #2ed600); color: #101114;
     font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
-    box-shadow: 0 4px 12px rgba(249,115,22,0.25);
+    box-shadow: 0 4px 12px rgba(57,255,20,0.25);
   }
   .ps-btn-signup:hover { opacity: 0.9; transform: translateY(-1px); }
 
   .ps-avatar {
-    width: 36px; height: 36px; border-radius: 50%; border: 2px solid #f97316;
+    width: 36px; height: 36px; border-radius: 50%; border: 2px solid #39ff14;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; color: #f97316; cursor: pointer;
-    background: rgba(249,115,22,0.1); transition: all 0.15s;
+    font-size: 14px; font-weight: 700; color: #39ff14; cursor: pointer;
+    background: rgba(57,255,20,0.1); transition: all 0.15s;
   }
-  .ps-avatar:hover { background: rgba(249,115,22,0.2); }
+  .ps-avatar:hover { background: rgba(57,255,20,0.2); }
 
   /* ── Content + Betslip ── */
   .ps-content { display: flex; flex: 1; }
@@ -235,7 +235,7 @@ const globalStyles = `
   .ps-betslip-title { font-size: 14px; font-weight: 700; color: #f8fafc; }
   .ps-betslip-count {
     min-width: 22px; height: 22px; border-radius: 6px; padding: 0 6px;
-    background: #f97316; color: #fff; font-size: 11px; font-weight: 700;
+    background: #39ff14; color: #101114; font-size: 11px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
   }
   .ps-betslip-tabs {
@@ -246,7 +246,7 @@ const globalStyles = `
     color: #64748b; font-size: 12px; font-weight: 600; cursor: pointer;
     transition: all 0.15s; border-bottom: 2px solid transparent;
   }
-  .ps-betslip-tab.active { color: #f97316; border-bottom-color: #f97316; }
+  .ps-betslip-tab.active { color: #39ff14; border-bottom-color: #39ff14; }
   .ps-betslip-tab:hover { color: #94a3b8; }
 
   .ps-betslip-empty {
@@ -264,7 +264,7 @@ const globalStyles = `
   .ps-betslip-selection-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
   .ps-betslip-selection-match { font-size: 11px; color: #64748b; }
   .ps-betslip-selection-market { font-size: 11px; color: #4a5580; }
-  .ps-betslip-selection-odds { font-size: 14px; font-weight: 700; color: #f97316; }
+  .ps-betslip-selection-odds { font-size: 14px; font-weight: 700; color: #39ff14; }
   .ps-betslip-remove {
     width: 20px; height: 20px; border-radius: 4px; border: none;
     background: transparent; color: #4a5580; cursor: pointer;
@@ -285,14 +285,14 @@ const globalStyles = `
     color: #e2e8f0; font-size: 14px; font-weight: 600;
     text-align: right;
   }
-  .ps-betslip-stake-input:focus { outline: none; border-color: #f97316; }
+  .ps-betslip-stake-input:focus { outline: none; border-color: #39ff14; }
   .ps-betslip-quick-stakes { display: flex; gap: 6px; }
   .ps-betslip-quick-stake {
     flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #1a1f3a;
     background: #0b0e1c; color: #94a3b8; font-size: 11px; font-weight: 600;
     cursor: pointer; transition: all 0.15s; text-align: center;
   }
-  .ps-betslip-quick-stake:hover { border-color: #f97316; color: #f97316; }
+  .ps-betslip-quick-stake:hover { border-color: #39ff14; color: #39ff14; }
 
   .ps-betslip-summary { display: flex; flex-direction: column; gap: 4px; }
   .ps-betslip-summary-row {
@@ -304,9 +304,9 @@ const globalStyles = `
 
   .ps-btn-place-bet {
     width: 100%; padding: 12px; border-radius: 8px; border: none;
-    background: linear-gradient(135deg, #f97316, #ef4444); color: #fff;
+    background: linear-gradient(135deg, #39ff14, #2ed600); color: #101114;
     font-size: 14px; font-weight: 700; cursor: pointer;
-    transition: all 0.15s; box-shadow: 0 4px 16px rgba(249,115,22,0.3);
+    transition: all 0.15s; box-shadow: 0 4px 16px rgba(57,255,20,0.3);
   }
   .ps-btn-place-bet:hover { opacity: 0.9; transform: translateY(-1px); }
   .ps-btn-place-bet:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }

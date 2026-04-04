@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface TabsProps {
   tabs: { label: string; key: string }[];
@@ -10,26 +10,26 @@ interface TabsProps {
 
 export default function Tabs({ tabs, activeKey, onChange }: TabsProps) {
   const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    borderBottom: '1px solid #1a1f3a',
-    gap: '0',
+    display: "flex",
+    borderBottom: "1px solid #1a1f3a",
+    gap: "0",
   };
 
   const getTabStyle = (key: string): React.CSSProperties => {
     const isActive = key === activeKey;
     return {
-      padding: '12px 20px',
-      fontSize: '14px',
-      fontWeight: '600',
-      color: isActive ? '#f97316' : '#64748b',
-      backgroundColor: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      borderBottom: isActive ? '2px solid #f97316' : 'none',
-      marginBottom: isActive ? '-1px' : '0',
-      transition: 'all 0.2s',
-      whiteSpace: 'nowrap',
-      position: 'relative',
+      padding: "12px 20px",
+      fontSize: "14px",
+      fontWeight: "600",
+      color: isActive ? "#39ff14" : "#64748b",
+      backgroundColor: "transparent",
+      border: "none",
+      cursor: "pointer",
+      borderBottom: isActive ? "2px solid #39ff14" : "none",
+      marginBottom: isActive ? "-1px" : "0",
+      transition: "all 0.2s",
+      whiteSpace: "nowrap",
+      position: "relative",
     };
   };
 
@@ -43,13 +43,13 @@ export default function Tabs({ tabs, activeKey, onChange }: TabsProps) {
           onMouseEnter={(e) => {
             if (tab.key !== activeKey) {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = '#cbd5e1';
+              el.style.color = "#cbd5e1";
             }
           }}
           onMouseLeave={(e) => {
             if (tab.key !== activeKey) {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = '#64748b';
+              el.style.color = "#64748b";
             }
           }}
         >

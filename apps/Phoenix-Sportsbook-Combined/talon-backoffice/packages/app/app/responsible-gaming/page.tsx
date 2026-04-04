@@ -60,7 +60,7 @@ export default function ResponsibleGamingPage() {
     padding: "12px 24px",
     borderRadius: 8,
     border: "none",
-    background: "linear-gradient(135deg, #f97316, #ef4444)",
+    background: "linear-gradient(135deg, #39ff14, #2ed600)",
     color: "#fff",
     fontSize: 14,
     fontWeight: 600,
@@ -108,7 +108,7 @@ export default function ResponsibleGamingPage() {
               borderRadius: 8,
               border: "none",
               background: activeSection === s.id ? "#1a2040" : "transparent",
-              color: activeSection === s.id ? "#f97316" : "#64748b",
+              color: activeSection === s.id ? "#39ff14" : "#64748b",
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
@@ -381,15 +381,13 @@ export default function ResponsibleGamingPage() {
                   name: "Gamblers Anonymous",
                   url: "https://www.gamblersanonymous.org",
                   phone: "",
-                  desc:
-                    "Peer support and 12-step recovery program for compulsive gamblers",
+                  desc: "Peer support and 12-step recovery program for compulsive gamblers",
                 },
                 {
                   name: "GamStop (UK Self-Exclusion)",
                   url: "https://www.gamstop.co.uk",
                   phone: "",
-                  desc:
-                    "Free self-exclusion service for UK-licensed online gambling",
+                  desc: "Free self-exclusion service for UK-licensed online gambling",
                 },
               ].map((resource) => (
                 <div
@@ -429,7 +427,7 @@ export default function ResponsibleGamingPage() {
                       rel="noopener noreferrer"
                       style={{
                         fontSize: 12,
-                        color: "#f97316",
+                        color: "#39ff14",
                         textDecoration: "none",
                       }}
                     >
@@ -528,7 +526,7 @@ export default function ResponsibleGamingPage() {
                   at{" "}
                   <a
                     href="mailto:support@phoenixsportsbook.com"
-                    style={{ color: "#f97316", textDecoration: "none" }}
+                    style={{ color: "#39ff14", textDecoration: "none" }}
                   >
                     support@phoenixsportsbook.com
                   </a>

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { forgotPassword } from '../../lib/api';
+import { useState } from "react";
+import Link from "next/link";
+import { forgotPassword } from "../../lib/api";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const validateEmail = (emailStr: string): boolean => {
@@ -18,16 +18,16 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     if (!email.trim()) {
-      setErrorMessage('Please enter your email address');
+      setErrorMessage("Please enter your email address");
       return;
     }
 
     if (!validateEmail(email)) {
-      setErrorMessage('Please enter a valid email address');
+      setErrorMessage("Please enter a valid email address");
       return;
     }
 
@@ -35,76 +35,78 @@ export default function ForgotPasswordPage() {
 
     try {
       await forgotPassword({ email });
-      setSuccessMessage('Check your email for password reset instructions');
+      setSuccessMessage("Check your email for password reset instructions");
       setSubmitted(true);
-      setEmail('');
+      setEmail("");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      setErrorMessage(message || 'Failed to send reset email. Please try again.');
+      setErrorMessage(
+        message || "Failed to send reset email. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    marginBottom: '16px',
-    backgroundColor: '#0a0f1d',
-    border: '1px solid #1a1f3a',
-    borderRadius: '4px',
-    color: '#e2e8f0',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
+    width: "100%",
+    padding: "10px 12px",
+    marginBottom: "16px",
+    backgroundColor: "#0a0f1d",
+    border: "1px solid #1a1f3a",
+    borderRadius: "4px",
+    color: "#e2e8f0",
+    fontSize: "14px",
+    boxSizing: "border-box",
+    fontFamily: "inherit",
   };
 
   const buttonStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 16px',
-    backgroundColor: '#f97316',
-    border: 'none',
-    color: '#ffffff',
-    borderRadius: '4px',
-    cursor: 'pointer',
+    width: "100%",
+    padding: "10px 16px",
+    backgroundColor: "#39ff14",
+    border: "none",
+    color: "#ffffff",
+    borderRadius: "4px",
+    cursor: "pointer",
     fontWeight: 600,
-    fontSize: '14px',
-    transition: 'all 0.2s ease',
+    fontSize: "14px",
+    transition: "all 0.2s ease",
   };
 
   return (
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-        padding: '20px',
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+        padding: "20px",
       }}
     >
       <div
         style={{
-          width: '100%',
-          maxWidth: '400px',
-          padding: '40px',
-          backgroundColor: '#0f1225',
-          border: '1px solid #1a1f3a',
-          borderRadius: '8px',
+          width: "100%",
+          maxWidth: "400px",
+          padding: "40px",
+          backgroundColor: "#0f1225",
+          border: "1px solid #1a1f3a",
+          borderRadius: "8px",
         }}
       >
         <div
           style={{
-            textAlign: 'center',
-            marginBottom: '32px',
+            textAlign: "center",
+            marginBottom: "32px",
           }}
         >
           <h1
             style={{
-              margin: '0 0 8px 0',
-              fontSize: '28px',
+              margin: "0 0 8px 0",
+              fontSize: "28px",
               fontWeight: 700,
-              color: '#ffffff',
+              color: "#ffffff",
             }}
           >
             Forgot Password
@@ -112,8 +114,8 @@ export default function ForgotPasswordPage() {
           <p
             style={{
               margin: 0,
-              fontSize: '14px',
-              color: '#a0a0a0',
+              fontSize: "14px",
+              color: "#a0a0a0",
             }}
           >
             Enter your email to reset your password
@@ -124,13 +126,13 @@ export default function ForgotPasswordPage() {
         {errorMessage && (
           <div
             style={{
-              padding: '12px',
-              marginBottom: '20px',
-              backgroundColor: '#7f1d1d',
-              border: '1px solid #991b1b',
-              borderRadius: '4px',
-              color: '#fca5a5',
-              fontSize: '13px',
+              padding: "12px",
+              marginBottom: "20px",
+              backgroundColor: "#7f1d1d",
+              border: "1px solid #991b1b",
+              borderRadius: "4px",
+              color: "#fca5a5",
+              fontSize: "13px",
             }}
           >
             {errorMessage}
@@ -141,13 +143,13 @@ export default function ForgotPasswordPage() {
         {successMessage && (
           <div
             style={{
-              padding: '12px',
-              marginBottom: '20px',
-              backgroundColor: '#064e3b',
-              border: '1px solid #047857',
-              borderRadius: '4px',
-              color: '#86efac',
-              fontSize: '13px',
+              padding: "12px",
+              marginBottom: "20px",
+              backgroundColor: "#064e3b",
+              border: "1px solid #047857",
+              borderRadius: "4px",
+              color: "#86efac",
+              fontSize: "13px",
             }}
           >
             {successMessage}
@@ -158,10 +160,10 @@ export default function ForgotPasswordPage() {
         <form onSubmit={handleSubmit}>
           <label
             style={{
-              display: 'block',
-              marginBottom: '8px',
-              color: '#e2e8f0',
-              fontSize: '14px',
+              display: "block",
+              marginBottom: "8px",
+              color: "#e2e8f0",
+              fontSize: "14px",
               fontWeight: 600,
             }}
           >
@@ -172,7 +174,7 @@ export default function ForgotPasswordPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (errorMessage) setErrorMessage('');
+              if (errorMessage) setErrorMessage("");
             }}
             placeholder="your@email.com"
             style={inputStyle}
@@ -185,41 +187,45 @@ export default function ForgotPasswordPage() {
             style={{
               ...buttonStyle,
               opacity: isLoading || submitted ? 0.7 : 1,
-              cursor: isLoading || submitted ? 'not-allowed' : 'pointer',
+              cursor: isLoading || submitted ? "not-allowed" : "pointer",
             }}
             onMouseEnter={(e) => {
               if (!isLoading && !submitted) {
-                e.currentTarget.style.backgroundColor = '#ea580c';
+                e.currentTarget.style.backgroundColor = "#ea580c";
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#f97316';
+              e.currentTarget.style.backgroundColor = "#39ff14";
             }}
           >
-            {isLoading ? 'Sending...' : submitted ? 'Email Sent' : 'Send Reset Link'}
+            {isLoading
+              ? "Sending..."
+              : submitted
+                ? "Email Sent"
+                : "Send Reset Link"}
           </button>
         </form>
 
         {/* Divider */}
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            margin: '24px 0',
-            gap: '12px',
+            display: "flex",
+            alignItems: "center",
+            margin: "24px 0",
+            gap: "12px",
           }}
         >
           <div
             style={{
               flex: 1,
-              height: '1px',
-              backgroundColor: '#0f3460',
+              height: "1px",
+              backgroundColor: "#0f3460",
             }}
           />
           <span
             style={{
-              color: '#a0a0a0',
-              fontSize: '12px',
+              color: "#a0a0a0",
+              fontSize: "12px",
             }}
           >
             or
@@ -227,8 +233,8 @@ export default function ForgotPasswordPage() {
           <div
             style={{
               flex: 1,
-              height: '1px',
-              backgroundColor: '#0f3460',
+              height: "1px",
+              backgroundColor: "#0f3460",
             }}
           />
         </div>
@@ -236,20 +242,20 @@ export default function ForgotPasswordPage() {
         {/* Links */}
         <div
           style={{
-            textAlign: 'center',
-            color: '#a0a0a0',
-            fontSize: '14px',
+            textAlign: "center",
+            color: "#a0a0a0",
+            fontSize: "14px",
           }}
         >
-          <div style={{ marginBottom: '12px' }}>
+          <div style={{ marginBottom: "12px" }}>
             Remember your password?
             <Link
               href="/auth/login"
               style={{
-                color: '#f97316',
-                textDecoration: 'none',
+                color: "#39ff14",
+                textDecoration: "none",
                 fontWeight: 600,
-                marginLeft: '4px',
+                marginLeft: "4px",
               }}
             >
               Sign in
@@ -260,10 +266,10 @@ export default function ForgotPasswordPage() {
             <Link
               href="/auth/register"
               style={{
-                color: '#f97316',
-                textDecoration: 'none',
+                color: "#39ff14",
+                textDecoration: "none",
                 fontWeight: 600,
-                marginLeft: '4px',
+                marginLeft: "4px",
               }}
             >
               Create one

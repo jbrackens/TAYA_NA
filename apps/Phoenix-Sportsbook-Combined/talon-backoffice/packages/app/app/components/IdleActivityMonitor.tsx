@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { logger } from '../lib/logger';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { logger } from "../lib/logger";
 
 interface IdleActivityMonitorProps {
   onLogout: () => void;
@@ -51,7 +51,14 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const events = ['mousemove', 'mousedown', 'click', 'scroll', 'keypress', 'load'];
+    const events = [
+      "mousemove",
+      "mousedown",
+      "click",
+      "scroll",
+      "keypress",
+      "load",
+    ];
 
     events.forEach((event) => {
       window.addEventListener(event, handleActivity, true);
@@ -71,7 +78,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
         await onRefreshToken();
       }
     } catch (err) {
-      logger.error('IdleMonitor', 'Token refresh failed', err);
+      logger.error("IdleMonitor", "Token refresh failed", err);
     }
   }, [onRefreshToken]);
 
@@ -80,7 +87,9 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     if (!isAuthenticated) return;
 
     checkIntervalRef.current = window.setInterval(() => {
-      const idleTime = Math.floor((Date.now() - lastActivityRef.current) / 1000);
+      const idleTime = Math.floor(
+        (Date.now() - lastActivityRef.current) / 1000,
+      );
       const timeUntilWarning = sessionTimeoutSeconds - idleTime;
 
       // Check if token needs refresh (30 seconds before timeout)
@@ -105,7 +114,12 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
         clearInterval(checkIntervalRef.current);
       }
     };
-  }, [isAuthenticated, sessionTimeoutSeconds, warningSeconds, refreshAuthToken]);
+  }, [
+    isAuthenticated,
+    sessionTimeoutSeconds,
+    warningSeconds,
+    refreshAuthToken,
+  ]);
 
   // Countdown timer for warning modal
   useEffect(() => {
@@ -136,7 +150,8 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   useEffect(() => {
     return () => {
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      if (countdownIntervalRef.current)
+        clearInterval(countdownIntervalRef.current);
     };
   }, []);
 
@@ -145,34 +160,34 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   return (
     <div
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         zIndex: 9999,
       }}
     >
       <div
         style={{
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
           borderRadius: 12,
           padding: 32,
           maxWidth: 400,
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          textAlign: 'center',
+          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+          textAlign: "center",
         }}
       >
         <h2
           style={{
-            margin: '0 0 12px 0',
+            margin: "0 0 12px 0",
             fontSize: 20,
             fontWeight: 700,
-            color: '#1f2937',
+            color: "#1f2937",
           }}
         >
           Inactivity Warning
@@ -180,18 +195,19 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
 
         <p
           style={{
-            margin: '0 0 24px 0',
+            margin: "0 0 24px 0",
             fontSize: 14,
-            color: '#6b7280',
+            color: "#6b7280",
             lineHeight: 1.5,
           }}
         >
-          Your session will expire due to inactivity. Click below to stay logged in.
+          Your session will expire due to inactivity. Click below to stay logged
+          in.
         </p>
 
         <div
           style={{
-            backgroundColor: '#f3f4f6',
+            backgroundColor: "#f3f4f6",
             borderRadius: 8,
             padding: 16,
             marginBottom: 24,
@@ -202,16 +218,16 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
               margin: 0,
               fontSize: 24,
               fontWeight: 700,
-              color: '#ef4444',
+              color: "#ef4444",
             }}
           >
             {countdown}s
           </p>
           <p
             style={{
-              margin: '8px 0 0 0',
+              margin: "8px 0 0 0",
               fontSize: 12,
-              color: '#6b7280',
+              color: "#6b7280",
             }}
           >
             Seconds remaining
@@ -220,29 +236,29 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
 
         <div
           style={{
-            display: 'flex',
+            display: "flex",
             gap: 12,
-            flexDirection: 'column',
+            flexDirection: "column",
           }}
         >
           <button
             onClick={handleActivity}
             style={{
-              padding: '10px 16px',
+              padding: "10px 16px",
               borderRadius: 8,
-              border: 'none',
+              border: "none",
               fontSize: 14,
               fontWeight: 600,
-              cursor: 'pointer',
-              background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-              color: '#ffffff',
-              transition: 'all 0.2s ease',
+              cursor: "pointer",
+              background: "linear-gradient(135deg, #39ff14 0%, #ea580c 100%)",
+              color: "#ffffff",
+              transition: "all 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.opacity = '0.9';
+              (e.currentTarget as HTMLButtonElement).style.opacity = "0.9";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.opacity = '1';
+              (e.currentTarget as HTMLButtonElement).style.opacity = "1";
             }}
           >
             Keep Me Logged In
@@ -251,21 +267,23 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
           <button
             onClick={onLogout}
             style={{
-              padding: '10px 16px',
+              padding: "10px 16px",
               borderRadius: 8,
-              border: '1px solid #e5e7eb',
+              border: "1px solid #e5e7eb",
               fontSize: 14,
               fontWeight: 600,
-              cursor: 'pointer',
-              background: '#ffffff',
-              color: '#374151',
-              transition: 'all 0.2s ease',
+              cursor: "pointer",
+              background: "#ffffff",
+              color: "#374151",
+              transition: "all 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#f9fafb';
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "#f9fafb";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#ffffff';
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "#ffffff";
             }}
           >
             Log Out Now

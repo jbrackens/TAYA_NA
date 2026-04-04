@@ -204,10 +204,10 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
               style={{
                 padding: "8px 16px",
                 backgroundColor:
-                  filterStatus === status ? "#f97316" : "#0f1225",
+                  filterStatus === status ? "#39ff14" : "#0f1225",
                 color: filterStatus === status ? "#000" : "#ffffff",
                 border: `1px solid ${
-                  filterStatus === status ? "#f97316" : "#1a1f3a"
+                  filterStatus === status ? "#39ff14" : "#1a1f3a"
                 }`,
                 borderRadius: "4px",
                 cursor: "pointer",
@@ -217,12 +217,12 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
               }}
               onClick={() => setFilterStatus(status)}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#f97316";
+                e.currentTarget.style.backgroundColor = "#39ff14";
                 e.currentTarget.style.color = "#000";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor =
-                  filterStatus === status ? "#f97316" : "#0f1225";
+                  filterStatus === status ? "#39ff14" : "#0f1225";
                 e.currentTarget.style.color =
                   filterStatus === status ? "#000" : "#ffffff";
               }}

@@ -101,9 +101,9 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
           const isActive = activeLeague === league.leagueKey;
           const pillStyle: React.CSSProperties = {
             padding: "8px 16px",
-            backgroundColor: isActive ? "#f97316" : "#0f1225",
+            backgroundColor: isActive ? "#39ff14" : "#0f1225",
             color: isActive ? "#000" : "#e2e8f0",
-            border: `1px solid ${isActive ? "#f97316" : "#1a1f3a"}`,
+            border: `1px solid ${isActive ? "#39ff14" : "#1a1f3a"}`,
             borderRadius: "20px",
             cursor: "pointer",
             transition: "all 0.2s",
@@ -120,13 +120,12 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
               onClick={() => onLeagueSelect?.(league.leagueKey)}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "#f97316";
+                  "#39ff14";
                 (e.currentTarget as HTMLButtonElement).style.color = "#000";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = isActive
-                  ? "#f97316"
-                  : "#0f1225";
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                  isActive ? "#39ff14" : "#0f1225";
                 (e.currentTarget as HTMLButtonElement).style.color = isActive
                   ? "#000"
                   : "#e2e8f0";

@@ -184,23 +184,25 @@ export default function NotificationsPage() {
             <div
               style={{ display: "flex", flexDirection: "column", gap: "8px" }}
             >
-              {([
-                {
-                  value: "instant",
-                  label: "Instant",
-                  desc: "Receive emails as events happen",
-                },
-                {
-                  value: "daily",
-                  label: "Daily Digest",
-                  desc: "One summary email per day",
-                },
-                {
-                  value: "weekly",
-                  label: "Weekly Digest",
-                  desc: "One summary email per week",
-                },
-              ] as const).map((opt) => (
+              {(
+                [
+                  {
+                    value: "instant",
+                    label: "Instant",
+                    desc: "Receive emails as events happen",
+                  },
+                  {
+                    value: "daily",
+                    label: "Daily Digest",
+                    desc: "One summary email per day",
+                  },
+                  {
+                    value: "weekly",
+                    label: "Weekly Digest",
+                    desc: "One summary email per week",
+                  },
+                ] as const
+              ).map((opt) => (
                 <label
                   key={opt.value}
                   className="notif-item"
@@ -219,7 +221,7 @@ export default function NotificationsPage() {
                     style={{
                       width: "18px",
                       height: "18px",
-                      accentColor: "#f97316",
+                      accentColor: "#39ff14",
                     }}
                   />
                 </label>
@@ -256,8 +258,7 @@ export default function NotificationsPage() {
                 {
                   key: "account_updates" as const,
                   label: "Account Updates",
-                  desc:
-                    "Deposit confirmations, withdrawal status, and security alerts",
+                  desc: "Deposit confirmations, withdrawal status, and security alerts",
                 },
                 {
                   key: "new_markets" as const,
@@ -267,8 +268,7 @@ export default function NotificationsPage() {
                 {
                   key: "odds_alerts" as const,
                   label: "Odds Alerts",
-                  desc:
-                    "Get alerted when odds change significantly on your favorites",
+                  desc: "Get alerted when odds change significantly on your favorites",
                 },
               ].map((cat) => (
                 <label
@@ -287,7 +287,7 @@ export default function NotificationsPage() {
                     style={{
                       width: "18px",
                       height: "18px",
-                      accentColor: "#f97316",
+                      accentColor: "#39ff14",
                     }}
                   />
                 </label>
@@ -368,7 +368,7 @@ const notificationsStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .notif-back:hover { border-color: #f97316; color: #f97316; }
+  .notif-back:hover { border-color: #39ff14; color: #39ff14; }
 
   .notif-card {
     background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
@@ -422,7 +422,7 @@ const notificationsStyles = `
   }
 
   .notif-toggle input:checked + .notif-toggle-slider {
-    background-color: #f97316;
+    background-color: #39ff14;
   }
 
   .notif-toggle input:checked + .notif-toggle-slider:before {
@@ -434,7 +434,7 @@ const notificationsStyles = `
   }
 
   .notif-save-btn {
-    padding: 12px 24px; background: #f97316; border: none;
+    padding: 12px 24px; background: #39ff14; border: none;
     border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; transition: opacity 0.15s;
   }

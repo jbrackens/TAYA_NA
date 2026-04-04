@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Modal from './Modal';
-import CodeInput from './CodeInput';
-import { verifyMfa, requestMfaCode, VerifyMfaResponse } from '../lib/api/auth-client';
+import React, { useState } from "react";
+import Modal from "./Modal";
+import CodeInput from "./CodeInput";
+import {
+  verifyMfa,
+  requestMfaCode,
+  VerifyMfaResponse,
+} from "../lib/api/auth-client";
 
 interface MfaModalProps {
   open: boolean;
@@ -35,7 +39,8 @@ export default function MfaModal({
       });
       onVerified(response);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Verification failed';
+      const errorMessage =
+        err instanceof Error ? err.message : "Verification failed";
       setError(errorMessage);
       setLoading(false);
     }
@@ -45,10 +50,11 @@ export default function MfaModal({
     setRequestingCode(true);
     setError(null);
     try {
-      await requestMfaCode({ user_id: userId, method: 'sms' });
+      await requestMfaCode({ user_id: userId, method: "sms" });
       setError(null);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to request new code';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to request new code";
       setError(errorMessage);
     } finally {
       setRequestingCode(false);
@@ -56,38 +62,43 @@ export default function MfaModal({
   };
 
   const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
+    display: "flex",
+    flexDirection: "column",
+    gap: "16px",
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#e2e8f0',
-    marginBottom: '8px',
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#e2e8f0",
+    marginBottom: "8px",
   };
 
   const descriptionStyle: React.CSSProperties = {
-    fontSize: '13px',
-    color: '#64748b',
-    marginBottom: '12px',
+    fontSize: "13px",
+    color: "#64748b",
+    marginBottom: "12px",
   };
 
   const buttonStyle: React.CSSProperties = {
-    padding: '8px 12px',
-    backgroundColor: 'transparent',
-    border: '1px solid #f97316',
-    color: '#f97316',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    transition: 'all 0.2s',
+    padding: "8px 12px",
+    backgroundColor: "transparent",
+    border: "1px solid #39ff14",
+    color: "#39ff14",
+    borderRadius: "4px",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "600",
+    transition: "all 0.2s",
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Two-Factor Authentication" maxWidth={400}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Two-Factor Authentication"
+      maxWidth={400}
+    >
       <div style={containerStyle}>
         <div>
           <h3 style={titleStyle}>Enter verification code</h3>
@@ -104,7 +115,7 @@ export default function MfaModal({
         />
 
         {error && (
-          <div style={{ fontSize: '13px', color: '#f87171', marginTop: '8px' }}>
+          <div style={{ fontSize: "13px", color: "#f87171", marginTop: "8px" }}>
             {error}
           </div>
         )}
@@ -115,10 +126,10 @@ export default function MfaModal({
           style={{
             ...buttonStyle,
             opacity: requestingCode ? 0.6 : 1,
-            cursor: requestingCode ? 'not-allowed' : 'pointer',
+            cursor: requestingCode ? "not-allowed" : "pointer",
           }}
         >
-          {requestingCode ? 'Requesting...' : 'Request New Code'}
+          {requestingCode ? "Requesting..." : "Request New Code"}
         </button>
       </div>
     </Modal>

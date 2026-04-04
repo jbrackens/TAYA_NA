@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { apiClient } from '../lib/api/client';
-import Collapse from '../components/Collapse';
+import React, { useEffect, useState } from "react";
+import { apiClient } from "../lib/api/client";
+import Collapse from "../components/Collapse";
 
 interface Promotion {
   id: string;
@@ -23,10 +23,12 @@ export default function PromotionsPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await apiClient.get<Promotion[]>('/api/v1/promotions');
+        const data = await apiClient.get<Promotion[]>("/api/v1/promotions");
         setPromotions(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load promotions');
+        setError(
+          err instanceof Error ? err.message : "Failed to load promotions",
+        );
         setPromotions([]);
       } finally {
         setLoading(false);
@@ -37,70 +39,70 @@ export default function PromotionsPage() {
   }, []);
 
   const containerStyle: React.CSSProperties = {
-    maxWidth: '1000px',
-    margin: '0 auto',
-    padding: '32px 20px',
+    maxWidth: "1000px",
+    margin: "0 auto",
+    padding: "32px 20px",
   };
 
   const headerStyle: React.CSSProperties = {
-    marginBottom: '32px',
+    marginBottom: "32px",
   };
 
   const titleStyle: React.CSSProperties = {
-    fontSize: '28px',
-    fontWeight: '800',
-    color: '#e2e8f0',
-    marginBottom: '8px',
-    letterSpacing: '-0.02em',
+    fontSize: "28px",
+    fontWeight: "800",
+    color: "#e2e8f0",
+    marginBottom: "8px",
+    letterSpacing: "-0.02em",
   };
 
   const subtitleStyle: React.CSSProperties = {
-    fontSize: '14px',
-    color: '#64748b',
+    fontSize: "14px",
+    color: "#64748b",
   };
 
   const gridStyle: React.CSSProperties = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-    gap: '20px',
-    marginBottom: '32px',
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+    gap: "20px",
+    marginBottom: "32px",
   };
 
   const cardStyle: React.CSSProperties = {
-    padding: '20px',
-    backgroundColor: '#0f1225',
-    border: '1px solid #1a1f3a',
-    borderRadius: '8px',
-    transition: 'all 0.3s',
+    padding: "20px",
+    backgroundColor: "#0f1225",
+    border: "1px solid #1a1f3a",
+    borderRadius: "8px",
+    transition: "all 0.3s",
   };
 
   const cardHoverStyle: React.CSSProperties = {
     ...cardStyle,
-    borderColor: '#f97316',
-    boxShadow: '0 4px 12px rgba(249, 115, 22, 0.15)',
+    borderColor: "#39ff14",
+    boxShadow: "0 4px 12px rgba(57, 255, 20, 0.15)",
   };
 
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const dateRangeStyle: React.CSSProperties = {
-    fontSize: '12px',
-    color: '#64748b',
-    marginTop: '12px',
-    paddingTop: '12px',
-    borderTop: '1px solid #1a1f3a',
+    fontSize: "12px",
+    color: "#64748b",
+    marginTop: "12px",
+    paddingTop: "12px",
+    borderTop: "1px solid #1a1f3a",
   };
 
   const emptyStateStyle: React.CSSProperties = {
-    textAlign: 'center',
-    padding: '60px 20px',
-    color: '#64748b',
+    textAlign: "center",
+    padding: "60px 20px",
+    color: "#64748b",
   };
 
   const emptyTitleStyle: React.CSSProperties = {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#e2e8f0',
-    marginBottom: '8px',
+    fontSize: "18px",
+    fontWeight: "600",
+    color: "#e2e8f0",
+    marginBottom: "8px",
   };
 
   if (loading) {
@@ -125,15 +127,17 @@ export default function PromotionsPage() {
       </div>
 
       {error && (
-        <div style={{
-          padding: '16px',
-          backgroundColor: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: '6px',
-          color: '#fca5a5',
-          marginBottom: '24px',
-          fontSize: '14px',
-        }}>
+        <div
+          style={{
+            padding: "16px",
+            backgroundColor: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.3)",
+            borderRadius: "6px",
+            color: "#fca5a5",
+            marginBottom: "24px",
+            fontSize: "14px",
+          }}
+        >
           {error}
         </div>
       )}
@@ -153,22 +157,42 @@ export default function PromotionsPage() {
               onMouseLeave={() => setHoveredCard(null)}
               className="promo-card"
             >
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#e2e8f0', marginBottom: '8px' }}>
+              <h3
+                style={{
+                  fontSize: "18px",
+                  fontWeight: "700",
+                  color: "#e2e8f0",
+                  marginBottom: "8px",
+                }}
+              >
                 {promo.title}
               </h3>
-              <p style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: '1.6', marginBottom: '12px' }}>
+              <p
+                style={{
+                  fontSize: "14px",
+                  color: "#cbd5e1",
+                  lineHeight: "1.6",
+                  marginBottom: "12px",
+                }}
+              >
                 {promo.description}
               </p>
               <div style={dateRangeStyle}>
-                <div style={{ marginBottom: '4px' }}>
+                <div style={{ marginBottom: "4px" }}>
                   From: {new Date(promo.validFrom).toLocaleDateString()}
                 </div>
                 <div>To: {new Date(promo.validTo).toLocaleDateString()}</div>
               </div>
               {promo.details && (
-                <div style={{ marginTop: '16px' }}>
+                <div style={{ marginTop: "16px" }}>
                   <Collapse title="View Details" defaultOpen={false}>
-                    <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        color: "#94a3b8",
+                        lineHeight: "1.6",
+                      }}
+                    >
                       {promo.details}
                     </p>
                   </Collapse>

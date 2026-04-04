@@ -460,10 +460,10 @@ export default function CashierPage() {
               {pendingTxId
                 ? "Processing deposit..."
                 : loading
-                ? "Processing..."
-                : activeTab === "deposit"
-                ? `Deposit $${displayAmount.toFixed(2)}`
-                : `Withdraw $${displayAmount.toFixed(2)}`}
+                  ? "Processing..."
+                  : activeTab === "deposit"
+                    ? `Deposit $${displayAmount.toFixed(2)}`
+                    : `Withdraw $${displayAmount.toFixed(2)}`}
             </button>
           </div>
 
@@ -555,7 +555,7 @@ const cashierStyles = `
     border: 1px solid #1e2243; border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;
   }
   .cashier-balance-label { display: block; font-size: 12px; color: #4a5580; font-weight: 600; margin-bottom: 4px; }
-  .cashier-balance-value { font-size: 28px; font-weight: 800; color: #f97316; }
+  .cashier-balance-value { font-size: 28px; font-weight: 800; color: #39ff14; }
   .cashier-balance-sub { display: block; font-size: 16px; font-weight: 600; color: #64748b; }
   .cashier-grid { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
   @media (max-width: 768px) { .cashier-grid { grid-template-columns: 1fr; } }
@@ -566,7 +566,7 @@ const cashierStyles = `
     color: #4a5580; background: none; border: none; cursor: pointer;
     border-bottom: 2px solid transparent; transition: all 0.15s;
   }
-  .cashier-tab.active { color: #f97316; border-bottom-color: #f97316; }
+  .cashier-tab.active { color: #39ff14; border-bottom-color: #39ff14; }
   .cashier-section { margin-bottom: 24px; }
   .cashier-label { display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 10px; }
   .cashier-quick-amounts { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -576,14 +576,14 @@ const cashierStyles = `
     cursor: pointer; transition: all 0.12s;
   }
   .cashier-quick-btn.active, .cashier-quick-btn:hover {
-    background: rgba(249,115,22,0.1); border-color: #f97316; color: #f97316;
+    background: rgba(57,255,20,0.1); border-color: #39ff14; color: #39ff14;
   }
   .cashier-input {
     width: 100%; padding: 12px 14px; border-radius: 8px; font-size: 14px;
     background: #0b0e1c; border: 1px solid #1e2243; color: #f1f5f9;
     outline: none; transition: border-color 0.15s;
   }
-  .cashier-input:focus { border-color: #f97316; }
+  .cashier-input:focus { border-color: #39ff14; }
   .cashier-payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
   .cashier-payment-btn {
     padding: 12px 8px; border-radius: 8px; font-size: 12px; font-weight: 600;
@@ -591,20 +591,20 @@ const cashierStyles = `
     transition: all 0.12s;
   }
   .cashier-payment-btn.active, .cashier-payment-btn:hover {
-    background: rgba(249,115,22,0.1); border-color: #f97316; color: #f97316;
+    background: rgba(57,255,20,0.1); border-color: #39ff14; color: #39ff14;
   }
   .cashier-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 16px; }
   .cashier-msg.error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
   .cashier-msg.success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #22c55e; }
-  .cashier-msg.pending { background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2); color: #f97316; display: flex; align-items: center; gap: 10px; }
+  .cashier-msg.pending { background: rgba(57,255,20,0.08); border: 1px solid rgba(57,255,20,0.2); color: #39ff14; display: flex; align-items: center; gap: 10px; }
   @keyframes cashier-spin { to { transform: rotate(360deg); } }
   .cashier-spinner {
-    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(249,115,22,0.3);
-    border-top-color: #f97316; border-radius: 50%; animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
+    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(57,255,20,0.3);
+    border-top-color: #39ff14; border-radius: 50%; animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
   }
   .cashier-submit {
     width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700;
-    background: #f97316; border: none; color: #fff; cursor: pointer; transition: opacity 0.15s;
+    background: #39ff14; border: none; color: #101114; cursor: pointer; transition: opacity 0.15s;
   }
   .cashier-submit:hover { opacity: 0.9; }
   .cashier-submit:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -616,6 +616,6 @@ const cashierStyles = `
   .cashier-summary-row:last-child { border-bottom: none; }
   .cashier-summary-row.total {
     margin-top: 8px; padding-top: 12px; border-top: 2px solid #1e2243;
-    font-size: 16px; font-weight: 700; color: #f97316;
+    font-size: 16px; font-weight: 700; color: #39ff14;
   }
 `;

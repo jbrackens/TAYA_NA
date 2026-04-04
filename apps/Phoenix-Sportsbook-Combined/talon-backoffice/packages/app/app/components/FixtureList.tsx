@@ -75,8 +75,8 @@ export const FixtureList: React.FC<FixtureListProps> = ({
           position === "home"
             ? match.homeTeam
             : position === "away"
-            ? match.awayTeam
-            : "Draw",
+              ? match.awayTeam
+              : "Draw",
         marketName: "Match Result",
         fixtureName: `${match.homeTeam} vs ${match.awayTeam}`,
         fixtureId: match.fixtureId,
@@ -111,10 +111,10 @@ export const FixtureList: React.FC<FixtureListProps> = ({
               style={{
                 padding: "8px 16px",
                 backgroundColor:
-                  filterStatus === status ? "#f97316" : "#0f1225",
+                  filterStatus === status ? "#39ff14" : "#0f1225",
                 color: filterStatus === status ? "#000" : "#e2e8f0",
                 border: `1px solid ${
-                  filterStatus === status ? "#f97316" : "#1a1f3a"
+                  filterStatus === status ? "#39ff14" : "#1a1f3a"
                 }`,
                 borderRadius: "4px",
                 cursor: "pointer",
@@ -143,14 +143,14 @@ export const FixtureList: React.FC<FixtureListProps> = ({
             fixture.status === "in_play"
               ? "#22c55e"
               : fixture.status === "finished"
-              ? "#64748b"
-              : "#f97316";
+                ? "#64748b"
+                : "#39ff14";
           const displayStatus =
             fixture.status === "in_play"
               ? "live"
               : fixture.status === "finished"
-              ? "finished"
-              : "upcoming";
+                ? "finished"
+                : "upcoming";
 
           return (
             <div
@@ -252,8 +252,8 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                       {pos === "home"
                         ? fixture.homeTeam.slice(0, 8)
                         : pos === "away"
-                        ? fixture.awayTeam.slice(0, 8)
-                        : "Draw"}
+                          ? fixture.awayTeam.slice(0, 8)
+                          : "Draw"}
                     </button>
                   ))}
                 </div>

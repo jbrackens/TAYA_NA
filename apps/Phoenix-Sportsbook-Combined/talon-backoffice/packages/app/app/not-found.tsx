@@ -1,9 +1,11 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function NotFound() {
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .not-found-container {
           display: flex;
           flex-direction: column;
@@ -26,7 +28,7 @@ export default function NotFound() {
         .not-found-code {
           font-size: 120px;
           font-weight: 800;
-          color: #f97316;
+          color: #39ff14;
           line-height: 1;
           letter-spacing: -0.02em;
           margin-bottom: 12px;
@@ -49,7 +51,7 @@ export default function NotFound() {
         .home-button {
           margin-top: 16px;
           padding: 12px 32px;
-          background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+          background: linear-gradient(135deg, #39ff14 0%, #ea580c 100%);
           color: #ffffff;
           text-decoration: none;
           border-radius: 10px;
@@ -59,18 +61,20 @@ export default function NotFound() {
           cursor: pointer;
           transition: all 0.2s;
           display: inline-block;
-          box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+          box-shadow: 0 4px 12px rgba(57, 255, 20, 0.25);
         }
 
         .home-button:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 16px rgba(249, 115, 22, 0.35);
+          box-shadow: 0 6px 16px rgba(57, 255, 20, 0.35);
         }
 
         .home-button:active {
           transform: translateY(0);
         }
-      `}} />
+      `,
+        }}
+      />
 
       <div className="not-found-container">
         <div className="not-found-content">

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export default function AboutPage() {
   return (
@@ -11,45 +11,52 @@ export default function AboutPage() {
         <section>
           <h2>Who We Are</h2>
           <p>
-            Phoenix Sportsbook is a next-generation sports betting platform built for speed,
-            transparency, and responsible play. We combine real-time odds from global markets
-            with a modern interface designed around the bettor's experience.
+            Phoenix Sportsbook is a next-generation sports betting platform
+            built for speed, transparency, and responsible play. We combine
+            real-time odds from global markets with a modern interface designed
+            around the bettor's experience.
           </p>
         </section>
 
         <section>
           <h2>Our Mission</h2>
           <p>
-            We believe sports betting should be fair, fun, and fully in the player's control.
-            Our platform provides competitive odds, instant payouts, and tools that help you
-            bet responsibly — because entertainment should never come at a cost you can't afford.
+            We believe sports betting should be fair, fun, and fully in the
+            player's control. Our platform provides competitive odds, instant
+            payouts, and tools that help you bet responsibly — because
+            entertainment should never come at a cost you can't afford.
           </p>
         </section>
 
         <section>
           <h2>What We Offer</h2>
           <p>
-            Pre-match and live in-play betting across dozens of sports. Single bets and parlays
-            with real-time odds movement. Cash-out options on open bets. Deposit and session
-            limits you control. A full responsible gaming suite including cool-off periods
-            and self-exclusion.
+            Pre-match and live in-play betting across dozens of sports. Single
+            bets and parlays with real-time odds movement. Cash-out options on
+            open bets. Deposit and session limits you control. A full
+            responsible gaming suite including cool-off periods and
+            self-exclusion.
           </p>
         </section>
 
         <section>
           <h2>Licensing &amp; Regulation</h2>
           <p>
-            Phoenix Sportsbook operates under applicable gaming licenses and regulatory
-            frameworks. All wagering activity is subject to the terms of service and
-            applicable laws of the jurisdiction in which you are located.
+            Phoenix Sportsbook operates under applicable gaming licenses and
+            regulatory frameworks. All wagering activity is subject to the terms
+            of service and applicable laws of the jurisdiction in which you are
+            located.
           </p>
         </section>
 
         <section>
           <h2>Contact</h2>
           <p>
-            For support inquiries, reach us at{' '}
-            <a href="mailto:support@phoenixsportsbook.com">support@phoenixsportsbook.com</a>.
+            For support inquiries, reach us at{" "}
+            <a href="mailto:support@phoenixsportsbook.com">
+              support@phoenixsportsbook.com
+            </a>
+            .
           </p>
         </section>
       </div>
@@ -76,7 +83,7 @@ const legalStyles = `
     font-size: 14px; line-height: 1.7; color: #94a3b8;
   }
   .legal-page a {
-    color: #f97316; text-decoration: none;
+    color: #39ff14; text-decoration: none;
   }
   .legal-page a:hover { text-decoration: underline; }
   .legal-page ul {

@@ -222,19 +222,19 @@ const landingStyles = `
   .landing-hero-glow {
     position: absolute; top: -80px; right: -60px;
     width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(57,255,20,0.12) 0%, transparent 65%);
     pointer-events: none;
   }
   .landing-hero-content { position: relative; max-width: 640px; }
   .landing-eyebrow {
     font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em;
-    color: #f97316; margin-bottom: 12px;
+    color: #39ff14; margin-bottom: 12px;
   }
   .landing-h1 {
     font-size: 40px; font-weight: 900; color: #f8fafc; line-height: 1.15;
     margin-bottom: 16px; letter-spacing: -0.03em;
   }
-  .landing-h1 .accent { color: #f97316; }
+  .landing-h1 .accent { color: #39ff14; }
   .landing-subtitle {
     font-size: 16px; color: #94a3b8; line-height: 1.7; margin-bottom: 28px; max-width: 520px;
   }
@@ -243,9 +243,9 @@ const landingStyles = `
   .landing-btn-primary {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 13px 28px; border-radius: 10px; border: none;
-    background: linear-gradient(135deg, #f97316, #ef4444); color: #fff;
+    background: linear-gradient(135deg, #39ff14, #2ed600); color: #101114;
     font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s;
-    box-shadow: 0 4px 20px rgba(249,115,22,0.3); text-decoration: none;
+    box-shadow: 0 4px 20px rgba(57,255,20,0.3); text-decoration: none;
   }
   .landing-btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
   .landing-btn-lg { padding: 16px 36px; font-size: 16px; }
@@ -253,11 +253,11 @@ const landingStyles = `
   .landing-btn-secondary {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 13px 28px; border-radius: 10px;
-    border: 1.5px solid #f97316; background: transparent;
-    color: #f97316; font-size: 15px; font-weight: 700;
+    border: 1.5px solid #39ff14; background: transparent;
+    color: #39ff14; font-size: 15px; font-weight: 700;
     cursor: pointer; transition: all 0.15s; text-decoration: none;
   }
-  .landing-btn-secondary:hover { background: rgba(249,115,22,0.08); }
+  .landing-btn-secondary:hover { background: rgba(57,255,20,0.08); }
 
   /* Stats row */
   .landing-stats {
@@ -266,7 +266,7 @@ const landingStyles = `
     border-radius: 12px; border: 1px solid #1a1f3a;
   }
   .landing-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .landing-stat-value { font-size: 24px; font-weight: 800; color: #f97316; }
+  .landing-stat-value { font-size: 24px; font-weight: 800; color: #39ff14; }
   .landing-stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
   .landing-stat-divider { width: 1px; height: 36px; background: #1a1f3a; }
 
@@ -285,7 +285,7 @@ const landingStyles = `
     color: #e2e8f0; font-size: 13px; font-weight: 600;
     text-decoration: none; transition: all 0.15s;
   }
-  .landing-sport-chip:hover { border-color: #f97316; color: #f97316; }
+  .landing-sport-chip:hover { border-color: #39ff14; color: #39ff14; }
   .landing-sport-chip-count {
     background: #1e2749; padding: 2px 8px; border-radius: 6px;
     font-size: 11px; font-weight: 700; color: #64748b;
@@ -302,7 +302,7 @@ const landingStyles = `
   .landing-feature-icon { font-size: 28px; display: block; margin-bottom: 12px; }
   .landing-feature-sub {
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-    color: #f97316; margin-bottom: 6px;
+    color: #39ff14; margin-bottom: 6px;
   }
   .landing-feature-heading { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
   .landing-feature-desc { font-size: 13px; color: #94a3b8; line-height: 1.65; }

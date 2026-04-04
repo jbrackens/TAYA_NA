@@ -227,9 +227,9 @@ export const HeaderBar: React.FC = () => {
               borderRadius: 8,
               fontSize: 11,
               fontWeight: 700,
-              background: "rgba(249,115,22,0.08)",
-              border: "1px solid rgba(249,115,22,0.2)",
-              color: "#f97316",
+              background: "rgba(57,255,20,0.08)",
+              border: "1px solid rgba(57,255,20,0.2)",
+              color: "#39ff14",
               cursor: "pointer",
               letterSpacing: "0.03em",
               transition: "all 0.15s",
@@ -515,16 +515,16 @@ export const HeaderBar: React.FC = () => {
                           background:
                             event.status === "in_play"
                               ? "rgba(34,197,94,0.1)"
-                              : "rgba(249,115,22,0.1)",
+                              : "rgba(57,255,20,0.1)",
                           color:
-                            event.status === "in_play" ? "#22c55e" : "#f97316",
+                            event.status === "in_play" ? "#22c55e" : "#39ff14",
                         }}
                       >
                         {event.status === "in_play"
                           ? t("SEARCH_STATUS_LIVE")
                           : event.status === "finished"
-                          ? t("SEARCH_STATUS_FT")
-                          : t("SEARCH_STATUS_UPCOMING")}
+                            ? t("SEARCH_STATUS_FT")
+                            : t("SEARCH_STATUS_UPCOMING")}
                       </div>
                     </a>
                   ))}

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../components/ToastProvider';
-import { getProfile } from '../lib/api/user-client';
-import { getBalance } from '../lib/api/wallet-client';
-import type { UserProfile } from '../lib/api/user-client';
-import type { Balance } from '../lib/api/wallet-client';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../components/ToastProvider";
+import { getProfile } from "../lib/api/user-client";
+import { getBalance } from "../lib/api/wallet-client";
+import type { UserProfile } from "../lib/api/user-client";
+import type { Balance } from "../lib/api/wallet-client";
 
 export default function AccountPage() {
   const { user } = useAuth();
@@ -48,21 +48,21 @@ export default function AccountPage() {
         <div className="account-banner">
           <div className="account-banner-left">
             <div className="account-avatar">
-              {profile?.username?.charAt(0)?.toUpperCase() || 'U'}
+              {profile?.username?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div>
               <div className="account-username">
-                {profile?.username || 'Loading...'}
+                {profile?.username || "Loading..."}
               </div>
               <div className="account-email">
-                {profile?.email || 'Loading...'}
+                {profile?.email || "Loading..."}
               </div>
             </div>
           </div>
           <div className="account-balance">
             <div className="account-balance-label">Available Balance</div>
             <div className="account-balance-value">
-              ${balance?.availableBalance?.toFixed(2) || '—'}
+              ${balance?.availableBalance?.toFixed(2) || "—"}
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ const accountPageStyles = `
 
   .account-banner-left { display: flex; align-items: center; gap: 16px; }
   .account-avatar {
-    width: 56px; height: 56px; border-radius: 12px; background: #f97316;
+    width: 56px; height: 56px; border-radius: 12px; background: #39ff14;
     display: flex; align-items: center; justify-content: center;
     font-size: 24px; font-weight: 700; color: #fff;
   }
@@ -138,7 +138,7 @@ const accountPageStyles = `
   .account-balance { text-align: right; }
   @media (max-width: 640px) { .account-balance { text-align: left; } }
   .account-balance-label { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
-  .account-balance-value { font-size: 24px; font-weight: 800; color: #f97316; }
+  .account-balance-value { font-size: 24px; font-weight: 800; color: #39ff14; }
 
   .account-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -152,8 +152,8 @@ const accountPageStyles = `
   }
 
   .account-card:hover {
-    border-color: #f97316; background: #161a32;
-    box-shadow: 0 8px 16px rgba(249, 115, 22, 0.1);
+    border-color: #39ff14; background: #161a32;
+    box-shadow: 0 8px 16px rgba(57, 255, 20, 0.1);
   }
 
   .account-card-icon { font-size: 32px; margin-bottom: 12px; }

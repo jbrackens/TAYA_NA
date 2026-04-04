@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from "react";
 
 interface CodeInputProps {
   length?: number;
@@ -15,8 +15,10 @@ export default function CodeInput({
   error,
   disabled = false,
 }: CodeInputProps) {
-  const [code, setCode] = useState<string[]>(Array(length).fill(''));
-  const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(length).fill(null));
+  const [code, setCode] = useState<string[]>(Array(length).fill(""));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>(
+    Array(length).fill(null),
+  );
 
   const handleInput = (index: number, value: string) => {
     if (disabled) return;
@@ -32,28 +34,28 @@ export default function CodeInput({
       inputRefs.current[index + 1]?.focus();
     }
 
-    if (newCode.every((d) => d !== '')) {
-      onComplete(newCode.join(''));
+    if (newCode.every((d) => d !== "")) {
+      onComplete(newCode.join(""));
     }
   };
 
   const handleKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
+    e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (disabled) return;
 
-    if (e.key === 'Backspace') {
+    if (e.key === "Backspace") {
       e.preventDefault();
       const newCode = [...code];
-      newCode[index] = '';
+      newCode[index] = "";
       setCode(newCode);
       if (index > 0) {
         inputRefs.current[index - 1]?.focus();
       }
-    } else if (e.key === 'ArrowLeft' && index > 0) {
+    } else if (e.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < length - 1) {
+    } else if (e.key === "ArrowRight" && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -62,8 +64,8 @@ export default function CodeInput({
     if (disabled) return;
 
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text');
-    const digits = pastedData.replace(/\D/g, '').split('').slice(0, length);
+    const pastedData = e.clipboardData.getData("text");
+    const digits = pastedData.replace(/\D/g, "").split("").slice(0, length);
 
     const newCode = [...code];
     digits.forEach((digit, idx) => {
@@ -72,47 +74,47 @@ export default function CodeInput({
     setCode(newCode);
 
     if (digits.length === length) {
-      onComplete(newCode.join(''));
+      onComplete(newCode.join(""));
     } else if (digits.length > 0) {
       inputRefs.current[Math.min(digits.length, length - 1)]?.focus();
     }
   };
 
   const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
   };
 
   const inputsContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'center',
+    display: "flex",
+    gap: "12px",
+    justifyContent: "center",
   };
 
   const getInputStyle = (index: number): React.CSSProperties => {
     const baseStyle: React.CSSProperties = {
-      width: '48px',
-      height: '48px',
-      fontSize: '20px',
-      fontWeight: '600',
-      color: '#e2e8f0',
-      textAlign: 'center',
-      backgroundColor: '#0f1225',
-      border: error ? '2px solid #ef4444' : '2px solid #1a1f3a',
-      borderRadius: '6px',
-      cursor: disabled ? 'not-allowed' : 'text',
+      width: "48px",
+      height: "48px",
+      fontSize: "20px",
+      fontWeight: "600",
+      color: "#e2e8f0",
+      textAlign: "center",
+      backgroundColor: "#0f1225",
+      border: error ? "2px solid #ef4444" : "2px solid #1a1f3a",
+      borderRadius: "6px",
+      cursor: disabled ? "not-allowed" : "text",
       opacity: disabled ? 0.6 : 1,
-      transition: 'all 0.2s',
-      boxSizing: 'border-box',
+      transition: "all 0.2s",
+      boxSizing: "border-box",
     };
 
     return baseStyle;
   };
 
   const errorStyle: React.CSSProperties = {
-    fontSize: '13px',
-    color: '#f87171',
+    fontSize: "13px",
+    color: "#f87171",
   };
 
   return (
@@ -135,14 +137,14 @@ export default function CodeInput({
               onFocus={(e) => {
                 if (!disabled) {
                   const el = e.currentTarget as HTMLInputElement;
-                  el.style.borderColor = '#f97316';
-                  el.style.boxShadow = '0 0 0 3px rgba(249, 115, 22, 0.1)';
+                  el.style.borderColor = "#39ff14";
+                  el.style.boxShadow = "0 0 0 3px rgba(57, 255, 20, 0.1)";
                 }
               }}
               onBlur={(e) => {
                 const el = e.currentTarget as HTMLInputElement;
-                el.style.borderColor = error ? '#ef4444' : '#1a1f3a';
-                el.style.boxShadow = 'none';
+                el.style.borderColor = error ? "#ef4444" : "#1a1f3a";
+                el.style.boxShadow = "none";
               }}
               style={getInputStyle(index)}
               disabled={disabled}

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import MarketRow from './MarketRow';
+import React, { useState } from "react";
+import MarketRow from "./MarketRow";
 
 interface Selection {
   id: string;
@@ -19,7 +19,11 @@ interface Market {
 interface MarketGroupProps {
   name: string;
   markets: Market[];
-  onSelectMarket?: (marketId: string, selectionId: string, odds: number) => void;
+  onSelectMarket?: (
+    marketId: string,
+    selectionId: string,
+    odds: number,
+  ) => void;
 }
 
 export const MarketGroup: React.FC<MarketGroupProps> = ({
@@ -34,52 +38,60 @@ export const MarketGroup: React.FC<MarketGroupProps> = ({
   }
 
   return (
-    <div style={{
-      borderBottom: '1px solid #1a1f3a',
-      padding: '16px 0',
-    }}>
+    <div
+      style={{
+        borderBottom: "1px solid #1a1f3a",
+        padding: "16px 0",
+      }}
+    >
       <button
         onClick={() => setExpanded(!expanded)}
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '100%',
-          padding: '0',
-          background: 'none',
-          border: 'none',
-          color: '#e2e8f0',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          padding: "0",
+          background: "none",
+          border: "none",
+          color: "#e2e8f0",
+          cursor: "pointer",
+          transition: "all 0.2s",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
-        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
       >
-        <h3 style={{
-          margin: '0',
-          fontSize: '15px',
-          fontWeight: '600',
-          color: '#e2e8f0',
-        }}>
+        <h3
+          style={{
+            margin: "0",
+            fontSize: "15px",
+            fontWeight: "600",
+            color: "#e2e8f0",
+          }}
+        >
           {name}
         </h3>
-        <span style={{
-          display: 'inline-block',
-          transition: 'transform 0.2s',
-          transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          color: '#f97316',
-        }}>
+        <span
+          style={{
+            display: "inline-block",
+            transition: "transform 0.2s",
+            transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+            color: "#39ff14",
+          }}
+        >
           ▼
         </span>
       </button>
 
       {expanded && (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          marginTop: '16px',
-        }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            marginTop: "16px",
+          }}
+        >
           {markets.map((market) => (
             <MarketRow
               key={market.id}

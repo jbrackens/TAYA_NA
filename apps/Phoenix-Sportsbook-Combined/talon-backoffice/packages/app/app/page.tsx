@@ -211,12 +211,12 @@ function AuthenticatedHome() {
         }
         .home-hero::before {
           content: ''; position: absolute; top: -50%; right: -20%; width: 400px; height: 400px;
-          background: radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(57,255,20,0.08) 0%, transparent 70%);
           pointer-events: none;
         }
         .home-hero h1 { font-size: 26px; font-weight: 800; color: #f8fafc; margin-bottom: 8px; letter-spacing: -0.02em; }
         .home-hero p { font-size: 15px; color: #64748b; font-weight: 400; }
-        .home-hero .accent { color: #f97316; }
+        .home-hero .accent { color: #39ff14; }
 
         /* Sport pills */
         .sport-pills { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
@@ -226,7 +226,7 @@ function AuthenticatedHome() {
           cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
         .sport-pill:hover { border-color: #374163; color: #94a3b8; }
-        .sport-pill.active { border-color: #f97316; color: #f97316; background: rgba(249,115,22,0.06); }
+        .sport-pill.active { border-color: #39ff14; color: #39ff14; background: rgba(57,255,20,0.06); }
 
         /* Section */
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
@@ -279,13 +279,13 @@ function AuthenticatedHome() {
           cursor: pointer; transition: all 0.12s; color: #e2e8f0;
         }
         .odds-btn:last-child { border-right: none; }
-        .odds-btn:hover { background: rgba(249,115,22,0.06); }
+        .odds-btn:hover { background: rgba(57,255,20,0.06); }
         .odds-btn:disabled { cursor: default; opacity: 0.5; }
         .odds-btn:disabled:hover { background: transparent; }
-        .odds-btn.selected { background: rgba(249,115,22,0.12); border-bottom: 2px solid #f97316; }
-        .odds-btn.selected .odds-label { color: #f97316; }
+        .odds-btn.selected { background: rgba(57,255,20,0.12); border-bottom: 2px solid #39ff14; }
+        .odds-btn.selected .odds-label { color: #39ff14; }
         .odds-btn .odds-label { font-size: 10px; font-weight: 600; color: #4a5580; text-transform: uppercase; letter-spacing: 0.05em; }
-        .odds-btn .odds-value { font-size: 15px; font-weight: 700; color: #f97316; }
+        .odds-btn .odds-value { font-size: 15px; font-weight: 700; color: #39ff14; }
         .odds-btn .odds-value.suspended { color: #374163; }
 
         /* Odds movement flash indicators */
@@ -316,7 +316,7 @@ function AuthenticatedHome() {
           display: block; text-align: center; padding: 10px; font-size: 12px;
           font-weight: 600; color: #4a5580; border-top: 1px solid #1a1f3a; transition: color 0.15s;
         }
-        .more-markets:hover { color: #f97316; }
+        .more-markets:hover { color: #39ff14; }
 
         /* Empty / error */
         .empty-state {

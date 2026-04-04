@@ -53,13 +53,8 @@ export const BetslipPanel: React.FC = () => {
   const toast = useToast();
   const { user } = useAuth();
 
-  const {
-    selections,
-    stakePerLeg,
-    parlayMode,
-    totalStake,
-    potentialReturn,
-  } = betslip;
+  const { selections, stakePerLeg, parlayMode, totalStake, potentialReturn } =
+    betslip;
 
   const handlePlaceBet = useCallback(async () => {
     if (betState === "idle") {
@@ -478,10 +473,10 @@ export const BetslipPanel: React.FC = () => {
                   padding: "10px 12px",
                   borderRadius: 8,
                   marginBottom: 8,
-                  background: "rgba(249,115,22,0.08)",
-                  border: "1px solid rgba(249,115,22,0.2)",
+                  background: "rgba(57,255,20,0.08)",
+                  border: "1px solid rgba(57,255,20,0.2)",
                   fontSize: 12,
-                  color: "#f97316",
+                  color: "#39ff14",
                   fontWeight: 500,
                   textAlign: "center",
                 }}
@@ -490,8 +485,8 @@ export const BetslipPanel: React.FC = () => {
                   type: parlayMode
                     ? "parlay"
                     : selections.length > 1
-                    ? `${selections.length} bets`
-                    : "bet",
+                      ? `${selections.length} bets`
+                      : "bet",
                   amount: totalStake.toFixed(2),
                 })}
               </div>
@@ -528,12 +523,12 @@ export const BetslipPanel: React.FC = () => {
                 {betState === "placing"
                   ? t("PLACING")
                   : betState === "success"
-                  ? t("PLACED")
-                  : `${t("PLACE_BET")}${
-                      selections.length > 1 && !parlayMode
-                        ? ` (${selections.length} bets)`
-                        : ""
-                    }`}
+                    ? t("PLACED")
+                    : `${t("PLACE_BET")}${
+                        selections.length > 1 && !parlayMode
+                          ? ` (${selections.length} bets)`
+                          : ""
+                      }`}
               </button>
             )}
 
@@ -603,11 +598,11 @@ export const BetslipPanel: React.FC = () => {
           height: 56,
           borderRadius: "50%",
           border: "none",
-          background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
+          background: "linear-gradient(135deg, #39ff14 0%, #ea580c 100%)",
           color: "white",
           fontSize: 24,
           cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(249,115,22,0.3)",
+          boxShadow: "0 8px 24px rgba(57,255,20,0.3)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -655,7 +650,7 @@ export const BetslipPanel: React.FC = () => {
                 justifyContent: "center",
                 fontSize: 12,
                 fontWeight: 700,
-                border: "2px solid #f97316",
+                border: "2px solid #39ff14",
               }}
             >
               {selections.length}
@@ -802,7 +797,7 @@ export const BetslipPanel: React.FC = () => {
 
         .ps-betslip-fab:hover {
           transform: scale(1.1);
-          box-shadow: 0 12px 32px rgba(249, 115, 22, 0.4);
+          box-shadow: 0 12px 32px rgba(57, 255, 20, 0.4);
         }
 
         .ps-betslip-fab:active {
@@ -949,7 +944,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
               <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>
                 {bet.selection?.selectionName || "Selection"}
               </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#f97316" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#39ff14" }}>
                 {bet.selection?.odds
                   ? formatOdds(bet.selection.odds, oddsFormat)
                   : "-"}

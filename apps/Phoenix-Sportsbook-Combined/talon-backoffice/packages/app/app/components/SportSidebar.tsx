@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { getSports } from '../lib/api/events-client';
-import type { Sport } from '../lib/api/events-client';
+import React, { useEffect, useState } from "react";
+import { getSports } from "../lib/api/events-client";
+import type { Sport } from "../lib/api/events-client";
 
 interface SportSidebarProps {
   onSportSelect?: (sportKey: string) => void;
@@ -29,7 +29,8 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
         }
       } catch (err) {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Failed to load sports';
+          const message =
+            err instanceof Error ? err.message : "Failed to load sports";
           setError(message);
         }
       } finally {
@@ -38,16 +39,18 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
     };
 
     loadSports();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const sidebarContainerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
+    display: "flex",
+    flexDirection: "column",
     gap: 0,
-    backgroundColor: '#16213e',
-    borderRadius: '8px',
-    overflow: 'hidden',
+    backgroundColor: "#16213e",
+    borderRadius: "8px",
+    overflow: "hidden",
   };
 
   const sidebarContainerMediaStyle = `
@@ -62,18 +65,18 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
   `;
 
   const sportItemStyle = (isActive: boolean): React.CSSProperties => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px',
-    border: 'none',
-    backgroundColor: isActive ? 'rgba(249, 115, 22, 0.125)' : 'transparent',
-    color: '#e2e8f0',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    borderLeft: `3px solid ${isActive ? '#f97316' : 'transparent'}`,
-    textAlign: 'left',
-    fontSize: '14px',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "16px",
+    border: "none",
+    backgroundColor: isActive ? "rgba(57, 255, 20, 0.125)" : "transparent",
+    color: "#e2e8f0",
+    cursor: "pointer",
+    transition: "all 0.2s",
+    borderLeft: `3px solid ${isActive ? "#39ff14" : "transparent"}`,
+    textAlign: "left",
+    fontSize: "14px",
     fontWeight: 500,
   });
 
@@ -82,7 +85,7 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
       .sport-item {
         flex: 0 0 auto;
         border-left: none;
-        border-bottom: 2px solid ${activeSport ? '#f97316' : 'transparent'};
+        border-bottom: 2px solid ${activeSport ? "#39ff14" : "transparent"};
         padding: 8px 12px;
         white-space: nowrap;
       }
@@ -94,19 +97,21 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
   };
 
   const badgeCountStyle: React.CSSProperties = {
-    backgroundColor: '#22c55e',
-    color: '#000',
-    padding: '2px 8px',
-    borderRadius: '12px',
-    fontSize: '11px',
+    backgroundColor: "#22c55e",
+    color: "#000",
+    padding: "2px 8px",
+    borderRadius: "12px",
+    fontSize: "11px",
     fontWeight: 700,
-    minWidth: '24px',
-    textAlign: 'center',
+    minWidth: "24px",
+    textAlign: "center",
   };
 
   if (loading) {
     return (
-      <div style={{ ...sidebarContainerStyle, padding: '16px', color: '#64748b' }}>
+      <div
+        style={{ ...sidebarContainerStyle, padding: "16px", color: "#64748b" }}
+      >
         Loading sports...
       </div>
     );
@@ -114,7 +119,9 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
 
   if (error) {
     return (
-      <div style={{ ...sidebarContainerStyle, padding: '16px', color: '#f87171' }}>
+      <div
+        style={{ ...sidebarContainerStyle, padding: "16px", color: "#f87171" }}
+      >
         Error: {error}
       </div>
     );
@@ -122,7 +129,10 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
 
   return (
     <>
-      <style>{sidebarContainerMediaStyle}{sportItemMediaStyle}</style>
+      <style>
+        {sidebarContainerMediaStyle}
+        {sportItemMediaStyle}
+      </style>
       <div style={sidebarContainerStyle} className="sidebar-container">
         {sports.map((sport: Sport) => {
           const isActive = activeSport === sport.sportKey;
@@ -133,14 +143,18 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
               style={sportItemStyle(isActive)}
               onClick={() => onSportSelect?.(sport.sportKey)}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(249, 115, 22, 0.0625)';
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                  "rgba(57, 255, 20, 0.0625)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = isActive ? 'rgba(249, 115, 22, 0.125)' : 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                  isActive ? "rgba(57, 255, 20, 0.125)" : "transparent";
               }}
             >
               <span style={sportNameStyle}>{sport.sportName}</span>
-              {sport.eventCount > 0 && <span style={badgeCountStyle}>{sport.eventCount}</span>}
+              {sport.eventCount > 0 && (
+                <span style={badgeCountStyle}>{sport.eventCount}</span>
+              )}
             </button>
           );
         })}

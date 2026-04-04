@@ -157,9 +157,8 @@ export const SportsSidebar: React.FC = () => {
       try {
         const rawSports = await getSports();
         // Normalize Sport → SidebarSport
-        const sidebarSports: SidebarSport[] = (Array.isArray(rawSports)
-          ? rawSports
-          : []
+        const sidebarSports: SidebarSport[] = (
+          Array.isArray(rawSports) ? rawSports : []
         ).map((s) => ({
           ...s,
           abbreviation: s.sportKey || s.sportId,
@@ -300,7 +299,7 @@ export const SportsSidebar: React.FC = () => {
                       fontSize: 14,
                       lineHeight: 1,
                       color: favorites.has(sport.sportId)
-                        ? "#f97316"
+                        ? "#39ff14"
                         : "#2a3158",
                       transition: "color 0.15s",
                     }}
@@ -316,8 +315,9 @@ export const SportsSidebar: React.FC = () => {
                   {sport.leagues.map((league) => (
                     <a
                       key={league.leagueId}
-                      href={`/sports/${sport.abbreviation}/${league.leagueKey ||
-                        league.leagueId}`}
+                      href={`/sports/${sport.abbreviation}/${
+                        league.leagueKey || league.leagueId
+                      }`}
                       className="ps-sidebar-item"
                       style={{ padding: "8px 20px 8px 8px", fontSize: 12 }}
                     >
