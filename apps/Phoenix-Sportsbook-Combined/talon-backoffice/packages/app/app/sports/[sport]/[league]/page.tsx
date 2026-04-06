@@ -108,7 +108,7 @@ function EventCard({ event }: { event: Event }) {
         </div>
 
         {event.hasMarkets && (
-          <div style={{ fontSize: '11px', color: '#64748b' }}>
+          <div style={{ fontSize: '11px', color: '#D3D3D3' }}>
             Markets available
           </div>
         )}
@@ -166,7 +166,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
 
   if (loading) {
     return (
-      <div style={{ padding: '24px', color: '#64748b' }}>
+      <div style={{ padding: '24px', color: '#D3D3D3' }}>
         Loading events...
       </div>
     );
@@ -213,7 +213,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
       )}
 
       {liveEvents.length === 0 && upcomingEvents.length === 0 && (
-        <p style={{ color: '#64748b' }}>No fixtures available for this league</p>
+        <p style={{ color: '#D3D3D3' }}>No fixtures available for this league</p>
       )}
     </div>
   );

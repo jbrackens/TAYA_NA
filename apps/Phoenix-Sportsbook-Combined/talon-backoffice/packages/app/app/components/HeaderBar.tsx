@@ -315,7 +315,7 @@ export const HeaderBar: React.FC = () => {
                   top: "50%",
                   transform: "translateY(-50%)",
                   fontSize: 11,
-                  color: "#64748b",
+                  color: "#D3D3D3",
                   pointerEvents: "none",
                 }}
               >
@@ -334,7 +334,7 @@ export const HeaderBar: React.FC = () => {
                         style={{
                           fontSize: 11,
                           fontWeight: 600,
-                          color: "#64748b",
+                          color: "#D3D3D3",
                           textTransform: "uppercase",
                           letterSpacing: "0.05em",
                           marginBottom: 8,
@@ -374,7 +374,7 @@ export const HeaderBar: React.FC = () => {
                     <div
                       style={{
                         textAlign: "center",
-                        color: "#64748b",
+                        color: "#D3D3D3",
                         fontSize: 12,
                       }}
                     >
@@ -387,7 +387,7 @@ export const HeaderBar: React.FC = () => {
                   style={{
                     textAlign: "center",
                     padding: "24px 0",
-                    color: "#64748b",
+                    color: "#D3D3D3",
                   }}
                 >
                   {t("SEARCH_SEARCHING")}
@@ -406,7 +406,7 @@ export const HeaderBar: React.FC = () => {
                     style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      color: "#64748b",
+                      color: "#D3D3D3",
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                       marginBottom: 4,
@@ -449,7 +449,7 @@ export const HeaderBar: React.FC = () => {
                         <div
                           style={{
                             fontSize: 11,
-                            color: "#64748b",
+                            color: "#D3D3D3",
                             marginTop: 2,
                           }}
                         >
@@ -484,7 +484,7 @@ export const HeaderBar: React.FC = () => {
                   <div style={{ color: "#D3D3D3" }}>
                     {t("SEARCH_NO_RESULTS", { query: searchQuery })}
                   </div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: "#D3D3D3", marginTop: 4 }}>
                     {t("SEARCH_TRY_DIFFERENT")}
                   </div>
                 </div>

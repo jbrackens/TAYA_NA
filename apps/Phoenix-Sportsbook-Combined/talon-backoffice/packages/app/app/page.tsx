@@ -144,7 +144,7 @@ export default function HomePage() {
   // Show marketing landing page for unauthenticated visitors
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) {
-    return <div style={{ padding: "40px", color: "#64748b" }}>Loading...</div>;
+    return <div style={{ padding: "40px", color: "#D3D3D3" }}>Loading...</div>;
   }
   if (!isAuthenticated) return <LandingPage />;
   return <AuthenticatedHome />;
@@ -715,7 +715,7 @@ function AuthenticatedHome() {
           display: flex; justify-content: space-between; align-items: center;
           padding: 14px 20px 0;
         }
-        .fixture-league { font-size: 12px; font-weight: 600; color: #4a5580; text-transform: uppercase; letter-spacing: 0.05em; }
+        .fixture-league { font-size: 12px; font-weight: 600; color: #D3D3D3; text-transform: uppercase; letter-spacing: 0.05em; }
         .fixture-time { font-size: 12px; font-weight: 600; }
         .fixture-time.upcoming { color: #D3D3D3; }
         .fixture-time.live { color: #22c55e; display: flex; align-items: center; gap: 6px; }

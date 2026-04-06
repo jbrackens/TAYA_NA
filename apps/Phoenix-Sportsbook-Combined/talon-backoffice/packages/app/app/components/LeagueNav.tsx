@@ -73,7 +73,7 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (loading) {
     return (
-      <div style={{ ...navContainerStyle, color: "#64748b" }}>
+      <div style={{ ...navContainerStyle, color: "#D3D3D3" }}>
         Loading leagues...
       </div>
     );
@@ -89,7 +89,7 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (leagues.length === 0) {
     return (
-      <div style={{ ...navContainerStyle, color: "#64748b" }}>
+      <div style={{ ...navContainerStyle, color: "#D3D3D3" }}>
         No leagues available
       </div>
     );

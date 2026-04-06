@@ -89,7 +89,7 @@ export default function Pagination({
 
   const ellipsisStyle: React.CSSProperties = {
     padding: "8px 12px",
-    color: "#64748b",
+    color: "#D3D3D3",
     fontSize: "13px",
   };
 

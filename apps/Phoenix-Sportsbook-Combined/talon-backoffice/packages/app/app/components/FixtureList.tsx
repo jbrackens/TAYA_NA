@@ -89,7 +89,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
     betslipSelections.some((b) => b.selectionId === `${fixtureId}-${position}`);
 
   if (loading) {
-    return <div style={{ color: "#64748b" }}>Loading fixtures...</div>;
+    return <div style={{ color: "#D3D3D3" }}>Loading fixtures...</div>;
   }
 
   if (error) {
@@ -97,7 +97,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
   }
 
   if (fixtures.length === 0) {
-    return <div style={{ color: "#64748b" }}>No fixtures available</div>;
+    return <div style={{ color: "#D3D3D3" }}>No fixtures available</div>;
   }
 
   return (
@@ -143,7 +143,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
             fixture.status === "in_play"
               ? "#22c55e"
               : fixture.status === "finished"
-                ? "#64748b"
+                ? "#D3D3D3"
                 : "#39ff14";
           const displayStatus =
             fixture.status === "in_play"
@@ -189,7 +189,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                   <span
                     style={{
                       fontSize: "12px",
-                      color: "#64748b",
+                      color: "#D3D3D3",
                       textTransform: "capitalize",
                     }}
                   >
@@ -210,7 +210,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                       {fixture.homeTeam}
                     </div>
                   </div>
-                  <div style={{ fontSize: "12px", color: "#64748b" }}>vs</div>
+                  <div style={{ fontSize: "12px", color: "#D3D3D3" }}>vs</div>
                   <div style={{ flex: 1, textAlign: "center" }}>
                     <div
                       style={{
@@ -290,7 +290,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
             Previous
           </button>
           <span
-            style={{ color: "#64748b", alignSelf: "center", fontSize: "13px" }}
+            style={{ color: "#D3D3D3", alignSelf: "center", fontSize: "13px" }}
           >
             Page {currentPage} of {totalPages}
           </span>

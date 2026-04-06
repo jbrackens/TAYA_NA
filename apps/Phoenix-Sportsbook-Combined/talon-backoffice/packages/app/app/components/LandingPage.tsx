@@ -270,7 +270,7 @@ const landingStyles = `
   }
   .landing-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .landing-stat-value { font-size: 24px; font-weight: 800; color: #39ff14; }
-  .landing-stat-label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+  .landing-stat-label { font-size: 11px; font-weight: 600; color: #D3D3D3; text-transform: uppercase; letter-spacing: 0.05em; }
   .landing-stat-divider { width: 1px; height: 36px; background: #1a1f3a; }
 
   /* ── Sections ── */
@@ -291,7 +291,7 @@ const landingStyles = `
   .landing-sport-chip:hover { border-color: #39ff14; color: #39ff14; }
   .landing-sport-chip-count {
     background: #1e2749; padding: 2px 8px; border-radius: 6px;
-    font-size: 11px; font-weight: 700; color: #64748b;
+    font-size: 11px; font-weight: 700; color: #D3D3D3;
   }
 
   /* Features grid */
@@ -330,7 +330,7 @@ const landingStyles = `
     border: 1px solid #1e2243;
   }
   .landing-final-cta h2 { font-size: 24px; font-weight: 800; color: #f8fafc; margin-bottom: 8px; }
-  .landing-final-cta p { font-size: 15px; color: #64748b; margin-bottom: 24px; }
+  .landing-final-cta p { font-size: 15px; color: #D3D3D3; margin-bottom: 24px; }
 
   @media (max-width: 768px) {
     .landing-hero { padding: 36px 24px; }

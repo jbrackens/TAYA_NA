@@ -185,7 +185,16 @@ export const SportsSidebar: React.FC = () => {
     <aside className="ps-sidebar">
       {/* Brand */}
       <div className="ps-sidebar-brand">
-        <div className="ps-sidebar-logo">T</div>
+        <div className="ps-sidebar-logo" aria-label="TAYA NA logo">
+          <span className="ps-sidebar-logo-mark" aria-hidden="true">
+            <span className="ps-sidebar-logo-t-top" />
+            <span className="ps-sidebar-logo-t-stem" />
+            <span className="ps-sidebar-logo-n-left" />
+            <span className="ps-sidebar-logo-n-diag" />
+            <span className="ps-sidebar-logo-n-right" />
+            <span className="ps-sidebar-logo-mid-slit" />
+          </span>
+        </div>
         <div className="ps-sidebar-title">TAYA NA!</div>
       </div>
 

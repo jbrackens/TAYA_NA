@@ -79,7 +79,7 @@ function OddButton({
       <span
         style={{
           fontSize: "11px",
-          color: "#64748b",
+          color: "#D3D3D3",
           overflow: "hidden",
           textOverflow: "ellipsis",
           maxWidth: "100%",
@@ -220,7 +220,7 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   if (loading) {
     return (
-      <div style={{ padding: "40px", color: "#64748b" }}>
+      <div style={{ padding: "40px", color: "#D3D3D3" }}>
         Loading match data...
       </div>
     );
@@ -286,7 +286,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             marginBottom: "16px",
           }}
         >
-          <span style={{ fontSize: "12px", color: "#64748b" }}>
+          <span style={{ fontSize: "12px", color: "#D3D3D3" }}>
             {game.sportName} &middot; {game.competitionName} &middot;{" "}
             {game.regionName}
           </span>
@@ -329,7 +329,7 @@ export default function MatchPage({ params }: MatchPageProps) {
           <div
             style={{
               fontSize: "13px",
-              color: "#4a5580",
+              color: "#D3D3D3",
               fontWeight: "600",
               padding: "6px 12px",
               background: "#0b0e1c",
@@ -352,7 +352,7 @@ export default function MatchPage({ params }: MatchPageProps) {
           </div>
         </div>
 
-        <div style={{ fontSize: "12px", color: "#4a5580", marginTop: "12px" }}>
+        <div style={{ fontSize: "12px", color: "#D3D3D3", marginTop: "12px" }}>
           {isLive
             ? "In Progress"
             : startDate.toLocaleDateString() +
@@ -402,7 +402,7 @@ export default function MatchPage({ params }: MatchPageProps) {
           style={{
             padding: "40px",
             textAlign: "center",
-            color: "#64748b",
+            color: "#D3D3D3",
             background: "#0f1225",
             borderRadius: "8px",
             fontSize: "14px",

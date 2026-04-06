@@ -27,7 +27,7 @@ export default function RootLayout({
           content="The ultimate sports betting platform"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Orbitron:wght@900&display=swap"
           rel="stylesheet"
         />
         {/* Google Tag Manager */}
@@ -115,11 +115,89 @@ const globalStyles = `
     border-bottom: 1px solid #1a1f3a;
   }
   .ps-sidebar-logo {
-    width: 36px; height: 36px; border-radius: 10px;
+    width: 36px; height: 36px; border-radius: 6px;
     background: linear-gradient(135deg, #39ff14, #2ed600);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 800; color: #fff;
-    box-shadow: 0 4px 12px rgba(57,255,20,0.3);
+    box-shadow: 0 2px 8px rgba(46, 214, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .ps-sidebar-logo::before {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.12);
+    pointer-events: none;
+  }
+  .ps-sidebar-logo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.04) 35%, transparent 100%);
+    pointer-events: none;
+  }
+  .ps-sidebar-logo-mark {
+    position: relative;
+    width: 22px;
+    height: 20px;
+    display: block;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.18));
+    z-index: 1;
+  }
+  .ps-sidebar-logo-t-top,
+  .ps-sidebar-logo-t-stem,
+  .ps-sidebar-logo-n-left,
+  .ps-sidebar-logo-n-diag,
+  .ps-sidebar-logo-n-right {
+    position: absolute;
+    background: linear-gradient(180deg, #ffffff 0%, #ecfff0 100%);
+    border-radius: 1px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .ps-sidebar-logo-t-top {
+    top: 1px;
+    left: 0;
+    width: 12px;
+    height: 4px;
+  }
+  .ps-sidebar-logo-t-stem {
+    top: 4px;
+    left: 4px;
+    width: 4px;
+    height: 14px;
+  }
+  .ps-sidebar-logo-n-left {
+    top: 3px;
+    left: 11px;
+    width: 4px;
+    height: 15px;
+  }
+  .ps-sidebar-logo-n-diag {
+    top: 4px;
+    left: 13px;
+    width: 4px;
+    height: 14px;
+    transform: skewX(28deg);
+    transform-origin: top left;
+  }
+  .ps-sidebar-logo-n-right {
+    top: 3px;
+    right: 0;
+    width: 4px;
+    height: 15px;
+  }
+  .ps-sidebar-logo-mid-slit {
+    position: absolute;
+    left: 1px;
+    right: 1px;
+    top: 10px;
+    height: 1px;
+    background: rgba(30, 50, 8, 0.28);
+    border-radius: 999px;
+    pointer-events: none;
   }
   .ps-sidebar-title { font-size: 18px; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em; }
   .ps-sidebar-title span { color: #39ff14; }
