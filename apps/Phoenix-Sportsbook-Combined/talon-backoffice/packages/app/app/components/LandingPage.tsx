@@ -277,6 +277,14 @@ const landingStyles = `
   .landing-section { margin-bottom: 40px; }
   .landing-section-title {
     font-size: 20px; font-weight: 800; color: #f8fafc; margin-bottom: 20px; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .landing-section-title::before {
+    content: '';
+    width: 22px;
+    height: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #39ff14, rgba(57,255,20,0.12));
   }
 
   /* Sport chips */
@@ -299,16 +307,40 @@ const landingStyles = `
   .landing-feature-card {
     padding: 24px; border-radius: 14px;
     background: #0f1225; border: 1px solid #1a1f3a;
-    transition: border-color 0.15s;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    position: relative;
+    overflow: hidden;
   }
-  .landing-feature-card:hover { border-color: #2a3158; }
-  .landing-feature-icon { font-size: 28px; display: block; margin-bottom: 12px; }
+  .landing-feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(57,255,20,0.08), transparent 36%);
+    pointer-events: none;
+  }
+  .landing-feature-card:hover {
+    border-color: rgba(57,255,20,0.28);
+    box-shadow: 0 20px 36px rgba(0,0,0,0.18);
+    transform: translateY(-2px);
+  }
+  .landing-feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    color: #39ff14;
+    background: rgba(57,255,20,0.08);
+    border: 1px solid rgba(57,255,20,0.12);
+  }
   .landing-feature-sub {
     font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
     color: #39ff14; margin-bottom: 6px;
   }
   .landing-feature-heading { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
-  .landing-feature-desc { font-size: 13px; color: #D3D3D3; line-height: 1.65; }
+  .landing-feature-desc { font-size: 13px; color: #D3D3D3; line-height: 1.7; max-width: 32ch; }
 
   /* RG Banner */
   .landing-rg-banner {
@@ -335,6 +367,8 @@ const landingStyles = `
   @media (max-width: 768px) {
     .landing-hero { padding: 36px 24px; }
     .landing-h1 { font-size: 28px; }
+    .landing-cta-row { flex-direction: column; align-items: stretch; }
+    .landing-btn-primary, .landing-btn-secondary { width: 100%; }
     .landing-stats { flex-direction: column; gap: 16px; }
     .landing-stat-divider { width: 60px; height: 1px; }
     .landing-features { grid-template-columns: 1fr; }

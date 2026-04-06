@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import StoreProvider from "./lib/store/StoreProvider";
 import { QueryProvider } from "./lib/query/QueryProvider";
 import { I18nProvider } from "./lib/i18n/I18nProvider";
@@ -18,6 +19,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isAuthRoute = pathname?.startsWith("/auth/");
+
   return (
     <html lang="en">
       <head>
@@ -58,25 +62,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
               <ToastProvider>
                 <AuthProvider>
                   <BetslipProvider>
-                    <div className="ps-shell">
-                      {/* Left Sidebar — Sport Navigation */}
-                      <SportsSidebar />
+                    {isAuthRoute ? (
+                      <div className="ps-auth-layout">{children}</div>
+                    ) : (
+                      <>
+                        <div className="ps-shell">
+                          {/* Left Sidebar — Sport Navigation */}
+                          <SportsSidebar />
 
-                      {/* Main Area */}
-                      <div className="ps-main">
-                        <div className="ps-main-inner">
-                          {/* Header — Brand, Tabs, Account Controls */}
-                          <HeaderBar />
+                          {/* Main Area */}
+                          <div className="ps-main">
+                            <div className="ps-main-inner">
+                              {/* Header — Brand, Tabs, Account Controls */}
+                              <HeaderBar />
 
-                          {/* Account Status Banner (self-excluded, cooling off, unverified, etc.) */}
-                          <AccountStatusBar />
+                              {/* Account Status Banner (self-excluded, cooling off, unverified, etc.) */}
+                              <AccountStatusBar />
 
-                          <div className="ps-page">{children}</div>
+                              <div className="ps-page">{children}</div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                    <BetslipPanel />
-                    <OpenChatButton />
+                        <BetslipPanel />
+                        <OpenChatButton />
+                      </>
+                    )}
                   </BetslipProvider>
                 </AuthProvider>
               </ToastProvider>
@@ -101,6 +111,12 @@ const globalStyles = `
 
   /* ── Shell Layout ── */
   .ps-shell { display: flex; min-height: 100vh; }
+  .ps-auth-layout {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top, rgba(57,255,20,0.06), transparent 28%),
+      linear-gradient(180deg, #0a0d18 0%, #0d1120 100%);
+  }
 
   /* ── Sidebar (Sport Navigation) ── */
   .ps-sidebar {
@@ -413,6 +429,18 @@ const globalStyles = `
   .ps-btn-clear:hover { border-color: #ef4444; color: #ef4444; }
 
   /* ── Responsive ── */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .ps-sidebar { width: 60px; }
+    .ps-sidebar .ps-sidebar-title,
+    .ps-sidebar .ps-sidebar-section-label,
+    .ps-sidebar .ps-sidebar-item span:not(.ps-sidebar-item-icon),
+    .ps-sidebar .ps-sidebar-badge { display: none; }
+    .ps-sidebar .ps-sidebar-item { padding: 12px; justify-content: center; }
+    .ps-sidebar .ps-sidebar-item-left { gap: 0; }
+    .ps-sidebar .ps-sidebar-item-icon { width: auto; font-size: 18px; }
+    .ps-sidebar .ps-sidebar-brand { padding: 16px; justify-content: center; }
+    .ps-main { margin-left: 60px; }
+  }
   @media (max-width: 768px) {
     .ps-shell { flex-direction: column; }
     .ps-sidebar {
@@ -486,17 +514,5 @@ const globalStyles = `
     .ps-btn-login, .ps-btn-signup, .ps-avatar { order: 2; }
     .ps-page { padding: 16px; }
     .ps-betslip-overlay { width: 100vw; }
-  }
-  @media (max-width: 1024px) {
-    .ps-sidebar { width: 60px; }
-    .ps-sidebar .ps-sidebar-title,
-    .ps-sidebar .ps-sidebar-section-label,
-    .ps-sidebar .ps-sidebar-item span:not(.ps-sidebar-item-icon),
-    .ps-sidebar .ps-sidebar-badge { display: none; }
-    .ps-sidebar .ps-sidebar-item { padding: 12px; justify-content: center; }
-    .ps-sidebar .ps-sidebar-item-left { gap: 0; }
-    .ps-sidebar .ps-sidebar-item-icon { width: auto; font-size: 18px; }
-    .ps-sidebar .ps-sidebar-brand { padding: 16px; justify-content: center; }
-    .ps-main { margin-left: 60px; }
   }
 `;

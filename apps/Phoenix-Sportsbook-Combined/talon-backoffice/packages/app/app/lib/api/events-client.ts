@@ -203,6 +203,9 @@ async function getBcAlias(normalizedKey: string): Promise<string> {
     // Cache empty — populate by loading sports first
     await getSports();
   }
+  if (normalizedKey === "football") {
+    return bcAliasCache.get("soccer") || "Soccer";
+  }
   return bcAliasCache.get(normalizedKey) || normalizedKey;
 }
 
