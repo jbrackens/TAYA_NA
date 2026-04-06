@@ -1,5 +1,8 @@
 import { apiClient } from "./client";
 
+const SESSION_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
+
 // Request types
 export interface GoLoginRequest {
   username: string;
@@ -126,6 +129,20 @@ export interface GoRefreshResponse {
   refreshToken: string;
 }
 
+interface SessionResponseRaw {
+  authenticated: boolean;
+  userId: string;
+  username: string;
+  expiresAt: string;
+}
+
+export interface SessionResponse {
+  authenticated: boolean;
+  userId: string;
+  username: string;
+  expiresAt: string;
+}
+
 export interface RegisterResponse {
   userId: string;
   username: string;
@@ -196,8 +213,19 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
  * Login with username and password
  */
 export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
-  const raw = await apiClient.post<GoLoginResponseRaw>("/auth/login", request);
-  return normalizeSnakeCase(raw);
+  const response = await fetch("/api/auth/login/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Login failed");
+  }
+
+  const raw = (await response.json()) as GoLoginResponseRaw;
+  return normalizeSnakeCase(raw) as GoLoginResponse;
 }
 
 /**
@@ -207,9 +235,32 @@ export async function refresh(
   refreshToken: string,
 ): Promise<GoRefreshResponse> {
   const raw = await apiClient.post<GoRefreshResponseRaw>("/auth/refresh", {
-    refresh_token: refreshToken,
+    refreshToken,
   });
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as GoRefreshResponse;
+}
+
+export async function getSession(
+  accessToken?: string,
+): Promise<SessionResponse> {
+  const token = accessToken || apiClient.getToken();
+  if (!token) {
+    throw new Error("No access token available");
+  }
+
+  const response = await fetch(`${SESSION_BASE_URL}/auth/session`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  const raw = (await response.json()) as SessionResponseRaw;
+  return raw;
 }
 
 /**

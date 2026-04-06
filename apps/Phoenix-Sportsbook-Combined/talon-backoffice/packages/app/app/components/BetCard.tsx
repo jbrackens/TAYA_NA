@@ -8,7 +8,7 @@ const Badge: React.FC<{
 }> = ({ variant = "upcoming", children }) => {
   const colors: Record<string, { bg: string; color: string }> = {
     live: { bg: "rgba(34,197,94,0.15)", color: "#22c55e" },
-    finished: { bg: "rgba(100,116,139,0.15)", color: "#94a3b8" },
+    finished: { bg: "rgba(100,116,139,0.15)", color: "#D3D3D3" },
     upcoming: { bg: "rgba(57,255,20,0.15)", color: "#39ff14" },
     cancelled: { bg: "rgba(239,68,68,0.15)", color: "#f87171" },
   };
@@ -52,8 +52,10 @@ export const BetCard: React.FC<BetCardProps> = ({ bet }) => {
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case "settled":
+      case "won":
+      case "lost":
         return "finished" as const;
+      case "open":
       case "pending":
       case "accepted":
         return "upcoming" as const;
@@ -189,11 +191,17 @@ export const BetCard: React.FC<BetCardProps> = ({ bet }) => {
           >
             Profit/Loss
           </span>
-          {bet.status === "settled" ? (
+          {bet.status === "won" ? (
             <span
               style={{ fontSize: "16px", fontWeight: 700, color: "#22c55e" }}
             >
-              +{stake}
+              +{formatCurrency(Math.round(bet.stakeCents * (bet.odds - 1)))}
+            </span>
+          ) : bet.status === "lost" ? (
+            <span
+              style={{ fontSize: "16px", fontWeight: 700, color: "#f87171" }}
+            >
+              -{stake}
             </span>
           ) : (
             <span

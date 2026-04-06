@@ -1,8 +1,8 @@
 'use client';
 
 import styled from 'styled-components';
-import { RiskDashboard, PlayerRiskTable } from '../components/risk-management';
-import { ErrorBoundary, LoadingSpinner, ErrorState, SkeletonLoader } from '../components/shared';
+import { RiskDashboard, PlayerRiskTable } from '../../components/risk-management';
+import { ErrorBoundary, LoadingSpinner, ErrorState, SkeletonLoader } from '../../components/shared';
 import { useState, useEffect } from 'react';
 
 const PageTitle = styled.h1`

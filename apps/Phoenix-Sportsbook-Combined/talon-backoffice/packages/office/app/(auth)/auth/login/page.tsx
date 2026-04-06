@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || '/dashboard';
 
@@ -20,7 +19,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -34,7 +33,8 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(returnUrl);
+      const destination = returnUrl.startsWith('/') ? returnUrl : '/dashboard';
+      window.location.assign(destination);
     } catch (err) {
       setError('Network error. Please try again.');
       setLoading(false);

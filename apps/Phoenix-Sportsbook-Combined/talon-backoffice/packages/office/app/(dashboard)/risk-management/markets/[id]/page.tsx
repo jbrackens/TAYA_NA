@@ -1,7 +1,7 @@
 'use client';
 
 import styled from 'styled-components';
-import { Card, Badge } from '../../../components/shared';
+import { Card, Badge } from '../../../../components/shared';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -108,11 +108,27 @@ export default function MarketDetailPage() {
   useEffect(() => {
     const fetchMarketDetail = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:3001/api';
-        const response = await fetch(`${apiUrl}/admin/markets/${id}`);
+        const response = await fetch(`/api/v1/admin/trading/markets/${id}`, {
+          headers: {
+            'X-Admin-Role': 'admin',
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        setMarket(data);
+        setMarket({
+          id: data.id,
+          name: data.name,
+          fixture: data.fixtureId || 'Unknown fixture',
+          sport: 'Unknown',
+          league: 'Unknown',
+          status: data.status || 'unknown',
+          totalBets: 0,
+          totalStake: 0,
+          totalLiability: 0,
+          totalExposure: 0,
+          risk: 0,
+          selections: [],
+        });
       } catch (error) {
         console.error('Failed to fetch market:', error);
         setMarket(null);

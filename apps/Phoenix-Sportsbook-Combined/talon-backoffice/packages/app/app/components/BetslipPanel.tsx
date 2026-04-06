@@ -40,7 +40,7 @@ interface OddsChange {
 }
 
 export const BetslipPanel: React.FC = () => {
-  const { t } = useTranslation("betslip");
+  const { t, ready } = useTranslation("betslip");
   const [activeTab, setActiveTab] = useState<"betslip" | "open">("betslip");
   const [betState, setBetState] = useState<BetState>("idle");
   const [betError, setBetError] = useState<string>("");
@@ -63,6 +63,14 @@ export const BetslipPanel: React.FC = () => {
     closeBetslip,
     toggleBetslip,
   } = betslip;
+
+  const tx = useCallback(
+    (key: string, fallback: string) => {
+      const value = ready ? t(key) : key;
+      return value === key ? fallback : value;
+    },
+    [ready, t],
+  );
 
   // Close on Escape key (unless placing bet)
   useEffect(() => {
@@ -91,7 +99,7 @@ export const BetslipPanel: React.FC = () => {
     try {
       const userId = user?.id;
       if (!userId) {
-        setBetError(t("LOG_IN_TO_BET"));
+        setBetError(tx("LOG_IN_TO_BET", "Log in to place a bet"));
         setBetState("error");
         setTimeout(() => setBetState("idle"), 3000);
         return;
@@ -192,7 +200,7 @@ export const BetslipPanel: React.FC = () => {
       }
 
       setBetState("success");
-      toast.success(t("PLACE_BET"), t("BET_CONFIRMED"));
+      toast.success(tx("PLACE_BET", "Place Bet"), tx("BET_CONFIRMED", "Bet confirmed"));
       // Clear betslip after successful placement
       setTimeout(() => {
         betslip?.clearAll();
@@ -200,7 +208,8 @@ export const BetslipPanel: React.FC = () => {
       }, 2000);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorMsg = message || t("PLACE_BET_FAILED");
+      const errorMsg =
+        message || tx("PLACE_BET_FAILED", "Bet placement failed");
       setBetError(errorMsg);
       setBetState("error");
       toast.error("Bet Failed", errorMsg);
@@ -242,7 +251,9 @@ export const BetslipPanel: React.FC = () => {
           <div className="ps-betslip-empty-icon">
             <Ticket size={48} strokeWidth={1.5} style={{ opacity: 0.4 }} />
           </div>
-          <div className="ps-betslip-empty-text">{t("NO_BETS_MESSAGE")}</div>
+          <div className="ps-betslip-empty-text">
+            {tx("NO_BETS_MESSAGE", "No bets in your betslip")}
+          </div>
         </div>
       ) : (
         <>
@@ -261,14 +272,14 @@ export const BetslipPanel: React.FC = () => {
                 onClick={() => betslip?.setParlayMode(false)}
                 style={{ flex: 1, borderBottom: "none", padding: "8px 0" }}
               >
-                {t("SINGLE")}
+                {tx("SINGLE", "Single")}
               </button>
               <button
                 className={`ps-betslip-tab ${parlayMode ? "active" : ""}`}
                 onClick={() => betslip?.setParlayMode(true)}
                 style={{ flex: 1, borderBottom: "none", padding: "8px 0" }}
               >
-                {t("MULTI")}
+                {tx("MULTI", "Multi")}
               </button>
             </div>
           )}
@@ -346,7 +357,7 @@ export const BetslipPanel: React.FC = () => {
                   <span style={{ flex: 1 }}>{change.name}</span>
                   <span
                     style={{
-                      color: "#94a3b8",
+                      color: "#D3D3D3",
                       textDecoration: "line-through",
                       marginRight: 6,
                     }}
@@ -398,7 +409,9 @@ export const BetslipPanel: React.FC = () => {
             {/* Stake Input */}
             <div className="ps-betslip-stake-row">
               <span className="ps-betslip-stake-label">
-                {parlayMode ? t("TOTAL_STAKE") : t("STAKE")}
+                {parlayMode
+                  ? tx("TOTAL_STAKE", "Total Stake")
+                  : tx("STAKE", "Stake")}
               </span>
               <input
                 type="number"
@@ -418,7 +431,7 @@ export const BetslipPanel: React.FC = () => {
             <div className="ps-betslip-summary">
               <div className="ps-betslip-summary-row">
                 <span className="ps-betslip-summary-label">
-                  {t("TOTAL_STAKE")}
+                  {tx("TOTAL_STAKE", "Total Stake")}
                 </span>
                 <span className="ps-betslip-summary-value">
                   ${totalStake.toFixed(2)}
@@ -426,7 +439,7 @@ export const BetslipPanel: React.FC = () => {
               </div>
               <div className="ps-betslip-summary-row">
                 <span className="ps-betslip-summary-label">
-                  {t("POSSIBLE_RETURN")}
+                  {tx("POSSIBLE_RETURN", "Possible Return")}
                 </span>
                 <span className="ps-betslip-summary-value green">
                   ${potentialReturn.toFixed(2)}
@@ -467,7 +480,7 @@ export const BetslipPanel: React.FC = () => {
                   textAlign: "center",
                 }}
               >
-                {t("PLACE_BET")}
+                {tx("PLACE_BET", "Bet placed")}
               </div>
             )}
 
@@ -505,14 +518,14 @@ export const BetslipPanel: React.FC = () => {
                   onClick={cancelConfirmation}
                   style={{ flex: 1 }}
                 >
-                  {t("CLEAR_ALL")}
+                  {tx("CLEAR_ALL", "Clear All")}
                 </button>
                 <button
                   className="ps-btn-place-bet"
                   onClick={handlePlaceBet}
                   style={{ flex: 2 }}
                 >
-                  {t("PLACE_BET")}
+                  {tx("PLACE_BET", "Place Bet")}
                 </button>
               </div>
             ) : (
@@ -526,10 +539,10 @@ export const BetslipPanel: React.FC = () => {
                 onClick={handlePlaceBet}
               >
                 {betState === "placing"
-                  ? t("PLACING")
+                  ? tx("PLACING", "Placing...")
                   : betState === "success"
-                    ? t("PLACED")
-                    : `${t("PLACE_BET")}${
+                    ? tx("PLACED", "Placed")
+                    : `${tx("PLACE_BET", "Place Bet")}${
                         selections.length > 1 && !parlayMode
                           ? ` (${selections.length} bets)`
                           : ""
@@ -547,7 +560,7 @@ export const BetslipPanel: React.FC = () => {
                   setBetError("");
                 }}
               >
-                {t("CLEAR_ALL")}
+                {tx("CLEAR_ALL", "Clear All")}
               </button>
             )}
           </div>
@@ -576,7 +589,7 @@ export const BetslipPanel: React.FC = () => {
         {/* Header */}
         <div className="ps-betslip-header">
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="ps-betslip-title">{t("BETSLIP")}</span>
+            <span className="ps-betslip-title">{tx("BETSLIP", "Betslip")}</span>
             <span className="ps-betslip-count">{selections.length}</span>
           </div>
           <button
@@ -609,13 +622,13 @@ export const BetslipPanel: React.FC = () => {
             }`}
             onClick={() => setActiveTab("betslip")}
           >
-            {t("BETSLIP")} ({selections.length})
+            {tx("BETSLIP", "Betslip")} ({selections.length})
           </button>
           <button
             className={`ps-betslip-tab ${activeTab === "open" ? "active" : ""}`}
             onClick={() => setActiveTab("open")}
           >
-            {t("OPEN_BETS")}
+            {tx("OPEN_BETS", "Open Bets")}
           </button>
         </div>
 
@@ -684,7 +697,7 @@ export const BetslipPanel: React.FC = () => {
 // ─── Open Bets Sub-Component ────────────────────────────────
 
 const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
-  const { t } = useTranslation("betslip");
+  const { t, ready } = useTranslation("betslip");
   const [openBets, setOpenBets] = useState<UserBet[]>([]);
   const [loading, setLoading] = useState(true);
   const [cashoutOffers, setCashoutOffers] = useState<
@@ -698,6 +711,13 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
   } | null>(null);
   const toast = useToast();
   const { user } = useAuth();
+  const tx = useCallback(
+    (key: string, fallback: string) => {
+      const value = ready ? t(key) : key;
+      return value === key ? fallback : value;
+    },
+    [ready, t],
+  );
 
   // Fetch open bets on mount
   React.useEffect(() => {
@@ -763,7 +783,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
           fontSize: 13,
         }}
       >
-        {t("LOADING")}
+        {tx("LOADING", "Loading...")}
       </div>
     );
   }
@@ -774,7 +794,9 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
         <div className="ps-betslip-empty-icon">
           <Clock size={48} strokeWidth={1.5} style={{ opacity: 0.4 }} />
         </div>
-        <div className="ps-betslip-empty-text">{t("NO_BETS_MESSAGE")}</div>
+        <div className="ps-betslip-empty-text">
+          {tx("NO_BETS_MESSAGE", "No bets in your betslip")}
+        </div>
       </div>
     );
   }
@@ -817,10 +839,10 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
               }}
             >
               <span>
-                {t("STAKE_LABEL")} ${bet.stake.toFixed(2)}
+                {tx("STAKE_LABEL", "Stake")} ${bet.stake.toFixed(2)}
               </span>
               <span>
-                {t("RETURN_LABEL")} ${bet.potentialReturn.toFixed(2)}
+                {tx("RETURN_LABEL", "Return")} ${bet.potentialReturn.toFixed(2)}
               </span>
             </div>
             <div style={{ fontSize: 10, color: "#374163", marginTop: 4 }}>
@@ -847,8 +869,8 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
                 }}
               >
                 {cashingOut === bet.betId
-                  ? t("CASHING_OUT")
-                  : `${t("CASH_OUT")} $${offer.cashoutValue.toFixed(2)}`}
+                  ? tx("CASHING_OUT", "Cashing out...")
+                  : `${tx("CASH_OUT", "Cash Out")} $${offer.cashoutValue.toFixed(2)}`}
               </button>
             )}
 

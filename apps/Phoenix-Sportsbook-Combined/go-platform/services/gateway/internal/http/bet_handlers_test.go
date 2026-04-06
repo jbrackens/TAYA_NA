@@ -47,6 +47,70 @@ func TestPlaceBetAndFetchByID(t *testing.T) {
 	}
 }
 
+func TestListBetHistoryByUser(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	creditReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/credit", strings.NewReader(`{"userId":"u-bet-history-1","amountCents":5000,"idempotencyKey":"seed-history"}`))
+	creditRes := httptest.NewRecorder()
+	handler.ServeHTTP(creditRes, creditReq)
+	if creditRes.Code != http.StatusOK {
+		t.Fatalf("seed credit failed: status=%d body=%s", creditRes.Code, creditRes.Body.String())
+	}
+
+	placeReq := httptest.NewRequest(http.MethodPost, "/api/v1/bets/place", strings.NewReader(`{"userId":"u-bet-history-1","marketId":"m:local:001","selectionId":"home","stakeCents":1200,"odds":1.8,"idempotencyKey":"bet-history-key-1"}`))
+	placeRes := httptest.NewRecorder()
+	handler.ServeHTTP(placeRes, placeReq)
+	if placeRes.Code != http.StatusOK {
+		t.Fatalf("place bet failed: status=%d body=%s", placeRes.Code, placeRes.Body.String())
+	}
+
+	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/bets?userId=u-bet-history-1&page=1&pageSize=10", nil)
+	listRes := httptest.NewRecorder()
+	handler.ServeHTTP(listRes, listReq)
+	if listRes.Code != http.StatusOK {
+		t.Fatalf("list bets failed: status=%d body=%s", listRes.Code, listRes.Body.String())
+	}
+
+	var payload struct {
+		CurrentPage int `json:"currentPage"`
+		Data        []struct {
+			BetID  string `json:"betId"`
+			UserID string `json:"userId"`
+			Status string `json:"status"`
+		} `json:"data"`
+		ItemsPerPage int  `json:"itemsPerPage"`
+		TotalCount   int  `json:"totalCount"`
+		HasNextPage  bool `json:"hasNextPage"`
+	}
+	if err := json.Unmarshal(listRes.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode bet history response: %v", err)
+	}
+
+	if payload.CurrentPage != 1 {
+		t.Fatalf("expected currentPage=1, got %d", payload.CurrentPage)
+	}
+	if payload.ItemsPerPage != 10 {
+		t.Fatalf("expected itemsPerPage=10, got %d", payload.ItemsPerPage)
+	}
+	if payload.TotalCount != 1 {
+		t.Fatalf("expected totalCount=1, got %d", payload.TotalCount)
+	}
+	if payload.HasNextPage {
+		t.Fatalf("expected hasNextPage=false, got true")
+	}
+	if len(payload.Data) != 1 {
+		t.Fatalf("expected 1 bet, got %d", len(payload.Data))
+	}
+	if payload.Data[0].UserID != "u-bet-history-1" {
+		t.Fatalf("expected userId=u-bet-history-1, got %s", payload.Data[0].UserID)
+	}
+	if payload.Data[0].Status != "placed" {
+		t.Fatalf("expected status=placed, got %s", payload.Data[0].Status)
+	}
+}
+
 func TestPlaceBetSupportsCanonicalEnvelopeItems(t *testing.T) {
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useBetslip } from "../../hooks/useBetslip";
 import { logger } from "../../lib/logger";
 
 interface Selection {
@@ -100,7 +101,7 @@ function MarketCard({
   onSelect,
 }: {
   market: BCMarket;
-  onSelect: (s: Selection) => void;
+  onSelect: (market: BCMarket, selection: Selection) => void;
 }) {
   const displayName = market.name + (market.base ? ` (${market.base})` : "");
   // Use colCount from BC data, default to 3 for most markets
@@ -121,7 +122,7 @@ function MarketCard({
           borderBottom: "1px solid #1a1f3a",
           fontSize: "13px",
           fontWeight: "600",
-          color: "#94a3b8",
+          color: "#D3D3D3",
         }}
       >
         {displayName}
@@ -135,7 +136,11 @@ function MarketCard({
         }}
       >
         {market.selections.map((s) => (
-          <OddButton key={s.id} selection={s} onSelect={onSelect} />
+          <OddButton
+            key={s.id}
+            selection={s}
+            onSelect={(selection) => onSelect(market, selection)}
+          />
         ))}
       </div>
     </div>
@@ -144,6 +149,7 @@ function MarketCard({
 
 export default function MatchPage({ params }: MatchPageProps) {
   const matchId = params.id;
+  const betslip = useBetslip();
   const [game, setGame] = useState<BCGameDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -180,13 +186,36 @@ export default function MatchPage({ params }: MatchPageProps) {
     };
   }, [matchId]);
 
-  const handleSelectOdd = (selection: Selection) => {
+  const handleSelectOdd = (market: BCMarket, selection: Selection) => {
+    const marketId = String(market.id);
+    const selectionId = String(selection.id);
+    const existing = betslip.selections.find(
+      (bet) => bet.selectionId === selectionId && bet.marketId === marketId,
+    );
+
+    if (existing) {
+      betslip.removeSelection(existing.id);
+      return;
+    }
+
+    betslip.addSelection({
+      id: `${marketId}-${selectionId}`,
+      fixtureId: String(game?.id || matchId),
+      marketId,
+      selectionId,
+      matchName: `${game?.team1 || "Team 1"} vs ${game?.team2 || "Team 2"}`,
+      marketName: market.name,
+      selectionName: selection.name,
+      odds: selection.price,
+      initialOdds: selection.price,
+    });
+
     logger.info("Betslip", "Selection added", {
       matchId,
+      marketId,
       selection: selection.name,
       price: selection.price,
     });
-    // TODO: dispatch to betslip store
   };
 
   if (loading) {
@@ -352,7 +381,7 @@ export default function MatchPage({ params }: MatchPageProps) {
             style={{
               fontSize: "15px",
               fontWeight: "700",
-              color: "#94a3b8",
+              color: "#D3D3D3",
               marginTop: "8px",
             }}
           >

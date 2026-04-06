@@ -497,7 +497,7 @@ export default function CashierPage() {
               <>
                 <h4
                   style={{
-                    color: "#94a3b8",
+                    color: "#D3D3D3",
                     fontSize: 12,
                     fontWeight: 600,
                     marginTop: 24,
@@ -568,7 +568,7 @@ const cashierStyles = `
   }
   .cashier-tab.active { color: #39ff14; border-bottom-color: #39ff14; }
   .cashier-section { margin-bottom: 24px; }
-  .cashier-label { display: block; font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 10px; }
+  .cashier-label { display: block; font-size: 13px; font-weight: 600; color: #D3D3D3; margin-bottom: 10px; }
   .cashier-quick-amounts { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
   .cashier-quick-btn {
     flex: 1; min-width: 60px; padding: 10px 8px; border-radius: 8px; font-size: 13px;
@@ -611,7 +611,7 @@ const cashierStyles = `
   .cashier-summary { height: fit-content; }
   .cashier-summary-row {
     display: flex; justify-content: space-between; padding: 10px 0;
-    border-bottom: 1px solid #1a1f3a; font-size: 13px; color: #94a3b8;
+    border-bottom: 1px solid #1a1f3a; font-size: 13px; color: #D3D3D3;
   }
   .cashier-summary-row:last-child { border-bottom: none; }
   .cashier-summary-row.total {

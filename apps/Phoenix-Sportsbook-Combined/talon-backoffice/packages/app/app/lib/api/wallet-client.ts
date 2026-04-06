@@ -72,6 +72,28 @@ interface GetTransactionsPaginatedResponseRaw {
   total_pages: number;
 }
 
+interface WalletBalanceRaw {
+  userId: string;
+  balanceCents: number;
+}
+
+interface WalletLedgerEntryRaw {
+  entryId: string;
+  userId: string;
+  type: string;
+  amountCents: number;
+  balanceCents: number;
+  idempotencyKey: string;
+  reason?: string;
+  transactionTime: string;
+}
+
+interface WalletLedgerResponseRaw {
+  userId: string;
+  items: WalletLedgerEntryRaw[];
+  total: number;
+}
+
 // Normalized response types (camelCase)
 export interface Balance {
   userId: string;
@@ -125,6 +147,16 @@ export interface GetTransactionsPaginatedResponse {
   totalPages: number;
 }
 
+function centsToDollars(value?: number): number {
+  return typeof value === "number" ? value / 100 : 0;
+}
+
+function mapLedgerType(type: string): string {
+  if (type === "credit") return "deposit";
+  if (type === "debit") return "withdrawal";
+  return type;
+}
+
 // Transaction status types (for polling pending deposits)
 interface TransactionStatusRaw {
   transaction_id: string;
@@ -169,8 +201,20 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
  * Get wallet balance for a user
  */
 export async function getBalance(userId: string): Promise<Balance> {
-  const raw = await apiClient.get<BalanceRaw>(`/api/v1/wallets/${userId}`);
-  return normalizeSnakeCase(raw);
+  try {
+    const raw = await apiClient.get<WalletBalanceRaw>(`/api/v1/wallet/${userId}`);
+    const availableBalance = centsToDollars(raw.balanceCents);
+    return {
+      userId: raw.userId,
+      availableBalance,
+      reservedBalance: 0,
+      totalBalance: availableBalance,
+      currency: "USD",
+    };
+  } catch {
+    const raw = await apiClient.get<BalanceRaw>(`/api/v1/wallets/${userId}`);
+    return normalizeSnakeCase(raw) as unknown as Balance;
+  }
 }
 
 /**
@@ -220,15 +264,52 @@ export async function getTransactions(
   userId: string,
   params?: GetTransactionsParams,
 ): Promise<GetTransactionsPaginatedResponse> {
-  const queryParams: Record<string, string> = {};
-  if (params?.page) queryParams.page = String(params.page);
-  if (params?.limit) queryParams.limit = String(params.limit);
-  if (params?.transaction_type)
-    queryParams.transaction_type = params.transaction_type;
+  try {
+    const ledgerParams: Record<string, string> = {};
+    if (params?.limit) ledgerParams.limit = String(params.limit);
+    const raw = await apiClient.get<WalletLedgerResponseRaw>(
+      `/api/v1/wallet/${userId}/ledger`,
+      ledgerParams,
+    );
 
-  const raw = await apiClient.get<GetTransactionsPaginatedResponseRaw>(
-    `/api/v1/wallets/${userId}/transactions`,
-    queryParams,
-  );
-  return normalizeSnakeCase(raw);
+    const page = params?.page || 1;
+    const limit = params?.limit || raw.items.length || 10;
+    const filtered = raw.items.filter((item) =>
+      params?.transaction_type
+        ? mapLedgerType(item.type) === params.transaction_type
+        : true,
+    );
+    const start = (page - 1) * limit;
+    const transactions = filtered.slice(start, start + limit).map((item) => ({
+      transactionId: item.entryId,
+      userId: item.userId,
+      type: mapLedgerType(item.type),
+      amount: centsToDollars(item.amountCents),
+      balanceBefore: centsToDollars(item.balanceCents - item.amountCents),
+      balanceAfter: centsToDollars(item.balanceCents),
+      currency: "USD",
+      description: item.reason,
+      createdAt: item.transactionTime,
+    }));
+
+    return {
+      transactions,
+      total: filtered.length,
+      page,
+      limit,
+      totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
+    };
+  } catch {
+    const queryParams: Record<string, string> = {};
+    if (params?.page) queryParams.page = String(params.page);
+    if (params?.limit) queryParams.limit = String(params.limit);
+    if (params?.transaction_type)
+      queryParams.transaction_type = params.transaction_type;
+
+    const raw = await apiClient.get<GetTransactionsPaginatedResponseRaw>(
+      `/api/v1/wallets/${userId}/transactions`,
+      queryParams,
+    );
+    return normalizeSnakeCase(raw) as unknown as GetTransactionsPaginatedResponse;
+  }
 }

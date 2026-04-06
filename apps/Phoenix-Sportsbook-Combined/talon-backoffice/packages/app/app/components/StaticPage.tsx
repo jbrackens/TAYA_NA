@@ -51,7 +51,7 @@ export const StaticPage: React.FC<StaticPageProps> = ({
 
       <div
         style={{
-          color: '#94a3b8',
+          color: '#D3D3D3',
           fontSize: '14px',
           lineHeight: '1.75',
         }}

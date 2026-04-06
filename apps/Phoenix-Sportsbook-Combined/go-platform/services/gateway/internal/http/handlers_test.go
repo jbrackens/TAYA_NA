@@ -921,6 +921,51 @@ func TestAdminPunterByIDNotFoundReturnsStructuredError(t *testing.T) {
 	}
 }
 
+func TestAdminPunterStatusUpdateApiV1Path(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	req := httptest.NewRequest(
+		http.MethodPut,
+		"/api/v1/admin/punters/p:local:001/status",
+		strings.NewReader(`{"status":"suspended"}`),
+	)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Admin-Role", "admin")
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d, body=%s", res.Code, res.Body.String())
+	}
+
+	var payload domain.Punter
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if payload.Status != "suspended" {
+		t.Fatalf("expected updated status suspended, got %s", payload.Status)
+	}
+
+	verifyReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/p:local:001", nil)
+	verifyReq.Header.Set("X-Admin-Role", "admin")
+	verifyRes := httptest.NewRecorder()
+	handler.ServeHTTP(verifyRes, verifyReq)
+
+	if verifyRes.Code != http.StatusOK {
+		t.Fatalf("expected verify status 200, got %d, body=%s", verifyRes.Code, verifyRes.Body.String())
+	}
+
+	var verifyPayload domain.Punter
+	if err := json.Unmarshal(verifyRes.Body.Bytes(), &verifyPayload); err != nil {
+		t.Fatalf("decode verify response: %v", err)
+	}
+	if verifyPayload.Status != "suspended" {
+		t.Fatalf("expected persisted status suspended, got %s", verifyPayload.Status)
+	}
+}
+
 func TestAdminAuditLogsListApiV1PathWithAdminRole(t *testing.T) {
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")

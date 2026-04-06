@@ -239,7 +239,7 @@ const landingStyles = `
   }
   .landing-h1 .accent { color: #39ff14; }
   .landing-subtitle {
-    font-size: 16px; color: #94a3b8; line-height: 1.7; margin-bottom: 28px; max-width: 520px;
+    font-size: 16px; color: #D3D3D3; line-height: 1.7; margin-bottom: 28px; max-width: 520px;
   }
   .landing-cta-row { display: flex; gap: 12px; margin-bottom: 36px; flex-wrap: wrap; }
 
@@ -308,7 +308,7 @@ const landingStyles = `
     color: #39ff14; margin-bottom: 6px;
   }
   .landing-feature-heading { font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
-  .landing-feature-desc { font-size: 13px; color: #94a3b8; line-height: 1.65; }
+  .landing-feature-desc { font-size: 13px; color: #D3D3D3; line-height: 1.65; }
 
   /* RG Banner */
   .landing-rg-banner {
@@ -318,7 +318,7 @@ const landingStyles = `
   }
   .landing-rg-icon { font-size: 28px; flex-shrink: 0; }
   .landing-rg-title { font-size: 15px; font-weight: 700; color: #86efac; margin-bottom: 4px; }
-  .landing-rg-text { font-size: 13px; color: #94a3b8; line-height: 1.6; }
+  .landing-rg-text { font-size: 13px; color: #D3D3D3; line-height: 1.6; }
   .landing-rg-link { color: #22c55e; font-weight: 600; text-decoration: none; }
   .landing-rg-link:hover { text-decoration: underline; }
 

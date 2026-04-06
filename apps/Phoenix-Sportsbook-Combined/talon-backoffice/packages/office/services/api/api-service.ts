@@ -2,7 +2,12 @@ const {
   API_GLOBAL_ENDPOINT,
 } = require("next/config").default().publicRuntimeConfig;
 import { shouldLogoutUser } from "../../lib/slices/authSlice";
-import { useApiHookTyped, Method, useSpy, UseApiHook } from "@phoenix-ui/utils";
+import { useSpy } from "@phoenix-ui/utils/dist/hooks/spy";
+import {
+  useApiHookTyped,
+  Method,
+  type UseApiHook,
+} from "@phoenix-ui/utils/dist/services/api/api-service";
 
 const OFFICE_GO_ROUTE_ALIASES: Record<string, string> = {
   login: "auth/login",

@@ -189,7 +189,7 @@ export default function PromotionsPage() {
                     <p
                       style={{
                         fontSize: "13px",
-                        color: "#94a3b8",
+                        color: "#D3D3D3",
                         lineHeight: "1.6",
                       }}
                     >

@@ -63,3 +63,28 @@ func (r *FileReadRepository) ListPunters(filter PunterFilter, page PageRequest) 
 func (r *FileReadRepository) GetPunterByID(id string) (Punter, error) {
 	return r.inner.GetPunterByID(id)
 }
+
+func (r *FileReadRepository) UpdatePunterStatus(id string, status string) (Punter, error) {
+	punter, err := r.inner.UpdatePunterStatus(id, status)
+	if err != nil {
+		return Punter{}, err
+	}
+
+	if err := r.persist(); err != nil {
+		return Punter{}, err
+	}
+
+	return punter, nil
+}
+
+func (r *FileReadRepository) persist() error {
+	snapshot := r.inner.snapshot()
+	raw, err := json.MarshalIndent(snapshot, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode gateway read-model file: %w", err)
+	}
+	if err := os.WriteFile(r.sourcePath, raw, 0o644); err != nil {
+		return fmt.Errorf("write gateway read-model file: %w", err)
+	}
+	return nil
+}

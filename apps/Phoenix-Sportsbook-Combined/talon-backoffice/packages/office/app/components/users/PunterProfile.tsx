@@ -139,9 +139,14 @@ export interface PunterProfileData {
 interface PunterProfileProps {
   punter?: PunterProfileData;
   onAction?: (action: string) => void;
+  actionsAvailable?: boolean;
 }
 
-export function PunterProfile({ punter, onAction }: PunterProfileProps) {
+export function PunterProfile({
+  punter,
+  onAction,
+  actionsAvailable = true,
+}: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
   if (!punter) {
@@ -159,16 +164,18 @@ export function PunterProfile({ punter, onAction }: PunterProfileProps) {
     .toUpperCase();
 
   const statusColor = {
-    active: 'primary',
+    active: 'success',
     suspended: 'danger',
-    inactive: 'secondary',
+    inactive: 'default',
   } as const;
 
   const verificationColor = {
     verified: 'success',
-    pending: 'secondary',
+    pending: 'warning',
     failed: 'danger',
   } as const;
+  const canSuspend = actionsAvailable && punter.status !== 'suspended';
+  const canActivate = actionsAvailable && punter.status === 'suspended';
 
   return (
     <ProfileContainer>
@@ -180,10 +187,10 @@ export function PunterProfile({ punter, onAction }: PunterProfileProps) {
               <Name>{punter.name}</Name>
               <Email>{punter.email}</Email>
               <BadgeGroup>
-                <Badge variant={statusColor[punter.status]}>
+                <Badge $variant={statusColor[punter.status]}>
                   {punter.status.toUpperCase()}
                 </Badge>
-                <Badge variant={verificationColor[punter.verificationStatus]}>
+                <Badge $variant={verificationColor[punter.verificationStatus]}>
                   {punter.verificationStatus.toUpperCase()}
                 </Badge>
               </BadgeGroup>
@@ -218,24 +225,39 @@ export function PunterProfile({ punter, onAction }: PunterProfileProps) {
           <ActionButtons>
             <Button
               variant="secondary"
-              onClick={() => onAction?.('suspend')}
-              disabled={punter.status === 'suspended'}
+              onClick={() => onAction?.(punter.status === 'suspended' ? 'activate' : 'suspend')}
+              disabled={!canSuspend && !canActivate}
             >
-              Suspend Account
+              {punter.status === 'suspended' ? 'Activate Account' : 'Suspend Account'}
             </Button>
             <Button
               variant="secondary"
               onClick={() => onAction?.('resetPassword')}
+              disabled={true}
             >
               Force Password Reset
             </Button>
             <Button
               variant="secondary"
               onClick={() => onAction?.('addNote')}
+              disabled={true}
             >
               Add Note
             </Button>
           </ActionButtons>
+
+          <div
+            style={{
+              marginTop: '12px',
+              fontSize: '12px',
+              color: '#a0a0a0',
+              lineHeight: 1.5,
+            }}
+          >
+            {actionsAvailable
+              ? 'Suspend and activate are live. Password reset and note actions are still awaiting backend support.'
+              : 'Admin account mutations are read-only here until the Go backoffice mutation routes are implemented.'}
+          </div>
         </InfoCard>
       </div>
 

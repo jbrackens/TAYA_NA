@@ -21,7 +21,7 @@ type TxType =
 
 export default function TransactionsPage() {
   const { user } = useAuth();
-  const toast = useToast();
+  const { success, error: showError } = useToast();
 
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [txType, setTxType] = useState<TxType>("all");
@@ -30,6 +30,7 @@ export default function TransactionsPage() {
     useState<GetTransactionsPaginatedResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const handleExportCSV = async () => {
     if (!user?.id) return;
@@ -65,11 +66,11 @@ export default function TransactionsPage() {
       logger.info("Transactions", "CSV export completed", {
         count: txns.length,
       });
-      toast.success("Export complete", `${txns.length} transactions exported`);
+      success("Export complete", `${txns.length} transactions exported`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error("Transactions", "CSV export failed", message);
-      toast.error("Export failed", message);
+      showError("Export failed", message);
     } finally {
       setExporting(false);
     }
@@ -88,14 +89,19 @@ export default function TransactionsPage() {
           transaction_type: txType === "all" ? undefined : txType,
         });
         setResponse(result);
+        setLoadError(null);
       } catch (err) {
-        toast.error("Failed to load transactions");
+        const message =
+          err instanceof Error ? err.message : "Failed to load transactions";
+        logger.error("Transactions", "Failed to load transactions", message);
+        setLoadError(message);
+        setResponse(null);
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [user?.id, txType, page, toast]);
+  }, [user?.id, txType, page]);
 
   const transactions = response?.transactions || [];
   const totalPages = response?.totalPages || 1;
@@ -200,6 +206,10 @@ export default function TransactionsPage() {
         <div className="tx-card">
           {loading ? (
             <div className="tx-loading">Loading transactions...</div>
+          ) : loadError ? (
+            <div className="tx-empty">
+              Transaction history is temporarily unavailable.
+            </div>
           ) : transactions.length === 0 ? (
             <div className="tx-empty">
               No transactions found for this period.
@@ -319,7 +329,7 @@ const transactionsStyles = `
 
   .tx-filter-btn {
     padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    background: #0f1225; border: 1px solid #1a1f3a; color: #94a3b8;
+    background: #0f1225; border: 1px solid #1a1f3a; color: #D3D3D3;
     cursor: pointer; transition: all 0.15s;
   }
 
@@ -350,7 +360,7 @@ const transactionsStyles = `
 
   .tx-table th {
     padding: 12px 16px; text-align: left; font-size: 12px;
-    font-weight: 700; color: #94a3b8; text-transform: uppercase;
+    font-weight: 700; color: #D3D3D3; text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
@@ -373,7 +383,7 @@ const transactionsStyles = `
 
   .tx-status {
     display: inline-block; padding: 4px 8px; background: #1a1f3a;
-    border-radius: 4px; color: #64748b; font-size: 12px; font-weight: 600;
+    border-radius: 4px; color: #D3D3D3; font-size: 12px; font-weight: 600;
   }
 
   .tx-pagination {
@@ -383,7 +393,7 @@ const transactionsStyles = `
 
   .tx-page-btn {
     padding: 8px 12px; background: #161a32; border: 1px solid #1a1f3a;
-    border-radius: 6px; color: #94a3b8; font-size: 12px; font-weight: 600;
+    border-radius: 6px; color: #D3D3D3; font-size: 12px; font-weight: 600;
     cursor: pointer; transition: all 0.15s;
   }
 
@@ -396,6 +406,6 @@ const transactionsStyles = `
   }
 
   .tx-page-info {
-    font-size: 13px; color: #94a3b8; font-weight: 600;
+    font-size: 13px; color: #D3D3D3; font-weight: 600;
   }
 `;

@@ -3,6 +3,7 @@ package domain
 import (
 	"sort"
 	"strings"
+	"sync"
 )
 
 const (
@@ -12,6 +13,7 @@ const (
 )
 
 type InMemoryReadRepository struct {
+	mu       sync.RWMutex
 	fixtures []Fixture
 	markets  []Market
 	punters  []Punter
@@ -111,6 +113,9 @@ func NewInMemoryReadRepository() *InMemoryReadRepository {
 }
 
 func (r *InMemoryReadRepository) ListFixtures(filter FixtureFilter, page PageRequest) ([]Fixture, PageMeta, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	filtered := make([]Fixture, 0, len(r.fixtures))
 	for _, fixture := range r.fixtures {
 		if filter.Tournament != "" && !strings.Contains(strings.ToLower(fixture.Tournament), strings.ToLower(filter.Tournament)) {
@@ -125,6 +130,9 @@ func (r *InMemoryReadRepository) ListFixtures(filter FixtureFilter, page PageReq
 }
 
 func (r *InMemoryReadRepository) GetFixtureByID(id string) (Fixture, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	for _, f := range r.fixtures {
 		if f.ID == id {
 			return f, nil
@@ -134,6 +142,9 @@ func (r *InMemoryReadRepository) GetFixtureByID(id string) (Fixture, error) {
 }
 
 func (r *InMemoryReadRepository) ListMarkets(filter MarketFilter, page PageRequest) ([]Market, PageMeta, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	filtered := make([]Market, 0, len(r.markets))
 	for _, market := range r.markets {
 		if filter.FixtureID != "" && market.FixtureID != filter.FixtureID {
@@ -151,6 +162,9 @@ func (r *InMemoryReadRepository) ListMarkets(filter MarketFilter, page PageReque
 }
 
 func (r *InMemoryReadRepository) GetMarketByID(id string) (Market, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	for _, m := range r.markets {
 		if m.ID == id {
 			return m, nil
@@ -160,6 +174,9 @@ func (r *InMemoryReadRepository) GetMarketByID(id string) (Market, error) {
 }
 
 func (r *InMemoryReadRepository) ListPunters(filter PunterFilter, page PageRequest) ([]Punter, PageMeta, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	filtered := make([]Punter, 0, len(r.punters))
 	search := strings.ToLower(strings.TrimSpace(filter.Search))
 	for _, punter := range r.punters {
@@ -182,12 +199,41 @@ func (r *InMemoryReadRepository) ListPunters(filter PunterFilter, page PageReque
 }
 
 func (r *InMemoryReadRepository) GetPunterByID(id string) (Punter, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	for _, punter := range r.punters {
 		if punter.ID == id {
 			return punter, nil
 		}
 	}
 	return Punter{}, ErrNotFound
+}
+
+func (r *InMemoryReadRepository) UpdatePunterStatus(id string, status string) (Punter, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for index, punter := range r.punters {
+		if punter.ID != id {
+			continue
+		}
+		r.punters[index].Status = status
+		return r.punters[index], nil
+	}
+
+	return Punter{}, ErrNotFound
+}
+
+func (r *InMemoryReadRepository) snapshot() readModelSnapshot {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return readModelSnapshot{
+		Fixtures: append([]Fixture(nil), r.fixtures...),
+		Markets:  append([]Market(nil), r.markets...),
+		Punters:  append([]Punter(nil), r.punters...),
+	}
 }
 
 func sortFixtures(items []Fixture, sortBy string, sortDir string) {

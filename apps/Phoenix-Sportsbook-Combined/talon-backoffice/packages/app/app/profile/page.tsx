@@ -80,7 +80,7 @@ function TabNavigation({
             padding: "12px 16px",
             border: "none",
             backgroundColor: "transparent",
-            color: activeTabIndex === index ? "#39ff14" : "#64748b",
+            color: activeTabIndex === index ? "#39ff14" : "#D3D3D3",
             borderBottom:
               activeTabIndex === index ? "2px solid #39ff14" : "none",
             cursor: "pointer",

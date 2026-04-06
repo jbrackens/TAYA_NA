@@ -38,7 +38,7 @@ export default function EsportsBetsPage() {
       <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px', color: '#ffffff' }}>
         Esports Betting
       </h1>
-      <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>
+      <p style={{ color: '#D3D3D3', fontSize: '14px', margin: 0 }}>
         Bet on CS:GO, Dota 2, League of Legends, Valorant, and more
       </p>
 

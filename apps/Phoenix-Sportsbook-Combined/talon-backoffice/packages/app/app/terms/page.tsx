@@ -117,7 +117,7 @@ const legalStyles = `
     font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 10px;
   }
   .legal-page p {
-    font-size: 14px; line-height: 1.7; color: #94a3b8;
+    font-size: 14px; line-height: 1.7; color: #D3D3D3;
   }
   .legal-page a {
     color: #39ff14; text-decoration: none;

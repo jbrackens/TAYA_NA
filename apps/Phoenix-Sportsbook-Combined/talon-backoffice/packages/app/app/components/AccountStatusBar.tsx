@@ -106,7 +106,7 @@ export const AccountStatusBar: React.FC = () => {
         level: "info",
         messageKey: "UNVERIFIED",
         actionKey: "VERIFY",
-        actionHref: "/profile",
+        actionHref: "/account",
       };
     }
 

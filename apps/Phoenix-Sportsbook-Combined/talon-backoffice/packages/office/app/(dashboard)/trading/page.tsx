@@ -2,8 +2,9 @@
 
 import styled from 'styled-components';
 import { useState, useEffect } from 'react';
-import { TradingBoard, MarketManagement } from '../components/trading';
-import { ErrorBoundary, LoadingSpinner, ErrorState } from '../components/shared';
+import { TradingBoard, MarketManagement } from '../../components/trading';
+import { ErrorBoundary, LoadingSpinner, ErrorState } from '../../components/shared';
+import { useRouter } from 'next/navigation';
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -37,95 +38,109 @@ interface FixtureData {
 interface MarketData {
   id: string;
   name: string;
-  odds: number;
-  active: boolean;
+  status: 'open' | 'suspended' | 'settled';
+  selectionCount: number;
+  liability: number;
+  betCount?: number;
 }
 
-const SAMPLE_FIXTURES: FixtureData[] = [
-  {
-    id: '1',
-    homeTeam: 'Manchester United',
-    awayTeam: 'Arsenal',
-    homeScore: 2,
-    awayScore: 1,
-    sport: 'Football',
-    status: 'live',
-    liability: 15000,
-    exposure: 45000,
-  },
-  {
-    id: '2',
-    homeTeam: 'Barcelona',
-    awayTeam: 'Real Madrid',
-    homeScore: 0,
-    awayScore: 0,
-    sport: 'Football',
-    status: 'upcoming',
-    liability: 20000,
-    exposure: 60000,
-  },
-  {
-    id: '3',
-    homeTeam: 'Lakers',
-    awayTeam: 'Celtics',
-    homeScore: 85,
-    awayScore: 92,
-    sport: 'Basketball',
-    status: 'live',
-    liability: 8000,
-    exposure: 25000,
-  },
-];
-
-const SAMPLE_MARKETS: MarketData[] = [
-  { id: '1', name: 'Match Result - 1X2', odds: 2.15, active: true },
-  { id: '2', name: 'Over/Under 2.5 Goals', odds: 1.95, active: true },
-  { id: '3', name: 'Both Teams to Score', odds: 1.72, active: true },
-  { id: '4', name: 'Correct Score', odds: 0.00, active: false },
-];
-
 function TradingPageContent() {
-  const [selectedFixtureId, setSelectedFixtureId] = useState<string>('1');
-  const [markets, setMarkets] = useState(SAMPLE_MARKETS);
+  const router = useRouter();
+  const [fixtures, setFixtures] = useState<FixtureData[]>([]);
+  const [selectedFixtureId, setSelectedFixtureId] = useState<string>('');
+  const [markets, setMarkets] = useState<MarketData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    // Simulate API call
-    setIsLoading(true);
-    setError(null);
-    const timer = setTimeout(() => {
+    const loadTradingData = async () => {
       try {
-        // Replace with actual API call + WebSocket connection:
-        // const { get } = useAdminApi();
-        // const { subscribe } = useTradingWebSocket();
-        // const fixtures = await get('/api/admin/fixtures');
-        // subscribe((data) => { /* handle updates */ });
-        setIsLoading(false);
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch('/api/v1/admin/trading/fixtures?page=1&pageSize=50', {
+          headers: {
+            'X-Admin-Role': 'admin',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to load fixtures');
+        }
+        const data = await response.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        const nextFixtures: FixtureData[] = items.map((item: any) => ({
+          id: item.id,
+          homeTeam: item.homeTeam,
+          awayTeam: item.awayTeam,
+          homeScore: 0,
+          awayScore: 0,
+          sport: item.sportKey || 'Unknown',
+          status: new Date(item.startsAt).getTime() <= Date.now() ? 'live' : 'upcoming',
+          marketCount: 0,
+          liability: 0,
+          exposure: 0,
+        }));
+        setFixtures(nextFixtures);
+        setSelectedFixtureId((current) => current || nextFixtures[0]?.id || '');
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load trading data');
+      } finally {
         setIsLoading(false);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
+    loadTradingData();
+  }, [reloadKey]);
 
-  const handleMarketToggle = (marketId: string) => {
-    setMarkets(markets.map(m =>
-      m.id === marketId ? { ...m, active: !m.active } : m
-    ));
-  };
+  useEffect(() => {
+    const loadMarkets = async () => {
+      if (!selectedFixtureId) {
+        setMarkets([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/v1/admin/trading/markets?page=1&pageSize=50&fixtureId=${encodeURIComponent(selectedFixtureId)}`,
+          {
+            headers: {
+              'X-Admin-Role': 'admin',
+            },
+          },
+        );
+        if (!response.ok) {
+          throw new Error('Failed to load markets');
+        }
+        const data = await response.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setMarkets(
+          items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            status: item.status || 'open',
+            selectionCount: 0,
+            liability: 0,
+            betCount: 0,
+          })),
+        );
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load markets');
+      }
+    };
+
+    loadMarkets();
+  }, [selectedFixtureId]);
 
   const handleRetry = () => {
-    setIsLoading(true);
+    setFixtures([]);
+    setMarkets([]);
+    setSelectedFixtureId('');
     setError(null);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+    setIsLoading(true);
+    setReloadKey((value) => value + 1);
   };
 
-  const selectedFixture = SAMPLE_FIXTURES.find(f => f.id === selectedFixtureId);
+  const selectedFixture = fixtures.find((fixture) => fixture.id === selectedFixtureId);
 
   if (isLoading) {
     return (
@@ -156,16 +171,15 @@ function TradingPageContent() {
 
       <TradingLayout>
         <TradingBoard
-          fixtures={SAMPLE_FIXTURES}
+          fixtures={fixtures}
           selectedFixtureId={selectedFixtureId}
-          onFixtureSelect={setSelectedFixtureId}
+          onFixtureSelect={(fixture) => setSelectedFixtureId(fixture.id)}
         />
 
         {selectedFixture && (
           <MarketManagement
             markets={markets}
-            onMarketToggle={handleMarketToggle}
-            onViewSelections={(marketId) => console.log('View selections for market:', marketId)}
+            onViewSelections={(marketId) => router.push(`/risk-management/markets/${marketId}`)}
           />
         )}
       </TradingLayout>

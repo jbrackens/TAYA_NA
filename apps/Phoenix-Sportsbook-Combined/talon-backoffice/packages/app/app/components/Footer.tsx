@@ -31,7 +31,7 @@ export default function Footer() {
   const columnTitleStyle: React.CSSProperties = {
     fontSize: "12px",
     fontWeight: "700",
-    color: "#94a3b8",
+    color: "#D3D3D3",
     textTransform: "uppercase",
     letterSpacing: "0.5px",
     marginBottom: "8px",

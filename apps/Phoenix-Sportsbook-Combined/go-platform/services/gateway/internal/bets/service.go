@@ -155,15 +155,15 @@ type SettleBetRequest struct {
 }
 
 type settlementTransitionMeta struct {
-	Resettled          bool
-	Policy             string
-	DeadHeatFactor     float64
-	PreviousStatus     string
-	PreviousOutcome    string
-	PreviousReference  string
+	Resettled           bool
+	Policy              string
+	DeadHeatFactor      float64
+	PreviousStatus      string
+	PreviousOutcome     string
+	PreviousReference   string
 	PreviousPayoutCents int64
-	NextPayoutCents    int64
-	AdjustmentCents    int64
+	NextPayoutCents     int64
+	AdjustmentCents     int64
 }
 
 type LifecycleBetRequest struct {
@@ -271,6 +271,21 @@ type PromoUsageSummary struct {
 	UniqueOddsBoosts         int64                 `json:"uniqueOddsBoosts"`
 	Freebets                 []PromoUsageBreakdown `json:"freebets"`
 	OddsBoosts               []PromoUsageBreakdown `json:"oddsBoosts"`
+}
+
+type BetHistoryQuery struct {
+	UserID   string
+	Statuses []string
+	Page     int
+	PageSize int
+}
+
+type BetHistoryPage struct {
+	CurrentPage  int   `json:"currentPage"`
+	Data         []Bet `json:"data"`
+	ItemsPerPage int   `json:"itemsPerPage"`
+	TotalCount   int   `json:"totalCount"`
+	HasNextPage  bool  `json:"hasNextPage"`
 }
 
 type persistedBetState struct {
@@ -572,6 +587,28 @@ func (s *Service) GetByID(betID string) (Bet, error) {
 		return Bet{}, domain.ErrNotFound
 	}
 	return bet, nil
+}
+
+func (s *Service) ListByUser(query BetHistoryQuery) (BetHistoryPage, error) {
+	query.UserID = strings.TrimSpace(query.UserID)
+	if query.UserID == "" {
+		return BetHistoryPage{}, ErrInvalidBetRequest
+	}
+	if query.Page <= 0 {
+		query.Page = 1
+	}
+	if query.PageSize <= 0 {
+		query.PageSize = 20
+	}
+	if query.PageSize > 100 {
+		query.PageSize = 100
+	}
+	query.Statuses = normalizeHistoryStatuses(query.Statuses)
+
+	if s.db != nil {
+		return s.listByUserDB(query)
+	}
+	return s.listByUserMemory(query), nil
 }
 
 func (s *Service) Settle(request SettleBetRequest) (Bet, error) {
@@ -1232,8 +1269,8 @@ func (s *Service) applySettlementTransition(bet Bet, request SettleBetRequest) (
 		balanceCents = entry.BalanceCents
 	} else if adjustmentCents < 0 {
 		entry, err := s.wallet.Debit(wallet.MutationRequest{
-			UserID:         bet.UserID,
-			AmountCents:    -adjustmentCents,
+			UserID:      bet.UserID,
+			AmountCents: -adjustmentCents,
 			IdempotencyKey: buildResettlementIdempotencyKey(
 				"resettle-debit",
 				bet,
@@ -1854,6 +1891,86 @@ LIMIT 1`, userID, idempotencyKey).Scan(
 	return bet, true, nil
 }
 
+func (s *Service) listByUserDB(query BetHistoryQuery) (BetHistoryPage, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), betDBTimeout)
+	defer cancel()
+
+	whereParts := []string{"user_id = $1"}
+	args := []any{query.UserID}
+	argIndex := 2
+
+	if len(query.Statuses) > 0 {
+		placeholders := make([]string, 0, len(query.Statuses))
+		for _, status := range query.Statuses {
+			placeholders = append(placeholders, fmt.Sprintf("$%d", argIndex))
+			args = append(args, status)
+			argIndex++
+		}
+		whereParts = append(whereParts, "status IN ("+strings.Join(placeholders, ", ")+")")
+	}
+
+	whereClause := strings.Join(whereParts, " AND ")
+
+	var totalCount int
+	countQuery := `SELECT COUNT(*) FROM bets WHERE ` + whereClause
+	if err := s.db.QueryRowContext(ctx, countQuery, args...).Scan(&totalCount); err != nil {
+		return BetHistoryPage{}, err
+	}
+
+	offset := (query.Page - 1) * query.PageSize
+	listArgs := append(append([]any{}, args...), query.PageSize, offset)
+	rows, err := s.db.QueryContext(ctx, `
+SELECT
+  bet_id,
+  user_id,
+  market_id,
+  selection_id,
+  stake_cents,
+  freebet_id,
+  freebet_applied_cents,
+  odds_boost_id,
+  odds,
+  potential_payout_cents,
+  status,
+  wallet_ledger_entry_id,
+  wallet_balance_cents,
+  idempotency_key,
+  CAST(placed_at AS TEXT),
+  CAST(settled_at AS TEXT),
+  settlement_ledger_entry_id,
+  settlement_outcome,
+  settlement_reference,
+  legs_json
+FROM bets
+WHERE `+whereClause+`
+ORDER BY placed_at DESC
+LIMIT $`+fmt.Sprintf("%d", argIndex)+` OFFSET $`+fmt.Sprintf("%d", argIndex+1), listArgs...)
+	if err != nil {
+		return BetHistoryPage{}, err
+	}
+	defer rows.Close()
+
+	items := make([]Bet, 0, query.PageSize)
+	for rows.Next() {
+		bet, err := scanBetRow(rows)
+		if err != nil {
+			return BetHistoryPage{}, err
+		}
+		items = append(items, bet)
+	}
+	if err := rows.Err(); err != nil {
+		return BetHistoryPage{}, err
+	}
+
+	return BetHistoryPage{
+		CurrentPage:  query.Page,
+		Data:         items,
+		ItemsPerPage: query.PageSize,
+		TotalCount:   totalCount,
+		HasNextPage:  offset+len(items) < totalCount,
+	}, nil
+}
+
 func (s *Service) insertBetDB(bet Bet) error {
 	ctx, cancel := context.WithTimeout(context.Background(), betDBTimeout)
 	defer cancel()
@@ -1902,6 +2019,196 @@ INSERT INTO bets (
 		nullIfEmpty(legsJSON),
 	)
 	return err
+}
+
+func (s *Service) listByUserMemory(query BetHistoryQuery) BetHistoryPage {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	items := make([]Bet, 0, len(s.betsByID))
+	for _, bet := range s.betsByID {
+		if bet.UserID != query.UserID {
+			continue
+		}
+		if !historyStatusMatches(bet.Status, query.Statuses) {
+			continue
+		}
+		items = append(items, bet)
+	}
+
+	sort.Slice(items, func(i, j int) bool {
+		return compareBetHistoryOrder(items[i], items[j])
+	})
+
+	totalCount := len(items)
+	offset := (query.Page - 1) * query.PageSize
+	if offset >= totalCount {
+		return BetHistoryPage{
+			CurrentPage:  query.Page,
+			Data:         []Bet{},
+			ItemsPerPage: query.PageSize,
+			TotalCount:   totalCount,
+			HasNextPage:  false,
+		}
+	}
+
+	end := offset + query.PageSize
+	if end > totalCount {
+		end = totalCount
+	}
+
+	return BetHistoryPage{
+		CurrentPage:  query.Page,
+		Data:         items[offset:end],
+		ItemsPerPage: query.PageSize,
+		TotalCount:   totalCount,
+		HasNextPage:  end < totalCount,
+	}
+}
+
+func scanBetRow(scanner interface{ Scan(dest ...any) error }) (Bet, error) {
+	var bet Bet
+	var settledAt sql.NullString
+	var settlementLedger sql.NullString
+	var settlementOutcome sql.NullString
+	var settlementReference sql.NullString
+	var legsJSON sql.NullString
+
+	err := scanner.Scan(
+		&bet.BetID,
+		&bet.UserID,
+		&bet.MarketID,
+		&bet.SelectionID,
+		&bet.StakeCents,
+		&bet.FreebetID,
+		&bet.FreebetAppliedCents,
+		&bet.OddsBoostID,
+		&bet.Odds,
+		&bet.PotentialPayoutCents,
+		&bet.Status,
+		&bet.WalletLedgerEntryID,
+		&bet.WalletBalanceCents,
+		&bet.IdempotencyKey,
+		&bet.PlacedAt,
+		&settledAt,
+		&settlementLedger,
+		&settlementOutcome,
+		&settlementReference,
+		&legsJSON,
+	)
+	if err != nil {
+		return Bet{}, err
+	}
+
+	bet.SettledAt = strings.TrimSpace(settledAt.String)
+	bet.SettlementLedgerEntryID = strings.TrimSpace(settlementLedger.String)
+	bet.SettlementOutcome = strings.TrimSpace(settlementOutcome.String)
+	bet.SettlementReference = strings.TrimSpace(settlementReference.String)
+	decodedLegs, err := decodeBetLegs(legsJSON.String)
+	if err != nil {
+		return Bet{}, err
+	}
+	bet.Legs = decodedLegs
+	return bet, nil
+}
+
+func normalizeHistoryStatuses(statuses []string) []string {
+	if len(statuses) == 0 {
+		return nil
+	}
+
+	normalized := make([]string, 0, len(statuses))
+	seen := map[string]struct{}{}
+	for _, raw := range statuses {
+		for _, part := range strings.Split(raw, ",") {
+			status := strings.ToLower(strings.TrimSpace(part))
+			switch status {
+			case "", "all":
+				continue
+			case "open", "pending", statusPlaced:
+				status = statusPlaced
+			case "won", statusSettledWon:
+				status = statusSettledWon
+			case "lost", statusSettledLost:
+				status = statusSettledLost
+			case "settled":
+				for _, settledStatus := range []string{statusSettledWon, statusSettledLost} {
+					if _, ok := seen[settledStatus]; !ok {
+						seen[settledStatus] = struct{}{}
+						normalized = append(normalized, settledStatus)
+					}
+				}
+				continue
+			case statusCashedOut:
+				status = statusCashedOut
+			case statusCancelled:
+				status = statusCancelled
+			case statusRefunded:
+				status = statusRefunded
+			default:
+				continue
+			}
+
+			if _, ok := seen[status]; ok {
+				continue
+			}
+			seen[status] = struct{}{}
+			normalized = append(normalized, status)
+		}
+	}
+
+	if len(normalized) == 0 {
+		return nil
+	}
+	return normalized
+}
+
+func historyStatusMatches(status string, allowed []string) bool {
+	if len(allowed) == 0 {
+		return true
+	}
+	for _, candidate := range allowed {
+		if status == candidate {
+			return true
+		}
+	}
+	return false
+}
+
+func compareBetHistoryOrder(left Bet, right Bet) bool {
+	leftTime, leftOK := parseHistoryTime(left.PlacedAt)
+	rightTime, rightOK := parseHistoryTime(right.PlacedAt)
+	switch {
+	case leftOK && rightOK:
+		if leftTime.Equal(rightTime) {
+			return left.BetID > right.BetID
+		}
+		return leftTime.After(rightTime)
+	case leftOK:
+		return true
+	case rightOK:
+		return false
+	default:
+		if left.PlacedAt == right.PlacedAt {
+			return left.BetID > right.BetID
+		}
+		return left.PlacedAt > right.PlacedAt
+	}
+}
+
+func parseHistoryTime(raw string) (time.Time, bool) {
+	if strings.TrimSpace(raw) == "" {
+		return time.Time{}, false
+	}
+	parsed, err := time.Parse(time.RFC3339Nano, raw)
+	if err == nil {
+		return parsed, true
+	}
+	parsed, err = time.Parse(time.RFC3339, raw)
+	if err == nil {
+		return parsed, true
+	}
+	return time.Time{}, false
 }
 
 func (s *Service) updateBetLifecycleDB(bet Bet) error {

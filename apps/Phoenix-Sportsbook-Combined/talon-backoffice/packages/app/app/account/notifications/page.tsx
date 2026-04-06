@@ -361,7 +361,7 @@ const notificationsStyles = `
   }
 
   .notif-header h1 { font-size: 28px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px; }
-  .notif-header p { font-size: 14px; color: #64748b; }
+  .notif-header p { font-size: 14px; color: #D3D3D3; }
 
   .notif-back {
     padding: 10px 16px; background: #0f1225; border: 1px solid #1a1f3a;
@@ -380,7 +380,7 @@ const notificationsStyles = `
   }
 
   .notif-desc {
-    font-size: 13px; color: #64748b; margin-bottom: 24px;
+    font-size: 13px; color: #D3D3D3; margin-bottom: 24px;
   }
 
   .notif-settings {
@@ -398,7 +398,7 @@ const notificationsStyles = `
 
   .notif-item-info { flex: 1; }
   .notif-item-title { font-size: 14px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
-  .notif-item-desc { font-size: 12px; color: #64748b; }
+  .notif-item-desc { font-size: 12px; color: #D3D3D3; }
 
   .notif-toggle {
     display: inline-flex; align-items: center; cursor: pointer;
@@ -418,7 +418,7 @@ const notificationsStyles = `
   .notif-toggle-slider:before {
     position: absolute; content: "";
     height: 22px; width: 22px; left: 3px; bottom: 3px;
-    background-color: #94a3b8; transition: 0.3s; border-radius: 50%;
+    background-color: #D3D3D3; transition: 0.3s; border-radius: 50%;
   }
 
   .notif-toggle input:checked + .notif-toggle-slider {

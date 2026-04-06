@@ -318,6 +318,27 @@ LIMIT 1`, id).Scan(&item.ID, &item.Email, &item.Status, &item.CountryCode, &item
 	return item, nil
 }
 
+func (r *SQLReadRepository) UpdatePunterStatus(id string, status string) (Punter, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), readRepositoryQueryTimeout)
+	defer cancel()
+
+	var item Punter
+	err := r.db.QueryRowContext(ctx, `
+UPDATE punters
+SET status = $2
+WHERE id = $1
+RETURNING id, email, status, country_code, CAST(created_at AS TEXT), CAST(last_login_at AS TEXT)
+`, id, status).Scan(&item.ID, &item.Email, &item.Status, &item.CountryCode, &item.CreatedAt, &item.LastLoginAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Punter{}, ErrNotFound
+		}
+		return Punter{}, err
+	}
+
+	return item, nil
+}
+
 func whereClause(conditions []string) string {
 	if len(conditions) == 0 {
 		return ""

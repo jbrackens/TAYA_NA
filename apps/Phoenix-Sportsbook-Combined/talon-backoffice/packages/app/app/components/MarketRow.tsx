@@ -2,8 +2,7 @@
 
 import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
-import { toggleBetElement, selectBets } from "../lib/store/betSlice";
+import { useBetslip } from "../hooks/useBetslip";
 
 const OddsButton: React.FC<{
   odds: number;
@@ -81,8 +80,7 @@ export const MarketRow: React.FC<MarketRowProps> = ({
   fixtureName,
   onSelectMarket,
 }) => {
-  const dispatch = useAppDispatch();
-  const betslipSelections = useAppSelector(selectBets);
+  const betslip = useBetslip();
 
   if (!market.selections || market.selections.length === 0) {
     return null;
@@ -93,33 +91,33 @@ export const MarketRow: React.FC<MarketRowProps> = ({
   const handleSelect = (selection: Selection) => {
     if (!isOpen) return;
 
-    // Dispatch to betslip store
-    dispatch(
-      toggleBetElement({
-        selectionId: selection.id,
-        brandMarketId: market.id,
-        selectionName: selection.name,
-        marketName: market.name,
-        fixtureName: fixtureName || "",
-        fixtureId: fixtureId || "",
-        odds: {
-          decimal: selection.odds,
-          american:
-            selection.odds >= 2
-              ? `+${Math.round((selection.odds - 1) * 100)}`
-              : `-${Math.round(100 / (selection.odds - 1))}`,
-          fractional: "0/0",
-        },
-      }),
+    const existing = betslip.selections.find(
+      (bet) => bet.selectionId === selection.id && bet.marketId === market.id,
     );
+
+    if (existing) {
+      betslip.removeSelection(existing.id);
+    } else {
+      betslip.addSelection({
+        id: `${market.id}-${selection.id}`,
+        fixtureId: fixtureId || "",
+        marketId: market.id,
+        selectionId: selection.id,
+        matchName: fixtureName || "",
+        marketName: market.name,
+        selectionName: selection.name,
+        odds: selection.odds,
+        initialOdds: selection.odds,
+      });
+    }
 
     // Also call the external handler if provided
     onSelectMarket?.(market.id, selection.id, selection.odds);
   };
 
   const isSelected = (selectionId: string) =>
-    betslipSelections.some(
-      (b) => b.selectionId === selectionId && b.brandMarketId === market.id,
+    betslip.selections.some(
+      (b) => b.selectionId === selectionId && b.marketId === market.id,
     );
 
   return (

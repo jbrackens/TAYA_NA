@@ -63,17 +63,33 @@ interface PlaceParlayResponseRaw {
   updated_at: string;
 }
 
+interface BetLegRaw {
+  marketId: string;
+  selectionId: string;
+  currentOdds?: number;
+  finalOdds?: number;
+}
+
 interface UserBetRaw {
-  bet_id: string;
-  user_id: string;
-  fixture_id: string;
-  market_id: string;
-  selection: BetSelectionRaw;
-  stake: number;
+  betId: string;
+  userId: string;
+  marketId: string;
+  selectionId: string;
+  legs?: BetLegRaw[];
+  stakeCents: number;
+  odds: number;
   status: string;
-  potential_return: number;
-  created_at: string;
-  updated_at: string;
+  potentialPayoutCents: number;
+  placedAt: string;
+  settledAt?: string;
+}
+
+interface BetHistoryPageRaw {
+  currentPage: number;
+  data: UserBetRaw[];
+  itemsPerPage: number;
+  totalCount: number;
+  hasNextPage: boolean;
 }
 
 interface CashoutOfferRaw {
@@ -144,6 +160,14 @@ export interface UserBet {
   updatedAt: string;
 }
 
+export interface BetHistoryPage {
+  currentPage: number;
+  data: UserBet[];
+  itemsPerPage: number;
+  totalCount: number;
+  hasNextPage: boolean;
+}
+
 export interface CashoutOffer {
   cashoutValue: number;
   currency: string;
@@ -205,8 +229,50 @@ export async function placeParlay(request: PlaceParlayRequest): Promise<PlacePar
  * Get all bets for a user
  */
 export async function getUserBets(userId: string): Promise<UserBet[]> {
-  const raw = await apiClient.get<UserBetRaw[]>('/api/v1/bets', { user_id: userId });
-  return normalizeSnakeCase(raw);
+  const result = await getUserBetsPage(userId, { page: 1, pageSize: 100 });
+  return result.data;
+}
+
+export async function getUserBetsPage(
+  userId: string,
+  options?: {
+    page?: number;
+    pageSize?: number;
+    status?: string;
+  },
+): Promise<BetHistoryPage> {
+  const raw = await apiClient.get<BetHistoryPageRaw>('/api/v1/bets', {
+    userId,
+    page: String(options?.page ?? 1),
+    pageSize: String(options?.pageSize ?? 20),
+    ...(options?.status && options.status !== "all" ? { status: options.status } : {}),
+  });
+
+  return {
+    currentPage: raw.currentPage,
+    itemsPerPage: raw.itemsPerPage,
+    totalCount: raw.totalCount,
+    hasNextPage: raw.hasNextPage,
+    data: (raw.data || []).map((bet) => {
+      const primaryLeg = bet.legs?.[0];
+      return {
+        betId: bet.betId,
+        userId: bet.userId,
+        fixtureId: "",
+        marketId: primaryLeg?.marketId ?? bet.marketId,
+        selection: {
+          selectionId: primaryLeg?.selectionId ?? bet.selectionId,
+          selectionName: primaryLeg?.selectionId ?? bet.selectionId,
+          odds: primaryLeg?.finalOdds ?? primaryLeg?.currentOdds ?? bet.odds,
+        },
+        stake: bet.stakeCents / 100,
+        status: bet.status,
+        potentialReturn: bet.potentialPayoutCents / 100,
+        createdAt: bet.placedAt,
+        updatedAt: bet.settledAt ?? bet.placedAt,
+      };
+    }),
+  };
 }
 
 /**

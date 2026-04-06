@@ -82,7 +82,7 @@ interface LoginFormProps {
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
-  const { t } = useTranslation("login");
+  const { t, ready } = useTranslation("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -90,6 +90,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+
+  const tx = (key: string, fallback: string) =>
+    ready ? t(key, { defaultValue: fallback }) : fallback;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,12 +102,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     try {
       // Validate inputs
       if (!username.trim() || !password.trim()) {
-        setError(t("ENTER_CREDENTIALS"));
+        setError(tx("ENTER_CREDENTIALS", "Enter your username and password."));
         return;
       }
 
       if (password.length < 6) {
-        setError(t("PASSWORD_MIN_LENGTH"));
+        setError(
+          tx("PASSWORD_MIN_LENGTH", "Password must be at least 6 characters."),
+        );
         return;
       }
 
@@ -126,7 +131,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       onSuccess?.();
       router.push("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : t("LOGIN_FAILED");
+      const message =
+        err instanceof Error ? err.message : tx("LOGIN_FAILED", "Login failed.");
       setError(message);
     } finally {
       setIsLoading(false);
@@ -184,12 +190,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             color: "#ffffff",
           }}
         >
-          {t("USERNAME")}
+          {tx("USERNAME", "Username")}
         </label>
         <Input
           id="username"
           type="text"
-          placeholder={t("USERNAME_PLACEHOLDER")}
+          placeholder={tx("USERNAME_PLACEHOLDER", "Enter your username")}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           disabled={isLoading}
@@ -211,12 +217,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             color: "#ffffff",
           }}
         >
-          {t("PASSWORD")}
+          {tx("PASSWORD", "Password")}
         </label>
         <Input
           id="password"
           type="password"
-          placeholder={t("PASSWORD_PLACEHOLDER")}
+          placeholder={tx("PASSWORD_PLACEHOLDER", "Enter your password")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
@@ -250,7 +256,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             cursor: "pointer",
           }}
         >
-          {t("REMEMBER_ME")}
+          {tx("REMEMBER_ME", "Remember me")}
         </label>
       </div>
 
@@ -260,7 +266,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         disabled={isLoading}
         style={{ width: "100%" }}
       >
-        {isLoading ? t("SIGNING_IN") : t("SIGN_IN")}
+        {isLoading
+          ? tx("SIGNING_IN", "Signing in...")
+          : tx("SIGN_IN", "Log In")}
       </Button>
     </form>
   );

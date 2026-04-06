@@ -357,7 +357,7 @@ const securityStyles = `
   }
 
   .sec-tab {
-    padding: 12px 16px; font-size: 14px; font-weight: 600; color: #64748b;
+    padding: 12px 16px; font-size: 14px; font-weight: 600; color: #D3D3D3;
     background: none; border: none; cursor: pointer;
     border-bottom: 2px solid transparent; transition: all 0.15s;
   }
@@ -376,7 +376,7 @@ const securityStyles = `
   }
 
   .sec-desc {
-    font-size: 13px; color: #64748b; margin-bottom: 24px;
+    font-size: 13px; color: #D3D3D3; margin-bottom: 24px;
   }
 
   .sec-form {
@@ -386,7 +386,7 @@ const securityStyles = `
   .sec-field { display: flex; flex-direction: column; gap: 8px; }
 
   .sec-label {
-    font-size: 13px; font-weight: 600; color: #94a3b8;
+    font-size: 13px; font-weight: 600; color: #D3D3D3;
   }
 
   .sec-input {

@@ -69,6 +69,13 @@ interface CoolOffStatusRaw {
   cool_off_until: string | null;
 }
 
+interface RestrictionsResponseRaw {
+  restrictions?: {
+    isOnCoolOff?: boolean;
+    coolOffUntil?: string | null;
+  };
+}
+
 interface SelfExcludeResponseRaw {
   user_id: string;
   status: string;
@@ -315,11 +322,15 @@ export async function getLimitsHistory(
  */
 export async function getCoolOffStatus(userId: string): Promise<CoolOffStatus> {
   try {
-    const raw = await apiClient.get<CoolOffStatusRaw>(
-      "/api/v1/punters/cool-off-status",
-      { user_id: userId },
+    const raw = await apiClient.get<RestrictionsResponseRaw>(
+      "/api/v1/compliance/rg/restrictions",
+      { userId },
     );
-    return normalizeSnakeCase(raw) as CoolOffStatus;
+    const restrictions = raw.restrictions;
+    return {
+      status: restrictions?.isOnCoolOff ? "active" : "inactive",
+      coolOffUntil: restrictions?.coolOffUntil ?? null,
+    };
   } catch (err) {
     logger.warn(
       "Compliance",

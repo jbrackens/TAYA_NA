@@ -1,7 +1,7 @@
 'use client';
 
 import styled from 'styled-components';
-import { Card, Badge } from '../../components/shared';
+import { Card, Badge } from '../../../components/shared';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -92,11 +92,27 @@ export default function FixturesPage() {
   useEffect(() => {
     const fetchFixtures = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:3001/api';
-        const response = await fetch(`${apiUrl}/admin/risk-fixtures`);
+        const response = await fetch('/api/v1/admin/trading/fixtures?page=1&pageSize=50', {
+          headers: {
+            'X-Admin-Role': 'admin',
+          },
+        });
         if (!response.ok) throw new Error('Failed to fetch');
         const data = await response.json();
-        setFixtures(data);
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setFixtures(
+          items.map((item: any) => ({
+            id: item.id,
+            match: `${item.homeTeam} vs ${item.awayTeam}`,
+            sport: item.sportKey || 'Unknown',
+            league: item.tournament || item.leagueKey || 'Unknown',
+            liability: 0,
+            exposure: 0,
+            risk: 0,
+            marketCount: 0,
+            status: 'low' as const,
+          })),
+        );
       } catch (error) {
         console.error('Failed to fetch fixtures:', error);
         setFixtures([]);

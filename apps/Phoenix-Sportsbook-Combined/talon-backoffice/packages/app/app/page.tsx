@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { Search } from "lucide-react";
 import { useBetslip } from "./hooks/useBetslip";
 import { BetSelection } from "./components/BetslipProvider";
 import { useAppSelector, useAppDispatch } from "./lib/store/hooks";
@@ -63,6 +64,18 @@ interface Sport {
   displayToPunters: boolean;
 }
 
+const SPORT_EMOJIS: Record<string, string> = {
+  soccer: "⚽",
+  football: "🏈",
+  basketball: "🏀",
+  tennis: "🎾",
+  baseball: "⚾",
+  esports: "🎮",
+  volleyball: "🏐",
+  boxing: "🥊",
+  mma: "🥋",
+};
+
 function getTeams(competitors: Record<string, Competitor> | undefined) {
   if (!competitors) return { home: "TBD", away: "TBD" };
   const home = competitors["home"] || Object.values(competitors)[0];
@@ -93,9 +106,46 @@ function formatDate(dateStr: string) {
   }
 }
 
+function getSportAccent(sport?: Sport | Fixture["sport"]) {
+  const key = sport?.abbreviation?.toLowerCase() || sport?.name?.toLowerCase();
+  return (key && SPORT_EMOJIS[key]) || SPORT_EMOJIS[sport?.sportId || ""] || "🎯";
+}
+
+function getSearchText(fixture: Fixture) {
+  const teams = getTeams(fixture.competitors);
+  return [
+    fixture.fixtureName,
+    teams.home,
+    teams.away,
+    fixture.sport?.name,
+    fixture.tournament?.name,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function getPrimaryMarket(fixture: Fixture) {
+  return fixture.markets?.find((market) => market.selections?.length >= 3) || fixture.markets?.[0];
+}
+
+function getFixtureStatusLabel(fixture: Fixture) {
+  if (fixture.isLive) return "Live";
+
+  const start = new Date(fixture.startTime).getTime();
+  if (!Number.isNaN(start) && start - Date.now() < 1000 * 60 * 90) {
+    return "Starting Soon";
+  }
+
+  return "Upcoming";
+}
+
 export default function HomePage() {
   // Show marketing landing page for unauthenticated visitors
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) {
+    return <div style={{ padding: "40px", color: "#64748b" }}>Loading...</div>;
+  }
   if (!isAuthenticated) return <LandingPage />;
   return <AuthenticatedHome />;
 }
@@ -106,6 +156,9 @@ function AuthenticatedHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeSport, setActiveSport] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const topPicksRef = useRef<HTMLDivElement | null>(null);
 
   // Betslip integration — providers are always mounted in layout.tsx
   const betslip = useBetslip();
@@ -194,10 +247,169 @@ function AuthenticatedHome() {
     loadData();
   }, []);
 
-  const filteredFixtures =
-    activeSport === "all"
-      ? fixtures
-      : fixtures.filter((f) => f.sport?.sportId === activeSport);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key !== "/" ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey
+      ) {
+        return;
+      }
+
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName?.toLowerCase();
+      if (
+        tag === "input" ||
+        tag === "textarea" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const sportCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const fixture of fixtures) {
+      if (!fixture.sport?.sportId) continue;
+      counts.set(
+        fixture.sport.sportId,
+        (counts.get(fixture.sport.sportId) || 0) + 1,
+      );
+    }
+    return counts;
+  }, [fixtures]);
+
+  const topSports = useMemo(() => {
+    const fromFixtures = sports
+      .filter((sport) => sportCounts.has(sport.sportId))
+      .sort(
+        (left, right) =>
+          (sportCounts.get(right.sportId) || 0) -
+          (sportCounts.get(left.sportId) || 0),
+      );
+
+    return fromFixtures.slice(0, 8);
+  }, [sports, sportCounts]);
+
+  const filteredFixtures = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    return fixtures.filter((fixture) => {
+      if (activeSport !== "all" && fixture.sport?.sportId !== activeSport) {
+        return false;
+      }
+      if (!normalizedQuery) return true;
+      return getSearchText(fixture).includes(normalizedQuery);
+    });
+  }, [fixtures, activeSport, searchQuery]);
+
+  const topPicks = useMemo(() => {
+    return [...filteredFixtures]
+      .filter((fixture) => getPrimaryMarket(fixture)?.selections?.length)
+      .sort((left, right) => {
+        if (left.isLive !== right.isLive) return left.isLive ? -1 : 1;
+        return new Date(left.startTime).getTime() - new Date(right.startTime).getTime();
+      })
+      .slice(0, 10);
+  }, [filteredFixtures]);
+
+  const popularRows = useMemo(() => {
+    const grouped = new Map<string, { sport: Sport; fixtures: Fixture[] }>();
+
+    for (const fixture of filteredFixtures) {
+      const sport = fixture.sport;
+      if (!sport?.sportId) continue;
+      if (!grouped.has(sport.sportId)) {
+        grouped.set(sport.sportId, { sport, fixtures: [] });
+      }
+      const entry = grouped.get(sport.sportId);
+      if (!entry) continue;
+      if (entry.fixtures.length < 5) {
+        entry.fixtures.push(fixture);
+      }
+    }
+
+    return [...grouped.values()].slice(0, 3);
+  }, [filteredFixtures]);
+
+  const scrollTopPicks = useCallback((direction: "left" | "right") => {
+    if (!topPicksRef.current) return;
+    const cardWidth = 304;
+    topPicksRef.current.scrollBy({
+      left: direction === "right" ? cardWidth : -cardWidth,
+      behavior: "smooth",
+    });
+  }, []);
+
+  const renderDiscoveryCard = useCallback(
+    (fixture: Fixture, compact = false) => {
+      const teams = getTeams(fixture.competitors);
+      const market = getPrimaryMarket(fixture);
+      if (!market || !market.selections?.length) return null;
+
+      return (
+        <article
+          key={fixture.fixtureId}
+          className={`discovery-card ${compact ? "compact" : ""}`}
+        >
+          <div className="discovery-card-top">
+            <span className="discovery-card-league">
+              {fixture.tournament?.name || fixture.sport?.name || "Featured"}
+            </span>
+            <span
+              className={`discovery-card-badge ${
+                fixture.isLive ? "live" : "soon"
+              }`}
+            >
+              {fixture.isLive ? "Live" : getFixtureStatusLabel(fixture)}
+            </span>
+          </div>
+
+          <div className="discovery-card-matchup">
+            <div className="discovery-card-team">{teams.home}</div>
+            <div className="discovery-card-versus">vs</div>
+            <div className="discovery-card-team">{teams.away}</div>
+          </div>
+
+          <div className="discovery-card-odds">
+            {market.selections.slice(0, 3).map((sel) => {
+              const isSelected = betslip?.selections?.some(
+                (s: BetSelection) =>
+                  s.selectionId === sel.selectionId &&
+                  s.marketId === market.marketId,
+              );
+              return (
+                <button
+                  key={`${fixture.fixtureId}-${sel.selectionId}`}
+                  className={`discovery-odds-btn ${
+                    isSelected ? "selected" : ""
+                  }`}
+                  onClick={() => handleOddsClick(fixture, market, sel)}
+                  disabled={sel.status === "SUSPENDED"}
+                >
+                  <span className="discovery-odds-label">{sel.name}</span>
+                  <span className="discovery-odds-value">
+                    {sel.status === "SUSPENDED"
+                      ? "-"
+                      : formatOdds(sel.odds, oddsFormat)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </article>
+      );
+    },
+    [betslip?.selections, handleOddsClick, oddsFormat],
+  );
 
   return (
     <>
@@ -215,24 +427,281 @@ function AuthenticatedHome() {
           pointer-events: none;
         }
         .home-hero h1 { font-size: 26px; font-weight: 800; color: #f8fafc; margin-bottom: 8px; letter-spacing: -0.02em; }
-        .home-hero p { font-size: 15px; color: #64748b; font-weight: 400; }
+        .home-hero p { font-size: 15px; color: #D3D3D3; font-weight: 400; }
         .home-hero .accent { color: #39ff14; }
 
-        /* Sport pills */
-        .sport-pills { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .discovery-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          margin-bottom: 30px;
+        }
+        .discovery-search {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px 18px;
+          border-radius: 16px;
+          background: rgba(0,0,0,0.2);
+          border: 1px solid rgba(148,163,184,0.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+        }
+        .discovery-search svg {
+          color: #D3D3D3;
+          flex-shrink: 0;
+        }
+        .discovery-search input {
+          flex: 1;
+          min-width: 0;
+          background: transparent;
+          border: none;
+          color: #f8fafc;
+          font-size: 16px;
+          outline: none;
+        }
+        .discovery-search input::placeholder { color: #D3D3D3; }
+        .discovery-shortcut {
+          padding: 5px 9px;
+          border-radius: 9px;
+          border: 1px solid rgba(148,163,184,0.12);
+          background: rgba(15,23,42,0.72);
+          color: #D3D3D3;
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        .sport-pills-shell {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          padding-bottom: 4px;
+        }
+        .sport-pills-shell::-webkit-scrollbar { display: none; }
+        .sport-pills {
+          display: flex; gap: 10px; min-width: max-content;
+        }
         .sport-pill {
-          padding: 8px 18px; border-radius: 10px; font-size: 13px; font-weight: 600;
-          border: 1.5px solid #1e2243; background: transparent; color: #64748b;
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 10px 16px; border-radius: 999px; font-size: 13px; font-weight: 700;
+          border: 1px solid rgba(42,49,80,0.9); background: #0f1630; color: #D3D3D3;
           cursor: pointer; transition: all 0.15s; white-space: nowrap;
         }
-        .sport-pill:hover { border-color: #374163; color: #94a3b8; }
-        .sport-pill.active { border-color: #39ff14; color: #39ff14; background: rgba(57,255,20,0.06); }
+        .sport-pill:hover { border-color: #435079; color: #dbeafe; transform: translateY(-1px); }
+        .sport-pill.active {
+          border-color: rgba(173,255,47,0.28);
+          color: #ADFF2F;
+          background: rgba(173,255,47,0.1);
+          box-shadow: 0 0 24px rgba(173,255,47,0.12);
+        }
+        .sport-pill-icon { font-size: 15px; line-height: 1; }
+
+        .discovery-section {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .discovery-section-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .discovery-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .discovery-title-icon {
+          font-size: 18px;
+          line-height: 1;
+        }
+        .discovery-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: #f8fafc;
+          letter-spacing: -0.02em;
+        }
+        .discovery-subtitle {
+          color: #D3D3D3;
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .carousel-controls {
+          display: flex;
+          gap: 8px;
+        }
+        .carousel-arrow {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 1px solid rgba(148,163,184,0.14);
+          background: #10192f;
+          color: #dbeafe;
+          cursor: pointer;
+          font-size: 18px;
+          transition: all 0.15s;
+        }
+        .carousel-arrow:hover {
+          border-color: rgba(173,255,47,0.28);
+          color: #ADFF2F;
+        }
+
+        .top-picks-track,
+        .sport-ribbon-track {
+          display: flex;
+          gap: 14px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          scroll-snap-type: x mandatory;
+          padding-bottom: 4px;
+        }
+        .top-picks-track::-webkit-scrollbar,
+        .sport-ribbon-track::-webkit-scrollbar { display: none; }
+
+        .discovery-card {
+          flex: 0 0 280px;
+          min-height: 144px;
+          padding: 16px;
+          border-radius: 18px;
+          border: 1px solid rgba(31,41,74,0.94);
+          background:
+            linear-gradient(180deg, rgba(18,26,51,0.96) 0%, rgba(10,14,31,0.98) 100%);
+          scroll-snap-align: start;
+          box-shadow: 0 16px 32px rgba(0,0,0,0.18);
+        }
+        .discovery-card.compact {
+          flex-basis: 250px;
+          min-height: 136px;
+        }
+        .discovery-card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+        .discovery-card-league {
+          font-size: 11px;
+          color: #D3D3D3;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+        .discovery-card-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          padding: 4px 10px;
+          font-size: 11px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+        .discovery-card-badge.live {
+          background: rgba(34,197,94,0.12);
+          color: #4ade80;
+        }
+        .discovery-card-badge.soon {
+          background: rgba(173,255,47,0.1);
+          color: #c9ff68;
+        }
+        .discovery-card-matchup {
+          display: grid;
+          gap: 6px;
+          margin-bottom: 16px;
+        }
+        .discovery-card-team {
+          color: #f8fafc;
+          font-size: 18px;
+          font-weight: 800;
+          line-height: 1.1;
+        }
+        .discovery-card-versus {
+          color: #D3D3D3;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          font-weight: 700;
+        }
+        .discovery-card-odds {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 8px;
+        }
+        .discovery-odds-btn {
+          border: 1px solid rgba(42,49,80,0.95);
+          border-radius: 12px;
+          background: rgba(9,15,31,0.85);
+          padding: 10px 8px;
+          color: #e2e8f0;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .discovery-odds-btn:hover {
+          border-color: rgba(173,255,47,0.2);
+          background: rgba(18,28,47,0.95);
+        }
+        .discovery-odds-btn:disabled {
+          opacity: 0.45;
+          cursor: default;
+        }
+        .discovery-odds-btn.selected {
+          border-color: rgba(173,255,47,0.45);
+          background: rgba(173,255,47,0.1);
+        }
+        .discovery-odds-label {
+          display: block;
+          color: #D3D3D3;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          margin-bottom: 4px;
+        }
+        .discovery-odds-value {
+          display: block;
+          color: #ADFF2F;
+          font-size: 15px;
+          font-weight: 800;
+        }
+
+        .popular-sport-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          margin-bottom: 28px;
+        }
+        .popular-sport-block {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .popular-sport-head {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .popular-sport-title {
+          font-size: 17px;
+          font-weight: 800;
+          color: #f8fafc;
+        }
+        .popular-sport-meta {
+          color: #D3D3D3;
+          font-size: 12px;
+          font-weight: 700;
+        }
 
         /* Section */
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
         .section-title { font-size: 17px; font-weight: 700; color: #f1f5f9; }
         .section-count {
-          font-size: 12px; font-weight: 600; color: #64748b; background: #161a35;
+          font-size: 12px; font-weight: 600; color: #D3D3D3; background: #161a35;
           padding: 4px 10px; border-radius: 6px;
         }
 
@@ -248,7 +717,7 @@ function AuthenticatedHome() {
         }
         .fixture-league { font-size: 12px; font-weight: 600; color: #4a5580; text-transform: uppercase; letter-spacing: 0.05em; }
         .fixture-time { font-size: 12px; font-weight: 600; }
-        .fixture-time.upcoming { color: #64748b; }
+        .fixture-time.upcoming { color: #D3D3D3; }
         .fixture-time.live { color: #22c55e; display: flex; align-items: center; gap: 6px; }
         .fixture-time.live::before {
           content: ''; width: 6px; height: 6px; border-radius: 50%; background: #22c55e;
@@ -264,7 +733,7 @@ function AuthenticatedHome() {
         .team-name.home { text-align: right; }
         .team-name.away { text-align: left; }
         .vs-badge {
-          font-size: 11px; font-weight: 700; color: #374163;
+          font-size: 11px; font-weight: 700; color: #D3D3D3;
           background: #1a1f3a; padding: 4px 10px; border-radius: 6px;
           text-transform: uppercase; letter-spacing: 0.1em; flex-shrink: 0;
         }
@@ -284,7 +753,7 @@ function AuthenticatedHome() {
         .odds-btn:disabled:hover { background: transparent; }
         .odds-btn.selected { background: rgba(57,255,20,0.12); border-bottom: 2px solid #39ff14; }
         .odds-btn.selected .odds-label { color: #39ff14; }
-        .odds-btn .odds-label { font-size: 10px; font-weight: 600; color: #4a5580; text-transform: uppercase; letter-spacing: 0.05em; }
+        .odds-btn .odds-label { font-size: 10px; font-weight: 600; color: #D3D3D3; text-transform: uppercase; letter-spacing: 0.05em; }
         .odds-btn .odds-value { font-size: 15px; font-weight: 700; color: #39ff14; }
         .odds-btn .odds-value.suspended { color: #374163; }
 
@@ -314,17 +783,17 @@ function AuthenticatedHome() {
         /* More markets link */
         .more-markets {
           display: block; text-align: center; padding: 10px; font-size: 12px;
-          font-weight: 600; color: #4a5580; border-top: 1px solid #1a1f3a; transition: color 0.15s;
+          font-weight: 600; color: #D3D3D3; border-top: 1px solid #1a1f3a; transition: color 0.15s;
         }
         .more-markets:hover { color: #39ff14; }
 
         /* Empty / error */
         .empty-state {
-          text-align: center; padding: 60px 20px; color: #374163;
+          text-align: center; padding: 60px 20px; color: #D3D3D3;
         }
         .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-        .empty-state .empty-title { font-size: 16px; font-weight: 600; color: #4a5580; margin-bottom: 6px; }
-        .empty-state .empty-sub { font-size: 13px; color: #374163; }
+        .empty-state .empty-title { font-size: 16px; font-weight: 600; color: #D3D3D3; margin-bottom: 6px; }
+        .empty-state .empty-sub { font-size: 13px; color: #D3D3D3; }
 
         .error-banner {
           padding: 14px 18px; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15);
@@ -333,6 +802,19 @@ function AuthenticatedHome() {
 
         .skeleton { background: linear-gradient(90deg, #161a35 25%, #1e2243 50%, #161a35 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 10px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        @media (max-width: 768px) {
+          .discovery-search {
+            padding: 14px 14px;
+          }
+          .discovery-shortcut {
+            display: none;
+          }
+          .discovery-card,
+          .discovery-card.compact {
+            flex-basis: 86vw;
+          }
+        }
       `,
         }}
       />
@@ -345,33 +827,122 @@ function AuthenticatedHome() {
         <p>Live odds, instant bets, real-time results.</p>
       </div>
 
+      <div className="discovery-stack">
+        <label className="discovery-search" htmlFor="discovery-search">
+          <Search size={20} strokeWidth={2.2} />
+          <input
+            id="discovery-search"
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search events, teams, or leagues..."
+          />
+          <span className="discovery-shortcut">/</span>
+        </label>
+
+        <div className="sport-pills-shell">
+          <div className="sport-pills">
+            <button
+              className={`sport-pill ${activeSport === "all" ? "active" : ""}`}
+              onClick={() => setActiveSport("all")}
+            >
+              <span className="sport-pill-icon">✨</span>
+              All Sports
+            </button>
+            {topSports.map((sport) => (
+              <button
+                key={sport.sportId}
+                className={`sport-pill ${
+                  activeSport === sport.sportId ? "active" : ""
+                }`}
+                onClick={() => setActiveSport(sport.sportId)}
+              >
+                <span className="sport-pill-icon">{getSportAccent(sport)}</span>
+                {sport.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <section className="discovery-section">
+          <div className="discovery-section-head">
+            <div>
+              <div className="discovery-title-wrap">
+                <span className="discovery-title-icon">🔥</span>
+                <span className="discovery-title">Top Picks</span>
+              </div>
+              <div className="discovery-subtitle">
+                High-action markets curated from live and near-start fixtures
+              </div>
+            </div>
+
+            <div className="carousel-controls">
+              <button
+                type="button"
+                className="carousel-arrow"
+                onClick={() => scrollTopPicks("left")}
+                aria-label="Scroll top picks left"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="carousel-arrow"
+                onClick={() => scrollTopPicks("right")}
+                aria-label="Scroll top picks right"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+
+          <div className="top-picks-track" ref={topPicksRef}>
+            {topPicks.length > 0 ? (
+              topPicks.map((fixture) => renderDiscoveryCard(fixture))
+            ) : (
+              <div className="empty-state" style={{ width: "100%" }}>
+                <div className="empty-title">No top picks right now</div>
+                <div className="empty-sub">
+                  Try another sport or search term to widen the board.
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
       {error && <div className="error-banner">{error}</div>}
 
-      {/* Sport pills */}
-      <div className="sport-pills">
-        <button
-          className={`sport-pill ${activeSport === "all" ? "active" : ""}`}
-          onClick={() => setActiveSport("all")}
-        >
-          All Sports
-        </button>
-        {sports.map((sport) => (
-          <button
-            key={sport.sportId}
-            className={`sport-pill ${
-              activeSport === sport.sportId ? "active" : ""
-            }`}
-            onClick={() => setActiveSport(sport.sportId)}
-          >
-            {sport.name}
-          </button>
-        ))}
-      </div>
+      {popularRows.length > 0 && (
+        <div className="popular-sport-grid">
+          {popularRows.map(({ sport, fixtures }) => (
+            <section key={`popular-${sport.sportId}`} className="popular-sport-block">
+              <div className="popular-sport-head">
+                <div className="popular-sport-title">
+                  {getSportAccent(sport)} Popular in {sport.name}
+                </div>
+                <div className="popular-sport-meta">{fixtures.length} featured events</div>
+              </div>
+
+              <div className="sport-ribbon-track">
+                {fixtures.map((fixture) => renderDiscoveryCard(fixture, true))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
 
       {/* Fixtures */}
       <div className="section-header">
         <span className="section-title">
-          {loading ? "Loading..." : "Upcoming Matches"}
+          {loading
+            ? "Loading..."
+            : searchQuery
+              ? "Search Results"
+              : activeSport === "all"
+                ? "All Matches"
+                : `${topSports.find((sport) => sport.sportId === activeSport)?.name || "Selected Sport"} Matches`}
         </span>
         {!loading && (
           <span className="section-count">

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import StyledComponentsRegistry from './lib/styled-components-registry';
 
 export const metadata: Metadata = {
   title: 'Phoenix Backoffice | Admin Panel',
@@ -19,7 +20,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           a { color: inherit; text-decoration: none; }
         `}} />
       </head>
-      <body>{children}</body>
+      <body>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+      </body>
     </html>
   );
 }

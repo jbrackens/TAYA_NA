@@ -1,9 +1,9 @@
 'use client';
 
 import styled from 'styled-components';
-import { Card, Button } from '../components/shared';
+import { Card, Button } from '../../components/shared';
 import { useState, useEffect } from 'react';
-import { ErrorBoundary, LoadingSpinner, ErrorState } from '../components/shared';
+import { ErrorBoundary, LoadingSpinner, ErrorState } from '../../components/shared';
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -123,31 +123,12 @@ interface Report {
   period: string;
 }
 
-const SAMPLE_METRICS: Metrics = {
-  totalRevenue: 125000,
-  totalBets: 45320,
-  uniqueUsers: 8950,
-  avgBetSize: 2.76,
+const EMPTY_METRICS: Metrics = {
+  totalRevenue: 0,
+  totalBets: 0,
+  uniqueUsers: 0,
+  avgBetSize: 0,
 };
-
-const SAMPLE_REPORTS: Report[] = [
-  {
-    id: '1',
-    title: 'Revenue Report - March 2024',
-    description: 'Weekly breakdown of revenue',
-    type: 'revenue',
-    generatedDate: '2024-03-31',
-    period: 'March 24-31',
-  },
-  {
-    id: '2',
-    title: 'User Activity Report - March 2024',
-    description: 'Monthly engagement metrics',
-    type: 'activity',
-    generatedDate: '2024-03-15',
-    period: 'March 1-15',
-  },
-];
 
 const AVAILABLE_REPORTS = [
   {
@@ -183,34 +164,89 @@ const AVAILABLE_REPORTS = [
 ];
 
 function ReportsPageContent() {
-  const [metrics, setMetrics] = useState<Metrics>(SAMPLE_METRICS);
+  const [metrics, setMetrics] = useState<Metrics>(EMPTY_METRICS);
   const [reports, setReports] = useState<Report[]>([]);
   const [activePeriod, setActivePeriod] = useState('7days');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    // Simulate API call
-    setIsLoading(true);
-    setError(null);
-    const timer = setTimeout(() => {
+    const loadReports = async () => {
       try {
-        // Replace with actual API call:
-        // const { get } = useAdminApi();
-        // const data = await get(`/api/admin/reports?period=${activePeriod}`);
-        // setMetrics(data.metrics);
-        // setReports(data.reports);
-        setReports(SAMPLE_REPORTS);
-        setMetrics(SAMPLE_METRICS);
-        setIsLoading(false);
+        setIsLoading(true);
+        setError(null);
+        const headers = { 'X-Admin-Role': 'admin' };
+        const [walletResponse, promoResponse, feedResponse, configResponse] =
+          await Promise.all([
+            fetch('/api/v1/admin/wallet/reconciliation', { headers }),
+            fetch('/api/v1/admin/promotions/usage', { headers }),
+            fetch('/api/v1/admin/feed-health', { headers }),
+            fetch('/api/v1/admin/config', { headers }),
+          ]);
+
+        if (
+          !walletResponse.ok ||
+          !promoResponse.ok ||
+          !feedResponse.ok ||
+          !configResponse.ok
+        ) {
+          throw new Error('Failed to load reports');
+        }
+
+        const wallet = await walletResponse.json();
+        const promo = await promoResponse.json();
+        const feed = await feedResponse.json();
+        const config = await configResponse.json();
+
+        const totalRevenue = (wallet.netMovementCents || 0) / 100;
+        const totalBets = promo.summary?.totalBets || 0;
+        const uniqueUsers = promo.summary?.uniqueUsers || wallet.distinctUserCount || 0;
+        const avgBetSize =
+          totalBets > 0 ? (promo.summary?.totalStakeCents || 0) / 100 / totalBets : 0;
+
+        setMetrics({
+          totalRevenue,
+          totalBets,
+          uniqueUsers,
+          avgBetSize,
+        });
+
+        setReports([
+          {
+            id: 'wallet-reconciliation',
+            title: 'Wallet Reconciliation Summary',
+            description: `Entries: ${wallet.entryCount}, net movement ${(wallet.netMovementCents || 0) / 100}`,
+            type: 'summary',
+            generatedDate: new Date().toISOString(),
+            period: activePeriod,
+          },
+          {
+            id: 'promotion-usage',
+            title: 'Promotion Usage Summary',
+            description: `Freebet bets: ${promo.summary?.betsWithFreebet || 0}, odds boost bets: ${promo.summary?.betsWithOddsBoost || 0}`,
+            type: 'compliance',
+            generatedDate: new Date().toISOString(),
+            period: activePeriod,
+          },
+          {
+            id: 'feed-health',
+            title: 'Feed Health Snapshot',
+            description: `Provider runtime ${feed.enabled ? 'enabled' : 'disabled'}, unhealthy streams: ${feed.summary?.unhealthyStreams || 0}`,
+            type: 'market',
+            generatedDate: config.updatedAt || new Date().toISOString(),
+            period: activePeriod,
+          },
+        ]);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load reports');
+      } finally {
         setIsLoading(false);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(timer);
-  }, [activePeriod]);
+    loadReports();
+  }, [activePeriod, reloadKey]);
 
   const handleGenerateReport = (reportType: string) => {
     console.log('Generate report:', reportType);
@@ -227,11 +263,9 @@ function ReportsPageContent() {
   const handleRetry = () => {
     setIsLoading(true);
     setError(null);
-    setTimeout(() => {
-      setReports(SAMPLE_REPORTS);
-      setMetrics(SAMPLE_METRICS);
-      setIsLoading(false);
-    }, 500);
+    setReports([]);
+    setMetrics(EMPTY_METRICS);
+    setReloadKey((value) => value + 1);
   };
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import styled from 'styled-components';
-import { Card, Badge } from '../../../components/shared';
+import { Card, Badge } from '../../../../components/shared';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -122,11 +122,52 @@ export default function FixtureDetailPage() {
   useEffect(() => {
     const fetchFixtureDetail = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:3001/api';
-        const response = await fetch(`${apiUrl}/admin/fixtures/${id}`);
-        if (!response.ok) throw new Error('Failed to fetch');
-        const data = await response.json();
-        setFixture(data);
+        const [fixtureResponse, marketsResponse] = await Promise.all([
+          fetch(`/api/v1/admin/trading/fixtures/${id}`, {
+            headers: {
+              'X-Admin-Role': 'admin',
+            },
+          }),
+          fetch(`/api/v1/admin/trading/markets?fixtureId=${encodeURIComponent(id)}&page=1&pageSize=50`, {
+            headers: {
+              'X-Admin-Role': 'admin',
+            },
+          }),
+        ]);
+
+        if (!fixtureResponse.ok) throw new Error('Failed to fetch fixture');
+
+        const fixtureData = await fixtureResponse.json();
+        const marketsData = marketsResponse.ok ? await marketsResponse.json() : {};
+        const markets = Array.isArray(marketsData?.items)
+          ? marketsData.items.map((market: any) => ({
+              id: market.id,
+              name: market.name,
+              odds: 0,
+              totalBets: 0,
+              totalStake: 0,
+              liability: 0,
+              exposure: 0,
+              risk: 0,
+            }))
+          : [];
+
+        setFixture({
+          id: fixtureData.id,
+          match: `${fixtureData.homeTeam} vs ${fixtureData.awayTeam}`,
+          sport: fixtureData.sportKey || 'Unknown',
+          league: fixtureData.tournament || fixtureData.leagueKey || 'Unknown',
+          homeTeam: fixtureData.homeTeam,
+          awayTeam: fixtureData.awayTeam,
+          startTime: fixtureData.startsAt,
+          status: 'OPEN',
+          totalLiability: 0,
+          totalExposure: 0,
+          totalRisk: 0,
+          marketCount: markets.length,
+          betCount: 0,
+          markets,
+        });
       } catch (error) {
         console.error('Failed to fetch fixture:', error);
         setFixture(null);

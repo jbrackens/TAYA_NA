@@ -51,7 +51,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <LoginForm onSuccess={() => (window.location.href = "/")} />
+        <LoginForm />
 
         <div
           style={{
@@ -150,7 +150,7 @@ export default function LoginPage() {
             fontSize: "14px",
           }}
         >
-          Don't have an account?
+          Don&apos;t have an account?
           <Link
             href="/auth/signup"
             style={{

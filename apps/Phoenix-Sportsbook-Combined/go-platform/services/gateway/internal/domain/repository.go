@@ -11,4 +11,8 @@ type ReadRepository interface {
 	GetPunterByID(id string) (Punter, error)
 }
 
+type PunterWriteRepository interface {
+	UpdatePunterStatus(id string, status string) (Punter, error)
+}
+
 var ErrNotFound = fmt.Errorf("entity not found")

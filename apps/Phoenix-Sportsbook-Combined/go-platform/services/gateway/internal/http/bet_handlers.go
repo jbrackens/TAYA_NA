@@ -171,7 +171,75 @@ type lifecycleBetRequest struct {
 	Reason string `json:"reason,omitempty"`
 }
 
+func handleBetHistory(service *bets.Service, w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	if r.Method != stdhttp.MethodGet {
+		return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+	}
+
+	userID := strings.TrimSpace(r.URL.Query().Get("userId"))
+	if userID == "" {
+		userID = strings.TrimSpace(r.URL.Query().Get("user_id"))
+	}
+	if userID == "" {
+		return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+	}
+
+	page := 1
+	if raw := strings.TrimSpace(r.URL.Query().Get("page")); raw != "" {
+		parsed, err := strconv.Atoi(raw)
+		if err != nil || parsed < 1 {
+			return httpx.BadRequest("invalid page query parameter", map[string]any{"field": "page"})
+		}
+		page = parsed
+	}
+
+	pageSize := 20
+	pageSizeRaw := strings.TrimSpace(r.URL.Query().Get("pageSize"))
+	if pageSizeRaw == "" {
+		pageSizeRaw = strings.TrimSpace(r.URL.Query().Get("itemsPerPage"))
+	}
+	if pageSizeRaw == "" {
+		pageSizeRaw = strings.TrimSpace(r.URL.Query().Get("limit"))
+	}
+	if pageSizeRaw != "" {
+		parsed, err := strconv.Atoi(pageSizeRaw)
+		if err != nil || parsed < 1 {
+			return httpx.BadRequest("invalid pageSize query parameter", map[string]any{"field": "pageSize"})
+		}
+		pageSize = parsed
+	}
+
+	statuses := append([]string{}, r.URL.Query()["status"]...)
+	statuses = append(statuses, r.URL.Query()["filters.status"]...)
+	if raw := strings.TrimSpace(r.URL.Query().Get("filterStatus")); raw != "" {
+		statuses = append(statuses, raw)
+	}
+
+	result, err := service.ListByUser(bets.BetHistoryQuery{
+		UserID:   userID,
+		Statuses: statuses,
+		Page:     page,
+		PageSize: pageSize,
+	})
+	if err != nil {
+		return mapBetError(err)
+	}
+	return httpx.WriteJSON(w, stdhttp.StatusOK, result)
+}
+
 func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
+	mux.Handle("/api/v1/bets", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		return handleBetHistory(service, w, r)
+	}))
+
+	mux.Handle("/api/v1/bets/history", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		return handleBetHistory(service, w, r)
+	}))
+
+	mux.Handle("/punters/bets", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		return handleBetHistory(service, w, r)
+	}))
+
 	mux.Handle("/api/v1/bets/cashout/quote", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
@@ -594,6 +662,9 @@ func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
 		}
 
 		betID := strings.TrimPrefix(r.URL.Path, "/api/v1/bets/")
+		if strings.TrimSpace(betID) == "" {
+			return handleBetHistory(service, w, r)
+		}
 		if betID == "" {
 			return httpx.NotFound("bet not found")
 		}

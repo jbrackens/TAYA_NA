@@ -131,6 +131,10 @@ type providerAcknowledgementActionMetadata struct {
 	LastAction  string
 }
 
+type punterStatusUpdateRequest struct {
+	Status string `json:"status"`
+}
+
 func toAdminMarketView(market domain.Market) adminMarketView {
 	return adminMarketView{
 		ID:        market.ID,
@@ -279,6 +283,7 @@ func registerAdminTradingRoutes(mux *stdhttp.ServeMux, basePath string, reposito
 
 func registerAdminPunterRoutes(mux *stdhttp.ServeMux, basePath string, repository domain.ReadRepository) {
 	puntersPath := fmt.Sprintf("%s/punters", basePath)
+	writableRepository, hasWritableRepository := repository.(domain.PunterWriteRepository)
 
 	mux.Handle(puntersPath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
@@ -318,15 +323,61 @@ func registerAdminPunterRoutes(mux *stdhttp.ServeMux, basePath string, repositor
 	}))
 
 	mux.Handle(puntersPath+"/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodGet {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
-		}
 		if err := requireAdminRole(r); err != nil {
 			return err
 		}
 
-		id := strings.TrimPrefix(r.URL.Path, puntersPath+"/")
-		if id == "" {
+		subpath := strings.TrimPrefix(r.URL.Path, puntersPath+"/")
+		if subpath == "" {
+			return httpx.NotFound("punter not found")
+		}
+
+		if strings.HasSuffix(subpath, "/status") {
+			if r.Method != stdhttp.MethodPut {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+			}
+			if !hasWritableRepository {
+				return httpx.Internal("punter status mutations unavailable", errors.New("punter write repository unavailable"))
+			}
+
+			id := strings.TrimSuffix(subpath, "/status")
+			id = strings.TrimSuffix(id, "/")
+			if id == "" || strings.Contains(id, "/") {
+				return httpx.NotFound("punter not found")
+			}
+
+			var request punterStatusUpdateRequest
+			if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+				return httpx.BadRequest("invalid punter status update payload", map[string]any{
+					"field": "body",
+				})
+			}
+
+			request.Status = strings.ToLower(strings.TrimSpace(request.Status))
+			if _, ok := allowedPunterStatuses[request.Status]; !ok {
+				return httpx.BadRequest(
+					"status must be one of active,suspended,self_excluded,deactivated",
+					map[string]any{"field": "status", "value": request.Status},
+				)
+			}
+
+			punter, err := writableRepository.UpdatePunterStatus(id, request.Status)
+			if err != nil {
+				if errors.Is(err, domain.ErrNotFound) {
+					return httpx.NotFound("punter not found")
+				}
+				return httpx.Internal("failed to update admin punter status", err)
+			}
+
+			return httpx.WriteJSON(w, stdhttp.StatusOK, punter)
+		}
+
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+
+		id := subpath
+		if strings.Contains(id, "/") {
 			return httpx.NotFound("punter not found")
 		}
 

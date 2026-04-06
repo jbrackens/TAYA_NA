@@ -80,7 +80,7 @@ export default function SportError({
             borderRadius: 8,
             border: "1px solid #1a1f3a",
             background: "transparent",
-            color: "#94a3b8",
+            color: "#D3D3D3",
             fontSize: 14,
             fontWeight: 600,
             textDecoration: "none",

@@ -245,7 +245,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             </h2>
             <p
               style={{
-                color: "#94a3b8",
+                color: "#D3D3D3",
                 fontSize: "14px",
                 marginBottom: "24px",
               }}
@@ -388,7 +388,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
               <div key={q.questionId} style={{ marginBottom: "16px" }}>
                 <label
                   style={{
-                    color: "#94a3b8",
+                    color: "#D3D3D3",
                     fontSize: "13px",
                     fontWeight: 600,
                     display: "block",
@@ -429,7 +429,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                         color:
                           kbaAnswers[q.questionId] === opt
                             ? "#39ff14"
-                            : "#94a3b8",
+                            : "#D3D3D3",
                         cursor: "pointer",
                         textAlign: "left",
                       }}
@@ -496,7 +496,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             <div style={{ marginBottom: "16px" }}>
               <label
                 style={{
-                  color: "#94a3b8",
+                  color: "#D3D3D3",
                   fontSize: "13px",
                   fontWeight: 600,
                   display: "block",
@@ -527,7 +527,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             <div style={{ marginBottom: "16px" }}>
               <label
                 style={{
-                  color: "#94a3b8",
+                  color: "#D3D3D3",
                   fontSize: "13px",
                   fontWeight: 600,
                   display: "block",
@@ -625,7 +625,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             >
               Verification In Progress
             </h2>
-            <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+            <p style={{ color: "#D3D3D3", fontSize: "14px" }}>
               Please complete the verification in the opened window. This page
               will update automatically.
             </p>
@@ -647,7 +647,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             >
               Verification Successful
             </h2>
-            <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+            <p style={{ color: "#D3D3D3", fontSize: "14px" }}>
               Your identity has been verified. You may now continue.
             </p>
           </div>
@@ -670,7 +670,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             </h2>
             <p
               style={{
-                color: "#94a3b8",
+                color: "#D3D3D3",
                 fontSize: "14px",
                 marginBottom: "16px",
               }}

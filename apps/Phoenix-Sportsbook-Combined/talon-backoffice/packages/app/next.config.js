@@ -56,7 +56,15 @@ module.exports = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
+        bufferutil: false,
+        "utf-8-validate": false,
       };
+    } else {
+      config.externals = config.externals || [];
+      config.externals.push({
+        bufferutil: "commonjs bufferutil",
+        "utf-8-validate": "commonjs utf-8-validate",
+      });
     }
     return {
       ...config,

@@ -5,6 +5,7 @@ import { apiClient } from "../lib/api/client";
 import {
   login as authLogin,
   refresh as authRefresh,
+  getSession,
 } from "../lib/api/auth-client";
 import { getCoolOffStatus } from "../lib/api/compliance-client";
 import { IdleActivityMonitor } from "./IdleActivityMonitor";
@@ -45,28 +46,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check for existing session on mount
   useEffect(() => {
-    try {
-      if (apiClient.isAuthenticated()) {
-        // We have a token — restore user from localStorage
-        const userId =
-          typeof window !== "undefined"
-            ? localStorage.getItem("phoenix_user_id")
-            : null;
-        const username =
-          typeof window !== "undefined"
-            ? localStorage.getItem("phoenix_username")
-            : null;
-        if (userId && username) {
-          setUser({ id: userId, username });
+    let mounted = true;
+
+    const restoreSession = async () => {
+      try {
+        if (!apiClient.isAuthenticated()) {
+          return;
+        }
+
+        try {
+          const session = await getSession();
+          if (!mounted || !session.authenticated) return;
+          setUser({ id: session.userId, username: session.username });
           setSessionStartTime(new Date());
+          if (typeof window !== "undefined") {
+            localStorage.setItem("phoenix_user_id", session.userId);
+            localStorage.setItem("phoenix_username", session.username);
+          }
+        } catch (sessionErr) {
+          const currentRefreshToken = apiClient.getRefreshToken();
+          if (!currentRefreshToken) {
+            throw sessionErr;
+          }
+
+          const refreshed = await authRefresh(currentRefreshToken);
+          apiClient.setToken(refreshed.accessToken, refreshed.refreshToken);
+          const session = await getSession(refreshed.accessToken);
+          if (!mounted || !session.authenticated) return;
+          setUser({ id: session.userId, username: session.username });
+          setSessionStartTime(new Date());
+          if (typeof window !== "undefined") {
+            localStorage.setItem("phoenix_user_id", session.userId);
+            localStorage.setItem("phoenix_username", session.username);
+          }
+        }
+      } catch (err) {
+        logger.error("Auth", "Session check failed", err);
+        apiClient.clearTokens();
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("phoenix_user_id");
+          localStorage.removeItem("phoenix_username");
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
         }
       }
-    } catch (err) {
-      logger.error("Auth", "Session check failed", err);
-      apiClient.clearTokens();
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    restoreSession();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = useCallback(
@@ -79,19 +111,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Store tokens via the base client
         apiClient.setToken(response.accessToken, response.refreshToken);
 
-        // Persist user info for session restore
-        if (typeof window !== "undefined") {
-          localStorage.setItem("phoenix_user_id", response.userId);
-          localStorage.setItem("phoenix_username", response.username);
+        const session = await getSession(response.accessToken);
+        if (!session.authenticated) {
+          throw new Error("Authenticated session could not be restored");
         }
 
         // Check cool-off status before completing login
-        const coolOff = await getCoolOffStatus(response.userId);
+        const coolOff = await getCoolOffStatus(session.userId);
         if (coolOff.status === "active" && coolOff.coolOffUntil) {
           const coolOffEnd = new Date(coolOff.coolOffUntil);
           if (coolOffEnd > new Date()) {
             logger.warn("Auth", "Login blocked due to active cool-off period", {
-              userId: response.userId,
+              userId: session.userId,
               coolOffUntil: coolOff.coolOffUntil,
             });
             apiClient.clearTokens();
@@ -105,12 +136,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
 
+        if (typeof window !== "undefined") {
+          localStorage.setItem("phoenix_user_id", session.userId);
+          localStorage.setItem("phoenix_username", session.username);
+        }
+
         setUser({
-          id: response.userId,
-          username: response.username,
+          id: session.userId,
+          username: session.username,
         });
         setSessionStartTime(new Date());
-        toast.success("Welcome back!", response.username);
+        toast.success("Welcome back!", session.username);
       } catch (err) {
         const loginError = err instanceof Error ? err : new Error(String(err));
         setError(loginError);
@@ -144,6 +180,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const response = await authRefresh(currentRefreshToken);
       apiClient.setToken(response.accessToken, response.refreshToken);
+      const session = await getSession(response.accessToken);
+      setUser({ id: session.userId, username: session.username });
     } catch (err) {
       const refreshError = err instanceof Error ? err : new Error(String(err));
       setError(refreshError);

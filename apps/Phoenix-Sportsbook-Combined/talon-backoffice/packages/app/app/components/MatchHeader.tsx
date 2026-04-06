@@ -10,7 +10,7 @@ const Badge: React.FC<{
 }> = ({ variant = "upcoming", children }) => {
   const colors: Record<string, { bg: string; color: string }> = {
     live: { bg: "rgba(34,197,94,0.15)", color: "#22c55e" },
-    finished: { bg: "rgba(100,116,139,0.15)", color: "#94a3b8" },
+    finished: { bg: "rgba(100,116,139,0.15)", color: "#D3D3D3" },
     upcoming: { bg: "rgba(57,255,20,0.15)", color: "#39ff14" },
     cancelled: { bg: "rgba(239,68,68,0.15)", color: "#f87171" },
   };

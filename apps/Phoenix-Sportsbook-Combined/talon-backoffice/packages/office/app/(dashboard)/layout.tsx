@@ -64,8 +64,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
         .dash-page { flex: 1; padding: 28px; }
         @media (max-width: 768px) {
-          .dash-sidebar { display: none; }
+          .dash-shell { flex-direction: column; }
+          .dash-sidebar {
+            display: flex;
+            position: relative;
+            width: 100%;
+            top: auto;
+            bottom: auto;
+            left: auto;
+            border-right: none;
+            border-bottom: 1px solid #1e2243;
+          }
+          .dash-brand {
+            padding: 14px 16px;
+            border-bottom: none;
+            border-right: 1px solid #1e2243;
+            min-width: max-content;
+          }
+          .dash-nav {
+            flex-direction: row;
+            gap: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            flex: 1;
+          }
+          .dash-nav-item {
+            min-width: max-content;
+            padding: 10px 12px;
+          }
+          .dash-sidebar > div:last-child {
+            padding: 12px;
+            border-top: none !important;
+            border-left: 1px solid #1e2243;
+          }
           .dash-content { margin-left: 0; }
+          .dash-header {
+            padding: 14px 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+          }
+          .dash-page { padding: 16px; }
         }
       `}} />
 

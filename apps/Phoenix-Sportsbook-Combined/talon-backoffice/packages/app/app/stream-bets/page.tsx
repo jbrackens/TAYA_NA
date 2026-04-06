@@ -181,7 +181,7 @@ export default function StreamBetsPage() {
               <p
                 style={{
                   fontSize: "13px",
-                  color: "#94a3b8",
+                  color: "#D3D3D3",
                   marginBottom: "12px",
                 }}
               >

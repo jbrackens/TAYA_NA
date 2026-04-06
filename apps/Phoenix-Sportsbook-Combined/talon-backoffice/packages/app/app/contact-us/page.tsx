@@ -123,7 +123,7 @@ export default function ContactUsPage() {
 
   const infoItemStyle: React.CSSProperties = {
     fontSize: "14px",
-    color: "#94a3b8",
+    color: "#D3D3D3",
     marginBottom: "8px",
   };
 

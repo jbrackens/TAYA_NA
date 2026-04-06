@@ -103,16 +103,27 @@ type structuredAuditLogger struct {
 func NewAuthService() *AuthService {
 	demoUsername := getEnvOrDefault("AUTH_DEMO_USERNAME", "demo@phoenix.local")
 	demoPassword := getEnvOrDefault("AUTH_DEMO_PASSWORD", "change-me-local")
+	adminUsername := getEnvOrDefault("AUTH_ADMIN_USERNAME", "admin@phoenix.local")
+	adminPassword := getEnvOrDefault("AUTH_ADMIN_PASSWORD", "admin123")
 	sessionStorePath := os.Getenv("AUTH_SESSION_STORE_FILE")
 
-	return &AuthService{
-		usersByUsername: map[string]user{
-			demoUsername: {
-				ID:       "user-demo",
-				Username: demoUsername,
-				Password: demoPassword,
-			},
+	users := map[string]user{
+		demoUsername: {
+			ID:       "user-demo",
+			Username: demoUsername,
+			Password: demoPassword,
 		},
+	}
+	if _, exists := users[adminUsername]; !exists {
+		users[adminUsername] = user{
+			ID:       "user-admin",
+			Username: adminUsername,
+			Password: adminPassword,
+		}
+	}
+
+	return &AuthService{
+		usersByUsername: users,
 		store:      NewFileBackedSessionStore(sessionStorePath),
 		audit:      &structuredAuditLogger{logger: log.Default()},
 		accessTTL:  durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),

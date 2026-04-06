@@ -88,8 +88,12 @@ export function MarketManagement({
   onViewSelections,
 }: MarketManagementProps) {
   const [localMarkets, setLocalMarkets] = useState<MarketData[]>(markets);
+  const canToggleMarkets = typeof onMarketToggle === 'function';
 
   const handleToggle = (marketId: string) => {
+    if (!canToggleMarkets) {
+      return;
+    }
     setLocalMarkets((prev) =>
       prev.map((m) =>
         m.id === marketId
@@ -137,6 +141,7 @@ export function MarketManagement({
                 variant={market.status === 'open' ? 'danger' : 'primary'}
                 size="sm"
                 onClick={() => handleToggle(market.id)}
+                disabled={!canToggleMarkets}
               >
                 {market.status === 'open' ? 'Suspend' : 'Resume'}
               </SuspendButton>
@@ -152,6 +157,20 @@ export function MarketManagement({
         ))
       ) : (
         <EmptyState>No markets available</EmptyState>
+      )}
+
+      {!canToggleMarkets && localMarkets.length > 0 && (
+        <div
+          style={{
+            fontSize: '12px',
+            color: '#a0a0a0',
+            padding: '10px 12px',
+            backgroundColor: 'rgba(15, 52, 96, 0.5)',
+            borderRadius: '4px',
+          }}
+        >
+          Market suspend/resume controls are not wired to a backend mutation route in this local environment yet.
+        </div>
       )}
     </Container>
   );

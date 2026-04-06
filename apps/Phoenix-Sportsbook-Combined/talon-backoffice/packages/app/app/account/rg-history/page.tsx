@@ -219,7 +219,7 @@ const rgHistoryStyles = `
 
   .rg-table th {
     padding: 12px 16px; text-align: left; font-size: 12px;
-    font-weight: 700; color: #94a3b8; text-transform: uppercase;
+    font-weight: 700; color: #D3D3D3; text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 

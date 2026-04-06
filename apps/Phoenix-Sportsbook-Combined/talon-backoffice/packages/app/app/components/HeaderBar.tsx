@@ -42,15 +42,28 @@ export const HeaderBar: React.FC = () => {
   const dispatch = useAppDispatch();
 
   // i18n
-  const { t, i18n } = useTranslation("header");
+  const { t, i18n, ready } = useTranslation("header");
   const currentLang = i18n.language || "en";
+  const tx = useCallback(
+    (key: string, fallback: string) =>
+      ready ? t(key, { defaultValue: fallback }) : fallback,
+    [ready, t],
+  );
 
   // Header tabs array now inside component to use translations
   const HEADER_TABS = [
-    { label: t("TAB_SPORTS_HOME"), href: "/" },
-    { label: t("TAB_LIVE"), href: "/live" },
-    { label: t("TAB_STARTING_SOON"), href: "/?filter=upcoming" },
+    { label: tx("TAB_SPORTS_HOME", "Sports Home"), href: "/" },
+    { label: tx("TAB_LIVE", "Live"), href: "/live" },
+    { label: tx("TAB_STARTING_SOON", "Starting Soon"), href: "/starting-soon" },
   ];
+
+  const isTabActive = useCallback(
+    (href: string) => {
+      if (href === "/") return pathname === "/";
+      return pathname === href || pathname.startsWith(`${href}/`);
+    },
+    [pathname],
+  );
 
   const cycleLang = useCallback(() => {
     const lang = i18n.language || "en";
@@ -145,9 +158,7 @@ export const HeaderBar: React.FC = () => {
             <a
               key={tab.href}
               href={tab.href}
-              className={`ps-topbar-tab ${
-                pathname === tab.href ? "active" : ""
-              }`}
+              className={`ps-topbar-tab ${isTabActive(tab.href) ? "active" : ""}`}
             >
               {tab.label}
             </a>
@@ -210,7 +221,7 @@ export const HeaderBar: React.FC = () => {
             onClick={() => setSearchOpen(!searchOpen)}
           >
             <SearchIcon size={14} strokeWidth={2} />
-            <span>{t("SEARCH_PLACEHOLDER")}</span>
+            <span>{tx("SEARCH_PLACEHOLDER", "Search events...")}</span>
           </button>
 
           {isAuthenticated ? (
@@ -238,17 +249,17 @@ export const HeaderBar: React.FC = () => {
               </button>
 
               {/* Avatar / Account */}
-              <a href="/profile" className="ps-avatar" title="Account">
+              <a href="/account" className="ps-avatar" title="Account">
                 {user?.username?.[0]?.toUpperCase() || "U"}
               </a>
             </>
           ) : (
             <>
               <a href="/auth/login" className="ps-btn-login">
-                {t("LOGIN_LINK")}
+                {tx("LOGIN_LINK", "Login")}
               </a>
               <a href="/auth/login?mode=register" className="ps-btn-signup">
-                {t("SIGN_UP_LINK")}
+                {tx("SIGN_UP_LINK", "Join Now")}
               </a>
             </>
           )}
@@ -313,7 +324,7 @@ export const HeaderBar: React.FC = () => {
             </div>
 
             {/* Results Area */}
-            <div style={{ minHeight: 100, color: "#94a3b8", fontSize: 14 }}>
+            <div style={{ minHeight: 100, color: "#D3D3D3", fontSize: 14 }}>
               {searchQuery.trim().length < 2 ? (
                 /* Quick Browse — show sports when no query */
                 <div>
@@ -470,7 +481,7 @@ export const HeaderBar: React.FC = () => {
                 </div>
               ) : (
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
-                  <div style={{ color: "#94a3b8" }}>
+                  <div style={{ color: "#D3D3D3" }}>
                     {t("SEARCH_NO_RESULTS", { query: searchQuery })}
                   </div>
                   <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>

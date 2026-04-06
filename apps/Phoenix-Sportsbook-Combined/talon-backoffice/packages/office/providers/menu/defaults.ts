@@ -6,7 +6,12 @@ import {
 import { DashboardOutlined, ReconciliationOutlined } from "@ant-design/icons";
 import defaultMenuStructure from "./structure";
 import { MenuModulesPathEnum } from "./structure";
-import { PunterRoleEnum } from "@phoenix-ui/utils";
+
+const OfficeRole = {
+  ADMIN: "admin",
+  TRADER: "trader",
+  OPERATOR: "operator",
+} as const;
 
 export const defaultMenuItems: MenuItem[] = [
   // {
@@ -18,13 +23,13 @@ export const defaultMenuItems: MenuItem[] = [
     key: "users",
     path: defaultMenuStructure.users.path(),
     label: "USERS",
-    roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.OPERATOR],
+    roles: [OfficeRole.ADMIN, OfficeRole.OPERATOR],
   },
   {
     key: "risk-management",
     path: defaultMenuStructure.get(MenuModulesPathEnum.RISK_MANAGEMENT).path(),
     label: "RISK_MANAGEMENT",
-    roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.TRADER, PunterRoleEnum.OPERATOR],
+    roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
     children: [
       {
         key: "summary",
@@ -33,7 +38,7 @@ export const defaultMenuItems: MenuItem[] = [
           .get(MenuModulesPathEnum.RISK_MANAGEMENT)
           .summary.path(),
         label: "RISK_MANAGEMENT_SUMMARY",
-        roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.TRADER, PunterRoleEnum.OPERATOR],
+        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
       },
       // Target B: fixtures list restored — route aligned to Go /admin/fixtures, response normalized
       {
@@ -43,7 +48,7 @@ export const defaultMenuItems: MenuItem[] = [
           .get(MenuModulesPathEnum.RISK_MANAGEMENT)
           .fixtures.path(),
         label: "RISK_MANAGEMENT_FIXTURES",
-        roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.TRADER, PunterRoleEnum.OPERATOR],
+        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
       },
       // Target B: markets list + read-only detail restored — route aligned to Go /admin/markets
       {
@@ -53,7 +58,7 @@ export const defaultMenuItems: MenuItem[] = [
           .get(MenuModulesPathEnum.RISK_MANAGEMENT)
           .markets.path(),
         label: "RISK_MANAGEMENT_MARKETS",
-        roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.TRADER, PunterRoleEnum.OPERATOR],
+        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
       },
       // Gated: no Go gateway route for market-categories
       // {
@@ -74,7 +79,7 @@ export const defaultMenuItems: MenuItem[] = [
           .get(MenuModulesPathEnum.RISK_MANAGEMENT)
           ["provider-ops"].path(),
         label: "RISK_MANAGEMENT_PROVIDER_OPS",
-        roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.TRADER, PunterRoleEnum.OPERATOR],
+        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
       },
       {
         key: "prediction",
@@ -83,7 +88,7 @@ export const defaultMenuItems: MenuItem[] = [
           .get(MenuModulesPathEnum.RISK_MANAGEMENT)
           .prediction.path(),
         label: "RISK_MANAGEMENT_PREDICTION",
-        roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.TRADER, PunterRoleEnum.OPERATOR],
+        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
       },
     ],
   },
@@ -91,7 +96,7 @@ export const defaultMenuItems: MenuItem[] = [
     key: "logs",
     path: defaultMenuStructure.logs.path(),
     label: "LOGS",
-    roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.OPERATOR],
+    roles: [OfficeRole.ADMIN, OfficeRole.OPERATOR],
   },
   {
     key: "terms-and-conditions",
@@ -99,7 +104,7 @@ export const defaultMenuItems: MenuItem[] = [
       .get(MenuModulesPathEnum.TERMS_AND_CONDITIONS)
       .path(),
     label: "TERMS_AND_CONDITIONS",
-    roles: [PunterRoleEnum.ADMIN, PunterRoleEnum.OPERATOR],
+    roles: [OfficeRole.ADMIN, OfficeRole.OPERATOR],
   },
 ];
 

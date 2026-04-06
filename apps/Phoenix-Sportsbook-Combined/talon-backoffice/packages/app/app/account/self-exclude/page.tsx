@@ -427,11 +427,11 @@ const selfExcludeStyles = `
   }
 
   .se-help-section p {
-    font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;
+    font-size: 12px; color: #D3D3D3; margin: 0 0 8px 0;
   }
 
   .se-help-section ul {
-    margin: 0; padding-left: 20px; font-size: 12px; color: #94a3b8;
+    margin: 0; padding-left: 20px; font-size: 12px; color: #D3D3D3;
   }
 
   .se-help-section li {
@@ -444,7 +444,7 @@ const selfExcludeStyles = `
 
   .se-duration-btn {
     flex: 1; padding: 12px 16px; background: #161a32; border: 1px solid #1a1f3a;
-    border-radius: 8px; color: #94a3b8; font-size: 13px; font-weight: 600;
+    border-radius: 8px; color: #D3D3D3; font-size: 13px; font-weight: 600;
     cursor: pointer; transition: all 0.15s; text-align: center;
   }
 
@@ -465,7 +465,7 @@ const selfExcludeStyles = `
   }
 
   .se-label {
-    font-size: 13px; font-weight: 600; color: #94a3b8;
+    font-size: 13px; font-weight: 600; color: #D3D3D3;
   }
 
   .se-textarea {
@@ -495,7 +495,7 @@ const selfExcludeStyles = `
   }
 
   .se-checkbox span {
-    font-size: 13px; color: #94a3b8; line-height: 1.4;
+    font-size: 13px; color: #D3D3D3; line-height: 1.4;
   }
 
   .se-confirm-card {
@@ -569,7 +569,7 @@ const selfExcludeStyles = `
   }
 
   .se-success-message p {
-    font-size: 13px; color: #94a3b8; margin: 0;
+    font-size: 13px; color: #D3D3D3; margin: 0;
   }
 
   .se-actions {

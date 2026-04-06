@@ -159,7 +159,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           <div
             style={{
               fontSize: 12,
-              color: "#94a3b8",
+              color: "#D3D3D3",
               marginTop: 2,
               lineHeight: 1.5,
             }}
@@ -184,7 +184,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           transition: "color 0.15s",
         }}
         onMouseEnter={(e) => {
-          (e.target as HTMLElement).style.color = "#94a3b8";
+          (e.target as HTMLElement).style.color = "#D3D3D3";
         }}
         onMouseLeave={(e) => {
           (e.target as HTMLElement).style.color = "#4a5580";

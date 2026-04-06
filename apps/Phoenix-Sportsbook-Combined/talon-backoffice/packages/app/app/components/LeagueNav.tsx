@@ -7,12 +7,14 @@ interface LeagueNavProps {
   sportKey: string;
   onLeagueSelect?: (leagueKey: string) => void;
   activeLeague?: string;
+  includeAllOption?: boolean;
 }
 
 export const LeagueNav: React.FC<LeagueNavProps> = ({
   sportKey,
   onLeagueSelect,
   activeLeague,
+  includeAllOption = false,
 }) => {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,6 +99,43 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
     <>
       <style>{scrollbarStyle}</style>
       <div style={navContainerStyle}>
+        {includeAllOption && (
+          <button
+            style={{
+              padding: "8px 16px",
+              backgroundColor:
+                !activeLeague || activeLeague === "all" ? "#39ff14" : "#0f1225",
+              color:
+                !activeLeague || activeLeague === "all" ? "#000" : "#e2e8f0",
+              border: `1px solid ${
+                !activeLeague || activeLeague === "all" ? "#39ff14" : "#1a1f3a"
+              }`,
+              borderRadius: "20px",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              whiteSpace: "nowrap",
+              fontSize: "13px",
+              fontWeight: 500,
+              flexShrink: 0,
+            }}
+            onClick={() => onLeagueSelect?.("all")}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                "#39ff14";
+              (e.currentTarget as HTMLButtonElement).style.color = "#000";
+            }}
+            onMouseLeave={(e) => {
+              const isActive = !activeLeague || activeLeague === "all";
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                isActive ? "#39ff14" : "#0f1225";
+              (e.currentTarget as HTMLButtonElement).style.color = isActive
+                ? "#000"
+                : "#e2e8f0";
+            }}
+          >
+            All
+          </button>
+        )}
         {leagues.map((league: League) => {
           const isActive = activeLeague === league.leagueKey;
           const pillStyle: React.CSSProperties = {

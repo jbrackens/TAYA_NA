@@ -6,8 +6,7 @@ import { getMarkets } from "../lib/api/markets-client";
 import type { Event } from "../lib/api/events-client";
 import type { Market, MarketSelection } from "../lib/api/markets-client";
 import wsService from "../lib/websocket/websocket-service";
-import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
-import { toggleBetElement, selectBets } from "../lib/store/betSlice";
+import { useBetslip } from "../hooks/useBetslip";
 
 interface MatchOdds {
   homeOdds: number;
@@ -32,8 +31,7 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   const [oddsMap, setOddsMap] = useState<Record<string, MatchOdds>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const dispatch = useAppDispatch();
-  const betslipSelections = useAppSelector(selectBets);
+  const betslip = useBetslip();
 
   useEffect(() => {
     let cancelled = false;
@@ -164,31 +162,31 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
           : matchOdds?.awaySelectionId || `${match.fixtureId}-away`;
     const marketId = matchOdds?.marketId || `${match.fixtureId}-match-result`;
 
-    dispatch(
-      toggleBetElement({
-        selectionId,
-        brandMarketId: marketId,
-        selectionName:
-          position === "home"
-            ? match.homeTeam
-            : position === "away"
-              ? match.awayTeam
-              : "Draw",
-        marketName: "Match Result",
-        fixtureName: `${match.homeTeam} vs ${match.awayTeam}`,
-        fixtureId: match.fixtureId,
-        odds: {
-          decimal: odds,
-          american:
-            odds >= 2
-              ? `+${Math.round((odds - 1) * 100)}`
-              : odds > 1
-                ? `-${Math.round(100 / (odds - 1))}`
-                : "0",
-          fractional: "0/0",
-        },
-      }),
+    const existing = betslip.selections.find(
+      (bet) => bet.selectionId === selectionId && bet.marketId === marketId,
     );
+
+    if (existing) {
+      betslip.removeSelection(existing.id);
+      return;
+    }
+
+    betslip.addSelection({
+      id: `${marketId}-${selectionId}`,
+      fixtureId: match.fixtureId,
+      marketId,
+      selectionId,
+      matchName: `${match.homeTeam} vs ${match.awayTeam}`,
+      marketName: "Match Result",
+      selectionName:
+        position === "home"
+          ? match.homeTeam
+          : position === "away"
+            ? match.awayTeam
+            : "Draw",
+      odds,
+      initialOdds: odds,
+    });
   };
 
   const isSelected = (fixtureId: string, position: string) => {
@@ -199,8 +197,10 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
         : position === "draw"
           ? matchOdds?.drawSelectionId
           : matchOdds?.awaySelectionId;
-    return betslipSelections.some(
-      (b) => b.selectionId === (selectionId || `${fixtureId}-${position}`),
+    return betslip.selections.some(
+      (b) =>
+        b.selectionId === (selectionId || `${fixtureId}-${position}`) &&
+        b.marketId === matchOdds?.marketId,
     );
   };
 

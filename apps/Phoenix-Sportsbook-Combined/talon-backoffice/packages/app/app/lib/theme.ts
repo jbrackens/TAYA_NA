@@ -42,7 +42,7 @@ export const colors = {
   // Text
   textPrimary: "#f8fafc", // Headings, strong text
   textDefault: "#e2e8f0", // Body text
-  textSecondary: "#94a3b8", // Subdued text
+  textSecondary: "#D3D3D3", // Secondary text on dark surfaces
   textMuted: "#64748b", // Placeholders, captions
   textDim: "#4a5580", // Section labels, disabled
 

@@ -1,4 +1,16 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080';
+const API_BASE =
+  typeof window === "undefined"
+    ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"
+    : "";
+
+function syncAuthCookie(token?: string) {
+  if (typeof document === 'undefined') return;
+  if (token) {
+    document.cookie = `authToken=${encodeURIComponent(token)}; path=/; SameSite=Lax`;
+    return;
+  }
+  document.cookie = 'authToken=; path=/; Max-Age=0; SameSite=Lax';
+}
 
 class ApiClient {
   private baseUrl: string;
@@ -17,7 +29,9 @@ class ApiClient {
   }
 
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
-    const url = new URL(`${this.baseUrl}${path}`);
+    const url = this.baseUrl
+      ? new URL(`${this.baseUrl}${path}`)
+      : new URL(path, window.location.origin);
     if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     const res = await fetch(url.toString(), { headers: this.getHeaders() });
     if (!res.ok) throw new ApiError(res.status, await res.text());
@@ -25,7 +39,8 @@ class ApiClient {
   }
 
   async post<T>(path: string, body?: Record<string, unknown>): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
+    const url = this.baseUrl ? `${this.baseUrl}${path}` : path;
+    const res = await fetch(url, {
       method: 'POST', headers: this.getHeaders(), body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
@@ -33,7 +48,8 @@ class ApiClient {
   }
 
   async put<T>(path: string, body?: Record<string, unknown>): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
+    const url = this.baseUrl ? `${this.baseUrl}${path}` : path;
+    const res = await fetch(url, {
       method: 'PUT', headers: this.getHeaders(), body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
@@ -41,7 +57,8 @@ class ApiClient {
   }
 
   async delete<T>(path: string): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
+    const url = this.baseUrl ? `${this.baseUrl}${path}` : path;
+    const res = await fetch(url, {
       method: 'DELETE', headers: this.getHeaders()
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
@@ -53,6 +70,7 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       localStorage.setItem('phoenix_access_token', accessToken);
       if (refreshToken) localStorage.setItem('phoenix_refresh_token', refreshToken);
+      syncAuthCookie(accessToken);
     }
   }
 
@@ -70,6 +88,7 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('phoenix_access_token');
       localStorage.removeItem('phoenix_refresh_token');
+      syncAuthCookie();
     }
   }
 

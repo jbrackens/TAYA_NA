@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,12 +13,12 @@ import (
 
 // TTL configuration for different entity types
 const (
-	FixtureListTTL      = 5 * time.Second
-	SingleFixtureTTL    = 10 * time.Second
-	MarketWithSelTTL    = 1 * time.Second
-	SportsCatalogTTL    = 1 * time.Hour
-	PunterProfileTTL    = 5 * time.Minute
-	BetByIDTTL          = 30 * time.Second
+	FixtureListTTL   = 5 * time.Second
+	SingleFixtureTTL = 10 * time.Second
+	MarketWithSelTTL = 1 * time.Second
+	SportsCatalogTTL = 1 * time.Hour
+	PunterProfileTTL = 5 * time.Minute
+	BetByIDTTL       = 30 * time.Second
 )
 
 // CachedReadRepository wraps any ReadRepository and adds caching via Redis
@@ -243,6 +244,24 @@ func (c *CachedReadRepository) GetPunterByID(id string) (domain.Punter, error) {
 	return punter, nil
 }
 
+func (c *CachedReadRepository) UpdatePunterStatus(id string, status string) (domain.Punter, error) {
+	writable, ok := c.underlying.(domain.PunterWriteRepository)
+	if !ok {
+		return domain.Punter{}, errors.New("punter write repository unavailable")
+	}
+
+	punter, err := writable.UpdatePunterStatus(id, status)
+	if err != nil {
+		c.metrics.RecordError("punter")
+		return domain.Punter{}, err
+	}
+
+	_ = c.InvalidatePunter(id)
+	_ = c.InvalidateAllPunters()
+
+	return punter, nil
+}
+
 // InvalidateFixture invalidates cache for a single fixture
 func (c *CachedReadRepository) InvalidateFixture(fixtureID string) error {
 	key := c.fixtureKey(fixtureID)
@@ -272,6 +291,11 @@ func (c *CachedReadRepository) InvalidateMarketsForFixture(fixtureID string) err
 func (c *CachedReadRepository) InvalidatePunter(punterID string) error {
 	key := c.punterKey(punterID)
 	return c.redis.Delete(context.Background(), key)
+}
+
+// InvalidateAllPunters invalidates all punter list caches.
+func (c *CachedReadRepository) InvalidateAllPunters() error {
+	return c.redis.DeleteByPrefix(context.Background(), "punter:list:")
 }
 
 // Metrics returns the cache metrics

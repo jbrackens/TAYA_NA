@@ -1,8 +1,8 @@
 'use client';
 
 import styled from 'styled-components';
-import { PunterSearch } from '../components/users';
-import { ErrorBoundary, LoadingSpinner, ErrorState, SkeletonLoader } from '../components/shared';
+import { PunterSearch } from '../../components/users';
+import { ErrorBoundary, LoadingSpinner, ErrorState, SkeletonLoader } from '../../components/shared';
 import { useState, useEffect } from 'react';
 
 const PageTitle = styled.h1`
@@ -14,47 +14,34 @@ const PageTitle = styled.h1`
 
 interface PunterData {
   id: string;
-  username: string;
+  name: string;
   email: string;
-  registeredDate: string;
+  lastActivity: string;
   totalBets: number;
-  totalStake: number;
-  status: 'active' | 'suspended' | 'verified' | 'unverified';
-  riskLevel: 'low' | 'medium' | 'high';
+  pnl: number;
+  status: 'active' | 'suspended' | 'inactive';
+  riskSegment: 'low' | 'medium' | 'high';
 }
 
-const SAMPLE_PUNTERS: PunterData[] = [
-  {
-    id: '1',
-    username: 'john_doe',
-    email: 'john@example.com',
-    registeredDate: '2024-01-15',
-    totalBets: 245,
-    totalStake: 12500,
-    status: 'active',
-    riskLevel: 'low',
-  },
-  {
-    id: '2',
-    username: 'jane_smith',
-    email: 'jane@example.com',
-    registeredDate: '2024-02-20',
-    totalBets: 156,
-    totalStake: 8900,
-    status: 'active',
-    riskLevel: 'medium',
-  },
-  {
-    id: '3',
-    username: 'high_roller',
-    email: 'roller@example.com',
-    registeredDate: '2024-03-10',
-    totalBets: 512,
-    totalStake: 45000,
-    status: 'suspended',
-    riskLevel: 'high',
-  },
-];
+const toDisplayName = (email: string) =>
+  email
+    .split('@')[0]
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ') || email;
+
+const toUserStatus = (status: string): PunterData['status'] => {
+  if (status === 'suspended') return 'suspended';
+  if (status === 'active') return 'active';
+  return 'inactive';
+};
+
+const toRiskSegment = (status: string): PunterData['riskSegment'] => {
+  if (status === 'suspended') return 'high';
+  if (status === 'active') return 'low';
+  return 'medium';
+};
 
 function UsersPageContent() {
   const [punters, setPunters] = useState<PunterData[]>([]);
@@ -62,24 +49,40 @@ function UsersPageContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate API call
-    setIsLoading(true);
-    setError(null);
-    const timer = setTimeout(() => {
+    const loadPunters = async () => {
       try {
-        // Replace with actual API call:
-        // const { get } = useAdminApi();
-        // const data = await get('/api/admin/users');
-        // setPunters(data);
-        setPunters(SAMPLE_PUNTERS);
-        setIsLoading(false);
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch('/api/v1/admin/punters?page=1&pageSize=100', {
+          headers: {
+            'X-Admin-Role': 'admin',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to load users');
+        }
+        const data = await response.json();
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setPunters(
+          items.map((item: any) => ({
+            id: item.id,
+            name: toDisplayName(item.email),
+            email: item.email,
+            lastActivity: item.lastLoginAt || 'Never',
+            totalBets: 0,
+            pnl: 0,
+            status: toUserStatus(item.status),
+            riskSegment: toRiskSegment(item.status),
+          })),
+        );
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load users');
+      } finally {
         setIsLoading(false);
       }
-    }, 500);
+    };
 
-    return () => clearTimeout(timer);
+    loadPunters();
   }, []);
 
   const handlePunterSelect = (punter: PunterData) => {
@@ -89,12 +92,39 @@ function UsersPageContent() {
   };
 
   const handleRetry = () => {
+    setPunters([]);
     setIsLoading(true);
     setError(null);
-    setTimeout(() => {
-      setPunters(SAMPLE_PUNTERS);
-      setIsLoading(false);
-    }, 500);
+    fetch('/api/v1/admin/punters?page=1&pageSize=100', {
+      headers: {
+        'X-Admin-Role': 'admin',
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Failed to load users');
+        return response.json();
+      })
+      .then((data) => {
+        const items = Array.isArray(data?.items) ? data.items : [];
+        setPunters(
+          items.map((item: any) => ({
+            id: item.id,
+            name: toDisplayName(item.email),
+            email: item.email,
+            lastActivity: item.lastLoginAt || 'Never',
+            totalBets: 0,
+            pnl: 0,
+            status: toUserStatus(item.status),
+            riskSegment: toRiskSegment(item.status),
+          })),
+        );
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : 'Failed to load users');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (

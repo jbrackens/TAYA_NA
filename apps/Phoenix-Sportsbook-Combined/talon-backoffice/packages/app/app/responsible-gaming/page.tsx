@@ -264,7 +264,7 @@ export default function ResponsibleGamingPage() {
               gap: 10,
               marginBottom: 16,
               fontSize: 13,
-              color: "#94a3b8",
+              color: "#D3D3D3",
               cursor: "pointer",
             }}
           >
@@ -334,7 +334,7 @@ export default function ResponsibleGamingPage() {
                     alignItems: "flex-start",
                     gap: 10,
                     fontSize: 13,
-                    color: "#94a3b8",
+                    color: "#D3D3D3",
                     padding: "8px 12px",
                     background: "#0b0e1c",
                     borderRadius: 6,
@@ -413,7 +413,7 @@ export default function ResponsibleGamingPage() {
                     <div
                       style={{
                         fontSize: 12,
-                        color: "#94a3b8",
+                        color: "#D3D3D3",
                         marginBottom: 6,
                       }}
                     >
@@ -458,7 +458,7 @@ export default function ResponsibleGamingPage() {
             >
               Patron Protection
             </h2>
-            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
+            <div style={{ fontSize: 13, color: "#D3D3D3", lineHeight: 1.7 }}>
               <p style={{ marginBottom: 12 }}>
                 TAYA NA! Sportsbook is committed to protecting our patrons. We
                 implement the following measures:
@@ -507,7 +507,7 @@ export default function ResponsibleGamingPage() {
             >
               Dispute Resolution
             </h2>
-            <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
+            <div style={{ fontSize: 13, color: "#D3D3D3", lineHeight: 1.7 }}>
               <p style={{ marginBottom: 12 }}>
                 If you have a complaint or dispute regarding your account,
                 transactions, or betting outcomes, please follow these steps:

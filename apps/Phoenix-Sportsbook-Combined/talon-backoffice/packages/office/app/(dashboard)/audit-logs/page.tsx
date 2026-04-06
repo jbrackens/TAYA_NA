@@ -1,8 +1,8 @@
 'use client';
 
 import styled from 'styled-components';
-import { AuditLogTable } from '../components/audit';
-import { ErrorBoundary, LoadingSpinner, ErrorState } from '../components/shared';
+import { AuditLogTable } from '../../components/audit';
+import { ErrorBoundary, LoadingSpinner, ErrorState } from '../../components/shared';
 import { useState, useEffect } from 'react';
 
 const PageTitle = styled.h1`
@@ -68,48 +68,26 @@ interface AuditLogEntry {
   timestamp: string;
   actor: string;
   action: string;
-  resource: string;
-  resourceId: string;
-  before: Record<string, any>;
-  after: Record<string, any>;
-  ipAddress: string;
+  entityType: string;
+  entityId: string;
+  dataBefore?: Record<string, any>;
+  dataAfter?: Record<string, any>;
 }
 
-const SAMPLE_LOGS: AuditLogEntry[] = [
-  {
-    id: '1',
-    timestamp: '2024-04-01T14:30:00Z',
-    actor: 'admin@example.com',
-    action: 'UPDATE',
-    resource: 'fixture',
-    resourceId: 'fix_001',
-    before: { status: 'live', odds: 2.15 },
-    after: { status: 'suspended', odds: 2.20 },
-    ipAddress: '192.168.1.1',
-  },
-  {
-    id: '2',
-    timestamp: '2024-04-01T13:45:00Z',
-    actor: 'risk_manager@example.com',
-    action: 'CREATE',
-    resource: 'alert',
-    resourceId: 'alert_001',
-    before: {},
-    after: { severity: 'high', description: 'High liability detected' },
-    ipAddress: '192.168.1.2',
-  },
-  {
-    id: '3',
-    timestamp: '2024-04-01T12:20:00Z',
-    actor: 'admin@example.com',
-    action: 'DELETE',
-    resource: 'user',
-    resourceId: 'user_123',
-    before: { email: 'test@example.com', status: 'active' },
-    after: {},
-    ipAddress: '192.168.1.1',
-  },
-];
+const deriveEntityType = (action: string, targetId: string) => {
+  if (targetId.startsWith('p:')) return 'user';
+  if (targetId.startsWith('m:')) return 'market';
+  if (targetId.startsWith('f:')) return 'fixture';
+  if (action.includes('.')) return action.split('.')[0];
+  return 'system';
+};
+
+const deriveActionLabel = (action: string) => {
+  if (action.includes('.')) {
+    return action.split('.').slice(1).join('.').toUpperCase();
+  }
+  return action.toUpperCase();
+};
 
 function AuditLogsPageContent() {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
@@ -118,53 +96,69 @@ function AuditLogsPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState('');
   const [resourceFilter, setResourceFilter] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    // Simulate API call
-    setIsLoading(true);
-    setError(null);
-    const timer = setTimeout(() => {
+    const loadLogs = async () => {
       try {
-        // Replace with actual API call:
-        // const { get } = useAdminApi();
-        // const data = await get('/api/admin/audit-logs');
-        let filtered = [...SAMPLE_LOGS];
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch('/api/v1/admin/audit-logs?page=1&pageSize=100', {
+          headers: {
+            'X-Admin-Role': 'admin',
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to load audit logs');
+        }
+        const data = await response.json();
+        let items = (Array.isArray(data?.items) ? data.items : []).map((item: any) => {
+          const entityType = deriveEntityType(item.action || '', item.targetId || '');
+          return {
+            id: item.id,
+            timestamp: item.occurredAt,
+            actor: item.actorId,
+            action: deriveActionLabel(item.action || ''),
+            entityType,
+            entityId: item.targetId || 'system',
+            dataAfter: item.details ? { details: item.details } : undefined,
+          } as AuditLogEntry;
+        });
 
         if (searchTerm) {
-          filtered = filtered.filter(
-            log =>
-              log.actor.includes(searchTerm) ||
-              log.resource.includes(searchTerm) ||
-              log.resourceId.includes(searchTerm)
+          const search = searchTerm.toLowerCase();
+          items = items.filter(
+            (log) =>
+              log.actor.toLowerCase().includes(search) ||
+              log.entityType.toLowerCase().includes(search) ||
+              log.entityId.toLowerCase().includes(search),
           );
         }
 
         if (actionFilter) {
-          filtered = filtered.filter(log => log.action === actionFilter);
+          items = items.filter((log) => log.action === actionFilter);
         }
 
         if (resourceFilter) {
-          filtered = filtered.filter(log => log.resource === resourceFilter);
+          items = items.filter((log) => log.entityType === resourceFilter);
         }
 
-        setLogs(filtered);
-        setIsLoading(false);
+        setLogs(items);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load audit logs');
+      } finally {
         setIsLoading(false);
       }
-    }, 300);
+    };
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, actionFilter, resourceFilter]);
+    loadLogs();
+  }, [searchTerm, actionFilter, resourceFilter, reloadKey]);
 
   const handleRetry = () => {
     setIsLoading(true);
     setError(null);
-    setTimeout(() => {
-      setLogs(SAMPLE_LOGS);
-      setIsLoading(false);
-    }, 300);
+    setLogs([]);
+    setReloadKey((value) => value + 1);
   };
 
   return (

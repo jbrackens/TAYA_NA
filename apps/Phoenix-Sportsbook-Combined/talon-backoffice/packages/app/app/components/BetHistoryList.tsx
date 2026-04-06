@@ -3,11 +3,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import BetCard from "./BetCard";
 import {
-  getUserBets,
+  getUserBetsPage,
   getCashoutOffer,
   cashoutBet,
   CashoutOffer,
-  UserBet,
 } from "../lib/api/betting-client";
 import { useToast } from "./ToastProvider";
 import { logger } from "../lib/logger";
@@ -20,6 +19,7 @@ interface Bet {
   odds: number;
   marketId: string;
   selectionId: string;
+  selectionName?: string;
   settledAt?: string;
 }
 
@@ -30,11 +30,23 @@ interface BetHistoryListProps {
   pageSize?: number;
 }
 
+function normalizeBetStatus(status: string): string {
+  switch (status) {
+    case "placed":
+      return "open";
+    case "settled_won":
+      return "won";
+    case "settled_lost":
+      return "lost";
+    default:
+      return status;
+  }
+}
+
 export const BetHistoryList: React.FC<BetHistoryListProps> = ({
   userId,
   pageSize = 10,
 }) => {
-  const [bets, setBets] = useState<Bet[]>([]);
   const [filteredBets, setFilteredBets] = useState<Bet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,38 +63,49 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
     async (signal: { cancelled: boolean }) => {
       try {
         setLoading(true);
-        const userBets: UserBet[] = await getUserBets(userId);
+        const result = await getUserBetsPage(userId, {
+          page: currentPage,
+          pageSize,
+          status: filterStatus,
+        });
         if (signal.cancelled) return;
 
-        // Normalize UserBet to local Bet shape
-        const normalized: Bet[] = (userBets || []).map((ub) => ({
+        const normalized: Bet[] = (result.data || []).map((ub) => ({
           betId: ub.betId,
           createdAt: ub.createdAt,
-          status: ub.status,
+          status: normalizeBetStatus(ub.status),
           stakeCents: Math.round(ub.stake * 100),
           odds: ub.selection?.odds ?? 0,
-          marketId: ub.selection?.marketId ?? "",
+          marketId: ub.marketId ?? "",
           selectionId: ub.selection?.selectionId ?? "",
-          settledAt: ub.settledAt,
+          selectionName: ub.selection?.selectionName ?? "",
+          settledAt:
+            ub.status === "settled_won" || ub.status === "settled_lost"
+              ? ub.updatedAt
+              : undefined,
         }));
-        setBets(normalized);
+        setFilteredBets(normalized);
+        setTotalPages(Math.max(1, Math.ceil(result.totalCount / pageSize)));
         setError(null);
 
         // Fetch cashout offers for open/pending bets
         const cashable = normalized.filter(
-          (b) =>
-            b.status === "open" ||
-            b.status === "pending" ||
-            b.status === "accepted",
+          (b) => b.status === "open",
         );
         const offers: Record<string, CashoutOffer> = {};
-        const offerResults = await Promise.allSettled(
-          cashable.map((bet) => getCashoutOffer(bet.betId)),
+        const offerResults = await Promise.all(
+          cashable.map(async (bet) => {
+            try {
+              const offer = await getCashoutOffer(bet.betId);
+              return { betId: bet.betId, offer };
+            } catch {
+              return null;
+            }
+          }),
         );
-        cashable.forEach((bet, i) => {
-          const result = offerResults[i];
-          if (result.status === "fulfilled" && result.value.available) {
-            offers[bet.betId] = result.value;
+        offerResults.forEach((result) => {
+          if (result?.offer.available) {
+            offers[result.betId] = result.offer;
           }
         });
         if (!signal.cancelled) {
@@ -101,7 +124,7 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
         }
       }
     },
-    [userId],
+    [userId, currentPage, pageSize, filterStatus],
   );
 
   useEffect(() => {
@@ -113,27 +136,9 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
     };
   }, [userId, loadBets]);
 
-  // Apply filter
   useEffect(() => {
-    let filtered = bets;
-
-    if (filterStatus !== "all") {
-      filtered = bets.filter((bet) => {
-        const statusMap: Record<BetStatus, string> = {
-          all: "all",
-          open: "pending",
-          won: "settled",
-          lost: "settled",
-          cashed_out: "cashed_out",
-        };
-        return bet.status === statusMap[filterStatus];
-      });
-    }
-
-    setFilteredBets(filtered);
     setCurrentPage(1);
-    setTotalPages(Math.ceil(filtered.length / pageSize));
-  }, [filterStatus, bets, pageSize]);
+  }, [filterStatus]);
 
   const handleCashout = async (betId: string) => {
     setCashingOut(betId);
@@ -159,10 +164,7 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
     }
   };
 
-  const paginatedBets = filteredBets.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
+  const paginatedBets = filteredBets;
 
   if (loading) {
     return (
@@ -186,10 +188,45 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
           display: "flex",
           flexDirection: "column",
           gap: "20px",
-          color: "#f87171",
+          padding: "16px 18px",
+          borderRadius: "12px",
+          border: "1px solid #1a1f3a",
+          background: "#0f1225",
+          color: "#D3D3D3",
         }}
       >
-        Error: {error}
+        <div style={{ fontWeight: 700, color: "#f8fafc" }}>
+          Failed to load bet history
+        </div>
+        <div
+          style={{
+            fontSize: "13px",
+            lineHeight: 1.6,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          {error}
+        </div>
+        <button
+          onClick={() => {
+            const signal = { cancelled: false };
+            void loadBets(signal);
+          }}
+          style={{
+            alignSelf: "flex-start",
+            padding: "8px 14px",
+            borderRadius: "8px",
+            border: "1px solid #1a1f3a",
+            background: "#11162c",
+            color: "#f8fafc",
+            cursor: "pointer",
+            fontSize: "13px",
+            fontWeight: 600,
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }

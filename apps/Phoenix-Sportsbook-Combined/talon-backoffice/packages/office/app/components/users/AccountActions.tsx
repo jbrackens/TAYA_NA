@@ -56,19 +56,24 @@ const WarningText = styled.p`
 `;
 
 interface AccountActionsProps {
-  punterId: string;
+  currentStatus?: 'active' | 'suspended' | 'inactive';
   onAction?: (action: string, data?: any) => void | Promise<void>;
 }
 
-export function AccountActions({ punterId, onAction }: AccountActionsProps) {
+export function AccountActions({ currentStatus, onAction }: AccountActionsProps) {
   const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false);
+  const statusActionsAvailable = typeof onAction === 'function';
+  const canSuspend = statusActionsAvailable && currentStatus !== 'suspended';
+  const canActivate = statusActionsAvailable && currentStatus === 'suspended';
 
-  const handleAction = async (action: string, title: string, message: string, impactSummary?: string) => {
+  const handleAction = async (action: string, title: string, message: string) => {
+    if (!statusActionsAvailable) {
+      return;
+    }
     confirm.openConfirm({
       title,
       message,
-      impactSummary,
       confirmText: 'Confirm',
       variant: 'danger',
       onConfirm: async () => {
@@ -97,10 +102,9 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
                   'suspend',
                   'Suspend Account',
                   'Suspend this punter\'s account immediately.',
-                  'Account will be locked. Punter cannot place bets.',
                 )
               }
-              disabled={isLoading}
+              disabled={isLoading || !canSuspend}
             >
               Suspend
             </StyledButton>
@@ -111,10 +115,9 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
                   'activate',
                   'Activate Account',
                   'Activate this suspended account.',
-                  'Account will be restored to active status.',
                 )
               }
-              disabled={isLoading}
+              disabled={isLoading || !canActivate}
             >
               Activate
             </StyledButton>
@@ -131,10 +134,9 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
                   'resetPassword',
                   'Force Password Reset',
                   'Force this punter to reset their password on next login.',
-                  'Punter must authenticate with new password.',
                 )
               }
-              disabled={isLoading}
+              disabled={true}
             >
               Reset Password
             </StyledButton>
@@ -145,10 +147,9 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
                   'disable2FA',
                   'Disable 2FA',
                   'Disable two-factor authentication for this punter.',
-                  '2FA will be completely disabled.',
                 )
               }
-              disabled={isLoading}
+              disabled={true}
             >
               Disable 2FA
             </StyledButton>
@@ -165,10 +166,9 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
                   'adjustSegment',
                   'Adjust Risk Segment',
                   'Adjust this punter\'s risk classification.',
-                  'Risk segment will be updated.',
                 )
               }
-              disabled={isLoading}
+              disabled={true}
             >
               Risk Segment
             </StyledButton>
@@ -179,10 +179,9 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
                   'setLimits',
                   'Set Manual Limits',
                   'Set custom deposit, stake, or session time limits.',
-                  'Punter will be subject to these limits.',
                 )
               }
-              disabled={isLoading}
+              disabled={true}
             >
               Set Limits
             </StyledButton>
@@ -195,7 +194,7 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
             <StyledButton
               variant="secondary"
               onClick={() => onAction?.('addNote')}
-              disabled={isLoading}
+              disabled={true}
             >
               Add Admin Note
             </StyledButton>
@@ -203,7 +202,7 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
         </ActionGroup>
 
         <WarningText>
-          Dangerous actions require confirmation. All actions are logged in audit trail.
+          Suspend and activate are live now. The rest of the admin controls stay disabled until the matching Go mutation routes exist.
         </WarningText>
       </ActionsContainer>
 
@@ -211,7 +210,6 @@ export function AccountActions({ punterId, onAction }: AccountActionsProps) {
         isOpen={confirm.isOpen}
         title={confirm.title}
         message={confirm.message}
-        impactSummary={confirm.impactSummary}
         confirmText={confirm.confirmText}
         cancelText={confirm.cancelText}
         variant={confirm.variant as 'danger' | 'warning' | 'info'}
