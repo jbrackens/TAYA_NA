@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  useDeferredValue,
+} from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
 import { useAppSelector, useAppDispatch } from "../lib/store/hooks";
@@ -30,8 +36,10 @@ export const HeaderBar: React.FC = () => {
   const [searchResults, setSearchResults] = useState<Event[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [quickSports, setQuickSports] = useState<Sport[]>([]);
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<number | null>(null);
+  const searchRequestIdRef = useRef(0);
 
   // Auth state — providers are always mounted in layout.tsx
   const { isAuthenticated, user } = useAuth();
@@ -117,13 +125,14 @@ export const HeaderBar: React.FC = () => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    const query = searchQuery.trim();
+    const query = deferredSearchQuery.trim();
     if (query.length < 2) {
       setSearchResults([]);
       setSearchLoading(false);
       return;
     }
     setSearchLoading(true);
+    const requestId = ++searchRequestIdRef.current;
     debounceRef.current = window.setTimeout(async () => {
       try {
         // Pass query to backend for server-side filtering; fall back to
@@ -137,17 +146,24 @@ export const HeaderBar: React.FC = () => {
             e.sportKey.toLowerCase().includes(lowerQuery) ||
             e.leagueKey.toLowerCase().includes(lowerQuery),
         );
+        if (requestId !== searchRequestIdRef.current) {
+          return;
+        }
         setSearchResults(filtered.slice(0, 20));
       } catch {
-        setSearchResults([]);
+        if (requestId === searchRequestIdRef.current) {
+          setSearchResults([]);
+        }
       } finally {
-        setSearchLoading(false);
+        if (requestId === searchRequestIdRef.current) {
+          setSearchLoading(false);
+        }
       }
     }, 300);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchQuery]);
+  }, [deferredSearchQuery]);
 
   return (
     <>

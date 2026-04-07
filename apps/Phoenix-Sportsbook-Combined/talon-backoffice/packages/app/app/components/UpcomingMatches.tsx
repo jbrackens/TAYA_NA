@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getSports, getEvents } from "../lib/api/events-client";
 import type { Event, Sport } from "../lib/api/events-client";
 import wsService from "../lib/websocket/websocket-service";
@@ -17,6 +17,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const trackedFixtureIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +38,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
         }
 
         const results = await Promise.allSettled(
-          sports.map(async (sport: Sport) => {
+          sports.slice(0, 8).map(async (sport: Sport) => {
             const response = await getEvents({
               sport: sport.sportKey,
               status: "scheduled",
@@ -61,6 +62,11 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
         }
 
         if (!cancelled) {
+          trackedFixtureIdsRef.current = new Set(
+            Object.values(upcomingMatches)
+              .flat()
+              .map((match) => match.fixtureId),
+          );
           setMatchesByGroup(upcomingMatches);
           setError(null);
         }
@@ -86,16 +92,37 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
       (data: Record<string, unknown>) => {
         const fixtureId = data?.fixtureId as string | undefined;
         const newStatus = data?.status as string | undefined;
-        if (!fixtureId || !newStatus) return;
+        if (
+          !fixtureId ||
+          !newStatus ||
+          !trackedFixtureIdsRef.current.has(fixtureId)
+        ) {
+          return;
+        }
 
         setMatchesByGroup((prev) => {
+          let changed = false;
           const updated: Record<string, Event[]> = {};
+
           for (const [sport, matches] of Object.entries(prev)) {
-            updated[sport] = matches.map((m: Event) =>
-              m.fixtureId === fixtureId ? { ...m, status: newStatus } : m,
-            );
+            const matchIndex = matches.findIndex((match) => match.fixtureId === fixtureId);
+            if (matchIndex === -1) {
+              updated[sport] = matches;
+              continue;
+            }
+
+            if (matches[matchIndex].status === newStatus) {
+              updated[sport] = matches;
+              continue;
+            }
+
+            changed = true;
+            const nextMatches = matches.slice();
+            nextMatches[matchIndex] = { ...nextMatches[matchIndex], status: newStatus };
+            updated[sport] = nextMatches;
           }
-          return updated;
+
+          return changed ? updated : prev;
         });
       },
     );
@@ -103,6 +130,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     return () => {
       cancelled = true;
       unsubscribe();
+      wsService.unsubscribe("fixture");
     };
   }, [limit]);
 
@@ -124,9 +152,10 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     return <div style={{ color: "#f87171" }}>Error: {error}</div>;
   }
 
-  const totalMatches = Object.values(matchesByGroup).reduce(
-    (sum, matches) => sum + matches.length,
-    0,
+  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
+  const totalMatches = useMemo(
+    () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
+    [groupedEntries],
   );
   if (totalMatches === 0) {
     return <div style={{ color: "#a0a0a0" }}>No upcoming matches</div>;
@@ -134,7 +163,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {Object.entries(matchesByGroup).map(([sport, matches]) => (
+      {groupedEntries.map(([sport, matches]) => (
         <div
           key={sport}
           style={{ display: "flex", flexDirection: "column", gap: "12px" }}

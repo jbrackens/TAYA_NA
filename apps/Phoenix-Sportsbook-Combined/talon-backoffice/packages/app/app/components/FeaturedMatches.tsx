@@ -209,6 +209,7 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
     return () => {
       cancelled = true;
       unsubscribe();
+      wsService.unsubscribe("fixture");
     };
   }, [sportKey, leagueKey]);
 

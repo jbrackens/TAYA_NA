@@ -42,6 +42,7 @@ class WebSocketService {
   private _isPolling = false;
   private pollTimer: number | null = null;
   private subscribedChannels: Set<string> = new Set();
+  private channelRefCounts: Map<string, number> = new Map();
   private authToken?: string;
 
   get isConnected(): boolean { return this._isConnected; }
@@ -108,18 +109,31 @@ class WebSocketService {
     this._isConnected = false;
     this._isPolling = false;
     this.subscribedChannels.clear();
+    this.channelRefCounts.clear();
   }
 
   subscribe(channel: string): void {
+    const nextCount = (this.channelRefCounts.get(channel) || 0) + 1;
+    this.channelRefCounts.set(channel, nextCount);
+
+    const isNewChannel = !this.subscribedChannels.has(channel);
     this.subscribedChannels.add(channel);
-    if (this._isConnected) {
+    if (this._isConnected && isNewChannel) {
       this.send({ event: 'subscribe', channel });
     }
     // If already in polling mode, the next poll cycle picks up the new channel
   }
 
   unsubscribe(channel: string): void {
-    this.subscribedChannels.delete(channel);
+    const currentCount = this.channelRefCounts.get(channel) || 0;
+    if (currentCount <= 1) {
+      this.channelRefCounts.delete(channel);
+      this.subscribedChannels.delete(channel);
+    } else {
+      this.channelRefCounts.set(channel, currentCount - 1);
+      return;
+    }
+
     if (this._isConnected) {
       this.send({ event: 'unsubscribe', channel });
     }
