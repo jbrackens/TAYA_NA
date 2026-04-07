@@ -3,39 +3,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { logger } from "../../lib/logger";
 import MarketGroup from "../../components/MarketGroup";
-
-interface Selection {
-  id: string;
-  name: string;
-  price: number;
-  type: string;
-  order: number;
-}
-
-interface BCMarket {
-  id: string;
-  type: string;
-  name: string;
-  displayKey: string;
-  base: number | null;
-  colCount: number;
-  selections: Selection[];
-}
-
-interface BCGameDetail {
-  id: number;
-  startTs: number;
-  team1: string;
-  team2: string;
-  type: number;
-  marketsCount: number;
-  info: Record<string, unknown> | null;
-  sportName: string;
-  sportAlias: string;
-  regionName: string;
-  competitionName: string;
-  markets: BCMarket[];
-}
+import {
+  bcGetGame,
+  type BCGameDetail,
+  type BCGameMarket,
+} from "../../lib/api/betconstruct-client";
 
 interface MatchPageProps {
   params: {
@@ -50,7 +22,7 @@ function matchesAny(value: string | undefined, needles: string[]) {
   return needles.some((needle) => normalized.includes(needle.toLowerCase()));
 }
 
-function isMoneylineMarket(market: BCMarket) {
+function isMoneylineMarket(market: BCGameMarket) {
   return (
     matchesAny(market.type, ["p1xp2", "p1p2", "winner", "moneyline", "match result"]) ||
     matchesAny(market.displayKey, ["winner", "moneyline", "match_result", "1x2"]) ||
@@ -58,7 +30,7 @@ function isMoneylineMarket(market: BCMarket) {
   );
 }
 
-function isHandicapMarket(market: BCMarket) {
+function isHandicapMarket(market: BCGameMarket) {
   return (
     matchesAny(market.type, ["handicap", "spread", "run line", "puck line"]) ||
     matchesAny(market.displayKey, ["handicap", "spread"]) ||
@@ -66,7 +38,7 @@ function isHandicapMarket(market: BCMarket) {
   );
 }
 
-function isTotalMarket(market: BCMarket) {
+function isTotalMarket(market: BCGameMarket) {
   return (
     matchesAny(market.type, ["total", "overunder", "over/under"]) ||
     matchesAny(market.displayKey, ["total", "totals", "over_under"]) ||
@@ -74,7 +46,7 @@ function isTotalMarket(market: BCMarket) {
   );
 }
 
-function isPlayerPropMarket(market: BCMarket) {
+function isPlayerPropMarket(market: BCGameMarket) {
   return (
     matchesAny(market.type, ["player"]) ||
     matchesAny(market.displayKey, ["player"]) ||
@@ -94,12 +66,7 @@ export default function MatchPage({ params }: MatchPageProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `/api/bc/game/?id=${encodeURIComponent(matchId)}`,
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
+        const data = await bcGetGame(matchId);
         if (!cancelled) {
           setGame(data);
           setError(null);

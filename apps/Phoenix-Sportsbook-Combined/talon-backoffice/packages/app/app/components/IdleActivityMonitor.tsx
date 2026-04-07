@@ -7,13 +7,13 @@ interface IdleActivityMonitorProps {
   onLogout: () => void;
   onRefreshToken?: () => Promise<void>;
   isAuthenticated: boolean;
-  sessionTimeoutSeconds?: number; // default 840
-  warningSeconds?: number; // default 60
+  sessionTimeoutSeconds?: number;
+  warningSeconds?: number;
 }
 
-const SIGN_OUT_TIME = 840; // 14 minutes in seconds
-const WARN_TIME = 60; // 1 minute warning in seconds
-const TOKEN_REFRESH_AHEAD = 30; // Refresh token 30 seconds before expiry
+const SIGN_OUT_TIME = 840;
+const WARN_TIME = 60;
+const TOKEN_REFRESH_AHEAD = 30;
 
 export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   onLogout,
@@ -25,53 +25,22 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(warningSeconds);
   const lastActivityRef = useRef<number>(Date.now());
-  const checkIntervalRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
-  const showWarningRef = useRef(false);
+  const warningTimeoutRef = useRef<number | null>(null);
+  const refreshTimeoutRef = useRef<number | null>(null);
   const warningShownRef = useRef(false);
 
-  // Update showWarning ref when state changes
-  useEffect(() => {
-    showWarningRef.current = showWarning;
-  }, [showWarning]);
-
-  // Activity event listeners
-  const handleActivity = useCallback(() => {
-    lastActivityRef.current = Date.now();
-
-    // Reset warning if user interacts while it's showing
-    if (showWarningRef.current) {
-      setShowWarning(false);
-      warningShownRef.current = false;
-      setCountdown(warningSeconds);
+  const clearSessionTimers = useCallback(() => {
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+      warningTimeoutRef.current = null;
     }
-  }, [warningSeconds]);
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+      refreshTimeoutRef.current = null;
+    }
+  }, []);
 
-  // Setup activity listeners
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const events = [
-      "mousemove",
-      "mousedown",
-      "click",
-      "scroll",
-      "keypress",
-      "load",
-    ];
-
-    events.forEach((event) => {
-      window.addEventListener(event, handleActivity, true);
-    });
-
-    return () => {
-      events.forEach((event) => {
-        window.removeEventListener(event, handleActivity, true);
-      });
-    };
-  }, [isAuthenticated, handleActivity]);
-
-  // Token refresh handler
   const refreshAuthToken = useCallback(async () => {
     try {
       if (onRefreshToken) {
@@ -82,53 +51,93 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     }
   }, [onRefreshToken]);
 
-  // Main idle check interval
+  const scheduleSessionTimers = useCallback(() => {
+    clearSessionTimers();
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const idleMs = Date.now() - lastActivityRef.current;
+    const refreshInMs = Math.max(
+      0,
+      (sessionTimeoutSeconds - TOKEN_REFRESH_AHEAD) * 1000 - idleMs,
+    );
+    const warningInMs = Math.max(0, sessionTimeoutSeconds * 1000 - idleMs);
+
+    refreshTimeoutRef.current = window.setTimeout(() => {
+      if (!warningShownRef.current) {
+        refreshAuthToken();
+      }
+    }, refreshInMs);
+
+    warningTimeoutRef.current = window.setTimeout(() => {
+      warningShownRef.current = true;
+      setShowWarning(true);
+      setCountdown(warningSeconds);
+    }, warningInMs);
+  }, [
+    clearSessionTimers,
+    isAuthenticated,
+    refreshAuthToken,
+    sessionTimeoutSeconds,
+    warningSeconds,
+  ]);
+
+  const handleActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
+
+    if (warningShownRef.current) {
+      warningShownRef.current = false;
+      setShowWarning(false);
+      setCountdown(warningSeconds);
+    }
+
+    if (isAuthenticated) {
+      scheduleSessionTimers();
+    }
+  }, [isAuthenticated, scheduleSessionTimers, warningSeconds]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      clearSessionTimers();
+      warningShownRef.current = false;
+      setShowWarning(false);
+      return;
+    }
+
+    lastActivityRef.current = Date.now();
+    scheduleSessionTimers();
+
+    return () => {
+      clearSessionTimers();
+    };
+  }, [clearSessionTimers, isAuthenticated, scheduleSessionTimers]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    checkIntervalRef.current = window.setInterval(() => {
-      const idleTime = Math.floor(
-        (Date.now() - lastActivityRef.current) / 1000,
-      );
-      const timeUntilWarning = sessionTimeoutSeconds - idleTime;
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "focus"];
 
-      // Check if token needs refresh (30 seconds before timeout)
-      if (
-        !warningShownRef.current &&
-        timeUntilWarning <= TOKEN_REFRESH_AHEAD &&
-        timeUntilWarning > 0
-      ) {
-        refreshAuthToken();
-      }
-
-      // Show warning when idle time exceeds threshold
-      if (idleTime >= sessionTimeoutSeconds && !warningShownRef.current) {
-        warningShownRef.current = true;
-        setShowWarning(true);
-        setCountdown(warningSeconds);
-      }
-    }, 1000); // Check every second
+    events.forEach((event) => {
+      window.addEventListener(event, handleActivity, {
+        capture: true,
+        passive: event === "scroll" || event === "touchstart",
+      });
+    });
 
     return () => {
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-      }
+      events.forEach((event) => {
+        window.removeEventListener(event, handleActivity, true);
+      });
     };
-  }, [
-    isAuthenticated,
-    sessionTimeoutSeconds,
-    warningSeconds,
-    refreshAuthToken,
-  ]);
+  }, [isAuthenticated, handleActivity]);
 
-  // Countdown timer for warning modal
   useEffect(() => {
     if (!showWarning) return;
 
     countdownIntervalRef.current = window.setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // Auto logout when countdown reaches 0
           if (countdownIntervalRef.current) {
             clearInterval(countdownIntervalRef.current);
           }
@@ -142,18 +151,19 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     return () => {
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
       }
     };
   }, [showWarning, onLogout]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-      if (countdownIntervalRef.current)
+      clearSessionTimers();
+      if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
+      }
     };
-  }, []);
+  }, [clearSessionTimers]);
 
   if (!showWarning || !isAuthenticated) return null;
 
@@ -261,7 +271,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
               (e.currentTarget as HTMLButtonElement).style.opacity = "1";
             }}
           >
-            Keep Me Logged In
+            Stay Logged In
           </button>
 
           <button
@@ -269,21 +279,13 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
             style={{
               padding: "10px 16px",
               borderRadius: 8,
-              border: "1px solid #e5e7eb",
+              border: "1px solid #d1d5db",
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 500,
               cursor: "pointer",
-              background: "#ffffff",
+              backgroundColor: "#ffffff",
               color: "#374151",
               transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#f9fafb";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#ffffff";
             }}
           >
             Log Out Now

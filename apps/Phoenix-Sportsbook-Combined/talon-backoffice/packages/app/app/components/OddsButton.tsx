@@ -24,7 +24,7 @@ interface OddsButtonProps {
   compact?: boolean;
 }
 
-export const OddsButton: React.FC<OddsButtonProps> = ({
+const OddsButtonComponent: React.FC<OddsButtonProps> = ({
   fixtureId,
   marketId,
   selectionId,
@@ -255,5 +255,7 @@ export const OddsButton: React.FC<OddsButtonProps> = ({
     </button>
   );
 };
+
+export const OddsButton = React.memo(OddsButtonComponent);
 
 export default OddsButton;

@@ -2,42 +2,9 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import OddsButton from "../../components/OddsButton";
+import { getEvent, type EventDetail } from "../../lib/api/events-client";
+import { getMarkets, type Market } from "../../lib/api/markets-client";
 import { colors, font, shadow, spacing, surface, text } from "../../lib/theme";
-
-interface RawSelectionOdds {
-  selectionId: string;
-  selectionName: string;
-  active?: boolean;
-  displayOdds?: {
-    decimal?: number;
-  };
-}
-
-interface RawFixtureMarketEntry {
-  fixtureId: string;
-  fixtureName: string;
-  startTime: string;
-  isLive: boolean;
-  status: string;
-  sport?: {
-    name?: string;
-  };
-  tournament?: {
-    name?: string;
-  };
-  competitors?: {
-    home?: { name?: string; score?: number };
-    away?: { name?: string; score?: number };
-  };
-  market: {
-    marketId: string;
-    marketName: string;
-    currentLifecycle?: {
-      type?: string;
-    };
-    selectionOdds?: RawSelectionOdds[];
-  };
-}
 
 interface FixturePageProps {
   params: {
@@ -47,7 +14,8 @@ interface FixturePageProps {
 
 export default function FixtureDetailPage({ params }: FixturePageProps) {
   const fixtureId = params.id;
-  const [entries, setEntries] = useState<RawFixtureMarketEntry[]>([]);
+  const [fixture, setFixture] = useState<EventDetail | null>(null);
+  const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,23 +25,15 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
     const loadFixture = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `/api/v1/markets/?fixture_id=${encodeURIComponent(fixtureId)}`,
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load fixture: ${response.status}`);
-        }
-
-        const payload = await response.json();
-        const data = Array.isArray(payload?.data) ? payload.data : [];
-        const fixtureEntries = data.filter(
-          (entry: RawFixtureMarketEntry) => entry.fixtureId === fixtureId,
-        );
+        const [eventDetail, marketList] = await Promise.all([
+          getEvent(fixtureId),
+          getMarkets(fixtureId),
+        ]);
 
         if (!cancelled) {
-          setEntries(fixtureEntries);
-          setError(fixtureEntries.length === 0 ? "Fixture not found" : null);
+          setFixture(eventDetail);
+          setMarkets(marketList);
+          setError(null);
         }
       } catch (err) {
         if (!cancelled) {
@@ -82,7 +42,9 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
           );
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
@@ -92,25 +54,26 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
     };
   }, [fixtureId]);
 
-  const fixture = entries[0];
   const groupedMarkets = useMemo(
     () =>
-      entries.map((entry) => ({
-        marketId: entry.market.marketId,
-        marketName: entry.market.marketName,
-        suspended: entry.market.currentLifecycle?.type !== "BETTABLE",
-        selections: (entry.market.selectionOdds || []).map((selection) => ({
+      markets.map((market) => ({
+        marketId: market.marketId,
+        marketName: market.marketName,
+        suspended: (market.status || "").toLowerCase() !== "open",
+        selections: (market.selections || []).map((selection) => ({
           selectionId: selection.selectionId,
           selectionName: selection.selectionName,
-          active: selection.active !== false,
-          odds: selection.displayOdds?.decimal ?? 0,
+          active: true,
+          odds: selection.odds ?? 0,
         })),
       })),
-    [entries],
+    [markets],
   );
 
   if (loading) {
-    return <div style={{ color: "#D3D3D3", padding: "32px" }}>Loading fixture...</div>;
+    return (
+      <div style={{ color: "#D3D3D3", padding: "32px" }}>Loading fixture...</div>
+    );
   }
 
   if (error || !fixture) {
@@ -121,11 +84,13 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
     );
   }
 
-  const homeTeam = fixture.competitors?.home?.name || "Home";
-  const awayTeam = fixture.competitors?.away?.name || "Away";
-  const homeScore = fixture.competitors?.home?.score ?? 0;
-  const awayScore = fixture.competitors?.away?.score ?? 0;
-  const statusLabel = fixture.isLive ? "LIVE" : fixture.status.replaceAll("_", " ");
+  const homeTeam = fixture.homeTeam || "Home";
+  const awayTeam = fixture.awayTeam || "Away";
+  const fixtureName = `${homeTeam} vs ${awayTeam}`;
+  const statusLabel =
+    fixture.status === "in_play"
+      ? "LIVE"
+      : fixture.status.replaceAll("_", " ");
   const startDate = new Date(fixture.startTime);
 
   return (
@@ -149,7 +114,7 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
             marginBottom: spacing.md,
           }}
         >
-          {fixture.sport?.name || "Sport"} &middot; {fixture.tournament?.name || "Competition"}
+          {fixture.sportKey || "Sport"} &middot; {fixture.leagueKey || "Competition"}
         </div>
         <div
           style={{
@@ -160,28 +125,24 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
           }}
         >
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: font["3xl"], fontWeight: font.extrabold, color: colors.textPrimary }}>
+            <div
+              style={{
+                fontSize: font["3xl"],
+                fontWeight: font.extrabold,
+                color: colors.textPrimary,
+              }}
+            >
               {homeTeam}
             </div>
-            {fixture.isLive && (
-              <div
-                style={{
-                  fontSize: "34px",
-                  fontWeight: font.extrabold,
-                  color: colors.primary,
-                  marginTop: spacing.sm,
-                  textShadow: `0 0 18px ${colors.primaryGlow}`,
-                }}
-              >
-                {homeScore}
-              </div>
-            )}
           </div>
           <div style={{ textAlign: "center" }}>
             <div
               style={{
                 fontSize: font.sm,
-                color: fixture.isLive ? colors.dangerText : colors.textSecondary,
+                color:
+                  fixture.status === "in_play"
+                    ? colors.dangerText
+                    : colors.textSecondary,
                 fontWeight: font.bold,
                 marginBottom: spacing.sm,
                 letterSpacing: "0.08em",
@@ -199,27 +160,22 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
             </div>
           </div>
           <div style={{ flex: 1, textAlign: "right" }}>
-            <div style={{ fontSize: font["3xl"], fontWeight: font.extrabold, color: colors.textPrimary }}>
+            <div
+              style={{
+                fontSize: font["3xl"],
+                fontWeight: font.extrabold,
+                color: colors.textPrimary,
+              }}
+            >
               {awayTeam}
             </div>
-            {fixture.isLive && (
-              <div
-                style={{
-                  fontSize: "34px",
-                  fontWeight: font.extrabold,
-                  color: colors.primary,
-                  marginTop: spacing.sm,
-                  textShadow: `0 0 18px ${colors.primaryGlow}`,
-                }}
-              >
-                {awayScore}
-              </div>
-            )}
           </div>
         </div>
       </section>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: spacing.md }}>
+      <section
+        style={{ display: "flex", flexDirection: "column", gap: spacing.md }}
+      >
         {groupedMarkets.map((market) => (
           <div
             key={market.marketId}
@@ -238,7 +194,13 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
                 marginBottom: spacing.md,
               }}
             >
-              <div style={{ fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary }}>
+              <div
+                style={{
+                  fontSize: font.lg,
+                  fontWeight: font.bold,
+                  color: colors.textPrimary,
+                }}
+              >
                 {market.marketName}
               </div>
               <div
@@ -267,7 +229,7 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
                   marketId={market.marketId}
                   selectionId={selection.selectionId}
                   odds={selection.odds}
-                  matchName={fixture.fixtureName}
+                  matchName={fixtureName}
                   marketName={market.marketName}
                   selectionName={selection.selectionName}
                   suspended={market.suspended || !selection.active}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { getSports, getEvents } from "../lib/api/events-client";
 import type { Event as SportEvent, Sport } from "../lib/api/events-client";
 import wsService from "../lib/websocket/websocket-service";
@@ -20,7 +20,7 @@ interface MatchCardProps {
   onBetAway?: () => void;
 }
 
-const InlineMatchCard: React.FC<MatchCardProps> = ({
+const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
   homeTeam,
   awayTeam,
   homeScore,
@@ -168,6 +168,8 @@ const InlineMatchCard: React.FC<MatchCardProps> = ({
   );
 };
 
+const InlineMatchCard = React.memo(InlineMatchCardComponent);
+
 interface MatchWithScore extends SportEvent {
   homeScore: number;
   awayScore: number;
@@ -184,29 +186,58 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
   >({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const trackedFixtureIdsRef = useRef<Set<string>>(new Set());
 
   // Handle WebSocket fixture updates
   const handleFixtureUpdate = useCallback((message: WsMessage) => {
     if (message.event !== "update") return;
     const data = message.data;
-    if (!data?.fixtureId) return;
+    const fixtureId = data?.fixtureId as string | undefined;
+    const status = data?.status as string | undefined;
+    const score = data?.score as
+      | { home?: number; away?: number }
+      | undefined;
+    if (!fixtureId || !trackedFixtureIdsRef.current.has(fixtureId)) {
+      return;
+    }
 
     setMatchesByGroup((prev) => {
-      const updated = { ...prev };
-      Object.keys(updated).forEach((sport) => {
-        updated[sport] = updated[sport].map((match) => {
-          if (match.fixtureId === data.fixtureId) {
-            return {
-              ...match,
-              homeScore: data.score?.home ?? match.homeScore,
-              awayScore: data.score?.away ?? match.awayScore,
-              status: data.status ?? match.status,
-            };
-          }
-          return match;
-        });
-      });
-      return updated;
+      let changed = false;
+      const updated: Record<string, MatchWithScore[]> = {};
+
+      for (const [sport, matches] of Object.entries(prev)) {
+        const matchIndex = matches.findIndex((match) => match.fixtureId === fixtureId);
+        if (matchIndex === -1) {
+          updated[sport] = matches;
+          continue;
+        }
+
+        const currentMatch = matches[matchIndex];
+        const nextHomeScore = score?.home ?? currentMatch.homeScore;
+        const nextAwayScore = score?.away ?? currentMatch.awayScore;
+        const nextStatus = status ?? currentMatch.status;
+
+        if (
+          currentMatch.homeScore === nextHomeScore &&
+          currentMatch.awayScore === nextAwayScore &&
+          currentMatch.status === nextStatus
+        ) {
+          updated[sport] = matches;
+          continue;
+        }
+
+        changed = true;
+        const nextMatches = matches.slice();
+        nextMatches[matchIndex] = {
+          ...currentMatch,
+          homeScore: nextHomeScore,
+          awayScore: nextAwayScore,
+          status: nextStatus,
+        };
+        updated[sport] = nextMatches;
+      }
+
+      return changed ? updated : prev;
     });
   }, []);
 
@@ -218,7 +249,7 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
         setLoading(true);
 
         // Load all sports, then fetch in-play events for each
-        const sports = await getSports();
+        const sports = (await getSports()).slice(0, 8);
         const liveMatches: Record<string, MatchWithScore[]> = {};
 
         // Fetch live events for each sport in parallel
@@ -246,6 +277,11 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
         }
 
         if (!cancelled) {
+          trackedFixtureIdsRef.current = new Set(
+            Object.values(liveMatches)
+              .flat()
+              .map((match) => match.fixtureId),
+          );
           setMatchesByGroup(liveMatches);
           setError(null);
         }
@@ -283,9 +319,10 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
     return <div style={{ color: "#f87171" }}>Error: {error}</div>;
   }
 
-  const totalMatches = Object.values(matchesByGroup).reduce(
-    (sum, matches) => sum + matches.length,
-    0,
+  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
+  const totalMatches = useMemo(
+    () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
+    [groupedEntries],
   );
   if (totalMatches === 0) {
     return (
@@ -301,7 +338,7 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
         gap: "24px",
       }}
     >
-      {Object.entries(matchesByGroup).map(([sport, matches]) => (
+      {groupedEntries.map(([sport, matches]) => (
         <div
           key={sport}
           style={{

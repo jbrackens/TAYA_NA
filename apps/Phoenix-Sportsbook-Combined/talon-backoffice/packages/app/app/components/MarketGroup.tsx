@@ -24,7 +24,7 @@ interface MarketGroupProps {
   ) => void;
 }
 
-export const MarketGroup: React.FC<MarketGroupProps> = ({
+const MarketGroupComponent: React.FC<MarketGroupProps> = ({
   name,
   markets,
   fixtureId,
@@ -128,5 +128,7 @@ export const MarketGroup: React.FC<MarketGroupProps> = ({
     </div>
   );
 };
+
+export const MarketGroup = React.memo(MarketGroupComponent);
 
 export default MarketGroup;

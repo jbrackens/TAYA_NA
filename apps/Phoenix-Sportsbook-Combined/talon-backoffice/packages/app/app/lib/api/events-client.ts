@@ -212,6 +212,22 @@ const leaguesCache = new Map<
   string,
   { entry: TimedCacheEntry<League[]> | null; promise: Promise<League[]> | null }
 >();
+const eventsCache = new Map<
+  string,
+  {
+    entry: TimedCacheEntry<GetEventsPaginatedResponse> | null;
+    promise: Promise<GetEventsPaginatedResponse> | null;
+  }
+>();
+const eventDetailCache = new Map<
+  string,
+  {
+    entry: TimedCacheEntry<EventDetail> | null;
+    promise: Promise<EventDetail> | null;
+  }
+>();
+const EVENTS_CACHE_TTL_MS = 15_000;
+const EVENT_DETAIL_CACHE_TTL_MS = 30_000;
 
 function isFresh<T>(
   entry: TimedCacheEntry<T> | null,
@@ -395,66 +411,122 @@ export async function getLeagues(sportKey: string): Promise<League[]> {
 export async function getEvents(
   params?: GetEventsParams,
 ): Promise<GetEventsPaginatedResponse> {
-  // Try BetConstruct first
-  if (params?.sport) {
-    try {
-      const bcAlias = await getBcAlias(params.sport);
-      const bcGames = await bcGetGames(bcAlias, params?.league);
-      if (bcGames.length > 0) {
-        const page = params?.page || 1;
-        const limit = params?.limit || 12;
-        const start = (page - 1) * limit;
-        const paged = bcGames.slice(start, start + limit);
-        const events: Event[] = paged.map((g) => ({
-          eventId: String(g.id),
-          fixtureId: String(g.id),
-          sportId: "",
-          leagueId: String((g as Record<string, unknown>).competitionId || ""),
-          homeTeam: g.team1_name || "TBD",
-          awayTeam: g.team2_name || "TBD",
-          sportKey: params.sport || "",
-          leagueKey: String((g as Record<string, unknown>).competitionId || ""),
-          startTime: new Date(g.start_ts * 1000).toISOString(),
-          status: g.type === 1 ? "in_play" : "scheduled",
-          hasMarkets: (g.markets_count || 0) > 0,
-        }));
-        return {
-          events,
-          total: bcGames.length,
-          page,
-          limit,
-          totalPages: Math.ceil(bcGames.length / limit),
-        };
-      }
-    } catch (err) {
-      logger.info(
-        "Events",
-        "BetConstruct games unavailable, trying Go backend",
-        err,
-      );
-    }
+  const cacheKey = JSON.stringify({
+    sport: params?.sport || "",
+    league: params?.league || "",
+    status: params?.status || "",
+    query: params?.query || "",
+    page: params?.page || 1,
+    limit: params?.limit || 12,
+  });
+  const cached = eventsCache.get(cacheKey);
+  if (cached && isFresh(cached.entry, EVENTS_CACHE_TTL_MS)) {
+    return cached.entry.data;
+  }
+  if (cached?.promise) {
+    return cached.promise;
   }
 
-  // Fall back to Go backend
-  const queryParams: Record<string, string> = {};
-  if (params?.sport) queryParams.sport = params.sport;
-  if (params?.league) queryParams.league = params.league;
-  if (params?.status) queryParams.status = params.status;
-  if (params?.query) queryParams.query = params.query;
-  if (params?.page) queryParams.page = String(params.page);
-  if (params?.limit) queryParams.limit = String(params.limit);
+  const promise = (async () => {
+  // Try BetConstruct first
+    if (params?.sport) {
+      try {
+        const bcAlias = await getBcAlias(params.sport);
+        const bcGames = await bcGetGames(bcAlias, params?.league);
+        if (bcGames.length > 0) {
+          const page = params?.page || 1;
+          const limit = params?.limit || 12;
+          const start = (page - 1) * limit;
+          const paged = bcGames.slice(start, start + limit);
+          const result: GetEventsPaginatedResponse = {
+            events: paged.map((g) => ({
+              eventId: String(g.id),
+              fixtureId: String(g.id),
+              sportId: "",
+              leagueId: String((g as Record<string, unknown>).competitionId || ""),
+              homeTeam: g.team1_name || "TBD",
+              awayTeam: g.team2_name || "TBD",
+              sportKey: params.sport || "",
+              leagueKey: String((g as Record<string, unknown>).competitionId || ""),
+              startTime: new Date(g.start_ts * 1000).toISOString(),
+              status: g.type === 1 ? "in_play" : "scheduled",
+              hasMarkets: (g.markets_count || 0) > 0,
+            })),
+            total: bcGames.length,
+            page,
+            limit,
+            totalPages: Math.ceil(bcGames.length / limit),
+          };
+          eventsCache.set(cacheKey, {
+            entry: { data: result, ts: Date.now() },
+            promise: null,
+          });
+          return result;
+        }
+      } catch (err) {
+        logger.info(
+          "Events",
+          "BetConstruct games unavailable, trying Go backend",
+          err,
+        );
+      }
+    }
 
-  const raw = await apiClient.get<GetEventsPaginatedResponseRaw>(
-    "/api/v1/events",
-    queryParams,
-  );
-  return normalizeSnakeCase(raw);
+    // Fall back to Go backend
+    const queryParams: Record<string, string> = {};
+    if (params?.sport) queryParams.sport = params.sport;
+    if (params?.league) queryParams.league = params.league;
+    if (params?.status) queryParams.status = params.status;
+    if (params?.query) queryParams.query = params.query;
+    if (params?.page) queryParams.page = String(params.page);
+    if (params?.limit) queryParams.limit = String(params.limit);
+
+    const raw = await apiClient.get<GetEventsPaginatedResponseRaw>(
+      "/api/v1/events",
+      queryParams,
+    );
+    const result = normalizeSnakeCase(raw) as GetEventsPaginatedResponse;
+    eventsCache.set(cacheKey, {
+      entry: { data: result, ts: Date.now() },
+      promise: null,
+    });
+    return result;
+  })();
+
+  eventsCache.set(cacheKey, {
+    entry: cached?.entry || null,
+    promise,
+  });
+
+  return promise;
 }
 
 /**
  * Get a specific event by ID
  */
 export async function getEvent(eventId: string): Promise<EventDetail> {
-  const raw = await apiClient.get<EventDetailRaw>(`/api/v1/events/${eventId}`);
-  return normalizeSnakeCase(raw);
+  const cached = eventDetailCache.get(eventId);
+  if (cached && isFresh(cached.entry, EVENT_DETAIL_CACHE_TTL_MS)) {
+    return cached.entry.data;
+  }
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  const promise = (async () => {
+    const raw = await apiClient.get<EventDetailRaw>(`/api/v1/events/${eventId}`);
+    const result = normalizeSnakeCase(raw) as EventDetail;
+    eventDetailCache.set(eventId, {
+      entry: { data: result, ts: Date.now() },
+      promise: null,
+    });
+    return result;
+  })();
+
+  eventDetailCache.set(eventId, {
+    entry: cached?.entry || null,
+    promise,
+  });
+
+  return promise;
 }

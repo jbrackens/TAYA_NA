@@ -1,5 +1,10 @@
 import { apiClient } from "./client";
 
+interface TimedCacheEntry<T> {
+  data: T;
+  ts: number;
+}
+
 // Request types
 export interface DepositRequest {
   amount: number;
@@ -172,6 +177,19 @@ export interface TransactionStatus {
   updatedAt: string;
 }
 
+const BALANCE_CACHE_TTL_MS = 15_000;
+const balanceCache = new Map<
+  string,
+  { entry: TimedCacheEntry<Balance> | null; promise: Promise<Balance> | null }
+>();
+
+function isFresh<T>(
+  entry: TimedCacheEntry<T> | null,
+  ttlMs: number,
+): entry is TimedCacheEntry<T> {
+  return !!entry && Date.now() - entry.ts < ttlMs;
+}
+
 // Utility function to normalize snake_case to camelCase
 function normalizeSnakeCase<T extends Record<string, unknown>>(
   obj: T,
@@ -201,20 +219,47 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
  * Get wallet balance for a user
  */
 export async function getBalance(userId: string): Promise<Balance> {
-  try {
-    const raw = await apiClient.get<WalletBalanceRaw>(`/api/v1/wallet/${userId}`);
-    const availableBalance = centsToDollars(raw.balanceCents);
-    return {
-      userId: raw.userId,
-      availableBalance,
-      reservedBalance: 0,
-      totalBalance: availableBalance,
-      currency: "USD",
-    };
-  } catch {
-    const raw = await apiClient.get<BalanceRaw>(`/api/v1/wallets/${userId}`);
-    return normalizeSnakeCase(raw) as unknown as Balance;
+  const cached = balanceCache.get(userId);
+  if (cached && isFresh(cached.entry, BALANCE_CACHE_TTL_MS)) {
+    return cached.entry.data;
   }
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  const promise = (async () => {
+    try {
+      const raw = await apiClient.get<WalletBalanceRaw>(`/api/v1/wallet/${userId}`);
+      const availableBalance = centsToDollars(raw.balanceCents);
+      const result: Balance = {
+        userId: raw.userId,
+        availableBalance,
+        reservedBalance: 0,
+        totalBalance: availableBalance,
+        currency: "USD",
+      };
+      balanceCache.set(userId, {
+        entry: { data: result, ts: Date.now() },
+        promise: null,
+      });
+      return result;
+    } catch {
+      const raw = await apiClient.get<BalanceRaw>(`/api/v1/wallets/${userId}`);
+      const result = normalizeSnakeCase(raw) as unknown as Balance;
+      balanceCache.set(userId, {
+        entry: { data: result, ts: Date.now() },
+        promise: null,
+      });
+      return result;
+    }
+  })();
+
+  balanceCache.set(userId, {
+    entry: cached?.entry || null,
+    promise,
+  });
+
+  return promise;
 }
 
 /**

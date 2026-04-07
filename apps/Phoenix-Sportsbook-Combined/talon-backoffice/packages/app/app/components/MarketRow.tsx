@@ -30,7 +30,7 @@ interface MarketRowProps {
   ) => void;
 }
 
-export const MarketRow: React.FC<MarketRowProps> = ({
+const MarketRowComponent: React.FC<MarketRowProps> = ({
   market,
   fixtureId,
   fixtureName,
@@ -129,5 +129,7 @@ export const MarketRow: React.FC<MarketRowProps> = ({
     </div>
   );
 };
+
+export const MarketRow = React.memo(MarketRowComponent);
 
 export default MarketRow;

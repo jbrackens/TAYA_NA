@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { X, Ticket, Clock } from "lucide-react";
 import { useBetslip } from "../hooks/useBetslip";
@@ -247,6 +247,42 @@ export const BetslipPanel: React.FC = () => {
     // Re-trigger placement flow — already in confirming state, call handlePlaceBet
   }, [betslip]);
 
+  const renderedSelections = useMemo(
+    () =>
+      selections.map((sel: BetSelection) => (
+        <div key={sel.id} className="ps-betslip-selection">
+          <div className="ps-betslip-selection-header">
+            <div>
+              <div className="ps-betslip-selection-name">{sel.selectionName}</div>
+              <div className="ps-betslip-selection-market">{sel.marketName}</div>
+              <div className="ps-betslip-selection-match">{sel.matchName}</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="ps-betslip-selection-odds">
+                {typeof sel.odds === "number"
+                  ? formatOdds(sel.odds, oddsFormat)
+                  : sel.odds}
+              </span>
+              <button
+                className="ps-betslip-remove"
+                onClick={() => betslip?.removeSelection(sel.id)}
+                title="Remove"
+              >
+                <X size={12} strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+          <div className="ps-betslip-selection-meta">
+            <span className="ps-betslip-selection-meta-label">Potential</span>
+            <span className="ps-betslip-selection-meta-value">
+              ${(stakePerLeg * sel.odds).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      )),
+    [betslip, oddsFormat, selections, stakePerLeg],
+  );
+
   // Helper function to render the betslip content (used by both desktop and mobile)
   const renderBetslipContent = () => (
     <>
@@ -282,49 +318,7 @@ export const BetslipPanel: React.FC = () => {
           )}
 
           {/* Selections */}
-          <div className="ps-betslip-list">
-            {selections.map((sel: BetSelection) => (
-              <div key={sel.id} className="ps-betslip-selection">
-                <div className="ps-betslip-selection-header">
-                  <div>
-                    <div className="ps-betslip-selection-name">
-                      {sel.selectionName}
-                    </div>
-                    <div className="ps-betslip-selection-market">
-                      {sel.marketName}
-                    </div>
-                    <div className="ps-betslip-selection-match">
-                      {sel.matchName}
-                    </div>
-                  </div>
-                  <div
-                    style={{ display: "flex", alignItems: "center", gap: 8 }}
-                  >
-                    <span className="ps-betslip-selection-odds">
-                      {typeof sel.odds === "number"
-                        ? formatOdds(sel.odds, oddsFormat)
-                        : sel.odds}
-                    </span>
-                    <button
-                      className="ps-betslip-remove"
-                      onClick={() => betslip?.removeSelection(sel.id)}
-                      title="Remove"
-                    >
-                      <X size={12} strokeWidth={2} />
-                    </button>
-                  </div>
-                </div>
-                <div className="ps-betslip-selection-meta">
-                  <span className="ps-betslip-selection-meta-label">
-                    Potential
-                  </span>
-                  <span className="ps-betslip-selection-meta-value">
-                    ${(stakePerLeg * sel.odds).toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className="ps-betslip-list">{renderedSelections}</div>
 
           {/* Odds Change Warning Banner */}
           {oddsChanged && changedSelections.length > 0 && (
@@ -698,33 +692,110 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
       setLoading(false);
       return;
     }
+    let cancelled = false;
     const load = async () => {
       try {
         const bets = await getUserBets(user.id);
         const active = (bets || []).filter(
           (b) => b.status === "OPENED" || b.status === "PENDING",
         );
+        if (cancelled) {
+          return;
+        }
         setOpenBets(active);
 
-        // Fetch cashout offers for each bet
+        const offerResults = await Promise.all(
+          active.map(async (bet) => {
+            try {
+              const offer = await getCashoutOffer(bet.betId);
+              return offer.available ? [bet.betId, offer] : null;
+            } catch {
+              return null;
+            }
+          }),
+        );
+        if (cancelled) {
+          return;
+        }
         const offers: Record<string, CashoutOffer> = {};
-        for (const bet of active) {
-          try {
-            const offer = await getCashoutOffer(bet.betId);
-            if (offer.available) offers[bet.betId] = offer;
-          } catch {
-            /* no cashout available */
+        for (const result of offerResults) {
+          if (result) {
+            const [betId, offer] = result;
+            offers[betId] = offer;
           }
         }
         setCashoutOffers(offers);
       } catch {
         // API not reachable
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
+
+  const renderedOpenBets = useMemo(
+    () =>
+      openBets.map((bet) => {
+        const offer = cashoutOffers[bet.betId];
+        const msg = cashoutMsg?.betId === bet.betId ? cashoutMsg : null;
+        return (
+          <div key={bet.betId} className="ps-open-bet-card">
+            <div className="ps-open-bet-card-top">
+              <span className="ps-open-bet-selection">
+                {bet.selection?.selectionName || "Selection"}
+              </span>
+              <span className="ps-open-bet-odds">
+                {bet.selection?.odds
+                  ? formatOdds(bet.selection.odds, oddsFormat)
+                  : "-"}
+              </span>
+            </div>
+            <div className="ps-open-bet-meta-row">
+              <span>
+                {tx("STAKE_LABEL", "Stake")} ${bet.stake.toFixed(2)}
+              </span>
+              <span>
+                {tx("RETURN_LABEL", "Return")} ${bet.potentialReturn.toFixed(2)}
+              </span>
+            </div>
+            <div className="ps-open-bet-status-row">
+              {bet.status} &middot; {new Date(bet.createdAt).toLocaleString()}
+            </div>
+
+            {offer && (
+              <button
+                onClick={() => handleCashout(bet.betId)}
+                disabled={cashingOut === bet.betId}
+                className="ps-open-bet-cashout"
+              >
+                {cashingOut === bet.betId
+                  ? tx("CASHING_OUT", "Cashing out...")
+                  : `${tx("CASH_OUT", "Cash Out")} $${offer.cashoutValue.toFixed(2)}`}
+              </button>
+            )}
+
+            {msg && (
+              <div
+                className={`ps-open-bet-message ${
+                  msg.type === "success"
+                    ? "ps-open-bet-message-success"
+                    : "ps-open-bet-message-error"
+                }`}
+              >
+                {msg.msg}
+              </div>
+            )}
+          </div>
+        );
+      }),
+    [cashingOut, cashoutMsg, cashoutOffers, handleCashout, oddsFormat, openBets, tx],
+  );
 
   const handleCashout = async (betId: string) => {
     setCashingOut(betId);
@@ -775,63 +846,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
   }
 
   return (
-    <div className="ps-betslip-list">
-      {openBets.map((bet) => {
-        const offer = cashoutOffers[bet.betId];
-        const msg = cashoutMsg?.betId === bet.betId ? cashoutMsg : null;
-        return (
-          <div key={bet.betId} className="ps-open-bet-card">
-            <div className="ps-open-bet-card-top">
-              <span className="ps-open-bet-selection">
-                {bet.selection?.selectionName || "Selection"}
-              </span>
-              <span className="ps-open-bet-odds">
-                {bet.selection?.odds
-                  ? formatOdds(bet.selection.odds, oddsFormat)
-                  : "-"}
-              </span>
-            </div>
-            <div className="ps-open-bet-meta-row">
-              <span>
-                {tx("STAKE_LABEL", "Stake")} ${bet.stake.toFixed(2)}
-              </span>
-              <span>
-                {tx("RETURN_LABEL", "Return")} ${bet.potentialReturn.toFixed(2)}
-              </span>
-            </div>
-            <div className="ps-open-bet-status-row">
-              {bet.status} &middot; {new Date(bet.createdAt).toLocaleString()}
-            </div>
-
-            {/* Cashout button */}
-            {offer && (
-              <button
-                onClick={() => handleCashout(bet.betId)}
-                disabled={cashingOut === bet.betId}
-                className="ps-open-bet-cashout"
-              >
-                {cashingOut === bet.betId
-                  ? tx("CASHING_OUT", "Cashing out...")
-                  : `${tx("CASH_OUT", "Cash Out")} $${offer.cashoutValue.toFixed(2)}`}
-              </button>
-            )}
-
-            {/* Cashout result message */}
-            {msg && (
-              <div
-                className={`ps-open-bet-message ${
-                  msg.type === "success"
-                    ? "ps-open-bet-message-success"
-                    : "ps-open-bet-message-error"
-                }`}
-              >
-                {msg.msg}
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
+    <div className="ps-betslip-list">{renderedOpenBets}</div>
   );
 };
 

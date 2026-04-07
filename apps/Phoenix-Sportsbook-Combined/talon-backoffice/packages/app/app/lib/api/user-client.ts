@@ -1,5 +1,10 @@
 import { apiClient } from './client';
 
+interface TimedCacheEntry<T> {
+  data: T;
+  ts: number;
+}
+
 // Request types
 export interface UpdateProfileRequest {
   email?: string;
@@ -77,6 +82,22 @@ export interface DeleteAccountResponse {
   scheduledDeletionDate?: string;
 }
 
+const PROFILE_CACHE_TTL_MS = 30_000;
+const profileCache = new Map<
+  string,
+  {
+    entry: TimedCacheEntry<UserProfile> | null;
+    promise: Promise<UserProfile> | null;
+  }
+>();
+
+function isFresh<T>(
+  entry: TimedCacheEntry<T> | null,
+  ttlMs: number,
+): entry is TimedCacheEntry<T> {
+  return !!entry && Date.now() - entry.ts < ttlMs;
+}
+
 // Utility function to normalize snake_case to camelCase
 function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
   if (Array.isArray(obj)) {
@@ -98,8 +119,30 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<s
  * Get user profile
  */
 export async function getProfile(userId: string): Promise<UserProfile> {
-  const raw = await apiClient.get<UserProfileRaw>(`/api/v1/users/${userId}/profile`);
-  return normalizeSnakeCase(raw);
+  const cached = profileCache.get(userId);
+  if (cached && isFresh(cached.entry, PROFILE_CACHE_TTL_MS)) {
+    return cached.entry.data;
+  }
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  const promise = (async () => {
+    const raw = await apiClient.get<UserProfileRaw>(`/api/v1/users/${userId}/profile`);
+    const result = normalizeSnakeCase(raw) as UserProfile;
+    profileCache.set(userId, {
+      entry: { data: result, ts: Date.now() },
+      promise: null,
+    });
+    return result;
+  })();
+
+  profileCache.set(userId, {
+    entry: cached?.entry || null,
+    promise,
+  });
+
+  return promise;
 }
 
 /**
