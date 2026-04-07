@@ -11,9 +11,9 @@ export default function TermsPage() {
         <section>
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using TAYA NA! Sportsbook, you agree to be bound by
-            these Terms and Conditions. If you do not agree, you must not use
-            the platform.
+            By accessing or using TAYA NA!, you agree to be bound by these
+            Terms and Conditions. If you do not agree, you must not use the
+            platform.
           </p>
         </section>
 
@@ -70,9 +70,9 @@ export default function TermsPage() {
         <section>
           <h2>7. Limitation of Liability</h2>
           <p>
-            TAYA NA! Sportsbook is provided "as is" without warranties of any
-            kind. We are not liable for any losses incurred through the use of
-            the platform, including but not limited to losses from technical
+            TAYA NA! is provided "as is" without warranties of any kind. We
+            are not liable for any losses incurred through the use of the
+            platform, including but not limited to losses from technical
             failures, interrupted service, or incorrect odds display.
           </p>
         </section>
@@ -90,8 +90,8 @@ export default function TermsPage() {
           <h2>9. Contact</h2>
           <p>
             Questions about these Terms may be directed to{" "}
-            <a href="mailto:legal@phoenixsportsbook.com">
-              legal@phoenixsportsbook.com
+            <a href="mailto:legal@tayanasportsbook.com">
+              legal@tayanasportsbook.com
             </a>
             .
           </p>

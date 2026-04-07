@@ -244,7 +244,7 @@ export async function getSports(): Promise<Sport[]> {
   // Try BetConstruct feed first
   try {
     const bcSports = await bcGetSports();
-    if (bcSports.length > 0) {
+    if (Array.isArray(bcSports) && bcSports.length > 0) {
       logger.info(
         "Events",
         "Loaded sports from BetConstruct feed",
@@ -273,7 +273,8 @@ export async function getSports(): Promise<Sport[]> {
 
   // Fall back to Go backend
   const raw = await apiClient.get<SportRaw[]>("/api/v1/sports");
-  return normalizeSnakeCase(raw);
+  const normalized = normalizeSnakeCase(raw);
+  return Array.isArray(normalized) ? (normalized as Sport[]) : [];
 }
 
 /**

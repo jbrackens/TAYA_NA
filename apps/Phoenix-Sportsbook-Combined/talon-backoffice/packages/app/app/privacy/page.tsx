@@ -80,8 +80,8 @@ export default function PrivacyPage() {
           <h2>8. Contact</h2>
           <p>
             Privacy inquiries can be sent to{" "}
-            <a href="mailto:privacy@phoenixsportsbook.com">
-              privacy@phoenixsportsbook.com
+            <a href="mailto:privacy@tayanasportsbook.com">
+              privacy@tayanasportsbook.com
             </a>
             .
           </p>

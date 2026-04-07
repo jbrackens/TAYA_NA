@@ -21,7 +21,7 @@ export default function Loading() {
           gap: 32px;
         }
 
-        .phoenix-logo-wrapper {
+        .taya-logo-wrapper {
           position: relative;
           width: 120px;
           height: 120px;
@@ -30,7 +30,7 @@ export default function Loading() {
           justify-content: center;
         }
 
-        .phoenix-circle {
+        .taya-circle {
           width: 120px;
           height: 120px;
           border-radius: 50%;
@@ -42,9 +42,9 @@ export default function Loading() {
           box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
         }
 
-        .phoenix-letter {
-          font-size: 64px;
-          font-weight: 800;
+        .taya-letter {
+          font-size: 46px;
+          font-weight: 900;
           color: #ffffff;
           letter-spacing: -0.02em;
         }
@@ -98,9 +98,9 @@ export default function Loading() {
 
       <div className="loading-container">
         <div className="loading-content">
-          <div className="phoenix-logo-wrapper">
-            <div className="phoenix-circle">
-              <div className="phoenix-letter">P</div>
+          <div className="taya-logo-wrapper">
+            <div className="taya-circle">
+              <div className="taya-letter">TN</div>
             </div>
           </div>
 

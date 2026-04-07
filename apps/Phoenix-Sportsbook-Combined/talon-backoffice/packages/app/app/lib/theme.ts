@@ -1,5 +1,5 @@
 /**
- * Phoenix Sportsbook — Design Tokens
+ * TAYA NA! Player App — Design Tokens
  * ====================================
  * Single source of truth for colors, spacing, typography, and shadows.
  * Import this instead of using inline hex values.
@@ -110,6 +110,8 @@ export const shadow = {
   lg: "0 8px 16px rgba(0, 0, 0, 0.3)",
   glow: "0 4px 12px rgba(57, 255, 20, 0.3)",
   glowLg: "0 4px 16px rgba(57, 255, 20, 0.3)",
+  panel: "0 20px 40px rgba(0, 0, 0, 0.16)",
+  panelLg: "0 24px 48px rgba(0, 0, 0, 0.2)",
 } as const;
 
 // ── Transitions ──
@@ -148,6 +150,60 @@ export const layout = {
   headerHeight: "56px",
 } as const;
 
+// ── Shared Surface Variants ──
+export const surface = {
+  panel: {
+    background: colors.bgSurface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius.xl,
+    boxShadow: shadow.panel,
+  },
+  panelRaised: {
+    background: `linear-gradient(180deg, ${colors.bgSurface} 0%, ${colors.bgBase} 100%)`,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius["2xl"],
+    boxShadow: shadow.panel,
+  },
+  panelInteractive: {
+    background: colors.bgSurface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: radius["2xl"],
+    boxShadow: shadow.md,
+    transition: transition.normal,
+  },
+  heroPanel: {
+    background: "linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%)",
+    border: `1px solid ${colors.borderHover}`,
+    borderRadius: "18px",
+    boxShadow: shadow.panelLg,
+  },
+  chip: {
+    background: "rgba(57,255,20,0.08)",
+    border: "1px solid rgba(57,255,20,0.14)",
+    borderRadius: "12px",
+  },
+} as const;
+
+export const text = {
+  eyebrow: {
+    color: brand.primary,
+    fontSize: font.xs,
+    fontWeight: font.bold,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+  },
+  sectionTitle: {
+    color: colors.textPrimary,
+    fontSize: font.xl,
+    fontWeight: font.extrabold,
+    letterSpacing: "-0.02em",
+  },
+  sectionBody: {
+    color: colors.textSecondary,
+    fontSize: font.base,
+  },
+} as const;
+
 /**
  * Convenience object bundling all tokens for a single import:
  *   import { theme } from '../lib/theme';
@@ -164,6 +220,8 @@ export const theme = {
   breakpoint,
   zIndex,
   layout,
+  surface,
+  text,
 } as const;
 
 export default theme;

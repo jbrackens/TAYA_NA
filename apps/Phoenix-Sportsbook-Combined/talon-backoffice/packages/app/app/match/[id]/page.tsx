@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useBetslip } from "../../hooks/useBetslip";
+import React, { useEffect, useState, useMemo } from "react";
 import { logger } from "../../lib/logger";
+import MarketGroup from "../../components/MarketGroup";
 
 interface Selection {
   id: string;
@@ -43,116 +43,51 @@ interface MatchPageProps {
   };
 }
 
-function OddButton({
-  selection,
-  onSelect,
-}: {
-  selection: Selection;
-  onSelect: (s: Selection) => void;
-}) {
+type MarketTab = "Popular" | "Game Lines" | "Player Props" | "All";
+
+function matchesAny(value: string | undefined, needles: string[]) {
+  const normalized = (value || "").toLowerCase();
+  return needles.some((needle) => normalized.includes(needle.toLowerCase()));
+}
+
+function isMoneylineMarket(market: BCMarket) {
   return (
-    <button
-      onClick={() => onSelect(selection)}
-      style={{
-        padding: "10px 8px",
-        borderRadius: "6px",
-        border: "1px solid #1a1f3a",
-        background: "#0b0e1c",
-        color: "#e2e8f0",
-        cursor: "pointer",
-        transition: "all 0.15s",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "4px",
-        minWidth: 0,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "#39ff14";
-        e.currentTarget.style.background = "rgba(57,255,20,0.08)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "#1a1f3a";
-        e.currentTarget.style.background = "#0b0e1c";
-      }}
-    >
-      <span
-        style={{
-          fontSize: "11px",
-          color: "#D3D3D3",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          maxWidth: "100%",
-          textAlign: "center",
-          lineHeight: "1.3",
-        }}
-      >
-        {selection.name}
-      </span>
-      <span style={{ fontSize: "15px", fontWeight: "700", color: "#39ff14" }}>
-        {selection.price.toFixed(2)}
-      </span>
-    </button>
+    matchesAny(market.type, ["p1xp2", "p1p2", "winner", "moneyline", "match result"]) ||
+    matchesAny(market.displayKey, ["winner", "moneyline", "match_result", "1x2"]) ||
+    matchesAny(market.name, ["match result", "moneyline", "winner"])
   );
 }
 
-function MarketCard({
-  market,
-  onSelect,
-}: {
-  market: BCMarket;
-  onSelect: (market: BCMarket, selection: Selection) => void;
-}) {
-  const displayName = market.name + (market.base ? ` (${market.base})` : "");
-  // Use colCount from BC data, default to 3 for most markets
-  const cols = market.colCount > 0 ? Math.min(market.colCount, 4) : 3;
-
+function isHandicapMarket(market: BCMarket) {
   return (
-    <div
-      style={{
-        background: "#0f1225",
-        border: "1px solid #1a1f3a",
-        borderRadius: "10px",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "12px 16px",
-          borderBottom: "1px solid #1a1f3a",
-          fontSize: "13px",
-          fontWeight: "600",
-          color: "#D3D3D3",
-        }}
-      >
-        {displayName}
-      </div>
-      <div
-        style={{
-          padding: "12px 16px",
-          display: "grid",
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
-          gap: "8px",
-        }}
-      >
-        {market.selections.map((s) => (
-          <OddButton
-            key={s.id}
-            selection={s}
-            onSelect={(selection) => onSelect(market, selection)}
-          />
-        ))}
-      </div>
-    </div>
+    matchesAny(market.type, ["handicap", "spread", "run line", "puck line"]) ||
+    matchesAny(market.displayKey, ["handicap", "spread"]) ||
+    matchesAny(market.name, ["handicap", "spread", "run line", "puck line"])
+  );
+}
+
+function isTotalMarket(market: BCMarket) {
+  return (
+    matchesAny(market.type, ["total", "overunder", "over/under"]) ||
+    matchesAny(market.displayKey, ["total", "totals", "over_under"]) ||
+    matchesAny(market.name, ["total", "over/under"])
+  );
+}
+
+function isPlayerPropMarket(market: BCMarket) {
+  return (
+    matchesAny(market.type, ["player"]) ||
+    matchesAny(market.displayKey, ["player"]) ||
+    matchesAny(market.name, ["player"])
   );
 }
 
 export default function MatchPage({ params }: MatchPageProps) {
   const matchId = params.id;
-  const betslip = useBetslip();
   const [game, setGame] = useState<BCGameDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<MarketTab>("Popular");
 
   useEffect(() => {
     let cancelled = false;
@@ -186,37 +121,27 @@ export default function MatchPage({ params }: MatchPageProps) {
     };
   }, [matchId]);
 
-  const handleSelectOdd = (market: BCMarket, selection: Selection) => {
-    const marketId = String(market.id);
-    const selectionId = String(selection.id);
-    const existing = betslip.selections.find(
-      (bet) => bet.selectionId === selectionId && bet.marketId === marketId,
-    );
+  const filteredMarketGroups = useMemo(() => {
+    if (!game) return [];
 
-    if (existing) {
-      betslip.removeSelection(existing.id);
-      return;
+    const markets = game.markets;
+    let filtered = markets;
+
+    if (activeTab === "Popular") {
+      filtered = markets
+        .filter((m) => isMoneylineMarket(m) || isHandicapMarket(m) || isTotalMarket(m))
+        .slice(0, 10);
+      if (filtered.length === 0) {
+        filtered = markets.slice(0, 10);
+      }
+    } else if (activeTab === "Game Lines") {
+      filtered = markets.filter((m) => isHandicapMarket(m) || isTotalMarket(m));
+    } else if (activeTab === "Player Props") {
+      filtered = markets.filter((m) => isPlayerPropMarket(m));
     }
 
-    betslip.addSelection({
-      id: `${marketId}-${selectionId}`,
-      fixtureId: String(game?.id || matchId),
-      marketId,
-      selectionId,
-      matchName: `${game?.team1 || "Team 1"} vs ${game?.team2 || "Team 2"}`,
-      marketName: market.name,
-      selectionName: selection.name,
-      odds: selection.price,
-      initialOdds: selection.price,
-    });
-
-    logger.info("Betslip", "Selection added", {
-      matchId,
-      marketId,
-      selection: selection.name,
-      price: selection.price,
-    });
-  };
+    return filtered;
+  }, [game, activeTab]);
 
   if (loading) {
     return (
@@ -229,9 +154,7 @@ export default function MatchPage({ params }: MatchPageProps) {
   if (error || !game) {
     return (
       <div style={{ padding: "40px" }}>
-        <div
-          style={{ color: "#f87171", fontSize: "16px", marginBottom: "16px" }}
-        >
+        <div style={{ color: "#f87171", fontSize: "16px", marginBottom: "16px" }}>
           {error || "Match not found"}
         </div>
         <button
@@ -255,50 +178,44 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   const isLive = game.type === 1;
   const startDate = new Date(game.startTs * 1000);
+  const fixtureName = `${game.team1} vs ${game.team2}`;
 
-  // Group markets: main (P1XP2, P1P2, WINNER) first, then rest
-  const mainTypes = new Set(["P1XP2", "P1P2"]);
-  const mainKeys = new Set(["WINNER"]);
-  const mainMarkets = game.markets.filter(
-    (m) => mainTypes.has(m.type) || mainKeys.has(m.displayKey),
-  );
-  const otherMarkets = game.markets.filter(
-    (m) => !mainTypes.has(m.type) && !mainKeys.has(m.displayKey),
-  );
+  const tabs: MarketTab[] = ["Popular", "Game Lines", "Player Props", "All"];
+  const tabDescription: Record<MarketTab, string> = {
+    Popular: "Core sides, totals, and the most bettable lines first.",
+    "Game Lines": "Main handicaps and totals grouped for quick scanning.",
+    "Player Props": "Player-led specials and prop markets when available.",
+    All: "Every market currently available for this fixture.",
+  };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "18px", paddingBottom: "40px" }}>
       {/* Match Header */}
       <div
         style={{
-          background:
-            "linear-gradient(135deg, #1a0a30 0%, #0f1225 50%, #0a1628 100%)",
-          border: "1px solid #1e2243",
-          borderRadius: "14px",
-          padding: "24px",
+          background: "linear-gradient(135deg, #1a0a30 0%, #0f1225 50%, #0a1628 100%)",
+          border: "1px solid #22304a",
+          borderRadius: "18px",
+          padding: "28px",
+          boxShadow: "0 24px 48px rgba(0,0,0,0.2)",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginBottom: "16px",
-          }}
-        >
-          <span style={{ fontSize: "12px", color: "#D3D3D3" }}>
-            {game.sportName} &middot; {game.competitionName} &middot;{" "}
-            {game.regionName}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "11px", color: "#D3D3D3", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>
+            {game.sportName} &middot; {game.competitionName}
           </span>
           {isLive && (
             <span
               style={{
-                padding: "3px 8px",
-                borderRadius: "4px",
-                background: "#7f1d1d",
-                color: "#f87171",
-                fontSize: "11px",
-                fontWeight: "600",
+                padding: "4px 9px",
+                borderRadius: "999px",
+                background: "rgba(239,68,68,0.16)",
+                color: "#fca5a5",
+                border: "1px solid rgba(239,68,68,0.22)",
+                fontSize: "10px",
+                fontWeight: "700",
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
               }}
             >
               LIVE
@@ -306,109 +223,90 @@ export default function MatchPage({ params }: MatchPageProps) {
           )}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "20px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "20px" }}>
           <div style={{ flex: 1 }}>
-            <h2
-              style={{
-                fontSize: "22px",
-                fontWeight: "800",
-                color: "#f8fafc",
-                margin: 0,
-              }}
-            >
+            <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#f8fafc", margin: 0, letterSpacing: "-0.02em" }}>
               {game.team1}
             </h2>
           </div>
-          <div
-            style={{
-              fontSize: "13px",
-              color: "#D3D3D3",
-              fontWeight: "600",
-              padding: "6px 12px",
-              background: "#0b0e1c",
-              borderRadius: "6px",
-            }}
-          >
+          <div style={{ fontSize: "12px", color: "#D3D3D3", fontWeight: "700", padding: "8px 12px", background: "rgba(11,14,28,0.75)", borderRadius: "999px", border: "1px solid #1a1f3a", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             vs
           </div>
           <div style={{ flex: 1, textAlign: "right" }}>
-            <h2
-              style={{
-                fontSize: "22px",
-                fontWeight: "800",
-                color: "#f8fafc",
-                margin: 0,
-              }}
-            >
+            <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#f8fafc", margin: 0, letterSpacing: "-0.02em" }}>
               {game.team2}
             </h2>
           </div>
         </div>
 
-        <div style={{ fontSize: "12px", color: "#D3D3D3", marginTop: "12px" }}>
-          {isLive
-            ? "In Progress"
-            : startDate.toLocaleDateString() +
-              " " +
-              startDate.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}{" "}
-          &middot; {game.marketsCount} markets
+        <div style={{ fontSize: "12px", color: "#D3D3D3", marginTop: "14px" }}>
+          {!isLive && startDate.toLocaleDateString() + " " + startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {isLive && "In Progress"}
+          {" "}&middot; {game.marketsCount} markets
         </div>
       </div>
 
-      {/* Main Markets */}
-      {mainMarkets.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {mainMarkets.map((m) => (
-            <MarketCard key={m.id} market={m} onSelect={handleSelectOdd} />
-          ))}
-        </div>
-      )}
-
-      {/* Other Markets */}
-      {otherMarkets.length > 0 && (
-        <>
-          <h3
+      {/* Horizontal Tabs */}
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          overflowX: "auto",
+          paddingBottom: "6px",
+          scrollbarWidth: "none",
+        }}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
             style={{
-              fontSize: "15px",
+              padding: "10px 18px",
+              borderRadius: "20px",
+              border: activeTab === tab ? "1px solid rgba(57,255,20,0.32)" : "1px solid #283248",
+              background: activeTab === tab ? "rgba(57,255,20,0.12)" : "#141a2a",
+              color: activeTab === tab ? "#39ff14" : "#D3D3D3",
+              fontSize: "13px",
               fontWeight: "700",
-              color: "#D3D3D3",
-              marginTop: "8px",
+              whiteSpace: "nowrap",
+              cursor: "pointer",
+              transition: "all 0.2s",
             }}
           >
-            All Markets ({otherMarkets.length})
-          </h3>
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-          >
-            {otherMarkets.map((m) => (
-              <MarketCard key={m.id} market={m} onSelect={handleSelectOdd} />
-            ))}
-          </div>
-        </>
-      )}
+            {tab}
+          </button>
+        ))}
+      </div>
 
-      {game.markets.length === 0 && (
+      <div style={{ marginTop: "-4px", fontSize: "13px", color: "#D3D3D3" }}>
+        {tabDescription[activeTab]}
+      </div>
+
+      {/* Market Groups */}
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {filteredMarketGroups.map((m) => (
+          <MarketGroup
+            key={m.id}
+            name={m.name + (m.base ? ` (${m.base})` : "")}
+            markets={[{ ...m, status: "open" }]}
+            fixtureId={String(game.id)}
+            fixtureName={fixtureName}
+          />
+        ))}
+      </div>
+
+      {filteredMarketGroups.length === 0 && (
         <div
           style={{
-            padding: "40px",
+            padding: "32px",
             textAlign: "center",
             color: "#D3D3D3",
             background: "#0f1225",
-            borderRadius: "8px",
-            fontSize: "14px",
+            border: "1px solid #1a1f3a",
+            borderRadius: "16px",
           }}
         >
-          No markets available for this match
+          No markets found in this category
         </div>
       )}
     </div>

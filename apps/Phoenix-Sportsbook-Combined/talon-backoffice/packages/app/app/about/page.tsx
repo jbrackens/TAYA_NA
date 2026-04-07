@@ -5,14 +5,14 @@ export default function AboutPage() {
     <>
       <style dangerouslySetInnerHTML={{ __html: legalStyles }} />
       <div className="legal-page">
-        <h1>About TAYA NA! Sportsbook</h1>
+        <h1>About TAYA NA!</h1>
         <p className="legal-updated">Last updated: April 2026</p>
 
         <section>
           <h2>Who We Are</h2>
           <p>
-            TAYA NA! Sportsbook is a next-generation sports betting platform
-            built for speed, transparency, and responsible play. We combine
+            TAYA NA! is a next-generation betting platform built for speed,
+            transparency, and responsible play. We combine
             real-time odds from global markets with a modern interface designed
             around the bettor's experience.
           </p>
@@ -42,9 +42,9 @@ export default function AboutPage() {
         <section>
           <h2>Licensing &amp; Regulation</h2>
           <p>
-            TAYA NA! Sportsbook operates under applicable gaming licenses and
-            regulatory frameworks. All wagering activity is subject to the terms
-            of service and applicable laws of the jurisdiction in which you are
+            TAYA NA! operates under applicable gaming licenses and regulatory
+            frameworks. All wagering activity is subject to the terms of
+            service and applicable laws of the jurisdiction in which you are
             located.
           </p>
         </section>
@@ -53,8 +53,8 @@ export default function AboutPage() {
           <h2>Contact</h2>
           <p>
             For support inquiries, reach us at{" "}
-            <a href="mailto:support@phoenixsportsbook.com">
-              support@phoenixsportsbook.com
+            <a href="mailto:support@tayanasportsbook.com">
+              support@tayanasportsbook.com
             </a>
             .
           </p>

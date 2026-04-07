@@ -6,7 +6,7 @@ import { getMarkets } from "../lib/api/markets-client";
 import type { Event } from "../lib/api/events-client";
 import type { Market, MarketSelection } from "../lib/api/markets-client";
 import wsService from "../lib/websocket/websocket-service";
-import { useBetslip } from "../hooks/useBetslip";
+import OddsButton from "./OddsButton";
 
 interface MatchOdds {
   homeOdds: number;
@@ -31,7 +31,6 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   const [oddsMap, setOddsMap] = useState<Record<string, MatchOdds>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const betslip = useBetslip();
 
   useEffect(() => {
     let cancelled = false;
@@ -55,7 +54,6 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
         const oddsResults = await Promise.allSettled(
           events.map(async (event: Event) => {
             const markets = await getMarkets(event.fixtureId);
-            // Find the "Match Result" / "1X2" / "Winner" market
             const matchResult = markets.find(
               (m: Market) =>
                 m.marketKey === "match_result" ||
@@ -123,7 +121,6 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
 
     loadMatches();
 
-    // Subscribe to live fixture updates via wsService
     wsService.subscribe("fixture");
     const unsubscribe = wsService.on(
       "fixture",
@@ -145,64 +142,6 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
       unsubscribe();
     };
   }, [sportKey, leagueKey]);
-
-  const handleBet = (match: Event, position: "home" | "draw" | "away") => {
-    const matchOdds = oddsMap[match.fixtureId];
-    const odds =
-      position === "home"
-        ? matchOdds?.homeOdds || 0
-        : position === "draw"
-          ? matchOdds?.drawOdds || 0
-          : matchOdds?.awayOdds || 0;
-    const selectionId =
-      position === "home"
-        ? matchOdds?.homeSelectionId || `${match.fixtureId}-home`
-        : position === "draw"
-          ? matchOdds?.drawSelectionId || `${match.fixtureId}-draw`
-          : matchOdds?.awaySelectionId || `${match.fixtureId}-away`;
-    const marketId = matchOdds?.marketId || `${match.fixtureId}-match-result`;
-
-    const existing = betslip.selections.find(
-      (bet) => bet.selectionId === selectionId && bet.marketId === marketId,
-    );
-
-    if (existing) {
-      betslip.removeSelection(existing.id);
-      return;
-    }
-
-    betslip.addSelection({
-      id: `${marketId}-${selectionId}`,
-      fixtureId: match.fixtureId,
-      marketId,
-      selectionId,
-      matchName: `${match.homeTeam} vs ${match.awayTeam}`,
-      marketName: "Match Result",
-      selectionName:
-        position === "home"
-          ? match.homeTeam
-          : position === "away"
-            ? match.awayTeam
-            : "Draw",
-      odds,
-      initialOdds: odds,
-    });
-  };
-
-  const isSelected = (fixtureId: string, position: string) => {
-    const matchOdds = oddsMap[fixtureId];
-    const selectionId =
-      position === "home"
-        ? matchOdds?.homeSelectionId
-        : position === "draw"
-          ? matchOdds?.drawSelectionId
-          : matchOdds?.awaySelectionId;
-    return betslip.selections.some(
-      (b) =>
-        b.selectionId === (selectionId || `${fixtureId}-${position}`) &&
-        b.marketId === matchOdds?.marketId,
-    );
-  };
 
   if (loading) {
     return <div style={{ color: "#a0a0a0" }}>Loading featured matches...</div>;
@@ -321,42 +260,25 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
                       : pos === "away"
                         ? match.awayTeam.slice(0, 8)
                         : "Draw";
+                  const selectionId = 
+                    pos === "home" ? matchOdds?.homeSelectionId :
+                    pos === "draw" ? matchOdds?.drawSelectionId :
+                    matchOdds?.awaySelectionId;
 
                   return (
-                    <button
-                      key={pos}
-                      onClick={() => handleBet(match, pos)}
-                      style={{
-                        flex: 1,
-                        padding: "8px 6px",
-                        backgroundColor: isSelected(match.fixtureId, pos)
-                          ? "#4f46e5"
-                          : "#1a1f3a",
-                        color: "#e2e8f0",
-                        border: `1px solid ${isSelected(match.fixtureId, pos) ? "#4f46e5" : "#2d3748"}`,
-                        borderRadius: "6px",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: "2px",
-                      }}
-                    >
-                      <span style={{ fontSize: "10px", color: "#64748b" }}>
-                        {label}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          color: odds ? "#39ff14" : "#64748b",
-                        }}
-                      >
-                        {odds ? odds.toFixed(2) : "-"}
-                      </span>
-                    </button>
+                    <div key={pos} style={{ flex: 1 }}>
+                      <OddsButton
+                        fixtureId={match.fixtureId}
+                        marketId={matchOdds?.marketId || `${match.fixtureId}-match-result`}
+                        selectionId={selectionId || `${match.fixtureId}-${pos}`}
+                        odds={odds || 0}
+                        matchName={`${match.homeTeam} vs ${match.awayTeam}`}
+                        marketName="Match Result"
+                        selectionName={pos === "home" ? match.homeTeam : pos === "away" ? match.awayTeam : "Draw"}
+                        label={label}
+                        suspended={!odds}
+                      />
+                    </div>
                   );
                 })}
               </div>

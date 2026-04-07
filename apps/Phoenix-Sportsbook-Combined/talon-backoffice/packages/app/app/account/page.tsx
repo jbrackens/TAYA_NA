@@ -16,6 +16,7 @@ import { getProfile } from "../lib/api/user-client";
 import { getBalance } from "../lib/api/wallet-client";
 import type { UserProfile } from "../lib/api/user-client";
 import type { Balance } from "../lib/api/wallet-client";
+import { colors, font, radius, shadow, spacing, surface, text, transition } from "../lib/theme";
 
 export default function AccountPage() {
   const { user } = useAuth();
@@ -48,8 +49,8 @@ export default function AccountPage() {
       <style dangerouslySetInnerHTML={{ __html: accountPageStyles }} />
       <div className="account-page">
         <div className="account-header">
-          <h1>Account Dashboard</h1>
-          <p>Manage your account settings and preferences</p>
+          <h1>Player Hub</h1>
+          <p>Manage your TAYA NA! profile, wallet, and account controls.</p>
         </div>
 
         {/* User Info Banner */}
@@ -81,107 +82,118 @@ export default function AccountPage() {
             <div className="account-card-icon">
               <Settings size={28} strokeWidth={2} />
             </div>
-            <div className="account-card-title">Settings</div>
-            <div className="account-card-desc">Edit profile information</div>
+            <div className="account-card-title">Profile</div>
+            <div className="account-card-desc">Update your details and account setup</div>
           </Link>
 
           <Link href="/bets" className="account-card">
             <div className="account-card-icon">
               <ReceiptText size={28} strokeWidth={2} />
             </div>
-            <div className="account-card-title">Bet History</div>
-            <div className="account-card-desc">View all your bets</div>
+            <div className="account-card-title">My Bets</div>
+            <div className="account-card-desc">Track open and settled tickets</div>
           </Link>
 
           <Link href="/account/transactions" className="account-card">
             <div className="account-card-icon">
               <CreditCard size={28} strokeWidth={2} />
             </div>
-            <div className="account-card-title">Transactions</div>
-            <div className="account-card-desc">Deposits and withdrawals</div>
+            <div className="account-card-title">Wallet Activity</div>
+            <div className="account-card-desc">Review deposits, withdrawals, and ledger movement</div>
           </Link>
 
           <Link href="/account/security" className="account-card">
             <div className="account-card-icon">
               <Lock size={28} strokeWidth={2} />
             </div>
-            <div className="account-card-title">Security</div>
-            <div className="account-card-desc">Password and 2FA settings</div>
+            <div className="account-card-title">Account Security</div>
+            <div className="account-card-desc">Passwords, verification, and sign-in protection</div>
           </Link>
 
           <Link href="/account/notifications" className="account-card">
             <div className="account-card-icon">
               <Bell size={28} strokeWidth={2} />
             </div>
-            <div className="account-card-title">Notifications</div>
-            <div className="account-card-desc">Manage preferences</div>
+            <div className="account-card-title">Alerts</div>
+            <div className="account-card-desc">Control bet, account, and promo notifications</div>
           </Link>
 
           <Link href="/responsible-gaming" className="account-card">
             <div className="account-card-icon">
               <HeartHandshake size={28} strokeWidth={2} />
             </div>
-            <div className="account-card-title">Responsible Gaming</div>
-            <div className="account-card-desc">Limits and self-exclusion</div>
-          </Link>
-        </div>
+            <div className="account-card-title">Play Safely</div>
+            <div className="account-card-desc">Limits, cool-offs, and self-exclusion tools</div>
+        </Link>
+      </div>
       </div>
     </>
   );
 }
 
 const accountPageStyles = `
-  .account-page { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
-  .account-header { margin-bottom: 32px; }
-  .account-header h1 { font-size: 32px; font-weight: 800; color: #e2e8f0; margin-bottom: 8px; }
-  .account-header p { font-size: 14px; color: #D3D3D3; }
+  .account-page { max-width: 1000px; margin: 0 auto; padding: ${spacing["2xl"]} ${spacing.lg}; }
+  .account-header { margin-bottom: ${spacing["3xl"]}; }
+  .account-header h1 { font-size: ${font["5xl"]}; font-weight: ${font.extrabold}; color: ${colors.textDefault}; margin-bottom: ${spacing.sm}; letter-spacing: -0.03em; }
+  .account-header p { font-size: ${font.base}; color: ${colors.textSecondary}; }
 
   .account-banner {
-    background: #0f1225; border: 1px solid #1a1f3a; border-radius: 14px;
-    padding: 24px; margin-bottom: 32px; display: flex; justify-content: space-between;
+    background: ${surface.panelRaised.background}; border: ${surface.panelRaised.border}; border-radius: ${surface.panelRaised.borderRadius};
+    box-shadow: ${surface.panelRaised.boxShadow};
+    padding: ${spacing["2xl"]}; margin-bottom: ${spacing["3xl"]}; display: flex; justify-content: space-between;
     align-items: center;
   }
   @media (max-width: 640px) {
-    .account-banner { flex-direction: column; gap: 16px; align-items: flex-start; }
+    .account-banner { flex-direction: column; gap: ${spacing.lg}; align-items: flex-start; }
   }
 
-  .account-banner-left { display: flex; align-items: center; gap: 16px; }
+  .account-banner-left { display: flex; align-items: center; gap: ${spacing.lg}; }
   .account-avatar {
-    width: 56px; height: 56px; border-radius: 12px; background: #39ff14;
+    width: 56px; height: 56px; border-radius: ${radius["2xl"]}; background: ${colors.gradient};
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px; font-weight: 700; color: #fff;
+    font-size: ${font["3xl"]}; font-weight: ${font.bold}; color: ${colors.textPrimary};
+    box-shadow: ${shadow.glow};
   }
 
-  .account-username { font-size: 16px; font-weight: 700; color: #e2e8f0; }
-  .account-email { font-size: 13px; color: #D3D3D3; margin-top: 4px; }
+  .account-username { font-size: ${font.lg}; font-weight: ${font.bold}; color: ${colors.textPrimary}; }
+  .account-email { font-size: ${font.md}; color: ${colors.textSecondary}; margin-top: ${spacing.xs}; }
 
   .account-balance { text-align: right; }
   @media (max-width: 640px) { .account-balance { text-align: left; } }
-  .account-balance-label { font-size: 12px; color: #D3D3D3; font-weight: 600; margin-bottom: 4px; }
-  .account-balance-value { font-size: 24px; font-weight: 800; color: #39ff14; }
+  .account-balance-label {
+    color: ${text.eyebrow.color};
+    font-size: ${text.eyebrow.fontSize};
+    font-weight: ${text.eyebrow.fontWeight};
+    letter-spacing: ${text.eyebrow.letterSpacing};
+    text-transform: ${text.eyebrow.textTransform};
+    margin-bottom: ${spacing.xs};
+  }
+  .account-balance-value { font-size: ${font["3xl"]}; font-weight: ${font.extrabold}; color: ${colors.primary}; }
 
   .account-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 16px;
+    gap: ${spacing.lg};
   }
 
   .account-card {
-    background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
-    padding: 20px; text-decoration: none;
-    transition: all 0.2s; cursor: pointer;
+    background: ${surface.panelInteractive.background}; border: ${surface.panelInteractive.border}; border-radius: ${surface.panelInteractive.borderRadius};
+    box-shadow: ${surface.panelInteractive.boxShadow};
+    padding: ${spacing.xl}; text-decoration: none;
+    transition: ${transition.normal}; cursor: pointer;
   }
 
   .account-card:hover {
-    border-color: #39ff14; background: #161a32;
-    box-shadow: 0 8px 16px rgba(57, 255, 20, 0.1);
+    border-color: rgba(57, 255, 20, 0.3); background: ${colors.bgHover};
+    box-shadow: ${shadow.glowLg};
+    transform: translateY(-1px);
   }
 
   .account-card-icon {
-    width: 48px; height: 48px; border-radius: 12px; margin-bottom: 12px;
+    width: 48px; height: 48px; border-radius: ${radius["2xl"]}; margin-bottom: ${spacing.md};
     display: inline-flex; align-items: center; justify-content: center;
-    color: #39ff14; background: rgba(57, 255, 20, 0.08);
-    border: 1px solid rgba(57, 255, 20, 0.16);
+    color: ${colors.primary}; background: ${surface.chip.background};
+    border: ${surface.chip.border};
   }
-  .account-card-title { font-size: 16px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
-  .account-card-desc { font-size: 13px; color: #D3D3D3; }
+  .account-card-title { font-size: ${font.lg}; font-weight: ${font.bold}; color: ${colors.textDefault}; margin-bottom: ${spacing.xs}; }
+  .account-card-desc { font-size: ${font.md}; color: ${colors.textSecondary}; }
 `;

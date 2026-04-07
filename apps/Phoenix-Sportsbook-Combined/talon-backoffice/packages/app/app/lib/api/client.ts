@@ -3,6 +3,18 @@ const API_BASE =
     ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"
     : "";
 
+function readAuthCookie(name: string) {
+  if (typeof document === "undefined") return null;
+  const prefix = `${name}=`;
+  const match = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+
+  if (!match) return null;
+  return decodeURIComponent(match.slice(prefix.length));
+}
+
 function syncAuthCookie(token?: string) {
   if (typeof document === 'undefined') return;
   if (token) {
@@ -22,7 +34,8 @@ class ApiClient {
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('phoenix_access_token');
+      const token =
+        localStorage.getItem('phoenix_access_token') || readAuthCookie('authToken');
       if (token) headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
@@ -76,7 +89,7 @@ class ApiClient {
 
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('phoenix_access_token');
+    return localStorage.getItem('phoenix_access_token') || readAuthCookie('authToken');
   }
 
   getRefreshToken(): string | null {

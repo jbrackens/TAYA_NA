@@ -256,10 +256,10 @@ export default function ContactUsPage() {
         <div style={infoTitleStyle}>Other Ways to Reach Us</div>
         <div style={infoItemStyle}>
           <strong style={{ color: "#e2e8f0" }}>Email:</strong>{" "}
-          support@phoenixsportsbook.com
+          support@tayanasportsbook.com
         </div>
         <div style={infoItemStyle}>
-          <strong style={{ color: "#e2e8f0" }}>Phone:</strong> 1-800-PHOENIX-1
+          <strong style={{ color: "#e2e8f0" }}>Phone:</strong> 1-800-TAYA-NA
         </div>
         <div style={infoItemStyle}>
           <strong style={{ color: "#e2e8f0" }}>Support Hours:</strong> Monday -

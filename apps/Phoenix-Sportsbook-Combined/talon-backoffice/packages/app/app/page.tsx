@@ -418,23 +418,59 @@ function AuthenticatedHome() {
           __html: `
         .home-hero {
           background: linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%);
-          border-radius: 16px; padding: 32px; margin-bottom: 28px;
+          border-radius: 18px; padding: 24px 28px; margin-bottom: 22px;
           border: 1px solid #1e2243; position: relative; overflow: hidden;
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 18px;
         }
         .home-hero::before {
           content: ''; position: absolute; top: -50%; right: -20%; width: 400px; height: 400px;
           background: radial-gradient(circle, rgba(57,255,20,0.08) 0%, transparent 70%);
           pointer-events: none;
         }
-        .home-hero h1 { font-size: 26px; font-weight: 800; color: #f8fafc; margin-bottom: 8px; letter-spacing: -0.02em; }
-        .home-hero p { font-size: 15px; color: #D3D3D3; font-weight: 400; }
+        .home-hero-copy { position: relative; z-index: 1; max-width: 560px; }
+        .home-hero h1 { font-size: 24px; font-weight: 800; color: #f8fafc; margin-bottom: 6px; letter-spacing: -0.02em; }
+        .home-hero p { font-size: 14px; color: #D3D3D3; font-weight: 400; }
         .home-hero .accent { color: #39ff14; }
+        .home-hero-stats {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+        .home-hero-chip {
+          padding: 10px 12px;
+          border-radius: 12px;
+          background: rgba(9,15,31,0.62);
+          border: 1px solid rgba(57,255,20,0.12);
+          min-width: 104px;
+        }
+        .home-hero-chip-value {
+          display: block;
+          color: #f8fafc;
+          font-size: 17px;
+          font-weight: 800;
+          line-height: 1.1;
+        }
+        .home-hero-chip-label {
+          display: block;
+          margin-top: 4px;
+          color: #D3D3D3;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+        }
 
         .discovery-stack {
           display: flex;
           flex-direction: column;
-          gap: 18px;
-          margin-bottom: 30px;
+          gap: 16px;
+          margin-bottom: 18px;
         }
         .discovery-search {
           display: flex;
@@ -470,6 +506,28 @@ function AuthenticatedHome() {
           font-weight: 700;
           line-height: 1;
         }
+        .discovery-context {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin-top: -2px;
+        }
+        .discovery-kicker {
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #39ff14;
+        }
+        .discovery-context-copy {
+          font-size: 13px;
+          color: #D3D3D3;
+        }
+        .discovery-context-copy strong {
+          color: #f8fafc;
+        }
 
         .sport-pills-shell {
           display: flex;
@@ -502,6 +560,17 @@ function AuthenticatedHome() {
           display: flex;
           flex-direction: column;
           gap: 12px;
+        }
+        .discovery-board {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          padding: 20px;
+          border-radius: 18px;
+          border: 1px solid #1f2940;
+          background: linear-gradient(180deg, rgba(16,20,35,0.96) 0%, rgba(10,14,26,0.98) 100%);
+          box-shadow: 0 22px 40px rgba(0,0,0,0.18);
+          margin-bottom: 28px;
         }
         .discovery-section-head {
           display: flex;
@@ -673,7 +742,6 @@ function AuthenticatedHome() {
           display: flex;
           flex-direction: column;
           gap: 20px;
-          margin-bottom: 28px;
         }
         .popular-sport-block {
           display: flex;
@@ -698,11 +766,22 @@ function AuthenticatedHome() {
         }
 
         /* Section */
+        .fixtures-board {
+          border: 1px solid #1b2336;
+          border-radius: 18px;
+          background: linear-gradient(180deg, rgba(15,18,33,0.98) 0%, rgba(10,13,25,0.98) 100%);
+          padding: 20px;
+        }
         .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
         .section-title { font-size: 17px; font-weight: 700; color: #f1f5f9; }
         .section-count {
           font-size: 12px; font-weight: 600; color: #D3D3D3; background: #161a35;
           padding: 4px 10px; border-radius: 6px;
+        }
+        .section-subtitle {
+          margin-top: 6px;
+          color: #D3D3D3;
+          font-size: 13px;
         }
 
         /* Fixture card */
@@ -804,6 +883,15 @@ function AuthenticatedHome() {
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         @media (max-width: 768px) {
+          .home-hero {
+            padding: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .home-hero-stats {
+            width: 100%;
+            justify-content: flex-start;
+          }
           .discovery-search {
             padding: 14px 14px;
           }
@@ -821,10 +909,26 @@ function AuthenticatedHome() {
 
       {/* Hero */}
       <div className="home-hero">
-        <h1>
-          Welcome to <span className="accent">TAYA NA!</span>
-        </h1>
-        <p>Live odds, instant bets, real-time results.</p>
+        <div className="home-hero-copy">
+          <h1>
+            Welcome to <span className="accent">TAYA NA!</span>
+          </h1>
+          <p>Search fast, grab a top pick, or scan the board sport by sport.</p>
+        </div>
+        <div className="home-hero-stats">
+          <div className="home-hero-chip">
+            <span className="home-hero-chip-value">{topPicks.length || "—"}</span>
+            <span className="home-hero-chip-label">Hot Picks</span>
+          </div>
+          <div className="home-hero-chip">
+            <span className="home-hero-chip-value">{popularRows.length || "—"}</span>
+            <span className="home-hero-chip-label">Sport Rows</span>
+          </div>
+          <div className="home-hero-chip">
+            <span className="home-hero-chip-value">{filteredFixtures.length || "—"}</span>
+            <span className="home-hero-chip-label">Visible Matches</span>
+          </div>
+        </div>
       </div>
 
       <div className="discovery-stack">
@@ -840,6 +944,18 @@ function AuthenticatedHome() {
           />
           <span className="discovery-shortcut">/</span>
         </label>
+
+        <div className="discovery-context">
+          <div>
+            <div className="discovery-kicker">Discovery Engine</div>
+            <div className="discovery-context-copy">
+              <strong>{filteredFixtures.length}</strong> matches filtered for your current board.
+            </div>
+          </div>
+          <div className="discovery-context-copy">
+            Start with <strong>Hot Picks</strong>, then scan sport ribbons before the full board.
+          </div>
+        </div>
 
         <div className="sport-pills-shell">
           <div className="sport-pills">
@@ -864,16 +980,18 @@ function AuthenticatedHome() {
             ))}
           </div>
         </div>
+      </div>
 
+      <div className="discovery-board">
         <section className="discovery-section">
           <div className="discovery-section-head">
             <div>
               <div className="discovery-title-wrap">
                 <span className="discovery-title-icon">🔥</span>
-                <span className="discovery-title">Top Picks</span>
+                <span className="discovery-title">Hot Picks</span>
               </div>
               <div className="discovery-subtitle">
-                High-action markets curated from live and near-start fixtures
+                Quick-entry plays pulled from live and about-to-start boards
               </div>
             </div>
 
@@ -904,159 +1022,166 @@ function AuthenticatedHome() {
               <div className="empty-state" style={{ width: "100%" }}>
                 <div className="empty-title">No top picks right now</div>
                 <div className="empty-sub">
-                  Try another sport or search term to widen the board.
+                  Open up the board with another sport or a wider search.
                 </div>
               </div>
             )}
           </div>
         </section>
+
+        {popularRows.length > 0 && (
+          <div className="popular-sport-grid">
+            {popularRows.map(({ sport, fixtures }) => (
+              <section key={`popular-${sport.sportId}`} className="popular-sport-block">
+                <div className="popular-sport-head">
+                  <div className="popular-sport-title">
+                    {getSportAccent(sport)} Popular in {sport.name}
+                  </div>
+                  <div className="popular-sport-meta">{fixtures.length} featured events</div>
+                </div>
+
+                <div className="sport-ribbon-track">
+                  {fixtures.map((fixture) => renderDiscoveryCard(fixture, true))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )}
       </div>
 
       {error && <div className="error-banner">{error}</div>}
 
-      {popularRows.length > 0 && (
-        <div className="popular-sport-grid">
-          {popularRows.map(({ sport, fixtures }) => (
-            <section key={`popular-${sport.sportId}`} className="popular-sport-block">
-              <div className="popular-sport-head">
-                <div className="popular-sport-title">
-                  {getSportAccent(sport)} Popular in {sport.name}
-                </div>
-                <div className="popular-sport-meta">{fixtures.length} featured events</div>
-              </div>
-
-              <div className="sport-ribbon-track">
-                {fixtures.map((fixture) => renderDiscoveryCard(fixture, true))}
-              </div>
-            </section>
-          ))}
-        </div>
-      )}
-
       {/* Fixtures */}
-      <div className="section-header">
-        <span className="section-title">
-          {loading
-            ? "Loading..."
-            : searchQuery
-              ? "Search Results"
-              : activeSport === "all"
-                ? "All Matches"
-                : `${topSports.find((sport) => sport.sportId === activeSport)?.name || "Selected Sport"} Matches`}
-        </span>
-        {!loading && (
-          <span className="section-count">
-            {filteredFixtures.length} matches
-          </span>
+      <div className="fixtures-board">
+        <div className="section-header">
+          <div>
+            <span className="section-title">
+              {loading
+                ? "Loading..."
+                : searchQuery
+                  ? "Full Match Board"
+                  : activeSport === "all"
+                    ? "Full Match Board"
+                    : `${topSports.find((sport) => sport.sportId === activeSport)?.name || "Selected Sport"} Board`}
+            </span>
+            <div className="section-subtitle">
+              Every available fixture after your search and sport filters.
+            </div>
+          </div>
+          {!loading && (
+            <span className="section-count">
+              {filteredFixtures.length} matches
+            </span>
+          )}
+        </div>
+
+        {loading && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[1, 2, 3].map((i) => (
+              <div
+                key={`skeleton-${i}`}
+                className="skeleton"
+                style={{ height: 140 }}
+              />
+            ))}
+          </div>
+        )}
+
+        {!loading &&
+          filteredFixtures.map((fixture) => {
+            const teams = getTeams(fixture.competitors);
+            const mainMarket = fixture.markets?.[0];
+            return (
+              <div key={fixture.fixtureId} className="fixture-card">
+                <div className="fixture-meta">
+                  <span className="fixture-league">
+                    {fixture.sport?.name} &middot; {fixture.tournament?.name}
+                  </span>
+                  <span
+                    className={`fixture-time ${
+                      fixture.isLive ? "live" : "upcoming"
+                    }`}
+                  >
+                    {fixture.isLive ? "LIVE" : formatDate(fixture.startTime)}
+                  </span>
+                </div>
+
+                <div className="fixture-teams">
+                  <span className="team-name home">{teams.home}</span>
+                  <span className="vs-badge">vs</span>
+                  <span className="team-name away">{teams.away}</span>
+                </div>
+
+                {mainMarket && mainMarket.selections?.length > 0 && (
+                  <div className="odds-row">
+                    {mainMarket.selections.map((sel) => {
+                      const isSelected = betslip?.selections?.some(
+                        (s: BetSelection) =>
+                          s.selectionId === sel.selectionId &&
+                          s.marketId === mainMarket.marketId,
+                      );
+                      const moveKey = `${mainMarket.marketId}:${sel.selectionId}`;
+                      const movement = movements[moveKey];
+                      const moveClass = movement
+                        ? movement.direction === "up"
+                          ? "odds-flash-up"
+                          : "odds-flash-down"
+                        : "";
+                      return (
+                        <button
+                          key={sel.selectionId}
+                          className={`odds-btn ${
+                            isSelected ? "selected" : ""
+                          } ${moveClass}`}
+                          onClick={() =>
+                            handleOddsClick(fixture, mainMarket, sel)
+                          }
+                          disabled={sel.status === "SUSPENDED"}
+                        >
+                          <span className="odds-label">{sel.name}</span>
+                          <span
+                            className={`odds-value ${
+                              sel.status === "SUSPENDED" ? "suspended" : ""
+                            }`}
+                          >
+                            {sel.status === "SUSPENDED"
+                              ? "-"
+                              : formatOdds(sel.odds, oddsFormat)}
+                            {movement && movement.direction === "up" && (
+                              <span className="odds-arrow up">&#9650;</span>
+                            )}
+                            {movement && movement.direction === "down" && (
+                              <span className="odds-arrow down">&#9660;</span>
+                            )}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {fixture.marketsTotalCount > 1 && (
+                  <a
+                    href={`/fixtures/${fixture.fixtureId}`}
+                    className="more-markets"
+                  >
+                    +{fixture.marketsTotalCount - 1} more markets
+                  </a>
+                )}
+              </div>
+            );
+          })}
+
+        {!loading && filteredFixtures.length === 0 && !error && (
+          <div className="empty-state">
+            <div className="empty-icon">⚽</div>
+            <div className="empty-title">No matches available</div>
+            <div className="empty-sub">
+              Check back soon for upcoming fixtures and live odds.
+            </div>
+          </div>
         )}
       </div>
-
-      {loading && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {[1, 2, 3].map((i) => (
-            <div
-              key={`skeleton-${i}`}
-              className="skeleton"
-              style={{ height: 140 }}
-            />
-          ))}
-        </div>
-      )}
-
-      {!loading &&
-        filteredFixtures.map((fixture) => {
-          const teams = getTeams(fixture.competitors);
-          const mainMarket = fixture.markets?.[0];
-          return (
-            <div key={fixture.fixtureId} className="fixture-card">
-              <div className="fixture-meta">
-                <span className="fixture-league">
-                  {fixture.sport?.name} &middot; {fixture.tournament?.name}
-                </span>
-                <span
-                  className={`fixture-time ${
-                    fixture.isLive ? "live" : "upcoming"
-                  }`}
-                >
-                  {fixture.isLive ? "LIVE" : formatDate(fixture.startTime)}
-                </span>
-              </div>
-
-              <div className="fixture-teams">
-                <span className="team-name home">{teams.home}</span>
-                <span className="vs-badge">vs</span>
-                <span className="team-name away">{teams.away}</span>
-              </div>
-
-              {mainMarket && mainMarket.selections?.length > 0 && (
-                <div className="odds-row">
-                  {mainMarket.selections.map((sel) => {
-                    const isSelected = betslip?.selections?.some(
-                      (s: BetSelection) =>
-                        s.selectionId === sel.selectionId &&
-                        s.marketId === mainMarket.marketId,
-                    );
-                    const moveKey = `${mainMarket.marketId}:${sel.selectionId}`;
-                    const movement = movements[moveKey];
-                    const moveClass = movement
-                      ? movement.direction === "up"
-                        ? "odds-flash-up"
-                        : "odds-flash-down"
-                      : "";
-                    return (
-                      <button
-                        key={sel.selectionId}
-                        className={`odds-btn ${
-                          isSelected ? "selected" : ""
-                        } ${moveClass}`}
-                        onClick={() =>
-                          handleOddsClick(fixture, mainMarket, sel)
-                        }
-                        disabled={sel.status === "SUSPENDED"}
-                      >
-                        <span className="odds-label">{sel.name}</span>
-                        <span
-                          className={`odds-value ${
-                            sel.status === "SUSPENDED" ? "suspended" : ""
-                          }`}
-                        >
-                          {sel.status === "SUSPENDED"
-                            ? "-"
-                            : formatOdds(sel.odds, oddsFormat)}
-                          {movement && movement.direction === "up" && (
-                            <span className="odds-arrow up">&#9650;</span>
-                          )}
-                          {movement && movement.direction === "down" && (
-                            <span className="odds-arrow down">&#9660;</span>
-                          )}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {fixture.marketsTotalCount > 1 && (
-                <a
-                  href={`/fixtures/${fixture.fixtureId}`}
-                  className="more-markets"
-                >
-                  +{fixture.marketsTotalCount - 1} more markets
-                </a>
-              )}
-            </div>
-          );
-        })}
-
-      {!loading && filteredFixtures.length === 0 && !error && (
-        <div className="empty-state">
-          <div className="empty-icon">⚽</div>
-          <div className="empty-title">No matches available</div>
-          <div className="empty-sub">
-            Check back soon for upcoming fixtures and live odds.
-          </div>
-        </div>
-      )}
     </>
   );
 }

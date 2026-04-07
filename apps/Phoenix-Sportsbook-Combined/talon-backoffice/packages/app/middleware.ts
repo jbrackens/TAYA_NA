@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ["/", "/sports", "/match", "/live", "/auth"];
+const PUBLIC_ROUTES = ["/", "/sports", "/match", "/fixtures", "/live", "/starting-soon", "/auth"];
 
 /**
  * Check if a route is public

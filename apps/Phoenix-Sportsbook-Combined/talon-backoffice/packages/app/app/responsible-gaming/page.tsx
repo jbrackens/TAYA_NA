@@ -460,8 +460,8 @@ export default function ResponsibleGamingPage() {
             </h2>
             <div style={{ fontSize: 13, color: "#D3D3D3", lineHeight: 1.7 }}>
               <p style={{ marginBottom: 12 }}>
-                TAYA NA! Sportsbook is committed to protecting our patrons. We
-                implement the following measures:
+                TAYA NA! is committed to protecting our players. We implement
+                the following measures:
               </p>
               <ul
                 style={{
@@ -525,10 +525,10 @@ export default function ResponsibleGamingPage() {
                   Reach out to our customer support team via live chat or email
                   at{" "}
                   <a
-                    href="mailto:support@phoenixsportsbook.com"
+                    href="mailto:support@tayanasportsbook.com"
                     style={{ color: "#39ff14", textDecoration: "none" }}
                   >
-                    support@phoenixsportsbook.com
+                    support@tayanasportsbook.com
                   </a>
                   . We aim to resolve most issues within 48 hours.
                 </li>

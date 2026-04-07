@@ -8,7 +8,7 @@ import { useAppSelector } from "../lib/store/hooks";
 import { selectUserStatus, selectCoolOff } from "../lib/store/settingsSlice";
 import { selectCurrentBalance } from "../lib/store/cashierSlice";
 import { useAuth } from "../hooks/useAuth";
-import { colors, brand, font, radius, spacing } from "../lib/theme";
+import { font, radius, shadow, spacing, transition } from "../lib/theme";
 
 /**
  * AccountStatusBar — prominent alert banner displayed below the header
@@ -139,6 +139,7 @@ export const AccountStatusBar: React.FC = () => {
         padding: `${spacing.md} ${spacing.xl}`,
         background: style.bg,
         borderBottom: `1px solid ${style.border}`,
+        boxShadow: shadow.sm,
         fontSize: font.md,
         fontWeight: font.medium,
         color: style.text,
@@ -168,7 +169,7 @@ export const AccountStatusBar: React.FC = () => {
             fontWeight: font.semibold,
             cursor: "pointer",
             whiteSpace: "nowrap",
-            transition: "background 0.15s",
+            transition: transition.fast,
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLElement).style.background = style.bg;
@@ -199,7 +200,7 @@ export const AccountStatusBar: React.FC = () => {
           justifyContent: "center",
           opacity: 0.6,
           flexShrink: 0,
-          transition: "opacity 0.15s",
+          transition: transition.fast,
         }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLElement).style.opacity = "1";

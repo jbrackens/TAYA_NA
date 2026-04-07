@@ -111,11 +111,11 @@ const fallbackContent: BonusContent = {
     },
     {
       heading: "9. Terms Modification",
-      body: "TAYA NA! Sportsbook reserves the right to modify bonus terms, eligibility, or promotional offers at any time. Bonuses in progress will not be affected by future changes.",
+      body: "TAYA NA! reserves the right to modify bonus terms, eligibility, or promotional offers at any time. Bonuses in progress will not be affected by future changes.",
     },
     {
       heading: "10. Support",
-      body: "For questions about bonus terms, eligibility, or rollover status, contact our support team at support@phoenixsportsbook.com or call 1-800-PHOENIX-1.",
+      body: "For questions about bonus terms, eligibility, or rollover status, contact our support team at support@tayanasportsbook.com or call 1-800-TAYA-NA.",
     },
   ],
 };

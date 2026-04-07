@@ -27,6 +27,7 @@ import { useToast } from "./ToastProvider";
 import { useAuth } from "../hooks/useAuth";
 import { geoComplianceService } from "../lib/services/geocomply";
 import { logger } from "../lib/logger";
+import { colors, shadow, transition } from "../lib/theme";
 
 const QUICK_STAKES = [5, 10, 25, 50, 100];
 
@@ -200,7 +201,10 @@ export const BetslipPanel: React.FC = () => {
       }
 
       setBetState("success");
-      toast.success(tx("PLACE_BET", "Place Bet"), tx("BET_CONFIRMED", "Bet confirmed"));
+      toast.success(
+        tx("PLACE_BET", "Lock In Bet"),
+        tx("BET_CONFIRMED", "Your ticket is locked in."),
+      );
       // Clear betslip after successful placement
       setTimeout(() => {
         betslip?.clearAll();
@@ -252,21 +256,14 @@ export const BetslipPanel: React.FC = () => {
             <Ticket size={48} strokeWidth={1.5} style={{ opacity: 0.4 }} />
           </div>
           <div className="ps-betslip-empty-text">
-            {tx("NO_BETS_MESSAGE", "No bets in your betslip")}
+            {tx("NO_BETS_MESSAGE", "Your slip is empty. Add a market to get started.")}
           </div>
         </div>
       ) : (
         <>
           {/* Single/Parlay Toggle */}
           {selections.length > 1 && (
-            <div
-              style={{
-                display: "flex",
-                padding: "8px 12px",
-                gap: 4,
-                borderBottom: "1px solid #1a1f3a",
-              }}
-            >
+            <div className="ps-betslip-mode-toggle">
               <button
                 className={`ps-betslip-tab ${!parlayMode ? "active" : ""}`}
                 onClick={() => betslip?.setParlayMode(false)}
@@ -285,7 +282,7 @@ export const BetslipPanel: React.FC = () => {
           )}
 
           {/* Selections */}
-          <div style={{ flex: 1, overflowY: "auto" }}>
+          <div className="ps-betslip-list">
             {selections.map((sel: BetSelection) => (
               <div key={sel.id} className="ps-betslip-selection">
                 <div className="ps-betslip-selection-header">
@@ -317,6 +314,14 @@ export const BetslipPanel: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                <div className="ps-betslip-selection-meta">
+                  <span className="ps-betslip-selection-meta-label">
+                    Potential
+                  </span>
+                  <span className="ps-betslip-selection-meta-value">
+                    ${(stakePerLeg * sel.odds).toFixed(2)}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -324,19 +329,13 @@ export const BetslipPanel: React.FC = () => {
           {/* Odds Change Warning Banner */}
           {oddsChanged && changedSelections.length > 0 && (
             <div
-              style={{
-                margin: "8px 12px",
-                padding: "12px",
-                borderRadius: 8,
-                background: "rgba(251, 191, 36, 0.1)",
-                border: "1px solid rgba(251, 191, 36, 0.3)",
-              }}
+              className="ps-betslip-state-card ps-betslip-state-card-warning"
             >
               <div
                 style={{
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "#fbbf24",
+                  color: colors.warning,
                   marginBottom: 8,
                 }}
               >
@@ -350,14 +349,14 @@ export const BetslipPanel: React.FC = () => {
                     justifyContent: "space-between",
                     alignItems: "center",
                     fontSize: 12,
-                    color: "#f1f5f9",
+                    color: colors.textPrimary,
                     padding: "4px 0",
                   }}
                 >
                   <span style={{ flex: 1 }}>{change.name}</span>
                   <span
                     style={{
-                      color: "#D3D3D3",
+                      color: colors.textSecondary,
                       textDecoration: "line-through",
                       marginRight: 6,
                     }}
@@ -391,7 +390,7 @@ export const BetslipPanel: React.FC = () => {
             </div>
           )}
 
-          {/* Footer: Stake + Summary + Place Bet */}
+          {/* Footer: Stake + Summary + Lock-In action */}
           <div className="ps-betslip-footer">
             {/* Quick Stakes */}
             <div className="ps-betslip-quick-stakes">
@@ -407,7 +406,8 @@ export const BetslipPanel: React.FC = () => {
             </div>
 
             {/* Stake Input */}
-            <div className="ps-betslip-stake-row">
+            <div className="ps-betslip-panel-block">
+              <div className="ps-betslip-stake-row">
               <span className="ps-betslip-stake-label">
                 {parlayMode
                   ? tx("TOTAL_STAKE", "Total Stake")
@@ -426,9 +426,10 @@ export const BetslipPanel: React.FC = () => {
                 step="0.01"
               />
             </div>
+            </div>
 
             {/* Summary */}
-            <div className="ps-betslip-summary">
+            <div className="ps-betslip-summary ps-betslip-panel-block">
               <div className="ps-betslip-summary-row">
                 <span className="ps-betslip-summary-label">
                   {tx("TOTAL_STAKE", "Total Stake")}
@@ -449,56 +450,21 @@ export const BetslipPanel: React.FC = () => {
 
             {/* Bet Error */}
             {betState === "error" && betError && (
-              <div
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  marginBottom: 8,
-                  background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.2)",
-                  color: "#f87171",
-                  fontSize: 12,
-                  fontWeight: 500,
-                }}
-              >
+              <div className="ps-betslip-state-card ps-betslip-state-card-error">
                 {betError}
               </div>
             )}
 
             {/* Bet Success */}
             {betState === "success" && (
-              <div
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  marginBottom: 8,
-                  background: "rgba(34,197,94,0.1)",
-                  border: "1px solid rgba(34,197,94,0.2)",
-                  color: "#22c55e",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  textAlign: "center",
-                }}
-              >
-                {tx("PLACE_BET", "Bet placed")}
+              <div className="ps-betslip-state-card ps-betslip-state-card-success">
+                {tx("PLACE_BET", "Locked In Bet")}
               </div>
             )}
 
             {/* Confirmation bar */}
             {betState === "confirming" && (
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: 8,
-                  marginBottom: 8,
-                  background: "rgba(57,255,20,0.08)",
-                  border: "1px solid rgba(57,255,20,0.2)",
-                  fontSize: 12,
-                  color: "#39ff14",
-                  fontWeight: 500,
-                  textAlign: "center",
-                }}
-              >
+              <div className="ps-betslip-state-card ps-betslip-state-card-confirm">
                 {t("CONFIRM_BET", {
                   type: parlayMode
                     ? "parlay"
@@ -510,7 +476,7 @@ export const BetslipPanel: React.FC = () => {
               </div>
             )}
 
-            {/* Place Bet / Confirm */}
+            {/* Lock-In / Confirm actions */}
             {betState === "confirming" ? (
               <div style={{ display: "flex", gap: 8 }}>
                 <button
@@ -525,7 +491,7 @@ export const BetslipPanel: React.FC = () => {
                   onClick={handlePlaceBet}
                   style={{ flex: 2 }}
                 >
-                  {tx("PLACE_BET", "Place Bet")}
+                  {tx("PLACE_BET", "Lock In Bet")}
                 </button>
               </div>
             ) : (
@@ -542,7 +508,7 @@ export const BetslipPanel: React.FC = () => {
                   ? tx("PLACING", "Placing...")
                   : betState === "success"
                     ? tx("PLACED", "Placed")
-                    : `${tx("PLACE_BET", "Place Bet")}${
+                    : `${tx("PLACE_BET", "Lock In Bet")}${
                         selections.length > 1 && !parlayMode
                           ? ` (${selections.length} bets)`
                           : ""
@@ -588,16 +554,23 @@ export const BetslipPanel: React.FC = () => {
       >
         {/* Header */}
         <div className="ps-betslip-header">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span className="ps-betslip-title">{tx("BETSLIP", "Betslip")}</span>
-            <span className="ps-betslip-count">{selections.length}</span>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span className="ps-betslip-title">{tx("BETSLIP", "Betslip")}</span>
+              <span className="ps-betslip-count">{selections.length}</span>
+            </div>
+            <div className="ps-betslip-subtitle">
+              {selections.length > 0
+                ? `${tx("POSSIBLE_RETURN", "Possible Return")}: $${potentialReturn.toFixed(2)}`
+                : tx("NO_BETS_MESSAGE", "Your slip is empty. Add a market to get started.")}
+            </div>
           </div>
           <button
             onClick={closeBetslip}
             style={{
               background: "none",
               border: "none",
-              color: "#4a5580",
+              color: colors.textSecondary,
               cursor: "pointer",
               padding: 8,
               display: "flex",
@@ -606,7 +579,7 @@ export const BetslipPanel: React.FC = () => {
               width: 44,
               height: 44,
               borderRadius: 8,
-              transition: "all 0.15s",
+              transition: transition.fast,
             }}
             aria-label="Close betslip"
           >
@@ -670,10 +643,10 @@ export const BetslipPanel: React.FC = () => {
         .ps-betslip-fab {
           position: fixed; bottom: 24px; right: 24px; z-index: 28;
           width: 56px; height: 56px; border-radius: 50%;
-          background: #39ff14; border: none; cursor: pointer;
+          background: ${colors.gradient}; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          color: #0f1225; font-weight: 700;
-          box-shadow: 0 4px 16px rgba(57,255,20,0.4);
+          color: ${colors.bgSurface}; font-weight: 700;
+          box-shadow: ${shadow.glowLg};
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .ps-betslip-fab:hover {
@@ -683,7 +656,7 @@ export const BetslipPanel: React.FC = () => {
         .ps-betslip-fab-count {
           position: absolute; top: -4px; right: -4px;
           min-width: 20px; height: 20px; border-radius: 10px;
-          background: #ef4444; color: #fff; font-size: 11px;
+          background: ${colors.danger}; color: #fff; font-size: 11px;
           font-weight: 700; display: flex; align-items: center;
           justify-content: center; padding: 0 5px;
         }
@@ -795,49 +768,30 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
           <Clock size={48} strokeWidth={1.5} style={{ opacity: 0.4 }} />
         </div>
         <div className="ps-betslip-empty-text">
-          {tx("NO_BETS_MESSAGE", "No bets in your betslip")}
+          {tx("NO_OPEN_BETS", "No open bets at the moment")}
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ flex: 1, overflowY: "auto" }}>
+    <div className="ps-betslip-list">
       {openBets.map((bet) => {
         const offer = cashoutOffers[bet.betId];
         const msg = cashoutMsg?.betId === bet.betId ? cashoutMsg : null;
         return (
-          <div
-            key={bet.betId}
-            style={{
-              padding: "12px 16px",
-              borderBottom: "1px solid #1a1f3a",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 4,
-              }}
-            >
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>
+          <div key={bet.betId} className="ps-open-bet-card">
+            <div className="ps-open-bet-card-top">
+              <span className="ps-open-bet-selection">
                 {bet.selection?.selectionName || "Selection"}
               </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#39ff14" }}>
+              <span className="ps-open-bet-odds">
                 {bet.selection?.odds
                   ? formatOdds(bet.selection.odds, oddsFormat)
                   : "-"}
               </span>
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 11,
-                color: "#4a5580",
-              }}
-            >
+            <div className="ps-open-bet-meta-row">
               <span>
                 {tx("STAKE_LABEL", "Stake")} ${bet.stake.toFixed(2)}
               </span>
@@ -845,7 +799,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
                 {tx("RETURN_LABEL", "Return")} ${bet.potentialReturn.toFixed(2)}
               </span>
             </div>
-            <div style={{ fontSize: 10, color: "#374163", marginTop: 4 }}>
+            <div className="ps-open-bet-status-row">
               {bet.status} &middot; {new Date(bet.createdAt).toLocaleString()}
             </div>
 
@@ -854,19 +808,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
               <button
                 onClick={() => handleCashout(bet.betId)}
                 disabled={cashingOut === bet.betId}
-                style={{
-                  width: "100%",
-                  marginTop: 8,
-                  padding: "8px",
-                  borderRadius: 6,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  background: "rgba(34,197,94,0.1)",
-                  border: "1px solid rgba(34,197,94,0.3)",
-                  color: "#22c55e",
-                  transition: "all 0.15s",
-                }}
+                className="ps-open-bet-cashout"
               >
                 {cashingOut === bet.betId
                   ? tx("CASHING_OUT", "Cashing out...")
@@ -877,13 +819,11 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
             {/* Cashout result message */}
             {msg && (
               <div
-                style={{
-                  marginTop: 6,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  textAlign: "center",
-                  color: msg.type === "success" ? "#22c55e" : "#f87171",
-                }}
+                className={`ps-open-bet-message ${
+                  msg.type === "success"
+                    ? "ps-open-bet-message-success"
+                    : "ps-open-bet-message-error"
+                }`}
               >
                 {msg.msg}
               </div>

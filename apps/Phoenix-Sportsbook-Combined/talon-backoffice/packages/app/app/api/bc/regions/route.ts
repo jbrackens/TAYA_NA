@@ -3,11 +3,32 @@ import { swarmQuery } from "../swarm";
 
 export const dynamic = "force-dynamic";
 
+const SPORT_ALIAS_MAP: Record<string, string> = {
+  soccer: "Soccer",
+  football: "Soccer",
+  basketball: "Basketball",
+  tennis: "Tennis",
+  baseball: "Baseball",
+  hockey: "IceHockey",
+  "ice-hockey": "IceHockey",
+  "american-football": "AmericanFootball",
+  cricket: "Cricket",
+  rugby: "RugbyUnion",
+  volleyball: "Volleyball",
+  mma: "Mma",
+  boxing: "Boxing",
+};
+
+function normalizeSportAlias(rawAlias: string) {
+  return SPORT_ALIAS_MAP[rawAlias.toLowerCase()] || rawAlias;
+}
+
 export async function GET(request: NextRequest) {
   const sportAlias = request.nextUrl.searchParams.get("sport");
   if (!sportAlias) {
     return NextResponse.json({ error: "Missing sport param" }, { status: 400 });
   }
+  const normalizedSportAlias = normalizeSportAlias(sportAlias);
 
   try {
     const data = await swarmQuery({
@@ -18,7 +39,7 @@ export async function GET(request: NextRequest) {
         game: "@count",
       },
       where: {
-        sport: { alias: sportAlias },
+        sport: { alias: normalizedSportAlias },
         game: { type: { "@in": [0, 2] } },
       },
     });

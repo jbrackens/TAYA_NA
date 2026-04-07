@@ -321,7 +321,7 @@ export const Betslip: React.FC = () => {
       </div>
 
       <Button variant="primary" style={{ width: "100%" }}>
-        Place Bet
+        Lock In Bet
       </Button>
 
       <Button variant="secondary" onClick={clearAll} style={{ width: "100%" }}>

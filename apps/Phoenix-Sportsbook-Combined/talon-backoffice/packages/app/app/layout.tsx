@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>TAYA NA! Sportsbook</title>
+        <title>TAYA NA!</title>
         <meta
           name="description"
           content="The ultimate sports betting platform"
@@ -319,7 +319,7 @@ const globalStyles = `
   .ps-betslip-overlay {
     position: fixed; top: 0; right: 0; bottom: 0;
     width: 380px; z-index: 30;
-    background: #0f1225; border-left: 1px solid #1a1f3a;
+    background: linear-gradient(180deg, #101428 0%, #0b0e1c 100%); border-left: 1px solid #1a1f3a;
     transform: translateX(100%);
     transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
     display: flex; flex-direction: column;
@@ -339,10 +339,13 @@ const globalStyles = `
     opacity: 1; pointer-events: auto;
   }
   .ps-betslip-header {
-    padding: 16px 20px; border-bottom: 1px solid #1a1f3a;
+    padding: 18px 20px 16px; border-bottom: 1px solid #1a1f3a;
     display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10, 14, 26, 0.6);
+    backdrop-filter: blur(16px);
   }
   .ps-betslip-title { font-size: 14px; font-weight: 700; color: #f8fafc; }
+  .ps-betslip-subtitle { margin-top: 6px; font-size: 11px; font-weight: 500; color: #D3D3D3; }
   .ps-betslip-count {
     min-width: 22px; height: 22px; border-radius: 6px; padding: 0 6px;
     background: #39ff14; color: #101114; font-size: 11px; font-weight: 700;
@@ -350,14 +353,22 @@ const globalStyles = `
   }
   .ps-betslip-tabs {
     display: flex; border-bottom: 1px solid #1a1f3a;
+    padding: 8px 12px 0;
+    gap: 8px;
   }
   .ps-betslip-tab {
-    flex: 1; padding: 10px; border: none; background: transparent;
+    flex: 1; padding: 10px; border: 1px solid transparent; background: transparent;
     color: #D3D3D3; font-size: 12px; font-weight: 600; cursor: pointer;
-    transition: all 0.15s; border-bottom: 2px solid transparent;
+    transition: all 0.15s; border-bottom: 2px solid transparent; border-radius: 8px 8px 0 0;
   }
-  .ps-betslip-tab.active { color: #39ff14; border-bottom-color: #39ff14; }
+  .ps-betslip-tab.active { color: #39ff14; border-color: rgba(57,255,20,0.18); border-bottom-color: #39ff14; background: rgba(57,255,20,0.06); }
   .ps-betslip-tab:hover { color: #ffffff; }
+  .ps-betslip-mode-toggle {
+    display: flex;
+    padding: 12px;
+    gap: 6px;
+    border-bottom: 1px solid #1a1f3a;
+  }
 
   .ps-betslip-empty {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -366,15 +377,36 @@ const globalStyles = `
   .ps-betslip-empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.3; }
   .ps-betslip-empty-text { font-size: 13px; font-weight: 500; line-height: 1.6; color: #D3D3D3; }
 
+  .ps-betslip-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
   .ps-betslip-selection {
-    padding: 12px 16px; border-bottom: 1px solid #1a1f3a;
+    padding: 14px 14px 12px; border: 1px solid #1a1f3a;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #12162c 0%, #0f1225 100%);
     display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.16);
   }
   .ps-betslip-selection-header { display: flex; justify-content: space-between; align-items: flex-start; }
   .ps-betslip-selection-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
   .ps-betslip-selection-match { font-size: 11px; color: #D3D3D3; }
   .ps-betslip-selection-market { font-size: 11px; color: #D3D3D3; }
   .ps-betslip-selection-odds { font-size: 14px; font-weight: 700; color: #39ff14; }
+  .ps-betslip-selection-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 6px;
+    margin-top: 2px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .ps-betslip-selection-meta-label { font-size: 11px; color: #D3D3D3; }
+  .ps-betslip-selection-meta-value { font-size: 12px; color: #f8fafc; font-weight: 600; }
   .ps-betslip-remove {
     width: 20px; height: 20px; border-radius: 4px; border: none;
     background: transparent; color: #4a5580; cursor: pointer;
@@ -386,6 +418,13 @@ const globalStyles = `
   .ps-betslip-footer {
     padding: 16px; border-top: 1px solid #1a1f3a;
     display: flex; flex-direction: column; gap: 10px;
+    background: linear-gradient(180deg, rgba(10,14,26,0.18) 0%, rgba(10,14,26,0.42) 100%);
+  }
+  .ps-betslip-panel-block {
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
   }
   .ps-betslip-stake-row { display: flex; align-items: center; gap: 8px; }
   .ps-betslip-stake-label { font-size: 12px; font-weight: 600; color: #D3D3D3; text-transform: uppercase; }
@@ -411,6 +450,110 @@ const globalStyles = `
   .ps-betslip-summary-label { color: #D3D3D3; }
   .ps-betslip-summary-value { color: #e2e8f0; font-weight: 600; }
   .ps-betslip-summary-value.green { color: #22c55e; font-size: 15px; }
+  .ps-betslip-state-card {
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+  }
+  .ps-betslip-state-card-warning {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+  }
+  .ps-betslip-state-card-error {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #f87171;
+  }
+  .ps-betslip-state-card-success {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.2);
+    color: #22c55e;
+    font-weight: 600;
+  }
+  .ps-betslip-state-card-confirm {
+    background: rgba(57,255,20,0.08);
+    border: 1px solid rgba(57,255,20,0.2);
+    color: #39ff14;
+  }
+  .ps-open-bet-card {
+    padding: 14px;
+    border: 1px solid #1a1f3a;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #12162c 0%, #0f1225 100%);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.16);
+  }
+  .ps-open-bet-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .ps-open-bet-selection {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+  .ps-open-bet-odds {
+    font-size: 13px;
+    font-weight: 700;
+    color: #39ff14;
+  }
+  .ps-open-bet-meta-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 11px;
+    color: #D3D3D3;
+  }
+  .ps-open-bet-status-row {
+    margin-top: 6px;
+    font-size: 10px;
+    color: #D3D3D3;
+    opacity: 0.85;
+  }
+  .ps-open-bet-cashout {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: #22c55e;
+    transition: all 0.15s;
+  }
+  .ps-open-bet-cashout:hover:not(:disabled) {
+    background: rgba(34,197,94,0.16);
+    border-color: rgba(34,197,94,0.45);
+  }
+  .ps-open-bet-cashout:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+  .ps-open-bet-message {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .ps-open-bet-message-success {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.2);
+    color: #22c55e;
+  }
+  .ps-open-bet-message-error {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #f87171;
+  }
 
   .ps-btn-place-bet {
     width: 100%; padding: 12px; border-radius: 8px; border: none;

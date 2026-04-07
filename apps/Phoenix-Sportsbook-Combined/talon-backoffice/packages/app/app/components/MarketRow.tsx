@@ -1,72 +1,28 @@
 "use client";
 
 import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
-import { useBetslip } from "../hooks/useBetslip";
-
-const OddsButton: React.FC<{
-  odds: number;
-  selected?: boolean;
-  suspended?: boolean;
-  movement?: "up" | "down" | null;
-  onClick?: () => void;
-}> = ({ odds, selected, suspended, movement, onClick }) => (
-  <button
-    onClick={onClick}
-    disabled={suspended}
-    style={{
-      padding: "8px 12px",
-      borderRadius: 8,
-      minWidth: 70,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 2,
-      border: `2px solid ${selected ? "#4f46e5" : "#1e2243"}`,
-      background: selected ? "#4f46e5" : "#161a35",
-      color: selected ? "#fff" : "#e2e8f0",
-      fontWeight: 600,
-      fontSize: 14,
-      cursor: suspended ? "not-allowed" : "pointer",
-      opacity: suspended ? 0.5 : 1,
-      transition: "all 0.15s",
-    }}
-  >
-    <span style={{ fontWeight: 700 }}>{odds.toFixed(2)}</span>
-    {movement && (
-      <span
-        style={{
-          fontSize: 10,
-          color: movement === "up" ? "#22c55e" : "#ef4444",
-        }}
-      >
-        {movement === "up" ? (
-          <TrendingUp size={10} strokeWidth={2} />
-        ) : (
-          <TrendingDown size={10} strokeWidth={2} />
-        )}
-      </span>
-    )}
-  </button>
-);
+import OddsButton from "./OddsButton";
 
 interface Selection {
   id: string;
   name: string;
-  odds: number;
+  price: number;
+  base?: number | string | null;
 }
 
 interface Market {
   id: string;
   name: string;
-  status: string;
-  selections?: Selection[];
+  status?: string;
+  selections?: any[];
+  type?: string;
+  displayKey?: string;
 }
 
 interface MarketRowProps {
   market: Market;
-  fixtureId?: string;
-  fixtureName?: string;
+  fixtureId: string;
+  fixtureName: string;
   onSelectMarket?: (
     marketId: string,
     selectionId: string,
@@ -78,67 +34,95 @@ export const MarketRow: React.FC<MarketRowProps> = ({
   market,
   fixtureId,
   fixtureName,
-  onSelectMarket,
 }) => {
-  const betslip = useBetslip();
-
   if (!market.selections || market.selections.length === 0) {
     return null;
   }
 
-  const isOpen = market.status === "open";
-
-  const handleSelect = (selection: Selection) => {
-    if (!isOpen) return;
-
-    const existing = betslip.selections.find(
-      (bet) => bet.selectionId === selection.id && bet.marketId === market.id,
-    );
-
-    if (existing) {
-      betslip.removeSelection(existing.id);
-    } else {
-      betslip.addSelection({
-        id: `${market.id}-${selection.id}`,
-        fixtureId: fixtureId || "",
-        marketId: market.id,
-        selectionId: selection.id,
-        matchName: fixtureName || "",
-        marketName: market.name,
-        selectionName: selection.name,
-        odds: selection.odds,
-        initialOdds: selection.odds,
-      });
-    }
-
-    // Also call the external handler if provided
-    onSelectMarket?.(market.id, selection.id, selection.odds);
-  };
-
-  const isSelected = (selectionId: string) =>
-    betslip.selections.some(
-      (b) => b.selectionId === selectionId && b.marketId === market.id,
-    );
+  const normalizedStatus = (market.status || "open").toLowerCase();
+  const isSuspended = ["suspended", "closed", "inactive", "blocked"].includes(
+    normalizedStatus,
+  );
+  const showLineLabel = (market.type || market.displayKey || market.name || "")
+    .toLowerCase()
+    .match(/total|handicap|spread|line|over\/under|run line|puck line/);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-      <div style={{ fontSize: "13px", fontWeight: 500, color: "#a0a0a0" }}>
-        {market.name}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        padding: "14px",
+        borderRadius: "12px",
+        background:
+          "linear-gradient(180deg, rgba(19,25,40,0.9) 0%, rgba(14,19,31,0.94) 100%)",
+        border: "1px solid #202a3e",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: "12px",
+        }}
+      >
+        <div>
+          <div style={{ fontSize: "14px", fontWeight: 700, color: "#f8fafc" }}>
+            {market.name}
+          </div>
+          <div
+            style={{
+              marginTop: "3px",
+              fontSize: "11px",
+              color: "#D3D3D3",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
+            {market.displayKey || market.type || "Market"}
+          </div>
+        </div>
+        <span
+          style={{
+            padding: "4px 8px",
+            borderRadius: "999px",
+            background: isSuspended
+              ? "rgba(239,68,68,0.12)"
+              : "rgba(57,255,20,0.08)",
+            border: `1px solid ${isSuspended ? "rgba(239,68,68,0.22)" : "rgba(57,255,20,0.14)"}`,
+            fontSize: "10px",
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: isSuspended ? "#fca5a5" : "#D3D3D3",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {isSuspended ? "Suspended" : `${market.selections.length} outcomes`}
+        </span>
       </div>
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(80px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
           gap: "8px",
         }}
       >
-        {market.selections.map((selection) => (
+        {market.selections.map((selection: any) => (
           <OddsButton
             key={selection.id}
-            odds={selection.odds}
-            selected={isSelected(selection.id)}
-            suspended={!isOpen}
-            onClick={() => handleSelect(selection)}
+            fixtureId={fixtureId}
+            marketId={market.id}
+            selectionId={selection.id}
+            odds={selection.price || selection.odds}
+            matchName={fixtureName}
+            marketName={market.name}
+            selectionName={selection.name}
+            suspended={isSuspended}
+            label={showLineLabel ? selection.base : undefined}
+            subtitle={showLineLabel ? selection.name : undefined}
           />
         ))}
       </div>

@@ -24,8 +24,17 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     const loadUpcomingMatches = async () => {
       try {
         setLoading(true);
-        const sports = await getSports();
+        const sportsResponse = await getSports();
+        const sports = Array.isArray(sportsResponse) ? sportsResponse : [];
         const upcomingMatches: Record<string, Event[]> = {};
+
+        if (sports.length === 0) {
+          if (!cancelled) {
+            setMatchesByGroup({});
+            setError(null);
+          }
+          return;
+        }
 
         const results = await Promise.allSettled(
           sports.map(async (sport: Sport) => {

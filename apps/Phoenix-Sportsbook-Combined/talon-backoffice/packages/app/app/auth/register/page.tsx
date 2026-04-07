@@ -729,9 +729,9 @@ export default function RegisterPage() {
                   fontSize: "13px",
                 }}
               >
-                The TAYA NA! Sportsbook platform is committed to responsible
-                gambling. If you experience gambling-related problems, please
-                contact our support team.
+                TAYA NA! is committed to responsible gambling. If you
+                experience gambling-related problems, please contact our
+                support team.
               </p>
               <p style={{ margin: 0, color: "#a0a0a0", fontSize: "13px" }}>
                 For full terms, please visit our website.

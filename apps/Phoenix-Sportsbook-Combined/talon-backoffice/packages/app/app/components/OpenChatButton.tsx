@@ -16,7 +16,7 @@ export default function OpenChatButton() {
     // Open external support chat
     const chatUrl =
       process.env.NEXT_PUBLIC_SUPPORT_CHAT_URL ||
-      "https://support.phoenix-sportsbook.com/chat";
+      "https://support.tayanasportsbook.com/chat";
     window.open(chatUrl, "supportChat", "width=800,height=600");
   };
 
