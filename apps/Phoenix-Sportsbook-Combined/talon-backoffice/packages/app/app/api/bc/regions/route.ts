@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     const data = await swarmQuery({
       source: "betting",
       what: {
+        sport: ["id", "name", "alias"],
         region: ["id", "name", "alias", "order"],
         competition: ["id", "name", "order"],
         game: "@count",
@@ -46,14 +47,6 @@ export async function GET(request: NextRequest) {
 
     const raw = data as Record<string, unknown>;
 
-    // Swarm response nests: region > competition > game (sport is filtered out
-    // by the where clause, so the top level is region directly).
-    const regionMap = raw.region as
-      | Record<string, Record<string, unknown>>
-      | undefined;
-    if (!regionMap) return NextResponse.json([]);
-
-    // Collect all competitions across all regions
     const competitions: Array<{
       id: unknown;
       name: unknown;
@@ -61,24 +54,44 @@ export async function GET(request: NextRequest) {
       gameCount: number;
     }> = [];
 
-    for (const region of Object.values(regionMap)) {
-      const compMap = region.competition as
-        | Record<string, Record<string, unknown>>
-        | undefined;
-      if (!compMap) continue;
-      for (const comp of Object.values(compMap)) {
-        const gameCount =
-          typeof comp.game === "number"
-            ? comp.game
-            : typeof comp.game === "object" && comp.game !== null
-            ? Object.keys(comp.game as Record<string, unknown>).length
-            : 0;
-        competitions.push({
-          id: comp.id,
-          name: comp.name,
-          order: comp.order,
-          gameCount,
-        });
+    function collectFromRegionMap(
+      regionMap: Record<string, Record<string, unknown>> | undefined,
+    ) {
+      if (!regionMap) return;
+      for (const region of Object.values(regionMap)) {
+        const compMap = region.competition as
+          | Record<string, Record<string, unknown>>
+          | undefined;
+        if (!compMap) continue;
+        for (const comp of Object.values(compMap)) {
+          const gameCount =
+            typeof comp.game === "number"
+              ? comp.game
+              : typeof comp.game === "object" && comp.game !== null
+                ? Object.keys(comp.game as Record<string, unknown>).length
+                : 0;
+          competitions.push({
+            id: comp.id,
+            name: comp.name,
+            order: comp.order,
+            gameCount,
+          });
+        }
+      }
+    }
+
+    collectFromRegionMap(
+      raw.region as Record<string, Record<string, unknown>> | undefined,
+    );
+
+    const sportMap = raw.sport as
+      | Record<string, Record<string, unknown>>
+      | undefined;
+    if (sportMap) {
+      for (const sport of Object.values(sportMap)) {
+        collectFromRegionMap(
+          sport.region as Record<string, Record<string, unknown>> | undefined,
+        );
       }
     }
 

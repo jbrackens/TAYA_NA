@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getEvents } from "../lib/api/events-client";
 import { getMarkets } from "../lib/api/markets-client";
 import type { Event } from "../lib/api/events-client";
@@ -23,6 +23,81 @@ interface FeaturedMatchesProps {
   leagueKey?: string;
 }
 
+function extractMatchOdds(event: Event, markets: Market[]): MatchOdds | null {
+  const matchResult = markets.find(
+    (market: Market) =>
+      market.marketKey === "match_result" ||
+      market.marketKey === "1x2" ||
+      market.marketName.toLowerCase().includes("match result") ||
+      market.marketName.toLowerCase().includes("winner"),
+  );
+  if (!matchResult || !matchResult.selections) {
+    return null;
+  }
+
+  const home = matchResult.selections.find(
+    (selection: MarketSelection) =>
+      selection.selectionName.toLowerCase().includes("home") ||
+      selection.selectionName === "1" ||
+      selection.selectionName.toLowerCase() === event.homeTeam.toLowerCase(),
+  );
+  const draw = matchResult.selections.find(
+    (selection: MarketSelection) =>
+      selection.selectionName.toLowerCase().includes("draw") ||
+      selection.selectionName === "X" ||
+      selection.selectionName.toLowerCase() === "draw",
+  );
+  const away = matchResult.selections.find(
+    (selection: MarketSelection) =>
+      selection.selectionName.toLowerCase().includes("away") ||
+      selection.selectionName === "2" ||
+      selection.selectionName.toLowerCase() === event.awayTeam.toLowerCase(),
+  );
+
+  return {
+    homeOdds: home?.odds || 0,
+    drawOdds: draw?.odds || 0,
+    awayOdds: away?.odds || 0,
+    homeSelectionId: home?.selectionId || `${event.fixtureId}-home`,
+    drawSelectionId: draw?.selectionId || `${event.fixtureId}-draw`,
+    awaySelectionId: away?.selectionId || `${event.fixtureId}-away`,
+    marketId: matchResult.marketId,
+  };
+}
+
+function areOddsMapsEqual(
+  left: Record<string, MatchOdds>,
+  right: Record<string, MatchOdds>,
+): boolean {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  if (leftKeys.length !== rightKeys.length) {
+    return false;
+  }
+
+  for (const key of leftKeys) {
+    const leftOdds = left[key];
+    const rightOdds = right[key];
+    if (!rightOdds) {
+      return false;
+    }
+
+    if (
+      leftOdds.homeOdds !== rightOdds.homeOdds ||
+      leftOdds.drawOdds !== rightOdds.drawOdds ||
+      leftOdds.awayOdds !== rightOdds.awayOdds ||
+      leftOdds.homeSelectionId !== rightOdds.homeSelectionId ||
+      leftOdds.drawSelectionId !== rightOdds.drawSelectionId ||
+      leftOdds.awaySelectionId !== rightOdds.awaySelectionId ||
+      leftOdds.marketId !== rightOdds.marketId
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   sportKey,
   leagueKey,
@@ -31,6 +106,7 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   const [oddsMap, setOddsMap] = useState<Record<string, MatchOdds>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const featuredFixtureIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -46,53 +122,31 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
         });
         const events = response.events.slice(0, 5);
         if (!cancelled) {
+          featuredFixtureIdsRef.current = new Set(
+            events.map((event) => event.fixtureId),
+          );
           setMatches(events);
           setError(null);
         }
 
-        // Fetch markets/odds for each match in parallel
+        if (events.length === 0) {
+          if (!cancelled) {
+            setOddsMap((previous) =>
+              Object.keys(previous).length === 0 ? previous : {},
+            );
+          }
+          return;
+        }
+
         const oddsResults = await Promise.allSettled(
           events.map(async (event: Event) => {
             const markets = await getMarkets(event.fixtureId);
-            const matchResult = markets.find(
-              (m: Market) =>
-                m.marketKey === "match_result" ||
-                m.marketKey === "1x2" ||
-                m.marketName.toLowerCase().includes("match result") ||
-                m.marketName.toLowerCase().includes("winner"),
-            );
-            if (!matchResult || !matchResult.selections) return null;
-
-            const home = matchResult.selections.find(
-              (s: MarketSelection) =>
-                s.selectionName.toLowerCase().includes("home") ||
-                s.selectionName === "1" ||
-                s.selectionName.toLowerCase() === event.homeTeam.toLowerCase(),
-            );
-            const draw = matchResult.selections.find(
-              (s: MarketSelection) =>
-                s.selectionName.toLowerCase().includes("draw") ||
-                s.selectionName === "X" ||
-                s.selectionName.toLowerCase() === "draw",
-            );
-            const away = matchResult.selections.find(
-              (s: MarketSelection) =>
-                s.selectionName.toLowerCase().includes("away") ||
-                s.selectionName === "2" ||
-                s.selectionName.toLowerCase() === event.awayTeam.toLowerCase(),
-            );
+            const odds = extractMatchOdds(event, markets);
+            if (!odds) return null;
 
             return {
               fixtureId: event.fixtureId,
-              odds: {
-                homeOdds: home?.odds || 0,
-                drawOdds: draw?.odds || 0,
-                awayOdds: away?.odds || 0,
-                homeSelectionId: home?.selectionId || `${event.fixtureId}-home`,
-                drawSelectionId: draw?.selectionId || `${event.fixtureId}-draw`,
-                awaySelectionId: away?.selectionId || `${event.fixtureId}-away`,
-                marketId: matchResult.marketId,
-              },
+              odds,
             };
           }),
         );
@@ -104,7 +158,9 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
               newOddsMap[result.value.fixtureId] = result.value.odds;
             }
           }
-          setOddsMap(newOddsMap);
+          setOddsMap((previous) =>
+            areOddsMapsEqual(previous, newOddsMap) ? previous : newOddsMap,
+          );
         }
       } catch (err) {
         if (!cancelled) {
@@ -126,14 +182,27 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
       "fixture",
       (data: Record<string, unknown>) => {
         const fixtureId = data?.fixtureId as string | undefined;
-        if (!fixtureId) return;
-        setMatches((prev) =>
-          prev.map((m) =>
-            m.fixtureId === fixtureId
-              ? { ...m, status: (data.status as string) || m.status }
-              : m,
-          ),
-        );
+        const status = data?.status as string | undefined;
+        if (
+          !fixtureId ||
+          !status ||
+          !featuredFixtureIdsRef.current.has(fixtureId)
+        ) {
+          return;
+        }
+
+        setMatches((previous) => {
+          const matchIndex = previous.findIndex(
+            (match) => match.fixtureId === fixtureId,
+          );
+          if (matchIndex === -1 || previous[matchIndex].status === status) {
+            return previous;
+          }
+
+          const next = previous.slice();
+          next[matchIndex] = { ...next[matchIndex], status };
+          return next;
+        });
       },
     );
 

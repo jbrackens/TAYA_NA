@@ -53,6 +53,8 @@ export async function GET(request: NextRequest) {
     const data = await swarmQuery({
       source: "betting",
       what: {
+        sport: ["id", "name", "alias"],
+        region: ["id", "name", "alias"],
         game: [
           "id",
           "start_ts",
@@ -131,6 +133,18 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    function extractFromRegionMap(
+      regionMap: Record<string, Record<string, unknown>> | undefined,
+    ) {
+      if (!regionMap) return;
+      for (const region of Object.values(regionMap)) {
+        const compMap = region.competition as
+          | Record<string, Record<string, unknown>>
+          | undefined;
+        if (compMap) extractFromCompMap(compMap);
+      }
+    }
+
     // Swarm response varies by filter:
     // - With competition filter: competition > game (top level)
     // - Without competition: region > competition > game
@@ -141,15 +155,22 @@ export async function GET(request: NextRequest) {
       extractFromCompMap(topCompMap);
     }
 
-    const regionMap = raw.region as
+    extractFromRegionMap(
+      raw.region as Record<string, Record<string, unknown>> | undefined,
+    );
+
+    const sportMap = raw.sport as
       | Record<string, Record<string, unknown>>
       | undefined;
-    if (regionMap) {
-      for (const region of Object.values(regionMap)) {
-        const compMap = region.competition as
+    if (sportMap) {
+      for (const sport of Object.values(sportMap)) {
+        const nestedCompMap = sport.competition as
           | Record<string, Record<string, unknown>>
           | undefined;
-        if (compMap) extractFromCompMap(compMap);
+        if (nestedCompMap) extractFromCompMap(nestedCompMap);
+        extractFromRegionMap(
+          sport.region as Record<string, Record<string, unknown>> | undefined,
+        );
       }
     }
 

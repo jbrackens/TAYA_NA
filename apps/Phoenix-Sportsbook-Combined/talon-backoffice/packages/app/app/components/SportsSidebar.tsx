@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { getSports, getLeagues, Sport, League } from "../lib/api/events-client";
@@ -146,12 +146,14 @@ export const SportsSidebar: React.FC = () => {
   }, []);
 
   // Sort: favorites first, then alphabetical
-  const sortedSports = [...sports].sort((a, b) => {
-    const aFav = favorites.has(a.sportId) ? 0 : 1;
-    const bFav = favorites.has(b.sportId) ? 0 : 1;
-    if (aFav !== bFav) return aFav - bFav;
-    return a.name.localeCompare(b.name);
-  });
+  const sortedSports = useMemo(() => {
+    return [...sports].sort((a, b) => {
+      const aFav = favorites.has(a.sportId) ? 0 : 1;
+      const bFav = favorites.has(b.sportId) ? 0 : 1;
+      if (aFav !== bFav) return aFav - bFav;
+      return a.name.localeCompare(b.name);
+    });
+  }, [sports, favorites]);
 
   useEffect(() => {
     const loadSports = async () => {

@@ -1,5 +1,10 @@
 import { apiClient } from './client';
 
+interface TimedCacheEntry<T> {
+  data: T;
+  ts: number;
+}
+
 // Request types
 export interface GetMarketsParams {
   fixture_id: string;
@@ -47,6 +52,23 @@ export interface Market {
   volume?: number;
 }
 
+const MARKETS_CACHE_TTL_MS = 30_000;
+const fixtureMarketsCache = new Map<
+  string,
+  { entry: TimedCacheEntry<Market[]> | null; promise: Promise<Market[]> | null }
+>();
+const marketByIdCache = new Map<
+  string,
+  { entry: TimedCacheEntry<Market> | null; promise: Promise<Market> | null }
+>();
+
+function isFresh<T>(
+  entry: TimedCacheEntry<T> | null,
+  ttlMs: number,
+): entry is TimedCacheEntry<T> {
+  return !!entry && Date.now() - entry.ts < ttlMs;
+}
+
 // Utility function to normalize snake_case to camelCase
 function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
   if (Array.isArray(obj)) {
@@ -68,14 +90,60 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<s
  * Get all markets for a fixture
  */
 export async function getMarkets(fixtureId: string): Promise<Market[]> {
-  const raw = await apiClient.get<MarketRaw[]>('/api/v1/markets', { fixture_id: fixtureId });
-  return normalizeSnakeCase(raw);
+  const cached = fixtureMarketsCache.get(fixtureId);
+  if (cached && isFresh(cached.entry, MARKETS_CACHE_TTL_MS)) {
+    return cached.entry.data;
+  }
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  const promise = (async () => {
+    const raw = await apiClient.get<MarketRaw[]>('/api/v1/markets', {
+      fixture_id: fixtureId,
+    });
+    const result = normalizeSnakeCase(raw) as Market[];
+    fixtureMarketsCache.set(fixtureId, {
+      entry: { data: result, ts: Date.now() },
+      promise: null,
+    });
+    return result;
+  })();
+
+  fixtureMarketsCache.set(fixtureId, {
+    entry: cached?.entry || null,
+    promise,
+  });
+
+  return promise;
 }
 
 /**
  * Get a specific market by ID
  */
 export async function getMarket(marketId: string): Promise<Market> {
-  const raw = await apiClient.get<MarketRaw>(`/api/v1/markets/${marketId}`);
-  return normalizeSnakeCase(raw);
+  const cached = marketByIdCache.get(marketId);
+  if (cached && isFresh(cached.entry, MARKETS_CACHE_TTL_MS)) {
+    return cached.entry.data;
+  }
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  const promise = (async () => {
+    const raw = await apiClient.get<MarketRaw>(`/api/v1/markets/${marketId}`);
+    const result = normalizeSnakeCase(raw) as Market;
+    marketByIdCache.set(marketId, {
+      entry: { data: result, ts: Date.now() },
+      promise: null,
+    });
+    return result;
+  })();
+
+  marketByIdCache.set(marketId, {
+    entry: cached?.entry || null,
+    promise,
+  });
+
+  return promise;
 }

@@ -16,21 +16,58 @@ export async function GET() {
       },
     });
 
-    const sportMap = (data as Record<string, unknown>).sport as
+    const raw = data as Record<string, unknown>;
+    const sportMap = raw.sport as
       | Record<string, Record<string, unknown>>
       | undefined;
-    if (!sportMap) {
-      return NextResponse.json([]);
+    const regionMap = raw.region as
+      | Record<string, Record<string, unknown>>
+      | undefined;
+
+    const sportsById = new Map<
+      string,
+      {
+        id: unknown;
+        name: unknown;
+        alias: unknown;
+        order: unknown;
+        gameCount: number;
+      }
+    >();
+
+    if (sportMap) {
+      for (const [sportId, sport] of Object.entries(sportMap)) {
+        sportsById.set(sportId, {
+          id: sport.id,
+          name: sport.name,
+          alias: sport.alias,
+          order: sport.order,
+          gameCount: typeof sport.game === "number" ? sport.game : 0,
+        });
+      }
     }
 
-    const sports = Object.values(sportMap)
-      .map((s) => ({
-        id: s.id,
-        name: s.name,
-        alias: s.alias,
-        order: s.order,
-        gameCount: s.game || 0,
-      }))
+    if (regionMap) {
+      for (const region of Object.values(regionMap)) {
+        const nestedSportMap = region.sport as
+          | Record<string, Record<string, unknown>>
+          | undefined;
+        if (!nestedSportMap) continue;
+        for (const [sportId, sport] of Object.entries(nestedSportMap)) {
+          const previous = sportsById.get(sportId);
+          const gameCount = typeof sport.game === "number" ? sport.game : 0;
+          sportsById.set(sportId, {
+            id: sport.id,
+            name: sport.name,
+            alias: sport.alias,
+            order: sport.order,
+            gameCount: Math.max(previous?.gameCount || 0, gameCount),
+          });
+        }
+      }
+    }
+
+    const sports = Array.from(sportsById.values())
       .filter((s) => (s.gameCount as number) > 0)
       .sort((a, b) => (a.order as number) - (b.order as number));
 

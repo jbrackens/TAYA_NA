@@ -125,6 +125,11 @@ export interface GetEventsPaginatedResponse {
   totalPages: number;
 }
 
+interface TimedCacheEntry<T> {
+  data: T;
+  ts: number;
+}
+
 // Utility function to normalize snake_case to camelCase
 function normalizeSnakeCase<T extends Record<string, unknown>>(
   obj: T,
@@ -197,6 +202,23 @@ function normalizeSportKey(alias: string): string {
 
 // Reverse map: normalized key → BC alias (populated when sports are loaded)
 const bcAliasCache: Map<string, string> = new Map();
+const SPORTS_CACHE_TTL_MS = 60_000;
+const LEAGUES_CACHE_TTL_MS = 60_000;
+const sportsCache: { entry: TimedCacheEntry<Sport[]> | null; promise: Promise<Sport[]> | null } = {
+  entry: null,
+  promise: null,
+};
+const leaguesCache = new Map<
+  string,
+  { entry: TimedCacheEntry<League[]> | null; promise: Promise<League[]> | null }
+>();
+
+function isFresh<T>(
+  entry: TimedCacheEntry<T> | null,
+  ttlMs: number,
+): entry is TimedCacheEntry<T> {
+  return !!entry && Date.now() - entry.ts < ttlMs;
+}
 
 async function getBcAlias(normalizedKey: string): Promise<string> {
   if (bcAliasCache.size === 0) {
@@ -241,40 +263,60 @@ const PH_SPORTS_WHITELIST = new Set([
  * Filters to Philippine market sports only.
  */
 export async function getSports(): Promise<Sport[]> {
-  // Try BetConstruct feed first
-  try {
-    const bcSports = await bcGetSports();
-    if (Array.isArray(bcSports) && bcSports.length > 0) {
-      logger.info(
-        "Events",
-        "Loaded sports from BetConstruct feed",
-        bcSports.length,
-      );
-      return bcSports
-        .filter((s) => PH_SPORTS_WHITELIST.has(s.alias || s.name))
-        .map((s) => {
-          const key = normalizeSportKey(s.alias || s.name);
-          bcAliasCache.set(key, s.alias || s.name);
-          return {
-            sportId: String(s.id),
-            sportName: s.name,
-            sportKey: key,
-            eventCount: s.gameCount,
-          };
-        });
-    }
-  } catch (err) {
-    logger.info(
-      "Events",
-      "BetConstruct feed unavailable, trying Go backend",
-      err,
-    );
+  if (isFresh(sportsCache.entry, SPORTS_CACHE_TTL_MS)) {
+    return sportsCache.entry.data;
   }
 
-  // Fall back to Go backend
-  const raw = await apiClient.get<SportRaw[]>("/api/v1/sports");
-  const normalized = normalizeSnakeCase(raw);
-  return Array.isArray(normalized) ? (normalized as Sport[]) : [];
+  if (sportsCache.promise) {
+    return sportsCache.promise;
+  }
+
+  sportsCache.promise = (async () => {
+  // Try BetConstruct feed first
+    try {
+      const bcSports = await bcGetSports();
+      if (Array.isArray(bcSports) && bcSports.length > 0) {
+        logger.info(
+          "Events",
+          "Loaded sports from BetConstruct feed",
+          bcSports.length,
+        );
+        const mapped = bcSports
+          .filter((s) => PH_SPORTS_WHITELIST.has(s.alias || s.name))
+          .map((s) => {
+            const key = normalizeSportKey(s.alias || s.name);
+            bcAliasCache.set(key, s.alias || s.name);
+            return {
+              sportId: String(s.id),
+              sportName: s.name,
+              sportKey: key,
+              eventCount: s.gameCount,
+            };
+          });
+        sportsCache.entry = { data: mapped, ts: Date.now() };
+        return mapped;
+      }
+    } catch (err) {
+      logger.info(
+        "Events",
+        "BetConstruct feed unavailable, trying Go backend",
+        err,
+      );
+    }
+
+    // Fall back to Go backend
+    const raw = await apiClient.get<SportRaw[]>("/api/v1/sports");
+    const normalized = normalizeSnakeCase(raw);
+    const result = Array.isArray(normalized) ? (normalized as Sport[]) : [];
+    sportsCache.entry = { data: result, ts: Date.now() };
+    return result;
+  })();
+
+  try {
+    return await sportsCache.promise;
+  } finally {
+    sportsCache.promise = null;
+  }
 }
 
 /**
@@ -282,38 +324,69 @@ export async function getSports(): Promise<Sport[]> {
  * Tries BetConstruct feed first, falls back to Go backend.
  */
 export async function getLeagues(sportKey: string): Promise<League[]> {
+  const existing = leaguesCache.get(sportKey);
+  if (existing && isFresh(existing.entry, LEAGUES_CACHE_TTL_MS)) {
+    return existing.entry.data;
+  }
+  if (existing?.promise) {
+    return existing.promise;
+  }
+
   // Reverse-map normalized key → BC alias (e.g. "basketball" → "Basketball")
-  const bcAlias = await getBcAlias(sportKey);
+  const promise = (async () => {
+    const bcAlias = await getBcAlias(sportKey);
 
-  // Try BetConstruct — returns competitions as "leagues"
-  try {
-    const bcComps = await bcGetRegions(bcAlias);
-    if (bcComps.length > 0) {
-      return bcComps.map((c) => ({
-        leagueId: String(c.id),
-        leagueName: c.name,
-        leagueKey: String(c.id),
-        sportKey,
-        eventCount: c.gameCount || 0,
-      }));
+    // Try BetConstruct — returns competitions as "leagues"
+    try {
+      const bcComps = await bcGetRegions(bcAlias);
+      if (bcComps.length > 0) {
+        const result = bcComps.map((c) => ({
+          leagueId: String(c.id),
+          leagueName: c.name,
+          leagueKey: String(c.id),
+          sportKey,
+          eventCount: c.gameCount || 0,
+        }));
+        leaguesCache.set(sportKey, {
+          entry: { data: result, ts: Date.now() },
+          promise: null,
+        });
+        return result;
+      }
+    } catch (err) {
+      logger.info(
+        "Events",
+        "BetConstruct regions unavailable, trying Go backend",
+        err,
+      );
     }
-  } catch (err) {
-    logger.info(
-      "Events",
-      "BetConstruct regions unavailable, trying Go backend",
-      err,
-    );
-  }
 
-  // Fall back to Go backend
-  try {
-    const raw = await apiClient.get<LeagueRaw[]>(
-      `/api/v1/sports/${sportKey}/leagues`,
-    );
-    return normalizeSnakeCase(raw);
-  } catch {
-    return [];
-  }
+    // Fall back to Go backend
+    try {
+      const raw = await apiClient.get<LeagueRaw[]>(
+        `/api/v1/sports/${sportKey}/leagues`,
+      );
+      const result = normalizeSnakeCase(raw) as League[];
+      leaguesCache.set(sportKey, {
+        entry: { data: result, ts: Date.now() },
+        promise: null,
+      });
+      return result;
+    } catch {
+      leaguesCache.set(sportKey, {
+        entry: { data: [], ts: Date.now() },
+        promise: null,
+      });
+      return [];
+    }
+  })();
+
+  leaguesCache.set(sportKey, {
+    entry: existing?.entry || null,
+    promise,
+  });
+
+  return promise;
 }
 
 /**

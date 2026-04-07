@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useDeferredValue,
+} from "react";
 import { Search } from "lucide-react";
 import { useBetslip } from "./hooks/useBetslip";
 import { BetSelection } from "./components/BetslipProvider";
@@ -157,6 +164,7 @@ function AuthenticatedHome() {
   const [error, setError] = useState("");
   const [activeSport, setActiveSport] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const topPicksRef = useRef<HTMLDivElement | null>(null);
 
@@ -276,69 +284,73 @@ function AuthenticatedHome() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const sportCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const fixture of fixtures) {
-      if (!fixture.sport?.sportId) continue;
-      counts.set(
-        fixture.sport.sportId,
-        (counts.get(fixture.sport.sportId) || 0) + 1,
-      );
-    }
-    return counts;
-  }, [fixtures]);
+  const discoveryData = useMemo(() => {
+    const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
+    const sportCounts = new Map<string, number>();
+    const filteredFixtures: Fixture[] = [];
 
-  const topSports = useMemo(() => {
-    const fromFixtures = sports
+    for (const fixture of fixtures) {
+      const sportId = fixture.sport?.sportId;
+      if (sportId) {
+        sportCounts.set(sportId, (sportCounts.get(sportId) || 0) + 1);
+      }
+
+      if (activeSport !== "all" && sportId !== activeSport) {
+        continue;
+      }
+
+      if (normalizedQuery && !getSearchText(fixture).includes(normalizedQuery)) {
+        continue;
+      }
+
+      filteredFixtures.push(fixture);
+    }
+
+    const topSports = sports
       .filter((sport) => sportCounts.has(sport.sportId))
       .sort(
         (left, right) =>
           (sportCounts.get(right.sportId) || 0) -
           (sportCounts.get(left.sportId) || 0),
-      );
+      )
+      .slice(0, 8);
 
-    return fromFixtures.slice(0, 8);
-  }, [sports, sportCounts]);
-
-  const filteredFixtures = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    return fixtures.filter((fixture) => {
-      if (activeSport !== "all" && fixture.sport?.sportId !== activeSport) {
-        return false;
-      }
-      if (!normalizedQuery) return true;
-      return getSearchText(fixture).includes(normalizedQuery);
-    });
-  }, [fixtures, activeSport, searchQuery]);
-
-  const topPicks = useMemo(() => {
-    return [...filteredFixtures]
+    const topPicks = filteredFixtures
       .filter((fixture) => getPrimaryMarket(fixture)?.selections?.length)
-      .sort((left, right) => {
-        if (left.isLive !== right.isLive) return left.isLive ? -1 : 1;
-        return new Date(left.startTime).getTime() - new Date(right.startTime).getTime();
+      .toSorted((left, right) => {
+        if (left.isLive !== right.isLive) {
+          return left.isLive ? -1 : 1;
+        }
+        return (
+          new Date(left.startTime).getTime() - new Date(right.startTime).getTime()
+        );
       })
       .slice(0, 10);
-  }, [filteredFixtures]);
 
-  const popularRows = useMemo(() => {
     const grouped = new Map<string, { sport: Sport; fixtures: Fixture[] }>();
-
     for (const fixture of filteredFixtures) {
       const sport = fixture.sport;
       if (!sport?.sportId) continue;
-      if (!grouped.has(sport.sportId)) {
-        grouped.set(sport.sportId, { sport, fixtures: [] });
+      const existing = grouped.get(sport.sportId);
+      if (existing) {
+        if (existing.fixtures.length < 5) {
+          existing.fixtures.push(fixture);
+        }
+        continue;
       }
-      const entry = grouped.get(sport.sportId);
-      if (!entry) continue;
-      if (entry.fixtures.length < 5) {
-        entry.fixtures.push(fixture);
-      }
+
+      grouped.set(sport.sportId, { sport, fixtures: [fixture] });
     }
 
-    return [...grouped.values()].slice(0, 3);
-  }, [filteredFixtures]);
+    return {
+      topSports,
+      filteredFixtures,
+      topPicks,
+      popularRows: [...grouped.values()].slice(0, 3),
+    };
+  }, [fixtures, sports, activeSport, deferredSearchQuery]);
+
+  const { topSports, filteredFixtures, topPicks, popularRows } = discoveryData;
 
   const scrollTopPicks = useCallback((direction: "left" | "right") => {
     if (!topPicksRef.current) return;
