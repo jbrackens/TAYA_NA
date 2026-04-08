@@ -2,74 +2,58 @@
 
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { getSports, getEvents } from "../lib/api/events-client";
-import type { Event, Sport } from "../lib/api/events-client";
+import type { BoardEvent, UpcomingBoard } from "../lib/types/match-board";
 import wsService from "../lib/websocket/websocket-service";
 
 interface UpcomingMatchesProps {
   limit?: number;
+  initialMatchesByGroup?: UpcomingBoard;
 }
 
 export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   limit = 50,
+  initialMatchesByGroup,
 }) => {
-  const [matchesByGroup, setMatchesByGroup] = useState<Record<string, Event[]>>(
-    {},
+  const [matchesByGroup, setMatchesByGroup] = useState<UpcomingBoard>(
+    initialMatchesByGroup || {},
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialMatchesByGroup);
   const [error, setError] = useState<string | null>(null);
   const trackedFixtureIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
 
+    const applyBoard = (board: UpcomingBoard) => {
+      trackedFixtureIdsRef.current = new Set(
+        Object.values(board)
+          .flat()
+          .map((match) => match.fixtureId),
+      );
+      setMatchesByGroup(board);
+      setError(null);
+    };
+
+    if (initialMatchesByGroup) {
+      applyBoard(initialMatchesByGroup);
+    }
+
     const loadUpcomingMatches = async () => {
       try {
-        setLoading(true);
-        const sportsResponse = await getSports();
-        const sports = Array.isArray(sportsResponse) ? sportsResponse : [];
-        const upcomingMatches: Record<string, Event[]> = {};
-
-        if (sports.length === 0) {
-          if (!cancelled) {
-            setMatchesByGroup({});
-            setError(null);
-          }
-          return;
+        if (!initialMatchesByGroup) {
+          setLoading(true);
         }
-
-        const results = await Promise.allSettled(
-          sports.slice(0, 8).map(async (sport: Sport) => {
-            const response = await getEvents({
-              sport: sport.sportKey,
-              status: "scheduled",
-              limit,
-            });
-            return { sport, events: response.events };
-          }),
+        const perSportLimit = Math.min(limit, 10);
+        const response = await fetch(
+          `/api/bc/upcoming-board/?limit=${encodeURIComponent(String(perSportLimit))}`,
         );
-
-        for (const result of results) {
-          if (result.status === "fulfilled" && result.value.events.length > 0) {
-            const sorted = result.value.events
-              .slice(0, 10)
-              .sort(
-                (a: Event, b: Event) =>
-                  new Date(a.startTime).getTime() -
-                  new Date(b.startTime).getTime(),
-              );
-            upcomingMatches[result.value.sport.sportName] = sorted;
-          }
+        if (!response.ok) {
+          throw new Error(`Failed to load upcoming board: ${response.status}`);
         }
+        const upcomingMatches = (await response.json()) as UpcomingBoard;
 
         if (!cancelled) {
-          trackedFixtureIdsRef.current = new Set(
-            Object.values(upcomingMatches)
-              .flat()
-              .map((match) => match.fixtureId),
-          );
-          setMatchesByGroup(upcomingMatches);
-          setError(null);
+          applyBoard(upcomingMatches);
         }
       } catch (err) {
         if (!cancelled) {
@@ -84,7 +68,9 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
       }
     };
 
-    loadUpcomingMatches();
+    if (!initialMatchesByGroup) {
+      loadUpcomingMatches();
+    }
 
     // Subscribe to fixture updates — detect when a scheduled match goes live
     wsService.subscribe("fixture");
@@ -103,7 +89,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
 
         setMatchesByGroup((prev) => {
           let changed = false;
-          const updated: Record<string, Event[]> = {};
+          const updated: UpcomingBoard = {};
 
           for (const [sport, matches] of Object.entries(prev)) {
             const matchIndex = matches.findIndex((match) => match.fixtureId === fixtureId);
@@ -133,7 +119,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
       unsubscribe();
       wsService.unsubscribe("fixture");
     };
-  }, [limit]);
+  }, [initialMatchesByGroup, limit]);
 
   const getCountdownText = (startTime: string): string => {
     const now = new Date();
@@ -189,7 +175,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
               gap: "16px",
             }}
           >
-            {matches.map((match: Event) => (
+            {matches.map((match: BoardEvent) => (
               <div key={match.eventId} style={{ position: "relative" }}>
                 <Link
                   href={`/match/${match.fixtureId || match.eventId}`}

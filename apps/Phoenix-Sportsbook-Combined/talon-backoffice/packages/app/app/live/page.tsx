@@ -1,19 +1,20 @@
-'use client';
+import LiveNow from "../components/LiveNow";
+import { loadLiveBoard } from "../lib/server/match-board";
 
-import LiveNow from '../components/LiveNow';
+export default async function LivePage() {
+  const initialMatchesByGroup = await loadLiveBoard(50);
 
-export default function LivePage() {
   return (
     <div>
       <h1 style={{
-        fontSize: '28px',
+        fontSize: "28px",
         fontWeight: 700,
-        marginBottom: '24px',
-        color: '#ffffff',
+        marginBottom: "24px",
+        color: "#ffffff",
       }}>
         Live Matches
       </h1>
-      <LiveNow />
+      <LiveNow initialMatchesByGroup={initialMatchesByGroup} />
     </div>
   );
 }

@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { getSports, getEvents } from "../lib/api/events-client";
-import type { Event as SportEvent, Sport } from "../lib/api/events-client";
 import wsService from "../lib/websocket/websocket-service";
 import type { WsMessage } from "../lib/websocket/websocket-service";
+import type { LiveBoard, LiveBoardMatch } from "../lib/types/match-board";
 
 interface MatchCardProps {
   homeTeam: string;
@@ -171,21 +170,19 @@ const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
 
 const InlineMatchCard = React.memo(InlineMatchCardComponent);
 
-interface MatchWithScore extends SportEvent {
-  homeScore: number;
-  awayScore: number;
-  sportName: string;
-}
-
 interface LiveNowProps {
   limit?: number;
+  initialMatchesByGroup?: LiveBoard;
 }
 
-export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
-  const [matchesByGroup, setMatchesByGroup] = useState<
-    Record<string, MatchWithScore[]>
-  >({});
-  const [loading, setLoading] = useState(true);
+export const LiveNow: React.FC<LiveNowProps> = ({
+  limit = 50,
+  initialMatchesByGroup,
+}) => {
+  const [matchesByGroup, setMatchesByGroup] = useState<LiveBoard>(
+    initialMatchesByGroup || {},
+  );
+  const [loading, setLoading] = useState(!initialMatchesByGroup);
   const [error, setError] = useState<string | null>(null);
   const trackedFixtureIdsRef = useRef<Set<string>>(new Set());
 
@@ -204,7 +201,7 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
 
     setMatchesByGroup((prev) => {
       let changed = false;
-      const updated: Record<string, MatchWithScore[]> = {};
+      const updated: LiveBoard = {};
 
       for (const [sport, matches] of Object.entries(prev)) {
         const matchIndex = matches.findIndex((match) => match.fixtureId === fixtureId);
@@ -245,46 +242,35 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
   useEffect(() => {
     let cancelled = false;
 
+    const applyBoard = (board: LiveBoard) => {
+      trackedFixtureIdsRef.current = new Set(
+        Object.values(board)
+          .flat()
+          .map((match) => match.fixtureId),
+      );
+      setMatchesByGroup(board);
+      setError(null);
+    };
+
+    if (initialMatchesByGroup) {
+      applyBoard(initialMatchesByGroup);
+    }
+
     const loadLiveMatches = async () => {
       try {
-        setLoading(true);
-
-        // Load all sports, then fetch in-play events for each
-        const sports = (await getSports()).slice(0, 8);
-        const liveMatches: Record<string, MatchWithScore[]> = {};
-
-        // Fetch live events for each sport in parallel
-        const results = await Promise.allSettled(
-          sports.map(async (sport: Sport) => {
-            const response = await getEvents({
-              sport: sport.sportKey,
-              status: "in_play",
-              limit,
-            });
-            return { sport, events: response.events };
-          }),
-        );
-
-        for (const result of results) {
-          if (result.status === "fulfilled" && result.value.events.length > 0) {
-            const { sport, events } = result.value;
-            liveMatches[sport.sportName] = events.map((event: SportEvent) => ({
-              ...event,
-              homeScore: 0,
-              awayScore: 0,
-              sportName: sport.sportName,
-            }));
-          }
+        if (!initialMatchesByGroup) {
+          setLoading(true);
         }
+        const response = await fetch(
+          `/api/bc/live-board/?limit=${encodeURIComponent(String(limit))}`,
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to load live board: ${response.status}`);
+        }
+        const liveMatches = (await response.json()) as LiveBoard;
 
         if (!cancelled) {
-          trackedFixtureIdsRef.current = new Set(
-            Object.values(liveMatches)
-              .flat()
-              .map((match) => match.fixtureId),
-          );
-          setMatchesByGroup(liveMatches);
-          setError(null);
+          applyBoard(liveMatches);
         }
       } catch (err) {
         if (!cancelled) {
@@ -299,7 +285,9 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
       }
     };
 
-    loadLiveMatches();
+    if (!initialMatchesByGroup) {
+      loadLiveMatches();
+    }
 
     // Subscribe to real-time fixture updates via the existing WebSocket singleton
     wsService.subscribe("fixture");
@@ -310,7 +298,7 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
       unsubscribe();
       wsService.unsubscribe("fixture");
     };
-  }, [limit, handleFixtureUpdate]);
+  }, [handleFixtureUpdate, initialMatchesByGroup, limit]);
 
   const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
   const totalMatches = useMemo(

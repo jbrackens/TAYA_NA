@@ -1,8 +1,9 @@
-"use client";
-
 import UpcomingMatches from "../components/UpcomingMatches";
+import { loadUpcomingBoard } from "../lib/server/match-board";
 
-export default function StartingSoonPage() {
+export default async function StartingSoonPage() {
+  const initialMatchesByGroup = await loadUpcomingBoard(10);
+
   return (
     <div>
       <h1
@@ -15,7 +16,7 @@ export default function StartingSoonPage() {
       >
         Starting Soon
       </h1>
-      <UpcomingMatches />
+      <UpcomingMatches initialMatchesByGroup={initialMatchesByGroup} />
     </div>
   );
 }
