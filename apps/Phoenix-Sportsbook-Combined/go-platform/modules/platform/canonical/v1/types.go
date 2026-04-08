@@ -15,19 +15,22 @@ const (
 type EntityType string
 
 const (
-	EntityFixture        EntityType = "fixture"
-	EntityMarket         EntityType = "market"
-	EntitySelection      EntityType = "selection"
-	EntityBet            EntityType = "bet"
-	EntitySettlement     EntityType = "settlement"
-	EntityCashoutQuote   EntityType = "cashout_quote"
-	EntityMatchTracker   EntityType = "match_tracker"
-	EntityFixtureStats   EntityType = "fixture_stats"
-	EntityFreebet        EntityType = "freebet"
-	EntityOddsBoost      EntityType = "odds_boost"
-	EntityLoyaltyAccount EntityType = "loyalty_account"
-	EntityLoyaltyLedger  EntityType = "loyalty_ledger_entry"
-	EntityTranslation    EntityType = "translation"
+	EntityFixture             EntityType = "fixture"
+	EntityMarket              EntityType = "market"
+	EntitySelection           EntityType = "selection"
+	EntityBet                 EntityType = "bet"
+	EntitySettlement          EntityType = "settlement"
+	EntityCashoutQuote        EntityType = "cashout_quote"
+	EntityMatchTracker        EntityType = "match_tracker"
+	EntityFixtureStats        EntityType = "fixture_stats"
+	EntityFreebet             EntityType = "freebet"
+	EntityOddsBoost           EntityType = "odds_boost"
+	EntityLoyaltyAccount      EntityType = "loyalty_account"
+	EntityLoyaltyLedger       EntityType = "loyalty_ledger_entry"
+	EntityLeaderboard         EntityType = "leaderboard"
+	EntityLeaderboardEvent    EntityType = "leaderboard_event"
+	EntityLeaderboardStanding EntityType = "leaderboard_standing"
+	EntityTranslation         EntityType = "translation"
 )
 
 type ChangeAction string
@@ -395,6 +398,71 @@ type ReferralReward struct {
 	LedgerEntryID      string                    `json:"ledgerEntryId,omitempty"`
 	CreatedAt          time.Time                 `json:"createdAt"`
 	UpdatedAt          time.Time                 `json:"updatedAt"`
+}
+
+type LeaderboardRankingMode string
+
+const (
+	LeaderboardRankingModeSum LeaderboardRankingMode = "sum"
+	LeaderboardRankingModeMin LeaderboardRankingMode = "min"
+	LeaderboardRankingModeMax LeaderboardRankingMode = "max"
+)
+
+type LeaderboardOrder string
+
+const (
+	LeaderboardOrderAscending  LeaderboardOrder = "asc"
+	LeaderboardOrderDescending LeaderboardOrder = "desc"
+)
+
+type LeaderboardStatus string
+
+const (
+	LeaderboardStatusDraft  LeaderboardStatus = "draft"
+	LeaderboardStatusActive LeaderboardStatus = "active"
+	LeaderboardStatusClosed LeaderboardStatus = "closed"
+)
+
+type LeaderboardDefinition struct {
+	LeaderboardID  string                 `json:"leaderboardId"`
+	Slug           string                 `json:"slug,omitempty"`
+	Name           string                 `json:"name"`
+	Description    string                 `json:"description,omitempty"`
+	MetricKey      string                 `json:"metricKey"`
+	EventType      string                 `json:"eventType,omitempty"`
+	RankingMode    LeaderboardRankingMode `json:"rankingMode"`
+	Order          LeaderboardOrder       `json:"order"`
+	Status         LeaderboardStatus      `json:"status"`
+	Currency       string                 `json:"currency,omitempty"`
+	PrizeSummary   string                 `json:"prizeSummary,omitempty"`
+	WindowStartsAt *time.Time             `json:"windowStartsAt,omitempty"`
+	WindowEndsAt   *time.Time             `json:"windowEndsAt,omitempty"`
+	LastComputedAt *time.Time             `json:"lastComputedAt,omitempty"`
+	CreatedBy      string                 `json:"createdBy,omitempty"`
+	CreatedAt      time.Time              `json:"createdAt"`
+	UpdatedAt      time.Time              `json:"updatedAt"`
+}
+
+type LeaderboardEvent struct {
+	EventID        string            `json:"eventId"`
+	LeaderboardID  string            `json:"leaderboardId"`
+	PlayerID       string            `json:"playerId"`
+	Score          float64           `json:"score"`
+	SourceType     string            `json:"sourceType,omitempty"`
+	SourceID       string            `json:"sourceId,omitempty"`
+	IdempotencyKey string            `json:"idempotencyKey,omitempty"`
+	Metadata       map[string]string `json:"metadata,omitempty"`
+	RecordedAt     time.Time         `json:"recordedAt"`
+}
+
+type LeaderboardStanding struct {
+	LeaderboardID string            `json:"leaderboardId"`
+	PlayerID      string            `json:"playerId"`
+	Rank          int               `json:"rank"`
+	Score         float64           `json:"score"`
+	EventCount    int               `json:"eventCount"`
+	LastEventAt   *time.Time        `json:"lastEventAt,omitempty"`
+	Metadata      map[string]string `json:"metadata,omitempty"`
 }
 
 type Translation struct {
