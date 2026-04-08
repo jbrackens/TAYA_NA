@@ -6,10 +6,10 @@ import { OddsButton } from '../../../components/OddsButton';
 import { logger } from '../../../lib/logger';
 
 interface LeaguePageProps {
-  params: {
+  params: Promise<{
     sport: string;
     league: string;
-  };
+  }>;
 }
 
 interface BCGameRaw {
@@ -82,17 +82,19 @@ function hasLineLabel(market: any) {
 }
 
 function getSelectionForTeam(game: BCGameRaw, market: any, side: 'home' | 'away') {
-  const teamName = side === 'home' ? game.team1_name : game.team2_name;
+  const teamName = String(side === 'home' ? game.team1_name || '' : game.team2_name || '');
   const typeKey = side === 'home' ? 'P1' : 'P2';
   const orderKey = side === 'home' ? 1 : 2;
   const fallbackIndex = side === 'home' ? 0 : 1;
+  const normalizedTeamName = teamName.toLowerCase();
 
   return (
     market?.selections?.find(
       (s: any) =>
         s?.type === typeKey ||
         s?.order === orderKey ||
-        s?.name?.toLowerCase().includes(teamName.toLowerCase()),
+        (normalizedTeamName.length > 0 &&
+          String(s?.name || '').toLowerCase().includes(normalizedTeamName)),
     ) ||
     market?.selections?.[fallbackIndex] ||
     market?.selections?.[0]
@@ -206,6 +208,19 @@ function GameRow({ game, sport }: { game: BCGameRaw; sport: string }) {
 
         const homeSel = getSelectionForTeam(game, market, 'home');
         const awaySel = getSelectionForTeam(game, market, 'away');
+        if (!homeSel || !awaySel) {
+          return (
+            <div
+              key={colIdx}
+              style={{
+                height: '92px',
+                backgroundColor: '#161a35',
+                borderRadius: '6px',
+                opacity: 0.3,
+              }}
+            />
+          );
+        }
 
         return (
           <div key={colIdx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -258,7 +273,7 @@ function GameRow({ game, sport }: { game: BCGameRaw; sport: string }) {
 }
 
 export default function LeaguePage({ params }: LeaguePageProps) {
-  const { sport, league } = params;
+  const { sport, league } = React.use(params);
   const [games, setGames] = useState<BCGameRaw[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

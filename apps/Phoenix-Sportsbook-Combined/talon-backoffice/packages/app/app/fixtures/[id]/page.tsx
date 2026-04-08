@@ -7,13 +7,13 @@ import { getMarkets, type Market } from "../../lib/api/markets-client";
 import { colors, font, shadow, spacing, surface, text } from "../../lib/theme";
 
 interface FixturePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function FixtureDetailPage({ params }: FixturePageProps) {
-  const fixtureId = params.id;
+  const { id: fixtureId } = React.use(params);
   const [fixture, setFixture] = useState<EventDetail | null>(null);
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);

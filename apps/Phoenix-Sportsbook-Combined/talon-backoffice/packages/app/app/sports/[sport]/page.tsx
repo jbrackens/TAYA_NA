@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import LeagueNav from '../../components/LeagueNav';
 import FixtureList from '../../components/FixtureList';
 
 interface SportPageProps {
-  params: {
+  params: Promise<{
     sport: string;
-  };
+  }>;
 }
 
 export default function SportPage({ params }: SportPageProps) {
-  const sport = params.sport;
+  const { sport } = React.use(params);
   const [selectedLeague, setSelectedLeague] = useState<string>('all');
 
   const sportName =

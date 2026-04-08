@@ -8,24 +8,13 @@ const securityHeaders = [
 
 module.exports = {
   // Transpile workspace packages that expose raw TypeScript source
+  outputFileTracingRoot: path.join(__dirname, "../.."),
   transpilePackages: [
     '@phoenix-ui/design-system',
     '@phoenix-ui/utils',
     '@phoenix-ui/api-client',
     '@phoenix-api/client',
   ],
-  publicRuntimeConfig: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080',
-    NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:18081',
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:18080/ws',
-    API_GLOBAL_ENDPOINT: process.env.API_GLOBAL_ENDPOINT,
-    WS_GLOBAL_ENDPOINT: process.env.WS_GLOBAL_ENDPOINT,
-    SHOW_FOR_SUBMISSION: process.env.SHOW_FOR_SUBMISSION,
-    CDN_URL: process.env.CDN_URL,
-    env: process.env.ENV_NAME,
-    staticFolder: "/static",
-    eligibleRoles: ["admin", "trader", "operator"],
-  },
   async headers() {
     return [
       {
@@ -64,12 +53,10 @@ module.exports = {
         alias: {
           ...config.resolve.alias,
           i18n: path.resolve(__dirname, "i18n.js"),
+          "next/config$": path.resolve(__dirname, "lib/next-runtime-config.js"),
         },
       },
     };
-  },
-  compiler: {
-    styledComponents: true,
   },
   trailingSlash: true,
   // Suppress React 18 hydration mismatch overlay in dev mode.
@@ -79,9 +66,6 @@ module.exports = {
   onDemandEntries: {
     maxInactiveAge: 60 * 1000,
     pagesBufferLength: 5,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   typescript: {
     // antd 4.x class components don't declare `children` in props,

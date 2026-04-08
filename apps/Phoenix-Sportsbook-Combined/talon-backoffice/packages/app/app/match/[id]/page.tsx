@@ -10,9 +10,9 @@ import {
 } from "../../lib/api/betconstruct-client";
 
 interface MatchPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 type MarketTab = "Popular" | "Game Lines" | "Player Props" | "All";
@@ -55,7 +55,7 @@ function isPlayerPropMarket(market: BCGameMarket) {
 }
 
 export default function MatchPage({ params }: MatchPageProps) {
-  const matchId = params.id;
+  const { id: matchId } = React.use(params);
   const [game, setGame] = useState<BCGameDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
