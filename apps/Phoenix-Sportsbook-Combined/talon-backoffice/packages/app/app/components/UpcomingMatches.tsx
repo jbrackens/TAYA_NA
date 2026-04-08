@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getSports, getEvents } from "../lib/api/events-client";
 import type { Event, Sport } from "../lib/api/events-client";
@@ -144,6 +145,12 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     return `${Math.floor(diff / 86400000)}d`;
   };
 
+  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
+  const totalMatches = useMemo(
+    () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
+    [groupedEntries],
+  );
+
   if (loading) {
     return <div style={{ color: "#a0a0a0" }}>Loading upcoming matches...</div>;
   }
@@ -152,11 +159,6 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     return <div style={{ color: "#f87171" }}>Error: {error}</div>;
   }
 
-  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
-  const totalMatches = useMemo(
-    () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
-    [groupedEntries],
-  );
   if (totalMatches === 0) {
     return <div style={{ color: "#a0a0a0" }}>No upcoming matches</div>;
   }
@@ -189,7 +191,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
           >
             {matches.map((match: Event) => (
               <div key={match.eventId} style={{ position: "relative" }}>
-                <a
+                <Link
                   href={`/match/${match.fixtureId || match.eventId}`}
                   style={{ textDecoration: "none" }}
                 >
@@ -284,7 +286,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
                       </div>
                     </div>
                   </div>
-                </a>
+                </Link>
               </div>
             ))}
           </div>

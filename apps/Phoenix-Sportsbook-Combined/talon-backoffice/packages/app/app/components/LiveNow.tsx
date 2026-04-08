@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { getSports, getEvents } from "../lib/api/events-client";
 import type { Event as SportEvent, Sport } from "../lib/api/events-client";
@@ -311,6 +312,12 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
     };
   }, [limit, handleFixtureUpdate]);
 
+  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
+  const totalMatches = useMemo(
+    () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
+    [groupedEntries],
+  );
+
   if (loading) {
     return <div style={{ color: "#64748b" }}>Loading live matches...</div>;
   }
@@ -319,11 +326,6 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
     return <div style={{ color: "#f87171" }}>Error: {error}</div>;
   }
 
-  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
-  const totalMatches = useMemo(
-    () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
-    [groupedEntries],
-  );
   if (totalMatches === 0) {
     return (
       <div style={{ color: "#64748b" }}>No live matches at the moment</div>
@@ -367,14 +369,19 @@ export const LiveNow: React.FC<LiveNowProps> = ({ limit = 50 }) => {
             }}
           >
             {matches.map((match) => (
-              <InlineMatchCard
+              <Link
                 key={match.eventId}
-                homeTeam={match.homeTeam}
-                awayTeam={match.awayTeam}
-                homeScore={match.homeScore}
-                awayScore={match.awayScore}
-                status="live"
-              />
+                href={`/match/${match.fixtureId || match.eventId}`}
+                style={{ textDecoration: "none" }}
+              >
+                <InlineMatchCard
+                  homeTeam={match.homeTeam}
+                  awayTeam={match.awayTeam}
+                  homeScore={match.homeScore}
+                  awayScore={match.awayScore}
+                  status="live"
+                />
+              </Link>
             ))}
           </div>
         </div>

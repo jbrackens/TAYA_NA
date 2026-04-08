@@ -43,8 +43,30 @@ interface AuthProviderProps {
   children: React.ReactNode;
 }
 
+function readStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  const id = localStorage.getItem("phoenix_user_id");
+  const username = localStorage.getItem("phoenix_username");
+  if (!id || !username) return null;
+  return { id, username };
+}
+
+function persistStoredUser(user: User) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("phoenix_user_id", user.id);
+  localStorage.setItem("phoenix_username", user.username);
+}
+
+function clearStoredUser() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("phoenix_user_id");
+  localStorage.removeItem("phoenix_username");
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() =>
+    apiClient.isAuthenticated() ? readStoredUser() : null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
@@ -63,12 +85,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const session = await getSession();
           if (!mounted || !session.authenticated) return;
-          setUser({ id: session.userId, username: session.username });
+          const restoredUser = { id: session.userId, username: session.username };
+          setUser(restoredUser);
           setSessionStartTime(new Date());
-          if (typeof window !== "undefined") {
-            localStorage.setItem("phoenix_user_id", session.userId);
-            localStorage.setItem("phoenix_username", session.username);
-          }
+          persistStoredUser(restoredUser);
         } catch (sessionErr) {
           const currentRefreshToken = apiClient.getRefreshToken();
           if (!currentRefreshToken) {
@@ -79,19 +99,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           apiClient.setToken(refreshed.accessToken, refreshed.refreshToken);
           const session = await getSession(refreshed.accessToken);
           if (!mounted || !session.authenticated) return;
-          setUser({ id: session.userId, username: session.username });
+          const restoredUser = { id: session.userId, username: session.username };
+          setUser(restoredUser);
           setSessionStartTime(new Date());
-          if (typeof window !== "undefined") {
-            localStorage.setItem("phoenix_user_id", session.userId);
-            localStorage.setItem("phoenix_username", session.username);
-          }
+          persistStoredUser(restoredUser);
         }
       } catch (err) {
         logger.error("Auth", "Session check failed", err);
         apiClient.clearTokens();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("phoenix_user_id");
-          localStorage.removeItem("phoenix_username");
+        clearStoredUser();
+        if (mounted) {
+          setUser(null);
         }
       } finally {
         if (mounted) {
@@ -132,25 +150,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               coolOffUntil: coolOff.coolOffUntil,
             });
             apiClient.clearTokens();
-            if (typeof window !== "undefined") {
-              localStorage.removeItem("phoenix_user_id");
-              localStorage.removeItem("phoenix_username");
-            }
+            clearStoredUser();
             throw new Error(
               `Your account is under a cool-off period until ${coolOffEnd.toLocaleDateString()}. Please try again later.`,
             );
           }
         }
 
-        if (typeof window !== "undefined") {
-          localStorage.setItem("phoenix_user_id", session.userId);
-          localStorage.setItem("phoenix_username", session.username);
-        }
-
-        setUser({
+        const authenticatedUser = {
           id: session.userId,
           username: session.username,
-        });
+        };
+        persistStoredUser(authenticatedUser);
+        setUser(authenticatedUser);
         setSessionStartTime(new Date());
         toast.success("Welcome back!", session.username);
       } catch (err) {
@@ -166,10 +178,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(() => {
     apiClient.clearTokens();
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("phoenix_user_id");
-      localStorage.removeItem("phoenix_username");
-    }
+    clearStoredUser();
     setUser(null);
     setError(null);
     setSessionStartTime(null);
@@ -187,7 +196,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authRefresh(currentRefreshToken);
       apiClient.setToken(response.accessToken, response.refreshToken);
       const session = await getSession(response.accessToken);
-      setUser({ id: session.userId, username: session.username });
+      const refreshedUser = { id: session.userId, username: session.username };
+      persistStoredUser(refreshedUser);
+      setUser(refreshedUser);
     } catch (err) {
       const refreshError = err instanceof Error ? err : new Error(String(err));
       setError(refreshError);

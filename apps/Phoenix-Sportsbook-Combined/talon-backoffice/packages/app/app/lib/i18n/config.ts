@@ -49,9 +49,7 @@ if (!i18n.isInitialized) {
     .use(fetchBackend)
     .use(initReactI18next)
     .init({
-      lng: typeof window !== 'undefined'
-        ? localStorage.getItem('phoenix_language') || 'en'
-        : 'en',
+      lng: 'en',
       fallbackLng: 'en',
       supportedLngs: SUPPORTED_LANGUAGES,
       ns: NAMESPACES,

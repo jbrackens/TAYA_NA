@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, {
   useState,
   useCallback,
@@ -43,7 +44,7 @@ export const HeaderBar: React.FC = () => {
   const searchRequestIdRef = useRef(0);
 
   // Auth state — providers are always mounted in layout.tsx
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   // Redux state — store is always available via StoreProvider in layout.tsx
   const oddsFormat = useAppSelector(selectOddsFormat);
@@ -179,13 +180,13 @@ export const HeaderBar: React.FC = () => {
         {/* Left — Navigation Tabs */}
         <nav className="ps-topbar-tabs">
           {HEADER_TABS.map((tab) => (
-            <a
+            <Link
               key={tab.href}
               href={tab.href}
               className={`ps-topbar-tab ${isTabActive(tab.href) ? "active" : ""}`}
             >
               {tab.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -248,10 +249,46 @@ export const HeaderBar: React.FC = () => {
             <span>{tx("SEARCH_PLACEHOLDER", "Search events...")}</span>
           </button>
 
-          {isAuthenticated ? (
+          {isLoading ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <div
+                style={{
+                  width: "84px",
+                  height: "32px",
+                  borderRadius: "999px",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              />
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "999px",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              />
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "999px",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                }}
+              />
+            </div>
+          ) : isAuthenticated ? (
             <>
               {/* Wallet Balance */}
-              <a href="/cashier" className="ps-wallet-badge">
+              <Link href="/cashier" className="ps-wallet-badge">
                 <WalletIcon size={14} strokeWidth={2} />
                 <span>
                   $
@@ -259,12 +296,12 @@ export const HeaderBar: React.FC = () => {
                     ? walletBalance.toFixed(2)
                     : "0.00"}
                 </span>
-              </a>
+              </Link>
 
               {/* My Bets */}
-              <a href="/bets" className="ps-topbar-icon" title="My Bets">
+              <Link href="/bets" className="ps-topbar-icon" title="My Bets">
                 <TicketIcon size={18} strokeWidth={2} />
-              </a>
+              </Link>
 
               {/* Notifications */}
               <button className="ps-topbar-icon" title="Notifications">
@@ -273,18 +310,18 @@ export const HeaderBar: React.FC = () => {
               </button>
 
               {/* Avatar / Account */}
-              <a href="/account" className="ps-avatar" title="Account">
+              <Link href="/account" className="ps-avatar" title="Account">
                 {user?.username?.[0]?.toUpperCase() || "U"}
-              </a>
+              </Link>
             </>
           ) : (
             <>
-              <a href="/auth/login" className="ps-btn-login">
+              <Link href="/auth/login" className="ps-btn-login">
                 {tx("LOGIN_LINK", "Login")}
-              </a>
-              <a href="/auth/login?mode=register" className="ps-btn-signup">
+              </Link>
+              <Link href="/auth/login?mode=register" className="ps-btn-signup">
                 {tx("SIGN_UP_LINK", "Join Now")}
-              </a>
+              </Link>
             </>
           )}
         </div>
@@ -370,10 +407,10 @@ export const HeaderBar: React.FC = () => {
                         style={{ display: "flex", flexWrap: "wrap", gap: 8 }}
                       >
                         {quickSports.map((s: Sport) => (
-                          <a
+                          <Link
                             key={s.sportKey}
                             href={`/sports/${s.sportKey}`}
-              onClick={() => {
+                            onClick={() => {
                               setSearchOpen(false);
                               setSearchQuery("");
                               setSearchResults([]);
@@ -390,7 +427,7 @@ export const HeaderBar: React.FC = () => {
                             }}
                           >
                             {s.sportName} ({s.eventCount})
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     </>
@@ -443,7 +480,7 @@ export const HeaderBar: React.FC = () => {
                       : t("SEARCH_RESULT_PLURAL")}
                   </div>
                   {searchResults.map((event: Event) => (
-                    <a
+                    <Link
                       key={event.eventId}
                       href={`/match/${event.fixtureId || event.eventId}`}
                       onClick={() => {
@@ -502,7 +539,7 @@ export const HeaderBar: React.FC = () => {
                             ? t("SEARCH_STATUS_FT")
                             : t("SEARCH_STATUS_UPCOMING")}
                       </div>
-                    </a>
+                    </Link>
                   ))}
                 </div>
               ) : (
