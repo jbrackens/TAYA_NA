@@ -246,3 +246,59 @@ func TestAccrueSettledBetPopulatesStakeAndProfitBoards(t *testing.T) {
 		}
 	}
 }
+
+func TestAccrueQualifiedReferralPopulatesReferralBoard(t *testing.T) {
+	svc := NewService()
+
+	err := svc.AccrueQualifiedReferral(ReferralScoreRequest{
+		ReferrerPlayerID: "u-ref-1",
+		ReferralID:       "ref:test:001",
+		ReferredPlayerID: "u-referred-1",
+		QualifiedAt:      time.Date(2026, time.April, 8, 18, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("accrue qualified referral: %v", err)
+	}
+
+	definitions := svc.ListDefinitions(DefinitionFilter{}, true)
+	var referralBoardID string
+	for _, definition := range definitions {
+		if definition.MetricKey == metricQualifiedReferrals {
+			referralBoardID = definition.LeaderboardID
+			break
+		}
+	}
+	if referralBoardID == "" {
+		t.Fatal("expected qualified referral board to exist")
+	}
+
+	standings, _, err := svc.Standings(referralBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("referral standings: %v", err)
+	}
+	found := false
+	for _, standing := range standings {
+		if standing.PlayerID == "u-ref-1" {
+			found = true
+			if standing.Score != 1 {
+				t.Fatalf("expected referral score 1, got %f", standing.Score)
+			}
+			if standing.EventCount != 1 {
+				t.Fatalf("expected one referral event, got %d", standing.EventCount)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("expected referrer to appear in referral standings")
+	}
+
+	err = svc.AccrueQualifiedReferral(ReferralScoreRequest{
+		ReferrerPlayerID: "u-ref-1",
+		ReferralID:       "ref:test:001",
+		ReferredPlayerID: "u-referred-1",
+		QualifiedAt:      time.Date(2026, time.April, 8, 18, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("idempotent referral accrual: %v", err)
+	}
+}

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"phoenix-revival/gateway/internal/leaderboards"
 	canonicalv1 "phoenix-revival/platform/canonical/v1"
 )
 
@@ -195,5 +196,61 @@ func TestRegisterReferralRejectsConflictingReferrer(t *testing.T) {
 	})
 	if !errors.Is(err, ErrReferralConflict) {
 		t.Fatalf("expected ErrReferralConflict, got %v", err)
+	}
+}
+
+func TestReferralQualificationFeedsLeaderboardScore(t *testing.T) {
+	svc := NewService()
+	leaderboardService := leaderboards.NewService()
+	svc.SetLeaderboardService(leaderboardService)
+
+	_, err := svc.RegisterReferral(ReferralCreateRequest{
+		ReferrerPlayerID: "u-ref-owner-1",
+		ReferredPlayerID: "u-ref-player-1",
+	})
+	if err != nil {
+		t.Fatalf("register referral: %v", err)
+	}
+
+	_, _, err = svc.AccrueSettledBet(SettlementAccrualRequest{
+		PlayerID:         "u-ref-player-1",
+		BetID:            "bet:ref:001",
+		SettlementStatus: "settled_won",
+		StakeCents:       1000,
+		IdempotencyKey:   "loyalty:referral:001",
+		Reason:           "first qualifying bet",
+		SettledAt:        time.Date(2026, time.April, 8, 18, 30, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("accrue qualifying bet: %v", err)
+	}
+
+	definitions := leaderboardService.ListDefinitions(leaderboards.DefinitionFilter{}, true)
+	var referralBoardID string
+	for _, definition := range definitions {
+		if definition.MetricKey == "qualified_referrals" {
+			referralBoardID = definition.LeaderboardID
+			break
+		}
+	}
+	if referralBoardID == "" {
+		t.Fatal("expected qualified referral leaderboard")
+	}
+
+	standings, _, err := leaderboardService.Standings(referralBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("leaderboard standings: %v", err)
+	}
+	found := false
+	for _, standing := range standings {
+		if standing.PlayerID == "u-ref-owner-1" {
+			found = true
+			if standing.Score != 1 {
+				t.Fatalf("expected referral leaderboard score 1, got %f", standing.Score)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("expected referrer to appear in referral leaderboard standings")
 	}
 }

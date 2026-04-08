@@ -37,6 +37,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	leaderboardService := leaderboards.NewService()
 	betService.SetPromotionServices(freebetService, oddsBoostService)
 	betService.SetLoyaltyService(loyaltyService)
+	loyaltyService.SetLeaderboardService(leaderboardService)
 	betService.SetLeaderboardService(leaderboardService)
 	matchTrackerService := matchtracker.NewService()
 	providerRuntime, err := provider.BootstrapRuntimeFromEnv(

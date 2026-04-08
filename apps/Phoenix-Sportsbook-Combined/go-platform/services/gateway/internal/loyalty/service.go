@@ -8,15 +8,16 @@ import (
 	"sync"
 	"time"
 
+	"phoenix-revival/gateway/internal/leaderboards"
 	canonicalv1 "phoenix-revival/platform/canonical/v1"
 )
 
 var (
-	ErrInvalidRequest      = errors.New("invalid loyalty request")
-	ErrAccountNotFound     = errors.New("loyalty account not found")
-	ErrAdjustmentConflict  = errors.New("loyalty adjustment idempotency conflict")
-	ErrAccrualConflict     = errors.New("loyalty accrual idempotency conflict")
-	ErrReferralConflict    = errors.New("loyalty referral conflict")
+	ErrInvalidRequest     = errors.New("invalid loyalty request")
+	ErrAccountNotFound    = errors.New("loyalty account not found")
+	ErrAdjustmentConflict = errors.New("loyalty adjustment idempotency conflict")
+	ErrAccrualConflict    = errors.New("loyalty accrual idempotency conflict")
+	ErrReferralConflict   = errors.New("loyalty referral conflict")
 )
 
 type SettlementAccrualRequest struct {
@@ -30,12 +31,12 @@ type SettlementAccrualRequest struct {
 }
 
 type AdjustmentRequest struct {
-	PlayerID         string
-	PointsDelta      int64
-	IdempotencyKey   string
-	Reason           string
-	CreatedBy        string
-	EntrySubtype     string
+	PlayerID       string
+	PointsDelta    int64
+	IdempotencyKey string
+	Reason         string
+	CreatedBy      string
+	EntrySubtype   string
 }
 
 type AccountFilter struct {
@@ -52,20 +53,21 @@ type ReferralCreateRequest struct {
 type Service struct {
 	mu sync.RWMutex
 
-	accounts            map[string]canonicalv1.LoyaltyAccount
-	ledger              map[string][]canonicalv1.LoyaltyLedgerEntry
-	accrualByKey        map[string]canonicalv1.LoyaltyLedgerEntry
-	adjustByKey         map[string]canonicalv1.LoyaltyLedgerEntry
-	referralsByID       map[string]canonicalv1.ReferralReward
-	referralByReferred  map[string]string
+	accounts              map[string]canonicalv1.LoyaltyAccount
+	ledger                map[string][]canonicalv1.LoyaltyLedgerEntry
+	accrualByKey          map[string]canonicalv1.LoyaltyLedgerEntry
+	adjustByKey           map[string]canonicalv1.LoyaltyLedgerEntry
+	referralsByID         map[string]canonicalv1.ReferralReward
+	referralByReferred    map[string]string
 	referralIDsByReferrer map[string][]string
-	tiers               []canonicalv1.LoyaltyTier
-	rules               []canonicalv1.LoyaltyAccrualRule
-	entrySequence       int64
-	accountSequence int64
-	referralSequence    int64
-	referralBonusPoints int64
-	now                 func() time.Time
+	tiers                 []canonicalv1.LoyaltyTier
+	rules                 []canonicalv1.LoyaltyAccrualRule
+	entrySequence         int64
+	accountSequence       int64
+	referralSequence      int64
+	referralBonusPoints   int64
+	leaderboards          *leaderboards.Service
+	now                   func() time.Time
 }
 
 func NewService() *Service {
@@ -97,6 +99,12 @@ func NewService() *Service {
 	svc.seedAccount("u-1", 5800, 4200, 350, 900, 700, now.Add(-30*24*time.Hour), now.Add(-24*time.Hour), now.Add(-2*time.Hour))
 	svc.seedAccount("u-2", 850, 850, 120, 300, 180, now.Add(-14*24*time.Hour), now.Add(-14*24*time.Hour), now.Add(-6*time.Hour))
 	return svc
+}
+
+func (s *Service) SetLeaderboardService(leaderboardService *leaderboards.Service) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.leaderboards = leaderboardService
 }
 
 func (s *Service) ListAccounts(filter AccountFilter) []canonicalv1.LoyaltyAccount {
@@ -412,7 +420,7 @@ func (s *Service) pointsForStakeLocked(stakeCents int64) int64 {
 		multiplier = rule.Multiplier
 		break
 	}
-	points := int64(float64(stakeCents)/100.0 * multiplier)
+	points := int64(float64(stakeCents) / 100.0 * multiplier)
 	if points <= 0 {
 		points = 1
 	}
@@ -499,6 +507,14 @@ func (s *Service) qualifyReferralLocked(referredPlayerID string, qualifiedAt tim
 	s.accounts[referral.ReferrerPlayerID] = referrer
 	s.ledger[referral.ReferrerPlayerID] = append([]canonicalv1.LoyaltyLedgerEntry{entry}, s.ledger[referral.ReferrerPlayerID]...)
 	s.referralsByID[referral.ReferralID] = referral
+	if s.leaderboards != nil {
+		_ = s.leaderboards.AccrueQualifiedReferral(leaderboards.ReferralScoreRequest{
+			ReferrerPlayerID: referral.ReferrerPlayerID,
+			ReferralID:       referral.ReferralID,
+			ReferredPlayerID: referredPlayerID,
+			QualifiedAt:      qualifiedAt,
+		})
+	}
 }
 
 func cloneAccount(in canonicalv1.LoyaltyAccount) canonicalv1.LoyaltyAccount {

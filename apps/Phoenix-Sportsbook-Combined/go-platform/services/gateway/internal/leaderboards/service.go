@@ -19,9 +19,11 @@ var (
 )
 
 const (
-	metricNetProfitCents = "net_profit_cents"
-	metricStakeCents     = "stake_cents"
-	eventTypeSettledBet  = "settled_bet"
+	metricNetProfitCents        = "net_profit_cents"
+	metricStakeCents            = "stake_cents"
+	metricQualifiedReferrals    = "qualified_referrals"
+	eventTypeSettledBet         = "settled_bet"
+	eventTypeReferralConversion = "referral_conversion"
 )
 
 type DefinitionFilter struct {
@@ -63,6 +65,13 @@ type SettlementScoreRequest struct {
 	StakeCents       int64
 	PayoutCents      int64
 	SettledAt        time.Time
+}
+
+type ReferralScoreRequest struct {
+	ReferrerPlayerID string
+	ReferralID       string
+	ReferredPlayerID string
+	QualifiedAt      time.Time
 }
 
 type Service struct {
@@ -117,6 +126,20 @@ func NewService() *Service {
 		WindowEndsAt:   &weeklyEnd,
 		CreatedBy:      "system",
 	})
+	referrals, _ := svc.CreateDefinition(CreateDefinitionRequest{
+		Slug:           "qualified-referral-race",
+		Name:           "Qualified Referral Race",
+		Description:    "Most qualified referrals in the current campaign window.",
+		MetricKey:      metricQualifiedReferrals,
+		EventType:      eventTypeReferralConversion,
+		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
+		Order:          canonicalv1.LeaderboardOrderDescending,
+		Status:         canonicalv1.LeaderboardStatusActive,
+		PrizeSummary:   "Top referrers unlock campaign rewards.",
+		WindowStartsAt: &weeklyStart,
+		WindowEndsAt:   &weeklyEnd,
+		CreatedBy:      "system",
+	})
 	_, _ = svc.RecordEvent(RecordEventRequest{
 		LeaderboardID:  profit.LeaderboardID,
 		PlayerID:       "u-1",
@@ -152,6 +175,15 @@ func NewService() *Service {
 		SourceID:       "bet:102",
 		IdempotencyKey: "seed-stake-2",
 		RecordedAt:     now.Add(-70 * time.Minute),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  referrals.LeaderboardID,
+		PlayerID:       "u-1",
+		Score:          1,
+		SourceType:     eventTypeReferralConversion,
+		SourceID:       "ref:seed:001",
+		IdempotencyKey: "seed-referral-1",
+		RecordedAt:     now.Add(-50 * time.Minute),
 	})
 	return svc
 }
@@ -433,6 +465,55 @@ func (s *Service) AccrueSettledBet(request SettlementScoreRequest) error {
 			Metadata: map[string]string{
 				"betId":            betID,
 				"settlementStatus": status,
+			},
+			RecordedAt: recordedAt,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Service) AccrueQualifiedReferral(request ReferralScoreRequest) error {
+	referrerID := strings.TrimSpace(request.ReferrerPlayerID)
+	referralID := strings.TrimSpace(request.ReferralID)
+	referredID := strings.TrimSpace(request.ReferredPlayerID)
+	if referrerID == "" || referralID == "" || referredID == "" {
+		return ErrInvalidRequest
+	}
+
+	recordedAt := request.QualifiedAt.UTC().Truncate(time.Second)
+	if recordedAt.IsZero() {
+		recordedAt = s.now().UTC().Truncate(time.Second)
+	}
+
+	s.mu.RLock()
+	definitions := make([]canonicalv1.LeaderboardDefinition, 0, len(s.definitions))
+	for _, definition := range s.definitions {
+		if definition.Status != canonicalv1.LeaderboardStatusActive {
+			continue
+		}
+		if definition.EventType != "" && definition.EventType != eventTypeReferralConversion {
+			continue
+		}
+		if definition.MetricKey == metricQualifiedReferrals {
+			definitions = append(definitions, cloneDefinition(definition))
+		}
+	}
+	s.mu.RUnlock()
+
+	for _, definition := range definitions {
+		if _, err := s.RecordEvent(RecordEventRequest{
+			LeaderboardID:  definition.LeaderboardID,
+			PlayerID:       referrerID,
+			Score:          1,
+			SourceType:     eventTypeReferralConversion,
+			SourceID:       referralID,
+			IdempotencyKey: fmt.Sprintf("leaderboard:%s:%s:%s", definition.LeaderboardID, eventTypeReferralConversion, referralID),
+			Metadata: map[string]string{
+				"referredPlayerId": referredID,
+				"referralId":       referralID,
 			},
 			RecordedAt: recordedAt,
 		}); err != nil {
