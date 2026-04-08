@@ -9,6 +9,7 @@ import (
 
 	"phoenix-revival/gateway/internal/domain"
 	"phoenix-revival/gateway/internal/freebets"
+	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/oddsboosts"
 	"phoenix-revival/gateway/internal/wallet"
@@ -654,6 +655,83 @@ func TestSettleBetWinAccruesLoyaltyPoints(t *testing.T) {
 	}
 	if ledger[0].SourceID != placed.BetID {
 		t.Fatalf("expected loyalty source id %s, got %s", placed.BetID, ledger[0].SourceID)
+	}
+}
+
+func TestSettleBetFeedsLeaderboardScores(t *testing.T) {
+	repository := domain.NewInMemoryReadRepository()
+	walletService := wallet.NewService()
+	_, _ = walletService.Credit(wallet.MutationRequest{UserID: "u-bet-leaderboard-1", AmountCents: 5000, IdempotencyKey: "seed"})
+
+	service := NewService(repository, walletService)
+	leaderboardService := leaderboards.NewService()
+	service.SetLeaderboardService(leaderboardService)
+
+	placed, err := service.Place(PlaceBetRequest{
+		UserID:         "u-bet-leaderboard-1",
+		MarketID:       "m:local:001",
+		SelectionID:    "home",
+		StakeCents:     1200,
+		Odds:           2.0,
+		IdempotencyKey: "settle-leaderboard-win",
+	})
+	if err != nil {
+		t.Fatalf("place bet: %v", err)
+	}
+
+	_, err = service.Settle(SettleBetRequest{
+		BetID:              placed.BetID,
+		WinningSelectionID: "home",
+		Reason:             "result confirmed",
+	})
+	if err != nil {
+		t.Fatalf("settle bet: %v", err)
+	}
+
+	definitions := leaderboardService.ListDefinitions(leaderboards.DefinitionFilter{}, true)
+	var profitBoardID string
+	var stakeBoardID string
+	for _, definition := range definitions {
+		switch definition.MetricKey {
+		case "net_profit_cents":
+			profitBoardID = definition.LeaderboardID
+		case "stake_cents":
+			stakeBoardID = definition.LeaderboardID
+		}
+	}
+
+	profitStandings, _, err := leaderboardService.Standings(profitBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("profit standings: %v", err)
+	}
+	foundProfit := false
+	for _, standing := range profitStandings {
+		if standing.PlayerID == "u-bet-leaderboard-1" {
+			foundProfit = true
+			if standing.Score != 1200 {
+				t.Fatalf("expected net profit score 1200, got %f", standing.Score)
+			}
+		}
+	}
+	if !foundProfit {
+		t.Fatal("expected leaderboard profit standings to include settled player")
+	}
+
+	stakeStandings, _, err := leaderboardService.Standings(stakeBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("stake standings: %v", err)
+	}
+	foundStake := false
+	for _, standing := range stakeStandings {
+		if standing.PlayerID == "u-bet-leaderboard-1" {
+			foundStake = true
+			if standing.Score != 1200 {
+				t.Fatalf("expected stake score 1200, got %f", standing.Score)
+			}
+		}
+	}
+	if !foundStake {
+		t.Fatal("expected leaderboard stake standings to include settled player")
 	}
 }
 

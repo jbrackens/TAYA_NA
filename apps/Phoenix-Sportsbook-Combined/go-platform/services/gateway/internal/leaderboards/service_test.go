@@ -159,3 +159,90 @@ func TestRecordEventIsIdempotentAndClosedLeaderboardsRejectWrites(t *testing.T) 
 		t.Fatalf("expected ErrLeaderboardClosed, got %v", err)
 	}
 }
+
+func TestAccrueSettledBetPopulatesStakeAndProfitBoards(t *testing.T) {
+	svc := NewService()
+
+	err := svc.AccrueSettledBet(SettlementScoreRequest{
+		PlayerID:         "u-score-1",
+		BetID:            "bet:score:001",
+		SettlementStatus: "settled_won",
+		StakeCents:       1200,
+		PayoutCents:      2400,
+		SettledAt:        time.Date(2026, time.April, 8, 17, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("accrue settled bet: %v", err)
+	}
+
+	definitions := svc.ListDefinitions(DefinitionFilter{}, true)
+	var profitBoardID string
+	var stakeBoardID string
+	for _, definition := range definitions {
+		switch definition.MetricKey {
+		case metricNetProfitCents:
+			profitBoardID = definition.LeaderboardID
+		case metricStakeCents:
+			stakeBoardID = definition.LeaderboardID
+		}
+	}
+
+	profitStandings, _, err := svc.Standings(profitBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("profit standings: %v", err)
+	}
+	foundProfit := false
+	for _, standing := range profitStandings {
+		if standing.PlayerID == "u-score-1" {
+			foundProfit = true
+			if standing.Score != 1200 {
+				t.Fatalf("expected net profit score 1200, got %f", standing.Score)
+			}
+		}
+	}
+	if !foundProfit {
+		t.Fatal("expected profit standings to include player")
+	}
+
+	stakeStandings, _, err := svc.Standings(stakeBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("stake standings: %v", err)
+	}
+	foundStake := false
+	for _, standing := range stakeStandings {
+		if standing.PlayerID == "u-score-1" {
+			foundStake = true
+			if standing.Score != 1200 {
+				t.Fatalf("expected stake score 1200, got %f", standing.Score)
+			}
+			if standing.EventCount != 1 {
+				t.Fatalf("expected one stake event, got %d", standing.EventCount)
+			}
+		}
+	}
+	if !foundStake {
+		t.Fatal("expected stake standings to include player")
+	}
+
+	err = svc.AccrueSettledBet(SettlementScoreRequest{
+		PlayerID:         "u-score-1",
+		BetID:            "bet:score:001",
+		SettlementStatus: "settled_won",
+		StakeCents:       1200,
+		PayoutCents:      2400,
+		SettledAt:        time.Date(2026, time.April, 8, 17, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("idempotent accrue settled bet: %v", err)
+	}
+
+	stakeStandings, _, err = svc.Standings(stakeBoardID, 20, 0)
+	if err != nil {
+		t.Fatalf("stake standings after replay: %v", err)
+	}
+	for _, standing := range stakeStandings {
+		if standing.PlayerID == "u-score-1" && standing.EventCount != 1 {
+			t.Fatalf("expected event count 1 after replay, got %d", standing.EventCount)
+		}
+	}
+}

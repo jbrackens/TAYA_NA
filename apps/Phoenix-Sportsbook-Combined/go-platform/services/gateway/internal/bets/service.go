@@ -21,6 +21,7 @@ import (
 
 	"phoenix-revival/gateway/internal/domain"
 	"phoenix-revival/gateway/internal/freebets"
+	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/oddsboosts"
 	"phoenix-revival/gateway/internal/wallet"
@@ -330,11 +331,12 @@ type promotionPlacementDecision struct {
 }
 
 type Service struct {
-	repository domain.ReadRepository
-	wallet     *wallet.Service
-	freebets   *freebets.Service
-	oddsBoosts *oddsboosts.Service
-	loyalty    *loyalty.Service
+	repository   domain.ReadRepository
+	wallet       *wallet.Service
+	freebets     *freebets.Service
+	oddsBoosts   *oddsboosts.Service
+	loyalty      *loyalty.Service
+	leaderboards *leaderboards.Service
 
 	mu                       sync.RWMutex
 	betsByID                 map[string]Bet
@@ -383,6 +385,12 @@ func (s *Service) SetLoyaltyService(loyaltyService *loyalty.Service) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.loyalty = loyaltyService
+}
+
+func (s *Service) SetLeaderboardService(leaderboardService *leaderboards.Service) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.leaderboards = leaderboardService
 }
 
 func NewService(repository domain.ReadRepository, walletService *wallet.Service) *Service {
@@ -1316,6 +1324,18 @@ func (s *Service) applySettlementTransition(bet Bet, request SettleBetRequest) (
 			SettledAt:        s.now().UTC(),
 		})
 		if err != nil {
+			return Bet{}, settlementTransitionMeta{}, err
+		}
+	}
+	if s.leaderboards != nil && !meta.Resettled {
+		if err := s.leaderboards.AccrueSettledBet(leaderboards.SettlementScoreRequest{
+			PlayerID:         bet.UserID,
+			BetID:            bet.BetID,
+			SettlementStatus: bet.Status,
+			StakeCents:       bet.StakeCents,
+			PayoutCents:      meta.NextPayoutCents,
+			SettledAt:        s.now().UTC(),
+		}); err != nil {
 			return Bet{}, settlementTransitionMeta{}, err
 		}
 	}

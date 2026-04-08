@@ -18,6 +18,12 @@ var (
 	ErrLeaderboardClosed   = errors.New("leaderboard is closed")
 )
 
+const (
+	metricNetProfitCents = "net_profit_cents"
+	metricStakeCents     = "stake_cents"
+	eventTypeSettledBet  = "settled_bet"
+)
+
 type DefinitionFilter struct {
 	Status string
 	Search string
@@ -50,6 +56,15 @@ type RecordEventRequest struct {
 	RecordedAt     time.Time
 }
 
+type SettlementScoreRequest struct {
+	PlayerID         string
+	BetID            string
+	SettlementStatus string
+	StakeCents       int64
+	PayoutCents      int64
+	SettledAt        time.Time
+}
+
 type Service struct {
 	mu sync.RWMutex
 
@@ -76,8 +91,8 @@ func NewService() *Service {
 		Slug:           "weekly-profit-race",
 		Name:           "Weekly Profit Race",
 		Description:    "Top net winners this week.",
-		MetricKey:      "net_profit_cents",
-		EventType:      "settled_bet",
+		MetricKey:      metricNetProfitCents,
+		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
 		Status:         canonicalv1.LeaderboardStatusActive,
@@ -91,8 +106,8 @@ func NewService() *Service {
 		Slug:           "weekly-stake-ladder",
 		Name:           "Weekly Stake Ladder",
 		Description:    "Most qualified stake volume this week.",
-		MetricKey:      "stake_cents",
-		EventType:      "settled_bet",
+		MetricKey:      metricStakeCents,
+		EventType:      eventTypeSettledBet,
 		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
 		Order:          canonicalv1.LeaderboardOrderDescending,
 		Status:         canonicalv1.LeaderboardStatusActive,
@@ -357,6 +372,75 @@ func (s *Service) Recompute(id string) (canonicalv1.LeaderboardDefinition, []can
 	definition.UpdatedAt = now
 	s.definitions[id] = definition
 	return cloneDefinition(definition), computeStandings(definition, s.eventsByLeaderboard[id]), nil
+}
+
+func (s *Service) AccrueSettledBet(request SettlementScoreRequest) error {
+	playerID := strings.TrimSpace(request.PlayerID)
+	betID := strings.TrimSpace(request.BetID)
+	if playerID == "" || betID == "" || request.StakeCents <= 0 {
+		return ErrInvalidRequest
+	}
+
+	status := strings.ToLower(strings.TrimSpace(request.SettlementStatus))
+	if status != "settled_won" && status != "settled_lost" {
+		return ErrInvalidRequest
+	}
+
+	recordedAt := request.SettledAt.UTC().Truncate(time.Second)
+	if recordedAt.IsZero() {
+		recordedAt = s.now().UTC().Truncate(time.Second)
+	}
+
+	s.mu.RLock()
+	definitions := make([]canonicalv1.LeaderboardDefinition, 0, len(s.definitions))
+	for _, definition := range s.definitions {
+		if definition.Status != canonicalv1.LeaderboardStatusActive {
+			continue
+		}
+		if definition.EventType != "" && definition.EventType != eventTypeSettledBet {
+			continue
+		}
+		switch definition.MetricKey {
+		case metricNetProfitCents, metricStakeCents:
+			definitions = append(definitions, cloneDefinition(definition))
+		}
+	}
+	s.mu.RUnlock()
+
+	netProfit := float64(-request.StakeCents)
+	if status == "settled_won" {
+		netProfit = float64(request.PayoutCents - request.StakeCents)
+	}
+
+	for _, definition := range definitions {
+		score := 0.0
+		switch definition.MetricKey {
+		case metricStakeCents:
+			score = float64(request.StakeCents)
+		case metricNetProfitCents:
+			score = netProfit
+		default:
+			continue
+		}
+
+		if _, err := s.RecordEvent(RecordEventRequest{
+			LeaderboardID:  definition.LeaderboardID,
+			PlayerID:       playerID,
+			Score:          score,
+			SourceType:     eventTypeSettledBet,
+			SourceID:       betID,
+			IdempotencyKey: fmt.Sprintf("leaderboard:%s:%s:%s", definition.LeaderboardID, eventTypeSettledBet, betID),
+			Metadata: map[string]string{
+				"betId":            betID,
+				"settlementStatus": status,
+			},
+			RecordedAt: recordedAt,
+		}); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func computeStandings(definition canonicalv1.LeaderboardDefinition, events []canonicalv1.LeaderboardEvent) []canonicalv1.LeaderboardStanding {
