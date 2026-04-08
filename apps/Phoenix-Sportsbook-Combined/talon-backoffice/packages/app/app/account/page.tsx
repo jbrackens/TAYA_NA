@@ -19,6 +19,10 @@ import {
   getLoyaltyLedger,
   getLoyaltyTiers,
 } from "../lib/api/loyalty-client";
+import {
+  getLeaderboards,
+  getLeaderboardEntries,
+} from "../lib/api/leaderboards-client";
 import type { UserProfile } from "../lib/api/user-client";
 import type { Balance } from "../lib/api/wallet-client";
 import type {
@@ -26,6 +30,10 @@ import type {
   LoyaltyLedgerEntry,
   LoyaltyTier,
 } from "../lib/api/loyalty-client";
+import type {
+  LeaderboardDefinition,
+  LeaderboardStanding,
+} from "../lib/api/leaderboards-client";
 import {
   colors,
   font,
@@ -44,6 +52,8 @@ export default function AccountPage() {
   const [loyalty, setLoyalty] = useState<LoyaltyAccount | null>(null);
   const [loyaltyLedger, setLoyaltyLedger] = useState<LoyaltyLedgerEntry[]>([]);
   const [loyaltyTiers, setLoyaltyTiers] = useState<LoyaltyTier[]>([]);
+  const [leaderboards, setLeaderboards] = useState<LeaderboardDefinition[]>([]);
+  const [featuredStandings, setFeaturedStandings] = useState<LeaderboardStanding[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -51,13 +61,21 @@ export default function AccountPage() {
         return;
       }
 
-      const [prof, bal, rewardsAccount, rewardsLedger, rewardsTiers] =
+      const [
+        prof,
+        bal,
+        rewardsAccount,
+        rewardsLedger,
+        rewardsTiers,
+        competitionBoards,
+      ] =
         await Promise.all([
           getProfile(user.id).catch(() => null),
           getBalance(user.id).catch(() => null),
           getLoyaltyAccount(user.id).catch(() => null),
           getLoyaltyLedger(user.id, 4).catch(() => []),
           getLoyaltyTiers().catch(() => []),
+          getLeaderboards().catch(() => []),
         ]);
 
       setProfile(prof);
@@ -65,6 +83,19 @@ export default function AccountPage() {
       setLoyalty(rewardsAccount);
       setLoyaltyLedger(rewardsLedger);
       setLoyaltyTiers(rewardsTiers);
+      const nextBoards = Array.isArray(competitionBoards)
+        ? competitionBoards.slice(0, 2)
+        : [];
+      setLeaderboards(nextBoards);
+
+      if (nextBoards[0]?.leaderboardId) {
+        const standings = await getLeaderboardEntries(nextBoards[0].leaderboardId, 3, 0).catch(
+          () => null,
+        );
+        setFeaturedStandings(Array.isArray(standings?.items) ? standings.items : []);
+      } else {
+        setFeaturedStandings([]);
+      }
     };
 
     void load();
@@ -192,6 +223,51 @@ export default function AccountPage() {
             ) : (
               <div className="loyalty-empty">
                 Settle your first bet to start building your rewards balance.
+              </div>
+            )}
+          </div>
+
+          <div className="competition-card">
+            <div className="competition-card-head">
+              <div>
+                <div className="loyalty-kicker">Competition Snapshot</div>
+                <h3>Leaderboard Watch</h3>
+              </div>
+              <Link href="/leaderboards" className="competition-link">
+                Open Boards
+              </Link>
+            </div>
+
+            {leaderboards.length > 0 ? (
+              <div className="competition-board-list">
+                {leaderboards.map((board, index) => (
+                  <div key={board.leaderboardId} className="competition-board-row">
+                    <div>
+                      <div className="competition-board-title">{board.name}</div>
+                      <div className="competition-board-meta">
+                        {board.rankingMode.toUpperCase()} · {board.order.toUpperCase()} · {board.metricKey}
+                      </div>
+                    </div>
+                    {index === 0 && featuredStandings.length > 0 ? (
+                      <div className="competition-standing-stack">
+                        {featuredStandings.map((standing) => (
+                          <div key={standing.playerId} className="competition-standing-row">
+                            <span>#{standing.rank} {standing.playerId}</span>
+                            <strong>{standing.score.toLocaleString()}</strong>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="competition-board-note">
+                        Jump in to see the latest standings.
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="loyalty-empty">
+                Competition boards will appear here when live contests are available.
               </div>
             )}
           </div>
@@ -378,6 +454,72 @@ const accountPageStyles = `
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: ${radius["2xl"]};
     padding: ${spacing.lg};
+  }
+  .competition-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: ${radius["2xl"]};
+    padding: ${spacing.lg};
+    margin-top: ${spacing.lg};
+  }
+  .competition-card-head {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.md};
+    align-items: flex-start;
+    margin-bottom: ${spacing.md};
+  }
+  .competition-card-head h3 {
+    margin: 0;
+    font-size: ${font.lg};
+    color: ${colors.textDefault};
+  }
+  .competition-link {
+    color: ${colors.primary};
+    font-size: ${font.sm};
+    font-weight: ${font.bold};
+    text-decoration: none;
+  }
+  .competition-board-list {
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.md};
+  }
+  .competition-board-row {
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.sm};
+    padding: ${spacing.md};
+    border-radius: ${radius.xl};
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .competition-board-title {
+    color: ${colors.textDefault};
+    font-size: ${font.md};
+    font-weight: ${font.bold};
+    margin-bottom: ${spacing.xs};
+  }
+  .competition-board-meta,
+  .competition-board-note {
+    color: ${colors.textSecondary};
+    font-size: ${font.sm};
+  }
+  .competition-standing-stack {
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.xs};
+  }
+  .competition-standing-row {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.md};
+    color: ${colors.textDefault};
+    font-size: ${font.sm};
+  }
+  .competition-standing-row strong {
+    color: ${colors.primary};
+    font-weight: ${font.extrabold};
   }
   .loyalty-stat-label {
     color: ${colors.textSecondary};
