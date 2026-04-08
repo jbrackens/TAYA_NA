@@ -58,6 +58,9 @@ module.exports = {
       },
     };
   },
+  compiler: {
+    styledComponents: true,
+  },
   trailingSlash: true,
   // Suppress React 18 hydration mismatch overlay in dev mode.
   // SSR/client differences from localStorage-dependent UI (menus, profile)
