@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { getEvents, Event } from "../lib/api/events-client";
 import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
 import { toggleBetElement, selectBets } from "../lib/store/betSlice";
@@ -166,7 +167,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                 cursor: "pointer",
               }}
             >
-              <a
+              <Link
                 href={`/match/${fixture.fixtureId}`}
                 style={{ textDecoration: "none", color: "inherit" }}
               >
@@ -223,7 +224,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                     </div>
                   </div>
                 </div>
-              </a>
+              </Link>
               {fixture.status !== "finished" && (
                 <div style={{ display: "flex", gap: "8px" }}>
                   {(["home", "draw", "away"] as const).map((pos) => (

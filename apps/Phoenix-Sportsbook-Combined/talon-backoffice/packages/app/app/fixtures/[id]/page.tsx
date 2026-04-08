@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import OddsButton from "../../components/OddsButton";
+import MarketDetailLoading from "../../components/MarketDetailLoading";
 import { getEvent, type EventDetail } from "../../lib/api/events-client";
 import { getMarkets, type Market } from "../../lib/api/markets-client";
 import { colors, font, shadow, spacing, surface, text } from "../../lib/theme";
@@ -71,9 +72,7 @@ export default function FixtureDetailPage({ params }: FixturePageProps) {
   );
 
   if (loading) {
-    return (
-      <div style={{ color: "#D3D3D3", padding: "32px" }}>Loading fixture...</div>
-    );
+    return <MarketDetailLoading eyebrow="Fixture board" subtitle="Loading fixture markets..." />;
   }
 
   if (error || !fixture) {

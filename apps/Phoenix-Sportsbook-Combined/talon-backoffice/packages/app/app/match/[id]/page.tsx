@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { logger } from "../../lib/logger";
 import MarketGroup from "../../components/MarketGroup";
+import MarketDetailLoading from "../../components/MarketDetailLoading";
 import {
   bcGetGame,
   type BCGameDetail,
@@ -112,9 +113,10 @@ export default function MatchPage({ params }: MatchPageProps) {
 
   if (loading) {
     return (
-      <div style={{ padding: "40px", color: "#D3D3D3" }}>
-        Loading match data...
-      </div>
+      <MarketDetailLoading
+        eyebrow="Match board"
+        subtitle="Loading markets and prices..."
+      />
     );
   }
 
