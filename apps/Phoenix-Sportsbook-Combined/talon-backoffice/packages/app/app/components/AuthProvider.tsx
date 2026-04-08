@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useState, useCallback, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import { apiClient } from "../lib/api/client";
 import {
   login as authLogin,
@@ -190,26 +196,42 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [logout]);
 
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: user !== null,
-    isLoading,
-    login,
-    logout,
-    refreshToken: refreshTokenFn,
-    error,
-    sessionStartTime,
-  };
+  const isAuthenticated = user !== null;
+
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      isAuthenticated,
+      isLoading,
+      login,
+      logout,
+      refreshToken: refreshTokenFn,
+      error,
+      sessionStartTime,
+    }),
+    [
+      user,
+      isAuthenticated,
+      isLoading,
+      login,
+      logout,
+      refreshTokenFn,
+      error,
+      sessionStartTime,
+    ],
+  );
 
   return (
     <AuthContext.Provider value={value}>
-      <IdleActivityMonitor
-        onLogout={logout}
-        onRefreshToken={refreshTokenFn}
-        isAuthenticated={user !== null}
-        sessionTimeoutSeconds={840}
-        warningSeconds={60}
-      />
+      {isAuthenticated && (
+        <IdleActivityMonitor
+          onLogout={logout}
+          onRefreshToken={refreshTokenFn}
+          isAuthenticated={isAuthenticated}
+          sessionTimeoutSeconds={840}
+          warningSeconds={60}
+        />
+      )}
       {children}
     </AuthContext.Provider>
   );

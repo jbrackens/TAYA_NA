@@ -27,7 +27,7 @@ import { useToast } from "./ToastProvider";
 import { useAuth } from "../hooks/useAuth";
 import { geoComplianceService } from "../lib/services/geocomply";
 import { logger } from "../lib/logger";
-import { colors, shadow, transition } from "../lib/theme";
+import { colors, transition } from "../lib/theme";
 
 const QUICK_STAKES = [5, 10, 25, 50, 100];
 
@@ -630,33 +630,6 @@ export const BetslipPanel: React.FC = () => {
         </button>
       )}
 
-      {/* Embedded Styles */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .ps-betslip-fab {
-          position: fixed; bottom: 24px; right: 24px; z-index: 28;
-          width: 56px; height: 56px; border-radius: 50%;
-          background: ${colors.gradient}; border: none; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          color: ${colors.bgSurface}; font-weight: 700;
-          box-shadow: ${shadow.glowLg};
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .ps-betslip-fab:hover {
-          transform: scale(1.1);
-          box-shadow: 0 6px 20px rgba(57,255,20,0.5);
-        }
-        .ps-betslip-fab-count {
-          position: absolute; top: -4px; right: -4px;
-          min-width: 20px; height: 20px; border-radius: 10px;
-          background: ${colors.danger}; color: #fff; font-size: 11px;
-          font-weight: 700; display: flex; align-items: center;
-          justify-content: center; padding: 0 5px;
-        }
-      `,
-        }}
-      />
     </>
   );
 };

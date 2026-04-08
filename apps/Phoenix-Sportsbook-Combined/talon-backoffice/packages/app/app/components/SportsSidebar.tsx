@@ -119,11 +119,17 @@ const FALLBACK_SPORTS: SidebarSport[] = [
 
 export const SportsSidebar: React.FC = () => {
   const pathname = usePathname();
-  const { t } = useTranslation("sidebar");
+  const { t, ready } = useTranslation("sidebar");
   const [sports, setSports] = useState<SidebarSport[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSport, setExpandedSport] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  const tx = useCallback(
+    (key: string, fallback: string) =>
+      ready ? t(key, { defaultValue: fallback }) : fallback,
+    [ready, t],
+  );
 
   // Load favorites from localStorage on mount
   useEffect(() => {
@@ -210,7 +216,7 @@ export const SportsSidebar: React.FC = () => {
             <span className="ps-sidebar-item-icon">
               <Radio size={15} strokeWidth={2} />
             </span>
-            <span>{t("IN_PLAY")}</span>
+            <span>{tx("IN_PLAY", "In-Play")}</span>
           </span>
           <span className="ps-sidebar-badge live">LIVE</span>
         </a>
@@ -222,14 +228,16 @@ export const SportsSidebar: React.FC = () => {
             <span className="ps-sidebar-item-icon">
               <Clock size={15} strokeWidth={2} />
             </span>
-            <span>{t("UPCOMING")}</span>
+            <span>{tx("UPCOMING", "Upcoming")}</span>
           </span>
         </a>
       </div>
 
       {/* Sports List */}
       <div className="ps-sidebar-section">
-        <div className="ps-sidebar-section-label">{t("ALL_GAMES")}</div>
+        <div className="ps-sidebar-section-label">
+          {tx("ALL_GAMES", "All Games")}
+        </div>
         {loading ? (
           <>
             {[1, 2, 3, 4, 5, 6].map((i) => (

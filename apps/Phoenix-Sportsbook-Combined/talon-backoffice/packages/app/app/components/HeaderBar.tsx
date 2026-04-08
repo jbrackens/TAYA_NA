@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useRef,
   useDeferredValue,
+  useMemo,
 } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
@@ -19,7 +20,7 @@ import { selectCurrentBalance } from "../lib/store/cashierSlice";
 import { getOddsFormatLabel } from "../lib/utils/odds";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES } from "../lib/i18n/config";
-import { getEvents, getSports, getLeagues } from "../lib/api/events-client";
+import { getEvents, getSports } from "../lib/api/events-client";
 import { Event, Sport, League } from "../lib/api/events-client";
 import {
   Search as SearchIcon,
@@ -59,11 +60,17 @@ export const HeaderBar: React.FC = () => {
   );
 
   // Header tabs array now inside component to use translations
-  const HEADER_TABS = [
-    { label: tx("TAB_SPORTS_HOME", "Sports Home"), href: "/" },
-    { label: tx("TAB_LIVE", "Live"), href: "/live" },
-    { label: tx("TAB_STARTING_SOON", "Starting Soon"), href: "/starting-soon" },
-  ];
+  const HEADER_TABS = useMemo(
+    () => [
+      { label: tx("TAB_SPORTS_HOME", "Sports Home"), href: "/" },
+      { label: tx("TAB_LIVE", "Live"), href: "/live" },
+      {
+        label: tx("TAB_STARTING_SOON", "Starting Soon"),
+        href: "/starting-soon",
+      },
+    ],
+    [tx],
+  );
 
   const isTabActive = useCallback(
     (href: string) => {
@@ -100,6 +107,7 @@ export const HeaderBar: React.FC = () => {
       if (e.key === "Escape" && searchOpen) {
         setSearchOpen(false);
         setSearchQuery("");
+        setSearchResults([]);
       }
     };
     if (searchOpen) {
@@ -365,9 +373,10 @@ export const HeaderBar: React.FC = () => {
                           <a
                             key={s.sportKey}
                             href={`/sports/${s.sportKey}`}
-                            onClick={() => {
+              onClick={() => {
                               setSearchOpen(false);
                               setSearchQuery("");
+                              setSearchResults([]);
                             }}
                             style={{
                               padding: "6px 12px",
@@ -440,6 +449,7 @@ export const HeaderBar: React.FC = () => {
                       onClick={() => {
                         setSearchOpen(false);
                         setSearchQuery("");
+                        setSearchResults([]);
                       }}
                       style={{
                         display: "flex",
