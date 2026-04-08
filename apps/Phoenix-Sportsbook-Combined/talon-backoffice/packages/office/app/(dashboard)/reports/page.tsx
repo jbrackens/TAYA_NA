@@ -1,9 +1,9 @@
 'use client';
 
 import styled from 'styled-components';
-import { Card, Button } from '../../components/shared';
+import { Card } from '../../components/shared';
 import { useState, useEffect } from 'react';
-import { ErrorBoundary, LoadingSpinner, ErrorState } from '../../components/shared';
+import { ErrorBoundary, ErrorState } from '../../components/shared';
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -17,17 +17,6 @@ const ReportsGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 40px;
-`;
-
-const ReportCard = styled(Card)`
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-  }
 `;
 
 const ReportTitle = styled.h3`
@@ -79,29 +68,6 @@ const ChartPlaceholder = styled.div`
   color: #a0a0a0;
 `;
 
-const FilterBar = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-`;
-
-const FilterButton = styled.button<{ $active?: boolean }>`
-  padding: 8px 16px;
-  background-color: ${props => props.$active ? '#4a7eff' : '#0f3460'};
-  color: ${props => props.$active ? '#1a1a2e' : '#4a7eff'};
-  border: 1px solid ${props => props.$active ? '#4a7eff' : '#0f3460'};
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #4a7eff;
-    color: #1a1a2e;
-  }
-`;
-
 const ButtonGroup = styled.div`
   display: flex;
   gap: 8px;
@@ -121,6 +87,23 @@ interface Report {
   type: string;
   generatedDate: string;
   period: string;
+}
+
+interface LeaderboardReportItem {
+  leaderboardId: string;
+  name: string;
+  metricKey: string;
+  rankingMode: string;
+  order: string;
+  status: string;
+  lastComputedAt?: string;
+}
+
+interface LeaderboardStanding {
+  playerId: string;
+  rank: number;
+  score: number;
+  eventCount: number;
 }
 
 const EMPTY_METRICS: Metrics = {
@@ -163,9 +146,81 @@ const AVAILABLE_REPORTS = [
   },
 ];
 
+const leaderboardAnalyticsGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
+  gap: '20px',
+} as const;
+
+const analyticsCardStyle = {
+  padding: '20px',
+  background: '#16213e',
+  border: '1px solid #0f3460',
+  borderRadius: '12px',
+} as const;
+
+const analyticsCardTitleStyle = {
+  margin: '0 0 12px 0',
+  color: '#ffffff',
+  fontWeight: 600,
+} as const;
+
+const standingsListStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '10px',
+} as const;
+
+const standingRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  gap: '12px',
+  padding: '10px 12px',
+  borderRadius: '8px',
+  background: '#0f3460',
+} as const;
+
+const reportCardStyle = {
+  padding: '24px',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+} as const;
+
+const reportButtonStyle = {
+  padding: '8px 14px',
+  background: '#4a7eff',
+  color: '#1a1a2e',
+  border: '1px solid #4a7eff',
+  borderRadius: '6px',
+  cursor: 'pointer',
+  fontWeight: 600,
+  fontSize: '12px',
+} as const;
+
+const secondaryButtonStyle = {
+  ...reportButtonStyle,
+  background: '#0f3460',
+  color: '#4a7eff',
+  border: '1px solid #4a7eff',
+} as const;
+
+const generatedReportRowStyle = {
+  padding: '16px',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '16px',
+  background: '#16213e',
+  border: '1px solid #0f3460',
+  borderRadius: '12px',
+} as const;
+
 function ReportsPageContent() {
   const [metrics, setMetrics] = useState<Metrics>(EMPTY_METRICS);
   const [reports, setReports] = useState<Report[]>([]);
+  const [leaderboards, setLeaderboards] = useState<LeaderboardReportItem[]>([]);
+  const [featuredLeaderboard, setFeaturedLeaderboard] = useState<LeaderboardReportItem | null>(null);
+  const [featuredStandings, setFeaturedStandings] = useState<LeaderboardStanding[]>([]);
   const [activePeriod, setActivePeriod] = useState('7days');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,19 +232,21 @@ function ReportsPageContent() {
         setIsLoading(true);
         setError(null);
         const headers = { 'X-Admin-Role': 'admin' };
-        const [walletResponse, promoResponse, feedResponse, configResponse] =
+        const [walletResponse, promoResponse, feedResponse, configResponse, leaderboardResponse] =
           await Promise.all([
             fetch('/api/v1/admin/wallet/reconciliation', { headers }),
             fetch('/api/v1/admin/promotions/usage', { headers }),
             fetch('/api/v1/admin/feed-health', { headers }),
             fetch('/api/v1/admin/config', { headers }),
+            fetch('/api/v1/admin/leaderboards', { headers }),
           ]);
 
         if (
           !walletResponse.ok ||
           !promoResponse.ok ||
           !feedResponse.ok ||
-          !configResponse.ok
+          !configResponse.ok ||
+          !leaderboardResponse.ok
         ) {
           throw new Error('Failed to load reports');
         }
@@ -198,6 +255,31 @@ function ReportsPageContent() {
         const promo = await promoResponse.json();
         const feed = await feedResponse.json();
         const config = await configResponse.json();
+        const leaderboardData = await leaderboardResponse.json();
+        const leaderboardItems = Array.isArray(leaderboardData?.items) ? leaderboardData.items : [];
+        setLeaderboards(leaderboardItems);
+
+        const activeBoard =
+          leaderboardItems.find((item: LeaderboardReportItem) => item.status === 'active') ||
+          leaderboardItems[0] ||
+          null;
+        setFeaturedLeaderboard(activeBoard);
+
+        if (activeBoard?.leaderboardId) {
+          const standingsResponse = await fetch(
+            `/api/v1/admin/leaderboards/${encodeURIComponent(activeBoard.leaderboardId)}`,
+            { headers },
+          );
+          if (!standingsResponse.ok) {
+            throw new Error('Failed to load leaderboard analytics');
+          }
+          const standingsData = await standingsResponse.json();
+          setFeaturedStandings(
+            Array.isArray(standingsData?.items) ? standingsData.items.slice(0, 5) : [],
+          );
+        } else {
+          setFeaturedStandings([]);
+        }
 
         const totalRevenue = (wallet.netMovementCents || 0) / 100;
         const totalBets = promo.summary?.totalBets || 0;
@@ -235,6 +317,14 @@ function ReportsPageContent() {
             description: `Provider runtime ${feed.enabled ? 'enabled' : 'disabled'}, unhealthy streams: ${feed.summary?.unhealthyStreams || 0}`,
             type: 'market',
             generatedDate: config.updatedAt || new Date().toISOString(),
+            period: activePeriod,
+          },
+          {
+            id: 'leaderboard-analytics',
+            title: 'Leaderboard Analytics Summary',
+            description: `Boards: ${leaderboardItems.length}, active: ${leaderboardItems.filter((item: LeaderboardReportItem) => item.status === 'active').length}`,
+            type: 'activity',
+            generatedDate: new Date().toISOString(),
             period: activePeriod,
           },
         ]);
@@ -304,27 +394,168 @@ function ReportsPageContent() {
         <ChartPlaceholder>Chart visualization coming soon</ChartPlaceholder>
       </ChartContainer>
 
+      <ChartContainer>
+        <ChartTitle>Leaderboard Analytics</ChartTitle>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '20px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
+              {leaderboards.length.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Boards</div>
+          </div>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
+              {leaderboards.filter((board) => board.status === 'active').length.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Active</div>
+          </div>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
+              {leaderboards.filter((board) => board.status === 'draft').length.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Draft</div>
+          </div>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
+              {leaderboards.filter((board) => board.status === 'closed').length.toLocaleString()}
+            </div>
+            <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Closed</div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            ...leaderboardAnalyticsGridStyle,
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+          }}
+        >
+          <div style={analyticsCardStyle}>
+            <p style={analyticsCardTitleStyle}>Featured Board</p>
+            {featuredLeaderboard ? (
+              <>
+                <p style={{ margin: '0 0 8px 0', color: '#ffffff', fontSize: '18px', fontWeight: '700' }}>
+                  {featuredLeaderboard.name}
+                </p>
+                <p style={{ margin: '0 0 10px 0', color: '#a0a0a0', fontSize: '12px' }}>
+                  {featuredLeaderboard.rankingMode.toUpperCase()} · {featuredLeaderboard.order.toUpperCase()} · {featuredLeaderboard.metricKey}
+                </p>
+                <p style={{ margin: '0', color: '#a0a0a0', fontSize: '12px' }}>
+                  Last recompute: {featuredLeaderboard.lastComputedAt ? new Date(featuredLeaderboard.lastComputedAt).toLocaleString() : 'Never'}
+                </p>
+              </>
+            ) : (
+              <p style={{ margin: 0, color: '#a0a0a0' }}>No leaderboards available</p>
+            )}
+          </div>
+
+          <div style={analyticsCardStyle}>
+            <p style={analyticsCardTitleStyle}>Top Standings</p>
+            {featuredStandings.length > 0 ? (
+              <div style={standingsListStyle}>
+                {featuredStandings.map((entry) => (
+                  <div key={`${entry.playerId}-${entry.rank}`} style={standingRowStyle}>
+                    <div>
+                      <div style={{ color: '#ffffff', fontWeight: '600', fontSize: '13px' }}>
+                        #{entry.rank} {entry.playerId}
+                      </div>
+                      <div style={{ color: '#a0a0a0', fontSize: '11px', marginTop: '4px' }}>
+                        {entry.eventCount} scoring events
+                      </div>
+                    </div>
+                    <div style={{ color: '#4a7eff', fontWeight: '700', fontSize: '15px' }}>
+                      {entry.score.toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ margin: 0, color: '#a0a0a0' }}>No standings recorded yet</p>
+            )}
+          </div>
+        </div>
+      </ChartContainer>
+
       <div style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', marginBottom: '16px' }}>
           Period Filter
         </h2>
-        <FilterBar>
-          <FilterButton $active={activePeriod === '7days'} onClick={() => setActivePeriod('7days')}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: activePeriod === '7days' ? '#4a7eff' : '#0f3460',
+              color: activePeriod === '7days' ? '#1a1a2e' : '#4a7eff',
+              border: `1px solid ${activePeriod === '7days' ? '#4a7eff' : '#0f3460'}`,
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+            onClick={() => setActivePeriod('7days')}
+          >
             Last 7 Days
-          </FilterButton>
-          <FilterButton $active={activePeriod === '30days'} onClick={() => setActivePeriod('30days')}>
+          </button>
+          <button
+            type="button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: activePeriod === '30days' ? '#4a7eff' : '#0f3460',
+              color: activePeriod === '30days' ? '#1a1a2e' : '#4a7eff',
+              border: `1px solid ${activePeriod === '30days' ? '#4a7eff' : '#0f3460'}`,
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+            onClick={() => setActivePeriod('30days')}
+          >
             Last 30 Days
-          </FilterButton>
-          <FilterButton $active={activePeriod === '90days'} onClick={() => setActivePeriod('90days')}>
+          </button>
+          <button
+            type="button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: activePeriod === '90days' ? '#4a7eff' : '#0f3460',
+              color: activePeriod === '90days' ? '#1a1a2e' : '#4a7eff',
+              border: `1px solid ${activePeriod === '90days' ? '#4a7eff' : '#0f3460'}`,
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+            onClick={() => setActivePeriod('90days')}
+          >
             Last 90 Days
-          </FilterButton>
-          <FilterButton $active={activePeriod === 'month'} onClick={() => setActivePeriod('month')}>
+          </button>
+          <button
+            type="button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: activePeriod === 'month' ? '#4a7eff' : '#0f3460',
+              color: activePeriod === 'month' ? '#1a1a2e' : '#4a7eff',
+              border: `1px solid ${activePeriod === 'month' ? '#4a7eff' : '#0f3460'}`,
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+            onClick={() => setActivePeriod('month')}
+          >
             This Month
-          </FilterButton>
-          <FilterButton $active={activePeriod === 'year'} onClick={() => setActivePeriod('year')}>
+          </button>
+          <button
+            type="button"
+            style={{
+              padding: '8px 16px',
+              backgroundColor: activePeriod === 'year' ? '#4a7eff' : '#0f3460',
+              color: activePeriod === 'year' ? '#1a1a2e' : '#4a7eff',
+              border: `1px solid ${activePeriod === 'year' ? '#4a7eff' : '#0f3460'}`,
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+            onClick={() => setActivePeriod('year')}
+          >
             This Year
-          </FilterButton>
-        </FilterBar>
+          </button>
+        </div>
       </div>
 
       <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#ffffff', marginBottom: '16px' }}>
@@ -332,7 +563,16 @@ function ReportsPageContent() {
       </h2>
       <ReportsGrid>
         {AVAILABLE_REPORTS.map((report) => (
-          <ReportCard key={report.type} onClick={() => handleGenerateReport(report.type)}>
+          <div
+            key={report.type}
+            style={{
+              ...reportCardStyle,
+              background: '#16213e',
+              border: '1px solid #0f3460',
+              borderRadius: '12px',
+            }}
+            onClick={() => handleGenerateReport(report.type)}
+          >
             <ReportTitle>{report.title}</ReportTitle>
             <ReportDescription>{report.description}</ReportDescription>
 
@@ -340,12 +580,12 @@ function ReportsPageContent() {
               <ReportDate>{new Date().toLocaleDateString()}</ReportDate>
 
               <ButtonGroup>
-                <Button variant="primary" size="sm">
+                <button type="button" style={reportButtonStyle}>
                   Generate
-                </Button>
+                </button>
               </ButtonGroup>
             </ReportMeta>
-          </ReportCard>
+          </div>
         ))}
       </ReportsGrid>
 
@@ -363,7 +603,13 @@ function ReportsPageContent() {
         ) : reports.length > 0 && !isLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {reports.map((report: Report) => (
-              <Card key={report.id} style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                key={report.id}
+                style={{
+                  ...generatedReportRowStyle,
+                  flexDirection: 'row',
+                }}
+              >
                 <div>
                   <p style={{ margin: '0 0 4px 0', color: '#ffffff', fontWeight: '600' }}>
                     {report.title}
@@ -373,14 +619,22 @@ function ReportsPageContent() {
                   </p>
                 </div>
                 <ButtonGroup>
-                  <Button variant="primary" size="sm" onClick={() => handleViewReport(report.id)}>
+                  <button
+                    type="button"
+                    style={reportButtonStyle}
+                    onClick={() => handleViewReport(report.id)}
+                  >
                     View
-                  </Button>
-                  <Button variant="secondary" size="sm" onClick={() => handleDownloadReport(report.id)}>
+                  </button>
+                  <button
+                    type="button"
+                    style={secondaryButtonStyle}
+                    onClick={() => handleDownloadReport(report.id)}
+                  >
                     Download
-                  </Button>
+                  </button>
                 </ButtonGroup>
-              </Card>
+              </div>
             ))}
           </div>
         ) : (
