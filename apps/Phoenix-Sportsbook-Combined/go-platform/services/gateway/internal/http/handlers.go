@@ -14,6 +14,7 @@ import (
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/domain"
 	"phoenix-revival/gateway/internal/freebets"
+	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/matchtracker"
 	"phoenix-revival/gateway/internal/oddsboosts"
 	"phoenix-revival/gateway/internal/payments"
@@ -31,7 +32,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	riskService := riskintel.NewService(repository, betService)
 	freebetService := freebets.NewService()
 	oddsBoostService := oddsboosts.NewService()
+	loyaltyService := loyalty.NewService()
 	betService.SetPromotionServices(freebetService, oddsBoostService)
+	betService.SetLoyaltyService(loyaltyService)
 	matchTrackerService := matchtracker.NewService()
 	providerRuntime, err := provider.BootstrapRuntimeFromEnv(
 		context.Background(),
@@ -82,6 +85,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerStatsCenterRoutes(mux, repository)
 	registerFreebetRoutes(mux, freebetService)
 	registerOddsBoostRoutes(mux, oddsBoostService)
+	registerLoyaltyRoutes(mux, loyaltyService)
 	registerPersonalizationRoutes(mux, riskService)
 	registerAdminRiskRoutes(mux, "/admin/risk", riskService)
 	registerAdminRiskRoutes(mux, "/api/v1/admin/risk", riskService)

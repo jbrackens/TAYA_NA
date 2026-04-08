@@ -9,6 +9,7 @@ import (
 
 	"phoenix-revival/gateway/internal/domain"
 	"phoenix-revival/gateway/internal/freebets"
+	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/oddsboosts"
 	"phoenix-revival/gateway/internal/wallet"
 	canonicalv1 "phoenix-revival/platform/canonical/v1"
@@ -603,6 +604,56 @@ func TestSettleBetWinCreditsWallet(t *testing.T) {
 	}
 	if settled.WalletBalanceCents != 6000 {
 		t.Fatalf("expected wallet balance 6000 after payout, got %d", settled.WalletBalanceCents)
+	}
+}
+
+func TestSettleBetWinAccruesLoyaltyPoints(t *testing.T) {
+	repository := domain.NewInMemoryReadRepository()
+	walletService := wallet.NewService()
+	_, _ = walletService.Credit(wallet.MutationRequest{UserID: "u-bet-loyalty-1", AmountCents: 5000, IdempotencyKey: "seed"})
+
+	service := NewService(repository, walletService)
+	loyaltyService := loyalty.NewService()
+	service.SetLoyaltyService(loyaltyService)
+
+	placed, err := service.Place(PlaceBetRequest{
+		UserID:         "u-bet-loyalty-1",
+		MarketID:       "m:local:001",
+		SelectionID:    "home",
+		StakeCents:     1200,
+		Odds:           2.0,
+		IdempotencyKey: "settle-loyalty-win",
+	})
+	if err != nil {
+		t.Fatalf("place bet: %v", err)
+	}
+
+	_, err = service.Settle(SettleBetRequest{
+		BetID:              placed.BetID,
+		WinningSelectionID: "home",
+		Reason:             "result confirmed",
+	})
+	if err != nil {
+		t.Fatalf("settle bet: %v", err)
+	}
+
+	account, ok := loyaltyService.GetAccount("u-bet-loyalty-1")
+	if !ok {
+		t.Fatal("expected loyalty account to exist after settlement")
+	}
+	if account.PointsBalance != 12 {
+		t.Fatalf("expected 12 loyalty points from 1200-cent stake, got %d", account.PointsBalance)
+	}
+
+	ledger := loyaltyService.Ledger("u-bet-loyalty-1", 10)
+	if len(ledger) != 1 {
+		t.Fatalf("expected one loyalty ledger entry, got %d", len(ledger))
+	}
+	if ledger[0].SourceType != canonicalv1.LoyaltyLedgerSourceBetSettlement {
+		t.Fatalf("expected settlement source type, got %s", ledger[0].SourceType)
+	}
+	if ledger[0].SourceID != placed.BetID {
+		t.Fatalf("expected loyalty source id %s, got %s", placed.BetID, ledger[0].SourceID)
 	}
 }
 

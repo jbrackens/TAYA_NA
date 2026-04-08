@@ -107,6 +107,17 @@ export {
   type DeleteAccountResponse
 } from './user-client';
 
+// Loyalty client
+export {
+  getLoyaltyAccount,
+  getLoyaltyLedger,
+  getLoyaltyTiers,
+  type LoyaltyAccount,
+  type LoyaltyLedgerEntry,
+  type LoyaltyTier,
+  type LoyaltyTierCode,
+} from './loyalty-client';
+
 // Compliance client
 export {
   setDepositLimits,

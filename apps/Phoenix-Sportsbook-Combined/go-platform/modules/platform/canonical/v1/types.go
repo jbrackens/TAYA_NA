@@ -15,17 +15,19 @@ const (
 type EntityType string
 
 const (
-	EntityFixture      EntityType = "fixture"
-	EntityMarket       EntityType = "market"
-	EntitySelection    EntityType = "selection"
-	EntityBet          EntityType = "bet"
-	EntitySettlement   EntityType = "settlement"
-	EntityCashoutQuote EntityType = "cashout_quote"
-	EntityMatchTracker EntityType = "match_tracker"
-	EntityFixtureStats EntityType = "fixture_stats"
-	EntityFreebet      EntityType = "freebet"
-	EntityOddsBoost    EntityType = "odds_boost"
-	EntityTranslation  EntityType = "translation"
+	EntityFixture        EntityType = "fixture"
+	EntityMarket         EntityType = "market"
+	EntitySelection      EntityType = "selection"
+	EntityBet            EntityType = "bet"
+	EntitySettlement     EntityType = "settlement"
+	EntityCashoutQuote   EntityType = "cashout_quote"
+	EntityMatchTracker   EntityType = "match_tracker"
+	EntityFixtureStats   EntityType = "fixture_stats"
+	EntityFreebet        EntityType = "freebet"
+	EntityOddsBoost      EntityType = "odds_boost"
+	EntityLoyaltyAccount EntityType = "loyalty_account"
+	EntityLoyaltyLedger  EntityType = "loyalty_ledger_entry"
+	EntityTranslation    EntityType = "translation"
 )
 
 type ChangeAction string
@@ -287,6 +289,112 @@ type OddsBoost struct {
 	AcceptReason    string          `json:"acceptReason,omitempty"`
 	CreatedAt       time.Time       `json:"createdAt"`
 	UpdatedAt       time.Time       `json:"updatedAt"`
+}
+
+type LoyaltyTierCode string
+
+const (
+	LoyaltyTierBronze LoyaltyTierCode = "bronze"
+	LoyaltyTierSilver LoyaltyTierCode = "silver"
+	LoyaltyTierGold   LoyaltyTierCode = "gold"
+	LoyaltyTierVIP    LoyaltyTierCode = "vip"
+)
+
+type LoyaltyLedgerEntryType string
+
+const (
+	LoyaltyLedgerEntryAccrual       LoyaltyLedgerEntryType = "accrual"
+	LoyaltyLedgerEntryAdjustment    LoyaltyLedgerEntryType = "adjustment"
+	LoyaltyLedgerEntryReferralBonus LoyaltyLedgerEntryType = "referral_bonus"
+	LoyaltyLedgerEntryPromoBonus    LoyaltyLedgerEntryType = "promo_bonus"
+	LoyaltyLedgerEntryReversal      LoyaltyLedgerEntryType = "reversal"
+	LoyaltyLedgerEntryExpiration    LoyaltyLedgerEntryType = "expiration"
+	LoyaltyLedgerEntryRedemption    LoyaltyLedgerEntryType = "redemption"
+)
+
+type LoyaltyLedgerSourceType string
+
+const (
+	LoyaltyLedgerSourceBetSettlement LoyaltyLedgerSourceType = "bet_settlement"
+	LoyaltyLedgerSourceAdminManual   LoyaltyLedgerSourceType = "admin_manual"
+	LoyaltyLedgerSourceReferral      LoyaltyLedgerSourceType = "referral"
+	LoyaltyLedgerSourceCampaign      LoyaltyLedgerSourceType = "campaign"
+	LoyaltyLedgerSourceSystemRecalc  LoyaltyLedgerSourceType = "system_recalc"
+)
+
+type LoyaltyQualificationState string
+
+const (
+	LoyaltyQualificationPending   LoyaltyQualificationState = "pending"
+	LoyaltyQualificationQualified LoyaltyQualificationState = "qualified"
+	LoyaltyQualificationRejected  LoyaltyQualificationState = "rejected"
+)
+
+type LoyaltyAccount struct {
+	AccountID                string          `json:"accountId"`
+	PlayerID                 string          `json:"playerId"`
+	PointsBalance            int64           `json:"pointsBalance"`
+	PointsEarnedLifetime     int64           `json:"pointsEarnedLifetime"`
+	PointsEarned7D           int64           `json:"pointsEarned7d,omitempty"`
+	PointsEarned30D          int64           `json:"pointsEarned30d,omitempty"`
+	PointsEarnedCurrentMonth int64           `json:"pointsEarnedCurrentMonth,omitempty"`
+	CurrentTier              LoyaltyTierCode `json:"currentTier"`
+	CurrentTierAssignedAt    *time.Time      `json:"currentTierAssignedAt,omitempty"`
+	PointsToNextTier         int64           `json:"pointsToNextTier,omitempty"`
+	NextTier                 LoyaltyTierCode `json:"nextTier,omitempty"`
+	LastAccrualAt            *time.Time      `json:"lastAccrualAt,omitempty"`
+	CreatedAt                time.Time       `json:"createdAt"`
+	UpdatedAt                time.Time       `json:"updatedAt"`
+}
+
+type LoyaltyLedgerEntry struct {
+	EntryID      string                  `json:"entryId"`
+	AccountID    string                  `json:"accountId"`
+	PlayerID     string                  `json:"playerId"`
+	EntryType    LoyaltyLedgerEntryType  `json:"entryType"`
+	EntrySubtype string                  `json:"entrySubtype,omitempty"`
+	SourceType   LoyaltyLedgerSourceType `json:"sourceType"`
+	SourceID     string                  `json:"sourceId,omitempty"`
+	PointsDelta  int64                   `json:"pointsDelta"`
+	BalanceAfter int64                   `json:"balanceAfter"`
+	Metadata     map[string]string       `json:"metadata,omitempty"`
+	CreatedBy    string                  `json:"createdBy,omitempty"`
+	CreatedAt    time.Time               `json:"createdAt"`
+}
+
+type LoyaltyTier struct {
+	TierCode            LoyaltyTierCode   `json:"tierCode"`
+	DisplayName         string            `json:"displayName"`
+	Rank                int               `json:"rank"`
+	MinLifetimePoints   int64             `json:"minLifetimePoints"`
+	MinRolling30DPoints int64             `json:"minRolling30dPoints,omitempty"`
+	Benefits            map[string]string `json:"benefits,omitempty"`
+	Active              bool              `json:"active"`
+}
+
+type LoyaltyAccrualRule struct {
+	RuleID                 string     `json:"ruleId"`
+	Name                   string     `json:"name"`
+	SourceType             string     `json:"sourceType"`
+	Active                 bool       `json:"active"`
+	Multiplier             float64    `json:"multiplier"`
+	MinQualifiedStakeCents int64      `json:"minQualifiedStakeCents,omitempty"`
+	EligibleSportIDs       []string   `json:"eligibleSportIds,omitempty"`
+	EligibleBetTypes       []string   `json:"eligibleBetTypes,omitempty"`
+	MaxPointsPerEvent      int64      `json:"maxPointsPerEvent,omitempty"`
+	EffectiveFrom          *time.Time `json:"effectiveFrom,omitempty"`
+	EffectiveTo            *time.Time `json:"effectiveTo,omitempty"`
+}
+
+type ReferralReward struct {
+	ReferralID         string                    `json:"referralId"`
+	ReferrerPlayerID   string                    `json:"referrerPlayerId"`
+	ReferredPlayerID   string                    `json:"referredPlayerId"`
+	QualificationState LoyaltyQualificationState `json:"qualificationState"`
+	QualifiedAt        *time.Time                `json:"qualifiedAt,omitempty"`
+	LedgerEntryID      string                    `json:"ledgerEntryId,omitempty"`
+	CreatedAt          time.Time                 `json:"createdAt"`
+	UpdatedAt          time.Time                 `json:"updatedAt"`
 }
 
 type Translation struct {

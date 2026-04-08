@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -11,38 +11,79 @@ import {
   Settings,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useToast } from "../components/ToastProvider";
 import { getProfile } from "../lib/api/user-client";
 import { getBalance } from "../lib/api/wallet-client";
+import {
+  getLoyaltyAccount,
+  getLoyaltyLedger,
+  getLoyaltyTiers,
+} from "../lib/api/loyalty-client";
 import type { UserProfile } from "../lib/api/user-client";
 import type { Balance } from "../lib/api/wallet-client";
-import { colors, font, radius, shadow, spacing, surface, text, transition } from "../lib/theme";
+import type {
+  LoyaltyAccount,
+  LoyaltyLedgerEntry,
+  LoyaltyTier,
+} from "../lib/api/loyalty-client";
+import {
+  colors,
+  font,
+  radius,
+  shadow,
+  spacing,
+  surface,
+  text,
+  transition,
+} from "../lib/theme";
 
 export default function AccountPage() {
   const { user } = useAuth();
-  const { error: toastError } = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loyalty, setLoyalty] = useState<LoyaltyAccount | null>(null);
+  const [loyaltyLedger, setLoyaltyLedger] = useState<LoyaltyLedgerEntry[]>([]);
+  const [loyaltyTiers, setLoyaltyTiers] = useState<LoyaltyTier[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      if (!user?.id) return;
-      try {
-        const [prof, bal] = await Promise.all([
-          getProfile(user.id),
-          getBalance(user.id),
-        ]);
-        setProfile(prof);
-        setBalance(bal);
-      } catch (err: unknown) {
-        // Silent error for now
-      } finally {
-        setLoading(false);
+      if (!user?.id) {
+        return;
       }
+
+      const [prof, bal, rewardsAccount, rewardsLedger, rewardsTiers] =
+        await Promise.all([
+          getProfile(user.id).catch(() => null),
+          getBalance(user.id).catch(() => null),
+          getLoyaltyAccount(user.id).catch(() => null),
+          getLoyaltyLedger(user.id, 4).catch(() => []),
+          getLoyaltyTiers().catch(() => []),
+        ]);
+
+      setProfile(prof);
+      setBalance(bal);
+      setLoyalty(rewardsAccount);
+      setLoyaltyLedger(rewardsLedger);
+      setLoyaltyTiers(rewardsTiers);
     };
-    load();
+
+    void load();
   }, [user?.id]);
+
+  const currentTierName =
+    loyaltyTiers.find((tier) => tier.tierCode === loyalty?.currentTier)?.displayName ||
+    normalizeTierName(loyalty?.currentTier) ||
+    "Bronze";
+  const nextTierName =
+    loyaltyTiers.find((tier) => tier.tierCode === loyalty?.nextTier)?.displayName ||
+    normalizeTierName(loyalty?.nextTier);
+  const tierProgressTotal =
+    loyalty && loyalty.pointsToNextTier >= 0
+      ? loyalty.pointsBalance + loyalty.pointsToNextTier
+      : 0;
+  const tierProgressPct =
+    tierProgressTotal > 0 && loyalty
+      ? Math.max(0, Math.min(100, (loyalty.pointsBalance / tierProgressTotal) * 100))
+      : 100;
 
   return (
     <>
@@ -50,10 +91,9 @@ export default function AccountPage() {
       <div className="account-page">
         <div className="account-header">
           <h1>Player Hub</h1>
-          <p>Manage your TAYA NA! profile, wallet, and account controls.</p>
+          <p>Manage your TAYA NA! profile, wallet, rewards, and account controls.</p>
         </div>
 
-        {/* User Info Banner */}
         <div className="account-banner">
           <div className="account-banner-left">
             <div className="account-avatar">
@@ -76,7 +116,86 @@ export default function AccountPage() {
           </div>
         </div>
 
-        {/* Navigation Grid */}
+        <div className="loyalty-panel">
+          <div className="loyalty-panel-header">
+            <div>
+              <div className="loyalty-kicker">Rewards</div>
+              <h2 className="loyalty-title">TAYA NA! Rewards</h2>
+              <p className="loyalty-subtitle">
+                Earn points from settled bets and unlock sharper tier benefits over time.
+              </p>
+            </div>
+            <div className="loyalty-tier-badge">{currentTierName}</div>
+          </div>
+
+          <div className="loyalty-stats">
+            <div className="loyalty-stat-card">
+              <div className="loyalty-stat-label">Points Balance</div>
+              <div className="loyalty-stat-value">{loyalty?.pointsBalance ?? "—"}</div>
+            </div>
+            <div className="loyalty-stat-card">
+              <div className="loyalty-stat-label">Lifetime Earned</div>
+              <div className="loyalty-stat-value">{loyalty?.pointsEarnedLifetime ?? "—"}</div>
+            </div>
+            <div className="loyalty-stat-card">
+              <div className="loyalty-stat-label">Next Tier</div>
+              <div className="loyalty-stat-value loyalty-stat-value--small">
+                {loyalty?.nextTier
+                  ? `${nextTierName || normalizeTierName(loyalty.nextTier)} in ${loyalty.pointsToNextTier}`
+                  : "Top tier unlocked"}
+              </div>
+            </div>
+          </div>
+
+          <div className="loyalty-progress-card">
+            <div className="loyalty-progress-head">
+              <span>Tier Progress</span>
+              <span>
+                {loyalty?.nextTier
+                  ? `${loyalty.pointsToNextTier} points to ${nextTierName || normalizeTierName(loyalty.nextTier)}`
+                  : "You are in the highest rewards tier"}
+              </span>
+            </div>
+            <div className="loyalty-progress-track">
+              <div
+                className="loyalty-progress-fill"
+                style={{ width: `${tierProgressPct}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="loyalty-activity-card">
+            <div className="loyalty-activity-head">
+              <h3>Recent Rewards Activity</h3>
+              <span>{loyaltyLedger.length} recent entries</span>
+            </div>
+            {loyaltyLedger.length > 0 ? (
+              <div className="loyalty-activity-list">
+                {loyaltyLedger.map((entry) => (
+                  <div key={entry.entryId} className="loyalty-activity-row">
+                    <div>
+                      <div className="loyalty-activity-title">
+                        {formatLedgerLabel(entry)}
+                      </div>
+                      <div className="loyalty-activity-meta">
+                        {new Date(entry.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                    <div className="loyalty-activity-points">
+                      {entry.pointsDelta > 0 ? "+" : ""}
+                      {entry.pointsDelta}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="loyalty-empty">
+                Settle your first bet to start building your rewards balance.
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="account-grid">
           <Link href="/account/security" className="account-card">
             <div className="account-card-icon">
@@ -124,11 +243,28 @@ export default function AccountPage() {
             </div>
             <div className="account-card-title">Play Safely</div>
             <div className="account-card-desc">Limits, cool-offs, and self-exclusion tools</div>
-        </Link>
-      </div>
+          </Link>
+        </div>
       </div>
     </>
   );
+}
+
+function normalizeTierName(tier?: string | null): string {
+  if (!tier) {
+    return "";
+  }
+  return tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
+}
+
+function formatLedgerLabel(entry: LoyaltyLedgerEntry): string {
+  if (entry.sourceType === "bet_settlement") {
+    return "Settled bet reward";
+  }
+  if (entry.sourceType === "admin_manual") {
+    return "Manual loyalty adjustment";
+  }
+  return entry.entrySubtype || entry.entryType;
 }
 
 const accountPageStyles = `
@@ -169,6 +305,160 @@ const accountPageStyles = `
     margin-bottom: ${spacing.xs};
   }
   .account-balance-value { font-size: ${font["3xl"]}; font-weight: ${font.extrabold}; color: ${colors.primary}; }
+
+  .loyalty-panel {
+    background: linear-gradient(180deg, rgba(8, 17, 25, 0.96), rgba(10, 23, 15, 0.94));
+    border: 1px solid rgba(57, 255, 20, 0.18);
+    border-radius: ${radius["2xl"]};
+    box-shadow: ${shadow.glowLg};
+    padding: ${spacing["2xl"]};
+    margin-bottom: ${spacing["3xl"]};
+  }
+  .loyalty-panel-header {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.lg};
+    align-items: flex-start;
+    margin-bottom: ${spacing.xl};
+  }
+  @media (max-width: 640px) {
+    .loyalty-panel-header { flex-direction: column; }
+  }
+  .loyalty-kicker {
+    color: ${text.eyebrow.color};
+    font-size: ${text.eyebrow.fontSize};
+    font-weight: ${text.eyebrow.fontWeight};
+    letter-spacing: ${text.eyebrow.letterSpacing};
+    text-transform: ${text.eyebrow.textTransform};
+    margin-bottom: ${spacing.xs};
+  }
+  .loyalty-title {
+    margin: 0 0 ${spacing.xs};
+    font-size: ${font["3xl"]};
+    font-weight: ${font.extrabold};
+    color: ${colors.textDefault};
+  }
+  .loyalty-subtitle {
+    margin: 0;
+    color: ${colors.textSecondary};
+    font-size: ${font.md};
+  }
+  .loyalty-tier-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 112px;
+    padding: ${spacing.sm} ${spacing.md};
+    border-radius: 999px;
+    background: rgba(57, 255, 20, 0.12);
+    border: 1px solid rgba(57, 255, 20, 0.28);
+    color: ${colors.primary};
+    font-size: ${font.sm};
+    font-weight: ${font.bold};
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .loyalty-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: ${spacing.md};
+    margin-bottom: ${spacing.lg};
+  }
+  .loyalty-stat-card, .loyalty-progress-card, .loyalty-activity-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: ${radius["2xl"]};
+    padding: ${spacing.lg};
+  }
+  .loyalty-stat-label {
+    color: ${colors.textSecondary};
+    font-size: ${font.sm};
+    margin-bottom: ${spacing.sm};
+  }
+  .loyalty-stat-value {
+    color: ${colors.textDefault};
+    font-size: ${font["3xl"]};
+    font-weight: ${font.extrabold};
+  }
+  .loyalty-stat-value--small {
+    font-size: ${font.lg};
+    line-height: 1.35;
+  }
+  .loyalty-progress-card { margin-bottom: ${spacing.lg}; }
+  .loyalty-progress-head {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.md};
+    color: ${colors.textSecondary};
+    font-size: ${font.sm};
+    margin-bottom: ${spacing.md};
+  }
+  @media (max-width: 640px) {
+    .loyalty-progress-head { flex-direction: column; }
+  }
+  .loyalty-progress-track {
+    position: relative;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .loyalty-progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #39ff14, #9cff7a);
+    box-shadow: 0 0 16px rgba(57, 255, 20, 0.35);
+  }
+  .loyalty-activity-head {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.md};
+    align-items: center;
+    margin-bottom: ${spacing.md};
+  }
+  .loyalty-activity-head h3 {
+    margin: 0;
+    font-size: ${font.lg};
+    color: ${colors.textDefault};
+  }
+  .loyalty-activity-head span {
+    color: ${colors.textSecondary};
+    font-size: ${font.sm};
+  }
+  .loyalty-activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: ${spacing.sm};
+  }
+  .loyalty-activity-row {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.md};
+    align-items: center;
+    padding: ${spacing.md};
+    border-radius: ${radius.xl};
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .loyalty-activity-title {
+    color: ${colors.textDefault};
+    font-size: ${font.md};
+    font-weight: ${font.semibold};
+    margin-bottom: ${spacing.xs};
+  }
+  .loyalty-activity-meta {
+    color: ${colors.textSecondary};
+    font-size: ${font.sm};
+  }
+  .loyalty-activity-points {
+    color: ${colors.primary};
+    font-size: ${font.lg};
+    font-weight: ${font.extrabold};
+  }
+  .loyalty-empty {
+    color: ${colors.textSecondary};
+    font-size: ${font.md};
+  }
 
   .account-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

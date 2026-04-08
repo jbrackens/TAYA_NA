@@ -21,6 +21,7 @@ import (
 
 	"phoenix-revival/gateway/internal/domain"
 	"phoenix-revival/gateway/internal/freebets"
+	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/oddsboosts"
 	"phoenix-revival/gateway/internal/wallet"
 )
@@ -333,6 +334,7 @@ type Service struct {
 	wallet     *wallet.Service
 	freebets   *freebets.Service
 	oddsBoosts *oddsboosts.Service
+	loyalty    *loyalty.Service
 
 	mu                       sync.RWMutex
 	betsByID                 map[string]Bet
@@ -375,6 +377,12 @@ func (s *Service) SetPromotionServices(freebetService *freebets.Service, oddsBoo
 	defer s.mu.Unlock()
 	s.freebets = freebetService
 	s.oddsBoosts = oddsBoostService
+}
+
+func (s *Service) SetLoyaltyService(loyaltyService *loyalty.Service) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.loyalty = loyaltyService
 }
 
 func NewService(repository domain.ReadRepository, walletService *wallet.Service) *Service {
@@ -1296,6 +1304,22 @@ func (s *Service) applySettlementTransition(bet Bet, request SettleBetRequest) (
 
 	meta.NextPayoutCents = targetPayoutCents
 	meta.AdjustmentCents = adjustmentCents
+
+	if s.loyalty != nil && !meta.Resettled {
+		_, _, err := s.loyalty.AccrueSettledBet(loyalty.SettlementAccrualRequest{
+			PlayerID:         bet.UserID,
+			BetID:            bet.BetID,
+			SettlementStatus: bet.Status,
+			StakeCents:       bet.StakeCents,
+			IdempotencyKey:   "loyalty:bet_settlement:" + bet.BetID,
+			Reason:           settlementReasonOrDefault(request.Reason, "bet settlement loyalty accrual"),
+			SettledAt:        s.now().UTC(),
+		})
+		if err != nil {
+			return Bet{}, settlementTransitionMeta{}, err
+		}
+	}
+
 	return bet, meta, nil
 }
 
