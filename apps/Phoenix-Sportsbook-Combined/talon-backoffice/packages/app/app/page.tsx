@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   useState,
   useEffect,
@@ -17,6 +18,7 @@ import { selectMovements, clearMovement } from "./lib/store/marketSlice";
 import { selectOddsFormat } from "./lib/store/settingsSlice";
 import { formatOdds } from "./lib/utils/odds";
 import { useAuth } from "./hooks/useAuth";
+import { getLeaderboards } from "./lib/api/leaderboards-client";
 
 const LandingPage = dynamic(() => import("./components/LandingPage"));
 
@@ -71,6 +73,16 @@ interface Sport {
   name: string;
   abbreviation: string;
   displayToPunters: boolean;
+}
+
+interface LeaderboardSummary {
+  leaderboardId: string;
+  name: string;
+  description?: string;
+  metricKey: string;
+  rankingMode: "sum" | "min" | "max";
+  order: "asc" | "desc";
+  status: "draft" | "active" | "closed";
 }
 
 const SPORT_EMOJIS: Record<string, string> = {
@@ -162,6 +174,7 @@ export default function HomePage() {
 function AuthenticatedHome() {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
+  const [leaderboards, setLeaderboards] = useState<LeaderboardSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeSport, setActiveSport] = useState("all");
@@ -234,9 +247,10 @@ function AuthenticatedHome() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [fixturesRes, sportsRes] = await Promise.all([
+        const [fixturesRes, sportsRes, leaderboardItems] = await Promise.all([
           fetch("/api/v1/fixtures"),
           fetch("/api/v1/sports"),
+          getLeaderboards().catch(() => []),
         ]);
         if (fixturesRes.ok) {
           const data = await fixturesRes.json();
@@ -248,6 +262,9 @@ function AuthenticatedHome() {
           const list = data.data || data.sports || data;
           setSports(Array.isArray(list) ? list : []);
         }
+        setLeaderboards(
+          Array.isArray(leaderboardItems) ? leaderboardItems.slice(0, 3) : [],
+        );
       } catch (err) {
         setError("Could not connect to API. Is the backend running?");
       } finally {
@@ -317,9 +334,9 @@ function AuthenticatedHome() {
       )
       .slice(0, 8);
 
-    const topPicks = filteredFixtures
+    const topPicks = [...filteredFixtures]
       .filter((fixture) => getPrimaryMarket(fixture)?.selections?.length)
-      .toSorted((left, right) => {
+      .sort((left: Fixture, right: Fixture) => {
         if (left.isLive !== right.isLive) {
           return left.isLive ? -1 : 1;
         }
@@ -477,6 +494,36 @@ function AuthenticatedHome() {
           </div>
         </div>
 
+        {leaderboards.length > 0 && (
+          <div className="leaderboard-strip">
+            <div className="leaderboard-strip-head">
+              <div>
+                <div className="discovery-kicker">Competition Pulse</div>
+                <div className="leaderboard-strip-title">
+                  Live leaderboard races running beside the board
+                </div>
+              </div>
+              <Link className="leaderboard-strip-link" href="/leaderboards">
+                View all
+              </Link>
+            </div>
+            <div className="leaderboard-strip-list">
+              {leaderboards.map((board) => (
+                <Link
+                  key={board.leaderboardId}
+                  href={`/leaderboards/${board.leaderboardId}`}
+                  className="leaderboard-pill"
+                >
+                  <div className="leaderboard-pill-title">{board.name}</div>
+                  <div className="leaderboard-pill-meta">
+                    {board.rankingMode.toUpperCase()} · {board.order.toUpperCase()} · {board.metricKey}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="sport-pills-shell">
           <div className="sport-pills">
             <button
@@ -608,7 +655,7 @@ function AuthenticatedHome() {
         )}
 
         {!loading &&
-          filteredFixtures.map((fixture) => {
+          filteredFixtures.map((fixture: Fixture) => {
             const teams = getTeams(fixture.competitors);
             const mainMarket = fixture.markets?.[0];
             return (
