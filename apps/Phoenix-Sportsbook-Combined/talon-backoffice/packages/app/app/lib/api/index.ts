@@ -118,6 +118,18 @@ export {
   type LoyaltyTierCode,
 } from './loyalty-client';
 
+// Leaderboards client
+export {
+  getLeaderboards,
+  getLeaderboard,
+  getLeaderboardEntries,
+  type LeaderboardDefinition,
+  type LeaderboardStanding,
+  type LeaderboardRankingMode,
+  type LeaderboardOrder,
+  type LeaderboardStatus,
+} from './leaderboards-client';
+
 // Compliance client
 export {
   setDepositLimits,

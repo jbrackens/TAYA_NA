@@ -6,6 +6,7 @@ import {
   Bell,
   CreditCard,
   HeartHandshake,
+  Medal,
   Lock,
   ReceiptText,
   Settings,
@@ -243,6 +244,14 @@ export default function AccountPage() {
             </div>
             <div className="account-card-title">Play Safely</div>
             <div className="account-card-desc">Limits, cool-offs, and self-exclusion tools</div>
+          </Link>
+
+          <Link href="/leaderboards" className="account-card">
+            <div className="account-card-icon">
+              <Medal size={28} strokeWidth={2} />
+            </div>
+            <div className="account-card-title">Leaderboards</div>
+            <div className="account-card-desc">Follow live competition boards and rank ladders</div>
           </Link>
         </div>
       </div>

@@ -8,6 +8,7 @@ const navItems = [
   { href: '/risk-management', label: 'Risk Management', icon: '🛡️' },
   { href: '/users', label: 'Users', icon: '👥' },
   { href: '/loyalty', label: 'Loyalty', icon: '🏆' },
+  { href: '/leaderboards', label: 'Leaderboards', icon: '🥇' },
   { href: '/audit-logs', label: 'Audit Logs', icon: '📋' },
   { href: '/reports', label: 'Reports', icon: '📄' },
 ];
