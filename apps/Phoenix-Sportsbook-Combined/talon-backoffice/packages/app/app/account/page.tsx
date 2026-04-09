@@ -54,6 +54,8 @@ export default function AccountPage() {
   const [loyaltyTiers, setLoyaltyTiers] = useState<LoyaltyTier[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardDefinition[]>([]);
   const [featuredStandings, setFeaturedStandings] = useState<LeaderboardStanding[]>([]);
+  const [featuredTotalCount, setFeaturedTotalCount] = useState(0);
+  const [viewerStanding, setViewerStanding] = useState<LeaderboardStanding | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -89,12 +91,16 @@ export default function AccountPage() {
       setLeaderboards(nextBoards);
 
       if (nextBoards[0]?.leaderboardId) {
-        const standings = await getLeaderboardEntries(nextBoards[0].leaderboardId, 3, 0).catch(
+        const standings = await getLeaderboardEntries(nextBoards[0].leaderboardId, 3, 0, user.id).catch(
           () => null,
         );
         setFeaturedStandings(Array.isArray(standings?.items) ? standings.items : []);
+        setFeaturedTotalCount(standings?.totalCount || 0);
+        setViewerStanding(standings?.viewerEntry || null);
       } else {
         setFeaturedStandings([]);
+        setFeaturedTotalCount(0);
+        setViewerStanding(null);
       }
     };
 
@@ -140,15 +146,22 @@ export default function AccountPage() {
               </div>
             </div>
           </div>
-          <div className="account-balance">
-            <div className="account-balance-label">Available Balance</div>
-            <div className="account-balance-value">
-              ${balance?.availableBalance?.toFixed(2) || "—"}
+          <div style={{ display: "flex", alignItems: "center", gap: spacing.lg }}>
+            {loyalty ? (
+              <a href="#loyalty-panel" className="account-rewards-chip">
+                {loyalty.pointsBalance.toLocaleString()} pts
+              </a>
+            ) : null}
+            <div className="account-balance">
+              <div className="account-balance-label">Available Balance</div>
+              <div className="account-balance-value">
+                ${balance?.availableBalance?.toFixed(2) || "—"}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="loyalty-panel">
+        <div id="loyalty-panel" className="loyalty-panel">
           <div className="loyalty-panel-header">
             <div>
               <div className="loyalty-kicker">Rewards</div>
@@ -176,6 +189,14 @@ export default function AccountPage() {
                   ? `${nextTierName || normalizeTierName(loyalty.nextTier)} in ${loyalty.pointsToNextTier}`
                   : "Top tier unlocked"}
               </div>
+            </div>
+            <div className="loyalty-stat-card">
+              <div className="loyalty-stat-label">7 Day</div>
+              <div className="loyalty-stat-value">{loyalty?.pointsEarned7D ?? "—"}</div>
+            </div>
+            <div className="loyalty-stat-card">
+              <div className="loyalty-stat-label">This Month</div>
+              <div className="loyalty-stat-value">{loyalty?.pointsEarnedCurrentMonth ?? "—"}</div>
             </div>
           </div>
 
@@ -237,6 +258,32 @@ export default function AccountPage() {
                 Open Boards
               </Link>
             </div>
+
+            {viewerStanding ? (() => {
+              const percentile = featuredTotalCount > 1
+                ? Math.round(((featuredTotalCount - viewerStanding.rank) / (featuredTotalCount - 1)) * 100)
+                : 100;
+              const boardName = leaderboards[0]?.name || "Featured Board";
+              return (
+                <div className="competition-viewer-card competition-viewer-card--glow">
+                  <div>
+                    <div className="competition-viewer-kicker">Your Rank &middot; {boardName}</div>
+                    <div className="competition-viewer-title">#{viewerStanding.rank} on this board</div>
+                    <div className="competition-viewer-copy">
+                      {viewerStanding.eventCount} scoring events, {viewerStanding.score.toLocaleString()} total.
+                    </div>
+                    <div className="competition-viewer-percentile">
+                      {viewerStanding.rank === 1
+                        ? "Leading the board!"
+                        : `Top ${100 - percentile}% — ahead of ${percentile}% of competitors`}
+                    </div>
+                  </div>
+                  <div className="competition-viewer-score">
+                    {viewerStanding.score.toLocaleString()}
+                  </div>
+                </div>
+              );
+            })() : null}
 
             {leaderboards.length > 0 ? (
               <div className="competition-board-list">
@@ -379,6 +426,24 @@ const accountPageStyles = `
   .account-username { font-size: ${font.lg}; font-weight: ${font.bold}; color: ${colors.textPrimary}; }
   .account-email { font-size: ${font.md}; color: ${colors.textSecondary}; margin-top: ${spacing.xs}; }
 
+  .account-rewards-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: ${spacing.sm} ${spacing.md};
+    border-radius: 999px;
+    background: rgba(57, 255, 20, 0.1);
+    border: 1px solid rgba(57, 255, 20, 0.24);
+    color: ${colors.primary};
+    font-size: ${font.sm};
+    font-weight: ${font.bold};
+    text-decoration: none;
+    white-space: nowrap;
+    transition: ${transition.normal};
+  }
+  .account-rewards-chip:hover {
+    background: rgba(57, 255, 20, 0.18);
+  }
+
   .account-balance { text-align: right; }
   @media (max-width: 640px) { .account-balance { text-align: left; } }
   .account-balance-label {
@@ -479,6 +544,53 @@ const accountPageStyles = `
     font-size: ${font.sm};
     font-weight: ${font.bold};
     text-decoration: none;
+  }
+  .competition-viewer-card {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.lg};
+    align-items: center;
+    padding: ${spacing.lg};
+    border-radius: ${radius.xl};
+    background: rgba(57,255,20,0.08);
+    border: 1px solid rgba(57,255,20,0.18);
+    margin-bottom: ${spacing.md};
+  }
+  .competition-viewer-kicker {
+    color: ${text.eyebrow.color};
+    font-size: 11px;
+    font-weight: ${font.bold};
+    letter-spacing: ${text.eyebrow.letterSpacing};
+    text-transform: ${text.eyebrow.textTransform};
+    margin-bottom: ${spacing.xs};
+  }
+  .competition-viewer-title {
+    color: ${colors.textDefault};
+    font-size: ${font.lg};
+    font-weight: ${font.extrabold};
+    margin-bottom: ${spacing.xs};
+  }
+  .competition-viewer-copy {
+    color: ${colors.textSecondary};
+    font-size: ${font.sm};
+  }
+  .competition-viewer-score {
+    color: ${colors.primary};
+    font-size: ${font["3xl"]};
+    font-weight: ${font.extrabold};
+  }
+  .competition-viewer-percentile {
+    color: ${colors.primary};
+    font-size: ${font.sm};
+    font-weight: ${font.semibold};
+    margin-top: ${spacing.sm};
+  }
+  @keyframes competition-glow-pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(57, 255, 20, 0.15); }
+    50% { box-shadow: 0 0 24px rgba(57, 255, 20, 0.35); }
+  }
+  .competition-viewer-card--glow {
+    animation: competition-glow-pulse 2.5s ease-in-out infinite;
   }
   .competition-board-list {
     display: flex;

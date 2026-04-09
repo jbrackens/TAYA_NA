@@ -261,6 +261,31 @@ Manual adjustment requirements:
 ### Admin APIs
 - `GET /api/v1/admin/loyalty/accounts`
 - `GET /api/v1/admin/loyalty/accounts/:id`
+- `POST /api/v1/admin/loyalty/adjustments`
+- `GET /api/v1/admin/loyalty/config`
+- `PUT /api/v1/admin/loyalty/tiers/:tierCode`
+- `PUT /api/v1/admin/loyalty/rules/:ruleId`
+
+## Shipped MVP Notes
+
+The current sportsbook-native MVP now includes:
+
+- seeded loyalty accounts and ledger activity for local QA
+- player hub rewards summary and recent activity
+- player bet-history `points earned` callouts for settled bets
+- backoffice loyalty account list and account detail
+- backoffice loyalty settings UI for tier thresholds and accrual rules
+
+Still intentionally deferred:
+
+- redemption flows
+- campaign shops
+- automatic rolling-window decay logic
+- full audit-log integration for configuration edits
+
+### Admin APIs
+- `GET /api/v1/admin/loyalty/accounts`
+- `GET /api/v1/admin/loyalty/accounts/:id`
 - `GET /api/v1/admin/loyalty/ledger`
 - `POST /api/v1/admin/loyalty/adjustments`
 - `GET /api/v1/admin/loyalty/rules`

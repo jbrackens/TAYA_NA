@@ -4,17 +4,20 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
-  getLeaderboard,
+  getLeaderboardForUser,
   getLeaderboardEntries,
   type LeaderboardDefinition,
   type LeaderboardStanding,
 } from '../../lib/api/leaderboards-client';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function LeaderboardDetailPage() {
   const params = useParams();
+  const { user } = useAuth();
   const leaderboardId = params?.id as string;
   const [leaderboard, setLeaderboard] = useState<LeaderboardDefinition | null>(null);
   const [items, setItems] = useState<LeaderboardStanding[]>([]);
+  const [viewerEntry, setViewerEntry] = useState<LeaderboardStanding | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,11 +28,12 @@ export default function LeaderboardDetailPage() {
       setError(null);
       try {
         const [detail, entries] = await Promise.all([
-          getLeaderboard(leaderboardId),
-          getLeaderboardEntries(leaderboardId, 50, 0),
+          getLeaderboardForUser(leaderboardId, user?.id),
+          getLeaderboardEntries(leaderboardId, 50, 0, user?.id),
         ]);
         setLeaderboard(detail.leaderboard);
         setItems(entries.items || []);
+        setViewerEntry(entries.viewerEntry || detail.viewerEntry || null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
       } finally {
@@ -38,7 +42,7 @@ export default function LeaderboardDetailPage() {
     };
 
     void load();
-  }, [leaderboardId]);
+  }, [leaderboardId, user?.id]);
 
   return (
     <>
@@ -64,6 +68,39 @@ export default function LeaderboardDetailPage() {
               </div>
             ) : null}
           </div>
+
+          {leaderboard?.windowStartsAt && leaderboard?.windowEndsAt ? (
+            <div className="leaderboard-window-line">
+              Competition Window: {new Date(leaderboard.windowStartsAt).toLocaleDateString()} &ndash; {new Date(leaderboard.windowEndsAt).toLocaleDateString()}
+            </div>
+          ) : null}
+
+          {leaderboard?.prizeSummary ? (
+            <div className="leaderboard-prize-callout">
+              <div className="leaderboard-prize-kicker">Prize Pool</div>
+              <div className="leaderboard-prize-text">{leaderboard.prizeSummary}</div>
+            </div>
+          ) : null}
+
+          {viewerEntry ? (
+            <div className={`leaderboard-viewer-card${viewerEntry.rank <= 3 ? ` leaderboard-viewer-card--rank${viewerEntry.rank}` : ''}`}>
+              <div>
+                <div className="leaderboard-viewer-kicker">Your Position &middot; {leaderboard?.name || 'Leaderboard'}</div>
+                <div className="leaderboard-viewer-title">#{viewerEntry.rank} on this board</div>
+                <div className="leaderboard-viewer-copy">
+                  {viewerEntry.eventCount} scoring events with a total of {viewerEntry.score.toLocaleString()}
+                  {viewerEntry.lastEventAt
+                    ? ` · Last activity: ${new Date(viewerEntry.lastEventAt).toLocaleDateString()}`
+                    : ''}
+                </div>
+              </div>
+              <div className="leaderboard-viewer-score">{viewerEntry.score.toLocaleString()}</div>
+            </div>
+          ) : user ? (
+            <div className="leaderboard-detail-state">
+              You are not ranked on this board yet. Qualifying bets and referral actions will move you onto the ladder.
+            </div>
+          ) : null}
 
           {error ? (
             <div className="leaderboard-detail-state">{error}</div>
@@ -151,10 +188,85 @@ const detailStyles = `
     font-size: 12px;
     font-weight: 700;
   }
+  .leaderboard-window-line {
+    color: #d3d3d3;
+    font-size: 13px;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .leaderboard-prize-callout {
+    margin-bottom: 18px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(57,255,20,0.08), rgba(12,18,38,0.9));
+    border: 1px solid rgba(57,255,20,0.2);
+  }
+  .leaderboard-prize-kicker {
+    color: #39ff14;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .leaderboard-prize-text {
+    color: #f8fafc;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .leaderboard-viewer-card--rank1 {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(12,18,38,0.9));
+  }
+  .leaderboard-viewer-card--rank2 {
+    border-color: #c0c0c0;
+    background: linear-gradient(135deg, rgba(192,192,192,0.1), rgba(12,18,38,0.9));
+  }
+  .leaderboard-viewer-card--rank3 {
+    border-color: #cd7f32;
+    background: linear-gradient(135deg, rgba(205,127,50,0.1), rgba(12,18,38,0.9));
+  }
   .leaderboard-standings {
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+  .leaderboard-viewer-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(57,255,20,0.1), rgba(12,18,38,0.9));
+    border: 1px solid rgba(57, 255, 20, 0.22);
+  }
+  .leaderboard-viewer-kicker {
+    color: #39ff14;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .leaderboard-viewer-title {
+    color: #f8fafc;
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .leaderboard-viewer-copy {
+    color: #d3d3d3;
+    font-size: 13px;
+  }
+  .leaderboard-viewer-score {
+    color: #39ff14;
+    font-size: 28px;
+    font-weight: 900;
   }
   .leaderboard-standing-row {
     display: flex;
@@ -195,7 +307,8 @@ const detailStyles = `
       padding: 18px;
     }
     .leaderboard-detail-head,
-    .leaderboard-standing-row {
+    .leaderboard-standing-row,
+    .leaderboard-viewer-card {
       flex-direction: column;
       align-items: flex-start;
     }

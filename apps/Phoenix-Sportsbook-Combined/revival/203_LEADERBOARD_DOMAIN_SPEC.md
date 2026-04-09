@@ -140,6 +140,8 @@ Ties should break deterministically:
 - `GET /api/v1/leaderboards/:id`
 - `GET /api/v1/leaderboards/:id/entries`
 
+Read APIs may optionally accept `userId` and return a `viewerEntry` payload so the player app can render "your rank" without downloading full standings.
+
 ### Admin
 
 - `GET /api/v1/admin/leaderboards`
@@ -171,3 +173,19 @@ Future storage can move to SQL tables:
 - bet settlement, referrals, or promo systems can emit events into leaderboards later
 - leaderboard read APIs should stay aggregate-first so UI never needs to understand event math
 - leaderboard events and loyalty ledger entries must remain separate domains
+
+## Shipped MVP Notes
+
+The current implementation now includes:
+
+- seeded weekly profit, weekly stake, and qualified referral boards
+- settlement-fed and referral-fed scoring from sportsbook-native services
+- player leaderboard hub, detail view, and home/account highlights
+- personalized `viewerEntry` rank surfaces in player flows
+- backoffice create, edit, record-event, recompute, and reports analytics views
+
+Still deferred:
+
+- prize payout automation
+- scheduled recompute jobs
+- challenge templates for prediction contests

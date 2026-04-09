@@ -254,3 +254,61 @@ func TestReferralQualificationFeedsLeaderboardScore(t *testing.T) {
 		t.Fatal("expected referrer to appear in referral leaderboard standings")
 	}
 }
+
+func TestUpdateTierRecalculatesAccountProgress(t *testing.T) {
+	svc := NewService()
+
+	tiers, err := svc.UpdateTier(TierUpdateRequest{
+		TierCode:          canonicalv1.LoyaltyTierSilver,
+		DisplayName:       "Silver",
+		Rank:              2,
+		MinLifetimePoints: 700,
+		Benefits:          map[string]string{"cashoutBoost": "priority"},
+		Active:            true,
+	})
+	if err != nil {
+		t.Fatalf("update tier: %v", err)
+	}
+	if len(tiers) < 4 {
+		t.Fatalf("expected seeded tiers to remain available, got %d", len(tiers))
+	}
+
+	account, ok := svc.GetAccount("u-2")
+	if !ok {
+		t.Fatal("expected seeded account u-2")
+	}
+	if account.CurrentTier != canonicalv1.LoyaltyTierSilver {
+		t.Fatalf("expected u-2 to promote into silver after threshold update, got %s", account.CurrentTier)
+	}
+}
+
+func TestUpdateRuleChangesFutureAccrualMultiplier(t *testing.T) {
+	svc := NewService()
+
+	_, err := svc.UpdateRule(RuleUpdateRequest{
+		RuleID:                 "rule:loyalty:default-settlement",
+		Name:                   "Default settled bet accrual",
+		SourceType:             string(canonicalv1.LoyaltyLedgerSourceBetSettlement),
+		Active:                 true,
+		Multiplier:             2.0,
+		MinQualifiedStakeCents: 100,
+	})
+	if err != nil {
+		t.Fatalf("update rule: %v", err)
+	}
+
+	entry, _, err := svc.AccrueSettledBet(SettlementAccrualRequest{
+		PlayerID:         "u-rule-1",
+		BetID:            "bet:rule:001",
+		SettlementStatus: "settled_won",
+		StakeCents:       1000,
+		IdempotencyKey:   "loyalty:bet_settlement:bet:rule:001:v1",
+		SettledAt:        time.Date(2026, 4, 8, 19, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		t.Fatalf("accrue after rule update: %v", err)
+	}
+	if entry.PointsDelta != 20 {
+		t.Fatalf("expected pointsDelta 20 after multiplier update, got %d", entry.PointsDelta)
+	}
+}

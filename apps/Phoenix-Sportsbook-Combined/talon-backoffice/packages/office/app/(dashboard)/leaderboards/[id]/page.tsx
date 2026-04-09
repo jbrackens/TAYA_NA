@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { ChangeEvent, CSSProperties, FormEvent, useEffect, useState } from 'react';
+import { ChangeEvent, CSSProperties, FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ErrorBoundary, ErrorState, LoadingSpinner } from '../../../components/shared';
 
@@ -18,6 +18,8 @@ interface LeaderboardDefinition {
   status: string;
   currency?: string;
   prizeSummary?: string;
+  windowStartsAt?: string;
+  windowEndsAt?: string;
   lastComputedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -32,6 +34,31 @@ interface LeaderboardStanding {
   lastEventAt?: string;
 }
 
+/** Convert an ISO/RFC3339 string to datetime-local input value (YYYY-MM-DDTHH:mm) */
+function toDatetimeLocal(iso: string | undefined): string {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  } catch {
+    return '';
+  }
+}
+
+/** Convert a datetime-local value (YYYY-MM-DDTHH:mm) to RFC3339 */
+function toRFC3339(dtLocal: string): string {
+  if (!dtLocal) return '';
+  try {
+    const d = new Date(dtLocal);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toISOString();
+  } catch {
+    return '';
+  }
+}
+
 function LeaderboardDetailPageContent() {
   const params = useParams();
   const router = useRouter();
@@ -44,6 +71,7 @@ function LeaderboardDetailPageContent() {
   const [isRecomputing, setIsRecomputing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [form, setForm] = useState({
     slug: '',
     name: '',
@@ -55,6 +83,8 @@ function LeaderboardDetailPageContent() {
     status: 'active',
     currency: 'USD',
     prizeSummary: '',
+    windowStartsAt: '',
+    windowEndsAt: '',
   });
   const [eventForm, setEventForm] = useState({
     playerId: '',
@@ -62,6 +92,22 @@ function LeaderboardDetailPageContent() {
     sourceType: 'admin_seed',
     sourceId: '',
   });
+
+  const showFeedback = useCallback((message: string) => {
+    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    const ts = new Date().toLocaleTimeString();
+    setFeedback(`${message} (${ts})`);
+    feedbackTimerRef.current = setTimeout(() => {
+      setFeedback(null);
+      feedbackTimerRef.current = null;
+    }, 4000);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+    };
+  }, []);
 
   const loadDetail = async () => {
     setIsLoading(true);
@@ -89,9 +135,11 @@ function LeaderboardDetailPageContent() {
           status: nextDefinition.status || 'active',
           currency: nextDefinition.currency || 'USD',
           prizeSummary: nextDefinition.prizeSummary || '',
+          windowStartsAt: toDatetimeLocal(nextDefinition.windowStartsAt),
+          windowEndsAt: toDatetimeLocal(nextDefinition.windowEndsAt),
         });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
     } finally {
       setIsLoading(false);
@@ -101,6 +149,14 @@ function LeaderboardDetailPageContent() {
   useEffect(() => {
     void loadDetail();
   }, [leaderboardId]);
+
+  const buildSavePayload = (statusOverride?: string) => ({
+    ...form,
+    status: statusOverride || form.status,
+    windowStartsAt: toRFC3339(form.windowStartsAt) || undefined,
+    windowEndsAt: toRFC3339(form.windowEndsAt) || undefined,
+    createdBy: 'office-admin',
+  });
 
   const saveDefinition = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -114,19 +170,43 @@ function LeaderboardDetailPageContent() {
           'Content-Type': 'application/json',
           'X-Admin-Role': 'admin',
         },
-        body: JSON.stringify({
-          ...form,
-          createdBy: 'office-admin',
-        }),
+        body: JSON.stringify(buildSavePayload()),
       });
       if (!response.ok) {
         throw new Error('Failed to save leaderboard');
       }
       const updated = await response.json();
       setDefinition(updated);
-      setFeedback('Leaderboard settings saved.');
-    } catch (err) {
+      showFeedback('Leaderboard settings saved.');
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save leaderboard');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const setStatusAndSave = async (targetStatus: string) => {
+    setError(null);
+    setFeedback(null);
+    setIsSaving(true);
+    try {
+      const response = await fetch(`/api/v1/admin/leaderboards/${encodeURIComponent(leaderboardId)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Role': 'admin',
+        },
+        body: JSON.stringify(buildSavePayload(targetStatus)),
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to set status to ${targetStatus}`);
+      }
+      const updated = await response.json();
+      setDefinition(updated);
+      setForm((current) => ({ ...current, status: targetStatus }));
+      showFeedback(`Status changed to ${targetStatus.toUpperCase()}.`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : `Failed to set status to ${targetStatus}`);
     } finally {
       setIsSaving(false);
     }
@@ -160,9 +240,9 @@ function LeaderboardDetailPageContent() {
       if (!response.ok) {
         throw new Error('Failed to record leaderboard event');
       }
-      setFeedback('Score event recorded. Recompute the board to refresh standings.');
+      showFeedback('Score event recorded. Recompute the board to refresh standings.');
       setEventForm({ playerId: '', score: '0', sourceType: 'admin_seed', sourceId: '' });
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to record leaderboard event');
     } finally {
       setIsRecording(false);
@@ -184,13 +264,21 @@ function LeaderboardDetailPageContent() {
       const data = await response.json();
       setDefinition(data?.leaderboard || definition);
       setStandings(Array.isArray(data?.items) ? data.items : []);
-      setFeedback('Leaderboard recomputed successfully.');
-    } catch (err) {
+      showFeedback('Leaderboard recomputed successfully.');
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to recompute leaderboard');
     } finally {
       setIsRecomputing(false);
     }
   };
+
+  const standingsMeta = (() => {
+    if (!standings.length) return null;
+    const scores = standings.map((s) => s.score);
+    const top = Math.max(...scores);
+    const bottom = Math.min(...scores);
+    return { total: standings.length, top, bottom };
+  })();
 
   if (isLoading) {
     return (
@@ -239,6 +327,32 @@ function LeaderboardDetailPageContent() {
       <div style={detailGridStyle}>
         <div style={surfaceCardStyle}>
           <h2 style={sectionTitleStyle}>Definition</h2>
+
+          {/* Lifecycle buttons */}
+          <div style={lifecycleRowStyle}>
+            <button
+              style={lifecyclePillStyle(form.status === 'draft', isSaving)}
+              disabled={form.status === 'draft' || isSaving}
+              onClick={() => void setStatusAndSave('draft')}
+            >
+              Set Draft
+            </button>
+            <button
+              style={lifecyclePillStyle(form.status === 'active', isSaving)}
+              disabled={form.status === 'active' || isSaving}
+              onClick={() => void setStatusAndSave('active')}
+            >
+              Activate
+            </button>
+            <button
+              style={lifecyclePillStyle(form.status === 'closed', isSaving, true)}
+              disabled={form.status === 'closed' || isSaving}
+              onClick={() => void setStatusAndSave('closed')}
+            >
+              Close Board
+            </button>
+          </div>
+
           <form style={formStyle} onSubmit={saveDefinition}>
             <div style={formColumnsStyle}>
               <label style={labelStyle}>Name<input style={inputStyle} value={form.name} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, name: event.target.value }))} /></label>
@@ -253,6 +367,10 @@ function LeaderboardDetailPageContent() {
               <label style={labelStyle}>Mode<select style={selectStyle} value={form.rankingMode} onChange={(event: ChangeEvent<HTMLSelectElement>) => setForm((current) => ({ ...current, rankingMode: event.target.value }))}><option value="sum">SUM</option><option value="min">MIN</option><option value="max">MAX</option></select></label>
               <label style={labelStyle}>Order<select style={selectStyle} value={form.order} onChange={(event: ChangeEvent<HTMLSelectElement>) => setForm((current) => ({ ...current, order: event.target.value }))}><option value="desc">DESC</option><option value="asc">ASC</option></select></label>
               <label style={labelStyle}>Status<select style={selectStyle} value={form.status} onChange={(event: ChangeEvent<HTMLSelectElement>) => setForm((current) => ({ ...current, status: event.target.value }))}><option value="draft">Draft</option><option value="active">Active</option><option value="closed">Closed</option></select></label>
+            </div>
+            <div style={formColumnsStyle}>
+              <label style={labelStyle}>Window Start<input type="datetime-local" style={inputStyle} value={form.windowStartsAt} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, windowStartsAt: event.target.value }))} /></label>
+              <label style={labelStyle}>Window End<input type="datetime-local" style={inputStyle} value={form.windowEndsAt} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, windowEndsAt: event.target.value }))} /></label>
             </div>
             <div style={formColumnsStyle}>
               <label style={labelStyle}>Currency<input style={inputStyle} value={form.currency} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, currency: event.target.value }))} /></label>
@@ -275,7 +393,14 @@ function LeaderboardDetailPageContent() {
       </div>
 
       <div style={surfaceCardStyle}>
-        <h2 style={sectionTitleStyle}>Standings</h2>
+        <div style={standingsHeaderStyle}>
+          <h2 style={{ ...sectionTitleStyle, marginBottom: 0 }}>Standings</h2>
+          {standingsMeta ? (
+            <div style={standingsMetaStyle}>
+              {standingsMeta.total} entries &middot; Top: {standingsMeta.top.toLocaleString()} &middot; Range: {standingsMeta.bottom.toLocaleString()} &ndash; {standingsMeta.top.toLocaleString()}
+            </div>
+          ) : null}
+        </div>
         {standings.length ? (
           <div style={standingsListStyle}>
             {standings.map((standing) => (
@@ -283,7 +408,7 @@ function LeaderboardDetailPageContent() {
                 <div style={rankCellStyle}>#{standing.rank}</div>
                 <div style={{ flex: 1 }}>
                   <div style={standingTitleStyle}>{standing.playerId}</div>
-                  <div style={standingMetaStyle}>
+                  <div style={standingMetaTextStyle}>
                     {standing.eventCount} events
                     {standing.lastEventAt ? ` · last event ${new Date(standing.lastEventAt).toLocaleString()}` : ''}
                   </div>
@@ -322,6 +447,24 @@ function buttonStyle(disabled = false): CSSProperties {
   };
 }
 
+function lifecyclePillStyle(active: boolean, saving: boolean, danger = false): CSSProperties {
+  const baseColor = danger ? '#dc2626' : '#4a7eff';
+  const isDisabled = active || saving;
+  return {
+    padding: '6px 14px',
+    borderRadius: 20,
+    border: active ? `2px solid ${baseColor}` : '2px solid #263056',
+    backgroundColor: active ? (danger ? '#7f1d1d' : '#1e3a5f') : 'transparent',
+    color: active ? '#ffffff' : '#94a3b8',
+    cursor: isDisabled ? 'not-allowed' : 'pointer',
+    fontWeight: 700,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    opacity: isDisabled ? 0.7 : 1,
+  };
+}
+
 const pageTitleStyle: CSSProperties = { fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#ffffff' };
 const subtitleStyle: CSSProperties = { margin: 0, color: '#a0a0a0', fontSize: 14 };
 const headerBarStyle: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16, marginBottom: 20 };
@@ -335,17 +478,20 @@ const errorBannerStyle: CSSProperties = { background: '#3a1014', border: '1px so
 const detailGridStyle: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(280px, 1fr)', gap: 20, marginBottom: 20 };
 const surfaceCardStyle: CSSProperties = { background: '#111328', border: '1px solid #1e2243', borderRadius: 12, padding: 20 };
 const sectionTitleStyle: CSSProperties = { fontSize: 18, fontWeight: 700, color: '#ffffff', marginTop: 0, marginBottom: 16 };
+const lifecycleRowStyle: CSSProperties = { display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' };
 const formStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 14 };
 const formColumnsStyle: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 };
 const labelStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, color: '#cbd5e1', fontSize: 13, fontWeight: 600 };
 const inputStyle: CSSProperties = { background: '#0b1021', border: '1px solid #263056', borderRadius: 8, padding: '10px 12px', color: '#f8fafc', fontSize: 14 };
 const selectStyle: CSSProperties = { ...inputStyle, appearance: 'none' };
 const textAreaStyle: CSSProperties = { ...inputStyle, minHeight: 84, resize: 'vertical' };
+const standingsHeaderStyle: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 };
+const standingsMetaStyle: CSSProperties = { color: '#93c5fd', fontSize: 13, fontWeight: 600 };
 const standingsListStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12 };
 const standingRowStyle: CSSProperties = { display: 'flex', alignItems: 'center', gap: 16, padding: '14px 16px', borderRadius: 10, background: '#0b1021', border: '1px solid #1e2243' };
 const rankCellStyle: CSSProperties = { width: 52, textAlign: 'center', color: '#93c5fd', fontSize: 22, fontWeight: 700 };
 const standingTitleStyle: CSSProperties = { color: '#ffffff', fontSize: 15, fontWeight: 700 };
-const standingMetaStyle: CSSProperties = { color: '#94a3b8', fontSize: 12, marginTop: 4 };
+const standingMetaTextStyle: CSSProperties = { color: '#94a3b8', fontSize: 12, marginTop: 4 };
 const scoreCellStyle: CSSProperties = { color: '#f8fafc', fontSize: 20, fontWeight: 700 };
 const emptyTextStyle: CSSProperties = { color: '#94a3b8', fontSize: 14 };
 

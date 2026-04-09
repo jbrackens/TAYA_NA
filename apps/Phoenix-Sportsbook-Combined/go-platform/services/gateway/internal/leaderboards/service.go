@@ -185,6 +185,177 @@ func NewService() *Service {
 		IdempotencyKey: "seed-referral-1",
 		RecordedAt:     now.Add(-50 * time.Minute),
 	})
+
+	// --- Additional seed players across all three boards ---
+
+	// Profit board: u-3, u-4, u-5
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  profit.LeaderboardID,
+		PlayerID:       "u-3",
+		Score:          85000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:003",
+		IdempotencyKey: "seed-profit-3",
+		RecordedAt:     now.Add(-80 * time.Minute),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  profit.LeaderboardID,
+		PlayerID:       "u-4",
+		Score:          42000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:004",
+		IdempotencyKey: "seed-profit-4",
+		RecordedAt:     now.Add(-60 * time.Minute),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  profit.LeaderboardID,
+		PlayerID:       "u-5",
+		Score:          31500,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:005",
+		IdempotencyKey: "seed-profit-5",
+		RecordedAt:     now.Add(-45 * time.Minute),
+	})
+
+	// Staking board: u-3, u-4, u-5
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  staking.LeaderboardID,
+		PlayerID:       "u-3",
+		Score:          450000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:103",
+		IdempotencyKey: "seed-stake-3",
+		RecordedAt:     now.Add(-2 * time.Hour),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  staking.LeaderboardID,
+		PlayerID:       "u-4",
+		Score:          180000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:104",
+		IdempotencyKey: "seed-stake-4",
+		RecordedAt:     now.Add(-55 * time.Minute),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  staking.LeaderboardID,
+		PlayerID:       "u-5",
+		Score:          95000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:105",
+		IdempotencyKey: "seed-stake-5",
+		RecordedAt:     now.Add(-40 * time.Minute),
+	})
+
+	// Referral board: u-3 (3 referrals), u-4 (1 referral)
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  referrals.LeaderboardID,
+		PlayerID:       "u-3",
+		Score:          1,
+		SourceType:     eventTypeReferralConversion,
+		SourceID:       "ref:seed:002",
+		IdempotencyKey: "seed-referral-2",
+		RecordedAt:     now.Add(-4 * time.Hour),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  referrals.LeaderboardID,
+		PlayerID:       "u-3",
+		Score:          1,
+		SourceType:     eventTypeReferralConversion,
+		SourceID:       "ref:seed:003",
+		IdempotencyKey: "seed-referral-3",
+		RecordedAt:     now.Add(-3 * time.Hour),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  referrals.LeaderboardID,
+		PlayerID:       "u-3",
+		Score:          1,
+		SourceType:     eventTypeReferralConversion,
+		SourceID:       "ref:seed:004",
+		IdempotencyKey: "seed-referral-4",
+		RecordedAt:     now.Add(-100 * time.Minute),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  referrals.LeaderboardID,
+		PlayerID:       "u-4",
+		Score:          1,
+		SourceType:     eventTypeReferralConversion,
+		SourceID:       "ref:seed:005",
+		IdempotencyKey: "seed-referral-5",
+		RecordedAt:     now.Add(-30 * time.Minute),
+	})
+
+	// --- Closed leaderboard: Last Week's Profit Race ---
+	lastWeekStart := now.Add(-10 * 24 * time.Hour)
+	lastWeekEnd := now.Add(-3 * 24 * time.Hour)
+	lastWeekProfit, _ := svc.CreateDefinition(CreateDefinitionRequest{
+		Slug:           "last-week-profit-race",
+		Name:           "Last Week's Profit Race",
+		Description:    "Top net winners from last week.",
+		MetricKey:      metricNetProfitCents,
+		EventType:      eventTypeSettledBet,
+		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
+		Order:          canonicalv1.LeaderboardOrderDescending,
+		Status:         canonicalv1.LeaderboardStatusActive,
+		Currency:       "USD",
+		PrizeSummary:   "Top 10 shared a cash bonus.",
+		WindowStartsAt: &lastWeekStart,
+		WindowEndsAt:   &lastWeekEnd,
+		CreatedBy:      "system",
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  lastWeekProfit.LeaderboardID,
+		PlayerID:       "u-1",
+		Score:          210000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:lw:001",
+		IdempotencyKey: "seed-lw-profit-1",
+		RecordedAt:     now.Add(-6 * 24 * time.Hour),
+	})
+	_, _ = svc.RecordEvent(RecordEventRequest{
+		LeaderboardID:  lastWeekProfit.LeaderboardID,
+		PlayerID:       "u-3",
+		Score:          145000,
+		SourceType:     "bet_settlement",
+		SourceID:       "bet:lw:002",
+		IdempotencyKey: "seed-lw-profit-2",
+		RecordedAt:     now.Add(-5 * 24 * time.Hour),
+	})
+	// Close the last-week board now that events are recorded
+	_, _ = svc.UpdateDefinition(lastWeekProfit.LeaderboardID, CreateDefinitionRequest{
+		Slug:           "last-week-profit-race",
+		Name:           "Last Week's Profit Race",
+		Description:    "Top net winners from last week.",
+		MetricKey:      metricNetProfitCents,
+		EventType:      eventTypeSettledBet,
+		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
+		Order:          canonicalv1.LeaderboardOrderDescending,
+		Status:         canonicalv1.LeaderboardStatusClosed,
+		Currency:       "USD",
+		PrizeSummary:   "Top 10 shared a cash bonus.",
+		WindowStartsAt: &lastWeekStart,
+		WindowEndsAt:   &lastWeekEnd,
+		CreatedBy:      "system",
+	})
+
+	// --- Draft leaderboard: Monthly VIP Challenge ---
+	vipStart := now.Add(7 * 24 * time.Hour)
+	vipEnd := now.Add(37 * 24 * time.Hour)
+	_, _ = svc.CreateDefinition(CreateDefinitionRequest{
+		Slug:           "monthly-vip-challenge",
+		Name:           "Monthly VIP Challenge",
+		Description:    "Exclusive monthly competition for VIP-tier players.",
+		MetricKey:      metricNetProfitCents,
+		EventType:      eventTypeSettledBet,
+		RankingMode:    canonicalv1.LeaderboardRankingModeSum,
+		Order:          canonicalv1.LeaderboardOrderDescending,
+		Status:         canonicalv1.LeaderboardStatusDraft,
+		Currency:       "USD",
+		PrizeSummary:   "Luxury prizes for the top 5.",
+		WindowStartsAt: &vipStart,
+		WindowEndsAt:   &vipEnd,
+		CreatedBy:      "system",
+	})
+
 	return svc
 }
 
@@ -384,6 +555,30 @@ func (s *Service) Standings(id string, limit, offset int) ([]canonicalv1.Leaderb
 	out := make([]canonicalv1.LeaderboardStanding, end-offset)
 	copy(out, standings[offset:end])
 	return out, cloneDefinition(definition), nil
+}
+
+func (s *Service) StandingForPlayer(id string, playerID string) (*canonicalv1.LeaderboardStanding, canonicalv1.LeaderboardDefinition, error) {
+	id = strings.TrimSpace(id)
+	playerID = strings.TrimSpace(playerID)
+	if id == "" || playerID == "" {
+		return nil, canonicalv1.LeaderboardDefinition{}, ErrInvalidRequest
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	definition, ok := s.definitions[id]
+	if !ok {
+		return nil, canonicalv1.LeaderboardDefinition{}, ErrLeaderboardNotFound
+	}
+	standings := computeStandings(definition, s.eventsByLeaderboard[id])
+	for i := range standings {
+		if standings[i].PlayerID == playerID {
+			item := standings[i]
+			return &item, cloneDefinition(definition), nil
+		}
+	}
+	return nil, cloneDefinition(definition), nil
 }
 
 func (s *Service) Recompute(id string) (canonicalv1.LeaderboardDefinition, []canonicalv1.LeaderboardStanding, error) {

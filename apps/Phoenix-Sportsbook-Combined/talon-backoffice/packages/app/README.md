@@ -20,6 +20,14 @@ WS_GLOBAL_ENDPOINT=ws://localhost:3010
 - `run-local:dev` - runs development server with hot reload
 - `test` - runs tests suites with `--coverage` option
 
+## Current Product Surfaces
+
+The player app now includes sportsbook-native loyalty and leaderboard MVP flows:
+
+- `/account` shows rewards balance, tier progress, recent loyalty ledger activity, and a competition snapshot
+- `/bets` shows `points earned` callouts on settled bets when loyalty rewards have posted
+- `/leaderboards` and `/leaderboards/[id]` expose live competition boards and personalized rank callouts
+
 ### Other scripts
 
 See core [README.md](../../README.md#scripts)

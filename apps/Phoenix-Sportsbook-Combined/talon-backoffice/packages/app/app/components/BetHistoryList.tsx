@@ -8,6 +8,7 @@ import {
   cashoutBet,
   CashoutOffer,
 } from "../lib/api/betting-client";
+import { getLoyaltyLedger } from "../lib/api/loyalty-client";
 import { useToast } from "./ToastProvider";
 import { logger } from "../lib/logger";
 
@@ -56,6 +57,7 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
   const [cashoutOffers, setCashoutOffers] = useState<
     Record<string, CashoutOffer>
   >({});
+  const [pointsByBetId, setPointsByBetId] = useState<Record<string, number>>({});
   const [cashingOut, setCashingOut] = useState<string | null>(null);
   const toast = useToast();
 
@@ -63,11 +65,14 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
     async (signal: { cancelled: boolean }) => {
       try {
         setLoading(true);
-        const result = await getUserBetsPage(userId, {
-          page: currentPage,
-          pageSize,
-          status: filterStatus,
-        });
+        const [result, loyaltyLedger] = await Promise.all([
+          getUserBetsPage(userId, {
+            page: currentPage,
+            pageSize,
+            status: filterStatus,
+          }),
+          getLoyaltyLedger(userId, 50).catch(() => []),
+        ]);
         if (signal.cancelled) return;
 
         const normalized: Bet[] = (result.data || []).map((ub) => ({
@@ -87,6 +92,16 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
         setFilteredBets(normalized);
         setTotalPages(Math.max(1, Math.ceil(result.totalCount / pageSize)));
         setError(null);
+        const loyaltyMap = (loyaltyLedger || []).reduce<Record<string, number>>(
+          (acc, entry) => {
+            if (entry.sourceType === "bet_settlement" && entry.sourceId) {
+              acc[entry.sourceId] = entry.pointsDelta;
+            }
+            return acc;
+          },
+          {},
+        );
+        setPointsByBetId(loyaltyMap);
 
         // Fetch cashout offers for open/pending bets
         const cashable = normalized.filter(
@@ -233,6 +248,14 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      {(() => {
+        const totalPoints = Object.values(pointsByBetId).reduce((sum, pts) => sum + pts, 0);
+        return totalPoints > 0 ? (
+          <div style={{ color: "#39ff14", fontSize: "12px", fontWeight: 600, opacity: 0.85 }}>
+            {totalPoints} points earned from settled bets this page
+          </div>
+        ) : null;
+      })()}
       <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
         {(["all", "open", "won", "lost", "cashed_out"] as BetStatus[]).map(
           (status) => (
@@ -285,6 +308,52 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                   style={{ display: "flex", flexDirection: "column", gap: "0" }}
                 >
                   <BetCard bet={bet} />
+                  {(bet.status === "won" || bet.status === "lost") &&
+                  pointsByBetId[bet.betId] ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "12px",
+                        padding: "10px 14px",
+                        background:
+                          "linear-gradient(135deg, rgba(57,255,20,0.12), rgba(8,18,11,0.92))",
+                        borderLeft: "1px solid rgba(57,255,20,0.24)",
+                        borderRight: "1px solid rgba(57,255,20,0.24)",
+                        borderBottom:
+                          offer ? "none" : "1px solid rgba(57,255,20,0.24)",
+                        marginTop: "-8px",
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            color: "#39ff14",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            letterSpacing: "0.14em",
+                            textTransform: "uppercase",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          Points Earned
+                        </div>
+                        <div style={{ color: "#D3D3D3", fontSize: "12px" }}>
+                          Settled bet rewards posted to your TAYA NA! loyalty balance.
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          color: "#39ff14",
+                          fontSize: "18px",
+                          fontWeight: 800,
+                        }}
+                      >
+                        +{pointsByBetId[bet.betId]}
+                      </div>
+                    </div>
+                  ) : null}
                   {offer && (
                     <button
                       disabled={cashingOut === bet.betId}

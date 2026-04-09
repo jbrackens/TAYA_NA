@@ -39,6 +39,16 @@ interface LoyaltyLedgerEntry {
 interface LoyaltyTier {
   tierCode: string;
   displayName: string;
+  minLifetimePoints?: number;
+}
+
+interface ReferralReward {
+  referralId: string;
+  referrerPlayerId: string;
+  referredPlayerId: string;
+  qualificationState: string;
+  qualifiedAt?: string;
+  createdAt: string;
 }
 
 function LoyaltyDetailPageContent() {
@@ -48,6 +58,8 @@ function LoyaltyDetailPageContent() {
   const [account, setAccount] = useState<LoyaltyAccount | null>(null);
   const [ledger, setLedger] = useState<LoyaltyLedgerEntry[]>([]);
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
+  const [referrals, setReferrals] = useState<ReferralReward[]>([]);
+  const [referralsLoading, setReferralsLoading] = useState(false);
   const [pointsDelta, setPointsDelta] = useState('100');
   const [reason, setReason] = useState('');
   const [entrySubtype, setEntrySubtype] = useState('goodwill');
@@ -70,15 +82,35 @@ function LoyaltyDetailPageContent() {
       setAccount(data.account || null);
       setLedger(Array.isArray(data.ledger) ? data.ledger : []);
       setTiers(Array.isArray(data.tiers) ? data.tiers : []);
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load loyalty account');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const loadReferrals = async () => {
+    setReferralsLoading(true);
+    try {
+      const response = await fetch(`/api/v1/referrals?userId=${encodeURIComponent(playerId)}`);
+      if (!response.ok) {
+        // Referral endpoint may 404 if no referrals exist — treat as empty
+        setReferrals([]);
+        return;
+      }
+      const data = await response.json();
+      setReferrals(Array.isArray(data?.items) ? data.items : []);
+    } catch (_err: unknown) {
+      // Non-critical — don't block the page
+      setReferrals([]);
+    } finally {
+      setReferralsLoading(false);
+    }
+  };
+
   useEffect(() => {
     void loadDetail();
+    void loadReferrals();
   }, [playerId]);
 
   const currentTierName = useMemo(
@@ -89,6 +121,26 @@ function LoyaltyDetailPageContent() {
     () => tiers.find((tier) => tier.tierCode === account?.nextTier)?.displayName || account?.nextTier || '',
     [tiers, account?.nextTier],
   );
+
+  // Compute tier progress for the progress bar
+  const tierProgress = useMemo(() => {
+    if (!account) return null;
+    const currentTierObj = tiers.find((t) => t.tierCode === account.currentTier);
+    const nextTierObj = tiers.find((t) => t.tierCode === account.nextTier);
+    if (!nextTierObj?.minLifetimePoints) return null;
+    const currentMin = currentTierObj?.minLifetimePoints ?? 0;
+    const nextMin = nextTierObj.minLifetimePoints;
+    const range = nextMin - currentMin;
+    if (range <= 0) return null;
+    const earned = account.pointsEarnedLifetime - currentMin;
+    const pct = Math.min(100, Math.max(0, (earned / range) * 100));
+    return {
+      percent: pct,
+      pointsToNext: account.pointsToNextTier,
+      nextName: nextTierObj.displayName || account.nextTier,
+      currentName: currentTierObj?.displayName || account.currentTier,
+    };
+  }, [account, tiers]);
 
   const submitAdjustment = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -130,7 +182,7 @@ function LoyaltyDetailPageContent() {
       setLedger((current) => [data.entry, ...current].slice(0, 20));
       setReason('');
       setFeedback('Loyalty adjustment applied successfully.');
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to save loyalty adjustment');
     } finally {
       setIsSubmitting(false);
@@ -172,7 +224,14 @@ function LoyaltyDetailPageContent() {
     <div>
       <div style={headerBarStyle}>
         <div>
-          <h1 style={pageTitleStyle}>{account.playerId}</h1>
+          <h1 style={pageTitleStyle}>
+            {account.playerId}
+            {account.lastAccrualAt ? (
+              <span style={lastAccrualBadgeStyle}>
+                Last accrual {new Date(account.lastAccrualAt).toLocaleString()}
+              </span>
+            ) : null}
+          </h1>
           <p style={subtitleStyle}>
             Current tier {currentTierName}
             {account.nextTier ? `, ${account.pointsToNextTier} points to ${nextTierName}` : ', top tier unlocked'}.
@@ -193,6 +252,64 @@ function LoyaltyDetailPageContent() {
         <MetricCard label="Lifetime Earned" value={account.pointsEarnedLifetime.toLocaleString()} />
         <MetricCard label="7 Day Earned" value={account.pointsEarned7D.toLocaleString()} />
         <MetricCard label="30 Day Earned" value={account.pointsEarned30D.toLocaleString()} />
+      </div>
+
+      {/* Tier Progress Bar */}
+      {tierProgress ? (
+        <div style={progressContainerStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ color: '#39ff14', fontSize: 13, fontWeight: 700 }}>{tierProgress.currentName}</span>
+            <span style={{ color: '#94a3b8', fontSize: 12 }}>
+              {tierProgress.pointsToNext.toLocaleString()} pts to {tierProgress.nextName}
+            </span>
+          </div>
+          <div style={progressTrackStyle}>
+            <div style={progressBarStyle(tierProgress.percent)} />
+          </div>
+        </div>
+      ) : !account.nextTier ? (
+        <div style={progressContainerStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+            <span style={{ color: '#39ff14', fontSize: 13, fontWeight: 700 }}>{currentTierName}</span>
+            <span style={{ color: '#4ade80', fontSize: 12 }}>Top tier reached</span>
+          </div>
+          <div style={progressTrackStyle}>
+            <div style={progressBarStyle(100)} />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Referral Activity */}
+      <div style={{ ...surfaceCardStyle, marginBottom: 20 }}>
+        <h2 style={sectionTitleStyle}>Referral Activity</h2>
+        {referralsLoading ? (
+          <div style={helperTextStyle}>Loading referrals...</div>
+        ) : referrals.length === 0 ? (
+          <div style={helperTextStyle}>No referral activity found for this player.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {referrals.map((ref) => (
+              <div key={ref.referralId} style={referralRowStyle}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff' }}>
+                    {ref.referrerPlayerId === playerId ? (
+                      <>Referred {ref.referredPlayerId}</>
+                    ) : (
+                      <>Referred by {ref.referrerPlayerId}</>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                    {new Date(ref.createdAt).toLocaleString()}
+                    {ref.qualifiedAt ? ` — qualified ${new Date(ref.qualifiedAt).toLocaleString()}` : ''}
+                  </div>
+                </div>
+                <span style={qualificationBadgeStyle(ref.qualificationState)}>
+                  {ref.qualificationState}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={gridStyle}>
@@ -336,6 +453,22 @@ function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSP
   };
 }
 
+function qualificationBadgeStyle(state: string): CSSProperties {
+  const isQualified = state === 'qualified' || state === 'completed';
+  return {
+    display: 'inline-block',
+    padding: '3px 8px',
+    borderRadius: 4,
+    fontSize: 11,
+    fontWeight: 600,
+    backgroundColor: isQualified ? 'rgba(57, 255, 20, 0.12)' : 'rgba(148, 163, 184, 0.12)',
+    color: isQualified ? '#39ff14' : '#94a3b8',
+    border: `1px solid ${isQualified ? 'rgba(57, 255, 20, 0.25)' : 'rgba(148, 163, 184, 0.25)'}`,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  };
+}
+
 function buttonStyle(secondary: boolean): CSSProperties {
   return {
     padding: '8px 16px',
@@ -358,18 +491,35 @@ function ledgerDeltaStyle(negative: boolean): CSSProperties {
   };
 }
 
-function feedbackStyle(error: boolean): CSSProperties {
+function feedbackStyle(isError: boolean): CSSProperties {
   return {
-    color: error ? '#fda4af' : '#86efac',
+    color: isError ? '#fda4af' : '#86efac',
     fontSize: 13,
   };
 }
+
+/* ── Style constants ── */
 
 const pageTitleStyle: CSSProperties = {
   fontSize: 28,
   fontWeight: 700,
   marginBottom: 8,
   color: '#ffffff',
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 12,
+  flexWrap: 'wrap',
+};
+
+const lastAccrualBadgeStyle: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 500,
+  color: '#94a3b8',
+  background: 'rgba(15, 52, 96, 0.6)',
+  padding: '3px 8px',
+  borderRadius: 4,
+  border: '1px solid #1e3a5f',
+  whiteSpace: 'nowrap',
 };
 
 const subtitleStyle: CSSProperties = {
@@ -506,6 +656,46 @@ const helperTextStyle: CSSProperties = {
   color: '#94a3b8',
   fontSize: 12,
   lineHeight: 1.5,
+};
+
+/* Progress bar styles */
+
+const progressContainerStyle: CSSProperties = {
+  background: '#16213e',
+  border: '1px solid #0f3460',
+  borderRadius: 8,
+  padding: 16,
+  marginBottom: 20,
+};
+
+const progressTrackStyle: CSSProperties = {
+  width: '100%',
+  height: 10,
+  background: '#0f172a',
+  borderRadius: 5,
+  overflow: 'hidden',
+};
+
+function progressBarStyle(percent: number): CSSProperties {
+  return {
+    width: `${percent}%`,
+    height: '100%',
+    background: 'linear-gradient(90deg, #4a7eff, #39ff14)',
+    borderRadius: 5,
+    transition: 'width 0.4s ease',
+  };
+}
+
+/* Referral row styles */
+
+const referralRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  padding: 12,
+  border: '1px solid #0f3460',
+  borderRadius: 8,
+  background: 'rgba(15, 52, 96, 0.35)',
 };
 
 export default function LoyaltyDetailPage() {

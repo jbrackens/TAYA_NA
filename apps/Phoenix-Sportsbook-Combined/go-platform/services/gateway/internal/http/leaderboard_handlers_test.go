@@ -146,3 +146,26 @@ func TestAdminLeaderboardRoutesRequireAdminRole(t *testing.T) {
 		t.Fatalf("expected 403 for admin leaderboard list without role, got %d", res.Code)
 	}
 }
+
+func TestLeaderboardRoutesExposeViewerStanding(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/leaderboards/lb:local:000001/entries?limit=5&offset=0&userId=u-1", nil)
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d, body=%s", res.Code, res.Body.String())
+	}
+
+	var payload struct {
+		ViewerEntry map[string]any `json:"viewerEntry"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode payload: %v", err)
+	}
+	if payload.ViewerEntry["playerId"] != "u-1" {
+		t.Fatalf("expected viewerEntry playerId u-1, got %v", payload.ViewerEntry["playerId"])
+	}
+}

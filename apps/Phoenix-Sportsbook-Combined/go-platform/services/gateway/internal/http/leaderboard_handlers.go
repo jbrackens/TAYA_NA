@@ -79,12 +79,17 @@ func registerLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboards.Serv
 			if err != nil {
 				return mapLeaderboardError(err)
 			}
+			viewerEntry, err := leaderboardViewerEntry(service, id, r)
+			if err != nil {
+				return err
+			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"leaderboard": definition,
 				"items":       items,
 				"totalCount":  len(items),
 				"limit":       limit,
 				"offset":      offset,
+				"viewerEntry": viewerEntry,
 			})
 		}
 
@@ -97,9 +102,14 @@ func registerLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboards.Serv
 		if err != nil {
 			return mapLeaderboardError(err)
 		}
+		viewerEntry, err := leaderboardViewerEntry(service, definition.LeaderboardID, r)
+		if err != nil {
+			return err
+		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"leaderboard": definition,
 			"topEntries":  items,
+			"viewerEntry": viewerEntry,
 		})
 	}))
 
@@ -207,6 +217,21 @@ func registerLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboards.Serv
 			}
 		}
 	}))
+}
+
+func leaderboardViewerEntry(service *leaderboards.Service, id string, r *stdhttp.Request) (any, error) {
+	userID := strings.TrimSpace(r.URL.Query().Get("userId"))
+	if userID == "" {
+		return nil, nil
+	}
+	entry, _, err := service.StandingForPlayer(id, userID)
+	if err != nil {
+		return nil, mapLeaderboardError(err)
+	}
+	if entry == nil {
+		return nil, nil
+	}
+	return entry, nil
 }
 
 func toLeaderboardCreateRequest(request leaderboardDefinitionRequest) leaderboards.CreateDefinitionRequest {

@@ -179,6 +179,9 @@ func TestAccrueSettledBetPopulatesStakeAndProfitBoards(t *testing.T) {
 	var profitBoardID string
 	var stakeBoardID string
 	for _, definition := range definitions {
+		if definition.Status != canonicalv1.LeaderboardStatusActive {
+			continue
+		}
 		switch definition.MetricKey {
 		case metricNetProfitCents:
 			profitBoardID = definition.LeaderboardID

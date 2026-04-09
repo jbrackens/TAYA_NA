@@ -440,6 +440,16 @@ export const BetslipPanel: React.FC = () => {
                   ${potentialReturn.toFixed(2)}
                 </span>
               </div>
+              {totalStake > 0 && user ? (
+                <div className="ps-betslip-summary-row">
+                  <span className="ps-betslip-summary-label" style={{ fontSize: 12 }}>
+                    Est. Rewards
+                  </span>
+                  <span className="ps-betslip-summary-value" style={{ color: "#39ff14", fontSize: 13 }}>
+                    +{Math.floor(totalStake)} pts
+                  </span>
+                </div>
+              ) : null}
             </div>
 
             {/* Bet Error */}

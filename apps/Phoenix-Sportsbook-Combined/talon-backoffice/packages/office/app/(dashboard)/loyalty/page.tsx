@@ -1,6 +1,7 @@
 'use client';
 
 import { ChangeEvent, CSSProperties, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { DataTable, ErrorBoundary, ErrorState, SkeletonLoader } from '../../components/shared';
 import type { ColumnDef } from '../../components/shared';
@@ -121,9 +122,14 @@ function LoyaltyPageContent() {
             Review player rewards balances, tier position, and recent accrual momentum.
           </p>
         </div>
-        <button style={buttonStyle()} onClick={() => void loadAccounts()}>
-          Refresh
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <Link href="/loyalty/settings" style={{ ...buttonStyle(), textDecoration: 'none' }}>
+            Manage Rules & Tiers
+          </Link>
+          <button style={buttonStyle()} onClick={() => void loadAccounts()}>
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div style={metricsGridStyle}>

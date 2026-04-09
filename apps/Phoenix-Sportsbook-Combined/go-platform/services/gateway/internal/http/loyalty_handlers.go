@@ -27,6 +27,28 @@ type loyaltyReferralRequest struct {
 	ReferredPlayerID string `json:"referredPlayerId"`
 }
 
+type loyaltyTierRequest struct {
+	DisplayName         string            `json:"displayName"`
+	Rank                int               `json:"rank"`
+	MinLifetimePoints   int64             `json:"minLifetimePoints"`
+	MinRolling30DPoints int64             `json:"minRolling30dPoints"`
+	Benefits            map[string]string `json:"benefits"`
+	Active              bool              `json:"active"`
+}
+
+type loyaltyRuleRequest struct {
+	Name                   string   `json:"name"`
+	SourceType             string   `json:"sourceType"`
+	Active                 bool     `json:"active"`
+	Multiplier             float64  `json:"multiplier"`
+	MinQualifiedStakeCents int64    `json:"minQualifiedStakeCents"`
+	EligibleSportIDs       []string `json:"eligibleSportIds"`
+	EligibleBetTypes       []string `json:"eligibleBetTypes"`
+	MaxPointsPerEvent      int64    `json:"maxPointsPerEvent"`
+	EffectiveFrom          string   `json:"effectiveFrom"`
+	EffectiveTo            string   `json:"effectiveTo"`
+}
+
 func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 	if service == nil {
 		return
@@ -232,6 +254,99 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, referral)
 	}))
+
+	mux.Handle("/api/v1/admin/loyalty/config", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"tiers":              service.ListTiers(),
+			"rules":              service.ListRules(),
+			"referralBonusPoints": service.ReferralBonusPoints(),
+		})
+	}))
+
+	tierPrefix := "/api/v1/admin/loyalty/tiers/"
+	mux.Handle(tierPrefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPut {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+
+		tierCode := strings.TrimSpace(strings.TrimPrefix(r.URL.Path, tierPrefix))
+		if tierCode == "" {
+			return httpx.NotFound("loyalty tier not found")
+		}
+
+		var request loyaltyTierRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+
+		items, err := service.UpdateTier(loyalty.TierUpdateRequest{
+			TierCode:            canonicalv1.LoyaltyTierCode(tierCode),
+			DisplayName:         strings.TrimSpace(request.DisplayName),
+			Rank:                request.Rank,
+			MinLifetimePoints:   request.MinLifetimePoints,
+			MinRolling30DPoints: request.MinRolling30DPoints,
+			Benefits:            request.Benefits,
+			Active:              request.Active,
+		})
+		if err != nil {
+			return mapLoyaltyError(err)
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"tiers": items,
+		})
+	}))
+
+	rulePrefix := "/api/v1/admin/loyalty/rules/"
+	mux.Handle(rulePrefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPut {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+
+		ruleID := strings.TrimSpace(strings.TrimPrefix(r.URL.Path, rulePrefix))
+		if ruleID == "" {
+			return httpx.NotFound("loyalty rule not found")
+		}
+
+		var request loyaltyRuleRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+
+		items, err := service.UpdateRule(loyalty.RuleUpdateRequest{
+			RuleID:                 ruleID,
+			Name:                   strings.TrimSpace(request.Name),
+			SourceType:             strings.TrimSpace(request.SourceType),
+			Active:                 request.Active,
+			Multiplier:             request.Multiplier,
+			MinQualifiedStakeCents: request.MinQualifiedStakeCents,
+			EligibleSportIDs:       request.EligibleSportIDs,
+			EligibleBetTypes:       request.EligibleBetTypes,
+			MaxPointsPerEvent:      request.MaxPointsPerEvent,
+			EffectiveFrom:          parseOptionalRFC3339(request.EffectiveFrom),
+			EffectiveTo:            parseOptionalRFC3339(request.EffectiveTo),
+		})
+		if err != nil {
+			return mapLoyaltyError(err)
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"rules": items,
+		})
+	}))
 }
 
 func toLoyaltyAccountResponse(account canonicalv1.LoyaltyAccount) canonicalv1.LoyaltyAccount {
@@ -261,6 +376,10 @@ func mapLoyaltyError(err error) error {
 		return httpx.BadRequest("invalid loyalty request", nil)
 	case errors.Is(err, loyalty.ErrAccountNotFound):
 		return httpx.NotFound("loyalty account not found")
+	case errors.Is(err, loyalty.ErrTierNotFound):
+		return httpx.NotFound("loyalty tier not found")
+	case errors.Is(err, loyalty.ErrRuleNotFound):
+		return httpx.NotFound("loyalty rule not found")
 	case errors.Is(err, loyalty.ErrAdjustmentConflict), errors.Is(err, loyalty.ErrAccrualConflict):
 		return httpx.Conflict("loyalty idempotency conflict", nil)
 	case errors.Is(err, loyalty.ErrReferralConflict):

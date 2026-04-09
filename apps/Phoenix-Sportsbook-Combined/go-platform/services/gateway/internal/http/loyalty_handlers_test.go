@@ -48,8 +48,8 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	if ledgerPayload.PlayerID != "u-1" {
 		t.Fatalf("expected ledger playerId u-1, got %s", ledgerPayload.PlayerID)
 	}
-	if ledgerPayload.Total != 0 {
-		t.Fatalf("expected seeded ledger total 0, got %d", ledgerPayload.Total)
+	if ledgerPayload.Total < 1 {
+		t.Fatalf("expected seeded ledger total >= 1, got %d", ledgerPayload.Total)
 	}
 
 	tiersReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty/tiers", nil)
@@ -194,5 +194,45 @@ func TestReferralRegistrationAndPlayerListFlow(t *testing.T) {
 	}
 	if payload.Total != 1 {
 		t.Fatalf("expected one referral record, got %d", payload.Total)
+	}
+}
+
+func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	configReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/config", nil)
+	configReq.Header.Set("X-Admin-Role", "admin")
+	configRes := httptest.NewRecorder()
+	handler.ServeHTTP(configRes, configReq)
+	if configRes.Code != http.StatusOK {
+		t.Fatalf("expected config status 200, got %d, body=%s", configRes.Code, configRes.Body.String())
+	}
+
+	tierReq := httptest.NewRequest(
+		http.MethodPut,
+		"/api/v1/admin/loyalty/tiers/silver",
+		bytes.NewBufferString(`{"displayName":"Silver","rank":2,"minLifetimePoints":700,"minRolling30dPoints":0,"benefits":{"cashoutBoost":"priority"},"active":true}`),
+	)
+	tierReq.Header.Set("Content-Type", "application/json")
+	tierReq.Header.Set("X-Admin-Role", "admin")
+	tierRes := httptest.NewRecorder()
+	handler.ServeHTTP(tierRes, tierReq)
+	if tierRes.Code != http.StatusOK {
+		t.Fatalf("expected tier update status 200, got %d, body=%s", tierRes.Code, tierRes.Body.String())
+	}
+
+	ruleReq := httptest.NewRequest(
+		http.MethodPut,
+		"/api/v1/admin/loyalty/rules/rule:loyalty:default-settlement",
+		bytes.NewBufferString(`{"name":"Default settled bet accrual","sourceType":"bet_settlement","active":true,"multiplier":2,"minQualifiedStakeCents":100,"eligibleSportIds":[],"eligibleBetTypes":[],"maxPointsPerEvent":0}`),
+	)
+	ruleReq.Header.Set("Content-Type", "application/json")
+	ruleReq.Header.Set("X-Admin-Role", "admin")
+	ruleRes := httptest.NewRecorder()
+	handler.ServeHTTP(ruleRes, ruleReq)
+	if ruleRes.Code != http.StatusOK {
+		t.Fatalf("expected rule update status 200, got %d, body=%s", ruleRes.Code, ruleRes.Body.String())
 	}
 }
