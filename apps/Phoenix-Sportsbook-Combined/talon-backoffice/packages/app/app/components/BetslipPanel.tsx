@@ -21,7 +21,7 @@ import {
 } from "../lib/api/betting-client";
 import { BetSelection } from "./BetslipProvider";
 import { useAppSelector } from "../lib/store/hooks";
-import { selectOddsFormat } from "../lib/store/settingsSlice";
+import { selectOddsFormat, DisplayOddsEnum } from "../lib/store/settingsSlice";
 import { formatOdds } from "../lib/utils/odds";
 import { useToast } from "./ToastProvider";
 import { useAuth } from "../hooks/useAuth";
@@ -72,6 +72,17 @@ export const BetslipPanel: React.FC = () => {
     },
     [ready, t],
   );
+  const estimatedRewards = Math.floor(totalStake);
+  const rewardsProgressCopy = useMemo(() => {
+    if (!user || totalStake <= 0) return null;
+    if (parlayMode && selections.length > 1) {
+      return "Multi ticket with rewards momentum attached.";
+    }
+    if (selections.length > 1) {
+      return "Singles on this slip still stack points ticket by ticket.";
+    }
+    return "This ticket can keep your rewards climb moving.";
+  }, [parlayMode, selections.length, totalStake, user]);
 
   // Close on Escape key (unless placing bet)
   useEffect(() => {
@@ -441,13 +452,31 @@ export const BetslipPanel: React.FC = () => {
                 </span>
               </div>
               {totalStake > 0 && user ? (
-                <div className="ps-betslip-summary-row">
-                  <span className="ps-betslip-summary-label" style={{ fontSize: 12 }}>
-                    Est. Rewards
-                  </span>
-                  <span className="ps-betslip-summary-value" style={{ color: "#39ff14", fontSize: 13 }}>
-                    +{Math.floor(totalStake)} pts
-                  </span>
+                <div className="ps-betslip-rewards-preview">
+                  <div className="ps-betslip-rewards-preview-top">
+                    <div>
+                      <div className="ps-betslip-rewards-kicker">
+                        Rewards Momentum
+                      </div>
+                      <div className="ps-betslip-rewards-copy">
+                        {rewardsProgressCopy}
+                      </div>
+                    </div>
+                    <div className="ps-betslip-rewards-points">
+                      +{estimatedRewards} pts
+                    </div>
+                  </div>
+                  <div className="ps-betslip-rewards-bar">
+                    <div
+                      className="ps-betslip-rewards-bar-fill"
+                      style={{
+                        width: `${Math.max(
+                          18,
+                          Math.min(100, (estimatedRewards / 25) * 100),
+                        )}%`,
+                      }}
+                    />
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -646,7 +675,7 @@ export const BetslipPanel: React.FC = () => {
 
 // ─── Open Bets Sub-Component ────────────────────────────────
 
-const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
+const OpenBetsTab: React.FC<{ oddsFormat: DisplayOddsEnum }> = ({ oddsFormat }) => {
   const { t, ready } = useTranslation("betslip");
   const [openBets, setOpenBets] = useState<UserBet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -688,7 +717,7 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
         setOpenBets(active);
 
         const offerResults = await Promise.all(
-          active.map(async (bet) => {
+          active.map(async (bet): Promise<[string, CashoutOffer] | null> => {
             try {
               const offer = await getCashoutOffer(bet.betId);
               return offer.available ? [bet.betId, offer] : null;
@@ -721,6 +750,26 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
       cancelled = true;
     };
   }, [user?.id]);
+
+  const handleCashout = useCallback(async (betId: string) => {
+    setCashingOut(betId);
+    setCashoutMsg(null);
+    try {
+      await cashoutBet(betId);
+      setCashoutMsg({ betId, msg: "Cashed out!", type: "success" });
+      toast.success("Cashout Successful!", "Your bet has been cashed out.");
+      // Remove from open bets
+      setOpenBets((prev) => prev.filter((b) => b.betId !== betId));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const errorMsg = message || "Cashout failed";
+      setCashoutMsg({ betId, msg: errorMsg, type: "error" });
+      toast.error("Cashout Failed", errorMsg);
+    } finally {
+      setCashingOut(null);
+      setTimeout(() => setCashoutMsg(null), 3000);
+    }
+  }, [toast]);
 
   const renderedOpenBets = useMemo(
     () =>
@@ -779,26 +828,6 @@ const OpenBetsTab: React.FC<{ oddsFormat: string }> = ({ oddsFormat }) => {
       }),
     [cashingOut, cashoutMsg, cashoutOffers, handleCashout, oddsFormat, openBets, tx],
   );
-
-  const handleCashout = async (betId: string) => {
-    setCashingOut(betId);
-    setCashoutMsg(null);
-    try {
-      await cashoutBet(betId);
-      setCashoutMsg({ betId, msg: "Cashed out!", type: "success" });
-      toast.success("Cashout Successful!", "Your bet has been cashed out.");
-      // Remove from open bets
-      setOpenBets((prev) => prev.filter((b) => b.betId !== betId));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const errorMsg = message || "Cashout failed";
-      setCashoutMsg({ betId, msg: errorMsg, type: "error" });
-      toast.error("Cashout Failed", errorMsg);
-    } finally {
-      setCashingOut(null);
-      setTimeout(() => setCashoutMsg(null), 3000);
-    }
-  };
 
   if (loading) {
     return (

@@ -161,6 +161,43 @@ function getFixtureStatusLabel(fixture: Fixture) {
   return "Upcoming";
 }
 
+function getEditorialAngle(
+  fixture: Fixture,
+  index: number,
+  leaderboardsActive: boolean,
+) {
+  const start = new Date(fixture.startTime).getTime();
+  const minutesToStart = Number.isNaN(start)
+    ? null
+    : Math.round((start - Date.now()) / 60000);
+
+  if (fixture.isLive) {
+    return {
+      tag: "Live Heat",
+      line: "Live prices are moving now. Step in before the board flips again.",
+    };
+  }
+
+  if (minutesToStart !== null && minutesToStart > 0 && minutesToStart <= 30) {
+    return {
+      tag: "Kickoff Window",
+      line: `Kickoff is roughly ${minutesToStart} minutes away. Catch the price before it tightens.`,
+    };
+  }
+
+  if (leaderboardsActive && index < 2) {
+    return {
+      tag: "Board Booster",
+      line: "A clean entry if you want action that also keeps your competition week alive.",
+    };
+  }
+
+  return {
+    tag: "Sharp Angle",
+    line: "A curated lane worth hitting before you drift into the deeper board.",
+  };
+}
+
 export default function HomePage() {
   // Show marketing landing page for unauthenticated visitors
   const { isAuthenticated, isLoading } = useAuth();
@@ -370,15 +407,9 @@ function AuthenticatedHome() {
   }, [fixtures, sports, activeSport, deferredSearchQuery]);
 
   const { topSports, filteredFixtures, topPicks, popularRows } = discoveryData;
-
-  const scrollTopPicks = useCallback((direction: "left" | "right") => {
-    if (!topPicksRef.current) return;
-    const cardWidth = 304;
-    topPicksRef.current.scrollBy({
-      left: direction === "right" ? cardWidth : -cardWidth,
-      behavior: "smooth",
-    });
-  }, []);
+  const featuredMoment = topPicks[0];
+  const secondaryMoments = topPicks.slice(1, 4);
+  const liveNowCount = filteredFixtures.filter((fixture) => fixture.isLive).length;
 
   const renderDiscoveryCard = useCallback(
     (fixture: Fixture, compact = false) => {
@@ -442,30 +473,259 @@ function AuthenticatedHome() {
     [betslip?.selections, handleOddsClick, oddsFormat],
   );
 
+  const renderFeatureSpotlight = useCallback(
+    (fixture: Fixture, index: number, lead = false) => {
+      const teams = getTeams(fixture.competitors);
+      const market = getPrimaryMarket(fixture);
+      const angle = getEditorialAngle(fixture, index, leaderboards.length > 0);
+
+      if (!market || !market.selections?.length) return null;
+
+      return (
+        <article
+          key={`feature-${fixture.fixtureId}`}
+          className={`feature-spotlight ${lead ? "lead" : ""}`}
+        >
+          <div className="feature-spotlight-top">
+            <div>
+              <div className="feature-spotlight-tag">{angle.tag}</div>
+              <div className="feature-spotlight-league">
+                {fixture.tournament?.name || fixture.sport?.name || "Hot Pick"}
+              </div>
+            </div>
+            <div
+              className={`feature-spotlight-status ${
+                fixture.isLive ? "live" : "soon"
+              }`}
+            >
+              {fixture.isLive ? "Live" : formatDate(fixture.startTime)}
+            </div>
+          </div>
+
+          <div className="feature-spotlight-matchup">
+            <div className="feature-spotlight-team">{teams.home}</div>
+            <div className="feature-spotlight-versus">vs</div>
+            <div className="feature-spotlight-team">{teams.away}</div>
+          </div>
+
+          <div className="feature-spotlight-market">
+            {market.name || "Match Result"}
+          </div>
+          <p className="feature-spotlight-copy">{angle.line}</p>
+
+          <div className="feature-spotlight-prices">
+            {market.selections.slice(0, 3).map((selection) => {
+              const isSelected = betslip?.selections?.some(
+                (entry: BetSelection) =>
+                  entry.selectionId === selection.selectionId &&
+                  entry.marketId === market.marketId,
+              );
+
+              return (
+                <button
+                  key={`${fixture.fixtureId}-${selection.selectionId}`}
+                  className={`feature-spotlight-price ${
+                    isSelected ? "selected" : ""
+                  }`}
+                  onClick={() => handleOddsClick(fixture, market, selection)}
+                  disabled={selection.status === "SUSPENDED"}
+                >
+                  <span>{selection.name}</span>
+                  <strong>
+                    {selection.status === "SUSPENDED"
+                      ? "-"
+                      : formatOdds(selection.odds, oddsFormat)}
+                  </strong>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="feature-spotlight-footer">
+            <span>
+              {fixture.isLive
+                ? "Live board active"
+                : `${fixture.marketsTotalCount || market.selections.length} market angles open`}
+            </span>
+            <Link href={`/match/${fixture.fixtureId}`}>Open full market</Link>
+          </div>
+        </article>
+      );
+    },
+    [betslip?.selections, handleOddsClick, leaderboards.length, oddsFormat],
+  );
+
   return (
     <>
       {/* Hero */}
       <div className="home-hero">
-        <div className="home-hero-copy">
-          <h1>
-            Welcome to <span className="accent">TAYA NA!</span>
-          </h1>
-          <p>Search fast, grab a top pick, or scan the board sport by sport.</p>
+        <div className="home-hero-main">
+          <div className="home-hero-copy">
+            <div className="home-hero-kicker">Featured Betting Lane</div>
+            <h1>
+              Hit the <span className="accent">live edge</span> before it moves.
+            </h1>
+            <p>
+              Jump straight into the sharpest picks, ride the live pressure, and
+              let rewards and rank climb with every strong ticket.
+            </p>
+
+            <div className="home-hero-actions">
+              <button
+                type="button"
+                className="home-hero-primary"
+                onClick={() =>
+                  topPicksRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                    inline: "nearest",
+                  })
+                }
+              >
+                Play Hot Picks
+              </button>
+              <Link className="home-hero-secondary" href="/live">
+                Open Live Board
+              </Link>
+            </div>
+
+            <div className="home-hero-stats">
+              <div className="home-hero-chip">
+                <span className="home-hero-chip-value">{liveNowCount || "—"}</span>
+                <span className="home-hero-chip-label">Live Now</span>
+              </div>
+              <div className="home-hero-chip">
+                <span className="home-hero-chip-value">{topPicks.length || "—"}</span>
+                <span className="home-hero-chip-label">Hot Picks</span>
+              </div>
+              <div className="home-hero-chip">
+                <span className="home-hero-chip-value">
+                  {leaderboards.length || "—"}
+                </span>
+                <span className="home-hero-chip-label">Live Races</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="home-hero-feature">
+            {featuredMoment ? (
+              <>
+                <div className="home-hero-feature-top">
+                  <div>
+                    <div className="home-hero-feature-kicker">Featured Right Now</div>
+                    <div className="home-hero-feature-league">
+                      {featuredMoment.tournament?.name ||
+                        featuredMoment.sport?.name ||
+                        "Featured Board"}
+                    </div>
+                  </div>
+                  <div
+                    className={`home-hero-feature-status ${
+                      featuredMoment.isLive ? "live" : "soon"
+                    }`}
+                  >
+                    {featuredMoment.isLive
+                      ? "Live Pressure"
+                      : getFixtureStatusLabel(featuredMoment)}
+                  </div>
+                </div>
+
+                <div className="home-hero-feature-matchup">
+                  <div className="home-hero-feature-team">
+                    {getTeams(featuredMoment.competitors).home}
+                  </div>
+                  <div className="home-hero-feature-vs">vs</div>
+                  <div className="home-hero-feature-team">
+                    {getTeams(featuredMoment.competitors).away}
+                  </div>
+                </div>
+
+                <div className="home-hero-feature-note">
+                  {getPrimaryMarket(featuredMoment)?.name || "Match Result"} ·{" "}
+                  {featuredMoment.isLive
+                    ? "prices moving on the live board"
+                    : "quick-entry angle before kickoff"}
+                </div>
+
+                <div className="home-hero-feature-odds">
+                  {getPrimaryMarket(featuredMoment)
+                    ?.selections?.slice(0, 3)
+                    .map((selection) => {
+                      const market = getPrimaryMarket(featuredMoment);
+                      if (!market) return null;
+                      const isSelected = betslip?.selections?.some(
+                        (entry: BetSelection) =>
+                          entry.selectionId === selection.selectionId &&
+                          entry.marketId === market.marketId,
+                      );
+
+                      return (
+                        <button
+                          key={`${featuredMoment.fixtureId}-${selection.selectionId}`}
+                          className={`home-hero-feature-price ${
+                            isSelected ? "selected" : ""
+                          }`}
+                          onClick={() =>
+                            handleOddsClick(featuredMoment, market, selection)
+                          }
+                          disabled={selection.status === "SUSPENDED"}
+                        >
+                          <span>{selection.name}</span>
+                          <strong>
+                            {selection.status === "SUSPENDED"
+                              ? "-"
+                              : formatOdds(selection.odds, oddsFormat)}
+                          </strong>
+                        </button>
+                      );
+                    })}
+                </div>
+
+                <div className="home-hero-feature-footer">
+                  <span>{formatDate(featuredMoment.startTime)}</span>
+                  <Link href={`/match/${featuredMoment.fixtureId}`}>
+                    Open full market
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <div className="home-hero-feature-empty">
+                Featured action is loading. The board will fill with the sharpest
+                plays available right now.
+              </div>
+            )}
+          </div>
         </div>
-        <div className="home-hero-stats">
-          <div className="home-hero-chip">
-            <span className="home-hero-chip-value">{topPicks.length || "—"}</span>
-            <span className="home-hero-chip-label">Hot Picks</span>
+
+        {secondaryMoments.length > 0 && (
+          <div className="home-hero-rail">
+            {secondaryMoments.map((fixture) => (
+              <Link
+                key={`hero-rail-${fixture.fixtureId}`}
+                href={`/match/${fixture.fixtureId}`}
+                className="home-hero-rail-card"
+              >
+                <div className="home-hero-rail-top">
+                  <span>{fixture.sport?.name || "Board"}</span>
+                  <span>{fixture.isLive ? "Live" : formatDate(fixture.startTime)}</span>
+                </div>
+                <div className="home-hero-rail-title">
+                  {getTeams(fixture.competitors).home} vs{" "}
+                  {getTeams(fixture.competitors).away}
+                </div>
+                <div className="home-hero-rail-meta">
+                  {getPrimaryMarket(fixture)?.name || "Featured market"} ·{" "}
+                  {getPrimaryMarket(fixture)?.selections?.[0]
+                    ? formatOdds(
+                        getPrimaryMarket(fixture)!.selections[0].odds,
+                        oddsFormat,
+                      )
+                    : "Open board"}
+                </div>
+              </Link>
+            ))}
           </div>
-          <div className="home-hero-chip">
-            <span className="home-hero-chip-value">{popularRows.length || "—"}</span>
-            <span className="home-hero-chip-label">Sport Rows</span>
-          </div>
-          <div className="home-hero-chip">
-            <span className="home-hero-chip-value">{filteredFixtures.length || "—"}</span>
-            <span className="home-hero-chip-label">Visible Matches</span>
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="discovery-stack">
@@ -484,13 +744,15 @@ function AuthenticatedHome() {
 
         <div className="discovery-context">
           <div>
-            <div className="discovery-kicker">Discovery Engine</div>
+            <div className="discovery-kicker">Board Control</div>
             <div className="discovery-context-copy">
-              <strong>{filteredFixtures.length}</strong> matches filtered for your current board.
+              <strong>{filteredFixtures.length}</strong> matches ready to scan once
+              you clear the featured lane.
             </div>
           </div>
           <div className="discovery-context-copy">
-            Start with <strong>Hot Picks</strong>, then scan sport ribbons before the full board.
+            Start with <strong>Hot Picks</strong>, then branch into sports, races,
+            and the full board.
           </div>
         </div>
 
@@ -500,7 +762,7 @@ function AuthenticatedHome() {
               <div>
                 <div className="discovery-kicker">Competition Pulse</div>
                 <div className="leaderboard-strip-title">
-                  Live leaderboard races running beside the board
+                  Chase live leaderboard races while the board is hot
                 </div>
               </div>
               <Link className="leaderboard-strip-link" href="/leaderboards">
@@ -558,33 +820,21 @@ function AuthenticatedHome() {
                 <span className="discovery-title">Hot Picks</span>
               </div>
               <div className="discovery-subtitle">
-                Quick-entry plays pulled from live and about-to-start boards
+                Quick-entry plays pulled from the sharpest live and almost-live boards
               </div>
-            </div>
-
-            <div className="carousel-controls">
-              <button
-                type="button"
-                className="carousel-arrow"
-                onClick={() => scrollTopPicks("left")}
-                aria-label="Scroll top picks left"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                className="carousel-arrow"
-                onClick={() => scrollTopPicks("right")}
-                aria-label="Scroll top picks right"
-              >
-                ›
-              </button>
             </div>
           </div>
 
-          <div className="top-picks-track" ref={topPicksRef}>
+          <div className="featured-picks-grid" ref={topPicksRef}>
             {topPicks.length > 0 ? (
-              topPicks.map((fixture) => renderDiscoveryCard(fixture))
+              <>
+                {renderFeatureSpotlight(topPicks[0], 0, true)}
+                <div className="featured-picks-stack">
+                  {topPicks.slice(1, 5).map((fixture, index) =>
+                    renderFeatureSpotlight(fixture, index + 1),
+                  )}
+                </div>
+              </>
             ) : (
               <div className="empty-state" style={{ width: "100%" }}>
                 <div className="empty-title">No top picks right now</div>

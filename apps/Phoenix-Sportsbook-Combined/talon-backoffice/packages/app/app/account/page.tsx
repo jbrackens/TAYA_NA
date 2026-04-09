@@ -122,6 +122,19 @@ export default function AccountPage() {
     tierProgressTotal > 0 && loyalty
       ? Math.max(0, Math.min(100, (loyalty.pointsBalance / tierProgressTotal) * 100))
       : 100;
+  const featuredBoardName = leaderboards[0]?.name || "Featured Board";
+  const viewerPercentile =
+    viewerStanding && featuredTotalCount > 1
+      ? Math.round(
+          ((featuredTotalCount - viewerStanding.rank) /
+            (featuredTotalCount - 1)) *
+            100,
+        )
+      : 100;
+  const viewerTopBand =
+    viewerStanding && featuredTotalCount > 0
+      ? Math.max(1, 100 - viewerPercentile)
+      : null;
 
   return (
     <>
@@ -259,31 +272,55 @@ export default function AccountPage() {
               </Link>
             </div>
 
-            {viewerStanding ? (() => {
-              const percentile = featuredTotalCount > 1
-                ? Math.round(((featuredTotalCount - viewerStanding.rank) / (featuredTotalCount - 1)) * 100)
-                : 100;
-              const boardName = leaderboards[0]?.name || "Featured Board";
-              return (
-                <div className="competition-viewer-card competition-viewer-card--glow">
+            {viewerStanding ? (
+              <div className="competition-viewer-card competition-viewer-card--glow">
+                <div className="competition-viewer-main">
                   <div>
-                    <div className="competition-viewer-kicker">Your Rank &middot; {boardName}</div>
-                    <div className="competition-viewer-title">#{viewerStanding.rank} on this board</div>
+                    <div className="competition-viewer-kicker">
+                      Your Rank &middot; {featuredBoardName}
+                    </div>
+                    <div className="competition-viewer-title">
+                      #{viewerStanding.rank} on this board
+                    </div>
                     <div className="competition-viewer-copy">
-                      {viewerStanding.eventCount} scoring events, {viewerStanding.score.toLocaleString()} total.
+                      {viewerStanding.eventCount} scoring events,{" "}
+                      {viewerStanding.score.toLocaleString()} total.
                     </div>
                     <div className="competition-viewer-percentile">
                       {viewerStanding.rank === 1
-                        ? "Leading the board!"
-                        : `Top ${100 - percentile}% — ahead of ${percentile}% of competitors`}
+                        ? "Leading the board right now."
+                        : viewerTopBand
+                          ? `Top ${viewerTopBand}% of the field with live room to climb.`
+                          : "You are live on the board."}
                     </div>
                   </div>
                   <div className="competition-viewer-score">
                     {viewerStanding.score.toLocaleString()}
                   </div>
                 </div>
-              );
-            })() : null}
+
+                <div className="competition-viewer-stats">
+                  <div className="competition-viewer-stat">
+                    <span className="competition-viewer-stat-label">Field</span>
+                    <strong className="competition-viewer-stat-value">
+                      {featuredTotalCount || "—"} runners
+                    </strong>
+                  </div>
+                  <div className="competition-viewer-stat">
+                    <span className="competition-viewer-stat-label">Position</span>
+                    <strong className="competition-viewer-stat-value">
+                      {viewerStanding.rank === 1 ? "Out Front" : `Chasing #${Math.max(1, viewerStanding.rank - 1)}`}
+                    </strong>
+                  </div>
+                  <div className="competition-viewer-stat">
+                    <span className="competition-viewer-stat-label">Pressure</span>
+                    <strong className="competition-viewer-stat-value">
+                      {viewerStanding.rank <= 3 ? "Podium Heat" : "Climb Live"}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {leaderboards.length > 0 ? (
               <div className="competition-board-list">
@@ -547,9 +584,8 @@ const accountPageStyles = `
   }
   .competition-viewer-card {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     gap: ${spacing.lg};
-    align-items: center;
     padding: ${spacing.lg};
     border-radius: ${radius.xl};
     background: rgba(57,255,20,0.08);
@@ -577,6 +613,37 @@ const accountPageStyles = `
   .competition-viewer-score {
     color: ${colors.primary};
     font-size: ${font["3xl"]};
+    font-weight: ${font.extrabold};
+  }
+  .competition-viewer-main {
+    display: flex;
+    justify-content: space-between;
+    gap: ${spacing.lg};
+    align-items: center;
+  }
+  .competition-viewer-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: ${spacing.sm};
+  }
+  .competition-viewer-stat {
+    padding: ${spacing.sm} ${spacing.md};
+    border-radius: ${radius.xl};
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .competition-viewer-stat-label {
+    display: block;
+    color: ${colors.textSecondary};
+    font-size: 11px;
+    font-weight: ${font.bold};
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: ${spacing.xs};
+  }
+  .competition-viewer-stat-value {
+    color: ${colors.textDefault};
+    font-size: ${font.md};
     font-weight: ${font.extrabold};
   }
   .competition-viewer-percentile {
@@ -658,6 +725,8 @@ const accountPageStyles = `
   }
   @media (max-width: 640px) {
     .loyalty-progress-head { flex-direction: column; }
+    .competition-viewer-main { flex-direction: column; align-items: flex-start; }
+    .competition-viewer-stats { grid-template-columns: 1fr; }
   }
   .loyalty-progress-track {
     position: relative;

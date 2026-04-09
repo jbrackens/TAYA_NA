@@ -18,6 +18,7 @@ export default function LeaderboardDetailPage() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardDefinition | null>(null);
   const [items, setItems] = useState<LeaderboardStanding[]>([]);
   const [viewerEntry, setViewerEntry] = useState<LeaderboardStanding | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ export default function LeaderboardDetailPage() {
         ]);
         setLeaderboard(detail.leaderboard);
         setItems(entries.items || []);
+        setTotalCount(entries.totalCount || 0);
         setViewerEntry(entries.viewerEntry || detail.viewerEntry || null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
@@ -43,6 +45,22 @@ export default function LeaderboardDetailPage() {
 
     void load();
   }, [leaderboardId, user?.id]);
+
+  const podium = items.slice(0, 3);
+  const nextPositionEntry =
+    viewerEntry && viewerEntry.rank > 1
+      ? items.find((entry) => entry.rank === viewerEntry.rank - 1) || null
+      : null;
+  const viewerGap =
+    viewerEntry && nextPositionEntry
+      ? Math.max(0, nextPositionEntry.score - viewerEntry.score)
+      : null;
+  const viewerPercentile =
+    viewerEntry && totalCount > 1
+      ? Math.round(((totalCount - viewerEntry.rank) / (totalCount - 1)) * 100)
+      : 100;
+  const viewerTopBand =
+    viewerEntry && totalCount > 0 ? Math.max(1, 100 - viewerPercentile) : null;
 
   return (
     <>
@@ -57,7 +75,7 @@ export default function LeaderboardDetailPage() {
               <h1>{leaderboard?.name || 'Leaderboard'}</h1>
               <p>
                 {leaderboard?.description ||
-                  'Track the sharpest runners on this TAYA NA! competition board.'}
+                  'Track the runners setting the pace on this TAYA NA! competition board.'}
               </p>
             </div>
             {leaderboard ? (
@@ -82,23 +100,75 @@ export default function LeaderboardDetailPage() {
             </div>
           ) : null}
 
+          {podium.length > 0 ? (
+            <div className="leaderboard-podium">
+              {podium.map((entry) => (
+                <div
+                  key={`podium-${entry.playerId}`}
+                  className={`leaderboard-podium-card leaderboard-podium-card--rank${Math.min(entry.rank, 3)}`}
+                >
+                  <div className="leaderboard-podium-rank">#{entry.rank}</div>
+                  <div className="leaderboard-podium-player">{entry.playerId}</div>
+                  <div className="leaderboard-podium-score">
+                    {entry.score.toLocaleString()}
+                  </div>
+                  <div className="leaderboard-podium-meta">
+                    {entry.eventCount} score events
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
           {viewerEntry ? (
             <div className={`leaderboard-viewer-card${viewerEntry.rank <= 3 ? ` leaderboard-viewer-card--rank${viewerEntry.rank}` : ''}`}>
-              <div>
-                <div className="leaderboard-viewer-kicker">Your Position &middot; {leaderboard?.name || 'Leaderboard'}</div>
-                <div className="leaderboard-viewer-title">#{viewerEntry.rank} on this board</div>
-                <div className="leaderboard-viewer-copy">
-                  {viewerEntry.eventCount} scoring events with a total of {viewerEntry.score.toLocaleString()}
-                  {viewerEntry.lastEventAt
-                    ? ` · Last activity: ${new Date(viewerEntry.lastEventAt).toLocaleDateString()}`
-                    : ''}
+              <div className="leaderboard-viewer-main">
+                <div>
+                  <div className="leaderboard-viewer-kicker">Your Position &middot; {leaderboard?.name || 'Leaderboard'}</div>
+                  <div className="leaderboard-viewer-title">#{viewerEntry.rank} on this board</div>
+                  <div className="leaderboard-viewer-copy">
+                    {viewerEntry.eventCount} scoring events with a total of {viewerEntry.score.toLocaleString()}
+                    {viewerEntry.lastEventAt
+                      ? ` · Last activity: ${new Date(viewerEntry.lastEventAt).toLocaleDateString()}`
+                      : ''}
+                  </div>
+                  <div className="leaderboard-viewer-next">
+                    {viewerEntry.rank === 1
+                      ? 'You are setting the pace for everyone behind you.'
+                      : viewerGap !== null
+                        ? `${viewerGap.toLocaleString()} points to catch #${viewerEntry.rank - 1}.`
+                        : 'Keep stacking qualifying action to climb the next rung.'}
+                  </div>
+                </div>
+                <div className="leaderboard-viewer-score-wrap">
+                  <div className="leaderboard-viewer-score">{viewerEntry.score.toLocaleString()}</div>
+                  <div className="leaderboard-viewer-score-meta">
+                    {viewerTopBand ? `Top ${viewerTopBand}%` : 'Live on board'}
+                  </div>
                 </div>
               </div>
-              <div className="leaderboard-viewer-score">{viewerEntry.score.toLocaleString()}</div>
+              <div className="leaderboard-viewer-stats">
+                <div className="leaderboard-viewer-stat">
+                  <span>Field</span>
+                  <strong>{totalCount || '—'} players</strong>
+                </div>
+                <div className="leaderboard-viewer-stat">
+                  <span>Pressure</span>
+                  <strong>{viewerEntry.rank <= 3 ? 'Podium Heat' : `Chasing #${Math.max(1, viewerEntry.rank - 1)}`}</strong>
+                </div>
+                <div className="leaderboard-viewer-stat">
+                  <span>Last Push</span>
+                  <strong>
+                    {viewerEntry.lastEventAt
+                      ? new Date(viewerEntry.lastEventAt).toLocaleDateString()
+                      : 'Waiting'}
+                  </strong>
+                </div>
+              </div>
             </div>
           ) : user ? (
             <div className="leaderboard-detail-state">
-              You are not ranked on this board yet. Qualifying bets and referral actions will move you onto the ladder.
+              You are not on this ladder yet. One qualifying push gets you into the race.
             </div>
           ) : null}
 
@@ -128,7 +198,7 @@ export default function LeaderboardDetailPage() {
             </div>
           ) : (
             <div className="leaderboard-detail-state">
-              No entries are ranked on this board yet.
+              This board has not kicked into action yet.
             </div>
           )}
         </div>
@@ -217,6 +287,54 @@ const detailStyles = `
     font-size: 15px;
     line-height: 1.5;
   }
+  .leaderboard-podium {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .leaderboard-podium-card {
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: rgba(8, 13, 28, 0.78);
+  }
+  .leaderboard-podium-card--rank1 {
+    border-color: rgba(255,215,0,0.45);
+    background: linear-gradient(135deg, rgba(255,215,0,0.14), rgba(12,18,38,0.92));
+  }
+  .leaderboard-podium-card--rank2 {
+    border-color: rgba(192,192,192,0.35);
+    background: linear-gradient(135deg, rgba(192,192,192,0.12), rgba(12,18,38,0.92));
+  }
+  .leaderboard-podium-card--rank3 {
+    border-color: rgba(205,127,50,0.35);
+    background: linear-gradient(135deg, rgba(205,127,50,0.12), rgba(12,18,38,0.92));
+  }
+  .leaderboard-podium-rank {
+    color: #39ff14;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .leaderboard-podium-player {
+    color: #f8fafc;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .leaderboard-podium-score {
+    color: #ffffff;
+    font-size: 26px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+  .leaderboard-podium-meta {
+    color: #d3d3d3;
+    font-size: 12px;
+  }
   .leaderboard-viewer-card--rank1 {
     border-color: #ffd700;
     background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(12,18,38,0.9));
@@ -236,9 +354,8 @@ const detailStyles = `
   }
   .leaderboard-viewer-card {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 18px;
-    align-items: center;
     margin-bottom: 18px;
     padding: 18px 20px;
     border-radius: 18px;
@@ -263,10 +380,59 @@ const detailStyles = `
     color: #d3d3d3;
     font-size: 13px;
   }
+  .leaderboard-viewer-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: center;
+  }
+  .leaderboard-viewer-next {
+    margin-top: 8px;
+    color: #bfff67;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .leaderboard-viewer-score-wrap {
+    display: grid;
+    justify-items: end;
+    gap: 6px;
+  }
   .leaderboard-viewer-score {
     color: #39ff14;
     font-size: 28px;
     font-weight: 900;
+  }
+  .leaderboard-viewer-score-meta {
+    color: #d3d3d3;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .leaderboard-viewer-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .leaderboard-viewer-stat {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .leaderboard-viewer-stat span {
+    display: block;
+    color: #d3d3d3;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .leaderboard-viewer-stat strong {
+    color: #f8fafc;
+    font-size: 14px;
+    font-weight: 800;
   }
   .leaderboard-standing-row {
     display: flex;
@@ -308,9 +474,16 @@ const detailStyles = `
     }
     .leaderboard-detail-head,
     .leaderboard-standing-row,
-    .leaderboard-viewer-card {
+    .leaderboard-viewer-main {
       flex-direction: column;
       align-items: flex-start;
+    }
+    .leaderboard-podium,
+    .leaderboard-viewer-stats {
+      grid-template-columns: 1fr;
+    }
+    .leaderboard-viewer-score-wrap {
+      justify-items: start;
     }
     .leaderboard-standing-rank {
       width: auto;

@@ -251,8 +251,47 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
       {(() => {
         const totalPoints = Object.values(pointsByBetId).reduce((sum, pts) => sum + pts, 0);
         return totalPoints > 0 ? (
-          <div style={{ color: "#39ff14", fontSize: "12px", fontWeight: 600, opacity: 0.85 }}>
-            {totalPoints} points earned from settled bets this page
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "14px",
+              flexWrap: "wrap",
+              padding: "14px 16px",
+              borderRadius: "14px",
+              border: "1px solid rgba(57,255,20,0.18)",
+              background:
+                "linear-gradient(135deg, rgba(57,255,20,0.1), rgba(9,18,12,0.94))",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  color: "#39ff14",
+                  fontSize: "11px",
+                  fontWeight: 800,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  marginBottom: "4px",
+                }}
+              >
+                Rewards Posted
+              </div>
+              <div style={{ color: "#D3D3D3", fontSize: "12px", lineHeight: 1.5 }}>
+                Settled tickets on this page already pushed points into your TAYA NA! climb.
+              </div>
+            </div>
+            <div
+              style={{
+                color: "#f8fafc",
+                fontSize: "22px",
+                fontWeight: 800,
+                whiteSpace: "nowrap",
+              }}
+            >
+              +{totalPoints} pts
+            </div>
           </div>
         ) : null;
       })()}
@@ -339,18 +378,31 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                         >
                           Points Earned
                         </div>
-                        <div style={{ color: "#D3D3D3", fontSize: "12px" }}>
-                          Settled bet rewards posted to your TAYA NA! loyalty balance.
+                        <div style={{ color: "#D3D3D3", fontSize: "12px", lineHeight: 1.5 }}>
+                          This settled ticket already pushed your loyalty balance forward.
                         </div>
                       </div>
-                      <div
-                        style={{
-                          color: "#39ff14",
-                          fontSize: "18px",
-                          fontWeight: 800,
-                        }}
-                      >
-                        +{pointsByBetId[bet.betId]}
+                      <div style={{ display: "grid", justifyItems: "end", gap: "4px" }}>
+                        <div
+                          style={{
+                            color: "#39ff14",
+                            fontSize: "18px",
+                            fontWeight: 800,
+                          }}
+                        >
+                          +{pointsByBetId[bet.betId]}
+                        </div>
+                        <div
+                          style={{
+                            color: "#a7f3d0",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Rewards climb
+                        </div>
                       </div>
                     </div>
                   ) : null}
