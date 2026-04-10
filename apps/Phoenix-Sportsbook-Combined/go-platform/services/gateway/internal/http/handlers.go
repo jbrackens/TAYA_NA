@@ -106,7 +106,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// Reverse proxy auth routes to the auth service
 	registerAuthProxy(mux)
 
-	geoService := compliance.NewMockGeoComplianceService()
+	geoService := compliance.NewMockGeoComplianceServiceFromEnv()
 	kycService := compliance.NewMockKYCService()
 	rgService := compliance.NewMockResponsibleGamblingService()
 	compliance.RegisterComplianceRoutes(mux, geoService, kycService, rgService)

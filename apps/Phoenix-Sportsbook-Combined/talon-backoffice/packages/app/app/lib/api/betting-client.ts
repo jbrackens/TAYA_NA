@@ -32,37 +32,6 @@ export interface PrecheckBetsRequest {
   }>;
 }
 
-// Response types (Go API uses snake_case)
-interface BetSelectionRaw {
-  selection_id: string;
-  selection_name: string;
-  odds: number;
-}
-
-interface PlaceBetResponseRaw {
-  bet_id: string;
-  user_id: string;
-  fixture_id: string;
-  market_id: string;
-  selection: BetSelectionRaw;
-  stake: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface PlaceParlayResponseRaw {
-  parlay_id: string;
-  user_id: string;
-  bets: PlaceBetResponseRaw[];
-  total_stake: number;
-  total_odds: number;
-  potential_return: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
-
 interface BetLegRaw {
   marketId: string;
   selectionId: string;
@@ -192,10 +161,18 @@ export interface PrecheckBetsResponse {
   }>;
 }
 
+function toStakeCents(amount: number): number {
+  return Math.round(amount * 100);
+}
+
+function buildIdempotencyKey(prefix: string): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+function normalizeSnakeCase(obj: unknown): unknown {
   if (Array.isArray(obj)) {
-    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
+    return obj.map(normalizeSnakeCase);
   }
   if (obj !== null && typeof obj === 'object') {
     return Object.entries(obj).reduce<Record<string, unknown>>((acc, [key, value]) => {
@@ -213,16 +190,82 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<s
  * Place a single bet
  */
 export async function placeBet(request: PlaceBetRequest): Promise<PlaceBetResponse> {
-  const raw = await apiClient.post<PlaceBetResponseRaw>('/api/v1/bets', request);
-  return normalizeSnakeCase(raw);
+  const requestId = buildIdempotencyKey('bet');
+  const raw = await apiClient.post<Record<string, unknown>>('/api/v1/bets/place/', {
+    userId: request.user_id,
+    requestId,
+    marketId: request.market_id,
+    selectionId: request.selection_id,
+    stakeCents: toStakeCents(request.stake),
+    odds: request.odds ?? 0,
+    idempotencyKey: requestId,
+  });
+
+  return {
+    betId: String(raw.betId ?? ''),
+    userId: String(raw.userId ?? request.user_id),
+    fixtureId: request.fixture_id,
+    marketId: String(raw.marketId ?? request.market_id),
+    selection: {
+      selectionId: String(raw.selectionId ?? request.selection_id),
+      selectionName: String(raw.selectionId ?? request.selection_id),
+      odds: Number(raw.odds ?? request.odds ?? 0),
+    },
+    stake: Number(raw.stakeCents ?? toStakeCents(request.stake)) / 100,
+    status: String(raw.status ?? 'placed'),
+    createdAt: String(raw.placedAt ?? new Date().toISOString()),
+    updatedAt: String(raw.placedAt ?? new Date().toISOString()),
+  };
 }
 
 /**
  * Place a parlay bet
  */
 export async function placeParlay(request: PlaceParlayRequest): Promise<PlaceParlayResponse> {
-  const raw = await apiClient.post<PlaceParlayResponseRaw>('/api/v1/parlays', request);
-  return normalizeSnakeCase(raw);
+  const requestId = buildIdempotencyKey('parlay');
+  const raw = await apiClient.post<Record<string, unknown>>('/api/v1/bets/place/', {
+    userId: request.user_id,
+    requestId,
+    marketId: request.bets[0]?.market_id ?? '',
+    selectionId: request.bets[0]?.selection_id ?? '',
+    stakeCents: toStakeCents(request.stake),
+    odds: 0,
+    idempotencyKey: requestId,
+    items: request.bets.map((bet) => ({
+      marketId: bet.market_id,
+      selectionId: bet.selection_id,
+      stakeCents: toStakeCents(request.stake),
+      odds: bet.odds ?? 0,
+    })),
+  });
+
+  const normalizedBets = request.bets.map((bet) => ({
+    betId: String(raw.betId ?? requestId),
+    userId: request.user_id,
+    fixtureId: bet.fixture_id,
+    marketId: bet.market_id,
+    selection: {
+      selectionId: bet.selection_id,
+      selectionName: bet.selection_id,
+      odds: bet.odds ?? 0,
+    },
+    stake: request.stake,
+    status: String(raw.status ?? 'placed'),
+    createdAt: String(raw.placedAt ?? new Date().toISOString()),
+    updatedAt: String(raw.placedAt ?? new Date().toISOString()),
+  }));
+
+  return {
+    parlayId: String(raw.betId ?? requestId),
+    userId: String(raw.userId ?? request.user_id),
+    bets: normalizedBets,
+    totalStake: Number(raw.stakeCents ?? toStakeCents(request.stake)) / 100,
+    totalOdds: normalizedBets.reduce((product, bet) => product * (bet.selection.odds || 1), 1),
+    potentialReturn: Number(raw.potentialPayoutCents ?? 0) / 100,
+    status: String(raw.status ?? 'placed'),
+    createdAt: String(raw.placedAt ?? new Date().toISOString()),
+    updatedAt: String(raw.placedAt ?? new Date().toISOString()),
+  };
 }
 
 /**
@@ -280,7 +323,7 @@ export async function getUserBetsPage(
  */
 export async function getBet(betId: string): Promise<UserBet> {
   const raw = await apiClient.get<UserBetRaw>(`/api/v1/bets/${betId}`);
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as UserBet;
 }
 
 /**
@@ -288,7 +331,7 @@ export async function getBet(betId: string): Promise<UserBet> {
  */
 export async function getCashoutOffer(betId: string): Promise<CashoutOffer> {
   const raw = await apiClient.get<CashoutOfferRaw>(`/api/v1/bets/${betId}/cashout-offer`);
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as CashoutOffer;
 }
 
 /**
@@ -296,13 +339,25 @@ export async function getCashoutOffer(betId: string): Promise<CashoutOffer> {
  */
 export async function cashoutBet(betId: string): Promise<CashoutResponse> {
   const raw = await apiClient.post<CashoutResponseRaw>(`/api/v1/bets/${betId}/cashout`);
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as CashoutResponse;
 }
 
 /**
  * Precheck bets before placement
  */
 export async function precheckBets(request: PrecheckBetsRequest): Promise<PrecheckBetsResponse> {
-  const raw = await apiClient.post<PrecheckBetsResponseRaw>('/api/v1/bets/precheck', request);
-  return normalizeSnakeCase(raw);
+  const raw = await apiClient.post<PrecheckBetsResponseRaw>('/api/v1/bets/precheck/', {
+    userId: request.user_id,
+    marketId: request.bets[0]?.market_id ?? '',
+    selectionId: request.bets[0]?.selection_id ?? '',
+    stakeCents: toStakeCents(request.bets[0]?.stake ?? 0),
+    odds: request.bets[0]?.odds ?? 0,
+    items: request.bets.map((bet) => ({
+      marketId: bet.market_id,
+      selectionId: bet.selection_id,
+      stakeCents: toStakeCents(bet.stake),
+      odds: bet.odds ?? 0,
+    })),
+  });
+  return normalizeSnakeCase(raw) as PrecheckBetsResponse;
 }

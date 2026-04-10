@@ -118,7 +118,7 @@ export const BetslipPanel: React.FC = () => {
       }
 
       // Geolocation compliance check
-      const geoResult = await geoComplianceService.checkLocation();
+      const geoResult = await geoComplianceService.checkLocation(userId);
       if (!geoResult.allowed) {
         const geoMsg =
           geoResult.errorMessage ||

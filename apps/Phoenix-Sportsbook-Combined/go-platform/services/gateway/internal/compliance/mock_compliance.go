@@ -3,30 +3,55 @@ package compliance
 import (
 	"context"
 	"fmt"
+	"os"
+	"strings"
 	"sync"
 	"time"
 )
+
+type GeoSandboxConfig struct {
+	Enabled bool
+	Country string
+	State   string
+	City    string
+}
 
 // MockGeoComplianceService is an in-memory mock geo compliance service
 type MockGeoComplianceService struct {
 	mu                sync.RWMutex
 	approvedCountries map[string]bool
 	locationHistory   map[string][]*LocationResult
+	sandboxConfig     GeoSandboxConfig
 }
 
 // NewMockGeoComplianceService creates a new mock geo compliance service
 func NewMockGeoComplianceService() *MockGeoComplianceService {
-	approvedCountries := map[string]bool{
-		"US": true,
-		"CA": true,
-		"GB": true,
-		"IE": true,
-		"AU": true,
-		"NZ": true,
+	return NewMockGeoComplianceServiceWithConfig(defaultApprovedCountries(), GeoSandboxConfig{})
+}
+
+func NewMockGeoComplianceServiceFromEnv() *MockGeoComplianceService {
+	return NewMockGeoComplianceServiceWithConfig(
+		parseApprovedCountriesEnv(os.Getenv("COMPLIANCE_GEO_APPROVED_COUNTRIES")),
+		GeoSandboxConfig{
+			Enabled: parseBoolEnv(os.Getenv("COMPLIANCE_GEO_SANDBOX_MODE")),
+			Country: strings.ToUpper(strings.TrimSpace(defaultStringEnv(os.Getenv("COMPLIANCE_GEO_SANDBOX_COUNTRY"), "US"))),
+			State:   strings.TrimSpace(os.Getenv("COMPLIANCE_GEO_SANDBOX_STATE")),
+			City:    strings.TrimSpace(defaultStringEnv(os.Getenv("COMPLIANCE_GEO_SANDBOX_CITY"), "Sandbox City")),
+		},
+	)
+}
+
+func NewMockGeoComplianceServiceWithConfig(approvedCountries map[string]bool, sandboxConfig GeoSandboxConfig) *MockGeoComplianceService {
+	if len(approvedCountries) == 0 {
+		approvedCountries = defaultApprovedCountries()
+	}
+	if sandboxConfig.Country == "" {
+		sandboxConfig.Country = "US"
 	}
 	return &MockGeoComplianceService{
 		approvedCountries: approvedCountries,
 		locationHistory:   make(map[string][]*LocationResult),
+		sandboxConfig:     sandboxConfig,
 	}
 }
 
@@ -40,6 +65,22 @@ func (m *MockGeoComplianceService) VerifyLocation(ctx context.Context, userID st
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	if m.sandboxConfig.Enabled {
+		result := &LocationResult{
+			UserID:    userID,
+			Latitude:  latitude,
+			Longitude: longitude,
+			Status:    "approved",
+			Message:   "Location approved in sandbox mode",
+			Country:   m.sandboxConfig.Country,
+			State:     m.sandboxConfig.State,
+			City:      m.sandboxConfig.City,
+			Timestamp: time.Now().UTC().Format(time.RFC3339),
+		}
+		m.locationHistory[userID] = append(m.locationHistory[userID], result)
+		return result, nil
+	}
 
 	// Simple mock: determine country by coordinates
 	country := m.getCountryFromCoords(latitude, longitude)
@@ -80,8 +121,54 @@ func (m *MockGeoComplianceService) IsLocationApproved(ctx context.Context, count
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
+	if m.sandboxConfig.Enabled {
+		return true, nil
+	}
+
 	approved, found := m.approvedCountries[country]
 	return approved && found, nil
+}
+
+func defaultApprovedCountries() map[string]bool {
+	return map[string]bool{
+		"US": true,
+		"CA": true,
+		"GB": true,
+		"IE": true,
+		"AU": true,
+		"NZ": true,
+	}
+}
+
+func parseApprovedCountriesEnv(raw string) map[string]bool {
+	countries := map[string]bool{}
+	for _, token := range strings.Split(raw, ",") {
+		country := strings.ToUpper(strings.TrimSpace(token))
+		if country != "" {
+			countries[country] = true
+		}
+	}
+	if len(countries) == 0 {
+		return defaultApprovedCountries()
+	}
+	return countries
+}
+
+func parseBoolEnv(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
+}
+
+func defaultStringEnv(raw string, fallback string) string {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return fallback
+	}
+	return value
 }
 
 func (m *MockGeoComplianceService) getCountryFromCoords(lat float64, lng float64) string {

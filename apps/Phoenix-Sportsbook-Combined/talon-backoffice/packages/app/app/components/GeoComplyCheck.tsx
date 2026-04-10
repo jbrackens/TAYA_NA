@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { geoComplianceService, GeoComplianceResult } from '../lib/services/geocomply';
+import { useAuth } from '../hooks/useAuth';
 
 interface GeoComplyCheckProps {
   children: React.ReactNode;
@@ -11,12 +12,13 @@ interface GeoComplyCheckProps {
 export default function GeoComplyCheck({ children, fallback }: GeoComplyCheckProps) {
   const [result, setResult] = useState<GeoComplianceResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     const checkCompliance = async () => {
       setLoading(true);
       try {
-        const complianceResult = await geoComplianceService.checkLocation();
+        const complianceResult = await geoComplianceService.checkLocation(user?.id);
         setResult(complianceResult);
       } catch (err) {
         setResult({
@@ -30,7 +32,7 @@ export default function GeoComplyCheck({ children, fallback }: GeoComplyCheckPro
     };
 
     checkCompliance();
-  }, []);
+  }, [user?.id]);
 
   const containerStyle: React.CSSProperties = {
     display: 'flex',

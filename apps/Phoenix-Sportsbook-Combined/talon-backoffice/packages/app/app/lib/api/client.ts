@@ -31,6 +31,23 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
+  private normalizePath(path: string): string {
+    if (this.baseUrl || !path.startsWith("/")) {
+      return path;
+    }
+
+    const [pathname, search = ""] = path.split("?");
+    const shouldNormalize =
+      (pathname.startsWith("/api/") || pathname.startsWith("/admin/")) &&
+      !pathname.endsWith("/");
+
+    if (!shouldNormalize) {
+      return path;
+    }
+
+    return search ? `${pathname}/?${search}` : `${pathname}/`;
+  }
+
   private getHeaders(): Record<string, string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (typeof window !== 'undefined') {
@@ -42,9 +59,10 @@ class ApiClient {
   }
 
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
+    const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl
-      ? new URL(`${this.baseUrl}${path}`)
-      : new URL(path, window.location.origin);
+      ? new URL(`${this.baseUrl}${normalizedPath}`)
+      : new URL(normalizedPath, window.location.origin);
     if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     const res = await fetch(url.toString(), { headers: this.getHeaders() });
     if (!res.ok) throw new ApiError(res.status, await res.text());
@@ -52,7 +70,8 @@ class ApiClient {
   }
 
   async post<T>(path: string, body?: Record<string, unknown>): Promise<T> {
-    const url = this.baseUrl ? `${this.baseUrl}${path}` : path;
+    const normalizedPath = this.normalizePath(path);
+    const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
       method: 'POST', headers: this.getHeaders(), body: body ? JSON.stringify(body) : undefined
     });
@@ -61,7 +80,8 @@ class ApiClient {
   }
 
   async put<T>(path: string, body?: Record<string, unknown>): Promise<T> {
-    const url = this.baseUrl ? `${this.baseUrl}${path}` : path;
+    const normalizedPath = this.normalizePath(path);
+    const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
       method: 'PUT', headers: this.getHeaders(), body: body ? JSON.stringify(body) : undefined
     });
@@ -70,7 +90,8 @@ class ApiClient {
   }
 
   async delete<T>(path: string): Promise<T> {
-    const url = this.baseUrl ? `${this.baseUrl}${path}` : path;
+    const normalizedPath = this.normalizePath(path);
+    const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
       method: 'DELETE', headers: this.getHeaders()
     });

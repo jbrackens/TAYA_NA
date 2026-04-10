@@ -4,6 +4,8 @@ import Link from "next/link";
 import LoginForm from "../../components/LoginForm";
 
 export default function LoginPage() {
+  const isLocalDev = process.env.NODE_ENV !== "production";
+
   return (
     <div
       style={{
@@ -80,6 +82,38 @@ export default function LoginPage() {
         </div>
 
         <LoginForm />
+
+        {isLocalDev && (
+          <div
+            style={{
+              marginTop: "16px",
+              padding: "12px 14px",
+              borderRadius: "12px",
+              background: "rgba(19, 28, 56, 0.92)",
+              border: "1px solid rgba(87, 126, 255, 0.24)",
+              color: "#cfe0ff",
+              fontSize: "13px",
+              lineHeight: 1.6,
+            }}
+          >
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#8fb9ff",
+                marginBottom: "6px",
+              }}
+            >
+              Local Demo Access
+            </div>
+            <div>
+              Use <strong>demo@phoenix.local</strong> with password{" "}
+              <strong>demo123</strong>.
+            </div>
+          </div>
+        )}
 
         <div
           style={{
