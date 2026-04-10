@@ -140,8 +140,26 @@ class ApiClient {
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
-    super(message);
+  constructor(status: number, body: string) {
+    let readable = body;
+    try {
+      const parsed: unknown = JSON.parse(body);
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        'error' in parsed
+      ) {
+        const errObj = (parsed as Record<string, unknown>).error;
+        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+          readable = String((errObj as Record<string, unknown>).message);
+        }
+      } else if (parsed && typeof parsed === 'object' && 'message' in parsed) {
+        readable = String((parsed as Record<string, unknown>).message);
+      }
+    } catch {
+      // body is not JSON, use as-is
+    }
+    super(readable);
     this.status = status;
     this.name = 'ApiError';
   }

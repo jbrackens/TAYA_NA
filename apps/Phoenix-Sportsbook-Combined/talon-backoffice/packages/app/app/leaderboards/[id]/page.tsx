@@ -173,7 +173,9 @@ export default function LeaderboardDetailPage() {
           ) : null}
 
           {error ? (
-            <div className="leaderboard-detail-state">{error}</div>
+            <div className="leaderboard-detail-state">
+              Unable to load standings right now. Try again later.
+            </div>
           ) : isLoading ? (
             <div className="leaderboard-detail-state">Loading standings...</div>
           ) : items.length ? (
