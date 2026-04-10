@@ -40,6 +40,9 @@ import { logger } from "../lib/logger";
 export default function RewardsPage() {
   const { user } = useAuth();
   const { t } = useTranslation("rewards");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const [loyalty, setLoyalty] = useState<LoyaltyAccount | null>(null);
   const [loyaltyLedger, setLoyaltyLedger] = useState<LoyaltyLedgerEntry[]>([]);
@@ -178,6 +181,10 @@ export default function RewardsPage() {
     viewerStanding && featuredTotalCount > 0
       ? Math.max(1, 100 - viewerPercentile)
       : null;
+
+  if (!mounted) {
+    return <div className="rewards-page" />;
+  }
 
   return (
     <>
