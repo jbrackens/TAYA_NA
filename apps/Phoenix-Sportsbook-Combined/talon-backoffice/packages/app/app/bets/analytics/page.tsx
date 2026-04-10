@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { getBetAnalytics } from '../../lib/api/betting-client';
 import type { BetAnalytics } from '../../lib/api/betting-client';
+import { ApiError } from '../../lib/api/client';
 import BettingHeatmap from '../../components/BettingHeatmap';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import { colors, font, spacing, radius } from '../../lib/theme';
@@ -52,7 +53,12 @@ function AnalyticsContent() {
         const message = err instanceof Error ? err.message : String(err);
         logger.error('Analytics', 'Failed to load bet analytics', message);
         if (!cancelled) {
-          setError(true);
+          // 404 means no bet data exists yet — show empty state, not error
+          if (err instanceof ApiError && err.status === 404) {
+            setData({ totalBets: 0, winRate: 0, roi: 0, avgStakeCents: 0, totalProfitCents: 0, daily: [], monthly: [], stakeBuckets: [], heatmap: [] } as BetAnalytics);
+          } else {
+            setError(true);
+          }
           setLoading(false);
         }
       });
