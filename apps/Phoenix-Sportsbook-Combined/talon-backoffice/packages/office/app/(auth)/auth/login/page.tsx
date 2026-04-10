@@ -33,6 +33,26 @@ export default function LoginPage() {
         return;
       }
 
+      // Store tokens in the legacy @phoenix-ui/utils token store (localStorage)
+      // so the Pages Router session guard can find them. The Go gateway returns
+      // opaque bearer tokens (atk_...) instead of JWTs — the dev-mode bypass
+      // in utils/auth.ts accepts these without JWT validation.
+      const accessToken = data.accessToken || data.token || '';
+      const refreshToken = data.refreshToken || data.refresh_token || '';
+      if (accessToken) {
+        localStorage.setItem('JdaToken', accessToken);
+        if (refreshToken) {
+          localStorage.setItem('RefreshToken', refreshToken);
+        }
+        // Set generous expiry so the session guard doesn't expire the token
+        const oneHourMs = Date.now() + (data.expiresInSeconds || 3600) * 1000;
+        localStorage.setItem('JdaTokenExpDate', JSON.stringify(oneHourMs));
+        if (refreshToken) {
+          const refreshExpiry = Date.now() + (data.refreshExpiresInSeconds || 7200) * 1000;
+          localStorage.setItem('RefreshTokenExpDate', JSON.stringify(refreshExpiry));
+        }
+      }
+
       const destination = returnUrl.startsWith('/') ? returnUrl : '/dashboard';
       window.location.assign(destination);
     } catch (err) {

@@ -66,6 +66,16 @@ function LoyaltySettingsPageContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingTier, setIsSavingTier] = useState(false);
   const [isSavingRule, setIsSavingRule] = useState(false);
+  const [isCreatingRule, setIsCreatingRule] = useState(false);
+  const [ruleMode, setRuleMode] = useState<'edit' | 'create'>('edit');
+  const [newRuleDraft, setNewRuleDraft] = useState<Omit<LoyaltyRule, 'ruleId'>>({
+    name: '',
+    sourceType: 'bet_settlement',
+    active: true,
+    multiplier: 1.0,
+    minQualifiedStakeCents: 0,
+    maxPointsPerEvent: 0,
+  });
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -207,6 +217,51 @@ function LoyaltySettingsPageContent() {
       setError(err instanceof Error ? err.message : 'Failed to save accrual rule');
     } finally {
       setIsSavingRule(false);
+    }
+  };
+
+  const createRule = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsCreatingRule(true);
+    setFeedback(null);
+    setError(null);
+    try {
+      const payload = {
+        ...newRuleDraft,
+        maxPointsPerEvent: newRuleDraft.maxPointsPerEvent || undefined,
+      };
+      const response = await fetch('/api/v1/admin/loyalty/rules', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Role': 'admin',
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create accrual rule');
+      }
+      const data = await response.json();
+      const nextRules = Array.isArray(data?.rules) ? data.rules : [];
+      setRules(nextRules);
+      const created = nextRules[nextRules.length - 1];
+      if (created) {
+        setSelectedRuleId(created.ruleId);
+      }
+      setFeedback('Accrual rule created.');
+      setRuleMode('edit');
+      setNewRuleDraft({
+        name: '',
+        sourceType: 'bet_settlement',
+        active: true,
+        multiplier: 1.0,
+        minQualifiedStakeCents: 0,
+        maxPointsPerEvent: 0,
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create accrual rule');
+    } finally {
+      setIsCreatingRule(false);
     }
   };
 
@@ -421,30 +476,165 @@ function LoyaltySettingsPageContent() {
 
         <div style={surfaceCardStyle}>
           <h2 style={sectionTitleStyle}>Accrual Rules</h2>
-          <div style={pillRowStyle}>
-            {rules.map((rule) => (
-              <button
-                key={rule.ruleId}
-                type="button"
-                style={pillStyle(selectedRuleId === rule.ruleId)}
-                onClick={() => setSelectedRuleId(rule.ruleId)}
-              >
-                <span style={statusDotStyle(rule.active)} />
-                {rule.name}
-              </button>
-            ))}
+
+          {/* Mode toggle: Edit Existing / Create New */}
+          <div style={{ ...pillRowStyle, marginBottom: 12 }}>
+            <button
+              type="button"
+              style={pillStyle(ruleMode === 'edit')}
+              onClick={() => setRuleMode('edit')}
+            >
+              Edit Existing
+            </button>
+            <button
+              type="button"
+              style={pillStyle(ruleMode === 'create')}
+              onClick={() => setRuleMode('create')}
+            >
+              + Create Rule
+            </button>
           </div>
 
-          {ruleDraft ? (
-            <form style={formStyle} onSubmit={saveRule}>
+          {ruleMode === 'edit' ? (
+            <>
+              <div style={pillRowStyle}>
+                {rules.map((rule) => (
+                  <button
+                    key={rule.ruleId}
+                    type="button"
+                    style={pillStyle(selectedRuleId === rule.ruleId)}
+                    onClick={() => setSelectedRuleId(rule.ruleId)}
+                  >
+                    <span style={statusDotStyle(rule.active)} />
+                    {rule.name}
+                  </button>
+                ))}
+              </div>
+
+              {ruleDraft ? (
+                <form style={formStyle} onSubmit={saveRule}>
+                  <label style={labelStyle}>
+                    Rule Name
+                    <input
+                      style={inputStyle}
+                      value={ruleDraft.name}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                        setRuleDraft((current) => current ? { ...current, name: event.target.value } : current)
+                      }
+                    />
+                  </label>
+                  <div style={formColumnsStyle}>
+                    <label style={labelStyle}>
+                      Source Type
+                      <input
+                        style={inputStyle}
+                        value={ruleDraft.sourceType}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setRuleDraft((current) => current ? { ...current, sourceType: event.target.value } : current)
+                        }
+                      />
+                    </label>
+                    <label style={labelStyle}>
+                      Multiplier
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        step="0.1"
+                        value={ruleDraft.multiplier}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setRuleDraft((current) => current ? { ...current, multiplier: Number(event.target.value) } : current)
+                        }
+                      />
+                    </label>
+                  </div>
+                  <div style={formColumnsStyle}>
+                    <label style={labelStyle}>
+                      Min Qualified Stake (cents)
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        value={ruleDraft.minQualifiedStakeCents}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setRuleDraft((current) => current ? { ...current, minQualifiedStakeCents: Number(event.target.value) } : current)
+                        }
+                      />
+                    </label>
+                    <label style={labelStyle}>
+                      Max Points / Event
+                      <input
+                        style={inputStyle}
+                        type="number"
+                        value={ruleDraft.maxPointsPerEvent || 0}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setRuleDraft((current) => current ? { ...current, maxPointsPerEvent: Number(event.target.value) } : current)
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  {/* Effective Date Range */}
+                  <div style={formColumnsStyle}>
+                    <label style={labelStyle}>
+                      Effective From
+                      <input
+                        style={inputStyle}
+                        type="datetime-local"
+                        value={rfc3339ToLocal(ruleDraft.effectiveFrom)}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setRuleDraft((current) =>
+                            current ? { ...current, effectiveFrom: localToRfc3339(event.target.value) || undefined } : current,
+                          )
+                        }
+                      />
+                    </label>
+                    <label style={labelStyle}>
+                      Effective To
+                      <input
+                        style={inputStyle}
+                        type="datetime-local"
+                        value={rfc3339ToLocal(ruleDraft.effectiveTo)}
+                        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                          setRuleDraft((current) =>
+                            current ? { ...current, effectiveTo: localToRfc3339(event.target.value) || undefined } : current,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <label style={checkboxLabelStyle}>
+                    <input
+                      type="checkbox"
+                      checked={ruleDraft.active}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                        setRuleDraft((current) => current ? { ...current, active: event.target.checked } : current)
+                      }
+                    />
+                    Rule is active
+                  </label>
+                  <div style={helperTextStyle}>
+                    This MVP applies the first active settled-bet rule. Use one active default rule at a time until multi-rule evaluation is expanded.
+                  </div>
+                  <button type="submit" style={buttonStyle(isSavingRule)} disabled={isSavingRule}>
+                    {isSavingRule ? 'Saving Rule...' : 'Save Rule'}
+                  </button>
+                </form>
+              ) : (
+                <div style={helperTextStyle}>No rule selected.</div>
+              )}
+            </>
+          ) : (
+            <form style={formStyle} onSubmit={createRule}>
               <label style={labelStyle}>
                 Rule Name
                 <input
                   style={inputStyle}
-                  value={ruleDraft.name}
+                  value={newRuleDraft.name}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    setRuleDraft((current) => current ? { ...current, name: event.target.value } : current)
+                    setNewRuleDraft((current) => ({ ...current, name: event.target.value }))
                   }
+                  placeholder="e.g. Double Points Weekend"
+                  required
                 />
               </label>
               <div style={formColumnsStyle}>
@@ -452,9 +642,9 @@ function LoyaltySettingsPageContent() {
                   Source Type
                   <input
                     style={inputStyle}
-                    value={ruleDraft.sourceType}
+                    value={newRuleDraft.sourceType}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setRuleDraft((current) => current ? { ...current, sourceType: event.target.value } : current)
+                      setNewRuleDraft((current) => ({ ...current, sourceType: event.target.value }))
                     }
                   />
                 </label>
@@ -464,9 +654,10 @@ function LoyaltySettingsPageContent() {
                     style={inputStyle}
                     type="number"
                     step="0.1"
-                    value={ruleDraft.multiplier}
+                    min="0.1"
+                    value={newRuleDraft.multiplier}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setRuleDraft((current) => current ? { ...current, multiplier: Number(event.target.value) } : current)
+                      setNewRuleDraft((current) => ({ ...current, multiplier: Number(event.target.value) }))
                     }
                   />
                 </label>
@@ -477,74 +668,43 @@ function LoyaltySettingsPageContent() {
                   <input
                     style={inputStyle}
                     type="number"
-                    value={ruleDraft.minQualifiedStakeCents}
+                    min="0"
+                    value={newRuleDraft.minQualifiedStakeCents}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setRuleDraft((current) => current ? { ...current, minQualifiedStakeCents: Number(event.target.value) } : current)
+                      setNewRuleDraft((current) => ({ ...current, minQualifiedStakeCents: Number(event.target.value) }))
                     }
                   />
                 </label>
                 <label style={labelStyle}>
-                  Max Points / Event
+                  Max Points / Event (0 = unlimited)
                   <input
                     style={inputStyle}
                     type="number"
-                    value={ruleDraft.maxPointsPerEvent || 0}
+                    min="0"
+                    value={newRuleDraft.maxPointsPerEvent || 0}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setRuleDraft((current) => current ? { ...current, maxPointsPerEvent: Number(event.target.value) } : current)
+                      setNewRuleDraft((current) => ({ ...current, maxPointsPerEvent: Number(event.target.value) }))
                     }
                   />
                 </label>
               </div>
-
-              {/* Effective Date Range */}
-              <div style={formColumnsStyle}>
-                <label style={labelStyle}>
-                  Effective From
-                  <input
-                    style={inputStyle}
-                    type="datetime-local"
-                    value={rfc3339ToLocal(ruleDraft.effectiveFrom)}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setRuleDraft((current) =>
-                        current ? { ...current, effectiveFrom: localToRfc3339(event.target.value) || undefined } : current,
-                      )
-                    }
-                  />
-                </label>
-                <label style={labelStyle}>
-                  Effective To
-                  <input
-                    style={inputStyle}
-                    type="datetime-local"
-                    value={rfc3339ToLocal(ruleDraft.effectiveTo)}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setRuleDraft((current) =>
-                        current ? { ...current, effectiveTo: localToRfc3339(event.target.value) || undefined } : current,
-                      )
-                    }
-                  />
-                </label>
-              </div>
-
               <label style={checkboxLabelStyle}>
                 <input
                   type="checkbox"
-                  checked={ruleDraft.active}
+                  checked={newRuleDraft.active}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    setRuleDraft((current) => current ? { ...current, active: event.target.checked } : current)
+                    setNewRuleDraft((current) => ({ ...current, active: event.target.checked }))
                   }
                 />
                 Rule is active
               </label>
               <div style={helperTextStyle}>
-                This MVP applies the first active settled-bet rule. Use one active default rule at a time until multi-rule evaluation is expanded.
+                Creates a new accrual rule. You can set effective dates after creation by editing the rule.
               </div>
-              <button type="submit" style={buttonStyle(isSavingRule)} disabled={isSavingRule}>
-                {isSavingRule ? 'Saving Rule...' : 'Save Rule'}
+              <button type="submit" style={buttonStyle(isCreatingRule)} disabled={isCreatingRule}>
+                {isCreatingRule ? 'Creating Rule...' : 'Create Rule'}
               </button>
             </form>
-          ) : (
-            <div style={helperTextStyle}>No rule selected.</div>
           )}
         </div>
       </div>

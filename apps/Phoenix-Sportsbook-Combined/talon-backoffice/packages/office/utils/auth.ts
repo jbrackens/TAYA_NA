@@ -48,6 +48,15 @@ const callRefreshToken = async (refreshToken: string) => {
   }
 };
 
+/**
+ * Returns true when running in development mode and the token is an opaque
+ * gateway token (e.g. "atk_...") that cannot be decoded as a JWT.
+ * In this scenario we skip JWT validation and role checks because the Go
+ * gateway doesn't issue JWTs — it issues opaque bearer tokens.
+ */
+const isDevOpaqueToken = (token: string | undefined): boolean =>
+  process.env.NODE_ENV === "development" && !!token && !validateAndDecode(token);
+
 export const validateSession = async (
   eligibleRoles: PunterRoles = [],
 ): Promise<string | null> => {
@@ -55,18 +64,21 @@ export const validateSession = async (
   const refreshToken = resolveRefreshToken();
   const validatedToken = validateAndDecode(token);
   const currentPath = Router.asPath;
+
+  // DEV MODE: accept opaque gateway tokens (atk_...) without JWT validation
+  if (isDevOpaqueToken(token)) {
+    return token;
+  }
+
   if (token && !validatedToken) {
     try {
       const extended = await extendAuthSession(refreshToken);
       if (extended) return extended;
-      // If refresh fails but token exists, keep session alive (dev mode)
-      return token;
+      Router.push(buildRedirectUrl(currentPath));
+      return null;
     } catch (e) {
-      // In dev mode, don't redirect if we have a token
-      if (process.env.NODE_ENV !== "development") {
-        Router.push(buildRedirectUrl(currentPath));
-      }
-      return token;
+      Router.push(buildRedirectUrl(currentPath));
+      return null;
     }
   } else {
     if (!token || !validatedToken) {
@@ -207,7 +219,13 @@ export const isEligibleToAccess = (
 export const validateAndCheckEligibility = (
   token: string,
   eligibleRoles: PunterRoles = [],
-): boolean => isEligibleToAccess(validateAndDecode(token), eligibleRoles);
+): boolean => {
+  // DEV MODE: opaque gateway tokens bypass JWT role checks
+  if (isDevOpaqueToken(token)) {
+    return true;
+  }
+  return isEligibleToAccess(validateAndDecode(token), eligibleRoles);
+};
 
 export const buildRedirectUrl = (pathname: string) =>
   pathname.includes(ROUTE_AUTH) ? "" : `${ROUTE_AUTH}?redirectTo=${pathname}`;

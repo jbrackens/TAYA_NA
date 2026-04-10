@@ -6,7 +6,7 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:18080/ws';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 const MAX_RECONNECT_ATTEMPTS = 5;
 const HEARTBEAT_INTERVAL = 50000; // 50 seconds
-const POLL_INTERVAL = 5000; // 5 seconds — fallback polling rate
+const POLL_INTERVAL = 15000; // 15 seconds — fallback polling rate (reduced from 5s to cut backend load)
 
 export type WsEventType = 'subscribe' | 'unsubscribe' | 'subscribe:success' | 'unsubscribe:success' | 'update' | 'error';
 
@@ -205,12 +205,21 @@ class WebSocketService {
       this.pollOnce();
     }, POLL_INTERVAL);
 
-    // Periodically try to restore WS (every 30s)
-    this.reconnectTimer = window.setInterval(() => {
-      logger.info('WS', 'Attempting WS restore from polling mode');
-      this.reconnectAttempts = 0;
-      this.connect(this.authToken);
-    }, 30000);
+    // Periodically try to restore WS with increasing backoff (30s, 60s, 120s, capped at 120s)
+    let restoreAttempt = 0;
+    const scheduleRestore = () => {
+      const delay = Math.min(30000 * Math.pow(2, restoreAttempt), 120000);
+      restoreAttempt++;
+      this.reconnectTimer = window.setTimeout(() => {
+        if (!this._isConnected && this._isPolling) {
+          logger.info('WS', 'Attempting WS restore from polling mode');
+          this.reconnectAttempts = 0;
+          this.connect(this.authToken);
+          scheduleRestore();
+        }
+      }, delay);
+    };
+    scheduleRestore();
   }
 
   private stopPolling(): void {

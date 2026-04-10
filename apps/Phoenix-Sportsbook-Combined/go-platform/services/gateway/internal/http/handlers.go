@@ -98,6 +98,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerWalletRoutes(mux, walletService)
 	registerBetRoutes(mux, betService)
 	registerAdminBetRoutes(mux, betService)
+	registerUserRoutes(mux)
 
 	// Register payment and compliance services
 	paymentService := payments.NewMockPaymentService(walletService)

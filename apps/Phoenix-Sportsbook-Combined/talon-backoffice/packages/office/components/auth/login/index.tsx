@@ -65,11 +65,15 @@ const LoginComponent: React.FC = () => {
         refreshExpiresIn,
         now,
       );
-      if (
-        token &&
-        refreshToken &&
-        isEligibleToAccess(validateAndDecode(token), eligibleRoles)
-      ) {
+
+      // DEV MODE: the Go gateway returns opaque tokens (atk_...) that can't be
+      // decoded as JWTs. Accept any non-empty token in development.
+      const isDev = process.env.NODE_ENV === "development";
+      const isEligible = isDev
+        ? !!token
+        : isEligibleToAccess(validateAndDecode(token), eligibleRoles);
+
+      if (token && refreshToken && isEligible) {
         saveToken(token, refreshToken);
         saveTokenExpDate(expiresInTimestamp, refreshExpiresInTimestamp);
         push((redirectTo as string) || "/users");

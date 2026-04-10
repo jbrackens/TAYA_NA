@@ -307,6 +307,44 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 		})
 	}))
 
+	rulesPath := "/api/v1/admin/loyalty/rules"
+	mux.Handle(rulesPath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.URL.Path != rulesPath {
+			return httpx.NotFound("loyalty rule not found")
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+
+		var request loyaltyRuleRequest
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+
+		items, err := service.CreateRule(loyalty.RuleCreateRequest{
+			Name:                   strings.TrimSpace(request.Name),
+			SourceType:             strings.TrimSpace(request.SourceType),
+			Active:                 request.Active,
+			Multiplier:             request.Multiplier,
+			MinQualifiedStakeCents: request.MinQualifiedStakeCents,
+			EligibleSportIDs:       request.EligibleSportIDs,
+			EligibleBetTypes:       request.EligibleBetTypes,
+			MaxPointsPerEvent:      request.MaxPointsPerEvent,
+			EffectiveFrom:          parseOptionalRFC3339(request.EffectiveFrom),
+			EffectiveTo:            parseOptionalRFC3339(request.EffectiveTo),
+		})
+		if err != nil {
+			return mapLoyaltyError(err)
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
+			"rules": items,
+		})
+	}))
+
 	rulePrefix := "/api/v1/admin/loyalty/rules/"
 	mux.Handle(rulePrefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodPut {

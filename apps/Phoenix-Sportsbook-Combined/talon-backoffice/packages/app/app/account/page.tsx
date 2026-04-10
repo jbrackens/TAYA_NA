@@ -148,14 +148,14 @@ export default function AccountPage() {
         <div className="account-banner">
           <div className="account-banner-left">
             <div className="account-avatar">
-              {profile?.username?.charAt(0)?.toUpperCase() || "U"}
+              {(profile?.username ?? user?.username ?? "U").charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="account-username">
-                {profile?.username || "Loading..."}
+                {profile?.username ?? user?.username ?? "Loading..."}
               </div>
               <div className="account-email">
-                {profile?.email || "Loading..."}
+                {profile?.email ?? user?.email ?? user?.username ?? "Loading..."}
               </div>
             </div>
           </div>

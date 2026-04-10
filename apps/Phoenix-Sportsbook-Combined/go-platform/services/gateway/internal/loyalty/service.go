@@ -76,6 +76,19 @@ type RuleUpdateRequest struct {
 	EffectiveTo            *time.Time
 }
 
+type RuleCreateRequest struct {
+	Name                   string
+	SourceType             string
+	Active                 bool
+	Multiplier             float64
+	MinQualifiedStakeCents int64
+	EligibleSportIDs       []string
+	EligibleBetTypes       []string
+	MaxPointsPerEvent      int64
+	EffectiveFrom          *time.Time
+	EffectiveTo            *time.Time
+}
+
 type Service struct {
 	mu sync.RWMutex
 
@@ -397,6 +410,37 @@ func (s *Service) UpdateRule(request RuleUpdateRequest) ([]canonicalv1.LoyaltyAc
 	if !found {
 		return nil, ErrRuleNotFound
 	}
+
+	out := make([]canonicalv1.LoyaltyAccrualRule, len(s.rules))
+	copy(out, s.rules)
+	return out, nil
+}
+
+func (s *Service) CreateRule(request RuleCreateRequest) ([]canonicalv1.LoyaltyAccrualRule, error) {
+	if strings.TrimSpace(request.Name) == "" || strings.TrimSpace(request.SourceType) == "" || request.Multiplier <= 0 {
+		return nil, ErrInvalidRequest
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	ruleID := fmt.Sprintf("rule:loyalty:%s-%d", strings.ReplaceAll(strings.ToLower(strings.TrimSpace(request.Name)), " ", "-"), time.Now().UnixMilli())
+
+	rule := canonicalv1.LoyaltyAccrualRule{
+		RuleID:                 ruleID,
+		Name:                   strings.TrimSpace(request.Name),
+		SourceType:             strings.TrimSpace(request.SourceType),
+		Active:                 request.Active,
+		Multiplier:             request.Multiplier,
+		MinQualifiedStakeCents: request.MinQualifiedStakeCents,
+		EligibleSportIDs:       append([]string(nil), request.EligibleSportIDs...),
+		EligibleBetTypes:       append([]string(nil), request.EligibleBetTypes...),
+		MaxPointsPerEvent:      request.MaxPointsPerEvent,
+		EffectiveFrom:          cloneTime(request.EffectiveFrom),
+		EffectiveTo:            cloneTime(request.EffectiveTo),
+	}
+
+	s.rules = append(s.rules, rule)
 
 	out := make([]canonicalv1.LoyaltyAccrualRule, len(s.rules))
 	copy(out, s.rules)
