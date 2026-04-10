@@ -1,5 +1,9 @@
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
   body {
     font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     background: #0b0e1c; color: #e2e8f0;
@@ -140,7 +144,7 @@
   .ps-sidebar-badge.live { background: rgba(239,68,68,0.15); color: #ef4444; }
 
   /* ── Main Area ── */
-  .ps-main { flex: 1; margin-left: 220px; display: flex; flex-direction: column; }
+  .ps-main { flex: 1; margin-left: 220px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
   /* ── Header / Top Bar ── */
   .ps-topbar {
@@ -212,7 +216,7 @@
   .ps-avatar:hover { background: rgba(57,255,20,0.2); }
 
   /* ── Main Inner (centered content) ── */
-  .ps-main-inner { max-width: 1440px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; min-height: 100vh; }
+  .ps-main-inner { max-width: 1440px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; height: 100%; }
   .ps-page { flex: 1; padding: 24px; overflow-y: auto; }
   .ps-betslip-fab {
     position: fixed;
