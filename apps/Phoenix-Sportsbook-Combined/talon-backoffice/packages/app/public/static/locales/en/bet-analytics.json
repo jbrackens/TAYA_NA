@@ -1,0 +1,23 @@
+{
+  "TITLE": "Bet Analytics",
+  "SUBTITLE": "Track your performance, spot patterns, and sharpen your edge.",
+  "BACK_TO_BETS": "Back to My Bets",
+  "SUMMARY_TOTAL_BETS": "Total Bets",
+  "SUMMARY_WIN_RATE": "Win Rate",
+  "SUMMARY_ROI": "ROI",
+  "SUMMARY_AVG_STAKE": "Avg Stake",
+  "SUMMARY_TOTAL_PNL": "Total P&L",
+  "CHART_ROI_TITLE": "ROI Over Time",
+  "CHART_WIN_RATE_TITLE": "Win Rate by Month",
+  "CHART_PNL_TITLE": "Cumulative P&L",
+  "CHART_STAKE_DIST_TITLE": "Stake Distribution",
+  "HEATMAP_TITLE": "Betting Patterns",
+  "HEATMAP_SUBTITLE": "Your win/loss activity by day and time",
+  "SHARE_WIN": "Share this win",
+  "SHARE_COPY": "Copy to clipboard",
+  "SHARE_DOWNLOAD": "Download as PNG",
+  "SHARE_COPIED": "Bet card copied!",
+  "SHARE_DOWNLOADED": "Bet card saved!",
+  "NO_DATA": "Place some bets to see your analytics here.",
+  "VIEW_ANALYTICS": "View Analytics"
+}

@@ -361,3 +361,54 @@ export async function precheckBets(request: PrecheckBetsRequest): Promise<Preche
   });
   return normalizeSnakeCase(raw) as PrecheckBetsResponse;
 }
+
+// ── Bet Analytics ──
+
+export interface BetAnalyticsPeriod {
+  period: string;
+  betCount: number;
+  wonCount: number;
+  lostCount: number;
+  stakeCents: number;
+  returnCents: number;
+  profitCents: number;
+}
+
+export interface BetAnalyticsHeatmapCell {
+  dayOfWeek: number;
+  hourBucket: number;
+  betCount: number;
+  wonCount: number;
+}
+
+export interface StakeBucket {
+  label: string;
+  minCents: number;
+  maxCents: number;
+  count: number;
+}
+
+export interface BetAnalytics {
+  totalBets: number;
+  totalWon: number;
+  totalLost: number;
+  totalCashedOut: number;
+  totalStakeCents: number;
+  totalReturnCents: number;
+  totalProfitCents: number;
+  avgStakeCents: number;
+  avgOdds: number;
+  winRate: number;
+  roi: number;
+  daily: BetAnalyticsPeriod[];
+  monthly: BetAnalyticsPeriod[];
+  heatmap: BetAnalyticsHeatmapCell[];
+  stakeBuckets: StakeBucket[];
+}
+
+/**
+ * Get bet analytics for a user
+ */
+export async function getBetAnalytics(userId: string): Promise<BetAnalytics> {
+  return apiClient.get<BetAnalytics>(`/api/v1/bets/analytics?userId=${encodeURIComponent(userId)}`);
+}

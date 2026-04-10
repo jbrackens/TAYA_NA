@@ -10,6 +10,7 @@ import {
 } from "../lib/api/betting-client";
 import { getLoyaltyLedger } from "../lib/api/loyalty-client";
 import { useToast } from "./ToastProvider";
+import { ShareWinButton } from "./ShareWinButton";
 import { logger } from "../lib/logger";
 
 interface Bet {
@@ -406,6 +407,15 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                       </div>
                     </div>
                   ) : null}
+                  {bet.status === "won" && (
+                    <ShareWinButton
+                      selectionName={bet.selectionName || ""}
+                      odds={bet.odds}
+                      stakeCents={bet.stakeCents}
+                      payoutCents={Math.round(bet.stakeCents * bet.odds)}
+                      betId={bet.betId}
+                    />
+                  )}
                   {offer && (
                     <button
                       disabled={cashingOut === bet.betId}

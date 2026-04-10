@@ -1,0 +1,23 @@
+{
+  "TITLE": "Wettanalyse",
+  "SUBTITLE": "Verfolge deine Leistung, erkenne Muster und schärfe deinen Vorteil.",
+  "BACK_TO_BETS": "Zurück zu Meine Wetten",
+  "SUMMARY_TOTAL_BETS": "Gesamte Wetten",
+  "SUMMARY_WIN_RATE": "Gewinnrate",
+  "SUMMARY_ROI": "ROI",
+  "SUMMARY_AVG_STAKE": "Ø Einsatz",
+  "SUMMARY_TOTAL_PNL": "Gesamt-G&V",
+  "CHART_ROI_TITLE": "ROI im Zeitverlauf",
+  "CHART_WIN_RATE_TITLE": "Gewinnrate nach Monat",
+  "CHART_PNL_TITLE": "Kumulierter G&V",
+  "CHART_STAKE_DIST_TITLE": "Einsatzverteilung",
+  "HEATMAP_TITLE": "Wettmuster",
+  "HEATMAP_SUBTITLE": "Deine Gewinn-/Verlustaktivität nach Tag und Uhrzeit",
+  "SHARE_WIN": "Diesen Gewinn teilen",
+  "SHARE_COPY": "In Zwischenablage kopieren",
+  "SHARE_DOWNLOAD": "Als PNG herunterladen",
+  "SHARE_COPIED": "Wettkarte kopiert!",
+  "SHARE_DOWNLOADED": "Wettkarte gespeichert!",
+  "NO_DATA": "Platziere Wetten, um deine Analyse hier zu sehen.",
+  "VIEW_ANALYTICS": "Analyse anzeigen"
+}

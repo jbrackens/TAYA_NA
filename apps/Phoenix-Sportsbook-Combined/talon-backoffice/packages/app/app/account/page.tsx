@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  BarChart2,
   Bell,
   CreditCard,
   HeartHandshake,
@@ -23,6 +24,9 @@ import {
   getLeaderboards,
   getLeaderboardEntries,
 } from "../lib/api/leaderboards-client";
+import { getBetAnalytics } from "../lib/api/betting-client";
+import type { BetAnalytics } from "../lib/api/betting-client";
+import BettingHeatmap from "../components/BettingHeatmap";
 import type { UserProfile } from "../lib/api/user-client";
 import type { Balance } from "../lib/api/wallet-client";
 import type {
@@ -56,6 +60,7 @@ export default function AccountPage() {
   const [featuredStandings, setFeaturedStandings] = useState<LeaderboardStanding[]>([]);
   const [featuredTotalCount, setFeaturedTotalCount] = useState(0);
   const [viewerStanding, setViewerStanding] = useState<LeaderboardStanding | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<BetAnalytics | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -70,6 +75,7 @@ export default function AccountPage() {
         rewardsLedger,
         rewardsTiers,
         competitionBoards,
+        betAnalytics,
       ] =
         await Promise.all([
           getProfile(user.id).catch(() => null),
@@ -78,6 +84,7 @@ export default function AccountPage() {
           getLoyaltyLedger(user.id, 4).catch(() => []),
           getLoyaltyTiers().catch(() => []),
           getLeaderboards().catch(() => []),
+          getBetAnalytics(user.id).catch(() => null),
         ]);
 
       setProfile(prof);
@@ -85,6 +92,7 @@ export default function AccountPage() {
       setLoyalty(rewardsAccount);
       setLoyaltyLedger(rewardsLedger);
       setLoyaltyTiers(rewardsTiers);
+      setAnalyticsData(betAnalytics);
       const nextBoards = Array.isArray(competitionBoards)
         ? competitionBoards.slice(0, 2)
         : [];
@@ -261,6 +269,8 @@ export default function AccountPage() {
             )}
           </div>
 
+          <BettingHeatmap heatmap={analyticsData?.heatmap || []} />
+
           <div className="competition-card">
             <div className="competition-card-head">
               <div>
@@ -412,6 +422,14 @@ export default function AccountPage() {
             </div>
             <div className="account-card-title">Leaderboards</div>
             <div className="account-card-desc">Follow live competition boards and rank ladders</div>
+          </Link>
+
+          <Link href="/bets/analytics" className="account-card">
+            <div className="account-card-icon">
+              <BarChart2 size={28} strokeWidth={2} />
+            </div>
+            <div className="account-card-title">Bet Analytics</div>
+            <div className="account-card-desc">ROI charts, win rates, and performance insights</div>
           </Link>
         </div>
       </div>

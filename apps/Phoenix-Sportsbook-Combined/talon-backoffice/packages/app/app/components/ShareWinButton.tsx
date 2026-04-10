@@ -1,0 +1,171 @@
+'use client';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { copyBetCardToClipboard, downloadBetCard } from './ShareableBetCard';
+import { useToast } from './ToastProvider';
+import { logger } from '../lib/logger';
+
+interface ShareWinButtonProps {
+  selectionName: string;
+  odds: number;
+  stakeCents: number;
+  payoutCents: number;
+  betId: string;
+}
+
+export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
+  selectionName,
+  odds,
+  stakeCents,
+  payoutCents,
+  betId,
+}) => {
+  const [open, setOpen] = useState(false);
+  const [clipboardSupported, setClipboardSupported] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (typeof ClipboardItem === 'undefined') {
+      setClipboardSupported(false);
+    }
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  const cardData = { selectionName, odds, stakeCents, payoutCents, betId };
+
+  const handleCopy = useCallback(async () => {
+    try {
+      const success = await copyBetCardToClipboard(cardData);
+      if (success) {
+        toast.success('Copied!', 'Bet card image copied to clipboard.');
+      } else {
+        toast.error('Not supported', 'Your browser does not support clipboard images.');
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error('ShareWinButton', 'Clipboard copy failed', message);
+      toast.error('Copy failed', 'Could not copy the bet card image.');
+    }
+    setOpen(false);
+  }, [selectionName, odds, stakeCents, payoutCents, betId, toast]);
+
+  const handleDownload = useCallback(() => {
+    downloadBetCard(cardData);
+    setOpen(false);
+  }, [selectionName, odds, stakeCents, payoutCents, betId]);
+
+  return (
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen((prev) => !prev)}
+        style={{
+          width: '100%',
+          padding: '8px 14px',
+          border: '1px solid rgba(57,255,20,0.24)',
+          background: 'rgba(57,255,20,0.06)',
+          color: '#39ff14',
+          fontSize: '12px',
+          fontWeight: 700,
+          borderRadius: '0 0 8px 8px',
+          marginTop: '-8px',
+          cursor: 'pointer',
+          textAlign: 'center',
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(57,255,20,0.12)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'rgba(57,255,20,0.06)';
+        }}
+      >
+        Share this win &#127942;
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            marginTop: '4px',
+            background: '#0f1225',
+            border: '1px solid #1a1f3a',
+            borderRadius: '8px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+            zIndex: 10,
+            overflow: 'hidden',
+          }}
+        >
+          {clipboardSupported && (
+            <button
+              onClick={() => void handleCopy()}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                background: 'transparent',
+                border: 'none',
+                color: '#D3D3D3',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#161a35';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              &#128203; Copy to clipboard
+            </button>
+          )}
+          <button
+            onClick={handleDownload}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              background: 'transparent',
+              border: 'none',
+              borderTop: clipboardSupported ? '1px solid #1a1f3a' : 'none',
+              color: '#D3D3D3',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#161a35';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+            }}
+          >
+            &#128229; Download PNG
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ShareWinButton;

@@ -290,6 +290,48 @@ type BetHistoryPage struct {
 	HasNextPage  bool  `json:"hasNextPage"`
 }
 
+type BetAnalyticsPeriod struct {
+	Period      string `json:"period"`
+	BetCount    int    `json:"betCount"`
+	WonCount    int    `json:"wonCount"`
+	LostCount   int    `json:"lostCount"`
+	StakeCents  int64  `json:"stakeCents"`
+	ReturnCents int64  `json:"returnCents"`
+	ProfitCents int64  `json:"profitCents"`
+}
+
+type BetAnalyticsHeatmapCell struct {
+	DayOfWeek  int `json:"dayOfWeek"`
+	HourBucket int `json:"hourBucket"`
+	BetCount   int `json:"betCount"`
+	WonCount   int `json:"wonCount"`
+}
+
+type StakeBucket struct {
+	Label    string `json:"label"`
+	MinCents int64  `json:"minCents"`
+	MaxCents int64  `json:"maxCents"`
+	Count    int    `json:"count"`
+}
+
+type BetAnalytics struct {
+	TotalBets        int                       `json:"totalBets"`
+	TotalWon         int                       `json:"totalWon"`
+	TotalLost        int                       `json:"totalLost"`
+	TotalCashedOut   int                       `json:"totalCashedOut"`
+	TotalStakeCents  int64                     `json:"totalStakeCents"`
+	TotalReturnCents int64                     `json:"totalReturnCents"`
+	TotalProfitCents int64                     `json:"totalProfitCents"`
+	AvgStakeCents    int64                     `json:"avgStakeCents"`
+	AvgOdds          float64                   `json:"avgOdds"`
+	WinRate          float64                   `json:"winRate"`
+	ROI              float64                   `json:"roi"`
+	Daily            []BetAnalyticsPeriod      `json:"daily"`
+	Monthly          []BetAnalyticsPeriod      `json:"monthly"`
+	Heatmap          []BetAnalyticsHeatmapCell `json:"heatmap"`
+	StakeBuckets     []StakeBucket             `json:"stakeBuckets"`
+}
+
 type persistedBetState struct {
 	BetsByID                   map[string]Bet                  `json:"betsById"`
 	BetsByIdempotent           map[string]Bet                  `json:"betsByIdempotent"`
@@ -681,6 +723,230 @@ func (s *Service) PromoUsageSummary(filter PromoUsageFilter, breakdownLimit int)
 		return s.promoUsageSummaryDB(filter, breakdownLimit)
 	}
 	return s.promoUsageSummaryMemory(filter, breakdownLimit), nil
+}
+
+func (s *Service) AnalyticsForUser(userID string) BetAnalytics {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	type heatmapKey struct {
+		day  int
+		hour int
+	}
+
+	type periodAcc struct {
+		betCount    int
+		wonCount    int
+		lostCount   int
+		stakeCents  int64
+		returnCents int64
+		profitCents int64
+	}
+
+	dailyMap := make(map[string]*periodAcc)
+	monthlyMap := make(map[string]*periodAcc)
+	heatmapMap := make(map[heatmapKey]*BetAnalyticsHeatmapCell)
+
+	stakeBucketDefs := []StakeBucket{
+		{Label: "$0-5", MinCents: 0, MaxCents: 500},
+		{Label: "$5-10", MinCents: 500, MaxCents: 1000},
+		{Label: "$10-25", MinCents: 1000, MaxCents: 2500},
+		{Label: "$25-50", MinCents: 2500, MaxCents: 5000},
+		{Label: "$50-100", MinCents: 5000, MaxCents: 10000},
+		{Label: "$100+", MinCents: 10000, MaxCents: 0},
+	}
+	bucketCounts := make([]int, len(stakeBucketDefs))
+
+	var totalBets, totalWon, totalLost, totalCashedOut int
+	var totalStakeCents, totalReturnCents, totalProfitCents int64
+	var totalOdds float64
+	var settledCount int
+
+	for _, bet := range s.betsByID {
+		if bet.UserID != userID {
+			continue
+		}
+		totalBets++
+		totalStakeCents += bet.StakeCents
+		totalOdds += bet.Odds
+
+		var betProfit int64
+		var betReturn int64
+		switch bet.Status {
+		case statusSettledWon:
+			totalWon++
+			settledCount++
+			betReturn = bet.PotentialPayoutCents
+			betProfit = bet.PotentialPayoutCents - bet.StakeCents
+			totalReturnCents += betReturn
+			totalProfitCents += betProfit
+		case statusSettledLost:
+			totalLost++
+			settledCount++
+			betProfit = -bet.StakeCents
+			totalProfitCents += betProfit
+		case statusCashedOut:
+			totalCashedOut++
+		}
+
+		// Parse time for daily/monthly/heatmap grouping
+		placedAt, err := time.Parse(time.RFC3339, strings.TrimSpace(bet.PlacedAt))
+		if err != nil {
+			placedAt, err = time.Parse(time.RFC3339Nano, strings.TrimSpace(bet.PlacedAt))
+		}
+		if err == nil {
+			dayKey := placedAt.Format("2006-01-02")
+			monthKey := placedAt.Format("2006-01")
+
+			if dailyMap[dayKey] == nil {
+				dailyMap[dayKey] = &periodAcc{}
+			}
+			d := dailyMap[dayKey]
+			d.betCount++
+			d.stakeCents += bet.StakeCents
+			d.returnCents += betReturn
+			d.profitCents += betProfit
+			if bet.Status == statusSettledWon {
+				d.wonCount++
+			} else if bet.Status == statusSettledLost {
+				d.lostCount++
+			}
+
+			if monthlyMap[monthKey] == nil {
+				monthlyMap[monthKey] = &periodAcc{}
+			}
+			m := monthlyMap[monthKey]
+			m.betCount++
+			m.stakeCents += bet.StakeCents
+			m.returnCents += betReturn
+			m.profitCents += betProfit
+			if bet.Status == statusSettledWon {
+				m.wonCount++
+			} else if bet.Status == statusSettledLost {
+				m.lostCount++
+			}
+
+			dow := int(placedAt.Weekday())
+			hourBucket := placedAt.Hour() / 6
+			hk := heatmapKey{day: dow, hour: hourBucket}
+			if heatmapMap[hk] == nil {
+				heatmapMap[hk] = &BetAnalyticsHeatmapCell{DayOfWeek: dow, HourBucket: hourBucket}
+			}
+			heatmapMap[hk].BetCount++
+			if bet.Status == statusSettledWon {
+				heatmapMap[hk].WonCount++
+			}
+		}
+
+		// Stake bucket assignment
+		for i, def := range stakeBucketDefs {
+			if def.MaxCents == 0 {
+				if bet.StakeCents >= def.MinCents {
+					bucketCounts[i]++
+				}
+			} else if bet.StakeCents >= def.MinCents && bet.StakeCents < def.MaxCents {
+				bucketCounts[i]++
+				break
+			}
+		}
+	}
+
+	// Build sorted daily periods
+	dailyKeys := make([]string, 0, len(dailyMap))
+	for k := range dailyMap {
+		dailyKeys = append(dailyKeys, k)
+	}
+	sort.Strings(dailyKeys)
+	daily := make([]BetAnalyticsPeriod, 0, len(dailyKeys))
+	for _, k := range dailyKeys {
+		d := dailyMap[k]
+		daily = append(daily, BetAnalyticsPeriod{
+			Period:      k,
+			BetCount:    d.betCount,
+			WonCount:    d.wonCount,
+			LostCount:   d.lostCount,
+			StakeCents:  d.stakeCents,
+			ReturnCents: d.returnCents,
+			ProfitCents: d.profitCents,
+		})
+	}
+
+	// Build sorted monthly periods
+	monthlyKeys := make([]string, 0, len(monthlyMap))
+	for k := range monthlyMap {
+		monthlyKeys = append(monthlyKeys, k)
+	}
+	sort.Strings(monthlyKeys)
+	monthly := make([]BetAnalyticsPeriod, 0, len(monthlyKeys))
+	for _, k := range monthlyKeys {
+		m := monthlyMap[k]
+		monthly = append(monthly, BetAnalyticsPeriod{
+			Period:      k,
+			BetCount:    m.betCount,
+			WonCount:    m.wonCount,
+			LostCount:   m.lostCount,
+			StakeCents:  m.stakeCents,
+			ReturnCents: m.returnCents,
+			ProfitCents: m.profitCents,
+		})
+	}
+
+	// Build heatmap slice
+	heatmap := make([]BetAnalyticsHeatmapCell, 0, len(heatmapMap))
+	for _, cell := range heatmapMap {
+		heatmap = append(heatmap, *cell)
+	}
+	sort.Slice(heatmap, func(i, j int) bool {
+		if heatmap[i].DayOfWeek != heatmap[j].DayOfWeek {
+			return heatmap[i].DayOfWeek < heatmap[j].DayOfWeek
+		}
+		return heatmap[i].HourBucket < heatmap[j].HourBucket
+	})
+
+	// Build stake buckets
+	stakeBuckets := make([]StakeBucket, len(stakeBucketDefs))
+	for i, def := range stakeBucketDefs {
+		stakeBuckets[i] = StakeBucket{
+			Label:    def.Label,
+			MinCents: def.MinCents,
+			MaxCents: def.MaxCents,
+			Count:    bucketCounts[i],
+		}
+	}
+
+	// Compute averages and rates
+	var avgStakeCents int64
+	var avgOdds float64
+	var winRate float64
+	var roi float64
+	if totalBets > 0 {
+		avgStakeCents = totalStakeCents / int64(totalBets)
+		avgOdds = totalOdds / float64(totalBets)
+	}
+	if settledCount > 0 {
+		winRate = float64(totalWon) / float64(settledCount)
+	}
+	if totalStakeCents > 0 {
+		roi = float64(totalProfitCents) / float64(totalStakeCents)
+	}
+
+	return BetAnalytics{
+		TotalBets:        totalBets,
+		TotalWon:         totalWon,
+		TotalLost:        totalLost,
+		TotalCashedOut:   totalCashedOut,
+		TotalStakeCents:  totalStakeCents,
+		TotalReturnCents: totalReturnCents,
+		TotalProfitCents: totalProfitCents,
+		AvgStakeCents:    avgStakeCents,
+		AvgOdds:          math.Round(avgOdds*100) / 100,
+		WinRate:          math.Round(winRate*10000) / 10000,
+		ROI:              math.Round(roi*10000) / 10000,
+		Daily:            daily,
+		Monthly:          monthly,
+		Heatmap:          heatmap,
+		StakeBuckets:     stakeBuckets,
+	}
 }
 
 func (s *Service) placeMemory(request PlaceBetRequest) (Bet, error) {

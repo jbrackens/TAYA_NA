@@ -656,6 +656,21 @@ func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, placed)
 	}))
 
+	mux.Handle("/api/v1/bets/analytics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		userID := strings.TrimSpace(r.URL.Query().Get("userId"))
+		if userID == "" {
+			userID = strings.TrimSpace(r.URL.Query().Get("user_id"))
+		}
+		if userID == "" {
+			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		analytics := service.AnalyticsForUser(userID)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, analytics)
+	}))
+
 	mux.Handle("/api/v1/bets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
