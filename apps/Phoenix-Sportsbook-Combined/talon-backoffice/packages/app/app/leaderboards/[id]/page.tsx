@@ -80,9 +80,9 @@ export default function LeaderboardDetailPage() {
             </div>
             {leaderboard ? (
               <div className="leaderboard-detail-badges">
-                <span>{leaderboard.status.toUpperCase()}</span>
-                <span>{leaderboard.rankingMode.toUpperCase()}</span>
-                <span>{leaderboard.order.toUpperCase()}</span>
+                <span>{leaderboard.status.charAt(0).toUpperCase() + leaderboard.status.slice(1)}</span>
+                <span>{leaderboard.rankingMode === 'SUM' ? 'Sum' : leaderboard.rankingMode === 'COUNT' ? 'Count' : leaderboard.rankingMode === 'MAX' ? 'Best' : leaderboard.rankingMode}</span>
+                <span>{leaderboard.order === 'DESC' ? 'Highest First' : leaderboard.order === 'ASC' ? 'Lowest First' : leaderboard.order}</span>
               </div>
             ) : null}
           </div>

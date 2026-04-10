@@ -4,6 +4,30 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { getLeaderboards, type LeaderboardDefinition } from '../lib/api/leaderboards-client';
 
+const METRIC_LABELS: Record<string, string> = {
+  net_profit_cents: 'Net Profit',
+  stake_cents: 'Total Stake',
+  win_count: 'Wins',
+  bet_count: 'Total Bets',
+  referral_count: 'Referrals',
+};
+
+const MODE_LABELS: Record<string, string> = {
+  SUM: 'Sum',
+  COUNT: 'Count',
+  MAX: 'Best',
+  AVG: 'Average',
+};
+
+const ORDER_LABELS: Record<string, string> = {
+  DESC: 'Highest First',
+  ASC: 'Lowest First',
+};
+
+function humanize(key: string, map: Record<string, string>): string {
+  return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export default function LeaderboardsPage() {
   const [items, setItems] = useState<LeaderboardDefinition[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,9 +78,9 @@ export default function LeaderboardsPage() {
                 <h2>{board.name}</h2>
                 <p>{board.description || 'Live competition board with real-time sportsbook ranking.'}</p>
                 <div className="leaderboards-meta">
-                  <span>{board.rankingMode.toUpperCase()}</span>
-                  <span>{board.order.toUpperCase()}</span>
-                  <span>{board.metricKey}</span>
+                  <span>{humanize(board.rankingMode, MODE_LABELS)}</span>
+                  <span>{humanize(board.order, ORDER_LABELS)}</span>
+                  <span>{humanize(board.metricKey, METRIC_LABELS)}</span>
                 </div>
               </Link>
             ))}
@@ -83,9 +107,9 @@ export default function LeaderboardsPage() {
                       {board.description || board.prizeSummary || 'Sportsbook competition board'}
                     </div>
                   </div>
-                  <div className="leaderboards-row-metric">{board.metricKey}</div>
+                  <div className="leaderboards-row-metric">{humanize(board.metricKey, METRIC_LABELS)}</div>
                   <div className="leaderboards-row-mode">
-                    {board.rankingMode.toUpperCase()} · {board.order.toUpperCase()}
+                    {humanize(board.rankingMode, MODE_LABELS)} · {humanize(board.order, ORDER_LABELS)}
                   </div>
                 </Link>
               ))}
