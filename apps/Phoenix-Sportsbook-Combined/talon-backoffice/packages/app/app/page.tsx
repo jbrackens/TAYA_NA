@@ -85,6 +85,19 @@ interface LeaderboardSummary {
   status: "draft" | "active" | "closed";
 }
 
+const METRIC_DISPLAY: Record<string, string> = {
+  net_profit_cents: 'Net Profit',
+  stake_cents: 'Total Stake',
+  win_count: 'Wins',
+  bet_count: 'Total Bets',
+  qualified_referrals: 'Referrals',
+  referral_count: 'Referrals',
+};
+
+function humanizeLabel(key: string): string {
+  return METRIC_DISPLAY[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 const SPORT_EMOJIS: Record<string, string> = {
   soccer: "⚽",
   football: "🏈",
@@ -868,7 +881,7 @@ function AuthenticatedHome() {
                 >
                   <div className="leaderboard-pill-title">{board.name}</div>
                   <div className="leaderboard-pill-meta">
-                    {board.rankingMode.toUpperCase()} · {board.order.toUpperCase()} · {board.metricKey}
+                    {humanizeLabel(board.metricKey)}
                   </div>
                 </Link>
               ))}
