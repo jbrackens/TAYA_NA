@@ -14,6 +14,7 @@ const NAMESPACES = [
   'session-timer', 'fixture', 'fixture-list', 'language-selector', 'api-errors',
   'error-component', 'page-home', 'page-about', 'page-terms', 'page-privacy-policy',
   'page-betting-rules', 'notifications', 'transactions', 'security', 'personal-details',
+  'rewards', 'bet-analytics',
 ];
 
 const SUPPORTED_LANGUAGES = ['en', 'de'];

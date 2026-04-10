@@ -164,3 +164,29 @@ export async function getLoyaltyTiers(): Promise<LoyaltyTier[]> {
 
   return promise;
 }
+
+// ── Referrals ──────────────────────────────────────────────
+
+export interface ReferralReward {
+  referralId: string;
+  referrerPlayerId: string;
+  referredPlayerId: string;
+  qualificationState: string;
+  qualifiedAt?: string;
+  ledgerEntryId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ReferralListResponse {
+  playerId: string;
+  items: ReferralReward[];
+  total: number;
+}
+
+export async function getReferrals(userId: string): Promise<ReferralReward[]> {
+  const raw = await apiClient.get<ReferralListResponse>(
+    `/api/v1/referrals?userId=${encodeURIComponent(userId)}`,
+  );
+  return Array.isArray(raw?.items) ? raw.items : [];
+}

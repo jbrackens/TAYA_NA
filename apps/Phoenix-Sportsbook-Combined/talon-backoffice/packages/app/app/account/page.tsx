@@ -190,6 +190,9 @@ export default function AccountPage() {
               <p className="loyalty-subtitle">
                 Earn points from settled bets and unlock sharper tier benefits over time.
               </p>
+              <Link href="/rewards" className="rewards-center-link">
+                Open Rewards Center →
+              </Link>
             </div>
             <div className="loyalty-tier-badge">{currentTierName}</div>
           </div>
@@ -547,6 +550,20 @@ const accountPageStyles = `
     margin: 0;
     color: ${colors.textSecondary};
     font-size: ${font.md};
+  }
+  .rewards-center-link {
+    display: inline-block;
+    margin-top: ${spacing.sm};
+    color: ${colors.primary};
+    font-size: ${font.sm};
+    font-weight: ${font.bold};
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: ${transition.fast};
+  }
+  .rewards-center-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   .loyalty-tier-badge {
     display: inline-flex;
