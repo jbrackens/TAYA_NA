@@ -25,7 +25,7 @@ const ORDER_LABELS: Record<string, string> = {
 };
 
 function humanize(key: string, map: Record<string, string>): string {
-  return map[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return map[key] || map[key.toUpperCase()] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function LeaderboardsPage() {
