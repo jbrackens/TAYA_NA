@@ -91,7 +91,7 @@ export async function getLoyaltyAccount(userId: string): Promise<LoyaltyAccount>
   }
 
   const promise = (async () => {
-    const result = await apiClient.get<LoyaltyAccount>(`/api/v1/loyalty?userId=${encodeURIComponent(userId)}`);
+    const result = await apiClient.get<LoyaltyAccount>(`/api/v1/loyalty/?userId=${encodeURIComponent(userId)}`);
     accountCache.set(userId, {
       entry: { data: result, ts: Date.now() },
       promise: null,
@@ -122,7 +122,7 @@ export async function getLoyaltyLedger(
 
   const promise = (async () => {
     const raw = await apiClient.get<LoyaltyLedgerResponseRaw>(
-      `/api/v1/loyalty/ledger?userId=${encodeURIComponent(userId)}&limit=${limit}`,
+      `/api/v1/loyalty/ledger/?userId=${encodeURIComponent(userId)}&limit=${limit}`,
     );
     ledgerCache.set(key, {
       entry: { data: raw.items || [], ts: Date.now() },
@@ -148,7 +148,7 @@ export async function getLoyaltyTiers(): Promise<LoyaltyTier[]> {
   }
 
   const promise = (async () => {
-    const raw = await apiClient.get<LoyaltyTiersResponseRaw>("/api/v1/loyalty/tiers");
+    const raw = await apiClient.get<LoyaltyTiersResponseRaw>("/api/v1/loyalty/tiers/");
     const items = raw.items || [];
     tiersCache = {
       entry: { data: items, ts: Date.now() },

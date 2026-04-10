@@ -1,8 +1,5 @@
 import { apiClient } from "./client";
 
-const SESSION_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
-
 // Request types
 export interface GoLoginRequest {
   username: string;
@@ -234,9 +231,17 @@ export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
 export async function refresh(
   refreshToken: string,
 ): Promise<GoRefreshResponse> {
-  const raw = await apiClient.post<GoRefreshResponseRaw>("/auth/refresh", {
-    refreshToken,
+  const response = await fetch("/api/v1/auth/refresh/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refreshToken }),
   });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  const raw = (await response.json()) as GoRefreshResponseRaw;
   return normalizeSnakeCase(raw) as GoRefreshResponse;
 }
 
@@ -248,7 +253,7 @@ export async function getSession(
     throw new Error("No access token available");
   }
 
-  const response = await fetch(`${SESSION_BASE_URL}/auth/session`, {
+  const response = await fetch("/api/v1/auth/session/", {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

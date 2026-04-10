@@ -150,6 +150,96 @@ function getPrimaryMarket(fixture: Fixture) {
   return fixture.markets?.find((market) => market.selections?.length >= 3) || fixture.markets?.[0];
 }
 
+function normalizeSelection(rawSelection: any, marketId: string): Selection {
+  return {
+    selectionId: String(rawSelection?.selectionId || rawSelection?.id || ""),
+    marketId,
+    name: String(rawSelection?.name || rawSelection?.selectionName || ""),
+    odds:
+      typeof rawSelection?.odds === "number"
+        ? rawSelection.odds
+        : typeof rawSelection?.displayOdds?.decimal === "number"
+          ? rawSelection.displayOdds.decimal
+          : 0,
+    status:
+      rawSelection?.status ||
+      (rawSelection?.active === false ? "SUSPENDED" : "ACTIVE"),
+  };
+}
+
+function normalizeMarket(rawMarket: any, fixtureId: string): Market {
+  const marketId = String(rawMarket?.marketId || rawMarket?.id || "");
+  const rawSelections = Array.isArray(rawMarket?.selections)
+    ? rawMarket.selections
+    : Array.isArray(rawMarket?.selectionOdds)
+      ? rawMarket.selectionOdds
+      : [];
+
+  return {
+    marketId,
+    fixtureId,
+    name: String(rawMarket?.name || rawMarket?.marketName || "Featured Market"),
+    status:
+      rawMarket?.status || rawMarket?.marketStatus?.type || "ACTIVE",
+    selections: rawSelections.map((selection: any) =>
+      normalizeSelection(selection, marketId),
+    ),
+  };
+}
+
+function normalizeFixture(rawFixture: any): Fixture {
+  const fixtureId = String(rawFixture?.fixtureId || rawFixture?.id || "");
+  const rawMarkets = Array.isArray(rawFixture?.markets) ? rawFixture.markets : [];
+
+  return {
+    fixtureId,
+    fixtureName: String(rawFixture?.fixtureName || rawFixture?.name || ""),
+    startTime: String(rawFixture?.startTime || rawFixture?.start_at || ""),
+    isLive: Boolean(rawFixture?.isLive),
+    sport: {
+      sportId: String(rawFixture?.sport?.sportId || rawFixture?.sport?.id || ""),
+      name: String(rawFixture?.sport?.name || "Featured"),
+      abbreviation: String(
+        rawFixture?.sport?.abbreviation ||
+          rawFixture?.sport?.name?.slice(0, 3)?.toUpperCase() ||
+          "",
+      ),
+      displayToPunters: rawFixture?.sport?.displayToPunters !== false,
+    },
+    tournament: {
+      tournamentId: String(
+        rawFixture?.tournament?.tournamentId || rawFixture?.tournament?.id || "",
+      ),
+      sportId: String(rawFixture?.tournament?.sportId || rawFixture?.sport?.sportId || ""),
+      name: String(rawFixture?.tournament?.name || "Featured"),
+      startTime: String(rawFixture?.tournament?.startTime || rawFixture?.startTime || ""),
+    },
+    status: String(rawFixture?.status || "NOT_STARTED"),
+    markets: rawMarkets.map((market: any) => normalizeMarket(market, fixtureId)),
+    marketsTotalCount:
+      typeof rawFixture?.marketsTotalCount === "number"
+        ? rawFixture.marketsTotalCount
+        : rawMarkets.length,
+    competitors: rawFixture?.competitors || {},
+  };
+}
+
+function normalizeSport(rawSport: any): Sport {
+  const sportId = String(
+    rawSport?.sportId || rawSport?.sportKey || rawSport?.id || rawSport?.name || "",
+  );
+  const name = String(rawSport?.name || rawSport?.sportKey || "Featured");
+
+  return {
+    sportId,
+    name,
+    abbreviation: String(
+      rawSport?.abbreviation || rawSport?.sportKey || name.slice(0, 3).toUpperCase(),
+    ),
+    displayToPunters: rawSport?.displayToPunters !== false,
+  };
+}
+
 function getFixtureStatusLabel(fixture: Fixture) {
   if (fixture.isLive) return "Live";
 
@@ -285,19 +375,19 @@ function AuthenticatedHome() {
     async function loadData() {
       try {
         const [fixturesRes, sportsRes, leaderboardItems] = await Promise.all([
-          fetch("/api/v1/fixtures"),
-          fetch("/api/v1/sports"),
+          fetch("/api/v1/fixtures/"),
+          fetch("/api/v1/sports/"),
           getLeaderboards().catch(() => []),
         ]);
         if (fixturesRes.ok) {
           const data = await fixturesRes.json();
           const list = data.data || data.fixtures || data;
-          setFixtures(Array.isArray(list) ? list : []);
+          setFixtures(Array.isArray(list) ? list.map(normalizeFixture) : []);
         }
         if (sportsRes.ok) {
           const data = await sportsRes.json();
-          const list = data.data || data.sports || data;
-          setSports(Array.isArray(list) ? list : []);
+          const list = data.data || data.sports || data.items || data;
+          setSports(Array.isArray(list) ? list.map(normalizeSport) : []);
         }
         setLeaderboards(
           Array.isArray(leaderboardItems) ? leaderboardItems.slice(0, 3) : [],

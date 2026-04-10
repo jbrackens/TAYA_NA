@@ -7,6 +7,7 @@ const securityHeaders = [
 ];
 
 module.exports = {
+  allowedDevOrigins: ["127.0.0.1"],
   // Transpile workspace packages that expose raw TypeScript source
   // NOTE: @phoenix-ui/design-system removed — all imports replaced with inline components
   transpilePackages: [

@@ -37,7 +37,7 @@ export async function getLeaderboards(search?: string): Promise<LeaderboardDefin
   if (search?.trim()) params.set('search', search.trim());
   const query = params.toString();
   const response = await apiClient.get<{ items?: LeaderboardDefinition[] }>(
-    `/api/v1/leaderboards${query ? `?${query}` : ''}`,
+    `/api/v1/leaderboards/${query ? `?${query}` : ''}`,
   );
   return Array.isArray(response?.items) ? response.items : [];
 }
@@ -61,7 +61,7 @@ export async function getLeaderboardForUser(
   const params = new URLSearchParams();
   if (userId?.trim()) params.set('userId', userId.trim());
   const query = params.toString();
-  return apiClient.get(`/api/v1/leaderboards/${encodeURIComponent(id)}${query ? `?${query}` : ''}`);
+  return apiClient.get(`/api/v1/leaderboards/${encodeURIComponent(id)}/${query ? `?${query}` : ''}`);
 }
 
 export async function getLeaderboardEntries(
@@ -84,5 +84,5 @@ export async function getLeaderboardEntries(
   if (userId?.trim()) {
     params.set('userId', userId.trim());
   }
-  return apiClient.get(`/api/v1/leaderboards/${encodeURIComponent(id)}/entries?${params.toString()}`);
+  return apiClient.get(`/api/v1/leaderboards/${encodeURIComponent(id)}/entries/?${params.toString()}`);
 }
