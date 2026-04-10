@@ -3,9 +3,11 @@ package http
 import (
 	"errors"
 	"fmt"
+	"log"
 	stdhttp "net/http"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"phoenix-revival/gateway/internal/domain"
@@ -13,6 +15,30 @@ import (
 )
 
 const maxSportsScanPageSize = 100
+
+// ---------------------------------------------------------------------------
+// In-memory cache for sports catalog and league summaries.
+//
+// The /api/v1/sports endpoint previously loaded ALL fixtures on every request
+// just to count events per sport. With a 45-second TTL cache the scan happens
+// at most once per interval while readers pay only the cost of an RLock.
+// ---------------------------------------------------------------------------
+
+const sportsCatalogCacheTTL = 45 * time.Second
+
+// sportsCatalogCache holds the most recent catalog response.
+var sportsCatalogCache struct {
+	mu           sync.RWMutex
+	items        []sportCatalogItem
+	lastRefreshed time.Time
+}
+
+// sportsLeagueCache holds per-sport league summaries.
+var sportsLeagueCache struct {
+	mu           sync.RWMutex
+	data         map[string][]sportLeagueItem // keyed by sportKey
+	lastRefreshed time.Time
+}
 
 type sportCatalogItem struct {
 	SportKey    string `json:"sportKey"`
@@ -164,9 +190,47 @@ func registerSportRoutes(mux *stdhttp.ServeMux, repository domain.ReadRepository
 }
 
 func listSportsCatalog(w stdhttp.ResponseWriter, repository domain.ReadRepository) error {
-	fixtures, err := listAllFixtures(repository)
+	items, err := getCachedSportsCatalog(repository)
 	if err != nil {
 		return httpx.Internal("failed to list sports", err)
+	}
+	return httpx.WriteJSON(w, stdhttp.StatusOK, sportCatalogResponse{Items: items})
+}
+
+// getCachedSportsCatalog returns the cached catalog or rebuilds it when stale.
+func getCachedSportsCatalog(repository domain.ReadRepository) ([]sportCatalogItem, error) {
+	sportsCatalogCache.mu.RLock()
+	if time.Since(sportsCatalogCache.lastRefreshed) < sportsCatalogCacheTTL && sportsCatalogCache.items != nil {
+		items := sportsCatalogCache.items
+		sportsCatalogCache.mu.RUnlock()
+		return items, nil
+	}
+	sportsCatalogCache.mu.RUnlock()
+
+	// Cache miss — rebuild under write lock.
+	sportsCatalogCache.mu.Lock()
+	defer sportsCatalogCache.mu.Unlock()
+
+	// Double-check: another goroutine may have refreshed while we waited.
+	if time.Since(sportsCatalogCache.lastRefreshed) < sportsCatalogCacheTTL && sportsCatalogCache.items != nil {
+		return sportsCatalogCache.items, nil
+	}
+
+	items, err := buildSportsCatalog(repository)
+	if err != nil {
+		return nil, err
+	}
+	sportsCatalogCache.items = items
+	sportsCatalogCache.lastRefreshed = time.Now()
+	log.Printf("sports catalog cache refreshed: %d sports", len(items))
+	return items, nil
+}
+
+// buildSportsCatalog performs the full fixture scan and aggregation.
+func buildSportsCatalog(repository domain.ReadRepository) ([]sportCatalogItem, error) {
+	fixtures, err := listAllFixtures(repository)
+	if err != nil {
+		return nil, err
 	}
 
 	type accumulator struct {
@@ -200,37 +264,91 @@ func listSportsCatalog(w stdhttp.ResponseWriter, repository domain.ReadRepositor
 		})
 	}
 	if len(items) == 0 {
-		// Keep canonical esports visible even with an empty dataset.
 		items = append(items, sportCatalogItem{SportKey: "esports", Name: sportDisplayName("esports")})
 	}
 
 	sort.SliceStable(items, func(i, j int) bool {
 		return items[i].SportKey < items[j].SportKey
 	})
-
-	return httpx.WriteJSON(w, stdhttp.StatusOK, sportCatalogResponse{Items: items})
+	return items, nil
 }
 
 func listSportLeagues(w stdhttp.ResponseWriter, repository domain.ReadRepository, sportKey string) error {
-	fixtures, err := listAllFixtures(repository)
+	items, err := getCachedSportLeagues(repository, sportKey)
 	if err != nil {
 		return httpx.Internal("failed to list sport leagues", err)
+	}
+	if items == nil {
+		return httpx.NotFound("sport not found")
+	}
+	return httpx.WriteJSON(w, stdhttp.StatusOK, sportLeaguesResponse{SportKey: sportKey, Items: items})
+}
+
+// getCachedSportLeagues returns cached league data for a sport, or rebuilds all leagues when stale.
+func getCachedSportLeagues(repository domain.ReadRepository, sportKey string) ([]sportLeagueItem, error) {
+	sportsLeagueCache.mu.RLock()
+	if time.Since(sportsLeagueCache.lastRefreshed) < sportsCatalogCacheTTL && sportsLeagueCache.data != nil {
+		items, ok := sportsLeagueCache.data[sportKey]
+		sportsLeagueCache.mu.RUnlock()
+		if !ok {
+			return nil, nil // sport not found
+		}
+		return items, nil
+	}
+	sportsLeagueCache.mu.RUnlock()
+
+	sportsLeagueCache.mu.Lock()
+	defer sportsLeagueCache.mu.Unlock()
+
+	// Double-check after acquiring write lock.
+	if time.Since(sportsLeagueCache.lastRefreshed) < sportsCatalogCacheTTL && sportsLeagueCache.data != nil {
+		items, ok := sportsLeagueCache.data[sportKey]
+		if !ok {
+			return nil, nil
+		}
+		return items, nil
+	}
+
+	data, err := buildAllSportLeagues(repository)
+	if err != nil {
+		return nil, err
+	}
+	sportsLeagueCache.data = data
+	sportsLeagueCache.lastRefreshed = time.Now()
+	log.Printf("sports league cache refreshed: %d sports", len(data))
+
+	items, ok := data[sportKey]
+	if !ok {
+		return nil, nil
+	}
+	return items, nil
+}
+
+// buildAllSportLeagues scans all fixtures and groups leagues by sport.
+func buildAllSportLeagues(repository domain.ReadRepository) (map[string][]sportLeagueItem, error) {
+	fixtures, err := listAllFixtures(repository)
+	if err != nil {
+		return nil, err
 	}
 
 	type accumulator struct {
 		name   string
 		events int
 	}
-	leagues := map[string]*accumulator{}
-	sportFound := false
+
+	// sportKey -> leagueKey -> accumulator
+	bySport := map[string]map[string]*accumulator{}
 
 	for _, fixture := range fixtures {
-		if fixtureSportKey(fixture) != sportKey {
-			continue
-		}
-		sportFound = true
+		sk := fixtureSportKey(fixture)
 		leagueKey := fixtureLeagueKey(fixture)
 		leagueName := fixtureLeagueName(fixture)
+
+		leagues, ok := bySport[sk]
+		if !ok {
+			leagues = map[string]*accumulator{}
+			bySport[sk] = leagues
+		}
 		entry, ok := leagues[leagueKey]
 		if !ok {
 			entry = &accumulator{name: leagueName}
@@ -239,26 +357,25 @@ func listSportLeagues(w stdhttp.ResponseWriter, repository domain.ReadRepository
 		entry.events++
 	}
 
-	if !sportFound {
-		return httpx.NotFound("sport not found")
-	}
-
-	items := make([]sportLeagueItem, 0, len(leagues))
-	for leagueKey, entry := range leagues {
-		items = append(items, sportLeagueItem{
-			LeagueKey:  leagueKey,
-			Name:       entry.name,
-			EventCount: entry.events,
-		})
-	}
-	sort.SliceStable(items, func(i, j int) bool {
-		if items[i].Name == items[j].Name {
-			return items[i].LeagueKey < items[j].LeagueKey
+	result := make(map[string][]sportLeagueItem, len(bySport))
+	for sk, leagues := range bySport {
+		items := make([]sportLeagueItem, 0, len(leagues))
+		for leagueKey, entry := range leagues {
+			items = append(items, sportLeagueItem{
+				LeagueKey:  leagueKey,
+				Name:       entry.name,
+				EventCount: entry.events,
+			})
 		}
-		return items[i].Name < items[j].Name
-	})
-
-	return httpx.WriteJSON(w, stdhttp.StatusOK, sportLeaguesResponse{SportKey: sportKey, Items: items})
+		sort.SliceStable(items, func(i, j int) bool {
+			if items[i].Name == items[j].Name {
+				return items[i].LeagueKey < items[j].LeagueKey
+			}
+			return items[i].Name < items[j].Name
+		})
+		result[sk] = items
+	}
+	return result, nil
 }
 
 func listSportEvents(w stdhttp.ResponseWriter, r *stdhttp.Request, repository domain.ReadRepository, sportKey string) error {

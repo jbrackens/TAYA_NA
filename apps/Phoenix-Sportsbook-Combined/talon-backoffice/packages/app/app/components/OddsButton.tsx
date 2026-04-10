@@ -6,7 +6,6 @@ import { useBetslip } from "../hooks/useBetslip";
 import { BetSelection } from "./BetslipProvider";
 import { useAppSelector } from "../lib/store/hooks";
 import { selectOddsFormat } from "../lib/store/settingsSlice";
-import { selectMovement } from "../lib/store/marketSlice";
 import { formatOdds } from "../lib/utils/odds";
 
 interface OddsButtonProps {
@@ -39,7 +38,6 @@ const OddsButtonComponent: React.FC<OddsButtonProps> = ({
 }) => {
   const betslip = useBetslip();
   const oddsFormat = useAppSelector(selectOddsFormat);
-  const movement = useAppSelector(selectMovement(`${marketId}:${selectionId}`));
   const [isFlashing, setIsFlashing] = useState<"up" | "down" | null>(null);
   const prevOddsRef = useRef(odds);
 
@@ -61,15 +59,6 @@ const OddsButtonComponent: React.FC<OddsButtonProps> = ({
     }
     prevOddsRef.current = odds;
   }, [odds]);
-
-  // Also check Redux movement for WS updates
-  useEffect(() => {
-    if (movement && Date.now() - movement.timestamp < 2000) {
-      setIsFlashing(movement.direction);
-      const timer = setTimeout(() => setIsFlashing(null), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [movement]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();

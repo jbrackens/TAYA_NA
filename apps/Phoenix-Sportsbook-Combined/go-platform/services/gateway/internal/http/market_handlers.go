@@ -136,8 +136,12 @@ func registerMarketRoutes(mux *stdhttp.ServeMux, repository domain.ReadRepositor
 			return httpx.Internal("failed to list markets", err)
 		}
 
-		legacyItems := make([]legacyMarketNavigation, 0, len(items))
+		// Batch-fetch unique fixtures to avoid N+1 queries
+		fixtureCache := make(map[string]domain.Fixture, len(items))
 		for _, item := range items {
+			if _, exists := fixtureCache[item.FixtureID]; exists {
+				continue
+			}
 			fixture, err := repository.GetFixtureByID(item.FixtureID)
 			if err != nil {
 				if errors.Is(err, domain.ErrNotFound) {
@@ -152,7 +156,12 @@ func registerMarketRoutes(mux *stdhttp.ServeMux, repository domain.ReadRepositor
 					return httpx.Internal("failed to fetch fixture for market response", err)
 				}
 			}
-			legacyItems = append(legacyItems, mapLegacyMarketNavigation(item, fixture))
+			fixtureCache[item.FixtureID] = fixture
+		}
+
+		legacyItems := make([]legacyMarketNavigation, 0, len(items))
+		for _, item := range items {
+			legacyItems = append(legacyItems, mapLegacyMarketNavigation(item, fixtureCache[item.FixtureID]))
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, toLegacyPagination(legacyItems, pagination))

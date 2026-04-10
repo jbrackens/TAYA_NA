@@ -6,6 +6,7 @@ import { getMarkets } from "../lib/api/markets-client";
 import type { Event } from "../lib/api/events-client";
 import type { Market, MarketSelection } from "../lib/api/markets-client";
 import wsService from "../lib/websocket/websocket-service";
+import type { WsMessage } from "../lib/websocket/websocket-service";
 import OddsButton from "./OddsButton";
 
 interface MatchOdds {
@@ -138,24 +139,26 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
           return;
         }
 
-        const oddsResults = await Promise.allSettled(
-          events.map(async (event: Event) => {
-            const markets = await getMarkets(event.fixtureId);
-            const odds = extractMatchOdds(event, markets);
-            if (!odds) return null;
-
-            return {
-              fixtureId: event.fixtureId,
-              odds,
-            };
-          }),
+        // Batch-fetch all markets in parallel (avoids waterfall through dedup layer)
+        const fixtureIds = events.map((event) => event.fixtureId);
+        const marketResults = await Promise.all(
+          fixtureIds.map((id) =>
+            getMarkets(id).catch((): Market[] => []),
+          ),
         );
 
         if (!cancelled) {
+          const marketsMap = new Map<string, Market[]>();
+          fixtureIds.forEach((id, index) => {
+            marketsMap.set(id, marketResults[index]);
+          });
+
           const newOddsMap: Record<string, MatchOdds> = {};
-          for (const result of oddsResults) {
-            if (result.status === "fulfilled" && result.value) {
-              newOddsMap[result.value.fixtureId] = result.value.odds;
+          for (const event of events) {
+            const markets = marketsMap.get(event.fixtureId) || [];
+            const odds = extractMatchOdds(event, markets);
+            if (odds) {
+              newOddsMap[event.fixtureId] = odds;
             }
           }
           setOddsMap((previous) =>
@@ -178,11 +181,13 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
     loadMatches();
 
     wsService.subscribe("fixture");
-    const unsubscribe = wsService.on(
+    wsService.subscribe("market");
+
+    const unsubFixture = wsService.on(
       "fixture",
-      (data: Record<string, unknown>) => {
-        const fixtureId = data?.fixtureId as string | undefined;
-        const status = data?.status as string | undefined;
+      (message: WsMessage) => {
+        const fixtureId = message.data?.fixtureId as string | undefined;
+        const status = message.data?.status as string | undefined;
         if (
           !fixtureId ||
           !status ||
@@ -206,10 +211,55 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
       },
     );
 
+    const unsubMarket = wsService.on(
+      "market",
+      (message: WsMessage) => {
+        if (message.event !== "update") return;
+        const data = message.data;
+        if (!data) return;
+
+        const marketId = data.marketId as string | undefined;
+        const selections = data.selectionOdds as
+          | Array<{ selectionId: string; odds: { decimal: number } }>
+          | undefined;
+        if (!marketId || !selections) return;
+
+        setOddsMap((previous) => {
+          // Find which fixture this market belongs to
+          const entry = Object.entries(previous).find(
+            ([, odds]) => odds.marketId === marketId,
+          );
+          if (!entry) return previous;
+
+          const [fixtureId, currentOdds] = entry;
+          let changed = false;
+          const updated = { ...currentOdds };
+
+          for (const sel of selections) {
+            if (sel.selectionId === currentOdds.homeSelectionId && sel.odds.decimal !== currentOdds.homeOdds) {
+              updated.homeOdds = sel.odds.decimal;
+              changed = true;
+            } else if (sel.selectionId === currentOdds.drawSelectionId && sel.odds.decimal !== currentOdds.drawOdds) {
+              updated.drawOdds = sel.odds.decimal;
+              changed = true;
+            } else if (sel.selectionId === currentOdds.awaySelectionId && sel.odds.decimal !== currentOdds.awayOdds) {
+              updated.awayOdds = sel.odds.decimal;
+              changed = true;
+            }
+          }
+
+          if (!changed) return previous;
+          return { ...previous, [fixtureId]: updated };
+        });
+      },
+    );
+
     return () => {
       cancelled = true;
-      unsubscribe();
+      unsubFixture();
+      unsubMarket();
       wsService.unsubscribe("fixture");
+      wsService.unsubscribe("market");
     };
   }, [sportKey, leagueKey]);
 

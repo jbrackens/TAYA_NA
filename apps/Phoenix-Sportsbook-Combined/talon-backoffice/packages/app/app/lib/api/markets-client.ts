@@ -52,7 +52,7 @@ export interface Market {
   volume?: number;
 }
 
-const MARKETS_CACHE_TTL_MS = 30_000;
+const MARKETS_CACHE_TTL_MS = 10_000;
 const fixtureMarketsCache = new Map<
   string,
   { entry: TimedCacheEntry<Market[]> | null; promise: Promise<Market[]> | null }

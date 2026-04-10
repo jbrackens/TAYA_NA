@@ -37,9 +37,16 @@ class ApiClient {
     }
 
     const [pathname, search = ""] = path.split("?");
+
+    // Skip normalization for paths containing encoded IDs with colons
+    // (e.g. /api/v1/leaderboards/lb:local:000001) — the trailing slash
+    // breaks gateway pattern matching for these resource paths.
+    const hasResourceId = /\/[a-z]+:[a-z]+:/.test(pathname);
+
     const shouldNormalize =
       (pathname.startsWith("/api/") || pathname.startsWith("/admin/")) &&
-      !pathname.endsWith("/");
+      !pathname.endsWith("/") &&
+      !hasResourceId;
 
     if (!shouldNormalize) {
       return path;
