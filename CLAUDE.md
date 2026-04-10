@@ -58,7 +58,7 @@ PhoenixBotRevival/
 - **Styling:** Tailwind CSS + inline styles (NO styled-components in app/)
 - **Logging:** `app/lib/logger.ts` — structured logger (dev: console with `[context]` prefix, prod: no-op)
 - **WebSocket:** `app/lib/websocket/` — real-time odds, fixtures, bets
-- **API clients:** `app/lib/api/` — one client per domain (auth, betting, events, markets, wallet, user, compliance)
+- **API clients:** `app/lib/api/` — one client per domain (auth, betting, events, markets, wallet, user, compliance, loyalty, leaderboards)
 - **Analytics:** Google Tag Manager (GTM-PJSSBJG)
 - **Testing:** Node.js built-in test runner (`node:test`) for zero-dependency tests; legacy jest tests exist
 - **Tests location:** `app/__tests__/`

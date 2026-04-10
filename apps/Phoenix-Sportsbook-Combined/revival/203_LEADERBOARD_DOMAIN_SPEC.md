@@ -179,10 +179,16 @@ Future storage can move to SQL tables:
 The current implementation now includes:
 
 - seeded weekly profit, weekly stake, and qualified referral boards
+- closed "Last Week's Profit Race" and draft "Monthly VIP Challenge" for history and preview
+- 5 seeded players (u-1 through u-5) with realistic event data across all boards
 - settlement-fed and referral-fed scoring from sportsbook-native services
 - player leaderboard hub, detail view, and home/account highlights
-- personalized `viewerEntry` rank surfaces in player flows
+- personalized `viewerEntry` rank surfaces in player flows (with percentile callout)
+- competition window dates and prize summary displayed on player detail pages
 - backoffice create, edit, record-event, recompute, and reports analytics views
+- backoffice window date editing, lifecycle buttons (draft/active/closed), batch recompute all
+- backoffice standings metadata (total entries, score range)
+- leaderboard competition cards on the standalone /rewards page
 
 Still deferred:
 

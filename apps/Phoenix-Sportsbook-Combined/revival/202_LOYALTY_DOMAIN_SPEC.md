@@ -276,20 +276,38 @@ The current sportsbook-native MVP now includes:
 - backoffice loyalty account list and account detail
 - backoffice loyalty settings UI for tier thresholds and accrual rules
 
+### Post-MVP Shipped (2026-04-10)
+
+- standalone `/rewards` Rewards Center: tier ladder, how-you-earn, 20-entry ledger, referral program, heatmap, competitions
+- bet analytics dashboard at `/bets/analytics`: ROI, win rate, P&L, stake distribution charts via `GET /api/v1/bets/analytics`
+- shareable bet cards: "Share this win" on settled winners, Canvas PNG with TAYA NA! branding
+- betting heatmap (7×4 day/time grid) on account and rewards pages
+- betslip estimated rewards preview
+- office rule creation form + `POST /api/v1/admin/loyalty/rules` endpoint
+- office tier benefits editor (key-value pairs)
+- office referral visibility on player detail
+- user profile endpoint `GET /api/v1/users/{userId}/profile`
+- office dev-mode auth bypass for local gateway tokens
+- performance: parallel market fetching, batched fixture lookups, 10s market cache, 15s poll fallback, sports catalog caching, gzip
+
 Still intentionally deferred:
 
 - redemption flows
 - campaign shops
 - automatic rolling-window decay logic
 - full audit-log integration for configuration edits
+- sport/league breakdown in analytics (requires fixture join)
+- parlay-specific analytics
 
-### Admin APIs
+### Admin APIs (current)
 - `GET /api/v1/admin/loyalty/accounts`
 - `GET /api/v1/admin/loyalty/accounts/:id`
-- `GET /api/v1/admin/loyalty/ledger`
 - `POST /api/v1/admin/loyalty/adjustments`
-- `GET /api/v1/admin/loyalty/rules`
-- `PUT /api/v1/admin/loyalty/rules/:id`
+- `POST /api/v1/admin/loyalty/referrals`
+- `GET /api/v1/admin/loyalty/config`
+- `PUT /api/v1/admin/loyalty/tiers/:tierCode`
+- `POST /api/v1/admin/loyalty/rules`
+- `PUT /api/v1/admin/loyalty/rules/:ruleId`
 
 ## Storage Recommendations
 Implement as a new sportsbook-native domain in Go.

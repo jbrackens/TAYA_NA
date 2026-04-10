@@ -22,11 +22,14 @@ WS_GLOBAL_ENDPOINT=ws://localhost:3010
 
 ## Current Product Surfaces
 
-The player app now includes sportsbook-native loyalty and leaderboard MVP flows:
+The player app includes sportsbook-native loyalty, leaderboards, analytics, and rewards:
 
-- `/account` shows rewards balance, tier progress, recent loyalty ledger activity, and a competition snapshot
-- `/bets` shows `points earned` callouts on settled bets when loyalty rewards have posted
-- `/leaderboards` and `/leaderboards/[id]` expose live competition boards and personalized rank callouts
+- `/account` shows rewards balance, tier progress, recent ledger activity, competition snapshot, betting heatmap, and links to the Rewards Center
+- `/rewards` is a standalone 9-section Rewards Center with tier ladder, referral program, full ledger history, heatmap, and competition standings
+- `/bets` shows `points earned` callouts on settled bets and a "Share this win" button on winning bets (generates branded PNG)
+- `/bets/analytics` is a bet analytics dashboard with ROI over time, win rate charts, cumulative P&L, stake distribution, and 5 summary stat cards
+- `/leaderboards` and `/leaderboards/[id]` expose live competition boards with personalized rank, window dates, and prize info
+- Betslip shows estimated rewards points preview alongside the potential return
 
 ### Other scripts
 
