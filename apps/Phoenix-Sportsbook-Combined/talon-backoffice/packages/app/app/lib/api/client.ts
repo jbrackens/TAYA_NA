@@ -3,7 +3,7 @@ const API_BASE =
     ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"
     : "";
 
-function readAuthCookie(name: string) {
+function readCookie(name: string) {
   if (typeof document === "undefined") return null;
   const prefix = `${name}=`;
   const match = document.cookie
@@ -55,12 +55,16 @@ class ApiClient {
     return search ? `${pathname}/?${search}` : `${pathname}/`;
   }
 
-  private getHeaders(): Record<string, string> {
+  private getHeaders(includeCsrf = false): Record<string, string> {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (typeof window !== 'undefined') {
       const token =
-        localStorage.getItem('phoenix_access_token') || readAuthCookie('authToken');
+        localStorage.getItem('phoenix_access_token') || readCookie('authToken');
       if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (includeCsrf) {
+        const csrf = readCookie('csrf_token');
+        if (csrf) headers['X-CSRF-Token'] = csrf;
+      }
     }
     return headers;
   }
@@ -81,7 +85,7 @@ class ApiClient {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'POST', headers: this.getHeaders(), credentials: 'include', body: body ? JSON.stringify(body) : undefined
+      method: 'POST', headers: this.getHeaders(true), credentials: 'include', body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
     if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
@@ -92,7 +96,7 @@ class ApiClient {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'PUT', headers: this.getHeaders(), credentials: 'include', body: body ? JSON.stringify(body) : undefined
+      method: 'PUT', headers: this.getHeaders(true), credentials: 'include', body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
     if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
@@ -103,7 +107,7 @@ class ApiClient {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'DELETE', headers: this.getHeaders(), credentials: 'include'
+      method: 'DELETE', headers: this.getHeaders(true), credentials: 'include'
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
     if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
@@ -121,7 +125,7 @@ class ApiClient {
 
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('phoenix_access_token') || readAuthCookie('authToken');
+    return localStorage.getItem('phoenix_access_token') || readCookie('authToken');
   }
 
   getRefreshToken(): string | null {

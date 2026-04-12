@@ -19,6 +19,7 @@ import { selectOddsFormat } from "./lib/store/settingsSlice";
 import { formatOdds } from "./lib/utils/odds";
 import { useAuth } from "./hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { logger } from "./lib/logger";
 import { getLeaderboards } from "./lib/api/leaderboards-client";
 
 const LandingPage = dynamic(() => import("./components/LandingPage"));
@@ -86,17 +87,19 @@ interface LeaderboardSummary {
   status: "draft" | "active" | "closed";
 }
 
-const METRIC_DISPLAY: Record<string, string> = {
-  net_profit_cents: 'Net Profit',
-  stake_cents: 'Total Stake',
-  win_count: 'Wins',
-  bet_count: 'Total Bets',
-  qualified_referrals: 'Referrals',
-  referral_count: 'Referrals',
+const METRIC_KEYS: Record<string, string> = {
+  net_profit_cents: 'NET_PROFIT',
+  stake_cents: 'TOTAL_STAKE',
+  win_count: 'WINS',
+  bet_count: 'TOTAL_BETS',
+  qualified_referrals: 'REFERRALS',
+  referral_count: 'REFERRALS',
 };
 
-function humanizeLabel(key: string): string {
-  return METRIC_DISPLAY[key] || key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+function humanizeLabel(key: string, t: (k: string) => string): string {
+  const i18nKey = METRIC_KEYS[key];
+  if (i18nKey) return t(i18nKey);
+  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const SPORT_EMOJIS: Record<string, string> = {
@@ -240,13 +243,13 @@ function normalizeFixture(rawFixture: any): Fixture {
 
 /** Issue #9: Validate fixtures have real data before displaying */
 function isValidFixture(fixture: Fixture): boolean {
-  const teams = getTeams(fixture);
+  const teams = getTeams(fixture.competitors);
   if (teams.home === 'TBD' && teams.away === 'TBD') {
-    logger.warn('Home', 'Filtered out fixture with missing teams', fixture.id);
+    logger.warn('Home', 'Filtered out fixture with missing teams', fixture.fixtureId);
     return false;
   }
   if (!fixture.startTime) {
-    logger.warn('Home', 'Filtered out fixture with no start time', fixture.id);
+    logger.warn('Home', 'Filtered out fixture with no start time', fixture.fixtureId);
     return false;
   }
   return true;
@@ -268,21 +271,22 @@ function normalizeSport(rawSport: any): Sport {
   };
 }
 
-function getFixtureStatusLabel(fixture: Fixture) {
-  if (fixture.isLive) return "Live";
+function getFixtureStatusLabel(fixture: Fixture, t: (k: string) => string) {
+  if (fixture.isLive) return t("LIVE");
 
   const start = new Date(fixture.startTime).getTime();
   if (!Number.isNaN(start) && start - Date.now() < 1000 * 60 * 90) {
-    return "Starting Soon";
+    return t("STARTING_SOON");
   }
 
-  return "Upcoming";
+  return t("UPCOMING");
 }
 
 function getEditorialAngle(
   fixture: Fixture,
   index: number,
   leaderboardsActive: boolean,
+  t: (k: string, opts?: Record<string, unknown>) => string,
 ) {
   const start = new Date(fixture.startTime).getTime();
   const minutesToStart = Number.isNaN(start)
@@ -291,28 +295,28 @@ function getEditorialAngle(
 
   if (fixture.isLive) {
     return {
-      tag: "Live Heat",
-      line: "Live prices are moving now. Step in before the board flips again.",
+      tag: t("LIVE_HEAT"),
+      line: t("LIVE_HEAT_LINE"),
     };
   }
 
   if (minutesToStart !== null && minutesToStart > 0 && minutesToStart <= 30) {
     return {
-      tag: "Kickoff Window",
-      line: `Kickoff is roughly ${minutesToStart} minutes away. Catch the price before it tightens.`,
+      tag: t("KICKOFF_WINDOW"),
+      line: t("KICKOFF_WINDOW_LINE", { minutes: minutesToStart }),
     };
   }
 
   if (leaderboardsActive && index < 2) {
     return {
-      tag: "Board Booster",
-      line: "A clean entry if you want action that also keeps your competition week alive.",
+      tag: t("BOARD_BOOSTER"),
+      line: t("BOARD_BOOSTER_LINE"),
     };
   }
 
   return {
-    tag: "Sharp Angle",
-    line: "A curated lane worth hitting before you drift into the deeper board.",
+    tag: t("SHARP_ANGLE"),
+    line: t("SHARP_ANGLE_LINE"),
   };
 }
 
@@ -384,7 +388,7 @@ function AuthenticatedHome() {
           `${getTeams(fixture.competitors).home} vs ${
             getTeams(fixture.competitors).away
           }`,
-        marketName: market.name || "Match Result",
+        marketName: market.name || t("MATCH_RESULT"),
         selectionName: selection.name,
         odds: selection.odds,
         initialOdds: selection.odds,
@@ -417,7 +421,7 @@ function AuthenticatedHome() {
         // Issue #3: Throw on API failures instead of silently showing empty board
         if (!fixturesRes.ok) {
           logger.error("Home", "Fixtures API failed", { status: fixturesRes.status });
-          setFeedError("Live feed temporarily unavailable. Odds may be stale.");
+          setFeedError("FEED_ERROR");
         } else {
           const data = await fixturesRes.json();
           const list = data.data || data.fixtures || data;
@@ -440,7 +444,7 @@ function AuthenticatedHome() {
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         logger.error("Home", "Failed to load homepage data", message);
-        setError("Could not connect to the sportsbook. Please check your connection and try again.");
+        setError("CONNECT_ERROR");
       } finally {
         setLoading(false);
       }
@@ -613,14 +617,14 @@ function AuthenticatedHome() {
         >
           <div className="discovery-card-top">
             <span className="discovery-card-league">
-              {fixture.tournament?.name || fixture.sport?.name || "Featured"}
+              {fixture.tournament?.name || fixture.sport?.name || t("FEATURED")}
             </span>
             <span
               className={`discovery-card-badge ${
                 fixture.isLive ? "live" : "soon"
               }`}
             >
-              {fixture.isLive ? "Live" : getFixtureStatusLabel(fixture)}
+              {fixture.isLive ? t("LIVE") : getFixtureStatusLabel(fixture, t)}
             </span>
           </div>
 
@@ -666,7 +670,7 @@ function AuthenticatedHome() {
     (fixture: Fixture, index: number, lead = false) => {
       const teams = getTeams(fixture.competitors);
       const market = getPrimaryMarket(fixture);
-      const angle = getEditorialAngle(fixture, index, leaderboards.length > 0);
+      const angle = getEditorialAngle(fixture, index, leaderboards.length > 0, t);
 
       if (!market || !market.selections?.length) return null;
 
@@ -679,7 +683,7 @@ function AuthenticatedHome() {
             <div>
               <div className="feature-spotlight-tag">{angle.tag}</div>
               <div className="feature-spotlight-league">
-                {fixture.tournament?.name || fixture.sport?.name || "Hot Pick"}
+                {fixture.tournament?.name || fixture.sport?.name || t("HOT_PICK")}
               </div>
             </div>
             <div
@@ -687,7 +691,7 @@ function AuthenticatedHome() {
                 fixture.isLive ? "live" : "soon"
               }`}
             >
-              {fixture.isLive ? "Live" : formatDate(fixture.startTime)}
+              {fixture.isLive ? t("LIVE") : formatDate(fixture.startTime)}
             </div>
           </div>
 
@@ -698,7 +702,7 @@ function AuthenticatedHome() {
           </div>
 
           <div className="feature-spotlight-market">
-            {market.name || "Match Result"}
+            {market.name || t("MATCH_RESULT")}
           </div>
           <p className="feature-spotlight-copy">{angle.line}</p>
 
@@ -733,10 +737,10 @@ function AuthenticatedHome() {
           <div className="feature-spotlight-footer">
             <span>
               {fixture.isLive
-                ? "Live board active"
-                : `${fixture.marketsTotalCount || market.selections.length} market angles open`}
+                ? t("LIVE_BOARD_ACTIVE")
+                : t("MARKET_ANGLES_COUNT", { count: fixture.marketsTotalCount || market.selections.length })}
             </span>
-            <Link href={`/match/${fixture.fixtureId}`}>Open full market</Link>
+            <Link href={`/match/${fixture.fixtureId}`}>{t("OPEN_FULL_MARKET_LINK")}</Link>
           </div>
         </article>
       );
@@ -804,7 +808,7 @@ function AuthenticatedHome() {
                     <div className="home-hero-feature-league">
                       {featuredMoment.tournament?.name ||
                         featuredMoment.sport?.name ||
-                        "Featured Board"}
+                        t("FEATURED_BOARD")}
                     </div>
                   </div>
                   <div
@@ -813,8 +817,8 @@ function AuthenticatedHome() {
                     }`}
                   >
                     {featuredMoment.isLive
-                      ? "Live Pressure"
-                      : getFixtureStatusLabel(featuredMoment)}
+                      ? t("LIVE_PRESSURE")
+                      : getFixtureStatusLabel(featuredMoment, t)}
                   </div>
                 </div>
 
@@ -829,10 +833,10 @@ function AuthenticatedHome() {
                 </div>
 
                 <div className="home-hero-feature-note">
-                  {getPrimaryMarket(featuredMoment)?.name || "Match Result"} ·{" "}
+                  {getPrimaryMarket(featuredMoment)?.name || t("MATCH_RESULT")} ·{" "}
                   {featuredMoment.isLive
-                    ? "prices moving on the live board"
-                    : "quick-entry angle before kickoff"}
+                    ? t("PRICES_MOVING")
+                    : t("QUICK_ENTRY_ANGLE")}
                 </div>
 
                 <div className="home-hero-feature-odds">
@@ -872,14 +876,13 @@ function AuthenticatedHome() {
                 <div className="home-hero-feature-footer">
                   <span>{formatDate(featuredMoment.startTime)}</span>
                   <Link href={`/match/${featuredMoment.fixtureId}`}>
-                    Open full market
+                    {t("OPEN_FULL_MARKET_LINK")}
                   </Link>
                 </div>
               </>
             ) : (
               <div className="home-hero-feature-empty">
-                Featured action is loading. The board will fill with the sharpest
-                plays available right now.
+                {t("FEATURED_LOADING")}
               </div>
             )}
           </div>
@@ -894,21 +897,21 @@ function AuthenticatedHome() {
                 className="home-hero-rail-card"
               >
                 <div className="home-hero-rail-top">
-                  <span>{fixture.sport?.name || "Board"}</span>
-                  <span>{fixture.isLive ? "Live" : formatDate(fixture.startTime)}</span>
+                  <span>{fixture.sport?.name || t("BOARD")}</span>
+                  <span>{fixture.isLive ? t("LIVE") : formatDate(fixture.startTime)}</span>
                 </div>
                 <div className="home-hero-rail-title">
                   {getTeams(fixture.competitors).home} vs{" "}
                   {getTeams(fixture.competitors).away}
                 </div>
                 <div className="home-hero-rail-meta">
-                  {getPrimaryMarket(fixture)?.name || "Featured market"} ·{" "}
+                  {getPrimaryMarket(fixture)?.name || t("FEATURED_MARKET")} ·{" "}
                   {getPrimaryMarket(fixture)?.selections?.[0]
                     ? formatOdds(
                         getPrimaryMarket(fixture)!.selections[0].odds,
                         oddsFormat,
                       )
-                    : "Open board"}
+                    : t("OPEN_BOARD")}
                 </div>
               </Link>
             ))}
@@ -946,14 +949,14 @@ function AuthenticatedHome() {
           }}>
             {searchLoading ? (
               <div style={{ padding: "16px 20px", color: "#94a3b8", fontSize: "13px" }}>
-                Searching...
+                {t("SEARCHING")}
               </div>
             ) : searchResults.length > 0 ? (
               searchResults.map((fixture) => {
-                const teams = getTeams(fixture);
+                const teams = getTeams(fixture.competitors);
                 return (
                   <div
-                    key={fixture.id}
+                    key={fixture.fixtureId}
                     style={{
                       padding: "10px 20px",
                       display: "flex",
@@ -982,7 +985,7 @@ function AuthenticatedHome() {
               })
             ) : (
               <div style={{ padding: "16px 20px", color: "#64748b", fontSize: "13px" }}>
-                No events found for &ldquo;{deferredSearchQuery}&rdquo;
+                {t("NO_EVENTS_FOUND", { query: deferredSearchQuery })}
               </div>
             )}
           </div>
@@ -991,10 +994,7 @@ function AuthenticatedHome() {
         <div className="discovery-context">
           <div>
             <div className="discovery-kicker">{t("BOARD_CONTROL")}</div>
-            <div className="discovery-context-copy">
-              <strong>{filteredFixtures.length}</strong> matches ready to scan once
-              you clear the featured lane.
-            </div>
+            <div className="discovery-context-copy" dangerouslySetInnerHTML={{ __html: t("MATCHES_READY", { count: filteredFixtures.length }) }} />
           </div>
           <div className="discovery-context-copy" dangerouslySetInnerHTML={{ __html: t("BOARD_CONTROL_HINT") }} />
         </div>
@@ -1021,7 +1021,7 @@ function AuthenticatedHome() {
                 >
                   <div className="leaderboard-pill-title">{board.name}</div>
                   <div className="leaderboard-pill-meta">
-                    {humanizeLabel(board.metricKey)}
+                    {humanizeLabel(board.metricKey, t)}
                   </div>
                 </Link>
               ))}
@@ -1080,9 +1080,9 @@ function AuthenticatedHome() {
               </>
             ) : (
               <div className="empty-state" style={{ width: "100%" }}>
-                <div className="empty-title">No top picks right now</div>
+                <div className="empty-title">{t("NO_TOP_PICKS")}</div>
                 <div className="empty-sub">
-                  Open up the board with another sport or a wider search.
+                  {t("NO_TOP_PICKS_SUB")}
                 </div>
               </div>
             )}
@@ -1095,9 +1095,9 @@ function AuthenticatedHome() {
               <section key={`popular-${sport.sportId}`} className="popular-sport-block">
                 <div className="popular-sport-head">
                   <div className="popular-sport-title">
-                    {getSportAccent(sport)} Popular in {sport.name}
+                    {getSportAccent(sport)} {t("POPULAR_IN", { sport: sport.name })}
                   </div>
-                  <div className="popular-sport-meta">{fixtures.length} featured events</div>
+                  <div className="popular-sport-meta">{t("FEATURED_EVENTS", { count: fixtures.length })}</div>
                 </div>
 
                 <div className="sport-ribbon-track">
@@ -1109,7 +1109,7 @@ function AuthenticatedHome() {
         )}
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
+      {error && <div className="error-banner">{t(error)}</div>}
 
       {/* Fixtures */}
       <div className="fixtures-board">
@@ -1117,12 +1117,12 @@ function AuthenticatedHome() {
           <div>
             <span className="section-title">
               {loading
-                ? "Loading..."
+                ? t("LOADING")
                 : searchQuery
                   ? t("FULL_BOARD_TITLE")
                   : activeSport === "all"
                     ? t("FULL_BOARD_TITLE")
-                    : `${topSports.find((sport) => sport.sportId === activeSport)?.name || "Selected Sport"} Board`}
+                    : t("SELECTED_SPORT_BOARD", { sport: topSports.find((sport) => sport.sportId === activeSport)?.name || "" })}
             </span>
             <div className="section-subtitle">
               {t("FULL_BOARD_SUBTITLE")}
@@ -1130,7 +1130,7 @@ function AuthenticatedHome() {
           </div>
           {!loading && (
             <span className="section-count">
-              {filteredFixtures.length} matches
+              {t("MATCHES", { count: filteredFixtures.length })}
             </span>
           )}
         </div>
@@ -1162,7 +1162,7 @@ function AuthenticatedHome() {
                       fixture.isLive ? "live" : "upcoming"
                     }`}
                   >
-                    {fixture.isLive ? "LIVE" : formatDate(fixture.startTime)}
+                    {fixture.isLive ? t("LIVE_LABEL") : formatDate(fixture.startTime)}
                   </span>
                 </div>
 
@@ -1225,7 +1225,7 @@ function AuthenticatedHome() {
                     href={`/fixtures/${fixture.fixtureId}`}
                     className="more-markets"
                   >
-                    +{fixture.marketsTotalCount - 1} more markets
+                    {t("MORE_MARKETS_LINK", { count: fixture.marketsTotalCount - 1 })}
                   </a>
                 )}
               </div>
@@ -1237,7 +1237,7 @@ function AuthenticatedHome() {
             <div className="empty-icon">⚽</div>
             <div className="empty-title">{t("NO_MATCHES")}</div>
             <div className="empty-sub">
-              Check back soon for upcoming fixtures and live odds.
+              {t("EMPTY_SUB")}
             </div>
           </div>
         )}

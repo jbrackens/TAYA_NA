@@ -136,9 +136,13 @@ export const SportsSidebar: React.FC = () => {
     setFavorites(loadFavorites());
   }, []);
 
+  const [animatingStar, setAnimatingStar] = useState<string | null>(null);
+
   const toggleFavorite = useCallback((sportId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setAnimatingStar(sportId);
+    setTimeout(() => setAnimatingStar(null), 300);
     setFavorites((prev) => {
       const next = new Set(prev);
       if (next.has(sportId)) {
@@ -323,7 +327,8 @@ export const SportsSidebar: React.FC = () => {
                       color: favorites.has(sport.sportId)
                         ? "#39ff14"
                         : "#2a3158",
-                      transition: "color 0.15s",
+                      transition: "color 0.15s, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                      transform: animatingStar === sport.sportId ? "scale(1.4)" : "scale(1)",
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",

@@ -21,6 +21,9 @@ const (
 	defaultAccessTokenTTL  = 15 * time.Minute
 	defaultRefreshTokenTTL = 24 * time.Hour
 	tokenSize              = 24
+	csrfTokenSize          = 32
+	csrfCookieName         = "csrf_token"
+	csrfHeaderName         = "X-CSRF-Token"
 )
 
 type AuthService struct {
@@ -102,7 +105,7 @@ type structuredAuditLogger struct {
 
 func NewAuthService() *AuthService {
 	demoUsername := getEnvOrDefault("AUTH_DEMO_USERNAME", "demo@phoenix.local")
-	demoPassword := getEnvOrDefault("AUTH_DEMO_PASSWORD", "change-me-local")
+	demoPassword := getEnvOrDefault("AUTH_DEMO_PASSWORD", "demo123")
 	demoUserID := getEnvOrDefault("AUTH_DEMO_USER_ID", "u-1")
 	adminUsername := getEnvOrDefault("AUTH_ADMIN_USERNAME", "admin@phoenix.local")
 	adminPassword := getEnvOrDefault("AUTH_ADMIN_PASSWORD", "admin123")
@@ -202,6 +205,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			SameSite: stdhttp.SameSiteLaxMode,
 			MaxAge:   int(auth.refreshTTL.Seconds()),
 		})
+		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, response)
 	}))
@@ -252,6 +256,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			SameSite: stdhttp.SameSiteLaxMode,
 			MaxAge:   int(auth.refreshTTL.Seconds()),
 		})
+		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, response)
 	}))
@@ -292,6 +297,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
 
+		// Verify CSRF token on state-changing request.
+		// Skip CSRF check if no CSRF cookie exists (e.g., client clearing
+		// cookies during a failed login before a CSRF token was ever issued).
+		if _, cookieErr := r.Cookie(csrfCookieName); cookieErr == nil {
+			if err := verifyCSRF(r); err != nil {
+				return err
+			}
+		}
+
 		// Clear auth cookies
 		stdhttp.SetCookie(w, &stdhttp.Cookie{
 			Name:     "access_token",
@@ -306,6 +320,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			Path:     "/api/v1/auth/refresh",
 			HttpOnly: true,
 			MaxAge:   -1,
+		})
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:   csrfCookieName,
+			Value:  "",
+			Path:   "/",
+			MaxAge: -1,
 		})
 
 		// Invalidate session if access token cookie exists
@@ -515,6 +535,56 @@ func parseBearerToken(header string) (string, error) {
 func digestToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
+}
+
+func makeCSRFToken() (string, error) {
+	raw := make([]byte, csrfTokenSize)
+	if _, err := rand.Read(raw); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(raw), nil
+}
+
+func setCSRFCookie(w stdhttp.ResponseWriter, secure bool, maxAge int) {
+	token, err := makeCSRFToken()
+	if err != nil {
+		return
+	}
+	stdhttp.SetCookie(w, &stdhttp.Cookie{
+		Name:     csrfCookieName,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: false, // JS must read this
+		Secure:   secure,
+		SameSite: stdhttp.SameSiteLaxMode,
+		MaxAge:   maxAge,
+	})
+}
+
+func verifyCSRF(r *stdhttp.Request) error {
+	cookie, err := r.Cookie(csrfCookieName)
+	if err != nil || cookie.Value == "" {
+		return httpx.Forbidden("missing CSRF token cookie")
+	}
+	header := r.Header.Get(csrfHeaderName)
+	if header == "" {
+		return httpx.Forbidden("missing CSRF token header")
+	}
+	if !hmacEqual(cookie.Value, header) {
+		return httpx.Forbidden("CSRF token mismatch")
+	}
+	return nil
+}
+
+func hmacEqual(a, b string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	result := byte(0)
+	for i := 0; i < len(a); i++ {
+		result |= a[i] ^ b[i]
+	}
+	return result == 0
 }
 
 func durationFromEnvSeconds(name string, fallback time.Duration) time.Duration {

@@ -14,9 +14,15 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 function getAuthToken(request: NextRequest): string | null {
-  const token = request.cookies.get("authToken")?.value;
-  if (token) {
-    return token;
+  // Check HttpOnly access_token cookie (current auth) or legacy authToken cookie
+  const accessToken = request.cookies.get("access_token")?.value;
+  if (accessToken) {
+    return accessToken;
+  }
+
+  const legacyToken = request.cookies.get("authToken")?.value;
+  if (legacyToken) {
+    return legacyToken;
   }
 
   const authHeader = request.headers.get("authorization");

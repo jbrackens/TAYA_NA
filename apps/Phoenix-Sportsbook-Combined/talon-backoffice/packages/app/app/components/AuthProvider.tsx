@@ -18,6 +18,17 @@ import { IdleActivityMonitor } from "./IdleActivityMonitor";
 import { useToast } from "./ToastProvider";
 import { logger } from "../lib/logger";
 
+function getCSRFHeaders(): Record<string, string> {
+  if (typeof document === "undefined") return {};
+  const match = document.cookie
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith("csrf_token="));
+  if (!match) return {};
+  const token = decodeURIComponent(match.slice("csrf_token=".length));
+  return token ? { "X-CSRF-Token": token } : {};
+}
+
 export interface User {
   id: string;
   username: string;
@@ -79,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const restoreSession = async () => {
       try {
         // Check if we have a stored user hint (lightweight check before API call)
-        const storedUser = getStoredUser();
+        const storedUser = readStoredUser();
         if (!storedUser) {
           return;
         }
@@ -162,7 +173,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               coolOffUntil: coolOff.coolOffUntil,
             });
             // Clear server-side cookies via logout endpoint
-            await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include" }).catch(() => {});
+            await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include", headers: getCSRFHeaders() }).catch(() => {});
             clearStoredUser();
             throw new Error(
               `Your account is under a cool-off period until ${coolOffEnd.toLocaleDateString()}. Please try again later.`,
@@ -180,7 +191,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         toast.success("Welcome back!", session.username);
       } catch (err) {
         // Issue #5 fix: clear cookies on any login failure to prevent half-auth
-        await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include" }).catch(() => {});
+        await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include", headers: getCSRFHeaders() }).catch(() => {});
         clearStoredUser();
         setUser(null);
         const loginError = err instanceof Error ? err : new Error(String(err));
@@ -195,7 +206,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(async () => {
     // Clear server-side HttpOnly cookies
-    await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include" }).catch(() => {});
+    await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include", headers: getCSRFHeaders() }).catch(() => {});
     clearStoredUser();
     setUser(null);
     setError(null);
