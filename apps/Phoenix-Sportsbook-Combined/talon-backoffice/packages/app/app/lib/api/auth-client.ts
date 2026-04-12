@@ -217,8 +217,20 @@ export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Login failed");
+    const body = await response.text();
+    let readable = body || "Login failed";
+    try {
+      const parsed: unknown = JSON.parse(body);
+      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+        const errObj = (parsed as Record<string, unknown>).error;
+        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+          readable = String((errObj as Record<string, unknown>).message);
+        }
+      }
+    } catch {
+      // body is not JSON, use as-is
+    }
+    throw new Error(readable);
   }
 
   const raw = (await response.json()) as GoLoginResponseRaw;
