@@ -2,7 +2,7 @@
 
 ## What This Is
 
-TAYA NA! Sportsbook platform targeting the Philippine market. Player-facing betting app (Next.js 13.5 App Router) with live BetConstruct odds feed. Monorepo at `/Users/john/Sandbox/PhoenixBotRevival/`.
+TAYA NA! Sportsbook platform targeting the Philippine market. Player-facing betting app (Next.js 16 App Router) with live BetConstruct odds feed. Monorepo at `/Users/john/Sandbox/PhoenixBotRevival/`.
 
 ## GitHub
 
@@ -51,7 +51,7 @@ cat "$MIGRATIONS_DIR/seed.sql" | docker exec -i phoenix_postgres psql -U phoenix
 ## Architecture
 
 ### Frontend Stack
-- Next.js 13.5 App Router, React 18, Redux Toolkit v1
+- Next.js 16 App Router, React 19, Redux Toolkit v1
 - Styling: inline styles + CSS-in-JS via `dangerouslySetInnerHTML` in layout.tsx
 - Brand: neon green `#39ff14` on dark navy `#0b0e1c`. Font: IBM Plex Sans.
 - Icons: lucide-react

@@ -9,8 +9,8 @@ This is the Phoenix Sportsbook platform — a real-time sports betting applicati
 ```
 PhoenixBotRevival/
 ├── apps/Phoenix-Sportsbook-Combined/
-│   ├── phoenix-frontend/packages/app/     ← Player app (Next.js 13.5 App Router)
-│   ├── talon-backoffice/packages/app/     ← Admin backoffice (Next.js 13.5 App Router)
+│   ├── phoenix-frontend/packages/app/     ← Player app (Next.js 16 App Router)
+│   ├── talon-backoffice/packages/app/     ← Admin backoffice (Next.js 16 App Router)
 │   ├── phoenix-backend/                   ← Go backend services
 │   └── go-platform/                       ← Go platform layer
 ├── services/                              ← Microservices
@@ -47,8 +47,8 @@ PhoenixBotRevival/
 
 **Path:** `apps/Phoenix-Sportsbook-Combined/phoenix-frontend/packages/app/`
 
-- **Framework:** Next.js 13.5 with App Router (`app/` directory)
-- **React:** 18 — `React.FC` does NOT include `children` prop; add explicitly
+- **Framework:** Next.js 16 with App Router (`app/` directory)
+- **React:** 19 — `React.FC` does NOT include `children` prop; add explicitly
 - **State:** Redux Toolkit v1 (NOT v2) — use `TypedUseSelectorHook`, NOT `.withTypes()`
 - **Store types:** `app/lib/store/hooks.ts` for `useAppDispatch` / `useAppSelector`
 - **Server state:** React Query
@@ -67,7 +67,7 @@ PhoenixBotRevival/
 
 **Path:** `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/`
 
-- Same Next.js 13.5 / React 18 / App Router setup as the player app
+- Same Next.js 16 / React 18 / App Router setup as the player app
 - Has its own `CLAUDE.md` with gate.sh rules at `talon-backoffice/packages/app/CLAUDE.md`
 - Same quality standards apply — zero bugs, no shortcuts
 

@@ -31,8 +31,8 @@ TAYA NA! is a full-stack sportsbook with a player-facing web app and an admin ba
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 13.5 (App Router) |
-| UI | React 18, Tailwind CSS |
+| Framework | Next.js 16 (App Router) |
+| UI | React 19, Tailwind CSS |
 | State | Redux Toolkit v1 (client), React Query (server) |
 | Real-time | WebSocket for live odds, fixtures, bet updates |
 | i18n | react-i18next with fetch backend |
@@ -52,7 +52,7 @@ TAYA NA! is a full-stack sportsbook with a player-facing web app and an admin ba
 
 ### Frontend (Admin Backoffice)
 
-Same Next.js 13.5 / React 18 stack as the player app, with Ant Design components for admin interfaces.
+Same Next.js 16 / React 19 stack as the player app, with Ant Design components for admin interfaces.
 
 ## Repository Structure
 
