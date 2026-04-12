@@ -137,6 +137,17 @@ import { useAppDispatch, useAppSelector } from '../lib/store/hooks';
 // Do NOT import from store.ts directly (circular dependency risk)
 ```
 
+### Auth & CSRF
+
+Auth uses HttpOnly cookies (`access_token`, `refresh_token`) set by the Go auth service. CSRF protection uses the double-submit cookie pattern:
+
+- **Login/refresh:** Go backend sets a `csrf_token` cookie (non-HttpOnly, readable by JS)
+- **Mutating requests:** Frontend reads `csrf_token` cookie and sends it as `X-CSRF-Token` header
+- **API client:** `post()`, `put()`, `delete()` methods auto-include the CSRF header
+- **Raw fetch calls:** Must manually include CSRF header (see `AuthProvider.tsx` `getCSRFHeaders()`)
+- **Proxy middleware:** `proxy.ts` checks for `access_token` cookie (not legacy `authToken`) to gate protected routes
+- **Demo credentials:** `demo@phoenix.local` / `demo123`
+
 ### localStorage Safety
 
 ```typescript
@@ -148,13 +159,25 @@ if (typeof window !== 'undefined') {
 
 ## Local Development
 
+### Dev Server Config
+All dev servers are configured in `.claude/launch.json`. Use `preview_start` to launch them:
+
+| Server | Port | Command |
+|--------|------|---------|
+| Player App (Next.js) | 3000 | `npm run dev` |
+| Go Gateway | 18080 | `go run ./cmd/gateway` |
+| Go Auth Service | 18081 | `go run ./cmd/auth` (with `AUTH_COOKIE_SECURE=false`) |
+| Back-Office App | 3001 | `npm run dev` |
+| PostgreSQL (Docker) | 5432 | `docker compose up postgres` |
+| Redis (Docker) | 6379 | `docker compose up redis` |
+
 ### Prerequisites
 - Node.js 18+
 - Go backend running on port 18080
 
 ### Player App
 ```bash
-cd /Users/john/Sandbox/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/phoenix-frontend/packages/app
+cd /Users/john/Sandbox/TAYA_NA/apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app
 npm install --legacy-peer-deps
 NEXT_PUBLIC_API_URL=http://localhost:18080 npm run dev
 # Runs on localhost:3000
@@ -162,7 +185,7 @@ NEXT_PUBLIC_API_URL=http://localhost:18080 npm run dev
 
 ### Backoffice
 ```bash
-cd /Users/john/Sandbox/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app
+cd /Users/john/Sandbox/TAYA_NA/apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app
 npm install --legacy-peer-deps
 npm run dev
 # Runs on localhost:3001
@@ -187,6 +210,7 @@ NEXT_PUBLIC_API_URL=http://localhost:18080    # Go backend
 NEXT_PUBLIC_AUTH_URL=http://localhost:18081    # Auth service
 NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws    # WebSocket
 NEXT_PUBLIC_SUPPORT_CHAT_URL=               # Live chat support URL
+AUTH_COOKIE_SECURE=false                     # Required for localhost HTTP (cookies default Secure)
 ```
 
 ## Quality Standards

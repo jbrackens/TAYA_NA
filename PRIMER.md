@@ -43,8 +43,10 @@ cat "$MIGRATIONS_DIR/seed.sql" | docker exec -i phoenix_postgres psql -U phoenix
 
 ### Login Credentials
 - **Username:** `demo@phoenix.local`
-- **Password:** `change-me-local`
+- **Password:** `demo123`
 - Auth service uses in-memory users (not DB). Set via `AUTH_DEMO_USERNAME` / `AUTH_DEMO_PASSWORD` env vars. Plain text password comparison.
+- Auth uses HttpOnly cookies (`access_token`, `refresh_token`) + CSRF double-submit cookie (`csrf_token`).
+- For local HTTP dev, set `AUTH_COOKIE_SECURE=false` (cookies default to `Secure` flag which blocks HTTP).
 
 ## Architecture
 
