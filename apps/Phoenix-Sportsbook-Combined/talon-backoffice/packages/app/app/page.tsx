@@ -323,12 +323,11 @@ function getEditorialAngle(
 }
 
 export default function HomePage() {
-  // Show marketing landing page for unauthenticated visitors
+  // Show marketing landing page only when auth definitively says "not logged in".
+  // During the auth check, render the authenticated shell with skeleton states
+  // so the user never sees a blank loading page — the app feels instant.
   const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) {
-    return <div style={{ padding: "40px", color: "#D3D3D3" }}>Loading...</div>;
-  }
-  if (!isAuthenticated) return <LandingPage />;
+  if (!isLoading && !isAuthenticated) return <LandingPage />;
   return <AuthenticatedHome />;
 }
 
