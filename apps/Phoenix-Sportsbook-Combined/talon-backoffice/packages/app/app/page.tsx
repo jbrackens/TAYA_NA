@@ -237,6 +237,20 @@ function normalizeFixture(rawFixture: any): Fixture {
   };
 }
 
+/** Issue #9: Validate fixtures have real data before displaying */
+function isValidFixture(fixture: Fixture): boolean {
+  const teams = getTeams(fixture);
+  if (teams.home === 'TBD' && teams.away === 'TBD') {
+    logger.warn('Home', 'Filtered out fixture with missing teams', fixture.id);
+    return false;
+  }
+  if (!fixture.startTime) {
+    logger.warn('Home', 'Filtered out fixture with no start time', fixture.id);
+    return false;
+  }
+  return true;
+}
+
 function normalizeSport(rawSport: any): Sport {
   const sportId = String(
     rawSport?.sportId || rawSport?.sportKey || rawSport?.id || rawSport?.name || "",
@@ -317,6 +331,7 @@ function AuthenticatedHome() {
   const [leaderboards, setLeaderboards] = useState<LeaderboardSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [feedError, setFeedError] = useState("");
   const [activeSport, setActiveSport] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -388,25 +403,38 @@ function AuthenticatedHome() {
     async function loadData() {
       try {
         const [fixturesRes, sportsRes, leaderboardItems] = await Promise.all([
-          fetch("/api/v1/fixtures/"),
-          fetch("/api/v1/sports/"),
+          fetch("/api/v1/fixtures/", { credentials: "include" }),
+          fetch("/api/v1/sports/", { credentials: "include" }),
           getLeaderboards().catch(() => []),
         ]);
-        if (fixturesRes.ok) {
+
+        // Issue #3: Throw on API failures instead of silently showing empty board
+        if (!fixturesRes.ok) {
+          logger.error("Home", "Fixtures API failed", { status: fixturesRes.status });
+          setFeedError("Live feed temporarily unavailable. Odds may be stale.");
+        } else {
           const data = await fixturesRes.json();
           const list = data.data || data.fixtures || data;
-          setFixtures(Array.isArray(list) ? list.map(normalizeFixture) : []);
+          const normalized = Array.isArray(list) ? list.map(normalizeFixture) : [];
+          // Issue #9: Filter out fixtures with missing or invalid data
+          setFixtures(normalized.filter(isValidFixture));
         }
-        if (sportsRes.ok) {
+
+        if (!sportsRes.ok) {
+          logger.error("Home", "Sports API failed", { status: sportsRes.status });
+        } else {
           const data = await sportsRes.json();
           const list = data.data || data.sports || data.items || data;
           setSports(Array.isArray(list) ? list.map(normalizeSport) : []);
         }
+
         setLeaderboards(
           Array.isArray(leaderboardItems) ? leaderboardItems.slice(0, 3) : [],
         );
       } catch (err) {
-        setError("Could not connect to API. Is the backend running?");
+        const message = err instanceof Error ? err.message : String(err);
+        logger.error("Home", "Failed to load homepage data", message);
+        setError("Could not connect to the sportsbook. Please check your connection and try again.");
       } finally {
         setLoading(false);
       }

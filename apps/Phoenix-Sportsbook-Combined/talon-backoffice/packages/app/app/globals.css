@@ -2,7 +2,6 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
     height: 100%;
-    overflow: hidden;
   }
   body {
     font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -14,9 +13,10 @@
   button { font-family: inherit; }
 
   /* ── Shell Layout ── */
-  .ps-shell { display: flex; min-height: 100vh; }
+  .ps-shell { display: flex; height: 100vh; overflow: hidden; }
   .ps-auth-layout {
     min-height: 100vh;
+    overflow-y: auto;
     background:
       radial-gradient(circle at top, rgba(57,255,20,0.06), transparent 28%),
       linear-gradient(180deg, #0a0d18 0%, #0d1120 100%);

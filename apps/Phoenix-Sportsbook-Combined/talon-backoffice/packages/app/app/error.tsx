@@ -61,7 +61,12 @@ export default function Error({
           lineHeight: 1.6,
         }}
       >
-        {error.message || "An unexpected error occurred. Please try again."}
+        Something went wrong. Please try again or contact support.
+        {process.env.NODE_ENV === "development" && error.message && (
+          <span style={{ display: "block", marginTop: 8, fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>
+            {error.message}
+          </span>
+        )}
       </p>
       <button
         onClick={reset}
