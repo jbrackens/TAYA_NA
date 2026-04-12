@@ -337,7 +337,11 @@ function AuthenticatedHome() {
   const [activeSport, setActiveSport] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
+  const [searchResults, setSearchResults] = useState<Fixture[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchDropdownRef = useRef<HTMLDivElement | null>(null);
   const topPicksRef = useRef<HTMLDivElement | null>(null);
 
   // Betslip integration — providers are always mounted in layout.tsx
@@ -442,6 +446,58 @@ function AuthenticatedHome() {
       }
     }
     loadData();
+  }, []);
+
+  // Issue #11: Debounced search API query
+  useEffect(() => {
+    if (deferredSearchQuery.length < 3) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      return;
+    }
+
+    let cancelled = false;
+    setSearchLoading(true);
+    setShowSearchDropdown(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/v1/search/events?q=${encodeURIComponent(deferredSearchQuery)}`, {
+          credentials: "include",
+        });
+        if (!cancelled && res.ok) {
+          const data = await res.json();
+          const list = data.data || data.results || data.fixtures || data;
+          setSearchResults(Array.isArray(list) ? list.map(normalizeFixture).filter(isValidFixture).slice(0, 10) : []);
+        }
+      } catch {
+        // Search API may not exist yet, silently fall back to local filtering
+        if (!cancelled) setSearchResults([]);
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [deferredSearchQuery]);
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        searchDropdownRef.current &&
+        !searchDropdownRef.current.contains(e.target as Node) &&
+        searchInputRef.current &&
+        !searchInputRef.current.contains(e.target as Node)
+      ) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -873,6 +929,64 @@ function AuthenticatedHome() {
           />
           <span className="discovery-shortcut">/</span>
         </label>
+
+        {/* Issue #11: Search API results dropdown */}
+        {showSearchDropdown && deferredSearchQuery.length >= 3 && (
+          <div ref={searchDropdownRef} className="search-results-dropdown" style={{
+            position: "relative",
+            zIndex: 20,
+            background: "rgba(15, 18, 37, 0.98)",
+            border: "1px solid rgba(57, 255, 20, 0.18)",
+            borderRadius: "12px",
+            marginTop: "-4px",
+            padding: "8px 0",
+            maxHeight: "320px",
+            overflowY: "auto",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+          }}>
+            {searchLoading ? (
+              <div style={{ padding: "16px 20px", color: "#94a3b8", fontSize: "13px" }}>
+                Searching...
+              </div>
+            ) : searchResults.length > 0 ? (
+              searchResults.map((fixture) => {
+                const teams = getTeams(fixture);
+                return (
+                  <div
+                    key={fixture.id}
+                    style={{
+                      padding: "10px 20px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      transition: "background 0.15s",
+                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(57,255,20,0.06)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <div>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#f8fafc" }}>
+                        {teams.home} vs {teams.away}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
+                        {fixture.sportKey?.toUpperCase()} {fixture.league ? `· ${fixture.league}` : ""}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: "12px", color: "#94a3b8" }}>
+                      {formatDate(fixture.startTime)}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ padding: "16px 20px", color: "#64748b", fontSize: "13px" }}>
+                No events found for &ldquo;{deferredSearchQuery}&rdquo;
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="discovery-context">
           <div>
