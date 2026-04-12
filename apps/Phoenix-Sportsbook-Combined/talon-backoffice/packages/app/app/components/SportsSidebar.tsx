@@ -3,7 +3,9 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { getSports, getLeagues, Sport, League } from "../lib/api/events-client";
+import { getLeagues, League } from "../lib/api/events-client";
+import type { Sport } from "../lib/api/events-client";
+import { useSports } from "../lib/query/hooks";
 import { logger } from "../lib/logger";
 import { SportIcon } from "./SportIcons";
 import { Radio, Clock, Star } from "lucide-react";
@@ -120,6 +122,7 @@ const FALLBACK_SPORTS: SidebarSport[] = [
 export const SportsSidebar: React.FC = () => {
   const pathname = usePathname();
   const { t, ready } = useTranslation("sidebar");
+  const { data: querySports, isLoading: sportsQueryLoading } = useSports();
   const [sports, setSports] = useState<SidebarSport[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedSport, setExpandedSport] = useState<string | null>(null);
@@ -165,29 +168,23 @@ export const SportsSidebar: React.FC = () => {
     });
   }, [sports, favorites]);
 
+  // Sync from React Query cache — shared with homepage, no duplicate fetch
   useEffect(() => {
-    const loadSports = async () => {
-      try {
-        const rawSports = await getSports();
-        // Normalize Sport → SidebarSport
-        const sidebarSports: SidebarSport[] = (
-          Array.isArray(rawSports) ? rawSports : []
-        ).map((s) => ({
-          ...s,
-          abbreviation: s.sportKey || s.sportId,
-          name: s.sportName || s.sportKey || "Unknown",
-        }));
-        const withGames = sidebarSports.filter((s) => s.eventCount > 0);
-        setSports(withGames.length > 0 ? withGames : FALLBACK_SPORTS);
-      } catch (err) {
-        logger.error("Sidebar", "Failed to load sports", err);
-        setSports(FALLBACK_SPORTS);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadSports();
-  }, []);
+    if (sportsQueryLoading) return;
+    if (!querySports || querySports.length === 0) {
+      setSports(FALLBACK_SPORTS);
+      setLoading(false);
+      return;
+    }
+    const sidebarSports: SidebarSport[] = querySports.map((s) => ({
+      ...s,
+      abbreviation: s.sportKey || s.sportId,
+      name: s.sportName || s.sportKey || "Unknown",
+    }));
+    const withGames = sidebarSports.filter((s) => s.eventCount > 0);
+    setSports(withGames.length > 0 ? withGames : FALLBACK_SPORTS);
+    setLoading(false);
+  }, [querySports, sportsQueryLoading]);
 
   const activeSport = (pathname ?? "/").startsWith("/sports/")
     ? (pathname ?? "/").split("/")[2]

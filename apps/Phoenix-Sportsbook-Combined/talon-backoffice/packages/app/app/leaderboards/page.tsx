@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
-import { getLeaderboards, type LeaderboardDefinition } from '../lib/api/leaderboards-client';
+import { useMemo } from 'react';
+import type { LeaderboardDefinition } from '../lib/api/leaderboards-client';
+import { useLeaderboards } from '../lib/query/hooks';
 
 const METRIC_LABELS: Record<string, string> = {
   net_profit_cents: 'Net Profit',
@@ -29,26 +30,9 @@ function humanize(key: string, map: Record<string, string>): string {
 }
 
 export default function LeaderboardsPage() {
-  const [items, setItems] = useState<LeaderboardDefinition[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const nextItems = await getLeaderboards();
-        setItems(nextItems);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load leaderboards');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void load();
-  }, []);
+  // React Query — shared cache with homepage Competition Pulse section
+  const { data: items = [], isLoading, error: queryError } = useLeaderboards();
+  const error = queryError ? (queryError instanceof Error ? queryError.message : 'Failed to load leaderboards') : null;
 
   const featured = useMemo(() => items.slice(0, 2), [items]);
 

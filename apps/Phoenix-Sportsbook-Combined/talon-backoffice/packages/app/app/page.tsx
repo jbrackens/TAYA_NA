@@ -20,7 +20,7 @@ import { formatOdds } from "./lib/utils/odds";
 import { useAuth } from "./hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { logger } from "./lib/logger";
-import { getLeaderboards } from "./lib/api/leaderboards-client";
+import { useSports, useFixtures, useLeaderboards } from "./lib/query/hooks";
 
 const LandingPage = dynamic(() => import("./components/LandingPage"));
 
@@ -332,12 +332,41 @@ export default function HomePage() {
 
 function AuthenticatedHome() {
   const { t } = useTranslation("home");
-  const [fixtures, setFixtures] = useState<Fixture[]>([]);
-  const [sports, setSports] = useState<Sport[]>([]);
-  const [leaderboards, setLeaderboards] = useState<LeaderboardSummary[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [feedError, setFeedError] = useState("");
+
+  // React Query — cached data survives navigation, no re-fetch on return visits
+  const { data: rawFixtures = [], isLoading: fixturesLoading, error: fixturesError } = useFixtures();
+  const { data: rawSportsData = [] } = useSports();
+  const { data: rawLeaderboards = [] } = useLeaderboards();
+
+  const fixtures = useMemo(() => {
+    const normalized = rawFixtures.map(normalizeFixture);
+    return normalized.filter(isValidFixture);
+  }, [rawFixtures]);
+
+  const sports = useMemo((): Sport[] => {
+    return rawSportsData.map((s) => ({
+      sportId: s.sportId || s.sportKey || "",
+      name: s.sportName || s.sportKey || "",
+      abbreviation: s.sportKey || (s.sportName || "").slice(0, 3).toUpperCase(),
+      displayToPunters: true,
+    }));
+  }, [rawSportsData]);
+
+  const leaderboards = useMemo((): LeaderboardSummary[] => {
+    return rawLeaderboards.slice(0, 3).map((lb) => ({
+      leaderboardId: lb.leaderboardId,
+      name: lb.name,
+      description: lb.description,
+      metricKey: lb.metricKey,
+      rankingMode: lb.rankingMode,
+      order: lb.order,
+      status: lb.status,
+    }));
+  }, [rawLeaderboards]);
+
+  const loading = fixturesLoading;
+  const error = fixturesError ? "CONNECT_ERROR" : "";
+  const feedError = "";
   const [activeSport, setActiveSport] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -409,48 +438,7 @@ function AuthenticatedHome() {
     [betslip],
   );
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [fixturesRes, sportsRes, leaderboardItems] = await Promise.all([
-          fetch("/api/v1/fixtures/", { credentials: "include" }),
-          fetch("/api/v1/sports/", { credentials: "include" }),
-          getLeaderboards().catch(() => []),
-        ]);
-
-        // Issue #3: Throw on API failures instead of silently showing empty board
-        if (!fixturesRes.ok) {
-          logger.error("Home", "Fixtures API failed", { status: fixturesRes.status });
-          setFeedError("FEED_ERROR");
-        } else {
-          const data = await fixturesRes.json();
-          const list = data.data || data.fixtures || data;
-          const normalized = Array.isArray(list) ? list.map(normalizeFixture) : [];
-          // Issue #9: Filter out fixtures with missing or invalid data
-          setFixtures(normalized.filter(isValidFixture));
-        }
-
-        if (!sportsRes.ok) {
-          logger.error("Home", "Sports API failed", { status: sportsRes.status });
-        } else {
-          const data = await sportsRes.json();
-          const list = data.data || data.sports || data.items || data;
-          setSports(Array.isArray(list) ? list.map(normalizeSport) : []);
-        }
-
-        setLeaderboards(
-          Array.isArray(leaderboardItems) ? leaderboardItems.slice(0, 3) : [],
-        );
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        logger.error("Home", "Failed to load homepage data", message);
-        setError("CONNECT_ERROR");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+  // Data fetching handled by React Query hooks above — cached across navigations
 
   // Issue #11: Debounced search API query
   useEffect(() => {

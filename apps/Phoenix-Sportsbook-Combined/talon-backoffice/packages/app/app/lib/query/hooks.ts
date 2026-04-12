@@ -3,8 +3,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSports, getLeagues, getEvents } from '../api/events-client';
 import { getUserBets } from '../api/betting-client';
+import { getLeaderboards } from '../api/leaderboards-client';
 import type { Sport, League } from '../api/events-client';
 import type { UserBet } from '../api/betting-client';
+import type { LeaderboardDefinition } from '../api/leaderboards-client';
 
 // ─── Query Keys ─────────────────────────────────────────────
 export const queryKeys = {
@@ -12,6 +14,8 @@ export const queryKeys = {
   leagues: (sportKey: string) => ['leagues', sportKey] as const,
   events: (sportKey?: string, leagueKey?: string) => ['events', sportKey, leagueKey] as const,
   userBets: (userId: string) => ['userBets', userId] as const,
+  fixtures: ['fixtures'] as const,
+  leaderboards: ['leaderboards'] as const,
 };
 
 // ─── Sports ─────────────────────────────────────────────────
@@ -48,6 +52,32 @@ export function useUserBets(userId: string, enabled = true) {
     queryFn: () => getUserBets(userId),
     enabled: !!userId && enabled,
     staleTime: 10 * 1000,
+  });
+}
+
+// ─── Fixtures (homepage feed) ───────────────────────────────
+async function fetchFixtures(): Promise<unknown[]> {
+  const res = await fetch('/api/v1/fixtures/', { credentials: 'include' });
+  if (!res.ok) return [];
+  const data = await res.json();
+  const list = data.data || data.fixtures || data;
+  return Array.isArray(list) ? list : [];
+}
+
+export function useFixtures() {
+  return useQuery<unknown[]>({
+    queryKey: queryKeys.fixtures,
+    queryFn: fetchFixtures,
+    staleTime: 30 * 1000, // fixtures change frequently
+  });
+}
+
+// ─── Leaderboards ───────────────────────────────────────────
+export function useLeaderboards() {
+  return useQuery<LeaderboardDefinition[]>({
+    queryKey: queryKeys.leaderboards,
+    queryFn: () => getLeaderboards(),
+    staleTime: 60 * 1000, // leaderboard list is fairly static
   });
 }
 
