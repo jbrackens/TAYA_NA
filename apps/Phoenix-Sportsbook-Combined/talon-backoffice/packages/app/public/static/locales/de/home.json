@@ -69,5 +69,8 @@
   "TOTAL_STAKE": "Gesamteinsatz",
   "WINS": "Siege",
   "TOTAL_BETS": "Wetten gesamt",
-  "REFERRALS": "Empfehlungen"
+  "REFERRALS": "Empfehlungen",
+  "TODAY": "Heute",
+  "TOMORROW": "Morgen",
+  "TBD": "TBD"
 }

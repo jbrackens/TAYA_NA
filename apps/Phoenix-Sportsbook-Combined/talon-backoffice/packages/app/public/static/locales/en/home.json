@@ -69,5 +69,8 @@
   "TOTAL_STAKE": "Total Stake",
   "WINS": "Wins",
   "TOTAL_BETS": "Total Bets",
-  "REFERRALS": "Referrals"
+  "REFERRALS": "Referrals",
+  "TODAY": "Today",
+  "TOMORROW": "Tomorrow",
+  "TBD": "TBD"
 }

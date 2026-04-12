@@ -114,14 +114,14 @@ const SPORT_EMOJIS: Record<string, string> = {
   mma: "🥋",
 };
 
-function getTeams(competitors: Record<string, Competitor> | undefined) {
-  if (!competitors) return { home: "TBD", away: "TBD" };
+function getTeams(competitors: Record<string, Competitor> | undefined, tbd = "TBD") {
+  if (!competitors) return { home: tbd, away: tbd };
   const home = competitors["home"] || Object.values(competitors)[0];
   const away = competitors["away"] || Object.values(competitors)[1];
-  return { home: home?.name || "TBD", away: away?.name || "TBD" };
+  return { home: home?.name || tbd, away: away?.name || tbd };
 }
 
-function formatDate(dateStr: string) {
+function formatDate(dateStr: string, t?: (k: string) => string) {
   try {
     const d = new Date(dateStr);
     const now = new Date();
@@ -132,9 +132,11 @@ function formatDate(dateStr: string) {
       hour: "2-digit",
       minute: "2-digit",
     });
-    if (d.toDateString() === now.toDateString()) return `Today, ${timeStr}`;
+    const todayLabel = t ? t("TODAY") : "Today";
+    const tomorrowLabel = t ? t("TOMORROW") : "Tomorrow";
+    if (d.toDateString() === now.toDateString()) return `${todayLabel}, ${timeStr}`;
     if (d.toDateString() === tomorrow.toDateString())
-      return `Tomorrow, ${timeStr}`;
+      return `${tomorrowLabel}, ${timeStr}`;
     return (
       d.toLocaleDateString([], { month: "short", day: "numeric" }) +
       `, ${timeStr}`
@@ -679,7 +681,7 @@ function AuthenticatedHome() {
                 fixture.isLive ? "live" : "soon"
               }`}
             >
-              {fixture.isLive ? t("LIVE") : formatDate(fixture.startTime)}
+              {fixture.isLive ? t("LIVE") : formatDate(fixture.startTime, t)}
             </div>
           </div>
 
@@ -862,7 +864,7 @@ function AuthenticatedHome() {
                 </div>
 
                 <div className="home-hero-feature-footer">
-                  <span>{formatDate(featuredMoment.startTime)}</span>
+                  <span>{formatDate(featuredMoment.startTime, t)}</span>
                   <Link href={`/match/${featuredMoment.fixtureId}`}>
                     {t("OPEN_FULL_MARKET_LINK")}
                   </Link>
@@ -886,7 +888,7 @@ function AuthenticatedHome() {
               >
                 <div className="home-hero-rail-top">
                   <span>{fixture.sport?.name || t("BOARD")}</span>
-                  <span>{fixture.isLive ? t("LIVE") : formatDate(fixture.startTime)}</span>
+                  <span>{fixture.isLive ? t("LIVE") : formatDate(fixture.startTime, t)}</span>
                 </div>
                 <div className="home-hero-rail-title">
                   {getTeams(fixture.competitors).home} vs{" "}
@@ -966,7 +968,7 @@ function AuthenticatedHome() {
                       </div>
                     </div>
                     <div style={{ fontSize: "12px", color: "#94a3b8" }}>
-                      {formatDate(fixture.startTime)}
+                      {formatDate(fixture.startTime, t)}
                     </div>
                   </div>
                 );
@@ -1150,7 +1152,7 @@ function AuthenticatedHome() {
                       fixture.isLive ? "live" : "upcoming"
                     }`}
                   >
-                    {fixture.isLive ? t("LIVE_LABEL") : formatDate(fixture.startTime)}
+                    {fixture.isLive ? t("LIVE_LABEL") : formatDate(fixture.startTime, t)}
                   </span>
                 </div>
 
