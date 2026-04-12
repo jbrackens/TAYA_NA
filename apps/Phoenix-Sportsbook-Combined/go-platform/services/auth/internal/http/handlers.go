@@ -181,6 +181,28 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if err != nil {
 			return err
 		}
+
+		// Set HttpOnly cookies for secure token transport
+		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "access_token",
+			Value:    response.AccessToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   secure,
+			SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge:   int(auth.accessTTL.Seconds()),
+		})
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "refresh_token",
+			Value:    response.RefreshToken,
+			Path:     "/api/v1/auth/refresh",
+			HttpOnly: true,
+			Secure:   secure,
+			SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge:   int(auth.refreshTTL.Seconds()),
+		})
+
 		return httpx.WriteJSON(w, stdhttp.StatusOK, response)
 	}))
 
@@ -190,18 +212,47 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		}
 		auth.PruneExpiredSessions()
 
-		var body refreshRequest
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		// Read refresh token from HttpOnly cookie first, fall back to request body
+		var refreshToken string
+		if cookie, err := r.Cookie("refresh_token"); err == nil && cookie.Value != "" {
+			refreshToken = cookie.Value
+		} else {
+			var body refreshRequest
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+			}
+			refreshToken = body.RefreshToken
 		}
-		if body.RefreshToken == "" {
-			return httpx.BadRequest("refreshToken is required", nil)
+		if refreshToken == "" {
+			return httpx.BadRequest("refresh token is required", nil)
 		}
 
-		response, err := auth.Refresh(body.RefreshToken)
+		response, err := auth.Refresh(refreshToken)
 		if err != nil {
 			return err
 		}
+
+		// Set new HttpOnly cookies
+		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "access_token",
+			Value:    response.AccessToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   secure,
+			SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge:   int(auth.accessTTL.Seconds()),
+		})
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "refresh_token",
+			Value:    response.RefreshToken,
+			Path:     "/api/v1/auth/refresh",
+			HttpOnly: true,
+			Secure:   secure,
+			SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge:   int(auth.refreshTTL.Seconds()),
+		})
+
 		return httpx.WriteJSON(w, stdhttp.StatusOK, response)
 	}))
 
@@ -211,9 +262,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		}
 		auth.PruneExpiredSessions()
 
-		token, err := parseBearerToken(r.Header.Get("Authorization"))
-		if err != nil {
-			return err
+		// Read access token from HttpOnly cookie first, fall back to Authorization header
+		var token string
+		if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
+			token = cookie.Value
+		} else {
+			var parseErr error
+			token, parseErr = parseBearerToken(r.Header.Get("Authorization"))
+			if parseErr != nil {
+				return parseErr
+			}
 		}
 
 		currentSession, err := auth.ValidateAccessToken(token)
@@ -227,6 +285,35 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			Username:      currentSession.Username,
 			ExpiresAt:     currentSession.AccessUntil.UTC().Format(time.RFC3339),
 		})
+	}))
+
+	mux.Handle("/api/v1/auth/logout", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		// Clear auth cookies
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "access_token",
+			Value:    "",
+			Path:     "/",
+			HttpOnly: true,
+			MaxAge:   -1,
+		})
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "refresh_token",
+			Value:    "",
+			Path:     "/api/v1/auth/refresh",
+			HttpOnly: true,
+			MaxAge:   -1,
+		})
+
+		// Invalidate session if access token cookie exists
+		if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
+			_ = auth.store.DeleteByAccessToken(digestToken(cookie.Value))
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"status": "logged_out"})
 	}))
 
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {

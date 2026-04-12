@@ -210,9 +210,10 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
  * Login with username and password
  */
 export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
-  const response = await fetch("/api/auth/login/", {
+  const response = await fetch("/api/v1/auth/login/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(request),
   });
 
@@ -240,40 +241,57 @@ export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
 /**
  * Refresh access token
  */
-export async function refresh(
-  refreshToken: string,
-): Promise<GoRefreshResponse> {
+export async function refresh(): Promise<GoRefreshResponse> {
+  // Refresh token is sent automatically via HttpOnly cookie
   const response = await fetch("/api/v1/auth/refresh/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken }),
+    credentials: "include",
   });
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    const body = await response.text();
+    let readable = body || "Session refresh failed";
+    try {
+      const parsed: unknown = JSON.parse(body);
+      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+        const errObj = (parsed as Record<string, unknown>).error;
+        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+          readable = String((errObj as Record<string, unknown>).message);
+        }
+      }
+    } catch {
+      // not JSON
+    }
+    throw new Error(readable);
   }
 
   const raw = (await response.json()) as GoRefreshResponseRaw;
   return normalizeSnakeCase(raw) as GoRefreshResponse;
 }
 
-export async function getSession(
-  accessToken?: string,
-): Promise<SessionResponse> {
-  const token = accessToken || apiClient.getToken();
-  if (!token) {
-    throw new Error("No access token available");
-  }
-
+export async function getSession(): Promise<SessionResponse> {
+  // Access token is sent automatically via HttpOnly cookie
   const response = await fetch("/api/v1/auth/session/", {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: "include",
   });
 
   if (!response.ok) {
-    throw new Error(await response.text());
+    const body = await response.text();
+    let readable = body || "Session validation failed";
+    try {
+      const parsed: unknown = JSON.parse(body);
+      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+        const errObj = (parsed as Record<string, unknown>).error;
+        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+          readable = String((errObj as Record<string, unknown>).message);
+        }
+      }
+    } catch {
+      // not JSON
+    }
+    throw new Error(readable);
   }
 
   const raw = (await response.json()) as SessionResponseRaw;
@@ -287,7 +305,7 @@ export async function register(
   request: RegisterRequest,
 ): Promise<RegisterResponse> {
   const raw = await apiClient.post<RegisterResponseRaw>(
-    "/auth/register",
+    "/api/v1/auth/register",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -300,7 +318,7 @@ export async function forgotPassword(
   request: ForgotPasswordRequest,
 ): Promise<ForgotPasswordResponse> {
   const raw = await apiClient.post<ForgotPasswordResponseRaw>(
-    "/auth/forgot-password",
+    "/api/v1/auth/forgot-password",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -313,7 +331,7 @@ export async function resetPassword(
   request: ResetPasswordRequest,
 ): Promise<ResetPasswordResponse> {
   const raw = await apiClient.post<ResetPasswordResponseRaw>(
-    "/auth/reset-password",
+    "/api/v1/auth/reset-password",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -326,7 +344,7 @@ export async function verifyEmail(
   request: VerifyEmailRequest,
 ): Promise<VerifyEmailResponse> {
   const raw = await apiClient.post<VerifyEmailResponseRaw>(
-    "/auth/verify-email",
+    "/api/v1/auth/verify-email",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -339,7 +357,7 @@ export async function verifyMfa(
   request: VerifyMfaRequest,
 ): Promise<VerifyMfaResponse> {
   const raw = await apiClient.post<VerifyMfaResponseRaw>(
-    "/auth/verify-mfa",
+    "/api/v1/auth/verify-mfa",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -352,7 +370,7 @@ export async function requestMfaCode(
   request: RequestMfaCodeRequest,
 ): Promise<RequestMfaCodeResponse> {
   const raw = await apiClient.post<RequestMfaCodeResponseRaw>(
-    "/auth/request-mfa-code",
+    "/api/v1/auth/request-mfa-code",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -365,7 +383,7 @@ export async function changePassword(
   request: ChangePasswordRequest,
 ): Promise<ChangePasswordResponse> {
   const raw = await apiClient.post<ChangePasswordResponseRaw>(
-    "/auth/change-password",
+    "/api/v1/auth/change-password",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -378,7 +396,7 @@ export async function acceptTerms(
   request: AcceptTermsRequest,
 ): Promise<AcceptTermsResponse> {
   const raw = await apiClient.post<AcceptTermsResponseRaw>(
-    "/auth/accept-terms",
+    "/api/v1/auth/accept-terms",
     request,
   );
   return normalizeSnakeCase(raw);

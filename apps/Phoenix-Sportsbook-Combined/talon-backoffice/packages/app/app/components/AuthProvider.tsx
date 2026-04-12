@@ -78,11 +78,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const restoreSession = async () => {
       try {
-        if (!apiClient.isAuthenticated()) {
+        // Check if we have a stored user hint (lightweight check before API call)
+        const storedUser = getStoredUser();
+        if (!storedUser) {
           return;
         }
 
         try {
+          // Session validation uses HttpOnly cookie automatically
           const session = await getSession();
           if (!mounted || !session.authenticated) return;
           const restoredUser = { id: session.userId, username: session.username };
@@ -90,23 +93,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setSessionStartTime(new Date());
           persistStoredUser(restoredUser);
         } catch (sessionErr) {
-          const currentRefreshToken = apiClient.getRefreshToken();
-          if (!currentRefreshToken) {
-            throw sessionErr;
+          // Issue #4: Distinguish network errors from auth failures
+          const isNetworkError = !(sessionErr instanceof Error && 'status' in sessionErr);
+          if (isNetworkError && storedUser) {
+            // Network issue, keep user logged in with stale data
+            logger.warn("Auth", "Session check failed, possible network issue", sessionErr);
+            if (mounted) {
+              setUser(storedUser);
+              setSessionStartTime(new Date());
+            }
+            return;
           }
 
-          const refreshed = await authRefresh(currentRefreshToken);
-          apiClient.setToken(refreshed.accessToken, refreshed.refreshToken);
-          const session = await getSession(refreshed.accessToken);
-          if (!mounted || !session.authenticated) return;
-          const restoredUser = { id: session.userId, username: session.username };
-          setUser(restoredUser);
-          setSessionStartTime(new Date());
-          persistStoredUser(restoredUser);
+          // Auth failure, try refresh (cookie-based, no token param needed)
+          try {
+            await authRefresh();
+            const session = await getSession();
+            if (!mounted || !session.authenticated) return;
+            const restoredUser = { id: session.userId, username: session.username };
+            setUser(restoredUser);
+            setSessionStartTime(new Date());
+            persistStoredUser(restoredUser);
+          } catch {
+            throw sessionErr;
+          }
         }
       } catch (err) {
         logger.error("Auth", "Session check failed", err);
-        apiClient.clearTokens();
         clearStoredUser();
         if (mounted) {
           setUser(null);
@@ -130,12 +143,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await authLogin({ username, password });
+        // Login sets HttpOnly cookies server-side, no client token handling needed
+        await authLogin({ username, password });
 
-        // Store tokens via the base client
-        apiClient.setToken(response.accessToken, response.refreshToken);
-
-        const session = await getSession(response.accessToken);
+        // Validate session via cookie-authenticated endpoint
+        const session = await getSession();
         if (!session.authenticated) {
           throw new Error("Authenticated session could not be restored");
         }
@@ -149,7 +161,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               userId: session.userId,
               coolOffUntil: coolOff.coolOffUntil,
             });
-            apiClient.clearTokens();
+            // Clear server-side cookies via logout endpoint
+            await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include" }).catch(() => {});
             clearStoredUser();
             throw new Error(
               `Your account is under a cool-off period until ${coolOffEnd.toLocaleDateString()}. Please try again later.`,
@@ -166,6 +179,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSessionStartTime(new Date());
         toast.success("Welcome back!", session.username);
       } catch (err) {
+        // Issue #5 fix: clear cookies on any login failure to prevent half-auth
+        await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include" }).catch(() => {});
+        clearStoredUser();
+        setUser(null);
         const loginError = err instanceof Error ? err : new Error(String(err));
         setError(loginError);
         throw loginError;
@@ -176,8 +193,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [toast],
   );
 
-  const logout = useCallback(() => {
-    apiClient.clearTokens();
+  const logout = useCallback(async () => {
+    // Clear server-side HttpOnly cookies
+    await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include" }).catch(() => {});
     clearStoredUser();
     setUser(null);
     setError(null);
@@ -188,14 +206,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshTokenFn = useCallback(async () => {
     setError(null);
     try {
-      const currentRefreshToken = apiClient.getRefreshToken();
-      if (!currentRefreshToken) {
-        throw new Error("No refresh token available");
-      }
-
-      const response = await authRefresh(currentRefreshToken);
-      apiClient.setToken(response.accessToken, response.refreshToken);
-      const session = await getSession(response.accessToken);
+      // Refresh uses HttpOnly cookie, no client token needed
+      await authRefresh();
+      const session = await getSession();
       const refreshedUser = { id: session.userId, username: session.username };
       persistStoredUser(refreshedUser);
       setUser(refreshedUser);

@@ -71,8 +71,9 @@ class ApiClient {
       ? new URL(`${this.baseUrl}${normalizedPath}`)
       : new URL(normalizedPath, window.location.origin);
     if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fetch(url.toString(), { headers: this.getHeaders() });
+    const res = await fetch(url.toString(), { headers: this.getHeaders(), credentials: 'include' });
     if (!res.ok) throw new ApiError(res.status, await res.text());
+    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
     return res.json();
   }
 
@@ -80,9 +81,10 @@ class ApiClient {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'POST', headers: this.getHeaders(), body: body ? JSON.stringify(body) : undefined
+      method: 'POST', headers: this.getHeaders(), credentials: 'include', body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
+    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
     return res.json();
   }
 
@@ -90,9 +92,10 @@ class ApiClient {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'PUT', headers: this.getHeaders(), body: body ? JSON.stringify(body) : undefined
+      method: 'PUT', headers: this.getHeaders(), credentials: 'include', body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
+    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
     return res.json();
   }
 
@@ -100,9 +103,10 @@ class ApiClient {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'DELETE', headers: this.getHeaders()
+      method: 'DELETE', headers: this.getHeaders(), credentials: 'include'
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
+    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
     return res.json();
   }
 
