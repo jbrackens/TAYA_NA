@@ -183,7 +183,11 @@ export default function RewardsPage() {
       : null;
 
   if (!mounted) {
-    return <div className="rewards-page" />;
+    return (
+      <div style={{ padding: spacing["3xl"], textAlign: "center", color: colors.textSecondary }}>
+        Please sign in to view your rewards.
+      </div>
+    );
   }
 
   return (
