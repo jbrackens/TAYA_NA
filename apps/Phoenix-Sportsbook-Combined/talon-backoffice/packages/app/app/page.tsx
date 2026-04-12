@@ -18,6 +18,7 @@ import { selectMovements, clearMovement } from "./lib/store/marketSlice";
 import { selectOddsFormat } from "./lib/store/settingsSlice";
 import { formatOdds } from "./lib/utils/odds";
 import { useAuth } from "./hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import { getLeaderboards } from "./lib/api/leaderboards-client";
 
 const LandingPage = dynamic(() => import("./components/LandingPage"));
@@ -326,6 +327,7 @@ export default function HomePage() {
 }
 
 function AuthenticatedHome() {
+  const { t } = useTranslation("home");
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardSummary[]>([]);
@@ -692,13 +694,12 @@ function AuthenticatedHome() {
       <div className="home-hero">
         <div className="home-hero-main">
           <div className="home-hero-copy">
-            <div className="home-hero-kicker">Featured Betting Lane</div>
+            <div className="home-hero-kicker">{t("HERO_KICKER")}</div>
             <h1>
-              Hit the <span className="accent">live edge</span> before it moves.
+              {t("HERO_TITLE_PREFIX")}<span className="accent">{t("HERO_TITLE_ACCENT")}</span>{t("HERO_TITLE_SUFFIX")}
             </h1>
             <p>
-              Jump straight into the sharpest picks, ride the live pressure, and
-              let rewards and rank climb with every strong ticket.
+              {t("HERO_SUBTITLE")}
             </p>
 
             <div className="home-hero-actions">
@@ -713,27 +714,27 @@ function AuthenticatedHome() {
                   })
                 }
               >
-                Play Hot Picks
+                {t("CTA_HOT_PICKS")}
               </button>
               <Link className="home-hero-secondary" href="/live">
-                Open Live Board
+                {t("CTA_LIVE_BOARD")}
               </Link>
             </div>
 
             <div className="home-hero-stats">
               <div className="home-hero-chip">
                 <span className="home-hero-chip-value">{liveNowCount || "—"}</span>
-                <span className="home-hero-chip-label">Live Now</span>
+                <span className="home-hero-chip-label">{t("LIVE_NOW")}</span>
               </div>
               <div className="home-hero-chip">
                 <span className="home-hero-chip-value">{topPicks.length || "—"}</span>
-                <span className="home-hero-chip-label">Hot Picks</span>
+                <span className="home-hero-chip-label">{t("HOT_PICKS")}</span>
               </div>
               <div className="home-hero-chip">
                 <span className="home-hero-chip-value">
                   {leaderboards.length || "—"}
                 </span>
-                <span className="home-hero-chip-label">Live Races</span>
+                <span className="home-hero-chip-label">{t("LIVE_RACES")}</span>
               </div>
             </div>
           </div>
@@ -743,7 +744,7 @@ function AuthenticatedHome() {
               <>
                 <div className="home-hero-feature-top">
                   <div>
-                    <div className="home-hero-feature-kicker">Featured Right Now</div>
+                    <div className="home-hero-feature-kicker">{t("FEATURED_RIGHT_NOW")}</div>
                     <div className="home-hero-feature-league">
                       {featuredMoment.tournament?.name ||
                         featuredMoment.sport?.name ||
@@ -868,36 +869,33 @@ function AuthenticatedHome() {
             type="text"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search events, teams, or leagues..."
+            placeholder={t("SEARCH_PLACEHOLDER")}
           />
           <span className="discovery-shortcut">/</span>
         </label>
 
         <div className="discovery-context">
           <div>
-            <div className="discovery-kicker">Board Control</div>
+            <div className="discovery-kicker">{t("BOARD_CONTROL")}</div>
             <div className="discovery-context-copy">
               <strong>{filteredFixtures.length}</strong> matches ready to scan once
               you clear the featured lane.
             </div>
           </div>
-          <div className="discovery-context-copy">
-            Start with <strong>Hot Picks</strong>, then branch into sports, races,
-            and the full board.
-          </div>
+          <div className="discovery-context-copy" dangerouslySetInnerHTML={{ __html: t("BOARD_CONTROL_HINT") }} />
         </div>
 
         {leaderboards.length > 0 && (
           <div className="leaderboard-strip">
             <div className="leaderboard-strip-head">
               <div>
-                <div className="discovery-kicker">Competition Pulse</div>
+                <div className="discovery-kicker">{t("COMPETITION_PULSE_KICKER")}</div>
                 <div className="leaderboard-strip-title">
-                  Chase live leaderboard races while the board is hot
+                  {t("COMPETITION_PULSE_TITLE")}
                 </div>
               </div>
               <Link className="leaderboard-strip-link" href="/leaderboards">
-                View all
+                {t("VIEW_ALL")}
               </Link>
             </div>
             <div className="leaderboard-strip-list">
@@ -924,7 +922,7 @@ function AuthenticatedHome() {
               onClick={() => setActiveSport("all")}
             >
               <span className="sport-pill-icon">✨</span>
-              All Sports
+              {t("ALL_SPORTS")}
             </button>
             {topSports.map((sport) => (
               <button
@@ -948,10 +946,10 @@ function AuthenticatedHome() {
             <div>
               <div className="discovery-title-wrap">
                 <span className="discovery-title-icon">🔥</span>
-                <span className="discovery-title">Hot Picks</span>
+                <span className="discovery-title">{t("HOT_PICKS_TITLE")}</span>
               </div>
               <div className="discovery-subtitle">
-                Quick-entry plays pulled from the sharpest live and almost-live boards
+                {t("HOT_PICKS_SUBTITLE")}
               </div>
             </div>
           </div>
@@ -1007,13 +1005,13 @@ function AuthenticatedHome() {
               {loading
                 ? "Loading..."
                 : searchQuery
-                  ? "Full Match Board"
+                  ? t("FULL_BOARD_TITLE")
                   : activeSport === "all"
-                    ? "Full Match Board"
+                    ? t("FULL_BOARD_TITLE")
                     : `${topSports.find((sport) => sport.sportId === activeSport)?.name || "Selected Sport"} Board`}
             </span>
             <div className="section-subtitle">
-              Every available fixture after your search and sport filters.
+              {t("FULL_BOARD_SUBTITLE")}
             </div>
           </div>
           {!loading && (
@@ -1123,7 +1121,7 @@ function AuthenticatedHome() {
         {!loading && filteredFixtures.length === 0 && !error && (
           <div className="empty-state">
             <div className="empty-icon">⚽</div>
-            <div className="empty-title">No matches available</div>
+            <div className="empty-title">{t("NO_MATCHES")}</div>
             <div className="empty-sub">
               Check back soon for upcoming fixtures and live odds.
             </div>
