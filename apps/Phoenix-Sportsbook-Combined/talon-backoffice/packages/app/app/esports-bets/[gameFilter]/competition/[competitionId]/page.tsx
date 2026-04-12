@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { LoadingState } from '../../../../components/Spinner';
 import FixtureList from '../../../../components/FixtureList';
 import { getLeagues } from '../../../../lib/api/events-client';
 import type { League } from '../../../../lib/api/events-client';
@@ -40,7 +41,7 @@ export default function EsportsCompetitionPage({ params }: EsportsCompetitionPag
   }, [params]);
 
   if (!gameFilter || !competitionId) {
-    return <div style={{ color: '#64748b', padding: '40px' }}>Loading...</div>;
+    return <LoadingState />;
   }
 
   const gameName = gameFilter

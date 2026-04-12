@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getBalance, Balance } from '../lib/api/wallet-client';
+import { Spinner } from './Spinner';
 
 interface CurrentBalanceProps {
   compact?: boolean;
@@ -51,9 +52,7 @@ export default function CurrentBalance({ compact = false }: CurrentBalanceProps)
 
   if (loading) {
     return (
-      <div style={{ color: '#64748b', fontSize: compact ? '13px' : '14px' }}>
-        Loading...
-      </div>
+      <Spinner size={compact ? 14 : 18} color="#64748b" />
     );
   }
 

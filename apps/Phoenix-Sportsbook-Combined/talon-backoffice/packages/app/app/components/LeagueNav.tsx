@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { getLeagues, League } from "../lib/api/events-client";
+import { Spinner } from "./Spinner";
 
 interface LeagueNavProps {
   sportKey: string;
@@ -73,8 +74,8 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (loading) {
     return (
-      <div style={{ ...navContainerStyle, color: "#D3D3D3" }}>
-        Loading leagues...
+      <div style={{ ...navContainerStyle, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Spinner size={20} />
       </div>
     );
   }

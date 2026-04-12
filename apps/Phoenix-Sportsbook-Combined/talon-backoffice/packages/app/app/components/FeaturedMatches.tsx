@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { LoadingState } from "./Spinner";
 import { getEvents } from "../lib/api/events-client";
 import { getMarkets } from "../lib/api/markets-client";
 import type { Event } from "../lib/api/events-client";
@@ -264,7 +265,7 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   }, [sportKey, leagueKey]);
 
   if (loading) {
-    return <div style={{ color: "#a0a0a0" }}>Loading featured matches...</div>;
+    return <LoadingState label="Loading featured matches" />;
   }
 
   if (error) {

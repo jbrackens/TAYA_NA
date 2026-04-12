@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { LoadingState } from "./Spinner";
 import wsService from "../lib/websocket/websocket-service";
 import type { WsMessage } from "../lib/websocket/websocket-service";
 import type { LiveBoard, LiveBoardMatch } from "../lib/types/match-board";
@@ -307,7 +308,7 @@ export const LiveNow: React.FC<LiveNowProps> = ({
   );
 
   if (loading) {
-    return <div style={{ color: "#64748b" }}>Loading live matches...</div>;
+    return <LoadingState label="Loading live matches" />;
   }
 
   if (error) {

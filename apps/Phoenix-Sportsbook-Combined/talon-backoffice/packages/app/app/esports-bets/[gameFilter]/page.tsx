@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { LoadingState } from '../../components/Spinner';
 import LeagueNav from '../../components/LeagueNav';
 import FixtureList from '../../components/FixtureList';
 
@@ -23,7 +24,7 @@ export default function EsportsGamePage({ params }: EsportsGamePageProps) {
   }, [params]);
 
   if (!gameFilter) {
-    return <div style={{ color: '#64748b', padding: '40px' }}>Loading...</div>;
+    return <LoadingState />;
   }
 
   const gameName = gameFilter

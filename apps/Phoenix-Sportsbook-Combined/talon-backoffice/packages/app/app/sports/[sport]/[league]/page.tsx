@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import { LoadingState } from '../../../components/Spinner';
 import { OddsButton } from '../../../components/OddsButton';
 import { logger } from '../../../lib/logger';
 
@@ -318,9 +319,7 @@ export default function LeaguePage({ params }: LeaguePageProps) {
 
   if (loading) {
     return (
-      <div style={{ padding: '24px', color: '#D3D3D3' }}>
-        Loading league matches...
-      </div>
+      <LoadingState label="Loading league matches" />
     );
   }
 

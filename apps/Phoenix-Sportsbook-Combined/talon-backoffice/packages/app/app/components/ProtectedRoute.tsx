@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
+import { LoadingState } from './Spinner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
-    return <div style={{ padding: '20px', color: '#a0a0a0' }}>Loading...</div>;
+    return <LoadingState />;
   }
 
   if (!isAuthenticated) {

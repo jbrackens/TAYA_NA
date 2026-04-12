@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { LoadingState } from "./Spinner";
 import type { BoardEvent, UpcomingBoard } from "../lib/types/match-board";
 import wsService from "../lib/websocket/websocket-service";
 
@@ -138,7 +139,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   );
 
   if (loading) {
-    return <div style={{ color: "#a0a0a0" }}>Loading upcoming matches...</div>;
+    return <LoadingState label="Loading upcoming matches" />;
   }
 
   if (error) {
