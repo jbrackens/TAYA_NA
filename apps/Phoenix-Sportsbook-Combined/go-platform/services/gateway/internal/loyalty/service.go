@@ -3,6 +3,8 @@ package loyalty
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -106,7 +108,24 @@ type Service struct {
 	referralSequence      int64
 	referralBonusPoints   int64
 	leaderboards          *leaderboards.Service
+	statePath             string
 	now                   func() time.Time
+}
+
+func NewServiceFromEnv() *Service {
+	statePath := os.Getenv("LOYALTY_STATE_FILE")
+	if statePath == "" {
+		statePath = ".data/loyalty-state.json"
+	}
+	svc := NewService()
+	svc.statePath = statePath
+	if err := svc.loadFromDisk(); err != nil {
+		log.Printf("loyalty: failed to load state from %s: %v (starting fresh with seeds)", statePath, err)
+	} else if len(svc.accounts) > 0 {
+		log.Printf("loyalty: restored %d accounts from %s", len(svc.accounts), statePath)
+		return svc
+	}
+	return svc
 }
 
 func NewService() *Service {

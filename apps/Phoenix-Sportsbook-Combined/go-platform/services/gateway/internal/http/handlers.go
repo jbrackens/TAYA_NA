@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/bets"
 	"phoenix-revival/gateway/internal/cache"
@@ -33,8 +34,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	riskService := riskintel.NewService(repository, betService)
 	freebetService := freebets.NewService()
 	oddsBoostService := oddsboosts.NewService()
-	loyaltyService := loyalty.NewService()
-	leaderboardService := leaderboards.NewService()
+	leaderboardService := leaderboards.NewServiceFromEnv()
+	loyaltyService := loyalty.NewServiceFromEnv()
 	betService.SetPromotionServices(freebetService, oddsBoostService)
 	betService.SetLoyaltyService(loyaltyService)
 	loyaltyService.SetLeaderboardService(leaderboardService)
@@ -91,6 +92,9 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerOddsBoostRoutes(mux, oddsBoostService)
 	registerLoyaltyRoutes(mux, loyaltyService)
 	registerLeaderboardRoutes(mux, leaderboardService)
+	// File-backed persistence: auto-save state every 5 seconds
+	loyaltyService.StartAutoSave(5 * time.Second)
+	leaderboardService.StartAutoSave(5 * time.Second)
 	registerPersonalizationRoutes(mux, riskService)
 	registerAdminRiskRoutes(mux, "/admin/risk", riskService)
 	registerAdminRiskRoutes(mux, "/api/v1/admin/risk", riskService)

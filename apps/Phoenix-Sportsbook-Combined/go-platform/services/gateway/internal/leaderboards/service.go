@@ -3,6 +3,8 @@ package leaderboards
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -82,7 +84,24 @@ type Service struct {
 	eventByIdempotency  map[string]canonicalv1.LeaderboardEvent
 	leaderboardSequence int64
 	eventSequence       int64
+	statePath           string
 	now                 func() time.Time
+}
+
+func NewServiceFromEnv() *Service {
+	statePath := os.Getenv("LEADERBOARD_STATE_FILE")
+	if statePath == "" {
+		statePath = ".data/leaderboard-state.json"
+	}
+	svc := NewService()
+	svc.statePath = statePath
+	if err := svc.loadFromDisk(); err != nil {
+		log.Printf("leaderboards: failed to load state from %s: %v (starting fresh with seeds)", statePath, err)
+	} else if len(svc.definitions) > 0 {
+		log.Printf("leaderboards: restored %d definitions from %s", len(svc.definitions), statePath)
+		return svc
+	}
+	return svc
 }
 
 func NewService() *Service {
