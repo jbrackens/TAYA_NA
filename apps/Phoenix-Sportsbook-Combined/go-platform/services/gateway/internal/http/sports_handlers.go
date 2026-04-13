@@ -187,6 +187,74 @@ func registerSportRoutes(mux *stdhttp.ServeMux, repository domain.ReadRepository
 		}
 		return httpx.NotFound("event route not found")
 	}))
+
+	// GET /api/v1/events — alias that accepts ?sport=X query param
+	mux.Handle("/api/v1/events", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		sportParam := r.URL.Query().Get("sport")
+		if sportParam == "" {
+			sportParam = "all"
+		}
+		sportKey, ok := normalizeSportKey(sportParam)
+		if !ok && sportParam != "all" {
+			return httpx.NotFound("sport not found")
+		}
+		if sportParam == "all" {
+			sportKey = ""
+		}
+		return listSportEvents(w, r, repository, sportKey)
+	}))
+
+	// GET /api/v1/events/{eventId} — lookup by fixture ID across all sports
+	mux.Handle("/api/v1/events/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		eventID := strings.TrimPrefix(r.URL.Path, "/api/v1/events/")
+		eventID = strings.TrimSuffix(eventID, "/")
+		if eventID == "" {
+			return httpx.NotFound("event ID required")
+		}
+		// Search across all fixtures for this ID
+		fixtures, err := listAllFixtures(repository)
+		if err != nil {
+			return httpx.Internal("failed to load fixtures", err)
+		}
+		for _, f := range fixtures {
+			if f.ID == eventID {
+				return httpx.WriteJSON(w, stdhttp.StatusOK, f)
+			}
+		}
+		return httpx.NotFound("event not found")
+	}))
+
+	// GET /api/v1/search/events?q=... — search fixtures by name/team
+	mux.Handle("/api/v1/search/events", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		query := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("q")))
+		if query == "" {
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{"data": []interface{}{}})
+		}
+		fixtures, err := listAllFixtures(repository)
+		if err != nil {
+			return httpx.Internal("failed to search fixtures", err)
+		}
+		var results []domain.Fixture
+		for _, f := range fixtures {
+			searchable := strings.ToLower(f.HomeTeam + " " + f.AwayTeam + " " + f.Tournament + " " + f.SportKey)
+			if strings.Contains(searchable, query) {
+				results = append(results, f)
+				if len(results) >= 10 {
+					break
+				}
+			}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{"data": results})
+	}))
 }
 
 func listSportsCatalog(w stdhttp.ResponseWriter, repository domain.ReadRepository) error {

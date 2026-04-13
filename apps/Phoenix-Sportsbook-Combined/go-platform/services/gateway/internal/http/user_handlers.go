@@ -8,6 +8,7 @@ import (
 	stdhttp "net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"phoenix-revival/platform/transport/httpx"
@@ -35,33 +36,81 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 		authURL = "http://localhost:18081"
 	}
 
-	// GET /api/v1/users/{userId}/profile — returns profile derived from auth session
+	// In-memory profile store for updates (production would use DB)
+	profileStore := &sync.Map{}
+
+	// POST /api/v1/punters/delete — player-initiated account deletion
+	mux.Handle("/api/v1/punters/delete", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var body struct {
+			UserID string `json:"user_id"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.UserID == "" {
+			return httpx.BadRequest("user_id is required", nil)
+		}
+		deletionDate := time.Now().AddDate(0, 0, 30).UTC().Format(time.RFC3339)
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
+			"user_id":                 body.UserID,
+			"status":                  "pending_deletion",
+			"scheduled_deletion_date": deletionDate,
+		})
+	}))
+
+	// GET|PUT /api/v1/users/{userId}/profile
+	// GET: returns profile derived from auth session
+	// PUT: updates stored profile fields
 	mux.Handle("/api/v1/users/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method == stdhttp.MethodOptions {
 			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-			w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRF-Token")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.WriteHeader(stdhttp.StatusNoContent)
 			return nil
 		}
 
-		if r.Method != stdhttp.MethodGet {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
-		}
-
-		// Parse: /api/v1/users/{userId}/profile
+		// Parse: /api/v1/users/{userId}/profile[/preferences]
 		trimmed := strings.TrimPrefix(r.URL.Path, "/api/v1/users/")
-		parts := strings.SplitN(trimmed, "/", 2)
-		if len(parts) != 2 || parts[1] != "profile" || parts[0] == "" {
+		trimmed = strings.TrimSuffix(trimmed, "/")
+		pathParts := strings.Split(trimmed, "/")
+		if len(pathParts) < 2 || pathParts[0] == "" {
 			return httpx.NotFound("route not found")
 		}
-		requestedUserID := parts[0]
+		requestedUserID := pathParts[0]
+		subRoute := strings.Join(pathParts[1:], "/")
+
+		// Handle PUT for profile updates and preferences
+		if r.Method == stdhttp.MethodPut {
+			var body map[string]interface{}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid JSON payload", nil)
+			}
+			storeKey := requestedUserID + ":" + subRoute
+			profileStore.Store(storeKey, body)
+			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			return httpx.WriteJSON(w, stdhttp.StatusOK, body)
+		}
+
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPut)
+		}
+
+		if subRoute != "profile" {
+			return httpx.NotFound("route not found")
+		}
 
 		// Forward the Authorization header to the auth service session endpoint
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
-			return httpx.Unauthorized("missing Authorization header")
+			// Also check cookies for HttpOnly access_token
+			if cookie, cookieErr := r.Cookie("access_token"); cookieErr == nil && cookie.Value != "" {
+				authHeader = "Bearer " + cookie.Value
+			} else {
+				return httpx.Unauthorized("missing Authorization header")
+			}
 		}
 
 		sessionURL := fmt.Sprintf("%s/api/v1/auth/session", authURL)
