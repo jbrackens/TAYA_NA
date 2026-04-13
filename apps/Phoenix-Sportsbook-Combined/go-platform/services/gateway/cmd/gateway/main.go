@@ -3,9 +3,15 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	stdhttp "net/http"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 
 	gatewayhttp "phoenix-revival/gateway/internal/http"
+	"phoenix-revival/platform/logging"
 	"phoenix-revival/platform/runtime"
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -13,20 +19,77 @@ import (
 func main() {
 	cfg := runtime.LoadServiceConfig("gateway", "18080")
 
+	// Initialize structured logging (JSON in production, text in dev)
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	logging.Init(cfg.Name, env)
+
 	mux := stdhttp.NewServeMux()
 	metricsRegistry := httpx.NewMetricsRegistry()
 	mux.Handle("/metrics", httpx.MetricsHandler(metricsRegistry, cfg.Name))
 	gatewayhttp.RegisterRoutes(mux, cfg.Name)
-	handler := httpx.Chain(
-		mux,
+
+	// Auth service URL for token validation
+	authServiceURL := os.Getenv("AUTH_SERVICE_URL")
+	if authServiceURL == "" {
+		authServiceURL = "http://localhost:18081"
+	}
+
+	// Public paths that do not require authentication
+	publicPrefixes := []string{
+		"/healthz",
+		"/readyz",
+		"/metrics",
+		"/api/v1/status",
+		"/api/v1/auth/",
+		"/auth/",
+		"/ws", // WebSocket has its own auth (Task 1.5)
+	}
+
+	// CSRF-exempt prefixes (auth endpoints handle their own CSRF)
+	csrfSkipPrefixes := []string{
+		"/api/v1/auth/",
+		"/auth/",
+		"/healthz",
+		"/readyz",
+		"/metrics",
+		"/api/v1/status",
+	}
+
+	// Build middleware chain — execution order is right-to-left:
+	// Recovery -> Metrics -> AccessLog -> CSRF -> Auth -> RequestID -> handler
+	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
+
+	middlewares := []httpx.Middleware{
 		httpx.RequestID(),
 		httpx.AccessLog(log.Default()),
 		httpx.Metrics(metricsRegistry),
 		httpx.Recovery(log.Default()),
-	)
+	}
 
-	log.Printf("starting %s service on :%s", cfg.Name, cfg.Port)
-	if err := runtime.RunHTTPServer(context.Background(), cfg, handler); err != nil {
+	if authEnabled {
+		// Insert Auth after RequestID, and CSRF after Auth
+		middlewares = []httpx.Middleware{
+			httpx.RequestID(),
+			httpx.Auth(authServiceURL, publicPrefixes),
+			httpx.CSRF(csrfSkipPrefixes),
+			httpx.AccessLog(log.Default()),
+			httpx.Metrics(metricsRegistry),
+			httpx.Recovery(log.Default()),
+		}
+		slog.Info("auth middleware enabled", "auth_service", authServiceURL)
+	} else {
+		slog.Warn("auth middleware DISABLED — all routes are unprotected", "reason", "GATEWAY_AUTH_ENABLED=false")
+	}
+
+	handler := httpx.Chain(mux, middlewares...)
+
+	// Graceful shutdown on SIGINT/SIGTERM
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	slog.Info("starting service", "service", cfg.Name, "port", cfg.Port)
+	if err := runtime.RunHTTPServer(ctx, cfg, handler); err != nil {
 		log.Fatalf("%s service failed: %v", cfg.Name, err)
 	}
+	slog.Info("service stopped gracefully", "service", cfg.Name)
 }

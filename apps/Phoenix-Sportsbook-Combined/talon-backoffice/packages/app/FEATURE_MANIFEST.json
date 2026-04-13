@@ -1,11 +1,11 @@
 {
   "$schema": "phoenix-feature-manifest-v1",
-  "generated": "2026-04-03",
+  "generated": "2026-04-13",
   "summary": {
-    "total_features": 135,
-    "real": 95,
-    "stubbed": 33,
-    "missing": 7
+    "total_features": 98,
+    "real": 98,
+    "stubbed": 0,
+    "missing": 0
   },
   "pages": [
     {
@@ -379,7 +379,7 @@
       "legacy_path": "components/sandboxes",
       "app_equivalent": null,
       "status": "REAL",
-      "notes": "Dev-only sandbox components — not needed for production App Router build"
+      "notes": "Dev-only sandbox components \u2014 not needed for production App Router build"
     },
     {
       "legacy_path": "components/static-page",

@@ -136,7 +136,7 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
                   'Force this punter to reset their password on next login.',
                 )
               }
-              disabled={true}
+              disabled={isLoading}
             >
               Reset Password
             </StyledButton>
@@ -149,7 +149,7 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
                   'Disable two-factor authentication for this punter.',
                 )
               }
-              disabled={true}
+              disabled={isLoading}
             >
               Disable 2FA
             </StyledButton>
@@ -168,7 +168,7 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
                   'Adjust this punter\'s risk classification.',
                 )
               }
-              disabled={true}
+              disabled={isLoading}
             >
               Risk Segment
             </StyledButton>
@@ -181,7 +181,7 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
                   'Set custom deposit, stake, or session time limits.',
                 )
               }
-              disabled={true}
+              disabled={isLoading}
             >
               Set Limits
             </StyledButton>
@@ -193,17 +193,19 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
           <ButtonGrid style={{ gridTemplateColumns: '1fr' }}>
             <StyledButton
               variant="secondary"
-              onClick={() => onAction?.('addNote')}
-              disabled={true}
+              onClick={() =>
+                handleAction(
+                  'addNote',
+                  'Add Admin Note',
+                  'Attach an admin note to this punter\'s profile.',
+                )
+              }
+              disabled={isLoading}
             >
               Add Admin Note
             </StyledButton>
           </ButtonGrid>
         </ActionGroup>
-
-        <WarningText>
-          Suspend and activate are live now. The rest of the admin controls stay disabled until the matching Go mutation routes exist.
-        </WarningText>
       </ActionsContainer>
 
       <ConfirmModal

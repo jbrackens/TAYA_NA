@@ -1,8 +1,10 @@
 package http
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -14,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"phoenix-revival/platform/transport/httpx"
 )
 
@@ -30,23 +33,40 @@ type AuthService struct {
 	mu sync.RWMutex
 
 	usersByUsername map[string]user
-	store           SessionStore
-	audit           AuditLogger
-	metrics         authMetrics
+	db             *sql.DB // nil = in-memory mode
+	store          SessionStore
+	audit          AuditLogger
+	metrics        authMetrics
 
 	accessTTL  time.Duration
 	refreshTTL time.Duration
 }
 
+type registerRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role,omitempty"`
+}
+
+const (
+	bcryptCost    = 12
+	userDBTimeout = 5 * time.Second
+	rolePlayer    = "player"
+	roleAdmin     = "admin"
+)
+
 type user struct {
-	ID       string
-	Username string
-	Password string
+	ID           string
+	Username     string
+	Password     string // plaintext (dev mode only, deprecated)
+	PasswordHash string // bcrypt hash (production mode)
+	Role         string // "player" or "admin"
 }
 
 type session struct {
 	UserID             string    `json:"userId"`
 	Username           string    `json:"username"`
+	Role               string    `json:"role"`
 	AccessTokenDigest  string    `json:"accessTokenDigest"`
 	RefreshTokenDigest string    `json:"refreshTokenDigest"`
 	AccessUntil        time.Time `json:"accessUntil"`
@@ -74,6 +94,7 @@ type sessionResponse struct {
 	Authenticated bool   `json:"authenticated"`
 	UserID        string `json:"userId"`
 	Username      string `json:"username"`
+	Role          string `json:"role"`
 	ExpiresAt     string `json:"expiresAt"`
 }
 
@@ -112,28 +133,102 @@ func NewAuthService() *AuthService {
 	adminUserID := getEnvOrDefault("AUTH_ADMIN_USER_ID", "user-admin")
 	sessionStorePath := os.Getenv("AUTH_SESSION_STORE_FILE")
 
+	// Hash seed passwords with bcrypt for consistency
+	demoHash, _ := bcrypt.GenerateFromPassword([]byte(demoPassword), bcryptCost)
+	adminHash, _ := bcrypt.GenerateFromPassword([]byte(adminPassword), bcryptCost)
+
 	users := map[string]user{
 		demoUsername: {
-			ID:       demoUserID,
-			Username: demoUsername,
-			Password: demoPassword,
+			ID:           demoUserID,
+			Username:     demoUsername,
+			Password:     demoPassword,
+			PasswordHash: string(demoHash),
+			Role:         rolePlayer,
 		},
 	}
 	if _, exists := users[adminUsername]; !exists {
 		users[adminUsername] = user{
-			ID:       adminUserID,
-			Username: adminUsername,
-			Password: adminPassword,
+			ID:           adminUserID,
+			Username:     adminUsername,
+			Password:     adminPassword,
+			PasswordHash: string(adminHash),
+			Role:         roleAdmin,
 		}
 	}
 
-	return &AuthService{
+	svc := &AuthService{
 		usersByUsername: users,
-		store:      NewFileBackedSessionStore(sessionStorePath),
-		audit:      &structuredAuditLogger{logger: log.Default()},
-		accessTTL:  durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
-		refreshTTL: durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
+		store:          NewFileBackedSessionStore(sessionStorePath),
+		audit:          &structuredAuditLogger{logger: log.Default()},
+		accessTTL:      durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
+		refreshTTL:     durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
 	}
+
+	// Optionally initialize DB-backed user store
+	storeMode := strings.ToLower(strings.TrimSpace(os.Getenv("AUTH_STORE_MODE")))
+	if storeMode == "db" || storeMode == "postgres" {
+		dsn := strings.TrimSpace(os.Getenv("AUTH_DB_DSN"))
+		if dsn != "" {
+			db, err := sql.Open("postgres", dsn)
+			if err != nil {
+				log.Printf("warning: failed to open auth DB: %v; falling back to in-memory", err)
+			} else {
+				ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+				defer cancel()
+				if err := db.PingContext(ctx); err != nil {
+					log.Printf("warning: auth DB ping failed: %v; falling back to in-memory", err)
+					_ = db.Close()
+				} else if err := svc.ensureUserSchema(db); err != nil {
+					log.Printf("warning: auth DB schema init failed: %v; falling back to in-memory", err)
+					_ = db.Close()
+				} else {
+					svc.db = db
+					svc.seedDBUsers(demoUsername, demoPassword, demoUserID, rolePlayer)
+					svc.seedDBUsers(adminUsername, adminPassword, adminUserID, roleAdmin)
+					log.Printf("auth service initialized in DB mode")
+				}
+			}
+		} else {
+			log.Printf("warning: AUTH_STORE_MODE=%s but AUTH_DB_DSN is empty; using in-memory", storeMode)
+		}
+	}
+
+	return svc
+}
+
+func (a *AuthService) ensureUserSchema(db *sql.DB) error {
+	ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+	defer cancel()
+	_, err := db.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS auth_users (
+  id VARCHAR(255) PRIMARY KEY,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'player',
+  oauth_provider VARCHAR(50),
+  oauth_subject VARCHAR(255),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`)
+	return err
+}
+
+func (a *AuthService) seedDBUsers(username, password, id, role string) {
+	if a.db == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+	defer cancel()
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
+	if err != nil {
+		log.Printf("warning: failed to hash seed password for %s: %v", username, err)
+		return
+	}
+	_, _ = a.db.ExecContext(ctx, `
+INSERT INTO auth_users (id, username, password_hash, role)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (username) DO NOTHING`, id, username, string(hash), role)
 }
 
 func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
@@ -208,6 +303,28 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, response)
+	}))
+
+	mux.Handle("/api/v1/auth/register", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		var body registerRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+
+		newUser, err := auth.Register(body.Username, body.Password, body.Role)
+		if err != nil {
+			return err
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
+			"userId":   newUser.ID,
+			"username": newUser.Username,
+			"role":     newUser.Role,
+		})
 	}))
 
 	mux.Handle("/api/v1/auth/refresh", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -288,6 +405,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			Authenticated: true,
 			UserID:        currentSession.UserID,
 			Username:      currentSession.Username,
+			Role:          currentSession.Role,
 			ExpiresAt:     currentSession.AccessUntil.UTC().Format(time.RFC3339),
 		})
 	}))
@@ -545,7 +663,7 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 	a.PruneExpiredSessions()
 
 	account, exists := a.lookupUser(username)
-	if !exists || account.Password != password {
+	if !exists || !a.verifyPassword(account, password) {
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
 		return tokenResponse{}, httpx.Unauthorized("invalid username or password")
@@ -567,6 +685,69 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 	a.audit.Event("auth.login.success", map[string]any{"username": username, "userId": account.ID})
 
 	return response, nil
+}
+
+func (a *AuthService) verifyPassword(account user, password string) bool {
+	// Prefer bcrypt hash if available
+	if account.PasswordHash != "" {
+		return bcrypt.CompareHashAndPassword([]byte(account.PasswordHash), []byte(password)) == nil
+	}
+	// Fallback to plaintext for legacy dev-mode accounts (deprecated)
+	return account.Password != "" && account.Password == password
+}
+
+func (a *AuthService) Register(username, password, role string) (user, error) {
+	username = strings.TrimSpace(username)
+	password = strings.TrimSpace(password)
+	if username == "" || len(password) < 6 {
+		return user{}, httpx.BadRequest("username required, password must be at least 6 characters", nil)
+	}
+	if role == "" {
+		role = rolePlayer
+	}
+	if role != rolePlayer && role != roleAdmin {
+		return user{}, httpx.BadRequest("role must be 'player' or 'admin'", nil)
+	}
+
+	// Check if user already exists
+	if _, exists := a.lookupUser(username); exists {
+		return user{}, httpx.Conflict("username already registered", nil)
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcryptCost)
+	if err != nil {
+		return user{}, httpx.Internal("failed to hash password", err)
+	}
+
+	newID := fmt.Sprintf("u-%s", hex.EncodeToString([]byte(username))[:12])
+	newUser := user{
+		ID:           newID,
+		Username:     username,
+		PasswordHash: string(hash),
+		Role:         role,
+	}
+
+	if a.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+		defer cancel()
+		_, err := a.db.ExecContext(ctx, `
+INSERT INTO auth_users (id, username, password_hash, role)
+VALUES ($1, $2, $3, $4)`, newUser.ID, newUser.Username, newUser.PasswordHash, newUser.Role)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
+				return user{}, httpx.Conflict("username already registered", nil)
+			}
+			return user{}, httpx.Internal("failed to create user", err)
+		}
+	}
+
+	// Also store in memory map for session lookups
+	a.mu.Lock()
+	a.usersByUsername[username] = newUser
+	a.mu.Unlock()
+
+	a.audit.Event("auth.register.success", map[string]any{"username": username, "userId": newID, "role": role})
+	return newUser, nil
 }
 
 func (a *AuthService) Refresh(refreshToken string) (tokenResponse, error) {
@@ -679,9 +860,26 @@ func (a *AuthService) recordAuthMetric(name string) {
 }
 
 func (a *AuthService) lookupUser(username string) (user, bool) {
+	// Check DB first if available
+	if a.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+		defer cancel()
+		var u user
+		err := a.db.QueryRowContext(ctx, `
+SELECT id, username, password_hash, COALESCE(role, 'player')
+FROM auth_users
+WHERE username = $1`, username).Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Role)
+		if err == nil {
+			return u, true
+		}
+		if err != sql.ErrNoRows {
+			log.Printf("warning: auth DB lookup failed for %s: %v; falling back to memory", username, err)
+		}
+	}
+
+	// Fallback to in-memory map
 	a.mu.RLock()
 	defer a.mu.RUnlock()
-
 	account, exists := a.usersByUsername[username]
 	return account, exists
 }
@@ -696,10 +894,16 @@ func newSession(account user, accessTTL, refreshTTL time.Duration) (session, tok
 		return session{}, tokenResponse{}, err
 	}
 
+	role := account.Role
+	if role == "" {
+		role = rolePlayer
+	}
+
 	now := time.Now().UTC()
 	return session{
 			UserID:             account.ID,
 			Username:           account.Username,
+			Role:               role,
 			AccessTokenDigest:  digestToken(accessToken),
 			RefreshTokenDigest: digestToken(refreshToken),
 			AccessUntil:        now.Add(accessTTL),

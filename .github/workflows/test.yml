@@ -26,7 +26,7 @@ jobs:
       - name: Run regression tests
         run: npx tsx --test app/__tests__/*.test.ts
 
-  go-build:
+  go-build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,10 +36,26 @@ jobs:
         with:
           go-version: '1.24'
 
+      - name: Build platform
+        working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform
+        run: go build ./...
+
+      - name: Test platform
+        working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/modules/platform
+        run: go test -race -count=1 ./...
+
       - name: Build gateway
         working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway
         run: go build ./...
 
+      - name: Test gateway
+        working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway
+        run: go test -race -count=1 ./...
+
       - name: Build auth
         working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/services/auth
         run: go build ./...
+
+      - name: Test auth
+        working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/services/auth
+        run: go test -race -count=1 ./...

@@ -48,6 +48,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	if err != nil {
 		log.Printf("warning: failed to bootstrap provider runtime: %v", err)
 	}
+	walletServiceForMetrics = walletService
 	registerFeedMetricsRoute(mux, service, providerRuntime, betService)
 
 	// Initialize WebSocket hub
@@ -68,10 +69,37 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{
-			"service": service,
-			"status":  "ready",
-		})
+
+		checks := map[string]string{}
+		allReady := true
+
+		// Check auth service reachability
+		authURL := os.Getenv("AUTH_SERVICE_URL")
+		if authURL == "" {
+			authURL = "http://localhost:18081"
+		}
+		authCtx, authCancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer authCancel()
+		authReq, _ := stdhttp.NewRequestWithContext(authCtx, stdhttp.MethodGet, authURL+"/healthz", nil)
+		if authReq != nil {
+			resp, err := stdhttp.DefaultClient.Do(authReq)
+			if err != nil || resp.StatusCode != stdhttp.StatusOK {
+				checks["auth"] = "unavailable"
+				allReady = false
+			} else {
+				checks["auth"] = "ok"
+				resp.Body.Close()
+			}
+		}
+
+		checks["service"] = service
+		if allReady {
+			checks["status"] = "ready"
+			return httpx.WriteJSON(w, stdhttp.StatusOK, checks)
+		}
+		checks["status"] = "degraded"
+		w.WriteHeader(stdhttp.StatusServiceUnavailable)
+		return httpx.WriteJSON(w, stdhttp.StatusServiceUnavailable, checks)
 	}))
 
 	mux.Handle("/api/v1/status", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -104,8 +132,21 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerAdminBetRoutes(mux, betService)
 	registerUserRoutes(mux)
 
-	// Register payment and compliance services
-	paymentService := payments.NewMockPaymentService(walletService)
+	// Register payment service — use DB-backed when wallet DB is available
+	var paymentService payments.PaymentService
+	if walletDB := walletService.DB(); walletDB != nil {
+		dbPayment, err := payments.NewDBPaymentService(walletDB, walletService)
+		if err != nil {
+			log.Printf("warning: failed to initialize DB payment service: %v; falling back to mock", err)
+			paymentService = payments.NewMockPaymentService(walletService)
+		} else {
+			paymentService = dbPayment
+			log.Printf("payments: DB-backed payment service initialized")
+		}
+	} else {
+		paymentService = payments.NewMockPaymentService(walletService)
+		log.Printf("payments: using mock payment service (no DB available)")
+	}
 	payments.RegisterPaymentRoutes(mux, paymentService)
 
 	// Reverse proxy auth routes to the auth service
@@ -113,7 +154,25 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	geoService := compliance.NewMockGeoComplianceServiceFromEnv()
 	kycService := compliance.NewMockKYCService()
-	rgService := compliance.NewMockResponsibleGamblingService()
+
+	// Use PostgreSQL-backed Responsible Gaming service when wallet DB is available
+	var rgService compliance.ResponsibleGamblingService
+	if walletDB := walletService.DB(); walletDB != nil {
+		pgRG, err := compliance.NewPostgresResponsibleGamblingService(walletDB)
+		if err != nil {
+			log.Printf("warning: failed to initialize PostgreSQL RG service: %v; falling back to mock", err)
+			rgService = compliance.NewMockResponsibleGamblingService()
+		} else {
+			rgService = pgRG
+			betService.SetComplianceService(pgRG)
+			log.Printf("compliance: responsible gaming service initialized in DB mode")
+		}
+	} else {
+		rgService = compliance.NewMockResponsibleGamblingService()
+		log.Printf("compliance: using mock responsible gaming service (no DB available)")
+	}
+	// Wire RG service into deposit compliance checking
+	payments.DepositComplianceChecker = rgService
 	compliance.RegisterComplianceRoutes(mux, geoService, kycService, rgService)
 }
 

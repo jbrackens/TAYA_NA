@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"phoenix-revival/gateway/internal/bets"
@@ -41,8 +42,70 @@ func (s *providerEventSink) Apply(ctx context.Context, event canonicalv1.Envelop
 		s.applyCashoutQuoteEvent(event)
 	case canonicalv1.EntityMatchTracker:
 		s.applyMatchTrackerEvent(event)
+	case canonicalv1.EntitySettlement:
+		s.applySettlementEvent(event)
 	}
 	return nil
+}
+
+// applySettlementEvent processes a settlement event from the feed provider.
+// It extracts the winning selection(s) and settles all bets on the market.
+func (s *providerEventSink) applySettlementEvent(event canonicalv1.Envelope) {
+	if s.betService == nil {
+		return
+	}
+
+	var settlement canonicalv1.Settlement
+	if err := event.DecodePayload(&settlement); err != nil {
+		slog.Error("feed settlement decode failed", "error", err)
+		return
+	}
+
+	if settlement.BetID == "" {
+		slog.Warn("feed settlement skipped: empty betId", "revision", event.Revision)
+		return
+	}
+
+	winningSelections := strings.Join(settlement.WinningSelectionIDs, ",")
+	if winningSelections == "" && settlement.Outcome == canonicalv1.SettlementOutcomeVoid {
+		// Void settlement — cancel the bet
+		_, err := s.betService.Cancel(bets.LifecycleBetRequest{
+			BetID:   settlement.BetID,
+			Reason:  settlement.Reason,
+			ActorID: fmt.Sprintf("feed:%s", event.Provider.Name),
+		})
+		if err != nil {
+			slog.Error("feed settlement cancel failed", "bet_id", settlement.BetID, "error", err)
+		} else {
+			slog.Info("feed settlement voided", "bet_id", settlement.BetID, "reason", settlement.Reason)
+		}
+		return
+	}
+
+	if winningSelections == "" {
+		slog.Warn("feed settlement skipped: no winning selections", "bet_id", settlement.BetID)
+		return
+	}
+
+	var deadHeatFactor *float64
+	if settlement.DeadHeatFactor != nil {
+		deadHeatFactor = settlement.DeadHeatFactor
+	}
+
+	_, err := s.betService.Settle(bets.SettleBetRequest{
+		BetID:                settlement.BetID,
+		WinningSelectionID:   winningSelections,
+		WinningSelectionName: "",
+		ResultSource:         fmt.Sprintf("feed:%s", event.Provider.Name),
+		DeadHeatFactor:       deadHeatFactor,
+		Reason:               settlement.Reason,
+		ActorID:              fmt.Sprintf("feed:%s", event.Provider.Name),
+	})
+	if err != nil {
+		slog.Error("feed settlement failed", "bet_id", settlement.BetID, "selections", winningSelections, "error", err)
+	} else {
+		slog.Info("feed settlement completed", "bet_id", settlement.BetID, "winning", winningSelections, "source", event.Provider.Name)
+	}
 }
 
 func (s *providerEventSink) applyMatchTrackerEvent(event canonicalv1.Envelope) {

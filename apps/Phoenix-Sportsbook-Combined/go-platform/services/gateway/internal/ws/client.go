@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -170,16 +171,46 @@ func (c *Client) writePump() {
 	}
 }
 
-// handleSubscribe processes a subscription request
+// handleSubscribe processes a subscription request with per-channel authorization.
+// User-specific channels (bets:{userID}, wallet:{userID}) require the client's
+// userID to match the channel's userID to prevent cross-user data leakage.
 func (c *Client) handleSubscribe(channels []string) {
 	for _, channel := range channels {
 		if channel == "" {
+			continue
+		}
+		if !authorizeChannelAccess(c.userID, channel) {
+			log.Printf("ws channel auth denied: user=%s channel=%s", c.userID, channel)
 			continue
 		}
 		if !c.channels[channel] {
 			c.channels[channel] = true
 			c.hub.Subscribe(c, channel)
 		}
+	}
+}
+
+// authorizeChannelAccess checks if a user is allowed to subscribe to a channel.
+// Public channels (markets:*, fixtures:*) are open to all authenticated users.
+// Private channels (bets:{userID}, wallet:{userID}) require matching userID.
+func authorizeChannelAccess(userID string, channel string) bool {
+	parts := strings.SplitN(channel, ":", 2)
+	if len(parts) != 2 {
+		return true // non-prefixed channels are public
+	}
+	prefix := parts[0]
+	channelOwner := parts[1]
+
+	switch prefix {
+	case "bets", "wallet":
+		// Private channels: must match the authenticated user
+		return strings.EqualFold(userID, channelOwner)
+	case "markets", "fixtures":
+		// Public channels: any authenticated user can subscribe
+		return true
+	default:
+		// Unknown prefixes default to public
+		return true
 	}
 }
 

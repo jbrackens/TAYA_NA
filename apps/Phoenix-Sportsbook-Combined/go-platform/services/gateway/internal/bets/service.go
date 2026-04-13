@@ -19,6 +19,7 @@ import (
 	"sync"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/domain"
 	"phoenix-revival/gateway/internal/freebets"
 	"phoenix-revival/gateway/internal/leaderboards"
@@ -372,6 +373,11 @@ type promotionPlacementDecision struct {
 	WalletBalanceCents  int64
 }
 
+var (
+	ErrPlayerRestricted = errors.New("player is restricted from betting")
+	ErrBetLimitExceeded = errors.New("cumulative bet limit exceeded")
+)
+
 type Service struct {
 	repository   domain.ReadRepository
 	wallet       *wallet.Service
@@ -379,6 +385,7 @@ type Service struct {
 	oddsBoosts   *oddsboosts.Service
 	loyalty      *loyalty.Service
 	leaderboards *leaderboards.Service
+	compliance   compliance.ResponsibleGamblingService
 
 	mu                       sync.RWMutex
 	betsByID                 map[string]Bet
@@ -435,11 +442,19 @@ func (s *Service) SetLeaderboardService(leaderboardService *leaderboards.Service
 	s.leaderboards = leaderboardService
 }
 
+func (s *Service) SetComplianceService(rgService compliance.ResponsibleGamblingService) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.compliance = rgService
+}
+
 func NewService(repository domain.ReadRepository, walletService *wallet.Service) *Service {
 	return NewServiceWithPath(repository, walletService, "")
 }
 
 func NewServiceFromEnv(repository domain.ReadRepository, walletService *wallet.Service) *Service {
+	isProduction := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT"))) == "production"
+
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("BET_STORE_MODE")))
 	if mode == "db" || mode == "sql" || mode == "postgres" {
 		driver := strings.TrimSpace(os.Getenv("BET_DB_DRIVER"))
@@ -448,16 +463,24 @@ func NewServiceFromEnv(repository domain.ReadRepository, walletService *wallet.S
 		}
 		dsn := strings.TrimSpace(os.Getenv("BET_DB_DSN"))
 		if dsn == "" {
+			if isProduction {
+				log.Fatalf("FATAL: BET_STORE_MODE=%s but BET_DB_DSN is empty; DB mode required in production", mode)
+			}
 			log.Printf("warning: BET_STORE_MODE=%s requested, but BET_DB_DSN is empty; falling back to local bet store", mode)
 		} else {
 			svc, err := NewServiceWithDB(repository, walletService, driver, dsn)
 			if err != nil {
+				if isProduction {
+					log.Fatalf("FATAL: failed to initialize bet db store in production: %v", err)
+				}
 				log.Printf("warning: failed to initialize bet db store driver=%s: %v; falling back to local bet store", driver, err)
 			} else {
 				log.Printf("bet service initialized in db mode using driver=%s", driver)
 				return svc
 			}
 		}
+	} else if isProduction {
+		log.Fatalf("FATAL: BET_STORE_MODE must be 'db' in production (currently %q); file-backed mode is not safe for real money", mode)
 	}
 
 	return NewServiceWithPath(repository, walletService, os.Getenv("BET_STORE_FILE"))
@@ -726,6 +749,123 @@ func (s *Service) PromoUsageSummary(filter PromoUsageFilter, breakdownLimit int)
 }
 
 func (s *Service) AnalyticsForUser(userID string) BetAnalytics {
+	if s.db != nil {
+		analytics, err := s.analyticsForUserDB(userID)
+		if err == nil {
+			return analytics
+		}
+		log.Printf("warning: DB analytics failed for user %s: %v; falling back to memory", userID, err)
+	}
+	return s.analyticsForUserMemory(userID)
+}
+
+func (s *Service) analyticsForUserDB(userID string) (BetAnalytics, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), betDBTimeout)
+	defer cancel()
+
+	var a BetAnalytics
+	err := s.db.QueryRowContext(ctx, `
+SELECT
+  COUNT(*),
+  COALESCE(SUM(CASE WHEN status = 'settled_won' THEN 1 ELSE 0 END), 0),
+  COALESCE(SUM(CASE WHEN status = 'settled_lost' THEN 1 ELSE 0 END), 0),
+  COALESCE(SUM(CASE WHEN status = 'cashed_out' THEN 1 ELSE 0 END), 0),
+  COALESCE(SUM(stake_cents), 0),
+  COALESCE(SUM(CASE WHEN status = 'settled_won' THEN potential_payout_cents ELSE 0 END), 0),
+  COALESCE(AVG(CASE WHEN status IN ('settled_won','settled_lost') THEN odds END), 0)
+FROM bets
+WHERE user_id = $1`, userID).Scan(
+		&a.TotalBets, &a.TotalWon, &a.TotalLost, &a.TotalCashedOut,
+		&a.TotalStakeCents, &a.TotalReturnCents, &a.AvgOdds)
+	if err != nil {
+		return BetAnalytics{}, err
+	}
+
+	a.TotalProfitCents = a.TotalReturnCents - a.TotalStakeCents
+	if a.TotalBets > 0 {
+		a.AvgStakeCents = a.TotalStakeCents / int64(a.TotalBets)
+	}
+	settledCount := a.TotalWon + a.TotalLost
+	if settledCount > 0 {
+		a.WinRate = math.Round(float64(a.TotalWon)/float64(settledCount)*10000) / 10000
+	}
+	if a.TotalStakeCents > 0 {
+		a.ROI = math.Round(float64(a.TotalProfitCents)/float64(a.TotalStakeCents)*10000) / 10000
+	}
+	a.AvgOdds = math.Round(a.AvgOdds*100) / 100
+
+	// Daily aggregation
+	dailyRows, err := s.db.QueryContext(ctx, `
+SELECT CAST(placed_at AS DATE) as day, COUNT(*),
+  SUM(CASE WHEN status='settled_won' THEN 1 ELSE 0 END),
+  SUM(CASE WHEN status='settled_lost' THEN 1 ELSE 0 END),
+  COALESCE(SUM(stake_cents),0),
+  COALESCE(SUM(CASE WHEN status='settled_won' THEN potential_payout_cents ELSE 0 END),0)
+FROM bets WHERE user_id = $1
+GROUP BY CAST(placed_at AS DATE) ORDER BY day DESC LIMIT 30`, userID)
+	if err == nil {
+		defer dailyRows.Close()
+		for dailyRows.Next() {
+			var p BetAnalyticsPeriod
+			var returnCents int64
+			if err := dailyRows.Scan(&p.Period, &p.BetCount, &p.WonCount, &p.LostCount, &p.StakeCents, &returnCents); err == nil {
+				p.ReturnCents = returnCents
+				p.ProfitCents = returnCents - p.StakeCents
+				a.Daily = append(a.Daily, p)
+			}
+		}
+	}
+
+	// Monthly aggregation
+	monthlyRows, err := s.db.QueryContext(ctx, `
+SELECT TO_CHAR(placed_at, 'YYYY-MM') as month, COUNT(*),
+  SUM(CASE WHEN status='settled_won' THEN 1 ELSE 0 END),
+  SUM(CASE WHEN status='settled_lost' THEN 1 ELSE 0 END),
+  COALESCE(SUM(stake_cents),0),
+  COALESCE(SUM(CASE WHEN status='settled_won' THEN potential_payout_cents ELSE 0 END),0)
+FROM bets WHERE user_id = $1
+GROUP BY TO_CHAR(placed_at, 'YYYY-MM') ORDER BY month DESC LIMIT 12`, userID)
+	if err == nil {
+		defer monthlyRows.Close()
+		for monthlyRows.Next() {
+			var p BetAnalyticsPeriod
+			var returnCents int64
+			if err := monthlyRows.Scan(&p.Period, &p.BetCount, &p.WonCount, &p.LostCount, &p.StakeCents, &returnCents); err == nil {
+				p.ReturnCents = returnCents
+				p.ProfitCents = returnCents - p.StakeCents
+				a.Monthly = append(a.Monthly, p)
+			}
+		}
+	}
+
+	// Stake buckets
+	a.StakeBuckets = []StakeBucket{
+		{Label: "$0-5", MinCents: 0, MaxCents: 500},
+		{Label: "$5-10", MinCents: 500, MaxCents: 1000},
+		{Label: "$10-25", MinCents: 1000, MaxCents: 2500},
+		{Label: "$25-50", MinCents: 2500, MaxCents: 5000},
+		{Label: "$50-100", MinCents: 5000, MaxCents: 10000},
+		{Label: "$100+", MinCents: 10000, MaxCents: 0},
+	}
+	for i := range a.StakeBuckets {
+		b := &a.StakeBuckets[i]
+		var count int
+		if b.MaxCents > 0 {
+			_ = s.db.QueryRowContext(ctx, `
+SELECT COUNT(*) FROM bets WHERE user_id=$1 AND stake_cents >= $2 AND stake_cents < $3`,
+				userID, b.MinCents, b.MaxCents).Scan(&count)
+		} else {
+			_ = s.db.QueryRowContext(ctx, `
+SELECT COUNT(*) FROM bets WHERE user_id=$1 AND stake_cents >= $2`,
+				userID, b.MinCents).Scan(&count)
+		}
+		b.Count = count
+	}
+
+	return a, nil
+}
+
+func (s *Service) analyticsForUserMemory(userID string) BetAnalytics {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -967,8 +1107,14 @@ func (s *Service) placeMemory(request PlaceBetRequest) (Bet, error) {
 	if err := s.validateOddsBoostForPlacement(request, decision); err != nil {
 		return Bet{}, err
 	}
+	// Compliance: check player restrictions and cumulative stake limits
+	if err := s.checkComplianceForPlacement(request); err != nil {
+		return Bet{}, err
+	}
 	if decision.AppliedLTDMsec > 0 {
-		time.Sleep(time.Duration(decision.AppliedLTDMsec) * time.Millisecond)
+		if err := applyLTDDelay(context.Background(), decision.AppliedLTDMsec); err != nil {
+			return Bet{}, err
+		}
 	}
 
 	idempotencyIndex := fmt.Sprintf("%s:%s", request.UserID, request.IdempotencyKey)
@@ -1037,6 +1183,7 @@ func (s *Service) placeMemory(request PlaceBetRequest) (Bet, error) {
 	}
 	_ = market
 	_ = fixture
+	s.recordComplianceBetPlaced(request.UserID, request.StakeCents)
 	return bet, nil
 }
 
@@ -1058,8 +1205,14 @@ func (s *Service) placeDB(request PlaceBetRequest) (Bet, error) {
 	if err := s.validateOddsBoostForPlacement(request, decision); err != nil {
 		return Bet{}, err
 	}
+	// Compliance: check player restrictions and cumulative stake limits
+	if err := s.checkComplianceForPlacement(request); err != nil {
+		return Bet{}, err
+	}
 	if decision.AppliedLTDMsec > 0 {
-		time.Sleep(time.Duration(decision.AppliedLTDMsec) * time.Millisecond)
+		if err := applyLTDDelay(context.Background(), decision.AppliedLTDMsec); err != nil {
+			return Bet{}, err
+		}
 	}
 
 	existing, found, err := s.getBetByUserIdempotencyDB(request.UserID, request.IdempotencyKey)
@@ -1121,6 +1274,7 @@ func (s *Service) placeDB(request PlaceBetRequest) (Bet, error) {
 		OccurredAt: now.UTC().Format(time.RFC3339),
 	})
 
+	s.recordComplianceBetPlaced(request.UserID, request.StakeCents)
 	return bet, nil
 }
 
@@ -1233,6 +1387,59 @@ func (s *Service) refundMemory(request LifecycleBetRequest) (Bet, error) {
 }
 
 func (s *Service) settleDB(request SettleBetRequest) (Bet, error) {
+	walletDB := s.wallet.DB()
+	if walletDB == nil || s.db == nil {
+		// Fallback: no shared DB available, use non-atomic path (legacy)
+		return s.settleDBNonAtomic(request)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), betDBTimeout)
+	defer cancel()
+
+	// Single atomic transaction across bet state + wallet mutation
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return Bet{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	bet, err := s.getBetByIDWithTx(ctx, tx, request.BetID)
+	if err != nil {
+		return Bet{}, err
+	}
+
+	updated, transition, err := s.applySettlementTransitionAtomic(ctx, tx, bet, request)
+	if err != nil {
+		return Bet{}, err
+	}
+	if !lifecycleTransitionChanged(bet, updated) {
+		return updated, nil
+	}
+	if err := s.updateBetLifecycleWithTx(ctx, tx, updated); err != nil {
+		return Bet{}, err
+	}
+	if err := s.insertEventWithTx(ctx, tx, BetEvent{
+		ID:         fmt.Sprintf("be:db:%d", s.now().UTC().UnixNano()),
+		BetID:      updated.BetID,
+		UserID:     updated.UserID,
+		Action:     actionBetSettled,
+		ActorID:    fallbackActor(request.ActorID, "admin"),
+		Status:     updated.Status,
+		Reason:     normalizeReasonCode(request.Reason, "result_confirmed"),
+		Details:    buildSettlementEventDetails(request, bet, updated, transition),
+		OccurredAt: s.now().UTC().Format(time.RFC3339),
+	}); err != nil {
+		return Bet{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return Bet{}, err
+	}
+	return updated, nil
+}
+
+// settleDBNonAtomic is the legacy path when bets and wallet are on different databases.
+func (s *Service) settleDBNonAtomic(request SettleBetRequest) (Bet, error) {
 	bet, err := s.getBetByIDDB(request.BetID)
 	if err != nil {
 		return Bet{}, err
@@ -1262,6 +1469,56 @@ func (s *Service) settleDB(request SettleBetRequest) (Bet, error) {
 }
 
 func (s *Service) cancelDB(request LifecycleBetRequest) (Bet, error) {
+	walletDB := s.wallet.DB()
+	if walletDB == nil || s.db == nil {
+		return s.cancelDBNonAtomic(request)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), betDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return Bet{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	bet, err := s.getBetByIDWithTx(ctx, tx, request.BetID)
+	if err != nil {
+		return Bet{}, err
+	}
+
+	updated, err := s.applyCancelTransitionAtomic(ctx, tx, bet, request.Reason)
+	if err != nil {
+		return Bet{}, err
+	}
+	if !lifecycleTransitionChanged(bet, updated) {
+		return updated, nil
+	}
+	if err := s.updateBetLifecycleWithTx(ctx, tx, updated); err != nil {
+		return Bet{}, err
+	}
+	if err := s.insertEventWithTx(ctx, tx, BetEvent{
+		ID:         fmt.Sprintf("be:db:%d", s.now().UTC().UnixNano()),
+		BetID:      updated.BetID,
+		UserID:     updated.UserID,
+		Action:     actionBetCancelled,
+		ActorID:    fallbackActor(request.ActorID, "admin"),
+		Status:     updated.Status,
+		Reason:     normalizeReasonCode(request.Reason, "cancelled_by_admin"),
+		Details:    settlementReasonOrDefault(request.Reason, "bet cancelled and refunded"),
+		OccurredAt: s.now().UTC().Format(time.RFC3339),
+	}); err != nil {
+		return Bet{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return Bet{}, err
+	}
+	return updated, nil
+}
+
+func (s *Service) cancelDBNonAtomic(request LifecycleBetRequest) (Bet, error) {
 	bet, err := s.getBetByIDDB(request.BetID)
 	if err != nil {
 		return Bet{}, err
@@ -1291,6 +1548,56 @@ func (s *Service) cancelDB(request LifecycleBetRequest) (Bet, error) {
 }
 
 func (s *Service) refundDB(request LifecycleBetRequest) (Bet, error) {
+	walletDB := s.wallet.DB()
+	if walletDB == nil || s.db == nil {
+		return s.refundDBNonAtomic(request)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), betDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return Bet{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	bet, err := s.getBetByIDWithTx(ctx, tx, request.BetID)
+	if err != nil {
+		return Bet{}, err
+	}
+
+	updated, err := s.applyRefundTransitionAtomic(ctx, tx, bet, request.Reason)
+	if err != nil {
+		return Bet{}, err
+	}
+	if !lifecycleTransitionChanged(bet, updated) {
+		return updated, nil
+	}
+	if err := s.updateBetLifecycleWithTx(ctx, tx, updated); err != nil {
+		return Bet{}, err
+	}
+	if err := s.insertEventWithTx(ctx, tx, BetEvent{
+		ID:         fmt.Sprintf("be:db:%d", s.now().UTC().UnixNano()),
+		BetID:      updated.BetID,
+		UserID:     updated.UserID,
+		Action:     actionBetRefunded,
+		ActorID:    fallbackActor(request.ActorID, "admin"),
+		Status:     updated.Status,
+		Reason:     normalizeReasonCode(request.Reason, "refunded_by_admin"),
+		Details:    settlementReasonOrDefault(request.Reason, "bet refunded"),
+		OccurredAt: s.now().UTC().Format(time.RFC3339),
+	}); err != nil {
+		return Bet{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return Bet{}, err
+	}
+	return updated, nil
+}
+
+func (s *Service) refundDBNonAtomic(request LifecycleBetRequest) (Bet, error) {
 	bet, err := s.getBetByIDDB(request.BetID)
 	if err != nil {
 		return Bet{}, err
@@ -1317,6 +1624,245 @@ func (s *Service) refundDB(request LifecycleBetRequest) (Bet, error) {
 		OccurredAt: s.now().UTC().Format(time.RFC3339),
 	})
 	return updated, nil
+}
+
+// ── Atomic settlement helpers (use external transaction) ──────────
+
+// applySettlementTransitionAtomic is like applySettlementTransition but uses
+// wallet.CreditWithTx/DebitWithTx for atomic bet+wallet mutations.
+func (s *Service) applySettlementTransitionAtomic(ctx context.Context, tx *sql.Tx, bet Bet, request SettleBetRequest) (Bet, settlementTransitionMeta, error) {
+	normalizedReference, winningSelectionSet := normalizeWinningSelectionSet(request.WinningSelectionID)
+	if normalizedReference == "" {
+		return Bet{}, settlementTransitionMeta{}, ErrInvalidSettleRequest
+	}
+	if len(bet.Legs) > 1 && !hasMultipleSettlementSelections(request.WinningSelectionID) {
+		return Bet{}, settlementTransitionMeta{}, ErrInvalidSettleRequest
+	}
+
+	deadHeatFactor := 1.0
+	if request.DeadHeatFactor != nil {
+		deadHeatFactor = *request.DeadHeatFactor
+	}
+
+	meta := settlementTransitionMeta{
+		Resettled:           bet.Status == statusSettledWon || bet.Status == statusSettledLost,
+		Policy:              "atomic_settlement",
+		DeadHeatFactor:      deadHeatFactor,
+		PreviousStatus:      bet.Status,
+		PreviousOutcome:     bet.SettlementOutcome,
+		PreviousReference:   bet.SettlementReference,
+		PreviousPayoutCents: s.currentSettlementPayoutCents(bet),
+	}
+
+	switch bet.Status {
+	case statusPlaced, statusSettledWon, statusSettledLost:
+	default:
+		return Bet{}, settlementTransitionMeta{}, ErrBetStateConflict
+	}
+
+	isWinningBet := isWinningSettlement(bet, winningSelectionSet)
+	targetStatus := statusSettledLost
+	targetOutcome := "lost"
+	targetPayoutCents := int64(0)
+	if isWinningBet {
+		targetStatus = statusSettledWon
+		targetOutcome = "won"
+		targetPayoutCents = int64(math.Round(float64(bet.PotentialPayoutCents) * deadHeatFactor))
+	}
+
+	// Idempotent replay check
+	if bet.Status != statusPlaced &&
+		bet.Status == targetStatus &&
+		sameSettlementReference(bet.SettlementReference, normalizedReference) &&
+		meta.PreviousPayoutCents == targetPayoutCents {
+		meta.NextPayoutCents = targetPayoutCents
+		return bet, meta, nil
+	}
+
+	adjustmentCents := targetPayoutCents - meta.PreviousPayoutCents
+	settlementLedgerEntryID := bet.SettlementLedgerEntryID
+	balanceCents := bet.WalletBalanceCents
+
+	if adjustmentCents > 0 {
+		idempotencyKey := "settle-win:" + bet.BetID
+		if meta.Resettled {
+			idempotencyKey = buildResettlementIdempotencyKey("resettle-credit", bet, meta.PreviousPayoutCents, targetPayoutCents, normalizedReference)
+		}
+		entry, err := s.wallet.CreditWithTx(ctx, tx, wallet.MutationRequest{
+			UserID:         bet.UserID,
+			AmountCents:    adjustmentCents,
+			IdempotencyKey: idempotencyKey,
+			Reason:         settlementReasonOrDefault(request.Reason, "bet settlement win"),
+		})
+		if err != nil {
+			return Bet{}, settlementTransitionMeta{}, err
+		}
+		settlementLedgerEntryID = entry.EntryID
+		balanceCents = entry.BalanceCents
+	} else if adjustmentCents < 0 {
+		entry, err := s.wallet.DebitWithTx(ctx, tx, wallet.MutationRequest{
+			UserID:         bet.UserID,
+			AmountCents:    -adjustmentCents,
+			IdempotencyKey: buildResettlementIdempotencyKey("resettle-debit", bet, meta.PreviousPayoutCents, targetPayoutCents, normalizedReference),
+			Reason:         settlementReasonOrDefault(request.Reason, "bet resettlement reversal"),
+		})
+		if err != nil {
+			return Bet{}, settlementTransitionMeta{}, err
+		}
+		settlementLedgerEntryID = entry.EntryID
+		balanceCents = entry.BalanceCents
+	}
+
+	bet.Status = targetStatus
+	bet.SettledAt = s.now().UTC().Format(time.RFC3339)
+	bet.SettlementOutcome = targetOutcome
+	bet.SettlementReference = normalizedReference
+	bet.SettlementLedgerEntryID = settlementLedgerEntryID
+	bet.WalletBalanceCents = balanceCents
+
+	meta.NextPayoutCents = targetPayoutCents
+	meta.AdjustmentCents = adjustmentCents
+
+	return bet, meta, nil
+}
+
+func (s *Service) applyCancelTransitionAtomic(ctx context.Context, tx *sql.Tx, bet Bet, reason string) (Bet, error) {
+	switch bet.Status {
+	case statusCancelled:
+		return bet, nil
+	case statusPlaced:
+	default:
+		return Bet{}, ErrBetStateConflict
+	}
+
+	entry, err := s.wallet.CreditWithTx(ctx, tx, wallet.MutationRequest{
+		UserID:         bet.UserID,
+		AmountCents:    bet.StakeCents,
+		IdempotencyKey: "cancel:" + bet.BetID,
+		Reason:         settlementReasonOrDefault(reason, "bet cancellation refund"),
+	})
+	if err != nil {
+		return Bet{}, err
+	}
+
+	bet.Status = statusCancelled
+	bet.SettledAt = s.now().UTC().Format(time.RFC3339)
+	bet.SettlementOutcome = "cancelled"
+	bet.SettlementReference = strings.TrimSpace(reason)
+	bet.SettlementLedgerEntryID = entry.EntryID
+	bet.WalletBalanceCents = entry.BalanceCents
+	return bet, nil
+}
+
+func (s *Service) applyRefundTransitionAtomic(ctx context.Context, tx *sql.Tx, bet Bet, reason string) (Bet, error) {
+	switch bet.Status {
+	case statusRefunded:
+		return bet, nil
+	case statusPlaced, statusSettledLost:
+	default:
+		return Bet{}, ErrBetStateConflict
+	}
+
+	entry, err := s.wallet.CreditWithTx(ctx, tx, wallet.MutationRequest{
+		UserID:         bet.UserID,
+		AmountCents:    bet.StakeCents,
+		IdempotencyKey: "refund:" + bet.BetID,
+		Reason:         settlementReasonOrDefault(reason, "bet refund"),
+	})
+	if err != nil {
+		return Bet{}, err
+	}
+
+	bet.Status = statusRefunded
+	bet.SettledAt = s.now().UTC().Format(time.RFC3339)
+	bet.SettlementOutcome = "refunded"
+	bet.SettlementReference = strings.TrimSpace(reason)
+	bet.SettlementLedgerEntryID = entry.EntryID
+	bet.WalletBalanceCents = entry.BalanceCents
+	return bet, nil
+}
+
+// ── Transaction-aware DB helpers ──────────────────────────────────
+
+func (s *Service) getBetByIDWithTx(ctx context.Context, tx *sql.Tx, betID string) (Bet, error) {
+	var bet Bet
+	var settledAt sql.NullString
+	var settlementLedger sql.NullString
+	var settlementOutcome sql.NullString
+	var settlementReference sql.NullString
+	var legsJSON sql.NullString
+
+	err := tx.QueryRowContext(ctx, `
+SELECT
+  bet_id, user_id, market_id, selection_id, stake_cents,
+  freebet_id, freebet_applied_cents, odds_boost_id, odds,
+  potential_payout_cents, status, wallet_ledger_entry_id,
+  wallet_balance_cents, idempotency_key,
+  CAST(placed_at AS TEXT), CAST(settled_at AS TEXT),
+  settlement_ledger_entry_id, settlement_outcome,
+  settlement_reference, legs_json
+FROM bets
+WHERE bet_id = $1
+FOR UPDATE`, betID).Scan(
+		&bet.BetID, &bet.UserID, &bet.MarketID, &bet.SelectionID,
+		&bet.StakeCents, &bet.FreebetID, &bet.FreebetAppliedCents,
+		&bet.OddsBoostID, &bet.Odds, &bet.PotentialPayoutCents,
+		&bet.Status, &bet.WalletLedgerEntryID, &bet.WalletBalanceCents,
+		&bet.IdempotencyKey, &bet.PlacedAt, &settledAt,
+		&settlementLedger, &settlementOutcome, &settlementReference, &legsJSON,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Bet{}, domain.ErrNotFound
+		}
+		return Bet{}, err
+	}
+	if settledAt.Valid {
+		bet.SettledAt = settledAt.String
+	}
+	if settlementLedger.Valid {
+		bet.SettlementLedgerEntryID = settlementLedger.String
+	}
+	if settlementOutcome.Valid {
+		bet.SettlementOutcome = settlementOutcome.String
+	}
+	if settlementReference.Valid {
+		bet.SettlementReference = settlementReference.String
+	}
+	if legsJSON.Valid && legsJSON.String != "" {
+		_ = json.Unmarshal([]byte(legsJSON.String), &bet.Legs)
+	}
+	return bet, nil
+}
+
+func (s *Service) updateBetLifecycleWithTx(ctx context.Context, tx *sql.Tx, bet Bet) error {
+	_, err := tx.ExecContext(ctx, `
+UPDATE bets
+SET
+  status = $2,
+  wallet_balance_cents = $3,
+  settled_at = $4,
+  settlement_ledger_entry_id = $5,
+  settlement_outcome = $6,
+  settlement_reference = $7
+WHERE bet_id = $1`,
+		bet.BetID, bet.Status, bet.WalletBalanceCents,
+		nullIfEmpty(bet.SettledAt), nullIfEmpty(bet.SettlementLedgerEntryID),
+		nullIfEmpty(bet.SettlementOutcome), nullIfEmpty(bet.SettlementReference),
+	)
+	return err
+}
+
+func (s *Service) insertEventWithTx(ctx context.Context, tx *sql.Tx, event BetEvent) error {
+	_, err := tx.ExecContext(ctx, `
+INSERT INTO bet_events (
+  event_id, bet_id, user_id, action, actor_id, status, reason, details, occurred_at
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		event.ID, event.BetID, event.UserID, event.Action,
+		event.ActorID, event.Status, nullIfEmpty(event.Reason),
+		nullIfEmpty(event.Details), event.OccurredAt,
+	)
+	return err
 }
 
 func normalizePlacementEnvelope(request PlaceBetRequest) (PlaceBetRequest, error) {
@@ -1989,6 +2535,69 @@ func (s *Service) refundPlacementDebitBestEffort(request PlaceBetRequest, reason
 	})
 	if err != nil {
 		log.Printf("warning: failed to rollback placement debit user=%s idempotency=%s: %v", request.UserID, request.IdempotencyKey, err)
+	}
+}
+
+// applyLTDDelay implements Liability Time Delay using a context-aware timer.
+// Unlike time.Sleep, this approach: (a) does not block the goroutine's OS thread,
+// (b) can be cancelled if the request context expires, and (c) allows the
+// Go scheduler to efficiently manage waiting goroutines via the runtime timer heap.
+func applyLTDDelay(ctx context.Context, delayMsec int64) error {
+	if delayMsec <= 0 {
+		return nil
+	}
+	timer := time.NewTimer(time.Duration(delayMsec) * time.Millisecond)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+// checkComplianceForPlacement verifies that the player is not restricted
+// and that cumulative stake limits are not exceeded. This is called before
+// the wallet debit to prevent money movement for restricted players.
+func (s *Service) checkComplianceForPlacement(request PlaceBetRequest) error {
+	if s.compliance == nil {
+		return nil // compliance service not configured, skip checks
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	allowed, reasonCode, err := s.compliance.CheckBetAllowed(ctx, request.UserID, request.StakeCents)
+	if err != nil {
+		log.Printf("warning: compliance check failed for user=%s: %v (allowing bet)", request.UserID, err)
+		return nil // fail-open: if compliance service is down, don't block bets
+	}
+	if !allowed {
+		switch {
+		case strings.Contains(reasonCode, "self_excluded"):
+			return ErrPlayerRestricted
+		case strings.Contains(reasonCode, "cool_off"):
+			return ErrPlayerRestricted
+		case strings.Contains(reasonCode, "blocked"):
+			return ErrPlayerRestricted
+		case strings.Contains(reasonCode, "limit_exceeded"):
+			return ErrBetLimitExceeded
+		default:
+			return ErrPlayerRestricted
+		}
+	}
+	return nil
+}
+
+// recordComplianceBetPlaced records a successful bet placement for limit tracking.
+func (s *Service) recordComplianceBetPlaced(userID string, stakeCents int64) {
+	if s.compliance == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	if err := s.compliance.RecordBet(ctx, userID, stakeCents); err != nil {
+		log.Printf("warning: failed to record bet for compliance tracking user=%s: %v", userID, err)
 	}
 }
 

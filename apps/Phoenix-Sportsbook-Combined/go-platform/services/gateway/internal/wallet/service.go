@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -21,7 +22,32 @@ var (
 	ErrInsufficientFunds      = errors.New("insufficient funds")
 	ErrIdempotencyConflict    = errors.New("idempotency key replay payload conflict")
 	ErrCorrectionTaskNotFound = errors.New("wallet correction task not found")
+	ErrReservationNotFound    = errors.New("reservation not found")
+	ErrReservationNotHeld     = errors.New("reservation is not in held status")
+	ErrReservationExpired     = errors.New("reservation has expired")
 )
+
+// Reservation represents a hold on funds that can be captured or released.
+type Reservation struct {
+	ID            string `json:"id"`
+	UserID        string `json:"userId"`
+	AmountCents   int64  `json:"amountCents"`
+	ReferenceType string `json:"referenceType"` // "bet", "withdrawal"
+	ReferenceID   string `json:"referenceId"`
+	Status        string `json:"status"` // "held", "captured", "released", "expired"
+	CreatedAt     string `json:"createdAt"`
+	ExpiresAt     string `json:"expiresAt"`
+	ResolvedAt    string `json:"resolvedAt,omitempty"`
+}
+
+// HoldRequest is the input for creating a fund reservation.
+type HoldRequest struct {
+	UserID        string
+	AmountCents   int64
+	ReferenceType string
+	ReferenceID   string
+	ExpiresIn     time.Duration // default 5 minutes if zero
+}
 
 const walletDBTimeout = 5 * time.Second
 
@@ -81,6 +107,20 @@ type persistedWalletState struct {
 	CorrectionSeq   int64                     `json:"correctionSeq"`
 }
 
+const idempotencyTTL = 24 * time.Hour
+
+// WalletMetrics tracks operational counters for monitoring.
+type WalletMetrics struct {
+	CreditCount     int64 `json:"creditCount"`
+	DebitCount      int64 `json:"debitCount"`
+	CreditTotalCents int64 `json:"creditTotalCents"`
+	DebitTotalCents  int64 `json:"debitTotalCents"`
+	ErrorCount      int64 `json:"errorCount"`
+	HoldCount       int64 `json:"holdCount"`
+	CaptureCount    int64 `json:"captureCount"`
+	ReleaseCount    int64 `json:"releaseCount"`
+}
+
 type Service struct {
 	mu sync.RWMutex
 
@@ -92,6 +132,7 @@ type Service struct {
 	correctionTasks map[string]CorrectionTask
 	now             func() time.Time
 	statePath       string
+	metrics         WalletMetrics
 
 	db *sql.DB
 }
@@ -101,6 +142,8 @@ func NewService() *Service {
 }
 
 func NewServiceFromEnv() *Service {
+	isProduction := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT"))) == "production"
+
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("WALLET_STORE_MODE")))
 	if mode == "db" || mode == "sql" || mode == "postgres" {
 		driver := strings.TrimSpace(os.Getenv("WALLET_DB_DRIVER"))
@@ -109,16 +152,24 @@ func NewServiceFromEnv() *Service {
 		}
 		dsn := strings.TrimSpace(os.Getenv("WALLET_DB_DSN"))
 		if dsn == "" {
+			if isProduction {
+				log.Fatalf("FATAL: WALLET_STORE_MODE=%s but WALLET_DB_DSN is empty; DB mode required in production", mode)
+			}
 			log.Printf("warning: WALLET_STORE_MODE=%s requested, but WALLET_DB_DSN is empty; falling back to local wallet store", mode)
 		} else {
 			svc, err := NewServiceWithDB(driver, dsn)
 			if err != nil {
+				if isProduction {
+					log.Fatalf("FATAL: failed to initialize wallet db store in production: %v", err)
+				}
 				log.Printf("warning: failed to initialize wallet db store driver=%s: %v; falling back to local wallet store", driver, err)
 			} else {
 				log.Printf("wallet service initialized in db mode using driver=%s", driver)
 				return svc
 			}
 		}
+	} else if isProduction {
+		log.Fatalf("FATAL: WALLET_STORE_MODE must be 'db' in production (currently %q); file-backed mode is not safe for real money", mode)
 	}
 
 	return NewServiceWithPath(os.Getenv("WALLET_LEDGER_FILE"))
@@ -164,7 +215,32 @@ func NewServiceWithPath(statePath string) *Service {
 	if statePath != "" {
 		_ = svc.loadFromDisk()
 	}
+	// Start background eviction for unbounded idempotency maps
+	go svc.evictStaleIdempotencyKeys()
 	return svc
+}
+
+// evictStaleIdempotencyKeys removes idempotency entries older than idempotencyTTL
+// to prevent unbounded memory growth in memory mode.
+func (s *Service) evictStaleIdempotencyKeys() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+	for range ticker.C {
+		s.mu.Lock()
+		cutoff := s.now().Add(-idempotencyTTL)
+		evicted := 0
+		for key, entry := range s.idempotencyMap {
+			entryTime, ok := parseEntryTime(entry.TransactionTime)
+			if ok && entryTime.Before(cutoff) {
+				delete(s.idempotencyMap, key)
+				evicted++
+			}
+		}
+		s.mu.Unlock()
+		if evicted > 0 {
+			slog.Info("wallet idempotency eviction", "evicted", evicted, "ttl", idempotencyTTL.String())
+		}
+	}
 }
 
 func (s *Service) Credit(request MutationRequest) (LedgerEntry, error) {
@@ -199,6 +275,394 @@ func (s *Service) Balance(userID string) int64 {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.balances[userID]
+}
+
+// BalanceBreakdown returns the real money and bonus fund balances separately.
+// This is required for regulatory compliance (bonus funds have different rules).
+type BalanceBreakdown struct {
+	RealMoneyCents int64 `json:"realMoneyCents"`
+	BonusFundCents int64 `json:"bonusFundCents"`
+	TotalCents     int64 `json:"totalCents"`
+}
+
+func (s *Service) BalanceWithBreakdown(userID string) BalanceBreakdown {
+	if s.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		defer cancel()
+		var real, bonus int64
+		err := s.db.QueryRowContext(ctx,
+			"SELECT balance_cents, bonus_balance_cents FROM wallet_balances WHERE user_id = $1",
+			userID).Scan(&real, &bonus)
+		if err != nil {
+			return BalanceBreakdown{}
+		}
+		return BalanceBreakdown{
+			RealMoneyCents: real,
+			BonusFundCents: bonus,
+			TotalCents:     real + bonus,
+		}
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	balance := s.balances[userID]
+	return BalanceBreakdown{RealMoneyCents: balance, TotalCents: balance}
+}
+
+// CreditBonus adds bonus funds to a user's bonus balance.
+func (s *Service) CreditBonus(request MutationRequest) (LedgerEntry, error) {
+	if s.db == nil {
+		// In memory mode, bonus funds go to regular balance
+		return s.applyMutationMemory("credit", request)
+	}
+	return s.applyBonusMutationDB("credit", request)
+}
+
+func (s *Service) applyBonusMutationDB(kind string, request MutationRequest) (LedgerEntry, error) {
+	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
+		return LedgerEntry{}, ErrInvalidMutationRequest
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Idempotency check
+	existing, found, err := findExistingMutation(ctx, tx, kind+":bonus", request.UserID, request.IdempotencyKey)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+	if found {
+		if existing.AmountCents != request.AmountCents {
+			return LedgerEntry{}, ErrIdempotencyConflict
+		}
+		return existing, nil
+	}
+
+	if _, err := tx.ExecContext(ctx, `
+INSERT INTO wallet_balances (user_id, balance_cents, bonus_balance_cents, updated_at)
+VALUES ($1, 0, 0, NOW())
+ON CONFLICT (user_id) DO NOTHING`, request.UserID); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	var bonusBalance int64
+	if err := tx.QueryRowContext(ctx, `
+SELECT bonus_balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
+		request.UserID).Scan(&bonusBalance); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	bonusBalance += request.AmountCents
+
+	if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_balances SET bonus_balance_cents = $2, updated_at = NOW() WHERE user_id = $1`,
+		request.UserID, bonusBalance); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	var id int64
+	var transactionTime string
+	err = tx.QueryRowContext(ctx, `
+INSERT INTO wallet_ledger (user_id, entry_type, fund_type, amount_cents, balance_cents, idempotency_key, reason, transaction_time)
+VALUES ($1, $2, 'bonus', $3, $4, $5, $6, NOW())
+RETURNING id, CAST(transaction_time AS TEXT)`,
+		request.UserID, kind, request.AmountCents, bonusBalance,
+		request.IdempotencyKey, normalizeReason(request.Reason)).Scan(&id, &transactionTime)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	return LedgerEntry{
+		EntryID:         fmt.Sprintf("le:%d", id),
+		UserID:          request.UserID,
+		Type:            kind,
+		AmountCents:     request.AmountCents,
+		BalanceCents:    bonusBalance,
+		IdempotencyKey:  request.IdempotencyKey,
+		Reason:          request.Reason,
+		TransactionTime: transactionTime,
+	}, nil
+}
+
+// MetricsSnapshot returns a point-in-time copy of wallet operational counters.
+func (s *Service) MetricsSnapshot() WalletMetrics {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.metrics
+}
+
+func (s *Service) recordMetric(kind string, amountCents int64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	switch kind {
+	case "credit":
+		s.metrics.CreditCount++
+		s.metrics.CreditTotalCents += amountCents
+	case "debit":
+		s.metrics.DebitCount++
+		s.metrics.DebitTotalCents += amountCents
+	case "error":
+		s.metrics.ErrorCount++
+	case "hold":
+		s.metrics.HoldCount++
+	case "capture":
+		s.metrics.CaptureCount++
+	case "release":
+		s.metrics.ReleaseCount++
+	}
+}
+
+// AvailableBalance returns the balance minus all active (held) reservations.
+// This is the amount actually available for new bets/withdrawals.
+func (s *Service) AvailableBalance(userID string) int64 {
+	balance := s.Balance(userID)
+	if s.db == nil {
+		return balance // no reservations in memory mode
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	defer cancel()
+
+	var heldTotal int64
+	err := s.db.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0)
+FROM wallet_reservations
+WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
+		userID).Scan(&heldTotal)
+	if err != nil {
+		return balance
+	}
+	available := balance - heldTotal
+	if available < 0 {
+		return 0
+	}
+	return available
+}
+
+// Hold creates a fund reservation that reduces available balance without
+// actually debiting. The hold can later be Captured (converting to a real
+// debit) or Released (restoring availability).
+func (s *Service) Hold(request HoldRequest) (Reservation, error) {
+	if request.UserID == "" || request.AmountCents <= 0 || request.ReferenceID == "" {
+		return Reservation{}, ErrInvalidMutationRequest
+	}
+	if request.ReferenceType == "" {
+		request.ReferenceType = "bet"
+	}
+	if request.ExpiresIn <= 0 {
+		request.ExpiresIn = 5 * time.Minute
+	}
+
+	if s.db == nil {
+		// Memory mode: fall back to direct debit (no reservation support)
+		return Reservation{}, fmt.Errorf("reservations require DB mode")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return Reservation{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Check idempotency — if a reservation already exists for this reference, return it
+	var existing Reservation
+	var existingExpiresAt, existingCreatedAt time.Time
+	err = tx.QueryRowContext(ctx, `
+SELECT id, user_id, amount_cents, reference_type, reference_id, status,
+       created_at, expires_at
+FROM wallet_reservations
+WHERE reference_type = $1 AND reference_id = $2
+LIMIT 1`, request.ReferenceType, request.ReferenceID).Scan(
+		&existing.ID, &existing.UserID, &existing.AmountCents,
+		&existing.ReferenceType, &existing.ReferenceID, &existing.Status,
+		&existingCreatedAt, &existingExpiresAt)
+	if err == nil {
+		existing.CreatedAt = existingCreatedAt.Format(time.RFC3339)
+		existing.ExpiresAt = existingExpiresAt.Format(time.RFC3339)
+		return existing, nil // idempotent: return existing reservation
+	}
+	if err != sql.ErrNoRows {
+		return Reservation{}, err
+	}
+
+	// Check available balance (balance minus active holds)
+	var balance int64
+	if err := tx.QueryRowContext(ctx, `
+SELECT balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
+		request.UserID).Scan(&balance); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Reservation{}, ErrInsufficientFunds
+		}
+		return Reservation{}, err
+	}
+
+	var heldTotal int64
+	_ = tx.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0)
+FROM wallet_reservations
+WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
+		request.UserID).Scan(&heldTotal)
+
+	available := balance - heldTotal
+	if available < request.AmountCents {
+		return Reservation{}, ErrInsufficientFunds
+	}
+
+	expiresAt := time.Now().UTC().Add(request.ExpiresIn)
+	var reservationID int64
+	err = tx.QueryRowContext(ctx, `
+INSERT INTO wallet_reservations (user_id, amount_cents, reference_type, reference_id, status, expires_at)
+VALUES ($1, $2, $3, $4, 'held', $5)
+RETURNING id`,
+		request.UserID, request.AmountCents, request.ReferenceType,
+		request.ReferenceID, expiresAt).Scan(&reservationID)
+	if err != nil {
+		return Reservation{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return Reservation{}, err
+	}
+
+	return Reservation{
+		ID:            fmt.Sprintf("rsv:%d", reservationID),
+		UserID:        request.UserID,
+		AmountCents:   request.AmountCents,
+		ReferenceType: request.ReferenceType,
+		ReferenceID:   request.ReferenceID,
+		Status:        "held",
+		CreatedAt:     time.Now().UTC().Format(time.RFC3339),
+		ExpiresAt:     expiresAt.Format(time.RFC3339),
+	}, nil
+}
+
+// Capture converts a held reservation into an actual debit + ledger entry.
+// This is called when the operation the hold was created for succeeds
+// (e.g., bet is confirmed, withdrawal is approved).
+func (s *Service) Capture(referenceType, referenceID string) (LedgerEntry, error) {
+	if s.db == nil {
+		return LedgerEntry{}, fmt.Errorf("reservations require DB mode")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	// Find and lock the reservation
+	var resID int64
+	var userID string
+	var amountCents int64
+	var status string
+	var expiresAt time.Time
+	err = tx.QueryRowContext(ctx, `
+SELECT id, user_id, amount_cents, status, expires_at
+FROM wallet_reservations
+WHERE reference_type = $1 AND reference_id = $2
+FOR UPDATE`,
+		referenceType, referenceID).Scan(&resID, &userID, &amountCents, &status, &expiresAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return LedgerEntry{}, ErrReservationNotFound
+		}
+		return LedgerEntry{}, err
+	}
+	if status != "held" {
+		return LedgerEntry{}, ErrReservationNotHeld
+	}
+	if time.Now().UTC().After(expiresAt) {
+		// Auto-expire
+		_, _ = tx.ExecContext(ctx, `
+UPDATE wallet_reservations SET status = 'expired', resolved_at = NOW() WHERE id = $1`, resID)
+		_ = tx.Commit()
+		return LedgerEntry{}, ErrReservationExpired
+	}
+
+	// Apply the actual debit through the shared mutation logic
+	entry, err := applyMutationTx(ctx, tx, "debit", MutationRequest{
+		UserID:         userID,
+		AmountCents:    amountCents,
+		IdempotencyKey: fmt.Sprintf("capture:%s:%s", referenceType, referenceID),
+		Reason:         fmt.Sprintf("reservation captured %s:%s", referenceType, referenceID),
+	})
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+
+	// Mark reservation as captured
+	_, err = tx.ExecContext(ctx, `
+UPDATE wallet_reservations SET status = 'captured', resolved_at = NOW() WHERE id = $1`, resID)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return LedgerEntry{}, err
+	}
+	return entry, nil
+}
+
+// Release cancels a held reservation, making the funds available again.
+// This is called when the operation is cancelled (e.g., bet placement fails,
+// withdrawal is declined).
+func (s *Service) Release(referenceType, referenceID string) error {
+	if s.db == nil {
+		return fmt.Errorf("reservations require DB mode")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	defer cancel()
+
+	result, err := s.db.ExecContext(ctx, `
+UPDATE wallet_reservations
+SET status = 'released', resolved_at = NOW()
+WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
+		referenceType, referenceID)
+	if err != nil {
+		return err
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return ErrReservationNotFound
+	}
+	return nil
+}
+
+// ExpireStaleReservations marks overdue held reservations as expired.
+// Should be called periodically (e.g., every minute) as a background job.
+func (s *Service) ExpireStaleReservations() (int64, error) {
+	if s.db == nil {
+		return 0, nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+	defer cancel()
+
+	result, err := s.db.ExecContext(ctx, `
+UPDATE wallet_reservations
+SET status = 'expired', resolved_at = NOW()
+WHERE status = 'held' AND expires_at < NOW()`)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 func (s *Service) Ledger(userID string, limit int) []LedgerEntry {
@@ -457,6 +921,45 @@ func (s *Service) applyMutationDB(kind string, request MutationRequest) (LedgerE
 		_ = tx.Rollback()
 	}()
 
+	entry, err := applyMutationTx(ctx, tx, kind, request)
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return LedgerEntry{}, err
+	}
+
+	return entry, nil
+}
+
+// CreditWithTx applies a credit within an externally-managed transaction.
+// The caller is responsible for calling tx.Commit() or tx.Rollback().
+// This enables atomic operations that span bet state + wallet mutations.
+func (s *Service) CreditWithTx(ctx context.Context, tx *sql.Tx, request MutationRequest) (LedgerEntry, error) {
+	return applyMutationTx(ctx, tx, "credit", request)
+}
+
+// DebitWithTx applies a debit within an externally-managed transaction.
+// The caller is responsible for calling tx.Commit() or tx.Rollback().
+func (s *Service) DebitWithTx(ctx context.Context, tx *sql.Tx, request MutationRequest) (LedgerEntry, error) {
+	return applyMutationTx(ctx, tx, "debit", request)
+}
+
+// DB exposes the underlying database connection for callers that need to
+// create transactions spanning multiple services (e.g., atomic settlement).
+// Returns nil if the service is running in memory mode.
+func (s *Service) DB() *sql.DB {
+	return s.db
+}
+
+// applyMutationTx is the shared core logic for wallet mutations.
+// It operates within the provided transaction without committing or rolling back.
+func applyMutationTx(ctx context.Context, tx *sql.Tx, kind string, request MutationRequest) (LedgerEntry, error) {
+	if request.UserID == "" || request.AmountCents <= 0 || request.IdempotencyKey == "" {
+		return LedgerEntry{}, ErrInvalidMutationRequest
+	}
+
 	existing, found, err := findExistingMutation(ctx, tx, kind, request.UserID, request.IdempotencyKey)
 	if err != nil {
 		return LedgerEntry{}, err
@@ -517,10 +1020,6 @@ RETURNING id, CAST(transaction_time AS TEXT)`,
 		normalizeReason(request.Reason),
 	).Scan(&id, &transactionTime)
 	if err != nil {
-		return LedgerEntry{}, err
-	}
-
-	if err := tx.Commit(); err != nil {
 		return LedgerEntry{}, err
 	}
 
@@ -859,12 +1358,14 @@ func (s *Service) ensureSchema() error {
 		`CREATE TABLE IF NOT EXISTS wallet_balances (
   user_id TEXT PRIMARY KEY,
   balance_cents BIGINT NOT NULL DEFAULT 0,
+  bonus_balance_cents BIGINT NOT NULL DEFAULT 0,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )`,
 		`CREATE TABLE IF NOT EXISTS wallet_ledger (
   id BIGSERIAL PRIMARY KEY,
   user_id TEXT NOT NULL,
   entry_type TEXT NOT NULL,
+  fund_type TEXT NOT NULL DEFAULT 'real',
   amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
   balance_cents BIGINT NOT NULL,
   idempotency_key TEXT NOT NULL,
@@ -872,6 +1373,19 @@ func (s *Service) ensureSchema() error {
   transaction_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (entry_type, user_id, idempotency_key)
 )`,
+		`CREATE TABLE IF NOT EXISTS wallet_reservations (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  amount_cents BIGINT NOT NULL CHECK (amount_cents > 0),
+  reference_type TEXT NOT NULL,
+  reference_id TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'held' CHECK (status IN ('held','captured','released','expired')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL,
+  resolved_at TIMESTAMPTZ,
+  UNIQUE (reference_type, reference_id)
+)`,
+		`CREATE INDEX IF NOT EXISTS idx_reservations_user_status ON wallet_reservations (user_id, status)`,
 	}
 
 	for _, statement := range statements {

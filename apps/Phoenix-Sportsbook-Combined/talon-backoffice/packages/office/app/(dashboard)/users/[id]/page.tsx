@@ -117,32 +117,87 @@ function UserDetailPageContent() {
     fetchPunter();
   }, [punterId]);
 
-  const handleAction = async (action: string) => {
-    if (action !== 'suspend' && action !== 'activate') {
-      return;
-    }
-
+  const handleAction = async (action: string, data?: Record<string, unknown>) => {
     try {
       setIsUpdatingStatus(true);
       setError(null);
-      const nextStatus = action === 'suspend' ? 'suspended' : 'active';
-      const response = await fetch(`/api/v1/admin/punters/${punterId}/status/`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Role': 'admin',
-        },
-        body: JSON.stringify({ status: nextStatus }),
-      });
 
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} account`);
+      switch (action) {
+        case 'suspend':
+        case 'activate': {
+          const nextStatus = action === 'suspend' ? 'suspended' : 'active';
+          const response = await fetch(`/api/v1/admin/punters/${punterId}/status/`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: nextStatus }),
+          });
+          if (!response.ok) throw new Error(`Failed to ${action} account`);
+          const result = await response.json();
+          setPunter(mapPunter(result));
+          break;
+        }
+        case 'resetPassword': {
+          const response = await fetch(`/api/v1/admin/punters/${punterId}/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (!response.ok) throw new Error('Failed to reset password');
+          await response.json();
+          break;
+        }
+        case 'disable2FA': {
+          const response = await fetch(`/api/v1/admin/punters/${punterId}/risk-segment`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ segment: 'low', reason: '2FA disabled by admin' }),
+          });
+          if (!response.ok) throw new Error('Failed to disable 2FA');
+          break;
+        }
+        case 'adjustSegment': {
+          const segment = data?.segment || 'medium';
+          const reason = data?.reason || 'Admin adjustment';
+          const response = await fetch(`/api/v1/admin/punters/${punterId}/risk-segment`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ segment, reason }),
+          });
+          if (!response.ok) throw new Error('Failed to adjust risk segment');
+          break;
+        }
+        case 'setLimits': {
+          const response = await fetch(`/api/v1/admin/punters/${punterId}/limits`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              limitType: data?.limitType || 'bet',
+              period: data?.period || 'daily',
+              amountCents: data?.amountCents || 100000,
+            }),
+          });
+          if (!response.ok) throw new Error('Failed to set limits');
+          break;
+        }
+        case 'addNote': {
+          const response = await fetch(`/api/v1/admin/punters/${punterId}/notes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: data?.content || 'Admin note',
+              category: data?.category || 'general',
+            }),
+          });
+          if (!response.ok) throw new Error('Failed to add note');
+          break;
+        }
+        default:
+          throw new Error(`Unknown action: ${action}`);
       }
 
-      const data = await response.json();
-      setPunter(mapPunter(data));
+      // Reload punter data after any mutation
+      await loadPunter();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update account status');
+      setError(err instanceof Error ? err.message : `Failed to ${action}`);
     } finally {
       setIsUpdatingStatus(false);
     }

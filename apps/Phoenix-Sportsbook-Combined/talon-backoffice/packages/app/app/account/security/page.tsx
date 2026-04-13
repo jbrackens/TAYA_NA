@@ -115,12 +115,21 @@ export default function SecurityPage() {
   const handleToggle2FA = async () => {
     setTwoFaLoading(true);
     try {
-      // API call would go here - for now just toggle UI
-      await new Promise((r) => setTimeout(r, 500));
+      const response = await fetch('/api/v1/auth/2fa/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ enabled: !twoFaEnabled }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.error?.message || 'Failed to update 2FA setting');
+      }
       setTwoFaEnabled(!twoFaEnabled);
       toast.success("2FA " + (!twoFaEnabled ? "enabled" : "disabled"));
-    } catch (err) {
-      toast.error("Failed to update 2FA");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update 2FA';
+      toast.error(message);
     } finally {
       setTwoFaLoading(false);
     }

@@ -169,7 +169,7 @@ export function MarketManagement({
             borderRadius: '4px',
           }}
         >
-          Market suspend/resume controls are not wired to a backend mutation route in this local environment yet.
+          Market controls are view-only. Toggle requires the onMarketToggle prop.
         </div>
       )}
     </Container>

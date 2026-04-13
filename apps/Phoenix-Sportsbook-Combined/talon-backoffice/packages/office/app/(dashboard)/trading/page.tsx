@@ -179,6 +179,26 @@ function TradingPageContent() {
         {selectedFixture && (
           <MarketManagement
             markets={markets}
+            onMarketToggle={async (marketId) => {
+              const market = markets.find((m) => m.id === marketId);
+              if (!market) return;
+              const nextStatus = market.status === 'open' ? 'suspended' : 'open';
+              try {
+                const response = await fetch(`/api/v1/admin/trading/markets/${marketId}/status`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ status: nextStatus }),
+                });
+                if (!response.ok) {
+                  throw new Error('Failed to update market status');
+                }
+                setMarkets((prev) =>
+                  prev.map((m) => (m.id === marketId ? { ...m, status: nextStatus as 'open' | 'suspended' | 'settled' } : m))
+                );
+              } catch {
+                setError('Failed to toggle market status');
+              }
+            }}
             onViewSelections={(marketId) => router.push(`/risk-management/markets/${marketId}`)}
           />
         )}

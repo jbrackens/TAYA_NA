@@ -328,12 +328,25 @@ export default function ProfilePage() {
       toast.error("Missing Fields", "Please fill in all password fields.");
       return;
     }
-    // API call would go here — the auth-client doesn't have changePassword yet
-    // For now, show a toast indicating the endpoint isn't available
-    toast.info(
-      "Not Available",
-      "Password change API endpoint not yet configured.",
-    );
+    try {
+      const response = await fetch('/api/v1/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data?.error?.message || 'Failed to change password');
+      }
+      toast.success("Password Changed", "Your password has been updated successfully.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to change password';
+      toast.error("Error", message);
+    }
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");

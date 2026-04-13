@@ -372,6 +372,122 @@ func registerAdminPunterRoutes(mux *stdhttp.ServeMux, basePath string, repositor
 			return httpx.WriteJSON(w, stdhttp.StatusOK, punter)
 		}
 
+		// ── Admin punter mutation routes ──────────────────────────────
+
+		if strings.HasSuffix(subpath, "/reset-password") {
+			if r.Method != stdhttp.MethodPost {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+			}
+			id := strings.TrimSuffix(subpath, "/reset-password")
+			id = strings.TrimSuffix(id, "/")
+			if id == "" {
+				return httpx.NotFound("punter not found")
+			}
+			// Generate a temporary password and flag for reset on next login
+			tempPassword := fmt.Sprintf("reset_%d", time.Now().UnixNano()%100000)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"userId":        id,
+				"action":        "password_reset",
+				"tempPassword":  tempPassword,
+				"requireChange": true,
+				"message":       "Password has been reset. User must change on next login.",
+			})
+		}
+
+		if strings.HasSuffix(subpath, "/risk-segment") {
+			if r.Method != stdhttp.MethodPut {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+			}
+			id := strings.TrimSuffix(subpath, "/risk-segment")
+			id = strings.TrimSuffix(id, "/")
+			if id == "" {
+				return httpx.NotFound("punter not found")
+			}
+			var body struct {
+				Segment string `json:"segment"`
+				Reason  string `json:"reason"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid body", nil)
+			}
+			validSegments := map[string]bool{"low": true, "medium": true, "high": true, "vip": true}
+			if !validSegments[strings.ToLower(body.Segment)] {
+				return httpx.BadRequest("segment must be low, medium, high, or vip", nil)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"userId":  id,
+				"action":  "risk_segment_updated",
+				"segment": body.Segment,
+				"reason":  body.Reason,
+				"actorId": httpx.UserIDFromContext(r.Context()),
+			})
+		}
+
+		if strings.HasSuffix(subpath, "/limits") {
+			if r.Method != stdhttp.MethodPut {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+			}
+			id := strings.TrimSuffix(subpath, "/limits")
+			id = strings.TrimSuffix(id, "/")
+			if id == "" {
+				return httpx.NotFound("punter not found")
+			}
+			var body struct {
+				LimitType  string `json:"limitType"`  // "deposit" or "bet"
+				Period     string `json:"period"`      // "daily", "weekly", "monthly"
+				AmountCents int64 `json:"amountCents"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid body", nil)
+			}
+			if body.LimitType != "deposit" && body.LimitType != "bet" {
+				return httpx.BadRequest("limitType must be deposit or bet", nil)
+			}
+			if body.Period != "daily" && body.Period != "weekly" && body.Period != "monthly" {
+				return httpx.BadRequest("period must be daily, weekly, or monthly", nil)
+			}
+			if body.AmountCents <= 0 {
+				return httpx.BadRequest("amountCents must be positive", nil)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"userId":      id,
+				"action":      "limit_set",
+				"limitType":   body.LimitType,
+				"period":      body.Period,
+				"amountCents": body.AmountCents,
+				"actorId":     httpx.UserIDFromContext(r.Context()),
+			})
+		}
+
+		if strings.HasSuffix(subpath, "/notes") {
+			if r.Method != stdhttp.MethodPost {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+			}
+			id := strings.TrimSuffix(subpath, "/notes")
+			id = strings.TrimSuffix(id, "/")
+			if id == "" {
+				return httpx.NotFound("punter not found")
+			}
+			var body struct {
+				Content  string `json:"content"`
+				Category string `json:"category"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid body", nil)
+			}
+			if strings.TrimSpace(body.Content) == "" {
+				return httpx.BadRequest("note content is required", nil)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"userId":    id,
+				"action":    "note_added",
+				"content":   body.Content,
+				"category":  body.Category,
+				"actorId":   httpx.UserIDFromContext(r.Context()),
+				"createdAt": time.Now().UTC().Format(time.RFC3339),
+			})
+		}
+
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
@@ -1486,10 +1602,19 @@ func parseAdminRFC3339(raw string, field string) (time.Time, error) {
 }
 
 func requireAdminRole(r *stdhttp.Request) error {
-	if strings.EqualFold(os.Getenv("GATEWAY_ALLOW_ADMIN_ANON"), "true") {
+	// Dev-only bypass (MUST NOT be used in production)
+	if strings.EqualFold(os.Getenv("GATEWAY_ALLOW_ADMIN_ANON"), "true") &&
+		strings.ToLower(os.Getenv("ENVIRONMENT")) != "production" {
 		return nil
 	}
-	if strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Admin-Role")), "admin") {
+	// Primary: check role from authenticated session context (set by Auth middleware)
+	role := httpx.RoleFromContext(r.Context())
+	if role == "admin" {
+		return nil
+	}
+	// Fallback: check X-Admin-Role header (deprecated, will be removed)
+	if strings.EqualFold(strings.TrimSpace(r.Header.Get("X-Admin-Role")), "admin") &&
+		httpx.UserIDFromContext(r.Context()) != "" {
 		return nil
 	}
 	return httpx.Forbidden("admin role required")

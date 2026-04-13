@@ -8,8 +8,11 @@ import (
 
 	"phoenix-revival/gateway/internal/bets"
 	"phoenix-revival/gateway/internal/provider"
+	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+var walletServiceForMetrics *wallet.Service
 
 func registerFeedMetricsRoute(
 	mux *stdhttp.ServeMux,
@@ -27,10 +30,53 @@ func registerFeedMetricsRoute(
 		w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
 		payload := provider.RenderPrometheusFeedMetrics(service, providerRuntime, thresholds) +
 			renderBetOfferPrometheusMetrics(service, betService) +
-			renderCashoutPrometheusMetrics(service, betService)
+			renderCashoutPrometheusMetrics(service, betService) +
+			renderWalletPrometheusMetrics(service)
 		_, _ = w.Write([]byte(payload))
 		return nil
 	}))
+}
+
+func renderWalletPrometheusMetrics(service string) string {
+	if walletServiceForMetrics == nil {
+		return ""
+	}
+	m := walletServiceForMetrics.MetricsSnapshot()
+	b := strings.Builder{}
+
+	b.WriteString("# HELP phoenix_wallet_credit_total Total wallet credit operations.\n")
+	b.WriteString("# TYPE phoenix_wallet_credit_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_credit_total{service=\"%s\"} %d\n", service, m.CreditCount))
+
+	b.WriteString("# HELP phoenix_wallet_debit_total Total wallet debit operations.\n")
+	b.WriteString("# TYPE phoenix_wallet_debit_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_debit_total{service=\"%s\"} %d\n", service, m.DebitCount))
+
+	b.WriteString("# HELP phoenix_wallet_credit_cents_total Total cents credited to wallets.\n")
+	b.WriteString("# TYPE phoenix_wallet_credit_cents_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_credit_cents_total{service=\"%s\"} %d\n", service, m.CreditTotalCents))
+
+	b.WriteString("# HELP phoenix_wallet_debit_cents_total Total cents debited from wallets.\n")
+	b.WriteString("# TYPE phoenix_wallet_debit_cents_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_debit_cents_total{service=\"%s\"} %d\n", service, m.DebitTotalCents))
+
+	b.WriteString("# HELP phoenix_wallet_error_total Total wallet operation errors.\n")
+	b.WriteString("# TYPE phoenix_wallet_error_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_error_total{service=\"%s\"} %d\n", service, m.ErrorCount))
+
+	b.WriteString("# HELP phoenix_wallet_hold_total Total wallet reservation holds.\n")
+	b.WriteString("# TYPE phoenix_wallet_hold_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_hold_total{service=\"%s\"} %d\n", service, m.HoldCount))
+
+	b.WriteString("# HELP phoenix_wallet_capture_total Total wallet reservation captures.\n")
+	b.WriteString("# TYPE phoenix_wallet_capture_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_capture_total{service=\"%s\"} %d\n", service, m.CaptureCount))
+
+	b.WriteString("# HELP phoenix_wallet_release_total Total wallet reservation releases.\n")
+	b.WriteString("# TYPE phoenix_wallet_release_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_wallet_release_total{service=\"%s\"} %d\n", service, m.ReleaseCount))
+
+	return b.String()
 }
 
 func renderBetOfferPrometheusMetrics(service string, betService *bets.Service) string {

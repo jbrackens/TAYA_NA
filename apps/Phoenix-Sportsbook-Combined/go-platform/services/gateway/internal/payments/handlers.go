@@ -1,12 +1,19 @@
 package payments
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	stdhttp "net/http"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+// DepositComplianceChecker is an optional interface for deposit limit checks.
+// If set, deposits are validated against responsible gaming limits before processing.
+var DepositComplianceChecker compliance.ResponsibleGamblingService
 
 // RegisterPaymentRoutes registers all payment-related HTTP handlers
 func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
@@ -30,9 +37,34 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.BadRequest("paymentMethod is required", map[string]any{"field": "paymentMethod"})
 		}
 
+		// Check deposit limits before processing
+		if DepositComplianceChecker != nil {
+			ctx, cancel := context.WithTimeout(r.Context(), 3*stdhttp.DefaultClient.Timeout)
+			if cancel != nil {
+				defer cancel()
+			}
+			allowed, reason, err := DepositComplianceChecker.CheckDepositAllowed(ctx, req.UserID, req.Amount)
+			if err != nil {
+				log.Printf("warning: deposit compliance check failed for user=%s: %v (allowing deposit)", req.UserID, err)
+			} else if !allowed {
+				return httpx.Forbidden("deposit not allowed: " + reason)
+			}
+		}
+
 		result, err := service.InitiateDeposit(r.Context(), req.UserID, req.Amount, req.PaymentMethod)
 		if err != nil {
 			return mapPaymentError(err)
+		}
+
+		// Record deposit for limit tracking
+		if DepositComplianceChecker != nil {
+			ctx2, cancel2 := context.WithTimeout(r.Context(), 2*stdhttp.DefaultClient.Timeout)
+			if cancel2 != nil {
+				defer cancel2()
+			}
+			if err := DepositComplianceChecker.RecordDeposit(ctx2, req.UserID, req.Amount); err != nil {
+				log.Printf("warning: failed to record deposit for compliance tracking user=%s: %v", req.UserID, err)
+			}
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
