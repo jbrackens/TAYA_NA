@@ -117,6 +117,93 @@ export default function LoginPage() {
 
         <div
           style={{
+            display: "flex",
+            alignItems: "center",
+            margin: "24px 0",
+            gap: "12px",
+          }}
+        >
+          <div style={{ flex: 1, height: "1px", backgroundColor: "#1f2a4a" }} />
+          <span
+            style={{
+              color: "#D3D3D3",
+              fontSize: "12px",
+              fontWeight: 600,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            or continue with
+          </span>
+          <div style={{ flex: 1, height: "1px", backgroundColor: "#1f2a4a" }} />
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "12px",
+            marginBottom: "24px",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = "/api/v1/auth/oauth/google/start";
+            }}
+            style={{
+              padding: "11px 12px",
+              backgroundColor: "#111933",
+              border: "1px solid #28477b",
+              color: "#d7e7ff",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "13px",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#18325b";
+              e.currentTarget.style.borderColor = "#4a7eff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#111933";
+              e.currentTarget.style.borderColor = "#28477b";
+            }}
+          >
+            Google
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = "/api/v1/auth/oauth/apple/start";
+            }}
+            style={{
+              padding: "11px 12px",
+              backgroundColor: "#111933",
+              border: "1px solid #28477b",
+              color: "#d7e7ff",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "13px",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#18325b";
+              e.currentTarget.style.borderColor = "#4a7eff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#111933";
+              e.currentTarget.style.borderColor = "#28477b";
+            }}
+          >
+            Apple
+          </button>
+        </div>
+
+        <div
+          style={{
             textAlign: "center",
             color: "#D3D3D3",
             fontSize: "14px",

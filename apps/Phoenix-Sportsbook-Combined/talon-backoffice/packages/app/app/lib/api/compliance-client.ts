@@ -214,7 +214,7 @@ export async function setSessionLimits(
   request: SetSessionLimitsRequest,
 ): Promise<SessionLimits> {
   const raw = await apiClient.post<SessionLimitsRaw>(
-    "/api/v1/compliance/rg/cool-off",
+    "/api/v1/compliance/rg/session-limit",
     request,
   );
   return normalizeSnakeCase(raw);

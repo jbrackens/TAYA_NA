@@ -342,6 +342,203 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, auth.MetricsSnapshot())
 	}))
+
+	// ─── OAuth Routes ────────────────────────────────────────────
+	frontendURL := getEnvOrDefault("AUTH_FRONTEND_URL", "http://localhost:3000")
+
+	// Google OAuth
+	googleClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
+	googleClientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+	googleRedirectURI := getEnvOrDefault("GOOGLE_OAUTH_REDIRECT_URI", "http://localhost:18081/api/v1/auth/oauth/google/callback")
+
+	mux.Handle("/api/v1/auth/oauth/google/start", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if googleClientID == "" {
+			return httpx.BadRequest("Google OAuth is not configured (set GOOGLE_OAUTH_CLIENT_ID)", nil)
+		}
+		state, err := makeCSRFToken()
+		if err != nil {
+			return httpx.Internal("failed to generate OAuth state", err)
+		}
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "oauth_state",
+			Value:    state,
+			Path:     "/",
+			HttpOnly: true,
+			SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge:   300,
+		})
+		authURL := fmt.Sprintf(
+			"https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=openid+email+profile&state=%s",
+			googleClientID, googleRedirectURI, state,
+		)
+		stdhttp.Redirect(w, r, authURL, stdhttp.StatusTemporaryRedirect)
+		return nil
+	}))
+
+	mux.Handle("/api/v1/auth/oauth/google/callback", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		code := r.URL.Query().Get("code")
+		state := r.URL.Query().Get("state")
+		if code == "" || state == "" {
+			return httpx.BadRequest("missing code or state parameter", nil)
+		}
+		// Verify state matches cookie
+		stateCookie, err := r.Cookie("oauth_state")
+		if err != nil || stateCookie.Value != state {
+			return httpx.Forbidden("OAuth state mismatch")
+		}
+		// Clear state cookie
+		stdhttp.SetCookie(w, &stdhttp.Cookie{Name: "oauth_state", Value: "", Path: "/", MaxAge: -1})
+
+		// Exchange code for Google tokens
+		tokenResp, err := exchangeGoogleCode(code, googleClientID, googleClientSecret, googleRedirectURI)
+		if err != nil {
+			log.Printf("Google OAuth token exchange failed: %v", err)
+			return httpx.Internal("Google OAuth token exchange failed", err)
+		}
+
+		// Get user info from Google
+		userInfo, err := getGoogleUserInfo(tokenResp.AccessToken)
+		if err != nil {
+			return httpx.Internal("failed to get Google user info", err)
+		}
+
+		// Find or create user by email
+		email := userInfo.Email
+		account, exists := auth.lookupUser(email)
+		if !exists {
+			// Auto-create user from Google login
+			auth.mu.Lock()
+			newID := fmt.Sprintf("u-google-%s", hex.EncodeToString([]byte(email))[:12])
+			auth.usersByUsername[email] = user{
+				ID:       newID,
+				Username: email,
+				Password: "", // No password for OAuth users
+			}
+			account = auth.usersByUsername[email]
+			auth.mu.Unlock()
+			auth.audit.Event("auth.oauth.google.user_created", map[string]any{"email": email, "userId": newID})
+		}
+
+		// Create session (same as login)
+		s, response, err := newSession(account, auth.accessTTL, auth.refreshTTL)
+		if err != nil {
+			return httpx.Internal("failed to create session", err)
+		}
+		if err := auth.store.Put(s); err != nil {
+			return httpx.Internal("failed to persist session", err)
+		}
+
+		// Set auth cookies
+		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name: "access_token", Value: response.AccessToken,
+			Path: "/", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge: int(auth.accessTTL.Seconds()),
+		})
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name: "refresh_token", Value: response.RefreshToken,
+			Path: "/api/v1/auth/refresh", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge: int(auth.refreshTTL.Seconds()),
+		})
+		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
+
+		auth.audit.Event("auth.oauth.google.login", map[string]any{"email": email, "userId": account.ID})
+
+		// Redirect back to frontend
+		stdhttp.Redirect(w, r, frontendURL+"/", stdhttp.StatusTemporaryRedirect)
+		return nil
+	}))
+
+	// Apple OAuth
+	appleClientID := os.Getenv("APPLE_OAUTH_CLIENT_ID")
+	appleRedirectURI := getEnvOrDefault("APPLE_OAUTH_REDIRECT_URI", "http://localhost:18081/api/v1/auth/oauth/apple/callback")
+
+	mux.Handle("/api/v1/auth/oauth/apple/start", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if appleClientID == "" {
+			return httpx.BadRequest("Apple OAuth is not configured (set APPLE_OAUTH_CLIENT_ID)", nil)
+		}
+		state, err := makeCSRFToken()
+		if err != nil {
+			return httpx.Internal("failed to generate OAuth state", err)
+		}
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name:     "oauth_state",
+			Value:    state,
+			Path:     "/",
+			HttpOnly: true,
+			SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge:   300,
+		})
+		authURL := fmt.Sprintf(
+			"https://appleid.apple.com/auth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=name+email&response_mode=form_post&state=%s",
+			appleClientID, appleRedirectURI, state,
+		)
+		stdhttp.Redirect(w, r, authURL, stdhttp.StatusTemporaryRedirect)
+		return nil
+	}))
+
+	mux.Handle("/api/v1/auth/oauth/apple/callback", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		// Apple sends callback as POST with form data
+		if err := r.ParseForm(); err != nil {
+			return httpx.BadRequest("invalid form data", nil)
+		}
+		code := r.FormValue("code")
+		state := r.FormValue("state")
+		if code == "" || state == "" {
+			return httpx.BadRequest("missing code or state", nil)
+		}
+		stateCookie, err := r.Cookie("oauth_state")
+		if err != nil || stateCookie.Value != state {
+			return httpx.Forbidden("OAuth state mismatch")
+		}
+		stdhttp.SetCookie(w, &stdhttp.Cookie{Name: "oauth_state", Value: "", Path: "/", MaxAge: -1})
+
+		// Apple user info comes in the initial POST as JSON in the "user" form field
+		email := r.FormValue("email")
+		if email == "" {
+			// For returning users, Apple doesn't send email again — use a placeholder
+			email = fmt.Sprintf("apple-%s@oauth.local", state[:8])
+		}
+
+		account, exists := auth.lookupUser(email)
+		if !exists {
+			auth.mu.Lock()
+			newID := fmt.Sprintf("u-apple-%s", hex.EncodeToString([]byte(email))[:12])
+			auth.usersByUsername[email] = user{
+				ID:       newID,
+				Username: email,
+				Password: "",
+			}
+			account = auth.usersByUsername[email]
+			auth.mu.Unlock()
+			auth.audit.Event("auth.oauth.apple.user_created", map[string]any{"email": email, "userId": newID})
+		}
+
+		s, response, err := newSession(account, auth.accessTTL, auth.refreshTTL)
+		if err != nil {
+			return httpx.Internal("failed to create session", err)
+		}
+		if err := auth.store.Put(s); err != nil {
+			return httpx.Internal("failed to persist session", err)
+		}
+
+		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name: "access_token", Value: response.AccessToken,
+			Path: "/", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge: int(auth.accessTTL.Seconds()),
+		})
+		stdhttp.SetCookie(w, &stdhttp.Cookie{
+			Name: "refresh_token", Value: response.RefreshToken,
+			Path: "/api/v1/auth/refresh", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
+			MaxAge: int(auth.refreshTTL.Seconds()),
+		})
+		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
+
+		auth.audit.Event("auth.oauth.apple.login", map[string]any{"email": email, "userId": account.ID})
+		stdhttp.Redirect(w, r, frontendURL+"/", stdhttp.StatusTemporaryRedirect)
+		return nil
+	}))
 }
 
 func (a *AuthService) Login(username string, password string) (tokenResponse, error) {
@@ -609,6 +806,69 @@ func (l *structuredAuditLogger) Event(name string, fields map[string]any) {
 		return
 	}
 	l.logger.Printf("event=%s fields=%s", name, string(payload))
+}
+
+// ─── Google OAuth Helpers ─────────────────────────────────────
+
+type googleTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	IDToken     string `json:"id_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+}
+
+type googleUserInfo struct {
+	Email         string `json:"email"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
+	EmailVerified bool   `json:"email_verified"`
+}
+
+func exchangeGoogleCode(code, clientID, clientSecret, redirectURI string) (*googleTokenResponse, error) {
+	data := fmt.Sprintf(
+		"code=%s&client_id=%s&client_secret=%s&redirect_uri=%s&grant_type=authorization_code",
+		code, clientID, clientSecret, redirectURI,
+	)
+	resp, err := stdhttp.Post(
+		"https://oauth2.googleapis.com/token",
+		"application/x-www-form-urlencoded",
+		strings.NewReader(data),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	var tokenResp googleTokenResponse
+	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
+		return nil, err
+	}
+	if tokenResp.AccessToken == "" {
+		return nil, fmt.Errorf("empty access_token from Google")
+	}
+	return &tokenResp, nil
+}
+
+func getGoogleUserInfo(accessToken string) (*googleUserInfo, error) {
+	req, err := stdhttp.NewRequest(stdhttp.MethodGet, "https://www.googleapis.com/oauth2/v2/userinfo", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	resp, err := (&stdhttp.Client{Timeout: 5 * time.Second}).Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	var info googleUserInfo
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return nil, err
+	}
+	if info.Email == "" {
+		return nil, fmt.Errorf("no email in Google user info")
+	}
+	return &info, nil
 }
 
 func getEnvOrDefault(name string, fallback string) string {

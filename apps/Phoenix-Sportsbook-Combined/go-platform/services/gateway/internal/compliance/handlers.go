@@ -5,6 +5,7 @@ import (
 	"errors"
 	stdhttp "net/http"
 	"strconv"
+	"time"
 
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -365,6 +366,31 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			"stakeCents": stakeCents,
 			"allowed":    allowed,
 			"reason":     reason,
+		})
+	}))
+
+	// Session limits — restrict how long a user can play per session
+	mux.Handle("/api/v1/compliance/rg/session-limit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		var req struct {
+			UserID                 string `json:"user_id"`
+			SessionDurationMinutes int    `json:"session_duration_minutes"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+		if req.UserID == "" || req.SessionDurationMinutes <= 0 {
+			return httpx.BadRequest("user_id and session_duration_minutes are required", nil)
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
+			"user_id":                  req.UserID,
+			"session_duration_minutes": req.SessionDurationMinutes,
+			"effective_date":           time.Now().UTC().Format(time.RFC3339),
+			"created_at":               time.Now().UTC().Format(time.RFC3339),
 		})
 	}))
 

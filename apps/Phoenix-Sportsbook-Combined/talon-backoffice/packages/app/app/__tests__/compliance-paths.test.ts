@@ -40,10 +40,16 @@ describe('compliance-client endpoint paths', () => {
   });
 
   it('coolOff calls /compliance/rg/cool-off', () => {
-    const coolOffMatches = source.match(/\/api\/v1\/compliance\/rg\/cool-off/g);
     assert.ok(
-      coolOffMatches && coolOffMatches.length >= 2,
-      'coolOff and setSessionLimits should both call /compliance/rg/cool-off',
+      source.includes('/api/v1/compliance/rg/cool-off'),
+      'coolOff should call /api/v1/compliance/rg/cool-off',
+    );
+  });
+
+  it('setSessionLimits calls /compliance/rg/session-limit (own endpoint)', () => {
+    assert.ok(
+      source.includes('/api/v1/compliance/rg/session-limit'),
+      'setSessionLimits should call /api/v1/compliance/rg/session-limit',
     );
   });
 
