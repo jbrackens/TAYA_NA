@@ -188,7 +188,7 @@ export async function setDepositLimits(
   request: SetDepositLimitsRequest,
 ): Promise<DepositLimits> {
   const raw = await apiClient.post<DepositLimitsRaw>(
-    "/api/v1/punters/deposit-limits",
+    "/api/v1/compliance/rg/deposit-limit",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -201,7 +201,7 @@ export async function setStakeLimits(
   request: SetStakeLimitsRequest,
 ): Promise<StakeLimits> {
   const raw = await apiClient.post<StakeLimitsRaw>(
-    "/api/v1/punters/stake-limits",
+    "/api/v1/compliance/rg/bet-limit",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -214,7 +214,7 @@ export async function setSessionLimits(
   request: SetSessionLimitsRequest,
 ): Promise<SessionLimits> {
   const raw = await apiClient.post<SessionLimitsRaw>(
-    "/api/v1/punters/session-limits",
+    "/api/v1/compliance/rg/cool-off",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -227,7 +227,7 @@ export async function coolOff(
   request: CoolOffRequest,
 ): Promise<CoolOffResponse> {
   const raw = await apiClient.post<CoolOffResponseRaw>(
-    "/api/v1/punters/cool-off",
+    "/api/v1/compliance/rg/cool-off",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -240,7 +240,7 @@ export async function selfExclude(
   request: SelfExcludeRequest,
 ): Promise<SelfExcludeResponse> {
   const raw = await apiClient.post<SelfExcludeResponseRaw>(
-    "/api/v1/punters/self-exclude",
+    "/api/v1/compliance/rg/self-exclude",
     request,
   );
   return normalizeSnakeCase(raw);
@@ -265,7 +265,7 @@ export async function uploadKycDocument(
   formData.append("user_id", userId);
   formData.append("document_type", documentType);
 
-  const res = await fetch(`${apiUrl}/api/v1/compliance/documents/upload`, {
+  const res = await fetch(`${apiUrl}/api/v1/compliance/kyc/submit-document`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
@@ -301,18 +301,46 @@ export async function getMonthlyDepositTotal(userId: string): Promise<number> {
 }
 
 /**
- * Get limits history for a user
+ * Get limits history for a user.
+ * Composes deposit limits + bet limits from the two Go compliance endpoints.
  */
 export async function getLimitsHistory(
   userId: string,
 ): Promise<GetLimitsHistoryResponse> {
-  const raw = await apiClient.get<GetLimitsHistoryResponseRaw>(
-    "/api/v1/punters/limits-history",
-    {
-      user_id: userId,
-    },
-  );
-  return normalizeSnakeCase(raw);
+  try {
+    const [depositLimits, betLimits] = await Promise.all([
+      apiClient.get<Record<string, unknown>>(
+        "/api/v1/compliance/rg/deposit-limits",
+        { userId },
+      ).catch(() => null),
+      apiClient.get<Record<string, unknown>>(
+        "/api/v1/compliance/rg/bet-limits",
+        { userId },
+      ).catch(() => null),
+    ]);
+
+    const history: LimitHistoryItem[] = [];
+    if (depositLimits && typeof depositLimits === "object") {
+      history.push({
+        limitType: "deposit",
+        newValue: (depositLimits as Record<string, unknown>).daily_limit as number | undefined,
+        effectiveDate: String((depositLimits as Record<string, unknown>).effective_date || new Date().toISOString()),
+        createdAt: String((depositLimits as Record<string, unknown>).created_at || new Date().toISOString()),
+      });
+    }
+    if (betLimits && typeof betLimits === "object") {
+      history.push({
+        limitType: "stake",
+        newValue: (betLimits as Record<string, unknown>).max_stake as number | undefined,
+        effectiveDate: String((betLimits as Record<string, unknown>).effective_date || new Date().toISOString()),
+        createdAt: String((betLimits as Record<string, unknown>).created_at || new Date().toISOString()),
+      });
+    }
+
+    return { userId, history, total: history.length };
+  } catch {
+    return { userId, history: [], total: 0 };
+  }
 }
 
 /**

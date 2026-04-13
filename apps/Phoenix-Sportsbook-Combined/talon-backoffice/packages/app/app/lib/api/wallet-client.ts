@@ -270,8 +270,8 @@ export async function deposit(
   request: DepositRequest,
 ): Promise<DepositResponse> {
   const raw = await apiClient.post<DepositResponseRaw>(
-    `/api/v1/wallets/${userId}/deposit`,
-    request,
+    "/api/v1/payments/deposit",
+    { ...request, user_id: userId },
   );
   return normalizeSnakeCase(raw);
 }
@@ -284,8 +284,8 @@ export async function withdraw(
   request: WithdrawRequest,
 ): Promise<WithdrawResponse> {
   const raw = await apiClient.post<WithdrawResponseRaw>(
-    `/api/v1/wallets/${userId}/withdraw`,
-    request,
+    "/api/v1/payments/withdraw",
+    { ...request, user_id: userId },
   );
   return normalizeSnakeCase(raw);
 }
@@ -297,7 +297,8 @@ export async function getTransactionStatus(
   transactionId: string,
 ): Promise<TransactionStatus> {
   const raw = await apiClient.get<TransactionStatusRaw>(
-    `/api/v1/wallets/transactions/${transactionId}`,
+    "/api/v1/payments/status",
+    { transactionId },
   );
   return (normalizeSnakeCase(raw) as unknown) as TransactionStatus;
 }

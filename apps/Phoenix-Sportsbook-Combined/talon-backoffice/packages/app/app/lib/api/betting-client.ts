@@ -330,15 +330,21 @@ export async function getBet(betId: string): Promise<UserBet> {
  * Get cashout offer for a bet
  */
 export async function getCashoutOffer(betId: string): Promise<CashoutOffer> {
-  const raw = await apiClient.get<CashoutOfferRaw>(`/api/v1/bets/${betId}/cashout-offer`);
+  const raw = await apiClient.post<CashoutOfferRaw>(
+    "/api/v1/bets/cashout/quote",
+    { betId } as Record<string, unknown>,
+  );
   return normalizeSnakeCase(raw) as CashoutOffer;
 }
 
 /**
- * Cash out a bet
+ * Cash out a bet (accept a cashout quote)
  */
 export async function cashoutBet(betId: string): Promise<CashoutResponse> {
-  const raw = await apiClient.post<CashoutResponseRaw>(`/api/v1/bets/${betId}/cashout`);
+  const raw = await apiClient.post<CashoutResponseRaw>(
+    "/api/v1/bets/cashout/accept",
+    { betId } as Record<string, unknown>,
+  );
   return normalizeSnakeCase(raw) as CashoutResponse;
 }
 
