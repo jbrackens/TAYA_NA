@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Run regression tests
+        run: npx tsx --test app/__tests__/*.test.ts
+
+  go-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Build gateway
+        working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway
+        run: go build ./...
+
+      - name: Build auth
+        working-directory: apps/Phoenix-Sportsbook-Combined/go-platform/services/auth
+        run: go build ./...
