@@ -180,8 +180,17 @@ func handleBetHistory(service *bets.Service, w stdhttp.ResponseWriter, r *stdhtt
 	if userID == "" {
 		userID = strings.TrimSpace(r.URL.Query().Get("user_id"))
 	}
+	// Use auth context userId if none provided in query
+	authUserID := httpx.UserIDFromContext(r.Context())
+	if userID == "" {
+		userID = authUserID
+	}
 	if userID == "" {
 		return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+	}
+	// Players can only view their own bets
+	if authUserID != "" && userID != authUserID && httpx.RoleFromContext(r.Context()) != "admin" {
+		return httpx.Forbidden("cannot access another user's bets")
 	}
 
 	page := 1
@@ -248,6 +257,10 @@ func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
+		// Enforce auth context for cashout
+		if authUserID := httpx.UserIDFromContext(r.Context()); authUserID != "" {
+			request.UserID = authUserID
+		}
 		providerExpiresAt := time.Time{}
 		if raw := strings.TrimSpace(request.ProviderExpiresAt); raw != "" {
 			parsed, err := time.Parse(time.RFC3339, raw)
@@ -278,6 +291,10 @@ func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
 		var request cashoutAcceptRequest
 		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+		// Enforce auth context for cashout
+		if authUserID := httpx.UserIDFromContext(r.Context()); authUserID != "" {
+			request.UserID = authUserID
 		}
 		bet, quote, err := service.AcceptCashout(bets.CashoutAcceptRequest{
 			BetID:         request.BetID,
@@ -631,6 +648,12 @@ func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 
+		// Enforce auth context: use authenticated user's ID for bet placement
+		authUserID := httpx.UserIDFromContext(r.Context())
+		if authUserID != "" {
+			request.UserID = authUserID
+		}
+
 		placed, err := service.Place(bets.PlaceBetRequest{
 			UserID:         request.UserID,
 			RequestID:      request.RequestID,
@@ -664,8 +687,17 @@ func registerBetRoutes(mux *stdhttp.ServeMux, service *bets.Service) {
 		if userID == "" {
 			userID = strings.TrimSpace(r.URL.Query().Get("user_id"))
 		}
+		// Use auth context userId if none provided
+		authUserID := httpx.UserIDFromContext(r.Context())
+		if userID == "" {
+			userID = authUserID
+		}
 		if userID == "" {
 			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		// Players can only view their own analytics
+		if authUserID != "" && userID != authUserID && httpx.RoleFromContext(r.Context()) != "admin" {
+			return httpx.Forbidden("cannot access another user's analytics")
 		}
 		analytics := service.AnalyticsForUser(userID)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, analytics)

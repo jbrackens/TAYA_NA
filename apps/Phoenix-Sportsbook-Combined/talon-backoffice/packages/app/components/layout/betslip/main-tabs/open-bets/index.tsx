@@ -79,7 +79,7 @@ export const OpenBetsTabContent: React.FC<OpenBetsTabContentProps> = ({
             },
           });
         } catch (err) {
-          console.log(err);
+          // Open bets fetch failed — error handled by API layer
         }
       };
       trigger();

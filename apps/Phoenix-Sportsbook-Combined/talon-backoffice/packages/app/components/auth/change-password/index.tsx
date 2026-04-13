@@ -57,7 +57,7 @@ const ChangePasswordComponent: React.FC = () => {
   };
 
   const onFinishFailed = (errorInfo: ValidateErrorEntity): void => {
-    console.log("Failed:", errorInfo);
+    // Form validation failed — errorInfo contains field-level details
   };
 
   const formItemLayout = {

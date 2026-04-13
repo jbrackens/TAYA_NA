@@ -3,6 +3,8 @@
  * Manages WebSocket connections for real-time updates (fixtures, odds changes, match tracker)
  */
 
+import { logger } from '../app/lib/logger';
+
 /**
  * WebSocket client for real-time updates
  */
@@ -32,7 +34,7 @@ export class PhoenixWebSocketClient {
         this.ws = new WebSocket(this.url);
 
         this.ws.onopen = () => {
-          console.log('[WebSocket] Connected to', this.url);
+          logger.info('WebSocket', 'Connected to', this.url);
           this.reconnectAttempts = 0;
           resolve();
         };
@@ -42,12 +44,12 @@ export class PhoenixWebSocketClient {
         };
 
         this.ws.onerror = (error) => {
-          console.error('[WebSocket] Error:', error);
+          logger.error('WebSocket', 'Connection error', error);
           reject(error);
         };
 
         this.ws.onclose = () => {
-          console.log('[WebSocket] Disconnected');
+          logger.info('WebSocket', 'Disconnected');
           this.connectionPromise = null;
           this.attemptReconnect();
         };
@@ -73,11 +75,11 @@ export class PhoenixWebSocketClient {
   /**
    * Send message to WebSocket server
    */
-  send(data: any): void {
+  send(data: unknown): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data));
     } else {
-      console.warn('[WebSocket] Not connected, message not sent');
+      logger.warn('WebSocket', 'Not connected, message not sent');
     }
   }
 
@@ -111,7 +113,7 @@ export class PhoenixWebSocketClient {
       const { type, payload } = message;
 
       if (!type) {
-        console.warn('[WebSocket] Message without type:', message);
+        logger.warn('WebSocket', 'Message without type', message);
         return;
       }
 
@@ -121,12 +123,12 @@ export class PhoenixWebSocketClient {
           try {
             handler(payload, message);
           } catch (error) {
-            console.error(`[WebSocket] Error in handler for ${type}:`, error);
+            logger.error('WebSocket', `Error in handler for ${type}`, error);
           }
         });
       }
     } catch (error) {
-      console.error('[WebSocket] Error parsing message:', error);
+      logger.error('WebSocket', 'Error parsing message', error);
     }
   }
 
@@ -137,16 +139,16 @@ export class PhoenixWebSocketClient {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-      console.log(`[WebSocket] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+      logger.info('WebSocket', `Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
       setTimeout(() => {
         this.connectionPromise = null;
         this.connect().catch((error) => {
-          console.error('[WebSocket] Reconnection failed:', error);
+          logger.error('WebSocket', 'Reconnection failed', error);
         });
       }, delay);
     } else {
-      console.error('[WebSocket] Max reconnection attempts reached');
+      logger.error('WebSocket', 'Max reconnection attempts reached');
     }
   }
 

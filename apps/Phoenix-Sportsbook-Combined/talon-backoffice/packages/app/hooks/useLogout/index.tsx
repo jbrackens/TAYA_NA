@@ -23,7 +23,6 @@ export const useLogout = () => {
   };
 
   const getSessionId = () => {
-    console.log({ session: sessionStorage.getItem(SESSION_ID_KEY) });
     return sessionStorage.getItem(SESSION_ID_KEY);
   };
 

@@ -87,6 +87,12 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 			return httpx.NotFound("wallet not found")
 		}
 
+		// Enforce auth context: players can only access their own wallet
+		authUserID := httpx.UserIDFromContext(r.Context())
+		if authUserID != "" && userID != authUserID && httpx.RoleFromContext(r.Context()) != "admin" {
+			return httpx.Forbidden("cannot access another user's wallet")
+		}
+
 		if len(parts) == 2 && parts[1] == "ledger" {
 			limit := 50
 			if raw := strings.TrimSpace(r.URL.Query().Get("limit")); raw != "" {

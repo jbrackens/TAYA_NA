@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/sports", "/match", "/fixtures", "/live", "/starting-soon", "/auth"];
+const PUBLIC_ROUTES = ["/", "/sports", "/match", "/fixtures", "/live", "/starting-soon", "/auth", "/responsible-gaming", "/contact-us", "/about", "/terms", "/privacy-policy", "/betting-rules"];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(

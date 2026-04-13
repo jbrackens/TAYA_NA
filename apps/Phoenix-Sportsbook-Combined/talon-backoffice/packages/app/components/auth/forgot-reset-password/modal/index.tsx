@@ -62,7 +62,7 @@ export const ForgotResetPasswordModalComponent: React.FC<ForgotResetPasswordModa
   };
 
   const onFinishFailed = (errorInfo: ValidateErrorEntity<any>): void => {
-    console.log("Failed:", errorInfo);
+    // Form validation failed — errorInfo contains field-level details
   };
 
   const formItemLayout = {

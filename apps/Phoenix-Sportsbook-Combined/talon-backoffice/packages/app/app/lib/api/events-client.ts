@@ -355,7 +355,7 @@ export async function getLeagues(sportKey: string): Promise<League[]> {
     // Try BetConstruct — returns competitions as "leagues"
     try {
       const bcComps = await bcGetRegions(bcAlias);
-      if (bcComps.length > 0) {
+      if (Array.isArray(bcComps) && bcComps.length > 0) {
         const result = bcComps.map((c) => ({
           leagueId: String(c.id),
           leagueName: c.name,
@@ -433,7 +433,7 @@ export async function getEvents(
       try {
         const bcAlias = await getBcAlias(params.sport);
         const bcGames = await bcGetGames(bcAlias, params?.league);
-        if (bcGames.length > 0) {
+        if (Array.isArray(bcGames) && bcGames.length > 0) {
           const page = params?.page || 1;
           const limit = params?.limit || 12;
           const start = (page - 1) * limit;

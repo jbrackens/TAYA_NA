@@ -40,17 +40,19 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    // Set auth token in httpOnly cookie for security
+    // Set auth tokens in httpOnly cookies for security
+    // authToken: used by the backoffice Next.js middleware
+    // access_token: used by the Go gateway auth middleware (forwarded via rewrite)
     const res = NextResponse.json(data);
     if (data.accessToken) {
-      res.cookies.set({
-        name: 'authToken',
-        value: data.accessToken,
+      const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'lax' as const,
         maxAge: data.expiresInSeconds || 3600,
-      });
+      };
+      res.cookies.set({ name: 'authToken', value: data.accessToken, ...cookieOptions });
+      res.cookies.set({ name: 'access_token', value: data.accessToken, ...cookieOptions, path: '/' });
     }
 
     return res;
