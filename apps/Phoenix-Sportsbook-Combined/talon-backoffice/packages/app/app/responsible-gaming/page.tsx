@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
+import { setDepositLimits, setStakeLimits, coolOff } from "../lib/api/compliance-client";
+import { logger } from "../lib/logger";
 
 type LimitType = "deposit" | "stake" | "session";
 type LimitPeriod = "daily" | "weekly" | "monthly";
@@ -12,6 +15,7 @@ interface LimitFormState {
 }
 
 export default function ResponsibleGamingPage() {
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState<string>("limits");
   const [limitForm, setLimitForm] = useState<LimitFormState>({
     type: "deposit",
@@ -20,6 +24,40 @@ export default function ResponsibleGamingPage() {
   });
   const [coolOffDays, setCoolOffDays] = useState("7");
   const [selfExcludeConfirm, setSelfExcludeConfirm] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+
+  const handleSetLimit = async () => {
+    if (!user?.id || !limitForm.amount) return;
+    setSubmitStatus(null);
+    try {
+      const amount = Number(limitForm.amount);
+      if (limitForm.type === "deposit") {
+        const limitPayload: Record<string, unknown> = { user_id: user.id };
+        limitPayload[`${limitForm.period}_limit`] = amount;
+        await setDepositLimits(limitPayload as Parameters<typeof setDepositLimits>[0]);
+      } else if (limitForm.type === "stake") {
+        await setStakeLimits({ user_id: user.id, max_stake: amount });
+      }
+      setSubmitStatus("Limit set successfully.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error("RG", "Failed to set limit", msg);
+      setSubmitStatus("Failed to set limit. Please try again.");
+    }
+  };
+
+  const handleCoolOff = async () => {
+    if (!user?.id) return;
+    setSubmitStatus(null);
+    try {
+      await coolOff({ user_id: user.id, duration_days: Number(coolOffDays) });
+      setSubmitStatus(`Cool off activated for ${coolOffDays} days.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error("RG", "Failed to start cool off", msg);
+      setSubmitStatus("Failed to start cool off. Please try again.");
+    }
+  };
 
   const sections = [
     { id: "limits", label: "Set Limits" },
@@ -184,7 +222,8 @@ export default function ResponsibleGamingPage() {
                 min="0"
               />
             </div>
-            <button style={btnStyle}>Set Limit</button>
+            <button style={btnStyle} onClick={handleSetLimit}>Set Limit</button>
+            {submitStatus && <p style={{ fontSize: 12, color: "#39ff14", marginTop: 8 }}>{submitStatus}</p>}
           </div>
         </div>
       )}
@@ -227,9 +266,10 @@ export default function ResponsibleGamingPage() {
               <option value="30">30 Days</option>
             </select>
           </div>
-          <button style={{ ...btnStyle, background: "#eab308" }}>
+          <button style={{ ...btnStyle, background: "#eab308" }} onClick={handleCoolOff}>
             Start Cool Off ({coolOffDays} days)
           </button>
+          {submitStatus && <p style={{ fontSize: 12, color: "#39ff14", marginTop: 8 }}>{submitStatus}</p>}
         </div>
       )}
 
