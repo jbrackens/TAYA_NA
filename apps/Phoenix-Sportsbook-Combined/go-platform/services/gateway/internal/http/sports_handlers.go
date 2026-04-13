@@ -3,7 +3,7 @@ package http
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	stdhttp "net/http"
 	"sort"
 	"strings"
@@ -290,7 +290,7 @@ func getCachedSportsCatalog(repository domain.ReadRepository) ([]sportCatalogIte
 	}
 	sportsCatalogCache.items = items
 	sportsCatalogCache.lastRefreshed = time.Now()
-	log.Printf("sports catalog cache refreshed: %d sports", len(items))
+	slog.Info("sports catalog cache refreshed", "count", len(items))
 	return items, nil
 }
 
@@ -383,7 +383,7 @@ func getCachedSportLeagues(repository domain.ReadRepository, sportKey string) ([
 	}
 	sportsLeagueCache.data = data
 	sportsLeagueCache.lastRefreshed = time.Now()
-	log.Printf("sports league cache refreshed: %d sports", len(data))
+	slog.Info("sports league cache refreshed", "count", len(data))
 
 	items, ok := data[sportKey]
 	if !ok {

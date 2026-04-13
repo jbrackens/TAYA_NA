@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 	"time"
 
@@ -13,6 +14,21 @@ import (
 )
 
 const paymentDBTimeout = 5 * time.Second
+
+// depositAutoApprove controls whether deposits are auto-approved without an
+// external payment gateway. In production/staging this MUST be false — deposits
+// remain "pending" until a webhook confirms them. In development it defaults to
+// true so the platform works out-of-the-box without Stripe/Adyen integration.
+var depositAutoApprove bool
+
+func init() {
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	if env == "production" || env == "staging" {
+		depositAutoApprove = false
+	} else {
+		depositAutoApprove = strings.ToLower(strings.TrimSpace(os.Getenv("DEPOSIT_AUTO_APPROVE"))) != "false"
+	}
+}
 
 // DBPaymentService is a production-grade payment service backed by PostgreSQL.
 // It implements a proper payment state machine:
@@ -95,19 +111,28 @@ VALUES ($1, $2, 'deposit', $3, $4, 'pending', $5)`,
 		return nil, fmt.Errorf("create deposit record: %w", err)
 	}
 
-	// In a production system, this would call an external payment gateway
-	// (Stripe, PayPal, etc.) and the deposit would remain "pending" until
-	// a webhook confirms it. For now, we auto-approve after recording.
+	if !depositAutoApprove {
+		// Production: deposit stays pending until external webhook confirms it.
+		// The gateway integration calls HandleWebhook() when the provider confirms.
+		slog.Info("deposit pending — awaiting external confirmation", "txn_id", txnID, "user_id", userID, "amount_cents", amountCents)
+		return &DepositResult{
+			TransactionID: txnID,
+			Status:        "pending",
+			Amount:        amountCents,
+			PaymentMethod: paymentMethod,
+		}, nil
+	}
+
+	// Development only: auto-approve for local testing without payment provider.
+	slog.Warn("deposit auto-approved (dev mode)", "txn_id", txnID, "user_id", userID, "amount_cents", amountCents)
 	result, err := s.processDepositApproval(ctx, txnID, userID, amountCents, paymentMethod)
 	if err != nil {
-		// Mark transaction as failed
 		_, _ = s.db.ExecContext(ctx, `
 UPDATE payment_transactions SET status = 'failed', error_message = $2, updated_at = NOW()
 WHERE txn_id = $1`, txnID, err.Error())
 		return nil, err
 	}
 
-	slog.Info("deposit processed", "txn_id", txnID, "user_id", userID, "amount_cents", amountCents, "status", "approved")
 	return result, nil
 }
 

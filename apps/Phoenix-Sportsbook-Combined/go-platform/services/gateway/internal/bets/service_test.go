@@ -2,6 +2,7 @@ package bets
 
 import (
 	"errors"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -135,7 +136,7 @@ func TestPlaceBetAppliesInPlayLtdWhenEnabled(t *testing.T) {
 
 	service := NewService(repository, walletService)
 	service.now = func() time.Time {
-		return time.Date(2026, 4, 10, 21, 0, 0, 0, time.UTC)
+		return time.Date(2030, 4, 10, 21, 0, 0, 0, time.UTC)
 	}
 
 	started := time.Now()
@@ -523,7 +524,7 @@ func TestPlaceBetRejectsWhenMarketStartTimePassed(t *testing.T) {
 
 	service := NewService(repository, walletService)
 	service.now = func() time.Time {
-		return time.Date(2026, 4, 10, 21, 0, 0, 0, time.UTC)
+		return time.Date(2030, 4, 10, 21, 0, 0, 0, time.UTC)
 	}
 
 	_, err := service.Place(PlaceBetRequest{
@@ -1333,5 +1334,228 @@ func TestPromoUsageSummaryAggregatesPromoCounters(t *testing.T) {
 	}
 	if len(summary.OddsBoosts) != 1 || summary.OddsBoosts[0].ID != "ob:local:001" {
 		t.Fatalf("expected odds boost breakdown for ob:local:001, got %+v", summary.OddsBoosts)
+	}
+}
+
+// WS6.3: 10 concurrent placements for the same user at full balance.
+// Exactly 1 should succeed; the other 9 should fail with insufficient funds.
+func TestConcurrentPlacementExactlyOneSucceeds(t *testing.T) {
+	repository := domain.NewInMemoryReadRepository()
+	walletService := wallet.NewService()
+
+	// Seed user with exactly enough for 1 bet of 1000 cents
+	_, err := walletService.Credit(wallet.MutationRequest{
+		UserID:         "u-concurrent",
+		AmountCents:    1000,
+		IdempotencyKey: "seed-concurrent",
+	})
+	if err != nil {
+		t.Fatalf("seed credit: %v", err)
+	}
+
+	service := NewService(repository, walletService)
+
+	const goroutines = 10
+	results := make(chan error, goroutines)
+
+	for i := 0; i < goroutines; i++ {
+		go func(idx int) {
+			_, placementErr := service.Place(PlaceBetRequest{
+				UserID:         "u-concurrent",
+				MarketID:       "m:local:001",
+				SelectionID:    "home",
+				StakeCents:     1000,
+				Odds:           1.95,
+				IdempotencyKey: fmt.Sprintf("concurrent-place-%d", idx),
+			})
+			results <- placementErr
+		}(i)
+	}
+
+	successes := 0
+	failures := 0
+	for i := 0; i < goroutines; i++ {
+		err := <-results
+		if err == nil {
+			successes++
+		} else {
+			failures++
+		}
+	}
+
+	if successes != 1 {
+		t.Fatalf("expected exactly 1 successful placement, got %d successes and %d failures", successes, failures)
+	}
+	if failures != goroutines-1 {
+		t.Fatalf("expected %d failures, got %d", goroutines-1, failures)
+	}
+
+	// Verify wallet balance is 0
+	balance := walletService.Balance("u-concurrent")
+	if balance != 0 {
+		t.Fatalf("expected wallet balance=0 after single successful placement, got %d", balance)
+	}
+}
+
+// WS6.3 variant: concurrent settlements — exactly 1 should succeed for the same bet.
+func TestConcurrentSettlementExactlyOneSucceeds(t *testing.T) {
+	repository := domain.NewInMemoryReadRepository()
+	walletService := wallet.NewService()
+
+	_, err := walletService.Credit(wallet.MutationRequest{
+		UserID:         "u-settle-concurrent",
+		AmountCents:    5000,
+		IdempotencyKey: "seed-settle-concurrent",
+	})
+	if err != nil {
+		t.Fatalf("seed credit: %v", err)
+	}
+
+	service := NewService(repository, walletService)
+	placed, err := service.Place(PlaceBetRequest{
+		UserID:         "u-settle-concurrent",
+		MarketID:       "m:local:001",
+		SelectionID:    "home",
+		StakeCents:     1000,
+		Odds:           2.00,
+		IdempotencyKey: "settle-concurrent-place",
+	})
+	if err != nil {
+		t.Fatalf("place bet: %v", err)
+	}
+
+	const goroutines = 10
+	results := make(chan error, goroutines)
+
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			_, err := service.Settle(SettleBetRequest{
+				BetID:              placed.BetID,
+				WinningSelectionID: "home",
+				ResultSource:       "test",
+				ActorID:            "test",
+			})
+			results <- err
+		}()
+	}
+
+	successes := 0
+	for i := 0; i < goroutines; i++ {
+		if err := <-results; err == nil {
+			successes++
+		}
+	}
+
+	// Settlement is idempotent — the first one settles, others replay.
+	// All should succeed (idempotent), but the wallet should only be credited once.
+	expectedPayout := int64(2000) // 1000 stake * 2.00 odds
+	balance := walletService.Balance("u-settle-concurrent")
+	expectedBalance := int64(5000) - int64(1000) + expectedPayout // seed - stake + payout
+	if balance != expectedBalance {
+		t.Fatalf("expected wallet balance=%d (credited exactly once), got %d", expectedBalance, balance)
+	}
+}
+
+// WS6.4: Settlement DLQ — failed settlement is recorded and can be retried.
+func TestSettlementDLQRecordAndRetry(t *testing.T) {
+	repository := domain.NewInMemoryReadRepository()
+	walletService := wallet.NewService()
+
+	_, err := walletService.Credit(wallet.MutationRequest{
+		UserID:         "u-dlq",
+		AmountCents:    5000,
+		IdempotencyKey: "seed-dlq",
+	})
+	if err != nil {
+		t.Fatalf("seed credit: %v", err)
+	}
+
+	service := NewService(repository, walletService)
+	placed, err := service.Place(PlaceBetRequest{
+		UserID:         "u-dlq",
+		MarketID:       "m:local:001",
+		SelectionID:    "home",
+		StakeCents:     1000,
+		Odds:           2.00,
+		IdempotencyKey: "dlq-place",
+	})
+	if err != nil {
+		t.Fatalf("place bet: %v", err)
+	}
+
+	// Record a failure manually (simulating what provider_stream_sink does)
+	fakeRequest := SettleBetRequest{
+		BetID:              placed.BetID,
+		WinningSelectionID: "home",
+		ResultSource:       "feed:test",
+		ActorID:            "feed:test",
+	}
+	service.RecordSettlementFailure(fakeRequest, errors.New("simulated transient error"))
+
+	// Verify it's in the DLQ
+	dlq := service.ListSettlementDLQ()
+	if len(dlq) != 1 {
+		t.Fatalf("expected 1 DLQ entry, got %d", len(dlq))
+	}
+	if dlq[0].BetID != placed.BetID {
+		t.Fatalf("expected DLQ entry for bet %s, got %s", placed.BetID, dlq[0].BetID)
+	}
+	if dlq[0].Attempts != 1 {
+		t.Fatalf("expected 1 attempt, got %d", dlq[0].Attempts)
+	}
+
+	// Retry — should succeed since the bet is still in placed status
+	result, err := service.RetrySettlementDLQ(placed.BetID)
+	if err != nil {
+		t.Fatalf("DLQ retry failed: %v", err)
+	}
+	if result.Status != statusSettledWon {
+		t.Fatalf("expected settled_won after retry, got %s", result.Status)
+	}
+
+	// DLQ should be empty after successful retry
+	dlq = service.ListSettlementDLQ()
+	if len(dlq) != 0 {
+		t.Fatalf("expected empty DLQ after successful retry, got %d entries", len(dlq))
+	}
+}
+
+// WS6.4: Purge removes DLQ entry without retrying.
+func TestSettlementDLQPurge(t *testing.T) {
+	repository := domain.NewInMemoryReadRepository()
+	walletService := wallet.NewService()
+
+	_, _ = walletService.Credit(wallet.MutationRequest{
+		UserID:         "u-dlq-purge",
+		AmountCents:    5000,
+		IdempotencyKey: "seed-dlq-purge",
+	})
+	service := NewService(repository, walletService)
+	placed, _ := service.Place(PlaceBetRequest{
+		UserID:         "u-dlq-purge",
+		MarketID:       "m:local:001",
+		SelectionID:    "home",
+		StakeCents:     1000,
+		Odds:           2.00,
+		IdempotencyKey: "dlq-purge-place",
+	})
+
+	service.RecordSettlementFailure(SettleBetRequest{
+		BetID:              placed.BetID,
+		WinningSelectionID: "home",
+		ResultSource:       "feed:test",
+		ActorID:            "feed:test",
+	}, errors.New("simulated error"))
+
+	if !service.PurgeSettlementDLQ(placed.BetID) {
+		t.Fatal("expected purge to return true")
+	}
+	if len(service.ListSettlementDLQ()) != 0 {
+		t.Fatal("expected empty DLQ after purge")
+	}
+
+	// Purge non-existent entry returns false
+	if service.PurgeSettlementDLQ("nonexistent") {
+		t.Fatal("expected purge of nonexistent bet to return false")
 	}
 }

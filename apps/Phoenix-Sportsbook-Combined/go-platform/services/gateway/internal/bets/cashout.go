@@ -423,3 +423,9 @@ func (s *Service) CashoutMetricsSnapshot() CashoutMetrics {
 	defer s.mu.RUnlock()
 	return s.cashoutMetrics
 }
+
+func (s *Service) SettlementMetricsSnapshot() SettlementMetrics {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.settlementMetrics
+}

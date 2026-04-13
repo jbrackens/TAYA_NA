@@ -2,7 +2,7 @@ package leaderboards
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -51,16 +51,16 @@ func (s *Service) saveToDisk() {
 	}
 	data, err := json.MarshalIndent(snap, "", "  ")
 	if err != nil {
-		log.Printf("leaderboards: failed to marshal snapshot: %v", err)
+		slog.Warn("leaderboards: failed to marshal snapshot", "error", err)
 		return
 	}
 	dir := filepath.Dir(s.statePath)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		log.Printf("leaderboards: failed to create state dir: %v", err)
+		slog.Warn("leaderboards: failed to create state dir", "error", err)
 		return
 	}
 	if err := os.WriteFile(s.statePath, data, 0o644); err != nil {
-		log.Printf("leaderboards: failed to write snapshot: %v", err)
+		slog.Warn("leaderboards: failed to write snapshot", "error", err)
 	}
 }
 
@@ -90,6 +90,6 @@ func (s *Service) loadFromDisk() error {
 	}
 	s.leaderboardSequence = snap.LeaderboardSequence
 	s.eventSequence = snap.EventSequence
-	log.Printf("leaderboards: loaded %d definitions from snapshot", len(s.definitions))
+	slog.Info("leaderboards: loaded definitions from snapshot", "count", len(s.definitions))
 	return nil
 }

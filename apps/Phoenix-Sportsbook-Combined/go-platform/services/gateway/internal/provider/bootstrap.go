@@ -2,7 +2,7 @@ package provider
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -44,11 +44,10 @@ func BootstrapRuntimeFromEnv(ctx context.Context, sink EventSink) (*Runtime, err
 		return nil, err
 	}
 
-	log.Printf(
-		"provider runtime started with adapters=%v snapshotEnabled=%t snapshotAtRevision=%d",
-		runtime.AdapterNames(),
-		runtimeOptions.EnableSnapshotBootstrap,
-		runtimeOptions.SnapshotAtRevision,
+	slog.Info("provider runtime started",
+		"adapters", runtime.AdapterNames(),
+		"snapshot_enabled", runtimeOptions.EnableSnapshotBootstrap,
+		"snapshot_at_revision", runtimeOptions.SnapshotAtRevision,
 	)
 	return runtime, nil
 }

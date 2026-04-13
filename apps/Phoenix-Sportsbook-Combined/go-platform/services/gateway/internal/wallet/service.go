@@ -155,16 +155,16 @@ func NewServiceFromEnv() *Service {
 			if isProduction {
 				log.Fatalf("FATAL: WALLET_STORE_MODE=%s but WALLET_DB_DSN is empty; DB mode required in production", mode)
 			}
-			log.Printf("warning: WALLET_STORE_MODE=%s requested, but WALLET_DB_DSN is empty; falling back to local wallet store", mode)
+			slog.Warn("WALLET_STORE_MODE requested but WALLET_DB_DSN is empty; falling back to local wallet store", "mode", mode)
 		} else {
 			svc, err := NewServiceWithDB(driver, dsn)
 			if err != nil {
 				if isProduction {
 					log.Fatalf("FATAL: failed to initialize wallet db store in production: %v", err)
 				}
-				log.Printf("warning: failed to initialize wallet db store driver=%s: %v; falling back to local wallet store", driver, err)
+				slog.Warn("failed to initialize wallet db store; falling back to local wallet store", "driver", driver, "error", err)
 			} else {
-				log.Printf("wallet service initialized in db mode using driver=%s", driver)
+				slog.Info("wallet service initialized in db mode", "driver", driver)
 				return svc
 			}
 		}
@@ -460,7 +460,7 @@ func (s *Service) Hold(request HoldRequest) (Reservation, error) {
 		request.ReferenceType = "bet"
 	}
 	if request.ExpiresIn <= 0 {
-		request.ExpiresIn = 5 * time.Minute
+		request.ExpiresIn = 24 * time.Hour // Default 24h; callers can override for shorter holds
 	}
 
 	if s.db == nil {

@@ -2,7 +2,7 @@ package http
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	stdhttp "net/http"
 	"net/http/httputil"
 	"net/url"
@@ -46,9 +46,24 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		newProviderEventSink(betService, matchTrackerService),
 	)
 	if err != nil {
-		log.Printf("warning: failed to bootstrap provider runtime: %v", err)
+		slog.Warn("failed to bootstrap provider runtime", "error", err)
 	}
 	walletServiceForMetrics = walletService
+
+	// Background job: expire stale wallet reservations every 60 seconds
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			expired, err := walletService.ExpireStaleReservations()
+			if err != nil {
+				slog.Warn("reservation expiry failed", "error", err)
+			} else if expired > 0 {
+				slog.Info("wallet: expired stale reservations", "count", expired)
+			}
+		}
+	}()
+
 	registerFeedMetricsRoute(mux, service, providerRuntime, betService)
 
 	// Initialize WebSocket hub
@@ -90,6 +105,20 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 				checks["auth"] = "ok"
 				resp.Body.Close()
 			}
+		}
+
+		// Check wallet DB connectivity (if DB mode)
+		if walletDB := walletService.DB(); walletDB != nil {
+			dbCtx, dbCancel := context.WithTimeout(r.Context(), 2*time.Second)
+			defer dbCancel()
+			if err := walletDB.PingContext(dbCtx); err != nil {
+				checks["db"] = "unavailable"
+				allReady = false
+			} else {
+				checks["db"] = "ok"
+			}
+		} else {
+			checks["db"] = "memory_mode"
 		}
 
 		checks["service"] = service
@@ -137,39 +166,48 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	if walletDB := walletService.DB(); walletDB != nil {
 		dbPayment, err := payments.NewDBPaymentService(walletDB, walletService)
 		if err != nil {
-			log.Printf("warning: failed to initialize DB payment service: %v; falling back to mock", err)
+			slog.Warn("failed to initialize DB payment service; falling back to mock", "error", err)
 			paymentService = payments.NewMockPaymentService(walletService)
 		} else {
 			paymentService = dbPayment
-			log.Printf("payments: DB-backed payment service initialized")
+			slog.Info("payments: DB-backed payment service initialized")
 		}
 	} else {
 		paymentService = payments.NewMockPaymentService(walletService)
-		log.Printf("payments: using mock payment service (no DB available)")
+		slog.Info("payments: using mock payment service (no DB available)")
 	}
 	payments.RegisterPaymentRoutes(mux, paymentService)
 
 	// Reverse proxy auth routes to the auth service
 	registerAuthProxy(mux)
 
-	geoService := compliance.NewMockGeoComplianceServiceFromEnv()
-	kycService := compliance.NewMockKYCService()
+	// Geo and KYC: fail-closed in production (reject all), mock in development
+	var geoService compliance.GeoComplianceService
+	var kycService compliance.KYCService
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	if env == "production" || env == "staging" {
+		geoService = compliance.NewFailClosedGeoComplianceService()
+		kycService = compliance.NewFailClosedKYCService()
+	} else {
+		geoService = compliance.NewMockGeoComplianceServiceFromEnv()
+		kycService = compliance.NewMockKYCService()
+	}
 
 	// Use PostgreSQL-backed Responsible Gaming service when wallet DB is available
 	var rgService compliance.ResponsibleGamblingService
 	if walletDB := walletService.DB(); walletDB != nil {
 		pgRG, err := compliance.NewPostgresResponsibleGamblingService(walletDB)
 		if err != nil {
-			log.Printf("warning: failed to initialize PostgreSQL RG service: %v; falling back to mock", err)
+			slog.Warn("failed to initialize PostgreSQL RG service; falling back to mock", "error", err)
 			rgService = compliance.NewMockResponsibleGamblingService()
 		} else {
 			rgService = pgRG
 			betService.SetComplianceService(pgRG)
-			log.Printf("compliance: responsible gaming service initialized in DB mode")
+			slog.Info("compliance: responsible gaming service initialized in DB mode")
 		}
 	} else {
 		rgService = compliance.NewMockResponsibleGamblingService()
-		log.Printf("compliance: using mock responsible gaming service (no DB available)")
+		slog.Info("compliance: using mock responsible gaming service (no DB available)")
 	}
 	// Wire RG service into deposit compliance checking
 	payments.DepositComplianceChecker = rgService
@@ -191,13 +229,13 @@ func createReadRepository() domain.ReadRepository {
 		}
 		dsn := strings.TrimSpace(os.Getenv("GATEWAY_DB_DSN"))
 		if dsn == "" {
-			log.Printf("warning: GATEWAY_READ_REPO_MODE=%s requested, but GATEWAY_DB_DSN is empty; falling back to non-db repository", mode)
+			slog.Warn("GATEWAY_READ_REPO_MODE requested but GATEWAY_DB_DSN is empty; falling back to non-db repository", "mode", mode)
 		} else {
 			r, err := domain.OpenSQLReadRepository(driver, dsn)
 			if err != nil {
-				log.Printf("warning: failed to initialize SQL read repository driver=%s: %v; falling back to non-db repository", driver, err)
+				slog.Warn("failed to initialize SQL read repository; falling back to non-db repository", "driver", driver, "error", err)
 			} else {
-				log.Printf("gateway read repository initialized in db mode using driver=%s", driver)
+				slog.Info("gateway read repository initialized in db mode", "driver", driver)
 				repository = r
 			}
 		}
@@ -207,9 +245,9 @@ func createReadRepository() domain.ReadRepository {
 		if snapshotPath := os.Getenv("GATEWAY_READ_MODEL_FILE"); snapshotPath != "" {
 			r, err := domain.NewFileReadRepository(snapshotPath)
 			if err != nil {
-				log.Printf("warning: failed to load GATEWAY_READ_MODEL_FILE=%s: %v; falling back to in-memory seed data", snapshotPath, err)
+				slog.Warn("failed to load GATEWAY_READ_MODEL_FILE; falling back to in-memory seed data", "path", snapshotPath, "error", err)
 			} else {
-				log.Printf("gateway read repository initialized from snapshot file: %s", snapshotPath)
+				slog.Info("gateway read repository initialized from snapshot file", "path", snapshotPath)
 				repository = r
 			}
 		}
@@ -223,10 +261,10 @@ func createReadRepository() domain.ReadRepository {
 	if redisURL := strings.TrimSpace(os.Getenv("REDIS_URL")); redisURL != "" || os.Getenv("ENABLE_CACHE") != "" {
 		redisClient, err := cache.NewRedisClientFromEnv()
 		if err != nil {
-			log.Printf("warning: failed to initialize Redis cache: %v; using uncached repository", err)
+			slog.Warn("failed to initialize Redis cache; using uncached repository", "error", err)
 		} else {
 			cachedRepo := cache.NewCachedReadRepository(repository, redisClient)
-			log.Printf("gateway read repository wrapped with Redis cache")
+			slog.Info("gateway read repository wrapped with Redis cache")
 			repository = cachedRepo
 		}
 	}
@@ -241,12 +279,12 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 	}
 	target, err := url.Parse(authURL)
 	if err != nil {
-		log.Printf("warning: invalid AUTH_SERVICE_URL %q: %v; auth proxy disabled", authURL, err)
+		slog.Warn("invalid AUTH_SERVICE_URL; auth proxy disabled", "url", authURL, "error", err)
 		return
 	}
 	proxy := httputil.NewSingleHostReverseProxy(target)
 	proxy.ErrorHandler = func(w stdhttp.ResponseWriter, r *stdhttp.Request, err error) {
-		log.Printf("auth proxy error: %v", err)
+		slog.Error("auth proxy error", "error", err)
 		stdhttp.Error(w, `{"error":{"code":"service_unavailable","message":"auth service unreachable"}}`, stdhttp.StatusBadGateway)
 	}
 
@@ -267,5 +305,5 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 	}
 	mux.HandleFunc("/api/v1/auth/", authHandler)
 	mux.HandleFunc("/auth/", authHandler)
-	log.Printf("auth proxy registered: /auth/* and /api/v1/auth/* → %s", authURL)
+	slog.Info("auth proxy registered", "target", authURL)
 }

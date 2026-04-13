@@ -3,7 +3,7 @@ package leaderboards
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -96,9 +96,9 @@ func NewServiceFromEnv() *Service {
 	svc := NewService()
 	svc.statePath = statePath
 	if err := svc.loadFromDisk(); err != nil {
-		log.Printf("leaderboards: failed to load state from %s: %v (starting fresh with seeds)", statePath, err)
+		slog.Warn("leaderboards: failed to load state, starting fresh with seeds", "path", statePath, "error", err)
 	} else if len(svc.definitions) > 0 {
-		log.Printf("leaderboards: restored %d definitions from %s", len(svc.definitions), statePath)
+		slog.Info("leaderboards: restored definitions from snapshot", "count", len(svc.definitions), "path", statePath)
 		return svc
 	}
 	return svc

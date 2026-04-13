@@ -3,7 +3,7 @@ package ws
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"sync"
 )
 
@@ -84,26 +84,31 @@ func (h *Hub) Run(ctx context.Context) {
 
 // handleSubscribe adds a client to a channel
 func (h *Hub) handleSubscribe(cmd *subscribeCmd) {
+	h.mu.Lock()
 	if h.channels[cmd.channel] == nil {
 		h.channels[cmd.channel] = make(map[*Client]bool)
 	}
 	h.channels[cmd.channel][cmd.client] = true
-	log.Printf("ws client subscribed user_id=%s channel=%s", cmd.client.userID, cmd.channel)
+	h.mu.Unlock()
+	slog.Info("ws client subscribed", "user_id", cmd.client.userID, "channel", cmd.channel)
 }
 
 // handleUnsubscribe removes a client from a channel
 func (h *Hub) handleUnsubscribe(cmd *unsubscribeCmd) {
+	h.mu.Lock()
 	if clients, exists := h.channels[cmd.channel]; exists {
 		delete(clients, cmd.client)
 		if len(clients) == 0 {
 			delete(h.channels, cmd.channel)
 		}
-		log.Printf("ws client unsubscribed user_id=%s channel=%s", cmd.client.userID, cmd.channel)
 	}
+	h.mu.Unlock()
+	slog.Info("ws client unsubscribed", "user_id", cmd.client.userID, "channel", cmd.channel)
 }
 
 // handleDisconnect removes a client from all channels
 func (h *Hub) handleDisconnect(client *Client) {
+	h.mu.Lock()
 	for channel := range client.channels {
 		if clients, exists := h.channels[channel]; exists {
 			delete(clients, client)
@@ -112,15 +117,25 @@ func (h *Hub) handleDisconnect(client *Client) {
 			}
 		}
 	}
-	log.Printf("ws client disconnected user_id=%s", client.userID)
+	h.mu.Unlock()
+	slog.Info("ws client disconnected", "user_id", client.userID)
 }
 
 // handleBroadcast sends a message to all clients subscribed to a channel
 func (h *Hub) handleBroadcast(cmd *broadcastCmd) {
-	if clients, exists := h.channels[cmd.channel]; exists {
-		for client := range clients {
-			client.SendMessage(cmd.message)
-		}
+	h.mu.RLock()
+	clients, exists := h.channels[cmd.channel]
+	if !exists {
+		h.mu.RUnlock()
+		return
+	}
+	targets := make([]*Client, 0, len(clients))
+	for client := range clients {
+		targets = append(targets, client)
+	}
+	h.mu.RUnlock()
+	for _, client := range targets {
+		client.SendMessage(cmd.message)
 	}
 }
 
@@ -160,7 +175,7 @@ func (h *Hub) Broadcast(channel string, message []byte) {
 func (h *Hub) BroadcastEvent(channel string, eventID string, eventType string, data interface{}) {
 	rawData, err := json.Marshal(data)
 	if err != nil {
-		log.Printf("ws failed to marshal event data channel=%s: %v", channel, err)
+		slog.Error("ws failed to marshal event data", "channel", channel, "error", err)
 		return
 	}
 

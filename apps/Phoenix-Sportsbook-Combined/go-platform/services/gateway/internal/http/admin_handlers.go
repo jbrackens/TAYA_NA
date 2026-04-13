@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	stdhttp "net/http"
 	"os"
 	"path/filepath"
@@ -152,9 +152,12 @@ func registerAdminRoutes(
 	betService *bets.Service,
 	providerRuntime *provider.Runtime,
 ) {
+	if db := walletService.DB(); db != nil {
+		SetSharedAuditDB(db)
+	}
 	initializeProviderOpsAuditStore()
-	registerAdminTradingRoutes(mux, "/admin/trading", repository)
-	registerAdminTradingRoutes(mux, "/api/v1/admin/trading", repository)
+	registerAdminTradingRoutes(mux, "/admin/trading", repository, betService)
+	registerAdminTradingRoutes(mux, "/api/v1/admin/trading", repository, betService)
 	registerAdminPunterRoutes(mux, "/admin", repository)
 	registerAdminPunterRoutes(mux, "/api/v1/admin", repository)
 	registerAdminUtilityRoutes(mux, "/admin", betService, providerRuntime)
@@ -163,7 +166,7 @@ func registerAdminRoutes(
 	registerAdminWalletRoutes(mux, "/api/v1/admin", walletService)
 }
 
-func registerAdminTradingRoutes(mux *stdhttp.ServeMux, basePath string, repository domain.ReadRepository) {
+func registerAdminTradingRoutes(mux *stdhttp.ServeMux, basePath string, repository domain.ReadRepository, betService *bets.Service) {
 	fixturesPath := fmt.Sprintf("%s/fixtures", basePath)
 	marketsPath := fmt.Sprintf("%s/markets", basePath)
 
@@ -258,14 +261,21 @@ func registerAdminTradingRoutes(mux *stdhttp.ServeMux, basePath string, reposito
 	}))
 
 	mux.Handle(marketsPath+"/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodGet {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
-		}
 		if err := requireAdminRole(r); err != nil {
 			return err
 		}
 
-		id := strings.TrimPrefix(r.URL.Path, marketsPath+"/")
+		// Check for /markets/{id}/status sub-route
+		fullSuffix := strings.TrimPrefix(r.URL.Path, marketsPath+"/")
+		if strings.HasSuffix(fullSuffix, "/status") {
+			return handleAdminMarketStatusChange(w, r, fullSuffix, repository, betService)
+		}
+
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+
+		id := fullSuffix
 		if id == "" {
 			return httpx.NotFound("market not found")
 		}
@@ -279,6 +289,84 @@ func registerAdminTradingRoutes(mux *stdhttp.ServeMux, basePath string, reposito
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, toAdminMarketView(market))
 	}))
+}
+
+// handleAdminMarketStatusChange handles PUT /admin/trading/markets/{id}/status
+// Changes market status using the lifecycle state machine, with auto-void cascade.
+func handleAdminMarketStatusChange(
+	w stdhttp.ResponseWriter,
+	r *stdhttp.Request,
+	suffix string,
+	repository domain.ReadRepository,
+	betService *bets.Service,
+) error {
+	if r.Method != stdhttp.MethodPut {
+		return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+	}
+
+	marketID := strings.TrimSuffix(suffix, "/status")
+	if marketID == "" {
+		return httpx.NotFound("market not found")
+	}
+
+	var body struct {
+		Status string `json:"status"`
+		Reason string `json:"reason"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		return httpx.BadRequest("invalid request body", nil)
+	}
+	newStatus := strings.ToLower(strings.TrimSpace(body.Status))
+	if newStatus == "" {
+		return httpx.BadRequest("status is required", nil)
+	}
+
+	// Validate transition using lifecycle state machine
+	market, err := repository.GetMarketByID(marketID)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return httpx.NotFound("market not found")
+		}
+		return httpx.Internal("failed to fetch market", err)
+	}
+
+	if err := domain.ValidateMarketTransition(market.Status, newStatus); err != nil {
+		return httpx.BadRequest(err.Error(), map[string]any{
+			"currentStatus": market.Status,
+			"targetStatus":  newStatus,
+		})
+	}
+
+	// Apply the transition
+	writeRepo, ok := repository.(domain.MarketWriteRepository)
+	if !ok {
+		return httpx.Internal("market mutations not supported by repository", nil)
+	}
+
+	updated, err := writeRepo.UpdateMarketStatus(marketID, newStatus)
+	if err != nil {
+		return httpx.Internal("failed to update market status", err)
+	}
+
+	response := map[string]any{
+		"market": toAdminMarketView(updated),
+	}
+
+	// Auto-void cascade: when market transitions to voided/cancelled, cancel all placed bets
+	if domain.IsTerminalStatus(newStatus) && betService != nil {
+		reason := body.Reason
+		if reason == "" {
+			reason = "market voided by admin"
+		}
+		voided, voidErr := betService.VoidByMarket(marketID, reason, "admin")
+		if voidErr != nil {
+			slog.Warn("market void cascade partial failure", "market_id", marketID, "error", voidErr)
+		}
+		response["voidedBets"] = voided
+		slog.Info("market transitioned with bet void cascade", "market_id", marketID, "new_status", newStatus, "bets_voided", voided)
+	}
+
+	return httpx.WriteJSON(w, stdhttp.StatusOK, response)
 }
 
 func registerAdminPunterRoutes(mux *stdhttp.ServeMux, basePath string, repository domain.ReadRepository) {
@@ -895,6 +983,76 @@ func registerAdminUtilityRoutes(
 		})
 		return httpx.WriteJSON(w, stdhttp.StatusOK, result)
 	}))
+
+	// Settlement Dead Letter Queue endpoints
+	dlqPath := fmt.Sprintf("%s/settlement/dlq", basePath)
+	dlqRetryPath := fmt.Sprintf("%s/settlement/dlq/retry", basePath)
+	dlqPurgePath := fmt.Sprintf("%s/settlement/dlq/purge", basePath)
+
+	mux.Handle(dlqPath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		entries := betService.ListSettlementDLQ()
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"items": entries,
+			"total": len(entries),
+		})
+	}))
+
+	mux.Handle(dlqRetryPath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		var body struct {
+			BetID string `json:"betId"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", nil)
+		}
+		if strings.TrimSpace(body.BetID) == "" {
+			return httpx.BadRequest("betId is required", map[string]any{"field": "betId"})
+		}
+		result, err := betService.RetrySettlementDLQ(body.BetID)
+		if err != nil {
+			return httpx.Internal("DLQ retry failed", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"bet":     result,
+			"message": "settlement retry succeeded",
+		})
+	}))
+
+	mux.Handle(dlqPurgePath, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		var body struct {
+			BetID string `json:"betId"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", nil)
+		}
+		if strings.TrimSpace(body.BetID) == "" {
+			return httpx.BadRequest("betId is required", map[string]any{"field": "betId"})
+		}
+		if !betService.PurgeSettlementDLQ(body.BetID) {
+			return httpx.NotFound("bet not found in DLQ")
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"betId":   body.BetID,
+			"message": "removed from DLQ",
+		})
+	}))
 }
 
 func providerAdapterNames(runtime *provider.Runtime) []string {
@@ -1223,7 +1381,7 @@ func providerOpsAuditSnapshot() []auditLogEntry {
 	if providerOpsAuditStore != nil {
 		entries, err := providerOpsAuditStore.Load(providerOpsAuditLimit)
 		if err != nil {
-			log.Printf("warning: failed to load provider ops audit entries from %s store: %v", providerOpsAuditStoreMode, err)
+			slog.Warn("failed to load provider ops audit entries", "store_mode", providerOpsAuditStoreMode, "error", err)
 		} else {
 			providerOpsAuditEntries = trimAuditEntries(entries, providerOpsAuditLimit)
 		}
@@ -1241,12 +1399,12 @@ func recordProviderOpsAuditEntry(entry auditLogEntry) {
 	providerOpsAuditEntries = trimAuditEntries(providerOpsAuditEntries, providerOpsAuditLimit)
 	if providerOpsAuditStore != nil {
 		if err := providerOpsAuditStore.Append(entry, providerOpsAuditLimit); err != nil {
-			log.Printf("warning: failed to persist provider ops audit entry to %s store: %v", providerOpsAuditStoreMode, err)
+			slog.Warn("failed to persist provider ops audit entry", "store_mode", providerOpsAuditStoreMode, "error", err)
 		}
 		return
 	}
 	if err := persistProviderOpsAuditEntriesLocked(); err != nil {
-		log.Printf("warning: failed to persist provider ops audit entries: %v", err)
+		slog.Warn("failed to persist provider ops audit entries", "error", err)
 	}
 }
 
@@ -1254,7 +1412,7 @@ func initializeProviderOpsAuditStore() {
 	providerOpsAuditStoreInit.Do(func() {
 		store, mode, path, err := buildProviderOpsAuditStoreFromEnv()
 		if err != nil {
-			log.Printf("warning: failed to initialize provider ops audit store from env: %v", err)
+			slog.Warn("failed to initialize provider ops audit store from env", "error", err)
 			store = newProviderOpsAuditFileStore(defaultProviderOpsAuditPath)
 			mode = "file"
 			path = defaultProviderOpsAuditPath
@@ -1265,7 +1423,7 @@ func initializeProviderOpsAuditStore() {
 
 		entries, err := providerOpsAuditStore.Load(providerOpsAuditLimit)
 		if err != nil {
-			log.Printf("warning: failed to load provider ops audit entries from %s store: %v", providerOpsAuditStoreMode, err)
+			slog.Warn("failed to load provider ops audit entries", "store_mode", providerOpsAuditStoreMode, "error", err)
 			return
 		}
 		providerOpsAuditMu.Lock()

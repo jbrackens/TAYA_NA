@@ -13,6 +13,7 @@ const (
 	CodeForbidden        = "forbidden"
 	CodeNotFound         = "not_found"
 	CodeMethodNotAllowed = "method_not_allowed"
+	CodeTooManyRequests  = "too_many_requests"
 	CodeInternalError    = "internal_error"
 )
 
@@ -85,6 +86,10 @@ func MethodNotAllowed(method string, allowed ...string) *AppError {
 		details,
 		nil,
 	)
+}
+
+func TooManyRequests(message string) *AppError {
+	return NewError(http.StatusTooManyRequests, CodeTooManyRequests, message, nil, nil)
 }
 
 func Internal(message string, cause error) *AppError {

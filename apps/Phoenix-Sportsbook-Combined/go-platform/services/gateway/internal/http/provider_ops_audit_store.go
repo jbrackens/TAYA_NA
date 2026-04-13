@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
@@ -222,6 +223,25 @@ func (s *providerOpsAuditDBStore) placeholder(index int) string {
 	return "?"
 }
 
+// sharedAuditDB allows injecting an existing *sql.DB (e.g., from the wallet
+// service) so the audit store reuses the same connection pool instead of
+// opening a second one.
+var sharedAuditDB *sql.DB
+
+// SetSharedAuditDB should be called before initializeProviderOpsAuditStore to
+// provide a shared database connection for audit persistence.
+func SetSharedAuditDB(db *sql.DB) {
+	sharedAuditDB = db
+}
+
+func newProviderOpsAuditDBStoreFromDB(db *sql.DB) (*providerOpsAuditDBStore, error) {
+	store := &providerOpsAuditDBStore{driver: "postgres", db: db}
+	if err := store.ensureSchema(); err != nil {
+		return nil, err
+	}
+	return store, nil
+}
+
 func buildProviderOpsAuditStoreFromEnv() (providerOpsAuditStoreBackend, string, string, error) {
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("PROVIDER_OPS_AUDIT_STORE_MODE")))
 	driver := strings.TrimSpace(os.Getenv("PROVIDER_OPS_AUDIT_DB_DRIVER"))
@@ -231,6 +251,15 @@ func buildProviderOpsAuditStoreFromEnv() (providerOpsAuditStoreBackend, string, 
 	dsn := strings.TrimSpace(os.Getenv("PROVIDER_OPS_AUDIT_DB_DSN"))
 	if dsn == "" {
 		dsn = strings.TrimSpace(os.Getenv("GATEWAY_DB_DSN"))
+	}
+
+	// Prefer shared wallet DB when available (avoids opening a second connection)
+	if sharedAuditDB != nil {
+		store, err := newProviderOpsAuditDBStoreFromDB(sharedAuditDB)
+		if err == nil {
+			return store, "db(shared)", "", nil
+		}
+		slog.Warn("failed to use shared DB for audit store; falling back to env config", "error", err)
 	}
 
 	wantsDB := mode == "db" || mode == "sql" || mode == "postgres" || mode == "shared" || (mode == "" && dsn != "")

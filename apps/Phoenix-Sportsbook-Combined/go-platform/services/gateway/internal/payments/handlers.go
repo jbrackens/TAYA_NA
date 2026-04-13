@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	stdhttp "net/http"
+	"os"
+	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/platform/transport/httpx"
@@ -39,13 +42,16 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 
 		// Check deposit limits before processing
 		if DepositComplianceChecker != nil {
-			ctx, cancel := context.WithTimeout(r.Context(), 3*stdhttp.DefaultClient.Timeout)
-			if cancel != nil {
-				defer cancel()
-			}
+			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+			defer cancel()
 			allowed, reason, err := DepositComplianceChecker.CheckDepositAllowed(ctx, req.UserID, req.Amount)
 			if err != nil {
-				log.Printf("warning: deposit compliance check failed for user=%s: %v (allowing deposit)", req.UserID, err)
+				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+				if env == "production" || env == "staging" {
+					slog.Error("deposit compliance check failed", "user_id", req.UserID, "env", env, "error", err)
+					return httpx.Forbidden("deposit compliance check unavailable")
+				}
+				slog.Warn("deposit compliance check failed, allowing deposit in dev mode", "user_id", req.UserID, "error", err)
 			} else if !allowed {
 				return httpx.Forbidden("deposit not allowed: " + reason)
 			}
@@ -58,12 +64,10 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 
 		// Record deposit for limit tracking
 		if DepositComplianceChecker != nil {
-			ctx2, cancel2 := context.WithTimeout(r.Context(), 2*stdhttp.DefaultClient.Timeout)
-			if cancel2 != nil {
-				defer cancel2()
-			}
+			ctx2, cancel2 := context.WithTimeout(r.Context(), 2*time.Second)
+			defer cancel2()
 			if err := DepositComplianceChecker.RecordDeposit(ctx2, req.UserID, req.Amount); err != nil {
-				log.Printf("warning: failed to record deposit for compliance tracking user=%s: %v", req.UserID, err)
+				slog.Warn("failed to record deposit for compliance tracking", "user_id", req.UserID, "error", err)
 			}
 		}
 

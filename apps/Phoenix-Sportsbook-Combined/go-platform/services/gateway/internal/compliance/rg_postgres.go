@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 )
@@ -427,7 +427,7 @@ FROM player_activity_log
 WHERE user_id = $1 AND activity_type = $2 AND created_at >= $3`,
 		userID, activityType, start).Scan(&total)
 	if err != nil {
-		log.Printf("rg: failed to query usage for %s/%s/%s: %v", userID, activityType, period, err)
+		slog.Error("rg: failed to query usage", "user_id", userID, "activity_type", activityType, "period", period, "error", err)
 		return 0
 	}
 	if total.Valid {

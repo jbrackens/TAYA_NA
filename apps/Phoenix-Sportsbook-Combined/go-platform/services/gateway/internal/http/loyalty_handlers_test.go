@@ -143,6 +143,7 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 }
 
 func TestAdminLoyaltyRoutesRequireAdminRole(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))

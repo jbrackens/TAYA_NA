@@ -2,7 +2,7 @@ package loyalty
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -65,16 +65,16 @@ func (s *Service) saveToDisk() {
 	}
 	data, err := json.MarshalIndent(snap, "", "  ")
 	if err != nil {
-		log.Printf("loyalty: failed to marshal snapshot: %v", err)
+		slog.Warn("loyalty: failed to marshal snapshot", "error", err)
 		return
 	}
 	dir := filepath.Dir(s.statePath)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		log.Printf("loyalty: failed to create state dir: %v", err)
+		slog.Warn("loyalty: failed to create state dir", "error", err)
 		return
 	}
 	if err := os.WriteFile(s.statePath, data, 0o644); err != nil {
-		log.Printf("loyalty: failed to write snapshot: %v", err)
+		slog.Warn("loyalty: failed to write snapshot", "error", err)
 	}
 }
 
@@ -123,6 +123,6 @@ func (s *Service) loadFromDisk() error {
 	s.entrySequence = snap.EntrySequence
 	s.accountSequence = snap.AccountSequence
 	s.referralSequence = snap.ReferralSequence
-	log.Printf("loyalty: loaded %d accounts from snapshot", len(s.accounts))
+	slog.Info("loyalty: loaded accounts from snapshot", "count", len(s.accounts))
 	return nil
 }

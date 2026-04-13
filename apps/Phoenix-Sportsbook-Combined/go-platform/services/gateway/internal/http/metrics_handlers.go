@@ -31,6 +31,7 @@ func registerFeedMetricsRoute(
 		payload := provider.RenderPrometheusFeedMetrics(service, providerRuntime, thresholds) +
 			renderBetOfferPrometheusMetrics(service, betService) +
 			renderCashoutPrometheusMetrics(service, betService) +
+			renderSettlementPrometheusMetrics(service, betService) +
 			renderWalletPrometheusMetrics(service)
 		_, _ = w.Write([]byte(payload))
 		return nil
@@ -120,6 +121,49 @@ func renderBetOfferPrometheusMetrics(service string, betService *bets.Service) s
 	builder.WriteString(fmt.Sprintf("phoenix_bet_offer_status_total{service=\"%s\",status=\"committed\"} %d\n", service, status.Committed))
 
 	return builder.String()
+}
+
+func renderSettlementPrometheusMetrics(service string, betService *bets.Service) string {
+	if betService == nil {
+		return ""
+	}
+
+	m := betService.SettlementMetricsSnapshot()
+	b := strings.Builder{}
+
+	b.WriteString("# HELP phoenix_settlement_total Total settlement operations.\n")
+	b.WriteString("# TYPE phoenix_settlement_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_total{service=\"%s\"} %d\n", service, m.SettlementCount))
+
+	b.WriteString("# HELP phoenix_settlement_win_total Total winning settlements.\n")
+	b.WriteString("# TYPE phoenix_settlement_win_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_win_total{service=\"%s\"} %d\n", service, m.WinCount))
+
+	b.WriteString("# HELP phoenix_settlement_loss_total Total losing settlements.\n")
+	b.WriteString("# TYPE phoenix_settlement_loss_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_loss_total{service=\"%s\"} %d\n", service, m.LossCount))
+
+	b.WriteString("# HELP phoenix_settlement_cancel_total Total bet cancellations.\n")
+	b.WriteString("# TYPE phoenix_settlement_cancel_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_cancel_total{service=\"%s\"} %d\n", service, m.CancelCount))
+
+	b.WriteString("# HELP phoenix_settlement_refund_total Total bet refunds.\n")
+	b.WriteString("# TYPE phoenix_settlement_refund_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_refund_total{service=\"%s\"} %d\n", service, m.RefundCount))
+
+	b.WriteString("# HELP phoenix_settlement_failure_total Total settlement failures.\n")
+	b.WriteString("# TYPE phoenix_settlement_failure_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_failure_total{service=\"%s\"} %d\n", service, m.FailureCount))
+
+	b.WriteString("# HELP phoenix_settlement_payout_cents_total Total cents paid out in settlements.\n")
+	b.WriteString("# TYPE phoenix_settlement_payout_cents_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_payout_cents_total{service=\"%s\"} %d\n", service, m.TotalPayoutCents))
+
+	b.WriteString("# HELP phoenix_settlement_refunded_cents_total Total cents refunded.\n")
+	b.WriteString("# TYPE phoenix_settlement_refunded_cents_total counter\n")
+	b.WriteString(fmt.Sprintf("phoenix_settlement_refunded_cents_total{service=\"%s\"} %d\n", service, m.TotalRefundedCents))
+
+	return b.String()
 }
 
 func renderCashoutPrometheusMetrics(service string, betService *bets.Service) string {

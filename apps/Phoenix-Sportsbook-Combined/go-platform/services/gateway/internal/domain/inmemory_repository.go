@@ -29,7 +29,7 @@ func NewInMemoryReadRepository() *InMemoryReadRepository {
 				LeagueKey:  "premier-league",
 				HomeTeam:   "Team Alpha",
 				AwayTeam:   "Team Beta",
-				StartsAt:   "2026-04-10T20:00:00Z",
+				StartsAt:   "2030-04-10T20:00:00Z",
 			},
 			{
 				ID:         "f:local:002",
@@ -38,7 +38,7 @@ func NewInMemoryReadRepository() *InMemoryReadRepository {
 				LeagueKey:  "champions-league",
 				HomeTeam:   "Team Gamma",
 				AwayTeam:   "Team Delta",
-				StartsAt:   "2026-04-11T19:45:00Z",
+				StartsAt:   "2030-04-11T19:45:00Z",
 			},
 		},
 		markets: []Market{
@@ -47,7 +47,7 @@ func NewInMemoryReadRepository() *InMemoryReadRepository {
 				FixtureID: "f:local:001",
 				Name:      "Match Winner",
 				Status:    "open",
-				StartsAt:  "2026-04-10T20:00:00Z",
+				StartsAt:  "2030-04-10T20:00:00Z",
 				Selections: []MarketSelection{
 					{ID: "home", Name: "Team Alpha", Odds: 1.8, Active: true},
 					{ID: "away", Name: "Team Beta", Odds: 2.2, Active: true},
@@ -61,7 +61,7 @@ func NewInMemoryReadRepository() *InMemoryReadRepository {
 				FixtureID: "f:local:001",
 				Name:      "Over/Under 2.5 Goals",
 				Status:    "open",
-				StartsAt:  "2026-04-10T20:00:00Z",
+				StartsAt:  "2030-04-10T20:00:00Z",
 				Selections: []MarketSelection{
 					{ID: "over", Name: "Over 2.5", Odds: 1.95, Active: true},
 					{ID: "under", Name: "Under 2.5", Odds: 1.9, Active: true},
@@ -74,7 +74,7 @@ func NewInMemoryReadRepository() *InMemoryReadRepository {
 				FixtureID: "f:local:002",
 				Name:      "Both Teams To Score",
 				Status:    "suspended",
-				StartsAt:  "2026-04-11T19:45:00Z",
+				StartsAt:  "2030-04-11T19:45:00Z",
 				Selections: []MarketSelection{
 					{ID: "yes", Name: "Yes", Odds: 2.2, Active: true},
 					{ID: "no", Name: "No", Odds: 1.62, Active: true},
@@ -223,6 +223,24 @@ func (r *InMemoryReadRepository) UpdatePunterStatus(id string, status string) (P
 	}
 
 	return Punter{}, ErrNotFound
+}
+
+func (r *InMemoryReadRepository) UpdateMarketStatus(id string, newStatus string) (Market, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for index, market := range r.markets {
+		if market.ID != id {
+			continue
+		}
+		if err := ValidateMarketTransition(market.Status, newStatus); err != nil {
+			return Market{}, err
+		}
+		r.markets[index].Status = newStatus
+		return r.markets[index], nil
+	}
+
+	return Market{}, ErrNotFound
 }
 
 func (r *InMemoryReadRepository) snapshot() readModelSnapshot {

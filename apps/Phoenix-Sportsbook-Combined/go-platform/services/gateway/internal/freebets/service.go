@@ -49,7 +49,7 @@ type Service struct {
 }
 
 func NewService() *Service {
-	now := time.Date(2026, 4, 3, 16, 30, 0, 0, time.UTC)
+	now := time.Now().UTC()
 	seed := []canonicalv1.Freebet{
 		{
 			FreebetID:            "fb:local:001",

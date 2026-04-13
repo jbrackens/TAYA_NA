@@ -2,7 +2,7 @@ package ws
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -113,14 +113,14 @@ func (c *Client) readPump() {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("ws client error user_id=%s: %v", c.userID, err)
+				slog.Error("ws client error", "user_id", c.userID, "error", err)
 			}
 			return
 		}
 
 		msg, err := ParseClientMessage(data)
 		if err != nil {
-			log.Printf("ws invalid message user_id=%s: %v", c.userID, err)
+			slog.Warn("ws invalid message", "user_id", c.userID, "error", err)
 			continue
 		}
 
@@ -130,7 +130,7 @@ func (c *Client) readPump() {
 		case MessageTypeUnsubscribe:
 			c.handleUnsubscribe(msg.Channels)
 		default:
-			log.Printf("ws unknown message type user_id=%s: %s", c.userID, msg.Type)
+			slog.Warn("ws unknown message type", "user_id", c.userID, "type", msg.Type)
 		}
 	}
 }
@@ -180,7 +180,7 @@ func (c *Client) handleSubscribe(channels []string) {
 			continue
 		}
 		if !authorizeChannelAccess(c.userID, channel) {
-			log.Printf("ws channel auth denied: user=%s channel=%s", c.userID, channel)
+			slog.Warn("ws channel auth denied", "user_id", c.userID, "channel", channel)
 			continue
 		}
 		if !c.channels[channel] {
@@ -209,8 +209,8 @@ func authorizeChannelAccess(userID string, channel string) bool {
 		// Public channels: any authenticated user can subscribe
 		return true
 	default:
-		// Unknown prefixes default to public
-		return true
+		// Unknown prefixes: fail-closed — reject to prevent unintended data exposure
+		return false
 	}
 }
 

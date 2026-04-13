@@ -804,6 +804,7 @@ func TestBetPrecheckWithUnacceptedOddsBoostReturnsReasonCode(t *testing.T) {
 }
 
 func TestAdminTradingMarketsListRequiresAdminRole(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
@@ -2317,6 +2318,7 @@ func TestAdminWalletReconciliationRejectsInvalidTimestamp(t *testing.T) {
 }
 
 func TestAdminWalletCreditRequiresAdminRole(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))

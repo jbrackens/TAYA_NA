@@ -11,6 +11,7 @@ import (
 	"syscall"
 
 	gatewayhttp "phoenix-revival/gateway/internal/http"
+	"phoenix-revival/gateway/internal/tracing"
 	"phoenix-revival/platform/logging"
 	"phoenix-revival/platform/runtime"
 	"phoenix-revival/platform/transport/httpx"
@@ -22,6 +23,18 @@ func main() {
 	// Initialize structured logging (JSON in production, text in dev)
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 	logging.Init(cfg.Name, env)
+
+	// Initialize OpenTelemetry tracing (configured via OTEL_* env vars)
+	tracingCtx := context.Background()
+	shutdownTracing, err := tracing.Init(tracingCtx, cfg.Name, "1.0.0")
+	if err != nil {
+		slog.Warn("tracing initialization failed", "error", err)
+	}
+	defer func() {
+		if err := shutdownTracing(tracingCtx); err != nil {
+			slog.Warn("tracing shutdown error", "error", err)
+		}
+	}()
 
 	mux := stdhttp.NewServeMux()
 	metricsRegistry := httpx.NewMetricsRegistry()
@@ -61,15 +74,18 @@ func main() {
 
 	middlewares := []httpx.Middleware{
 		httpx.RequestID(),
+		tracing.Middleware(),
+		httpx.SecurityHeaders(),
 		httpx.AccessLog(log.Default()),
 		httpx.Metrics(metricsRegistry),
 		httpx.Recovery(log.Default()),
 	}
 
 	if authEnabled {
-		// Insert Auth after RequestID, and CSRF after Auth
 		middlewares = []httpx.Middleware{
 			httpx.RequestID(),
+			tracing.Middleware(),
+			httpx.SecurityHeaders(),
 			httpx.Auth(authServiceURL, publicPrefixes),
 			httpx.CSRF(csrfSkipPrefixes),
 			httpx.AccessLog(log.Default()),

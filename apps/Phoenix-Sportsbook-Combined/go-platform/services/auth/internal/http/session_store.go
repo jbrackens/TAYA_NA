@@ -195,12 +195,12 @@ func (s *FileBackedSessionStore) persistLocked() error {
 	}
 
 	targetDir := filepath.Dir(s.path)
-	if err := os.MkdirAll(targetDir, 0o755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o700); err != nil {
 		return err
 	}
 
 	tempPath := s.path + ".tmp"
-	file, err := os.Create(tempPath)
+	file, err := os.OpenFile(tempPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return err
 	}

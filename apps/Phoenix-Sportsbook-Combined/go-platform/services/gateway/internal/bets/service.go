@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"log/slog"
 	"math"
 	"net/netip"
 	"os"
@@ -53,12 +54,14 @@ const (
 	statusPlaced      = "placed"
 	statusSettledWon  = "settled_won"
 	statusSettledLost = "settled_lost"
+	statusPush        = "push" // tie/push — stake returned, no win/loss
 	statusCashedOut   = "cashed_out"
 	statusCancelled   = "cancelled"
 	statusRefunded    = "refunded"
 
 	actionBetPlaced    = "bet.placed"
 	actionBetSettled   = "bet.settled"
+	actionBetPush      = "bet.push"
 	actionBetCashedOut = "bet.cashed_out"
 	actionBetCancelled = "bet.cancelled"
 	actionBetRefunded  = "bet.refunded"
@@ -246,6 +249,32 @@ type CashoutMetrics struct {
 	QuoteStateConflicts int64 `json:"quoteStateConflicts"`
 }
 
+// SettlementMetrics tracks settlement operation counters.
+type SettlementMetrics struct {
+	SettlementCount    int64 `json:"settlementCount"`
+	WinCount           int64 `json:"winCount"`
+	LossCount          int64 `json:"lossCount"`
+	CancelCount        int64 `json:"cancelCount"`
+	RefundCount        int64 `json:"refundCount"`
+	VoidByMarketCount  int64 `json:"voidByMarketCount"`
+	ResettlementCount  int64 `json:"resettlementCount"`
+	FailureCount       int64 `json:"failureCount"`
+	TotalPayoutCents   int64 `json:"totalPayoutCents"`
+	TotalRefundedCents int64 `json:"totalRefundedCents"`
+}
+
+// SettlementDLQEntry represents a failed settlement that should be retried.
+type SettlementDLQEntry struct {
+	BetID         string          `json:"betId"`
+	Request       SettleBetRequest `json:"request"`
+	ErrorMessage  string          `json:"errorMessage"`
+	Attempts      int             `json:"attempts"`
+	FirstFailedAt time.Time       `json:"firstFailedAt"`
+	LastAttemptAt time.Time       `json:"lastAttemptAt"`
+}
+
+const settlementDLQMaxAttempts = 10
+
 type PromoUsageFilter struct {
 	UserID      string
 	FreebetID   string
@@ -402,6 +431,8 @@ type Service struct {
 	quoteLatestRevisionByBet map[string]int64
 	quoteSequence            int64
 	cashoutMetrics           CashoutMetrics
+	settlementMetrics        SettlementMetrics
+	settlementDLQ            []SettlementDLQEntry
 	builderQuotesByID        map[string]BetBuilderQuote
 	builderQuotesByKey       map[string]BetBuilderQuote
 	builderQuoteSequence     int64
@@ -466,16 +497,16 @@ func NewServiceFromEnv(repository domain.ReadRepository, walletService *wallet.S
 			if isProduction {
 				log.Fatalf("FATAL: BET_STORE_MODE=%s but BET_DB_DSN is empty; DB mode required in production", mode)
 			}
-			log.Printf("warning: BET_STORE_MODE=%s requested, but BET_DB_DSN is empty; falling back to local bet store", mode)
+			slog.Warn("BET_STORE_MODE requested but BET_DB_DSN is empty; falling back to local bet store", "mode", mode)
 		} else {
 			svc, err := NewServiceWithDB(repository, walletService, driver, dsn)
 			if err != nil {
 				if isProduction {
 					log.Fatalf("FATAL: failed to initialize bet db store in production: %v", err)
 				}
-				log.Printf("warning: failed to initialize bet db store driver=%s: %v; falling back to local bet store", driver, err)
+				slog.Warn("failed to initialize bet db store; falling back to local bet store", "driver", driver, "error", err)
 			} else {
-				log.Printf("bet service initialized in db mode using driver=%s", driver)
+				slog.Info("bet service initialized in db mode", "driver", driver)
 				return svc
 			}
 		}
@@ -702,30 +733,238 @@ func (s *Service) Settle(request SettleBetRequest) (Bet, error) {
 			return Bet{}, ErrInvalidSettleRequest
 		}
 	}
+	var result Bet
+	var err error
 	if s.db != nil {
-		return s.settleDB(request)
+		result, err = s.settleDB(request)
+	} else {
+		result, err = s.settleMemory(request)
 	}
-	return s.settleMemory(request)
+	s.mu.Lock()
+	if err != nil {
+		s.settlementMetrics.FailureCount++
+	} else {
+		s.settlementMetrics.SettlementCount++
+		switch result.Status {
+		case statusSettledWon:
+			s.settlementMetrics.WinCount++
+			s.settlementMetrics.TotalPayoutCents += result.PotentialPayoutCents
+		case statusSettledLost:
+			s.settlementMetrics.LossCount++
+		}
+	}
+	s.mu.Unlock()
+	return result, err
+}
+
+// RecordSettlementFailure adds a failed settlement to the dead letter queue.
+// If the bet already exists in the DLQ, it increments the attempt count.
+func (s *Service) RecordSettlementFailure(request SettleBetRequest, settlementErr error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	now := s.now()
+	for i := range s.settlementDLQ {
+		if s.settlementDLQ[i].BetID == request.BetID {
+			s.settlementDLQ[i].Attempts++
+			s.settlementDLQ[i].LastAttemptAt = now
+			s.settlementDLQ[i].ErrorMessage = settlementErr.Error()
+			return
+		}
+	}
+	s.settlementDLQ = append(s.settlementDLQ, SettlementDLQEntry{
+		BetID:         request.BetID,
+		Request:       request,
+		ErrorMessage:  settlementErr.Error(),
+		Attempts:      1,
+		FirstFailedAt: now,
+		LastAttemptAt: now,
+	})
+}
+
+// ListSettlementDLQ returns all entries in the dead letter queue.
+func (s *Service) ListSettlementDLQ() []SettlementDLQEntry {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([]SettlementDLQEntry, len(s.settlementDLQ))
+	copy(out, s.settlementDLQ)
+	return out
+}
+
+// RetrySettlementDLQ retries a single DLQ entry. On success, removes it from the queue.
+func (s *Service) RetrySettlementDLQ(betID string) (Bet, error) {
+	s.mu.RLock()
+	var entry *SettlementDLQEntry
+	for i := range s.settlementDLQ {
+		if s.settlementDLQ[i].BetID == betID {
+			cp := s.settlementDLQ[i]
+			entry = &cp
+			break
+		}
+	}
+	s.mu.RUnlock()
+
+	if entry == nil {
+		return Bet{}, fmt.Errorf("bet %s not found in settlement DLQ", betID)
+	}
+	if entry.Attempts >= settlementDLQMaxAttempts {
+		return Bet{}, fmt.Errorf("bet %s exceeded max DLQ retry attempts (%d)", betID, settlementDLQMaxAttempts)
+	}
+
+	result, err := s.Settle(entry.Request)
+	if err != nil {
+		s.RecordSettlementFailure(entry.Request, err)
+		return Bet{}, err
+	}
+
+	// Success — remove from DLQ.
+	s.mu.Lock()
+	for i := range s.settlementDLQ {
+		if s.settlementDLQ[i].BetID == betID {
+			s.settlementDLQ = append(s.settlementDLQ[:i], s.settlementDLQ[i+1:]...)
+			break
+		}
+	}
+	s.mu.Unlock()
+	return result, nil
+}
+
+// PurgeSettlementDLQ removes a single entry from the DLQ without retrying.
+func (s *Service) PurgeSettlementDLQ(betID string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.settlementDLQ {
+		if s.settlementDLQ[i].BetID == betID {
+			s.settlementDLQ = append(s.settlementDLQ[:i], s.settlementDLQ[i+1:]...)
+			return true
+		}
+	}
+	return false
 }
 
 func (s *Service) Cancel(request LifecycleBetRequest) (Bet, error) {
 	if strings.TrimSpace(request.BetID) == "" {
 		return Bet{}, ErrInvalidSettleRequest
 	}
+	var result Bet
+	var err error
 	if s.db != nil {
-		return s.cancelDB(request)
+		result, err = s.cancelDB(request)
+	} else {
+		result, err = s.cancelMemory(request)
 	}
-	return s.cancelMemory(request)
+	if err == nil {
+		s.mu.Lock()
+		s.settlementMetrics.CancelCount++
+		s.settlementMetrics.TotalRefundedCents += result.StakeCents
+		s.mu.Unlock()
+	}
+	return result, err
 }
 
 func (s *Service) Refund(request LifecycleBetRequest) (Bet, error) {
 	if strings.TrimSpace(request.BetID) == "" {
 		return Bet{}, ErrInvalidSettleRequest
 	}
+	var result Bet
+	var err error
 	if s.db != nil {
-		return s.refundDB(request)
+		result, err = s.refundDB(request)
+	} else {
+		result, err = s.refundMemory(request)
 	}
-	return s.refundMemory(request)
+	if err == nil {
+		s.mu.Lock()
+		s.settlementMetrics.RefundCount++
+		s.settlementMetrics.TotalRefundedCents += result.StakeCents
+		s.mu.Unlock()
+	}
+	return result, err
+}
+
+// VoidByMarket cancels all placed (unsettled) bets on a given market.
+// This is triggered when a market transitions to voided/cancelled state.
+// Returns the count of voided bets and any error.
+func (s *Service) VoidByMarket(marketID, reason, actorID string) (int, error) {
+	if strings.TrimSpace(marketID) == "" {
+		return 0, ErrMarketNotFound
+	}
+	if reason == "" {
+		reason = "market voided"
+	}
+	if actorID == "" {
+		actorID = "system"
+	}
+
+	if s.db != nil {
+		return s.voidByMarketDB(marketID, reason, actorID)
+	}
+	return s.voidByMarketMemory(marketID, reason, actorID)
+}
+
+func (s *Service) voidByMarketDB(marketID, reason, actorID string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second) // longer timeout for batch
+	defer cancel()
+
+	// Find all placed bets on this market
+	rows, err := s.db.QueryContext(ctx, `
+SELECT bet_id FROM bets WHERE market_id = $1 AND status = $2`, marketID, statusPlaced)
+	if err != nil {
+		return 0, fmt.Errorf("query bets for market void: %w", err)
+	}
+	defer rows.Close()
+
+	var betIDs []string
+	for rows.Next() {
+		var betID string
+		if err := rows.Scan(&betID); err != nil {
+			return 0, err
+		}
+		betIDs = append(betIDs, betID)
+	}
+	if err := rows.Err(); err != nil {
+		return 0, err
+	}
+
+	voided := 0
+	for _, betID := range betIDs {
+		_, err := s.Cancel(LifecycleBetRequest{
+			BetID:   betID,
+			Reason:  reason,
+			ActorID: actorID,
+		})
+		if err != nil {
+			slog.Warn("failed to void bet during market void", "bet_id", betID, "error", err)
+			continue // don't block other voids on a single failure
+		}
+		voided++
+	}
+	return voided, nil
+}
+
+func (s *Service) voidByMarketMemory(marketID, reason, actorID string) (int, error) {
+	s.mu.RLock()
+	var betIDs []string
+	for _, bet := range s.betsByID {
+		if bet.MarketID == marketID && bet.Status == statusPlaced {
+			betIDs = append(betIDs, bet.BetID)
+		}
+	}
+	s.mu.RUnlock()
+
+	voided := 0
+	for _, betID := range betIDs {
+		_, err := s.Cancel(LifecycleBetRequest{
+			BetID:   betID,
+			Reason:  reason,
+			ActorID: actorID,
+		})
+		if err != nil {
+			continue
+		}
+		voided++
+	}
+	return voided, nil
 }
 
 func (s *Service) ListEvents(limit int) ([]BetEvent, error) {
@@ -754,7 +993,7 @@ func (s *Service) AnalyticsForUser(userID string) BetAnalytics {
 		if err == nil {
 			return analytics
 		}
-		log.Printf("warning: DB analytics failed for user %s: %v; falling back to memory", userID, err)
+		slog.Warn("DB analytics failed; falling back to memory", "user_id", userID, "error", err)
 	}
 	return s.analyticsForUserMemory(userID)
 }
@@ -1179,7 +1418,7 @@ func (s *Service) placeMemory(request PlaceBetRequest) (Bet, error) {
 	})
 
 	if err := s.saveToDiskLocked(); err != nil {
-		log.Printf("warning: failed to persist bet state to disk: %v", err)
+		slog.Warn("failed to persist bet state to disk", "error", err)
 	}
 	_ = market
 	_ = fixture
@@ -1309,7 +1548,7 @@ func (s *Service) settleMemory(request SettleBetRequest) (Bet, error) {
 		})
 	}
 	if err := s.saveToDiskLocked(); err != nil {
-		log.Printf("warning: failed to persist bet state to disk: %v", err)
+		slog.Warn("failed to persist bet state to disk", "error", err)
 	}
 	return updated, nil
 }
@@ -1345,7 +1584,7 @@ func (s *Service) cancelMemory(request LifecycleBetRequest) (Bet, error) {
 		})
 	}
 	if err := s.saveToDiskLocked(); err != nil {
-		log.Printf("warning: failed to persist bet state to disk: %v", err)
+		slog.Warn("failed to persist bet state to disk", "error", err)
 	}
 	return updated, nil
 }
@@ -1381,7 +1620,7 @@ func (s *Service) refundMemory(request LifecycleBetRequest) (Bet, error) {
 		})
 	}
 	if err := s.saveToDiskLocked(); err != nil {
-		log.Printf("warning: failed to persist bet state to disk: %v", err)
+		slog.Warn("failed to persist bet state to disk", "error", err)
 	}
 	return updated, nil
 }
@@ -1642,6 +1881,9 @@ func (s *Service) applySettlementTransitionAtomic(ctx context.Context, tx *sql.T
 	deadHeatFactor := 1.0
 	if request.DeadHeatFactor != nil {
 		deadHeatFactor = *request.DeadHeatFactor
+		if deadHeatFactor <= 0 || deadHeatFactor > 1.0 {
+			return Bet{}, settlementTransitionMeta{}, fmt.Errorf("dead heat factor must be in range (0, 1.0], got %f", deadHeatFactor)
+		}
 	}
 
 	meta := settlementTransitionMeta{
@@ -1759,6 +2001,7 @@ func (s *Service) applyRefundTransitionAtomic(ctx context.Context, tx *sql.Tx, b
 	case statusRefunded:
 		return bet, nil
 	case statusPlaced, statusSettledLost:
+		// Refunds allowed from placed or lost. Won bets require Cancel/Void.
 	default:
 		return Bet{}, ErrBetStateConflict
 	}
@@ -1980,7 +2223,7 @@ func (s *Service) validatePlacementRequest(request PlaceBetRequest) (domain.Mark
 		}
 		return domain.Market{}, domain.Fixture{}, domain.MarketSelection{}, err
 	}
-	if !strings.EqualFold(market.Status, "open") {
+	if !domain.IsBettableStatus(market.Status) {
 		return domain.Market{}, domain.Fixture{}, domain.MarketSelection{}, ErrMarketNotOpen
 	}
 
@@ -2032,6 +2275,9 @@ func (s *Service) applySettlementTransition(bet Bet, request SettleBetRequest) (
 	deadHeatFactor := 1.0
 	if request.DeadHeatFactor != nil {
 		deadHeatFactor = *request.DeadHeatFactor
+		if deadHeatFactor <= 0 || deadHeatFactor > 1.0 {
+			return Bet{}, settlementTransitionMeta{}, fmt.Errorf("dead heat factor must be in range (0, 1.0], got %f", deadHeatFactor)
+		}
 	}
 
 	meta := settlementTransitionMeta{
@@ -2188,6 +2434,8 @@ func (s *Service) applyRefundTransition(bet Bet, reason string) (Bet, error) {
 	case statusRefunded:
 		return bet, nil
 	case statusPlaced, statusSettledLost:
+		// Refunds are allowed from placed (unsettled) or lost bets only.
+		// Won bets have already paid out — use Cancel/Void for reversals.
 	default:
 		return Bet{}, ErrBetStateConflict
 	}
@@ -2534,7 +2782,7 @@ func (s *Service) refundPlacementDebitBestEffort(request PlaceBetRequest, reason
 		Reason:         "bet placement rollback " + reason,
 	})
 	if err != nil {
-		log.Printf("warning: failed to rollback placement debit user=%s idempotency=%s: %v", request.UserID, request.IdempotencyKey, err)
+		slog.Warn("failed to rollback placement debit", "user_id", request.UserID, "idempotency_key", request.IdempotencyKey, "error", err)
 	}
 }
 
@@ -2559,6 +2807,9 @@ func applyLTDDelay(ctx context.Context, delayMsec int64) error {
 // checkComplianceForPlacement verifies that the player is not restricted
 // and that cumulative stake limits are not exceeded. This is called before
 // the wallet debit to prevent money movement for restricted players.
+//
+// In production/staging: fail-closed — if compliance service is unreachable,
+// bets are blocked. In development: fail-open for local testing convenience.
 func (s *Service) checkComplianceForPlacement(request PlaceBetRequest) error {
 	if s.compliance == nil {
 		return nil // compliance service not configured, skip checks
@@ -2569,8 +2820,13 @@ func (s *Service) checkComplianceForPlacement(request PlaceBetRequest) error {
 
 	allowed, reasonCode, err := s.compliance.CheckBetAllowed(ctx, request.UserID, request.StakeCents)
 	if err != nil {
-		log.Printf("warning: compliance check failed for user=%s: %v (allowing bet)", request.UserID, err)
-		return nil // fail-open: if compliance service is down, don't block bets
+		env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+		if env == "production" || env == "staging" {
+			slog.Error("compliance check failed (blocking bet)", "user_id", request.UserID, "env", env, "error", err)
+			return ErrPlayerRestricted // fail-closed in production/staging
+		}
+		slog.Warn("compliance check failed (allowing bet — dev mode)", "user_id", request.UserID, "error", err)
+		return nil // fail-open in development only
 	}
 	if !allowed {
 		switch {
@@ -2597,7 +2853,7 @@ func (s *Service) recordComplianceBetPlaced(userID string, stakeCents int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	if err := s.compliance.RecordBet(ctx, userID, stakeCents); err != nil {
-		log.Printf("warning: failed to record bet for compliance tracking user=%s: %v", userID, err)
+		slog.Warn("failed to record bet for compliance tracking", "user_id", userID, "error", err)
 	}
 }
 
@@ -3344,7 +3600,7 @@ func (s *Service) recordEventDBBestEffort(event BetEvent) {
 		return
 	}
 	if err := s.insertEventDB(event); err != nil {
-		log.Printf("warning: failed to persist bet event id=%s action=%s: %v", event.ID, event.Action, err)
+		slog.Warn("failed to persist bet event", "event_id", event.ID, "action", event.Action, "error", err)
 	}
 }
 

@@ -3,7 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"io"
-	"log"
+	"log/slog"
 	stdhttp "net/http"
 	"os"
 	"strings"
@@ -26,12 +26,22 @@ func init() {
 	}
 }
 
+var wsEnvironment string
+
+func init() {
+	wsEnvironment = strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *stdhttp.Request) bool {
 		if len(allowedOrigins) == 0 {
-			// Dev mode: allow all origins when no origins configured
+			if wsEnvironment == "production" || wsEnvironment == "staging" {
+				slog.Warn("ws connection rejected: WS_ALLOWED_ORIGINS not configured", "environment", wsEnvironment)
+				return false
+			}
+			// Dev mode only: allow all origins when no origins configured
 			return true
 		}
 		origin := r.Header.Get("Origin")
@@ -40,7 +50,7 @@ var upgrader = websocket.Upgrader{
 				return true
 			}
 		}
-		log.Printf("ws connection rejected: origin=%s not in allowed list", origin)
+		slog.Warn("ws connection rejected: origin not in allowed list", "origin", origin)
 		return false
 	},
 }
@@ -73,7 +83,7 @@ func NewHandler(hub *Hub) stdhttp.HandlerFunc {
 		// Upgrade the HTTP connection to WebSocket
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			log.Printf("ws upgrade error: %v", err)
+			slog.Error("ws upgrade error", "error", err)
 			return
 		}
 
@@ -81,7 +91,7 @@ func NewHandler(hub *Hub) stdhttp.HandlerFunc {
 		client := NewClientFromWS(hub, conn, userID)
 		client.Start()
 
-		log.Printf("ws client connected user_id=%s", userID)
+		slog.Info("ws client connected", "user_id", userID)
 	}
 }
 
@@ -103,13 +113,7 @@ func authenticateWebSocket(r *stdhttp.Request) (string, error) {
 		}
 	}
 
-	// 3. Fallback: query param (deprecated — logs warning)
-	if token == "" {
-		token = r.URL.Query().Get("token")
-		if token != "" {
-			log.Printf("ws auth: token passed via query param (deprecated, use cookie or header)")
-		}
-	}
+	// Query param auth removed — tokens in URLs leak via logs, proxies, and Referer headers.
 
 	if token == "" {
 		return "", stdhttp.ErrMissingFile
@@ -140,7 +144,7 @@ func validateTokenAgainstAuthService(token string) (string, error) {
 	client := &stdhttp.Client{Timeout: 5 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("ws auth: auth service unavailable: %v", err)
+		slog.Error("ws auth: auth service unavailable", "error", err)
 		return "", err
 	}
 	defer func() { _, _ = io.Copy(io.Discard, resp.Body); resp.Body.Close() }()

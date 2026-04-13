@@ -68,14 +68,26 @@ func (s *providerEventSink) applySettlementEvent(event canonicalv1.Envelope) {
 
 	winningSelections := strings.Join(settlement.WinningSelectionIDs, ",")
 	if winningSelections == "" && settlement.Outcome == canonicalv1.SettlementOutcomeVoid {
-		// Void settlement — cancel the bet
+		actor := fmt.Sprintf("feed:%s", event.Provider.Name)
+		// Void settlement — try Cancel first (for placed bets), fall back to Refund (for settled bets)
 		_, err := s.betService.Cancel(bets.LifecycleBetRequest{
 			BetID:   settlement.BetID,
 			Reason:  settlement.Reason,
-			ActorID: fmt.Sprintf("feed:%s", event.Provider.Name),
+			ActorID: actor,
 		})
 		if err != nil {
-			slog.Error("feed settlement cancel failed", "bet_id", settlement.BetID, "error", err)
+			// If bet was already settled (won/lost), use Refund which handles
+			// reversal of prior payout before refunding stake.
+			_, refundErr := s.betService.Refund(bets.LifecycleBetRequest{
+				BetID:   settlement.BetID,
+				Reason:  settlement.Reason,
+				ActorID: actor,
+			})
+			if refundErr != nil {
+				slog.Error("feed settlement void failed", "bet_id", settlement.BetID, "cancel_err", err, "refund_err", refundErr)
+			} else {
+				slog.Info("feed settlement voided (via refund)", "bet_id", settlement.BetID, "reason", settlement.Reason)
+			}
 		} else {
 			slog.Info("feed settlement voided", "bet_id", settlement.BetID, "reason", settlement.Reason)
 		}
@@ -92,7 +104,7 @@ func (s *providerEventSink) applySettlementEvent(event canonicalv1.Envelope) {
 		deadHeatFactor = settlement.DeadHeatFactor
 	}
 
-	_, err := s.betService.Settle(bets.SettleBetRequest{
+	req := bets.SettleBetRequest{
 		BetID:                settlement.BetID,
 		WinningSelectionID:   winningSelections,
 		WinningSelectionName: "",
@@ -100,9 +112,11 @@ func (s *providerEventSink) applySettlementEvent(event canonicalv1.Envelope) {
 		DeadHeatFactor:       deadHeatFactor,
 		Reason:               settlement.Reason,
 		ActorID:              fmt.Sprintf("feed:%s", event.Provider.Name),
-	})
+	}
+	_, err := s.betService.Settle(req)
 	if err != nil {
 		slog.Error("feed settlement failed", "bet_id", settlement.BetID, "selections", winningSelections, "error", err)
+		s.betService.RecordSettlementFailure(req, err)
 	} else {
 		slog.Info("feed settlement completed", "bet_id", settlement.BetID, "winning", winningSelections, "source", event.Provider.Name)
 	}

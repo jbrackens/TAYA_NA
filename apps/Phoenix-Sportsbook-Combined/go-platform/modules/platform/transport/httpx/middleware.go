@@ -31,6 +31,10 @@ const (
 	generatedRequestSize = 16
 	authCacheTTL         = 30 * time.Second
 	authCacheMaxSize     = 10000
+
+	// Circuit breaker thresholds for auth service
+	cbFailureThreshold = 5               // open circuit after 5 consecutive failures
+	cbResetTimeout     = 15 * time.Second // try again after 15s
 )
 
 func Chain(handler http.Handler, middlewares ...Middleware) http.Handler {
@@ -83,6 +87,52 @@ func RoleFromContext(ctx context.Context) string {
 	return v
 }
 
+// ── Auth Circuit Breaker ──────────────────────────────────────────
+
+// authCircuitBreaker prevents cascading failures when the auth service is down.
+// After cbFailureThreshold consecutive failures, the circuit opens and fast-fails
+// for cbResetTimeout. After that window, one request is allowed through (half-open).
+type authCircuitBreaker struct {
+	mu               sync.Mutex
+	consecutiveFails int
+	lastFailure      time.Time
+	state            string // "closed", "open", "half-open"
+}
+
+func (cb *authCircuitBreaker) allow() bool {
+	cb.mu.Lock()
+	defer cb.mu.Unlock()
+	switch cb.state {
+	case "open":
+		if time.Since(cb.lastFailure) > cbResetTimeout {
+			cb.state = "half-open"
+			return true
+		}
+		return false
+	case "half-open":
+		return false // only one request at a time in half-open
+	default: // closed
+		return true
+	}
+}
+
+func (cb *authCircuitBreaker) recordSuccess() {
+	cb.mu.Lock()
+	defer cb.mu.Unlock()
+	cb.consecutiveFails = 0
+	cb.state = "closed"
+}
+
+func (cb *authCircuitBreaker) recordFailure() {
+	cb.mu.Lock()
+	defer cb.mu.Unlock()
+	cb.consecutiveFails++
+	cb.lastFailure = time.Now()
+	if cb.consecutiveFails >= cbFailureThreshold {
+		cb.state = "open"
+	}
+}
+
 // ── Auth Middleware ────────────────────────────────────────────────
 
 type authCacheEntry struct {
@@ -102,8 +152,11 @@ type authSessionResponse struct {
 // Auth validates the access_token cookie or Authorization header against the
 // auth service and injects UserID, Username, and Role into the request context.
 // Paths matching any publicPrefix are passed through without authentication.
+// Includes a circuit breaker: after 5 consecutive auth service failures, requests
+// fast-fail for 15 seconds instead of waiting for the 5s timeout each time.
 func Auth(authServiceURL string, publicPrefixes []string) Middleware {
 	cache := &sync.Map{}
+	cb := &authCircuitBreaker{state: "closed"}
 
 	// Background cache cleanup every 60 seconds
 	go func() {
@@ -161,34 +214,60 @@ func Auth(authServiceURL string, publicPrefixes []string) Middleware {
 				cache.Delete(token)
 			}
 
+			// Circuit breaker: fast-fail if auth service is known to be down
+			if !cb.allow() {
+				WriteError(w, r, &AppError{
+					Status:  http.StatusServiceUnavailable,
+					Code:    "auth_unavailable",
+					Message: "auth service temporarily unavailable",
+				})
+				return
+			}
+
 			// Validate against auth service
 			sessionURL := strings.TrimRight(authServiceURL, "/") + "/api/v1/auth/session"
 			req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, sessionURL, nil)
 			if err != nil {
+				cb.recordFailure()
 				WriteError(w, r, Internal("failed to create auth validation request", err))
 				return
 			}
 			req.AddCookie(&http.Cookie{Name: cookieAccessToken, Value: token})
 			req.Header.Set("Authorization", "Bearer "+token)
+			// Propagate request ID for cross-service tracing
+			if reqID := RequestIDFromContext(r.Context()); reqID != "" {
+				req.Header.Set(headerRequestID, reqID)
+			}
 
 			client := &http.Client{Timeout: 5 * time.Second}
 			resp, err := client.Do(req)
 			if err != nil {
+				cb.recordFailure()
 				WriteError(w, r, Internal("auth service unavailable", err))
 				return
 			}
 			defer func() { _, _ = io.Copy(io.Discard, resp.Body); resp.Body.Close() }()
 
+			if resp.StatusCode >= 500 {
+				cb.recordFailure()
+				WriteError(w, r, Internal("auth service error", nil))
+				return
+			}
+
 			if resp.StatusCode != http.StatusOK {
+				cb.recordSuccess() // auth service responded, circuit is fine
 				WriteError(w, r, Unauthorized("invalid or expired access token"))
 				return
 			}
 
 			var session authSessionResponse
 			if err := json.NewDecoder(resp.Body).Decode(&session); err != nil || !session.Authenticated {
+				cb.recordSuccess()
 				WriteError(w, r, Unauthorized("invalid session"))
 				return
 			}
+
+			cb.recordSuccess()
 
 			// Cache the validated session
 			cache.Store(token, authCacheEntry{
@@ -280,6 +359,24 @@ func RequireRole(r *http.Request, role string) error {
 	return nil
 }
 
+// SecurityHeaders adds standard security headers to all responses.
+func SecurityHeaders() Middleware {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("X-Content-Type-Options", "nosniff")
+			w.Header().Set("X-Frame-Options", "DENY")
+			w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+			w.Header().Set("X-XSS-Protection", "0") // Modern browsers: use CSP instead
+			w.Header().Set("Content-Security-Policy", "default-src 'self'")
+			// HSTS only if Secure cookies are enabled (production)
+			if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+				w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func Recovery(logger *log.Logger) Middleware {
 	l := withFallbackLogger(logger)
 	return func(next http.Handler) http.Handler {
@@ -310,15 +407,29 @@ func AccessLog(logger *log.Logger) Middleware {
 
 			next.ServeHTTP(recorder, r)
 
-			l.Printf(
-				"request_id=%s method=%s path=%s status=%d duration_ms=%d bytes=%d",
-				RequestIDFromContext(r.Context()),
-				r.Method,
-				r.URL.Path,
-				recorder.statusCode,
-				time.Since(started).Milliseconds(),
-				recorder.bytes,
-			)
+			traceID := recorder.Header().Get("X-Trace-Id")
+			if traceID != "" {
+				l.Printf(
+					"request_id=%s trace_id=%s method=%s path=%s status=%d duration_ms=%d bytes=%d",
+					RequestIDFromContext(r.Context()),
+					traceID,
+					r.Method,
+					r.URL.Path,
+					recorder.statusCode,
+					time.Since(started).Milliseconds(),
+					recorder.bytes,
+				)
+			} else {
+				l.Printf(
+					"request_id=%s method=%s path=%s status=%d duration_ms=%d bytes=%d",
+					RequestIDFromContext(r.Context()),
+					r.Method,
+					r.URL.Path,
+					recorder.statusCode,
+					time.Since(started).Milliseconds(),
+					recorder.bytes,
+				)
+			}
 		})
 	}
 }

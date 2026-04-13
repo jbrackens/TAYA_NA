@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	stdhttp "net/http"
 	"os"
 	"strings"
@@ -123,7 +123,7 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 		client := &stdhttp.Client{Timeout: 5 * time.Second}
 		resp, err := client.Do(req)
 		if err != nil {
-			log.Printf("user profile: auth service unreachable: %v", err)
+			slog.Error("user profile: auth service unreachable", "error", err)
 			return httpx.Internal("auth service unreachable", err)
 		}
 		defer func() { _ = resp.Body.Close() }()

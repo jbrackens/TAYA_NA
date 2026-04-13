@@ -40,6 +40,10 @@ type AuthService struct {
 
 	accessTTL  time.Duration
 	refreshTTL time.Duration
+
+	loginLimiter    *rateLimiter
+	registerLimiter *rateLimiter
+	lockout         *lockoutTracker
 }
 
 type registerRequest struct {
@@ -125,12 +129,35 @@ type structuredAuditLogger struct {
 }
 
 func NewAuthService() *AuthService {
-	demoUsername := getEnvOrDefault("AUTH_DEMO_USERNAME", "demo@phoenix.local")
-	demoPassword := getEnvOrDefault("AUTH_DEMO_PASSWORD", "demo123")
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+
+	demoUsername := os.Getenv("AUTH_DEMO_USERNAME")
+	demoPassword := os.Getenv("AUTH_DEMO_PASSWORD")
 	demoUserID := getEnvOrDefault("AUTH_DEMO_USER_ID", "u-1")
-	adminUsername := getEnvOrDefault("AUTH_ADMIN_USERNAME", "admin@phoenix.local")
-	adminPassword := getEnvOrDefault("AUTH_ADMIN_PASSWORD", "admin123")
+	adminUsername := os.Getenv("AUTH_ADMIN_USERNAME")
+	adminPassword := os.Getenv("AUTH_ADMIN_PASSWORD")
 	adminUserID := getEnvOrDefault("AUTH_ADMIN_USER_ID", "user-admin")
+
+	// In production/staging, seed credentials MUST come from environment.
+	// In development, provide defaults so the platform works out-of-the-box.
+	if env == "production" || env == "staging" {
+		if demoUsername == "" || demoPassword == "" || adminUsername == "" || adminPassword == "" {
+			log.Fatalf("FATAL: AUTH_DEMO_USERNAME, AUTH_DEMO_PASSWORD, AUTH_ADMIN_USERNAME, and AUTH_ADMIN_PASSWORD must be set in %s", env)
+		}
+	} else {
+		if demoUsername == "" {
+			demoUsername = "demo@phoenix.local"
+		}
+		if demoPassword == "" {
+			demoPassword = "demo123"
+		}
+		if adminUsername == "" {
+			adminUsername = "admin@phoenix.local"
+		}
+		if adminPassword == "" {
+			adminPassword = "admin123"
+		}
+	}
 	sessionStorePath := os.Getenv("AUTH_SESSION_STORE_FILE")
 
 	// Hash seed passwords with bcrypt for consistency
@@ -157,11 +184,14 @@ func NewAuthService() *AuthService {
 	}
 
 	svc := &AuthService{
-		usersByUsername: users,
-		store:          NewFileBackedSessionStore(sessionStorePath),
-		audit:          &structuredAuditLogger{logger: log.Default()},
-		accessTTL:      durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
-		refreshTTL:     durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
+		usersByUsername:  users,
+		store:           NewFileBackedSessionStore(sessionStorePath),
+		audit:           &structuredAuditLogger{logger: log.Default()},
+		accessTTL:       durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
+		refreshTTL:      durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
+		loginLimiter:    newRateLimiter(),
+		registerLimiter: newRateLimiter(),
+		lockout:         newLockoutTracker(),
 	}
 
 	// Optionally initialize DB-backed user store
@@ -310,6 +340,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
 
+		// Rate limit: 3 registrations per minute per IP
+		remoteIP := extractIP(r)
+		if !auth.registerLimiter.allow("register:"+remoteIP, 3, time.Minute) {
+			return httpx.TooManyRequests("too many registration attempts, try again later")
+		}
+
 		var body registerRequest
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
@@ -446,9 +482,18 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			MaxAge: -1,
 		})
 
-		// Invalidate session if access token cookie exists
+		// Invalidate session: try cookie first, then Authorization header
+		var tokenToInvalidate string
 		if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
-			_ = auth.store.DeleteByAccessToken(digestToken(cookie.Value))
+			tokenToInvalidate = cookie.Value
+		}
+		if tokenToInvalidate == "" {
+			if authHeader := r.Header.Get("Authorization"); strings.HasPrefix(authHeader, "Bearer ") {
+				tokenToInvalidate = strings.TrimPrefix(authHeader, "Bearer ")
+			}
+		}
+		if tokenToInvalidate != "" {
+			_ = auth.store.DeleteByAccessToken(digestToken(tokenToInvalidate))
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"status": "logged_out"})
@@ -662,12 +707,28 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 func (a *AuthService) Login(username string, password string) (tokenResponse, error) {
 	a.PruneExpiredSessions()
 
+	// Rate limit: 10 login attempts per minute per username
+	if !a.loginLimiter.allow("login:"+username, 10, time.Minute) {
+		a.audit.Event("auth.login.rate_limited", map[string]any{"username": username})
+		return tokenResponse{}, httpx.TooManyRequests("too many login attempts, try again later")
+	}
+
+	// Account lockout check
+	if a.lockout.isLocked(username) {
+		a.audit.Event("auth.login.locked_out", map[string]any{"username": username})
+		return tokenResponse{}, httpx.TooManyRequests("account temporarily locked due to repeated failures")
+	}
+
 	account, exists := a.lookupUser(username)
 	if !exists || !a.verifyPassword(account, password) {
+		a.lockout.recordFailure(username)
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
 		return tokenResponse{}, httpx.Unauthorized("invalid username or password")
 	}
+
+	// Successful login clears lockout state
+	a.lockout.clearFailures(username)
 
 	s, response, err := newSession(account, a.accessTTL, a.refreshTTL)
 	if err != nil {
@@ -696,18 +757,18 @@ func (a *AuthService) verifyPassword(account user, password string) bool {
 	return account.Password != "" && account.Password == password
 }
 
-func (a *AuthService) Register(username, password, role string) (user, error) {
+func (a *AuthService) Register(username, password, _ string) (user, error) {
 	username = strings.TrimSpace(username)
 	password = strings.TrimSpace(password)
-	if username == "" || len(password) < 6 {
-		return user{}, httpx.BadRequest("username required, password must be at least 6 characters", nil)
+	if username == "" {
+		return user{}, httpx.BadRequest("username is required", nil)
 	}
-	if role == "" {
-		role = rolePlayer
+	if err := validatePasswordStrength(password); err != nil {
+		return user{}, err
 	}
-	if role != rolePlayer && role != roleAdmin {
-		return user{}, httpx.BadRequest("role must be 'player' or 'admin'", nil)
-	}
+	// Registration always creates player accounts. Admin accounts must be
+	// created through a separate protected admin endpoint or seeded via env.
+	role := rolePlayer
 
 	// Check if user already exists
 	if _, exists := a.lookupUser(username); exists {
@@ -1075,9 +1136,200 @@ func getGoogleUserInfo(accessToken string) (*googleUserInfo, error) {
 	return &info, nil
 }
 
+func extractIP(r *stdhttp.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if i := strings.IndexByte(xff, ','); i > 0 {
+			return strings.TrimSpace(xff[:i])
+		}
+		return strings.TrimSpace(xff)
+	}
+	if xri := r.Header.Get("X-Real-Ip"); xri != "" {
+		return xri
+	}
+	if i := strings.LastIndex(r.RemoteAddr, ":"); i > 0 {
+		return r.RemoteAddr[:i]
+	}
+	return r.RemoteAddr
+}
+
 func getEnvOrDefault(name string, fallback string) string {
 	if value := os.Getenv(name); value != "" {
 		return value
 	}
 	return fallback
+}
+
+// ─── Password Strength ──────────────────────────────────────────
+
+const minPasswordLength = 12
+
+func validatePasswordStrength(password string) error {
+	if len(password) < minPasswordLength {
+		return httpx.BadRequest(fmt.Sprintf("password must be at least %d characters", minPasswordLength), nil)
+	}
+	var hasUpper, hasLower, hasDigit bool
+	for _, ch := range password {
+		switch {
+		case ch >= 'A' && ch <= 'Z':
+			hasUpper = true
+		case ch >= 'a' && ch <= 'z':
+			hasLower = true
+		case ch >= '0' && ch <= '9':
+			hasDigit = true
+		}
+	}
+	classes := 0
+	if hasUpper {
+		classes++
+	}
+	if hasLower {
+		classes++
+	}
+	if hasDigit {
+		classes++
+	}
+	if classes < 2 {
+		return httpx.BadRequest("password must contain at least two of: uppercase, lowercase, digits", nil)
+	}
+	return nil
+}
+
+// ─── Rate Limiting ──────────────────────────────────────────────
+
+type rateLimiter struct {
+	mu      sync.Mutex
+	windows map[string][]time.Time
+}
+
+func newRateLimiter() *rateLimiter {
+	rl := &rateLimiter{windows: make(map[string][]time.Time)}
+	// Sweep old entries every 60s
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			rl.sweep()
+		}
+	}()
+	return rl
+}
+
+func (rl *rateLimiter) allow(key string, limit int, window time.Duration) bool {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	now := time.Now()
+	cutoff := now.Add(-window)
+	// Filter to recent entries
+	recent := make([]time.Time, 0, len(rl.windows[key]))
+	for _, t := range rl.windows[key] {
+		if t.After(cutoff) {
+			recent = append(recent, t)
+		}
+	}
+	if len(recent) >= limit {
+		rl.windows[key] = recent
+		return false
+	}
+	rl.windows[key] = append(recent, now)
+	return true
+}
+
+func (rl *rateLimiter) sweep() {
+	rl.mu.Lock()
+	defer rl.mu.Unlock()
+	cutoff := time.Now().Add(-5 * time.Minute)
+	for key, times := range rl.windows {
+		recent := make([]time.Time, 0, len(times))
+		for _, t := range times {
+			if t.After(cutoff) {
+				recent = append(recent, t)
+			}
+		}
+		if len(recent) == 0 {
+			delete(rl.windows, key)
+		} else {
+			rl.windows[key] = recent
+		}
+	}
+}
+
+// ─── Account Lockout ────────────────────────────────────────────
+
+const (
+	maxFailedAttempts  = 5
+	lockoutDuration    = 15 * time.Minute
+	failedAttemptWindow = time.Minute
+)
+
+type lockoutTracker struct {
+	mu       sync.Mutex
+	failures map[string][]time.Time // username -> timestamps of failures
+	lockouts map[string]time.Time   // username -> locked until
+}
+
+func newLockoutTracker() *lockoutTracker {
+	lt := &lockoutTracker{
+		failures: make(map[string][]time.Time),
+		lockouts: make(map[string]time.Time),
+	}
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			lt.sweep()
+		}
+	}()
+	return lt
+}
+
+func (lt *lockoutTracker) isLocked(username string) bool {
+	lt.mu.Lock()
+	defer lt.mu.Unlock()
+	until, ok := lt.lockouts[username]
+	if !ok {
+		return false
+	}
+	if time.Now().After(until) {
+		delete(lt.lockouts, username)
+		delete(lt.failures, username)
+		return false
+	}
+	return true
+}
+
+func (lt *lockoutTracker) recordFailure(username string) {
+	lt.mu.Lock()
+	defer lt.mu.Unlock()
+	now := time.Now()
+	cutoff := now.Add(-failedAttemptWindow)
+	recent := make([]time.Time, 0, len(lt.failures[username]))
+	for _, t := range lt.failures[username] {
+		if t.After(cutoff) {
+			recent = append(recent, t)
+		}
+	}
+	recent = append(recent, now)
+	lt.failures[username] = recent
+	if len(recent) >= maxFailedAttempts {
+		lt.lockouts[username] = now.Add(lockoutDuration)
+	}
+}
+
+func (lt *lockoutTracker) clearFailures(username string) {
+	lt.mu.Lock()
+	defer lt.mu.Unlock()
+	delete(lt.failures, username)
+	delete(lt.lockouts, username)
+}
+
+func (lt *lockoutTracker) sweep() {
+	lt.mu.Lock()
+	defer lt.mu.Unlock()
+	now := time.Now()
+	for u, until := range lt.lockouts {
+		if now.After(until) {
+			delete(lt.lockouts, u)
+			delete(lt.failures, u)
+		}
+	}
 }

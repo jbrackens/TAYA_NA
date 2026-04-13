@@ -3,7 +3,7 @@ package payments
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -91,7 +91,7 @@ func (m *MockPaymentService) InitiateDeposit(ctx context.Context, userID string,
 			Reason:         fmt.Sprintf("deposit via %s", paymentMethod),
 		})
 		if err != nil {
-			log.Printf("warning: failed to credit wallet for deposit %s: %v", txnID, err)
+			slog.Warn("failed to credit wallet for deposit", "txn_id", txnID, "error", err)
 		}
 	}
 
@@ -161,7 +161,7 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 			Reason:         fmt.Sprintf("withdrawal via %s (pending)", paymentMethod),
 		})
 		if err != nil {
-			log.Printf("warning: failed to debit wallet for withdrawal %s: %v", txnID, err)
+			slog.Warn("failed to debit wallet for withdrawal", "txn_id", txnID, "error", err)
 		}
 	}
 
@@ -259,13 +259,13 @@ func (m *MockPaymentService) HandleWebhook(ctx context.Context, payload WebhookP
 	// If deposit is confirmed, credit wallet
 	if txn.Type == "deposit" && payload.Status == "approved" && m.walletService != nil {
 		// Wallet was already credited in InitiateDeposit, just log
-		log.Printf("webhook: deposit %s confirmed for user %s", payload.TransactionID, payload.UserID)
+		slog.Info("webhook deposit confirmed", "txn_id", payload.TransactionID, "user_id", payload.UserID)
 	}
 
 	// If withdrawal is processed, mark as complete
 	if txn.Type == "withdrawal" && payload.Status == "processed" {
 		txn.ProcessedAt = time.Now().UTC().Format(time.RFC3339)
-		log.Printf("webhook: withdrawal %s processed for user %s", payload.TransactionID, payload.UserID)
+		slog.Info("webhook withdrawal processed", "txn_id", payload.TransactionID, "user_id", payload.UserID)
 	}
 
 	return nil

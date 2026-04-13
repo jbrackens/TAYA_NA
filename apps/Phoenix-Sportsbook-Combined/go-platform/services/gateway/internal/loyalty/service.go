@@ -3,7 +3,7 @@ package loyalty
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"sort"
 	"strings"
@@ -120,9 +120,9 @@ func NewServiceFromEnv() *Service {
 	svc := NewService()
 	svc.statePath = statePath
 	if err := svc.loadFromDisk(); err != nil {
-		log.Printf("loyalty: failed to load state from %s: %v (starting fresh with seeds)", statePath, err)
+		slog.Warn("loyalty: failed to load state, starting fresh with seeds", "path", statePath, "error", err)
 	} else if len(svc.accounts) > 0 {
-		log.Printf("loyalty: restored %d accounts from %s", len(svc.accounts), statePath)
+		slog.Info("loyalty: restored accounts from snapshot", "count", len(svc.accounts), "path", statePath)
 		return svc
 	}
 	return svc

@@ -15,4 +15,9 @@ type PunterWriteRepository interface {
 	UpdatePunterStatus(id string, status string) (Punter, error)
 }
 
+// MarketWriteRepository provides mutation operations on markets.
+type MarketWriteRepository interface {
+	UpdateMarketStatus(id string, newStatus string) (Market, error)
+}
+
 var ErrNotFound = fmt.Errorf("entity not found")

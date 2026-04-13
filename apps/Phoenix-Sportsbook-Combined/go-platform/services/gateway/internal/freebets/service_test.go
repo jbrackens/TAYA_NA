@@ -156,7 +156,7 @@ func TestApplyToBetRejectsInvalidStateAndWrongUser(t *testing.T) {
 func TestApplyToBetMarksExpiredAsNotApplicable(t *testing.T) {
 	service := NewService()
 	service.now = func() time.Time {
-		return time.Date(2026, 4, 5, 0, 0, 0, 0, time.UTC)
+		return time.Now().UTC().Add(48 * time.Hour) // 2 days from now, past 24h expiry
 	}
 
 	_, err := service.ApplyToBet(ApplyToBetRequest{
