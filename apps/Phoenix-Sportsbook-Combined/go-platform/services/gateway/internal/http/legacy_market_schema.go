@@ -112,7 +112,7 @@ func toLegacyPagination[T any](items []T, page domain.PageMeta) legacyPaginatedR
 }
 
 func mapLegacyFixtureNavigation(fixture domain.Fixture, markets []domain.Market) legacyFixtureNavigation {
-	sport := inferSportFromTournament(fixture.Tournament)
+	sport := inferSport(fixture.SportKey, fixture.Tournament)
 	tournamentID := "t:" + slugifyStable(fixture.Tournament)
 	if tournamentID == "t:" {
 		tournamentID = "t:unknown"
@@ -130,10 +130,10 @@ func mapLegacyFixtureNavigation(fixture domain.Fixture, markets []domain.Market)
 		FixtureID:         fixture.ID,
 		FixtureName:       fixture.HomeTeam + " vs " + fixture.AwayTeam,
 		StartTime:         fixture.StartsAt,
-		IsLive:            false,
+		IsLive:            fixture.Status == "in_play",
 		Sport:             sport,
 		Tournament:        legacyTournament{TournamentID: tournamentID, SportID: sport.SportID, Name: fixture.Tournament, StartTime: fixture.StartsAt},
-		Status:            "NOT_STARTED",
+		Status:            mapFixtureStatus(fixture.Status),
 		Markets:           legacyMarkets,
 		MarketsTotalCount: len(markets),
 		Competitors: map[string]legacyCompetitorWithScore{
@@ -270,7 +270,34 @@ func inferDefaultSelections(marketName string, fixture domain.Fixture) []domain.
 	}
 }
 
-func inferSportFromTournament(tournament string) legacySport {
+// sportRegistry maps sportKey values to display names.
+var sportRegistry = map[string]legacySport{
+	"soccer":    {SportID: "s:soccer", Name: "Football", Abbreviation: "FOOT", DisplayToPunters: true},
+	"football":  {SportID: "s:soccer", Name: "Football", Abbreviation: "FOOT", DisplayToPunters: true},
+	"basketball": {SportID: "s:basketball", Name: "Basketball", Abbreviation: "BASK", DisplayToPunters: true},
+	"nba":       {SportID: "s:basketball", Name: "Basketball", Abbreviation: "BASK", DisplayToPunters: true},
+	"boxing":    {SportID: "s:boxing", Name: "Boxing", Abbreviation: "BOX", DisplayToPunters: true},
+	"mma":       {SportID: "s:mma", Name: "MMA", Abbreviation: "MMA", DisplayToPunters: true},
+	"ufc":       {SportID: "s:mma", Name: "MMA", Abbreviation: "MMA", DisplayToPunters: true},
+	"tennis":    {SportID: "s:tennis", Name: "Tennis", Abbreviation: "TEN", DisplayToPunters: true},
+	"volleyball": {SportID: "s:volleyball", Name: "Volleyball", Abbreviation: "VB", DisplayToPunters: true},
+	"baseball":  {SportID: "s:baseball", Name: "Baseball", Abbreviation: "BASE", DisplayToPunters: true},
+	"mlb":       {SportID: "s:baseball", Name: "Baseball", Abbreviation: "BASE", DisplayToPunters: true},
+	"cricket":   {SportID: "s:cricket", Name: "Cricket", Abbreviation: "CRIC", DisplayToPunters: true},
+	"badminton": {SportID: "s:badminton", Name: "Badminton", Abbreviation: "BAD", DisplayToPunters: true},
+	"cs2":       {SportID: "s:cs2", Name: "Counter-Strike 2", Abbreviation: "CS2", DisplayToPunters: true},
+	"esports":   {SportID: "s:esports", Name: "Esports", Abbreviation: "ESPT", DisplayToPunters: true},
+}
+
+func inferSport(sportKey string, tournament string) legacySport {
+	// First try sportKey lookup
+	if sportKey != "" {
+		key := strings.ToLower(strings.TrimSpace(sportKey))
+		if sport, ok := sportRegistry[key]; ok {
+			return sport
+		}
+	}
+	// Fall back to tournament name inference
 	lower := strings.ToLower(strings.TrimSpace(tournament))
 	switch {
 	case strings.Contains(lower, "league"),
@@ -278,12 +305,19 @@ func inferSportFromTournament(tournament string) legacySport {
 		strings.Contains(lower, "serie"),
 		strings.Contains(lower, "championship"),
 		strings.Contains(lower, "cup"):
-		return legacySport{
-			SportID:          "s:football",
-			Name:             "Football",
-			Abbreviation:     "FOOT",
-			DisplayToPunters: true,
-		}
+		return sportRegistry["soccer"]
+	case strings.Contains(lower, "nba"), strings.Contains(lower, "basketball"), strings.Contains(lower, "pba"):
+		return sportRegistry["basketball"]
+	case strings.Contains(lower, "ufc"), strings.Contains(lower, "mma"):
+		return sportRegistry["mma"]
+	case strings.Contains(lower, "boxing"), strings.Contains(lower, "wbc"), strings.Contains(lower, "wba"), strings.Contains(lower, "wbo"):
+		return sportRegistry["boxing"]
+	case strings.Contains(lower, "mlb"), strings.Contains(lower, "baseball"):
+		return sportRegistry["baseball"]
+	case strings.Contains(lower, "atp"), strings.Contains(lower, "wta"), strings.Contains(lower, "tennis"):
+		return sportRegistry["tennis"]
+	case strings.Contains(lower, "ipl"), strings.Contains(lower, "cricket"):
+		return sportRegistry["cricket"]
 	default:
 		return legacySport{
 			SportID:          "s:esports",
@@ -291,6 +325,21 @@ func inferSportFromTournament(tournament string) legacySport {
 			Abbreviation:     "ESPT",
 			DisplayToPunters: true,
 		}
+	}
+}
+
+func mapFixtureStatus(status string) string {
+	switch strings.ToLower(status) {
+	case "in_play":
+		return "IN_PLAY"
+	case "finished", "completed":
+		return "FINISHED"
+	case "cancelled":
+		return "CANCELLED"
+	case "suspended":
+		return "SUSPENDED"
+	default:
+		return "NOT_STARTED"
 	}
 }
 
