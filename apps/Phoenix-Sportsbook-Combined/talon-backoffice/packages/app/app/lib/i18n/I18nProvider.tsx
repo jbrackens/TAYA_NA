@@ -10,17 +10,27 @@ interface I18nProviderProps {
 
 /**
  * Wraps the app with the i18next provider.
- * Waits for translations to load before rendering children,
- * preventing the flash of raw i18n keys (e.g. "HERO_KICKER").
+ *
+ * Hydration safety: `ready` MUST start as `false` unconditionally.
+ * On the server the fetch-based backend cannot load translations (relative
+ * URLs have no origin during SSR), so i18n is never initialised there.
+ * If we derived the initial state from `i18n.isInitialized` the client
+ * could start with `true` (the module already ran) while the server was
+ * `false` — producing a different component tree and a React hydration
+ * error.
+ *
+ * We wait for the `initialized` event, which fires only after ALL
+ * namespaces listed in the config `ns` array have been fetched.  This
+ * prevents the flash of raw i18n keys (e.g. "HERO_KICKER") that occurred
+ * when we gated only on the "common" namespace while page-specific
+ * namespaces like "home" or "landing" were still in flight.
  */
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
-  const [ready, setReady] = useState(i18n.isInitialized && i18n.hasLoadedNamespace('common'));
+  // Always false on first render — matches the server-rendered HTML.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const storedLanguage =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('phoenix_language')
-        : null;
+    const storedLanguage = localStorage.getItem('phoenix_language');
 
     if (storedLanguage && storedLanguage !== i18n.language) {
       void i18n.changeLanguage(storedLanguage);
@@ -28,26 +38,25 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (ready) return;
-
-    // Wait for i18next to finish loading initial namespaces
-    const onInit = () => setReady(true);
-    if (i18n.isInitialized && i18n.hasLoadedNamespace('common')) {
+    // i18n may already be fully initialised (module-level init completed
+    // before this effect ran).  `isInitialized` is only `true` once every
+    // namespace in the `ns` array has been loaded for the current language.
+    if (i18n.isInitialized) {
       setReady(true);
       return;
     }
-    i18n.on('initialized', onInit);
-    i18n.on('loaded', onInit);
+
+    const markReady = () => setReady(true);
+    i18n.on('initialized', markReady);
     return () => {
-      i18n.off('initialized', onInit);
-      i18n.off('loaded', onInit);
+      i18n.off('initialized', markReady);
     };
-  }, [ready]);
+  }, []);
 
   if (!ready) {
-    // Render nothing while translations load — prevents key flash.
-    // The app shell (sidebar, header) is still rendered by the layout
-    // since I18nProvider wraps inside the visual shell.
+    // Render a minimal placeholder that is identical on server and client.
+    // The real children (AppShell with sidebar, header, page) render only
+    // after every translation namespace is available.
     return <I18nextProvider i18n={i18n}><div /></I18nextProvider>;
   }
 
