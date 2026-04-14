@@ -5,12 +5,24 @@ import Link from 'next/link';
 import { LoadingState } from '../../../components/Spinner';
 import { OddsButton } from '../../../components/OddsButton';
 import { logger } from '../../../lib/logger';
+import type { BCGameMarket, BCGameSelection } from '../../../lib/api/betconstruct-client';
 
 interface LeaguePageProps {
   params: Promise<{
     sport: string;
     league: string;
   }>;
+}
+
+/** Selection with optional handicap/total line value */
+interface BCMarketSelection extends BCGameSelection {
+  base?: number | null;
+}
+
+interface BCGameInfo {
+  score1?: number;
+  score2?: number;
+  current_game_time?: string;
 }
 
 interface BCGameRaw {
@@ -20,8 +32,8 @@ interface BCGameRaw {
   team2_name: string;
   type: number;
   markets_count: number;
-  info?: any;
-  markets: any[];
+  info?: BCGameInfo;
+  markets: BCGameMarket[];
   competitionId?: string;
   competitionName?: string;
 }
@@ -46,7 +58,7 @@ function matchesAny(value: string | undefined, needles: string[]) {
   return needles.some((needle) => normalized.includes(needle.toLowerCase()));
 }
 
-function isMoneylineMarket(market: any) {
+function isMoneylineMarket(market: BCGameMarket) {
   return (
     matchesAny(market?.type, ['p1xp2', 'p1p2', 'winner', 'moneyline', 'match result']) ||
     matchesAny(market?.displayKey, ['winner', 'moneyline', 'match_result', '1x2']) ||
@@ -54,7 +66,7 @@ function isMoneylineMarket(market: any) {
   );
 }
 
-function isHandicapMarket(market: any) {
+function isHandicapMarket(market: BCGameMarket) {
   return (
     matchesAny(market?.type, ['handicap', 'spread', 'run line', 'puck line']) ||
     matchesAny(market?.displayKey, ['handicap', 'spread']) ||
@@ -62,7 +74,7 @@ function isHandicapMarket(market: any) {
   );
 }
 
-function isTotalMarket(market: any) {
+function isTotalMarket(market: BCGameMarket) {
   return (
     matchesAny(market?.type, ['total', 'overunder', 'over/under']) ||
     matchesAny(market?.displayKey, ['total', 'totals', 'over_under']) ||
@@ -70,7 +82,7 @@ function isTotalMarket(market: any) {
   );
 }
 
-function isBttsMarket(market: any) {
+function isBttsMarket(market: BCGameMarket) {
   return (
     matchesAny(market?.type, ['btts', 'both team']) ||
     matchesAny(market?.displayKey, ['btts']) ||
@@ -78,11 +90,11 @@ function isBttsMarket(market: any) {
   );
 }
 
-function hasLineLabel(market: any) {
+function hasLineLabel(market: BCGameMarket) {
   return isHandicapMarket(market) || isTotalMarket(market);
 }
 
-function getSelectionForTeam(game: BCGameRaw, market: any, side: 'home' | 'away') {
+function getSelectionForTeam(game: BCGameRaw, market: BCGameMarket, side: 'home' | 'away'): BCMarketSelection | undefined {
   const teamName = String(side === 'home' ? game.team1_name || '' : game.team2_name || '');
   const typeKey = side === 'home' ? 'P1' : 'P2';
   const orderKey = side === 'home' ? 1 : 2;
@@ -91,7 +103,7 @@ function getSelectionForTeam(game: BCGameRaw, market: any, side: 'home' | 'away'
 
   return (
     market?.selections?.find(
-      (s: any) =>
+      (s: BCMarketSelection) =>
         s?.type === typeKey ||
         s?.order === orderKey ||
         (normalizedTeamName.length > 0 &&
@@ -102,7 +114,7 @@ function getSelectionForTeam(game: BCGameRaw, market: any, side: 'home' | 'away'
   );
 }
 
-function getMarketForColumn(sport: string, colIdx: number, markets: any[]) {
+function getMarketForColumn(sport: string, colIdx: number, markets: BCGameMarket[]) {
   const normalizedSport = sport.toLowerCase();
   const cols = SPORT_COLUMNS[normalizedSport] || ['Spread', 'Moneyline', 'Total'];
   const colName = cols[colIdx];

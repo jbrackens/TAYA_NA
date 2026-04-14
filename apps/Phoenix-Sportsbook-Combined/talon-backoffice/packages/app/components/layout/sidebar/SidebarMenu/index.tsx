@@ -333,8 +333,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = memo(
             <MenuContainer
               isCollapsed={isCollapsed}
               isGamesListVisible={isGamesListVisible}
-              //@ts-ignore
-              ref={ref}
+              ref={ref as React.Ref<HTMLDivElement>}
             >
               <CustomCollapse games={listBasedOnLocation} />
             </MenuContainer>
@@ -342,8 +341,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = memo(
             <GameMenuContainer
               isCollapsed={isCollapsed}
               isGamesListVisible={isGamesListVisible}
-              //@ts-ignore
-              ref={ref}
+              ref={ref as React.Ref<HTMLDivElement>}
             >
               <CustomCollapse games={listBasedOnLocation} />
             </GameMenuContainer>

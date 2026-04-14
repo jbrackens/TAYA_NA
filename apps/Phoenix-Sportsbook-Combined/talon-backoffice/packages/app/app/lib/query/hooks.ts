@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSports, getLeagues, getEvents } from '../api/events-client';
 import { getUserBets } from '../api/betting-client';
 import { getLeaderboards } from '../api/leaderboards-client';
-import type { Sport, League } from '../api/events-client';
+import type { Sport, League, GetEventsPaginatedResponse } from '../api/events-client';
 import type { UserBet } from '../api/betting-client';
 import type { LeaderboardDefinition } from '../api/leaderboards-client';
 
@@ -38,7 +38,7 @@ export function useLeagues(sportKey: string, enabled = true) {
 
 // ─── Events ─────────────────────────────────────────────────
 export function useEvents(sportKey?: string, leagueKey?: string) {
-  return useQuery<any>({
+  return useQuery<GetEventsPaginatedResponse>({
     queryKey: queryKeys.events(sportKey, leagueKey),
     queryFn: () => getEvents({ sport: sportKey, league: leagueKey }),
     staleTime: 30 * 1000, // events change frequently

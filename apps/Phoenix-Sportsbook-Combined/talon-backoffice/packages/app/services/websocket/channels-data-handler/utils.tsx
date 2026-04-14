@@ -1,3 +1,5 @@
+import { Dispatch } from "redux";
+import { BetReason } from "@phoenix-ui/utils";
 import {
   wsBetUpdateCancelled,
   wsBetUpdateFailed,
@@ -12,19 +14,26 @@ export enum BetChannelStateTypeEnum {
   FAILED = "FAILED",
 }
 
-export const handleBetUpdate = (payload: any, dispatch: any) => {
-  switch (payload.state) {
+interface BetUpdatePayload {
+  betId: string;
+  state: string;
+  reason?: BetReason;
+}
+
+export const handleBetUpdate = (payload: Record<string, unknown>, dispatch: Dispatch) => {
+  const betPayload = payload as unknown as BetUpdatePayload;
+  switch (betPayload.state) {
     case BetChannelStateTypeEnum.OPENED:
-      dispatch(wsBetUpdateOpened(payload));
+      dispatch(wsBetUpdateOpened(betPayload));
       break;
     case BetChannelStateTypeEnum.CANCELLED:
-      dispatch(wsBetUpdateCancelled(payload));
+      dispatch(wsBetUpdateCancelled(betPayload));
       break;
     case BetChannelStateTypeEnum.SETTLED:
-      dispatch(wsBetUpdateSettled(payload));
+      dispatch(wsBetUpdateSettled(betPayload));
       break;
     case BetChannelStateTypeEnum.FAILED:
-      dispatch(wsBetUpdateFailed(payload));
+      dispatch(wsBetUpdateFailed(betPayload));
       break;
   }
 };

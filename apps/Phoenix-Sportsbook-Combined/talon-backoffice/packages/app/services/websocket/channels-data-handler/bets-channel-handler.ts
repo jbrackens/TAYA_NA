@@ -1,4 +1,5 @@
-import { MessageEventEnum } from "../websocket-service";
+import { Dispatch } from "redux";
+import { MessageEventEnum, ParsedData } from "../websocket-service";
 import { handleBetUpdate } from "./utils";
 
 export enum BetChannelEventEnum {
@@ -12,7 +13,7 @@ export enum BetChannelStateTypeEnum {
   FAILED = "FAILED",
 }
 
-export const betsChannelHandler = (data: any, dispatch: any) => {
+export const betsChannelHandler = (data: ParsedData, dispatch: Dispatch) => {
   switch (data.event) {
     case MessageEventEnum.UPDATE:
       handleBetUpdate(data.data, dispatch);

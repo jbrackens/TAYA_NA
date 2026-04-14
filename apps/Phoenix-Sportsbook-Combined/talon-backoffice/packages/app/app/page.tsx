@@ -169,7 +169,8 @@ function getPrimaryMarket(fixture: Fixture) {
   return fixture.markets?.find((market) => market.selections?.length >= 3) || fixture.markets?.[0];
 }
 
-function normalizeSelection(rawSelection: any, marketId: string): Selection {
+function normalizeSelection(rawSelection: Record<string, unknown>, marketId: string): Selection {
+  const displayOdds = rawSelection?.displayOdds as Record<string, unknown> | undefined;
   return {
     selectionId: String(rawSelection?.selectionId || rawSelection?.id || ""),
     marketId,
@@ -177,38 +178,41 @@ function normalizeSelection(rawSelection: any, marketId: string): Selection {
     odds:
       typeof rawSelection?.odds === "number"
         ? rawSelection.odds
-        : typeof rawSelection?.displayOdds?.decimal === "number"
-          ? rawSelection.displayOdds.decimal
+        : typeof displayOdds?.decimal === "number"
+          ? displayOdds.decimal
           : 0,
     status:
-      rawSelection?.status ||
+      (rawSelection?.status as string) ||
       (rawSelection?.active === false ? "SUSPENDED" : "ACTIVE"),
   };
 }
 
-function normalizeMarket(rawMarket: any, fixtureId: string): Market {
+function normalizeMarket(rawMarket: Record<string, unknown>, fixtureId: string): Market {
   const marketId = String(rawMarket?.marketId || rawMarket?.id || "");
   const rawSelections = Array.isArray(rawMarket?.selections)
     ? rawMarket.selections
     : Array.isArray(rawMarket?.selectionOdds)
       ? rawMarket.selectionOdds
       : [];
+  const marketStatus = rawMarket?.marketStatus as Record<string, unknown> | undefined;
 
   return {
     marketId,
     fixtureId,
     name: String(rawMarket?.name || rawMarket?.marketName || "Featured Market"),
     status:
-      rawMarket?.status || rawMarket?.marketStatus?.type || "ACTIVE",
-    selections: rawSelections.map((selection: any) =>
+      (rawMarket?.status as string) || (marketStatus?.type as string) || "ACTIVE",
+    selections: rawSelections.map((selection: Record<string, unknown>) =>
       normalizeSelection(selection, marketId),
     ),
   };
 }
 
-function normalizeFixture(rawFixture: any): Fixture {
+function normalizeFixture(rawFixture: Record<string, unknown>): Fixture {
   const fixtureId = String(rawFixture?.fixtureId || rawFixture?.id || "");
   const rawMarkets = Array.isArray(rawFixture?.markets) ? rawFixture.markets : [];
+  const sport = rawFixture?.sport as Record<string, unknown> | undefined;
+  const tournament = rawFixture?.tournament as Record<string, unknown> | undefined;
 
   return {
     fixtureId,
@@ -216,30 +220,27 @@ function normalizeFixture(rawFixture: any): Fixture {
     startTime: String(rawFixture?.startTime || rawFixture?.start_at || ""),
     isLive: Boolean(rawFixture?.isLive),
     sport: {
-      sportId: String(rawFixture?.sport?.sportId || rawFixture?.sport?.id || ""),
-      name: String(rawFixture?.sport?.name || "Featured"),
+      sportId: String(sport?.sportId || sport?.id || ""),
+      name: String(sport?.name || "Featured"),
       abbreviation: String(
-        rawFixture?.sport?.abbreviation ||
-          rawFixture?.sport?.name?.slice(0, 3)?.toUpperCase() ||
-          "",
+        sport?.abbreviation ||
+          (typeof sport?.name === "string" ? sport.name.slice(0, 3).toUpperCase() : ""),
       ),
-      displayToPunters: rawFixture?.sport?.displayToPunters !== false,
+      displayToPunters: sport?.displayToPunters !== false,
     },
     tournament: {
-      tournamentId: String(
-        rawFixture?.tournament?.tournamentId || rawFixture?.tournament?.id || "",
-      ),
-      sportId: String(rawFixture?.tournament?.sportId || rawFixture?.sport?.sportId || ""),
-      name: String(rawFixture?.tournament?.name || "Featured"),
-      startTime: String(rawFixture?.tournament?.startTime || rawFixture?.startTime || ""),
+      tournamentId: String(tournament?.tournamentId || tournament?.id || ""),
+      sportId: String(tournament?.sportId || sport?.sportId || ""),
+      name: String(tournament?.name || "Featured"),
+      startTime: String(tournament?.startTime || rawFixture?.startTime || ""),
     },
     status: String(rawFixture?.status || "NOT_STARTED"),
-    markets: rawMarkets.map((market: any) => normalizeMarket(market, fixtureId)),
+    markets: rawMarkets.map((market: Record<string, unknown>) => normalizeMarket(market, fixtureId)),
     marketsTotalCount:
       typeof rawFixture?.marketsTotalCount === "number"
         ? rawFixture.marketsTotalCount
         : rawMarkets.length,
-    competitors: rawFixture?.competitors || {},
+    competitors: (rawFixture?.competitors as Record<string, Competitor>) || {},
   };
 }
 
@@ -257,21 +258,7 @@ function isValidFixture(fixture: Fixture): boolean {
   return true;
 }
 
-function normalizeSport(rawSport: any): Sport {
-  const sportId = String(
-    rawSport?.sportId || rawSport?.sportKey || rawSport?.id || rawSport?.name || "",
-  );
-  const name = String(rawSport?.name || rawSport?.sportKey || "Featured");
 
-  return {
-    sportId,
-    name,
-    abbreviation: String(
-      rawSport?.abbreviation || rawSport?.sportKey || name.slice(0, 3).toUpperCase(),
-    ),
-    displayToPunters: rawSport?.displayToPunters !== false,
-  };
-}
 
 function getFixtureStatusLabel(fixture: Fixture, t: (k: string) => string) {
   if (fixture.isLive) return t("LIVE");
@@ -340,7 +327,7 @@ function AuthenticatedHome() {
   const { data: rawLeaderboards = [] } = useLeaderboards();
 
   const fixtures = useMemo(() => {
-    const normalized = rawFixtures.map(normalizeFixture);
+    const normalized = rawFixtures.map((f) => normalizeFixture(f as Record<string, unknown>));
     return normalized.filter(isValidFixture);
   }, [rawFixtures]);
 
@@ -367,7 +354,6 @@ function AuthenticatedHome() {
 
   const loading = fixturesLoading;
   const error = fixturesError ? "CONNECT_ERROR" : "";
-  const feedError = "";
   const [activeSport, setActiveSport] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -963,7 +949,7 @@ function AuthenticatedHome() {
                         {teams.home} vs {teams.away}
                       </div>
                       <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
-                        {fixture.sportKey?.toUpperCase()} {fixture.league ? `· ${fixture.league}` : ""}
+                        {fixture.sport.name?.toUpperCase()} {fixture.tournament.name ? `· ${fixture.tournament.name}` : ""}
                       </div>
                     </div>
                     <div style={{ fontSize: "12px", color: "#94a3b8" }}>

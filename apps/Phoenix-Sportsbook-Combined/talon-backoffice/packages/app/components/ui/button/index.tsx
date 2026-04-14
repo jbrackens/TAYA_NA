@@ -11,7 +11,7 @@ export type CoreButtontProps = {
   icon?: ReactNode;
   href?: string;
   shape?: "circle" | "round";
-  className?: any;
+  className?: string;
   type?: "default" | "primary" | "ghost" | "dashed" | "link" | "text";
   // for testing purposes
   role?: string;

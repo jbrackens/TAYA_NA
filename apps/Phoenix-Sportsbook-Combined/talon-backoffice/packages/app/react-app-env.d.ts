@@ -5,6 +5,6 @@ import "react";
 
 declare module "react" {
   interface FunctionComponent<P = {}> {
-    (props: P & { children?: ReactNode }, context?: any): ReactElement<any, any> | null;
+    (props: P & { children?: ReactNode }, context?: unknown): ReactElement<unknown, unknown> | null;
   }
 }

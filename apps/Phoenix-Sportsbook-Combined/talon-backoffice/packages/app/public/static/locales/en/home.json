@@ -72,5 +72,11 @@
   "REFERRALS": "Referrals",
   "TODAY": "Today",
   "TOMORROW": "Tomorrow",
-  "TBD": "TBD"
+  "TBD": "TBD",
+  "NO_FEATURED_MATCHES": "No featured matches available",
+  "NO_UPCOMING_MATCHES": "No upcoming matches",
+  "NO_LIVE_MATCHES": "No live matches at the moment",
+  "LOADING_FEATURED_MATCHES": "Loading featured matches",
+  "LOADING_UPCOMING_MATCHES": "Loading upcoming matches",
+  "LOADING_LIVE_MATCHES": "Loading live matches"
 }

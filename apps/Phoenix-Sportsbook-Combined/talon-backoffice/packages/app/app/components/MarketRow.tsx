@@ -7,14 +7,15 @@ interface Selection {
   id: string;
   name: string;
   price: number;
-  base?: number | string | null;
+  odds?: number;
+  base?: string | number | null;
 }
 
 interface Market {
   id: string;
   name: string;
   status?: string;
-  selections?: any[];
+  selections?: Selection[];
   type?: string;
   displayKey?: string;
 }
@@ -110,18 +111,18 @@ const MarketRowComponent: React.FC<MarketRowProps> = ({
           gap: "8px",
         }}
       >
-        {market.selections.map((selection: any) => (
+        {market.selections.map((selection: Selection) => (
           <OddsButton
             key={selection.id}
             fixtureId={fixtureId}
             marketId={market.id}
             selectionId={selection.id}
-            odds={selection.price || selection.odds}
+            odds={selection.price || selection.odds || 0}
             matchName={fixtureName}
             marketName={market.name}
             selectionName={selection.name}
             suspended={isSuspended}
-            label={showLineLabel ? selection.base : undefined}
+            label={showLineLabel ? String(selection.base ?? "") || undefined : undefined}
             subtitle={showLineLabel ? selection.name : undefined}
           />
         ))}

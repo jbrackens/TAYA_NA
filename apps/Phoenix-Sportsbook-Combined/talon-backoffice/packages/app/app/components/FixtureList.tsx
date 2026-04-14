@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { getEvents, Event } from "../lib/api/events-client";
 import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
 import { toggleBetElement, selectBets } from "../lib/store/betSlice";
@@ -27,6 +28,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const dispatch = useAppDispatch();
   const betslipSelections = useAppSelector(selectBets);
+  const { t } = useTranslation(["fixture-list", "common"]);
 
   const loadFixtures = useCallback(
     async (page: number) => {
@@ -77,9 +79,9 @@ export const FixtureList: React.FC<FixtureListProps> = ({
             ? match.homeTeam
             : position === "away"
               ? match.awayTeam
-              : "Draw",
-        marketName: "Match Result",
-        fixtureName: `${match.homeTeam} vs ${match.awayTeam}`,
+              : t("common:DRAW_LABEL"),
+        marketName: t("common:MATCH_RESULT", { defaultValue: "Match Result" }),
+        fixtureName: `${match.homeTeam} ${t("common:VS")} ${match.awayTeam}`,
         fixtureId: match.fixtureId,
         odds: { decimal: 0, american: "0", fractional: "0/0" },
       }),
@@ -90,15 +92,15 @@ export const FixtureList: React.FC<FixtureListProps> = ({
     betslipSelections.some((b) => b.selectionId === `${fixtureId}-${position}`);
 
   if (loading) {
-    return <div style={{ color: "#D3D3D3" }}>Loading fixtures...</div>;
+    return <div style={{ color: "#D3D3D3" }}>{t("fixture-list:LOADING")}</div>;
   }
 
   if (error) {
-    return <div style={{ color: "#f87171" }}>Error: {error}</div>;
+    return <div style={{ color: "#f87171" }}>{t("common:ERROR_MESSAGE", { message: error })}</div>;
   }
 
   if (fixtures.length === 0) {
-    return <div style={{ color: "#D3D3D3" }}>No fixtures available</div>;
+    return <div style={{ color: "#D3D3D3" }}>{t("fixture-list:NO_FIXTURES")}</div>;
   }
 
   return (
@@ -125,7 +127,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
               }}
               onClick={() => setFilterStatus(status)}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {t(`fixture-list:FILTER_${status.toUpperCase()}`)}
             </button>
           ),
         )}
@@ -211,7 +213,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                       {fixture.homeTeam}
                     </div>
                   </div>
-                  <div style={{ fontSize: "12px", color: "#D3D3D3" }}>vs</div>
+                  <div style={{ fontSize: "12px", color: "#D3D3D3" }}>{t("common:VS")}</div>
                   <div style={{ flex: 1, textAlign: "center" }}>
                     <div
                       style={{
@@ -254,7 +256,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                         ? fixture.homeTeam.slice(0, 8)
                         : pos === "away"
                           ? fixture.awayTeam.slice(0, 8)
-                          : "Draw"}
+                          : t("common:DRAW_LABEL")}
                     </button>
                   ))}
                 </div>
@@ -288,12 +290,12 @@ export const FixtureList: React.FC<FixtureListProps> = ({
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(currentPage - 1)}
           >
-            Previous
+            {t("common:PREVIOUS")}
           </button>
           <span
             style={{ color: "#D3D3D3", alignSelf: "center", fontSize: "13px" }}
           >
-            Page {currentPage} of {totalPages}
+            {t("common:PAGE_OF", { current: currentPage, total: totalPages })}
           </span>
           <button
             style={{
@@ -309,7 +311,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
           >
-            Next
+            {t("common:NEXT")}
           </button>
         </div>
       )}

@@ -44,7 +44,7 @@ const TransactionHistoryList: React.FC<TransactionHistoryListProps> = ({
   const { formatCurrencyValue } = useCurrency();
   const { t } = useTranslation(["transaction-history"]);
   const tableColRef = useCallback(
-    (node: any) => {
+    (node: HTMLTableDataCellElement | null) => {
       if (node !== null) {
         setIdColumnWidth(node.getBoundingClientRect().width);
       }

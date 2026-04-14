@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { LoadingState } from "./Spinner";
 import wsService from "../lib/websocket/websocket-service";
 import type { WsMessage } from "../lib/websocket/websocket-service";
@@ -34,6 +35,7 @@ const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
   onBetDraw,
   onBetAway,
 }) => {
+  const { t } = useTranslation(["home", "common"]);
   const statusColors: Record<string, string> = {
     live: "#22c55e",
     finished: "#64748b",
@@ -89,7 +91,7 @@ const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
             {homeScore}
           </div>
         </div>
-        <div style={{ fontSize: "12px", color: "#64748b" }}>vs</div>
+        <div style={{ fontSize: "12px", color: "#64748b" }}>{t("common:VS")}</div>
         <div style={{ flex: 1, textAlign: "center" }}>
           <div style={{ fontSize: "14px", color: "#e2e8f0", fontWeight: 600 }}>
             {awayTeam}
@@ -124,7 +126,7 @@ const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
                 cursor: "pointer",
               }}
             >
-              Home {homeOdds.toFixed(2)}
+              {t("common:HOME_LABEL")} {homeOdds.toFixed(2)}
             </button>
           )}
           {drawOdds && (
@@ -142,7 +144,7 @@ const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
                 cursor: "pointer",
               }}
             >
-              Draw {drawOdds.toFixed(2)}
+              {t("common:DRAW_LABEL")} {drawOdds.toFixed(2)}
             </button>
           )}
           {awayOdds && (
@@ -160,7 +162,7 @@ const InlineMatchCardComponent: React.FC<MatchCardProps> = ({
                 cursor: "pointer",
               }}
             >
-              Away {awayOdds.toFixed(2)}
+              {t("common:AWAY_LABEL")} {awayOdds.toFixed(2)}
             </button>
           )}
         </div>
@@ -186,6 +188,7 @@ export const LiveNow: React.FC<LiveNowProps> = ({
   const [loading, setLoading] = useState(!initialMatchesByGroup);
   const [error, setError] = useState<string | null>(null);
   const trackedFixtureIdsRef = useRef<Set<string>>(new Set());
+  const { t } = useTranslation(["home", "common"]);
 
   // Handle WebSocket fixture updates
   const handleFixtureUpdate = useCallback((message: WsMessage) => {
@@ -308,16 +311,16 @@ export const LiveNow: React.FC<LiveNowProps> = ({
   );
 
   if (loading) {
-    return <LoadingState label="Loading live matches" />;
+    return <LoadingState label={t("home:LOADING_LIVE_MATCHES")} />;
   }
 
   if (error) {
-    return <div style={{ color: "#f87171" }}>Error: {error}</div>;
+    return <div style={{ color: "#f87171" }}>{t("common:ERROR_MESSAGE", { message: error })}</div>;
   }
 
   if (totalMatches === 0) {
     return (
-      <div style={{ color: "#64748b" }}>No live matches at the moment</div>
+      <div style={{ color: "#64748b" }}>{t("home:NO_LIVE_MATCHES")}</div>
     );
   }
 

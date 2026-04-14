@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LoadingState } from "./Spinner";
 import type { BoardEvent, UpcomingBoard } from "../lib/types/match-board";
 import wsService from "../lib/websocket/websocket-service";
@@ -21,6 +22,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   const [loading, setLoading] = useState(!initialMatchesByGroup);
   const [error, setError] = useState<string | null>(null);
   const trackedFixtureIdsRef = useRef<Set<string>>(new Set());
+  const { t } = useTranslation(["home", "common"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,7 +79,8 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     wsService.subscribe("fixture");
     const unsubscribe = wsService.on(
       "fixture",
-      (data: Record<string, unknown>) => {
+      (message) => {
+        const data = message.data;
         const fixtureId = data?.fixtureId as string | undefined;
         const newStatus = data?.status as string | undefined;
         if (
@@ -126,7 +129,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     const now = new Date();
     const start = new Date(startTime);
     const diff = start.getTime() - now.getTime();
-    if (diff < 0) return "Starting soon";
+    if (diff < 0) return t("home:STARTING_SOON");
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
     return `${Math.floor(diff / 86400000)}d`;
@@ -139,15 +142,15 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
   );
 
   if (loading) {
-    return <LoadingState label="Loading upcoming matches" />;
+    return <LoadingState label={t("home:LOADING_UPCOMING_MATCHES")} />;
   }
 
   if (error) {
-    return <div style={{ color: "#f87171" }}>Error: {error}</div>;
+    return <div style={{ color: "#f87171" }}>{t("common:ERROR_MESSAGE", { message: error })}</div>;
   }
 
   if (totalMatches === 0) {
-    return <div style={{ color: "#a0a0a0" }}>No upcoming matches</div>;
+    return <div style={{ color: "#a0a0a0" }}>{t("home:NO_UPCOMING_MATCHES")}</div>;
   }
 
   return (
@@ -200,7 +203,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
                     }}
                   >
                     {match.status === "in_play"
-                      ? "LIVE"
+                      ? t("home:LIVE_LABEL")
                       : getCountdownText(match.startTime)}
                   </div>
                   <div
@@ -236,7 +239,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
                         }}
                       />
                       <span style={{ fontSize: "12px", color: "#64748b" }}>
-                        {match.status === "in_play" ? "Live" : "Upcoming"}
+                        {match.status === "in_play" ? t("home:LIVE") : t("home:UPCOMING")}
                       </span>
                     </div>
                     <div
@@ -258,7 +261,7 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
                         </div>
                       </div>
                       <div style={{ fontSize: "12px", color: "#64748b" }}>
-                        vs
+                        {t("common:VS")}
                       </div>
                       <div style={{ flex: 1, textAlign: "center" }}>
                         <div

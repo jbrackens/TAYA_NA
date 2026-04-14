@@ -161,9 +161,8 @@ const Layout: React.FC<LayoutComponentProps> = ({
 
   const ref = useRef() as React.MutableRefObject<HTMLDivElement>;
 
-  const handleClick = (e: any) => {
-    //@ts-ignore
-    if (ref.current !== null && !ref.current.contains(e.target)) {
+  const handleClick = (e: MouseEvent) => {
+    if (ref.current !== null && e.target instanceof Node && !ref.current.contains(e.target)) {
       setIsGamesListVisible(false);
     }
   };

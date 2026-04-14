@@ -36,7 +36,7 @@ export enum GameIdEnum {
 export const initialState = {
   currentGame: undefined,
   language: "",
-  isUserDataLoading: undefined,
+  isUserDataLoading: undefined as boolean | undefined,
   isGeocomplyRequired: false,
   isGeocomplyLocationFailed: false,
   isAccountDataUpdateNeeded: false,
@@ -103,37 +103,37 @@ const settingsSlice = createSlice({
       state.userData = initialState.userData;
     },
 
-    setLanguage: (state, action) => {
+    setLanguage: (state, action: PayloadAction<string>) => {
       state.language = action.payload;
     },
 
-    setUserData: (state, action) => {
+    setUserData: (state, action: PayloadAction<Partial<typeof initialState.userData>>) => {
       state.userData = {
         ...state.userData,
         ...action.payload,
       };
     },
 
-    setIsGeocomplyLocationFailed: (state, action) => {
+    setIsGeocomplyLocationFailed: (state, action: PayloadAction<boolean>) => {
       state.isGeocomplyLocationFailed = action.payload;
     },
 
-    setIsGeocomplyRequired: (state, action) => {
+    setIsGeocomplyRequired: (state, action: PayloadAction<boolean>) => {
       state.isGeocomplyRequired = action.payload;
     },
 
-    setIsUserDataLoading: (state, action) => {
+    setIsUserDataLoading: (state, action: PayloadAction<boolean | undefined>) => {
       state.isUserDataLoading = action.payload;
     },
 
-    setUserIdentificationData: (state, action) => {
+    setUserIdentificationData: (state, action: PayloadAction<Partial<typeof initialState.userData>>) => {
       state.userData = {
         ...state.userData,
         ...action.payload,
       };
     },
 
-    setCommunicationPreferences: (state, action) => {
+    setCommunicationPreferences: (state, action: PayloadAction<typeof initialState.userData.communicationPreferences>) => {
       state.userData.communicationPreferences = { ...action.payload };
     },
 
@@ -168,7 +168,7 @@ const settingsSlice = createSlice({
       }
     },
 
-    setIsAccountDataUpdateNeeded: (state, action) => {
+    setIsAccountDataUpdateNeeded: (state, action: PayloadAction<boolean>) => {
       state.isAccountDataUpdateNeeded = action.payload;
     },
 
@@ -178,35 +178,39 @@ const settingsSlice = createSlice({
   },
 });
 
-export const selectLanguage = (state: any) => state.settings.language;
+type SettingsSliceState = {
+  settings: typeof initialState & { timezone?: string };
+};
 
-export const selectTimezone = (state: any) => state.settings.timezone;
+export const selectLanguage = (state: SettingsSliceState) => state.settings.language;
 
-export const selectAccountCommunicatePreferences = (state: any) =>
+export const selectTimezone = (state: SettingsSliceState) => state.settings.timezone;
+
+export const selectAccountCommunicatePreferences = (state: SettingsSliceState) =>
   state.settings.userData.communicationPreferences;
 
-export const selectAccountDepositLimits = (state: any) =>
+export const selectAccountDepositLimits = (state: SettingsSliceState) =>
   state.settings.userData.depositLimits;
 
-export const selectAccountSessionLimits = (state: any) =>
+export const selectAccountSessionLimits = (state: SettingsSliceState) =>
   state.settings.userData.sessionLimits;
 
-export const selectAccountStakeLimits = (state: any) =>
+export const selectAccountStakeLimits = (state: SettingsSliceState) =>
   state.settings.userData.stakeLimits;
 
-export const selectIsUserDataLoading = (state: any) =>
+export const selectIsUserDataLoading = (state: SettingsSliceState) =>
   state.settings.isUserDataLoading;
 
-export const selectIsGeocomplyRequired = (state: any) =>
+export const selectIsGeocomplyRequired = (state: SettingsSliceState) =>
   state.settings.isGeocomplyRequired;
 
-export const selectIsGeocomplyLocationFailed = (state: any) =>
+export const selectIsGeocomplyLocationFailed = (state: SettingsSliceState) =>
   state.settings.isGeocomplyLocationFailed;
 
-export const selectAccountStatus = (state: any): PunterStatus =>
-  state.settings.userData.status;
+export const selectAccountStatus = (state: SettingsSliceState): PunterStatus =>
+  state.settings.userData.status as PunterStatus;
 
-export const selectUserPersonalDetails = (state: any) => ({
+export const selectUserPersonalDetails = (state: SettingsSliceState) => ({
   username: state.settings.userData.username,
   email: state.settings.userData.email,
   phoneNumber: state.settings.userData.phoneNumber,
@@ -222,18 +226,18 @@ export const selectUserPersonalDetails = (state: any) => ({
   signUpDate: state.settings.userData.signUpDate,
 });
 
-export const selectIsAccountDataUpdateNeeded = (state: any) =>
+export const selectIsAccountDataUpdateNeeded = (state: SettingsSliceState) =>
   state.settings.userData.userId === "" ||
   state.settings.isAccountDataUpdateNeeded;
 
-export const selectStatus = (state: any) => state.settings.userData.status;
+export const selectStatus = (state: SettingsSliceState) => state.settings.userData.status;
 
-export const selectCoolOff = (state: any) => state.settings.userData.coolOff;
+export const selectCoolOff = (state: SettingsSliceState) => state.settings.userData.coolOff;
 
-export const selectHasToAcceptResponsibilityCheck = (state: any) =>
+export const selectHasToAcceptResponsibilityCheck = (state: SettingsSliceState) =>
   state.settings.userData.hasToAcceptResponsibilityCheck;
 
-export const selectOddsFormat = (state: any): DisplayOddsEnum =>
+export const selectOddsFormat = (state: SettingsSliceState): DisplayOddsEnum =>
   state.settings.oddsFormat;
 
 export const {

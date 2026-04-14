@@ -92,27 +92,31 @@ const authSlice = createSlice({
   },
 });
 
-export const selectAuthModalVisible = (state: any) =>
+type AuthSliceState = {
+  auth: typeof initialState;
+};
+
+export const selectAuthModalVisible = (state: AuthSliceState) =>
   state.auth.isLoginModalVisible;
 
-export const selectRegisterModalVisible = (state: any) =>
+export const selectRegisterModalVisible = (state: AuthSliceState) =>
   state.auth.isRegisterModalVisible;
 
-export const selectForgotPasswordModalVisible = (state: any) =>
+export const selectForgotPasswordModalVisible = (state: AuthSliceState) =>
   state.auth.isForgotPasswordModalVisible;
 
-export const selectResetPasswordModalVisible = (state: any) =>
+export const selectResetPasswordModalVisible = (state: AuthSliceState) =>
   state.auth.isResetPasswordModalVisible;
 
-export const selectTermsModalVisible = (state: any) =>
+export const selectTermsModalVisible = (state: AuthSliceState) =>
   state.auth.isTermsModalVisible;
 
-export const selectIsLoggedIn = (state: any) => state.auth.isLoggedIn;
+export const selectIsLoggedIn = (state: AuthSliceState) => state.auth.isLoggedIn;
 
-export const selectWsErrorModalVisible = (state: any) =>
+export const selectWsErrorModalVisible = (state: AuthSliceState) =>
   state.auth.isWsErrorModalVisible;
 
-export const selectIsWsConnected = (state: any) => state.auth.isWsConnected;
+export const selectIsWsConnected = (state: AuthSliceState) => state.auth.isWsConnected;
 
 export const {
   showAuthModal,

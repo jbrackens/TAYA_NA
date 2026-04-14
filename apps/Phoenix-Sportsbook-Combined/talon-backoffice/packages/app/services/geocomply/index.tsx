@@ -17,15 +17,58 @@ const {
   GEOCOMPLY_OOBEE_URL,
 } = require("next/config").default().publicRuntimeConfig;
 
-declare var GeoComply: any;
-declare var GCOobee: any;
+interface GeoComplyEventEmitter {
+  on(event: string, handler: (...args: string[]) => void): GeoComplyEventEmitter;
+  connect(installerId: string, envId: string): void;
+}
+
+interface GeoComplyClient extends GeoComplyEventEmitter {
+  CYCLEIP: string;
+  CLNT_ERROR_WRONG_OR_MISSING_PARAMETER: string;
+  CLNT_ERROR_LICENSE_EXPIRED: string;
+  CLNT_ERROR_INVALID_LICENSE_FORMAT: string;
+  CLNT_ERROR_SERVER_COMMUNICATION: string;
+  CLNT_ERROR_LOCAL_SERVICE_COMMUNICATION: string;
+  CLNT_ERROR_LOCAL_SERVICE_UNSUP_VER: string;
+  CLNT_ERROR_LOCAL_SERVICE_UNAVAILABLE: string;
+  CLNT_ERROR_TRANSACTION_TIMEOUT: string;
+  connect(installerId: string, envId: string): void;
+  disconnect(): void;
+  setLicense(key: string | undefined): GeoComplyClient;
+  setGeolocationReason(reason: string | null): GeoComplyClient;
+  setUserId(userId: string | null): GeoComplyClient;
+  requestGeolocation(): void;
+  configure(config: Record<string, unknown>): void;
+}
+
+interface GeoComplySDK {
+  Client: GeoComplyClient;
+  Events: { ready(target: Window, callback: () => void): void };
+}
+
+interface GCOobeeMobileClient {
+  configure(config: Record<string, unknown>): void;
+  connect(opts: Record<string, unknown>, callback: () => void): void;
+  request(): void;
+  hasGeolocatedRecently(): boolean;
+  events: GeoComplyEventEmitter;
+  EVENTS: Record<string, string>;
+}
+
+interface GCOobeeSDK {
+  createClient(): GCOobeeMobileClient;
+  utils: { browser: { is: { android: boolean; ios: boolean } } };
+}
+
+declare var GeoComply: GeoComplySDK;
+declare var GCOobee: GCOobeeSDK;
 
 const EXPIRY_BUFFER = 60;
 
 type GeoLocationState = {
   reason: string | null;
   isLoading: boolean;
-  response?: any;
+  response?: unknown;
   locationExpiry?: string;
 };
 
@@ -43,18 +86,18 @@ export type UseGeolocation = {
   triggerLocationCheck: (reason: string) => void;
   clearLocationState: () => void;
   isLoading: boolean;
-  response: any;
+  response: unknown;
   isClientConnected: boolean;
 };
 
-let geocomplyMobile: any;
+let geocomplyMobile: GCOobeeMobileClient;
 
 export const useGeolocation = (): UseGeolocation => {
   const dispatch = useDispatch();
   const isUserLoggedIn = useSelector(selectIsLoggedIn);
   const useGeocomplyLicense = useApi("geo-comply/license-key", "GET");
   const useGeocomplyPacket = useApi("geo-comply/geo-packet", "POST");
-  const licenseKey = useRef<string>();
+  const licenseKey = useRef<string | undefined>(undefined);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isClientLoading, setIsClientLoading] = useState(false);
@@ -280,9 +323,9 @@ export const useGeolocation = (): UseGeolocation => {
           `GeoLocation failed. Details: ErrCode=[${errorCode}] ErrMessage=[${errorMessage}]`,
         );
       })
-      .on("geolocation", function(data: any) {
+      .on("geolocation", function(data: string) {
         console.log("GC: packetCreated:\r\n" + data);
-        setGeopacket(data);
+        setGeopacket(data || null);
       })
       .on("log", console.log);
 
@@ -292,7 +335,7 @@ export const useGeolocation = (): UseGeolocation => {
   const initMobile = (): void => {
     console.log("GC: initMobile", { geocomplyMobile });
     geocomplyMobile.events
-      .on("**", function(this: any) {
+      .on("**", function(this: { event: string }) {
         console.log({ catch: this.event });
       })
       .on("before", function() {})
@@ -316,8 +359,8 @@ export const useGeolocation = (): UseGeolocation => {
       })
       .on("geolocation.stop_updating", function() {})
       .on(geocomplyMobile.EVENTS.HINT, function() {})
-      .on("geolocation.success", function(data: any) {
-        setGeopacket(data);
+      .on("geolocation.success", function(data: string) {
+        setGeopacket(data || null);
       });
   };
 

@@ -8,7 +8,7 @@ interface MatchTrackerIncident {
   incidentId: string;
   type: string;
   clockSeconds?: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 interface MatchTimelineProps {
@@ -31,7 +31,7 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
 
       setIncidents((prev) => {
         // Merge new incidents, deduplicate by incidentId, keep most recent first
-        const newIncidents: MatchTrackerIncident[] = data.incidents;
+        const newIncidents = data.incidents as MatchTrackerIncident[];
         const existingIds = new Set(
           prev.map((i: MatchTrackerIncident) => i.incidentId),
         );

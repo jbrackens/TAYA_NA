@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Bet, SummaryValues, SelectedBed } from "@phoenix-ui/utils";
+import { Bet, SummaryValues, SelectedBed, BetReason } from "@phoenix-ui/utils";
 import { Status } from "@phoenix-ui/utils";
 import { omit } from "lodash";
 import { BetSlipData } from "../../components/layout/betslip/list";
@@ -184,7 +184,7 @@ const betSlice = createSlice({
       state.handledOpenBetsPages = action.payload;
     },
 
-    setMultiBetsStake: (state, action: PayloadAction<any>) => {
+    setMultiBetsStake: (state, action: PayloadAction<number>) => {
       state.multiBetsStake = action.payload;
       state.summaryValues = {
         ...state.summaryValues,
@@ -203,7 +203,7 @@ const betSlice = createSlice({
       };
     },
 
-    wsBetUpdateOpened: (state, action: any) => {
+    wsBetUpdateOpened: (state, action: PayloadAction<{ betId: string }>) => {
       const newOpenBet = state.values.find(
         (el) => el?.betId === action.payload.betId,
       );
@@ -232,7 +232,7 @@ const betSlice = createSlice({
       }
     },
 
-    wsBetUpdateCancelled: (state, action: any) => {
+    wsBetUpdateCancelled: (state, action: PayloadAction<{ betId: string }>) => {
       //to change after design approval
       state.values = state.values.map((el) => {
         if (el?.betId === action.payload.betId) {
@@ -246,14 +246,14 @@ const betSlice = createSlice({
       });
     },
 
-    wsBetUpdateSettled: (state, action: any) => {
+    wsBetUpdateSettled: (state, action: PayloadAction<{ betId: string }>) => {
       //to change after design approval
       state.openBets = state.openBets.filter(
         (el) => el?.betId !== action.payload.betId,
       );
     },
 
-    wsBetUpdateFailed: (state, action: any) => {
+    wsBetUpdateFailed: (state, action: PayloadAction<{ betId: string; reason?: BetReason }>) => {
       state.values = state.values.map((el) => {
         if (el?.betId === action.payload.betId) {
           return {

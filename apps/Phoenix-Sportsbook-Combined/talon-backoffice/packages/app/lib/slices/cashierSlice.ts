@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export const initialState = {
   isCashierDrawerVisible: false,
@@ -18,22 +18,26 @@ const cashierSlice = createSlice({
       state.isCashierDrawerVisible = false;
     },
 
-    setCurrentBalance: (state, action) => {
+    setCurrentBalance: (state, action: PayloadAction<number>) => {
       state.currentBalance = action.payload;
     },
 
-    setBalanceUpdateNeeded: (state, action) => {
+    setBalanceUpdateNeeded: (state, action: PayloadAction<boolean>) => {
       state.isBalanceUpdateNeeded = action.payload;
     },
   },
 });
 
-export const selectCashierDrawerVisible = (state: any) =>
+type CashierSliceState = {
+  cashier: typeof initialState;
+};
+
+export const selectCashierDrawerVisible = (state: CashierSliceState) =>
   state.cashier.isCashierDrawerVisible;
 
-export const selectCurrentBalance = (state: any) =>
+export const selectCurrentBalance = (state: CashierSliceState) =>
   state.cashier.currentBalance;
-export const selectIsBalanceUpdateNeeded = (state: any) =>
+export const selectIsBalanceUpdateNeeded = (state: CashierSliceState) =>
   state.cashier.isBalanceUpdateNeeded;
 
 export const {

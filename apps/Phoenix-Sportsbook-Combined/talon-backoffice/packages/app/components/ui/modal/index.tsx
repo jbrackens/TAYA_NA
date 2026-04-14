@@ -7,15 +7,15 @@ type CoreModalProps = {
   visible?: boolean;
   title?: React.ReactNode;
   closable?: boolean;
-  onOk?: (...args: any[]) => any;
-  onCancel?: (...args: any[]) => any;
+  onOk?: (e: React.MouseEvent<HTMLElement>) => void;
+  onCancel?: (e: React.MouseEvent<HTMLElement>) => void;
   afterClose?: () => void;
   okButtonProps?: CoreButtontProps;
   cancelButtonProps?: CoreButtontProps;
   centered?: boolean;
   width?: string | number;
   okText?: React.ReactNode;
-  okType?: any;
+  okType?: "default" | "primary" | "ghost" | "dashed" | "link" | "text" | "danger";
   cancelText?: React.ReactNode;
   mask?: boolean;
   maskClosable?: boolean;

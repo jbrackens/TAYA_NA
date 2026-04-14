@@ -19,7 +19,7 @@ export type UseWebsocket = {
   data: ParsedData | null;
   closeConnection: () => void;
   openConnection: () => void;
-  sendMessage: (message: any) => void;
+  sendMessage: (message: Message) => void;
   error: null | string;
   isConnectionOpen: boolean;
 };
@@ -28,15 +28,14 @@ export type ParsedData = {
   event: string;
   channel: string;
   correlationId?: string;
-  data: {
-    [key: string]: any;
-  };
+  data: Record<string, unknown>;
 };
 
 export type Message = {
   event: string;
   channel: string;
   token?: string;
+  correlationId?: string;
 };
 
 export enum MessageEventEnum {
@@ -132,10 +131,8 @@ export const useWebsocket = (): UseWebsocket => {
   const heartbeatIntervalTime = 50000;
 
   useEffect(() => {
-    let interval: number;
+    let interval: ReturnType<typeof setInterval>;
     if (intervalState > 0) {
-      // https://github.com/Microsoft/TypeScript/issues/30128
-      // @ts-ignore
       interval = setInterval(() => {
         sendMessage({
           event: "heartbeat",

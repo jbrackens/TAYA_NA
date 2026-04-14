@@ -3,11 +3,19 @@
 import React, { useState } from "react";
 import MarketRow from "./MarketRow";
 
+interface MarketSelection {
+  id: string;
+  name: string;
+  price: number;
+  odds?: number;
+  base?: string | number | null;
+}
+
 interface Market {
   id: string;
   name: string;
   status?: string;
-  selections?: any[];
+  selections?: MarketSelection[];
   type?: string;
   displayKey?: string;
 }

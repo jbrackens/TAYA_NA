@@ -1,3 +1,5 @@
+import { Dispatch } from "redux";
+import { ParsedData } from "./websocket-service";
 import { betsChannelHandler } from "./channels-data-handler/bets-channel-handler";
 import { fixturesChannelHandler } from "./channels-data-handler/fixtures-data-hander";
 import { marketsChannelHandler } from "./channels-data-handler/markets-data-handler";
@@ -5,7 +7,7 @@ import { WalletsChannelHandler } from "./channels-data-handler/wallets-channel-h
 
 export type Channel = {
   actions: {
-    saveChannelData: (payload?: any, dispatch?: any) => void;
+    saveChannelData: (payload: ParsedData, dispatch: Dispatch) => void;
   };
 };
 

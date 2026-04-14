@@ -72,5 +72,11 @@
   "REFERRALS": "Empfehlungen",
   "TODAY": "Heute",
   "TOMORROW": "Morgen",
-  "TBD": "TBD"
+  "TBD": "TBD",
+  "NO_FEATURED_MATCHES": "Keine empfohlenen Spiele verfügbar",
+  "NO_UPCOMING_MATCHES": "Keine bevorstehenden Spiele",
+  "NO_LIVE_MATCHES": "Momentan keine Live-Spiele",
+  "LOADING_FEATURED_MATCHES": "Empfohlene Spiele laden",
+  "LOADING_UPCOMING_MATCHES": "Bevorstehende Spiele laden",
+  "LOADING_LIVE_MATCHES": "Live-Spiele laden"
 }

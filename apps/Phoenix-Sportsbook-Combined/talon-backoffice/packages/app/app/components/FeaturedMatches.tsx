@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LoadingState } from "./Spinner";
 import { getEvents } from "../lib/api/events-client";
 import { getMarkets } from "../lib/api/markets-client";
@@ -109,6 +110,7 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const featuredFixtureIdsRef = useRef<Set<string>>(new Set());
+  const { t } = useTranslation(["home", "common"]);
 
   useEffect(() => {
     let cancelled = false;
@@ -265,16 +267,16 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
   }, [sportKey, leagueKey]);
 
   if (loading) {
-    return <LoadingState label="Loading featured matches" />;
+    return <LoadingState label={t("home:LOADING_FEATURED_MATCHES")} />;
   }
 
   if (error) {
-    return <div style={{ color: "#f87171" }}>Error: {error}</div>;
+    return <div style={{ color: "#f87171" }}>{t("common:ERROR_MESSAGE", { message: error })}</div>;
   }
 
   if (matches.length === 0) {
     return (
-      <div style={{ color: "#a0a0a0" }}>No featured matches available</div>
+      <div style={{ color: "#a0a0a0" }}>{t("home:NO_FEATURED_MATCHES")}</div>
     );
   }
 
@@ -354,7 +356,7 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
                     {match.homeTeam}
                   </div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#64748b" }}>vs</div>
+                <div style={{ fontSize: "12px", color: "#64748b" }}>{t("common:VS")}</div>
                 <div style={{ flex: 1, textAlign: "center" }}>
                   <div
                     style={{
@@ -380,8 +382,8 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
                       ? match.homeTeam.slice(0, 8)
                       : pos === "away"
                         ? match.awayTeam.slice(0, 8)
-                        : "Draw";
-                  const selectionId = 
+                        : t("common:DRAW_LABEL");
+                  const selectionId =
                     pos === "home" ? matchOdds?.homeSelectionId :
                     pos === "draw" ? matchOdds?.drawSelectionId :
                     matchOdds?.awaySelectionId;
@@ -393,9 +395,9 @@ export const FeaturedMatches: React.FC<FeaturedMatchesProps> = ({
                         marketId={matchOdds?.marketId || `${match.fixtureId}-match-result`}
                         selectionId={selectionId || `${match.fixtureId}-${pos}`}
                         odds={odds || 0}
-                        matchName={`${match.homeTeam} vs ${match.awayTeam}`}
-                        marketName="Match Result"
-                        selectionName={pos === "home" ? match.homeTeam : pos === "away" ? match.awayTeam : "Draw"}
+                        matchName={`${match.homeTeam} ${t("common:VS")} ${match.awayTeam}`}
+                        marketName={t("home:MATCH_RESULT")}
+                        selectionName={pos === "home" ? match.homeTeam : pos === "away" ? match.awayTeam : t("common:DRAW_LABEL")}
                         label={label}
                         suspended={!odds}
                       />

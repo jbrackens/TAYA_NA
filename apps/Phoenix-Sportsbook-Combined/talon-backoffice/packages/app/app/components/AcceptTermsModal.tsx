@@ -36,8 +36,8 @@ export default function AcceptTermsModal({
     try {
       const response = await apiClient.get("/api/v1/content/terms");
       if (typeof response === "object" && response !== null) {
-        const content =
-          (response as Record<string, any>).content || String(response);
+        const rawContent = (response as Record<string, unknown>).content;
+        const content = typeof rawContent === "string" ? rawContent : String(response);
         setTermsContent(content);
       } else {
         setTermsContent(String(response));

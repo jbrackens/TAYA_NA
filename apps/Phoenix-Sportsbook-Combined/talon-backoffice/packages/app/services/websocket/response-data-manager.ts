@@ -1,3 +1,4 @@
+import { Dispatch } from "redux";
 import { channelsMap } from "./channels-map";
 import { ParsedData, MessageEventEnum } from "./websocket-service";
 import {
@@ -6,7 +7,7 @@ import {
   removeMessageFromQueue,
 } from "../../lib/slices/channels/channelSubscriptionSlice";
 
-export const responseDataManager = (data: ParsedData, dispatch: any) => {
+export const responseDataManager = (data: ParsedData, dispatch: Dispatch) => {
   const { event, channel, correlationId } = data;
 
   if (event !== MessageEventEnum.ERROR) {

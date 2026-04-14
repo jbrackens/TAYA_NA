@@ -1,5 +1,6 @@
 import React from "react";
 import { BaseCheckbox, BaseCheckboxGroup } from "./index.styled";
+import type { CheckboxChangeEvent } from "antd/lib/checkbox";
 
 export type CoreCheckboxtProps = {
   autoFocus?: boolean;
@@ -7,13 +8,13 @@ export type CoreCheckboxtProps = {
   defaultChecked?: boolean;
   disabled?: boolean;
   indeterminate?: boolean;
-  onChange?: (e: any) => void;
-  value?: any;
+  onChange?: (e: CheckboxChangeEvent) => void;
+  value?: string | number | boolean;
   children?: React.ReactNode;
 };
 
 const CoreCheckbox: React.FC<CoreCheckboxtProps> & {
-  Group: any;
+  Group: typeof BaseCheckboxGroup;
 } = ({
   autoFocus,
   checked,

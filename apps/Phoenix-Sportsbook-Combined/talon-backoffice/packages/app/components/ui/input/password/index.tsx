@@ -9,7 +9,7 @@ export type PasswordInputProps = {
   value?: string;
   onChange?: (e: React.FormEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FormEvent<HTMLInputElement>) => void;
-  style?: any;
+  style?: React.CSSProperties;
   placeholder?: string;
   testId?: string;
   className?: string;

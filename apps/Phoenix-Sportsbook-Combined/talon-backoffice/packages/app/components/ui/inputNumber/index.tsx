@@ -7,7 +7,7 @@ type CoreInputNumberProps = {
   decimalSeparator?: string;
   defaultValue?: string;
   disabled?: boolean;
-  formatter?: (arg: any) => any;
+  formatter?: (value: string | number | undefined) => string;
   keyboard?: boolean;
   max?: number;
   min?: number;
@@ -18,11 +18,11 @@ type CoreInputNumberProps = {
   step?: number | string;
   stringMode?: boolean;
   value?: number;
-  onChange?: (value: any) => void;
-  onPressEnter?: (e: any) => void;
-  onBlur?: (e: any) => void;
-  onStep?: any;
-  style?: any;
+  onChange?: (value: string | number | null) => void;
+  onPressEnter?: React.KeyboardEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  onStep?: (value: string | number, info: { offset: string | number; type: 'up' | 'down' }) => void;
+  style?: React.CSSProperties;
   testId?: string;
 };
 

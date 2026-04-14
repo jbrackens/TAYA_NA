@@ -26,7 +26,7 @@ const profileSlice = createSlice({
  * @param   {Object} state The root state
  * @returns {number} The current value
  */
-export const selectValue = (state: any) => state.profile.value;
+export const selectValue = (state: { profile: { value: number } }) => state.profile.value;
 
 export const { increment, reset } = profileSlice.actions;
 
