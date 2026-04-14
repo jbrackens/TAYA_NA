@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TAYA NA! Design System Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0b0e1c;
+    color: #e2e8f0;
+    line-height: 1.6;
+    padding: 40px;
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 56px;
+    padding: 40px;
+    background: linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%);
+    border: 1px solid #2a3050;
+    border-radius: 18px;
+  }
+  .page-header h1 {
+    font-size: 40px;
+    font-weight: 900;
+    color: #f8fafc;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+  }
+  .page-header h1 span { color: #39ff14; }
+  .page-header p { color: #D3D3D3; font-size: 16px; }
+  .page-header img {
+    filter: drop-shadow(0 4px 16px rgba(57,255,20,0.35));
+  }
+
+  /* Section layout */
+  .section { margin-bottom: 56px; }
+  .section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #1a1f3a;
+  }
+  .section-title .tag {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+  .tag-shared { background: rgba(74,126,255,0.12); color: #4a7eff; }
+  .tag-player { background: rgba(57,255,20,0.08); color: #39ff14; }
+  .tag-admin { background: rgba(74,222,128,0.06); color: #4ade80; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .col-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #D3D3D3;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(26,31,58,0.5);
+  }
+  .col-label.player { color: #39ff14; }
+  .col-label.admin { color: #4ade80; }
+
+  /* Color swatches */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  .swatch {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #1a1f3a;
+  }
+  .swatch-color {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .swatch-info {
+    background: #0f1225;
+    padding: 8px 10px;
+  }
+  .swatch-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 2px;
+  }
+  .swatch-hex {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #D3D3D3;
+  }
+
+  /* Typography samples */
+  .type-sample {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+  .type-meta {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #64748b;
+    margin-top: 6px;
+  }
+
+  /* Component previews */
+  .component-preview {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-player-primary {
+    background: linear-gradient(135deg, #39ff14, #2ed600);
+    color: #101114;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(57,255,20,0.25);
+  }
+  .btn-player-outline {
+    background: transparent;
+    border: 1.5px solid #39ff14;
+    color: #39ff14;
+    border-radius: 10px;
+  }
+  .btn-admin-primary {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #101114;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(74,222,128,0.15);
+  }
+  .btn-admin-outline {
+    background: transparent;
+    border: 1.5px solid #4ade80;
+    color: #4ade80;
+    border-radius: 8px;
+  }
+  .btn-destructive {
+    background: transparent;
+    border: 1.5px solid #ef4444;
+    color: #f87171;
+    border-radius: 8px;
+  }
+  .btn-ghost {
+    background: #161a35;
+    border: 1px solid #1a1f3a;
+    color: #e2e8f0;
+    border-radius: 8px;
+  }
+
+  /* Cards */
+  .card-player {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .card-admin {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  /* Fixture card */
+  .fixture-card {
+    background: #111328;
+    border: 1px solid #1a1f3a;
+    border-radius: 14px;
+    padding: 16px;
+    max-width: 320px;
+  }
+  .fixture-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .fixture-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+  }
+  .fixture-dot.upcoming { background: #39ff14; }
+  .fixture-label {
+    font-size: 12px;
+    color: #D3D3D3;
+    text-transform: capitalize;
+  }
+  .fixture-teams {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .fixture-team {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .fixture-vs { font-size: 12px; color: #D3D3D3; }
+  .odds-row { display: flex; gap: 8px; }
+  .odds-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: #1a1f3a;
+    border: 1px solid #2d3748;
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .odds-btn.selected {
+    background: #4f46e5;
+    border-color: #4f46e5;
+  }
+  .odds-btn:hover { border-color: #39ff14; }
+
+  /* Data table */
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .data-table th {
+    background: #111631;
+    border-bottom: 1px solid #1a1f3a;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #D3D3D3;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+  }
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(26,31,58,0.5);
+    height: 44px;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: #161a35; }
+  .data-table .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+  }
+  .data-table .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .status-success { background: rgba(34,197,94,0.12); color: #22c55e; }
+  .status-danger { background: rgba(239,68,68,0.12); color: #f87171; }
+  .status-warning { background: rgba(251,191,36,0.12); color: #fbbf24; }
+  .status-info { background: rgba(74,126,255,0.12); color: #4a7eff; }
+
+  /* Metric cards */
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .metric-card {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .metric-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #D3D3D3;
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-trend {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .metric-trend.up { color: #22c55e; }
+  .metric-trend.down { color: #ef4444; }
+
+  /* Form preview */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #D3D3D3;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    background: #0b0e1c;
+    border: 1px solid #1a1f3a;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: #e2e8f0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    height: 40px;
+    outline: none;
+    transition: all 0.15s ease;
+  }
+  .form-input:focus {
+    border-color: #4ade80;
+    box-shadow: 0 0 0 2px rgba(74,222,128,0.15);
+  }
+  .form-input::placeholder { color: #64748b; }
+
+  /* Admin tabs */
+  .admin-tabs {
+    display: flex;
+    border-bottom: 1px solid #1a1f3a;
+    margin-bottom: 20px;
+  }
+  .admin-tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #D3D3D3;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: transparent;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: all 0.15s ease;
+  }
+  .admin-tab.active {
+    color: #4ade80;
+    border-bottom-color: #4ade80;
+    font-weight: 600;
+  }
+  .admin-tab:hover { color: #e2e8f0; background: rgba(74,222,128,0.04); }
+
+  /* Sidebar preview */
+  .sidebar-preview {
+    border: 1px solid #1a1f3a;
+    border-radius: 10px;
+    overflow: hidden;
+    max-width: 240px;
+  }
+  .sidebar-inner { background: #0f1225; padding: 16px 0; }
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 16px 4px;
+  }
+  .sidebar-section-label.player { color: #D3D3D3; }
+  .sidebar-section-label.admin { color: #64748b; font-size: 11px; }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #D3D3D3;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-item:hover { background: #161a35; }
+  .sidebar-item.active-player {
+    background: #1a2040;
+    color: #39ff14;
+    border-left-color: #39ff14;
+    font-weight: 600;
+  }
+  .sidebar-item.active-admin {
+    background: #1a2040;
+    color: #4ade80;
+    border-left-color: #4ade80;
+    font-weight: 600;
+  }
+  .sidebar-icon { width: 18px; height: 18px; flex-shrink: 0; }
+  .sidebar-icon svg { width: 18px; height: 18px; stroke-width: 1.75; }
+
+  /* Betslip preview */
+  .betslip-preview {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 14px;
+    max-width: 340px;
+    overflow: hidden;
+  }
+  .betslip-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #1a1f3a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .betslip-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f8fafc;
+  }
+  .betslip-count {
+    background: #39ff14;
+    color: #101114;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .betslip-body { padding: 16px; }
+  .betslip-selection {
+    background: #111631;
+    border: 1px solid #1a1f3a;
+    border-left: 3px solid #39ff14;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .betslip-match {
+    font-size: 11px;
+    color: #D3D3D3;
+    margin-bottom: 4px;
+  }
+  .betslip-pick {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+  .betslip-odds {
+    font-size: 13px;
+    font-weight: 700;
+    color: #39ff14;
+    float: right;
+  }
+  .betslip-stake {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    align-items: center;
+  }
+  .stake-input {
+    flex: 1;
+    background: #0b0e1c;
+    border: 1px solid #1a1f3a;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: #e2e8f0;
+    font-size: 14px;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .betslip-footer { padding: 0 16px 16px; }
+
+  /* Radius comparison */
+  .radius-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 16px;
+  }
+  .radius-sample {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .radius-box {
+    width: 80px;
+    height: 56px;
+    background: #161a35;
+    border: 1px solid #1a1f3a;
+  }
+  .radius-label {
+    font-size: 11px;
+    color: #D3D3D3;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* Green comparison */
+  .green-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .green-panel {
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+  }
+  .green-panel.player-green {
+    background: linear-gradient(135deg, #39ff14, #2ed600);
+    box-shadow: 0 4px 20px rgba(57,255,20,0.3);
+  }
+  .green-panel.admin-green {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    box-shadow: 0 4px 20px rgba(74,222,128,0.15);
+  }
+  .green-panel-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(0,0,0,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .green-panel-hex {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: #101114;
+  }
+  .green-panel-use {
+    font-size: 13px;
+    color: rgba(0,0,0,0.6);
+    margin-top: 8px;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: #0f1225;
+    border: 1px solid #1a1f3a;
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .detail-header {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f8fafc;
+    border-bottom: 1px solid #1a1f3a;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+  }
+  .kv-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(26,31,58,0.3);
+  }
+  .kv-key { font-size: 13px; color: #D3D3D3; font-weight: 500; }
+  .kv-value { font-size: 13px; color: #e2e8f0; text-align: right; }
+  .kv-value.mono { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* Icon tiles */
+  .icon-tile-player {
+    width: 40px; height: 40px;
+    background: rgba(57,255,20,0.08);
+    border: 1px solid rgba(57,255,20,0.14);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-tile-admin {
+    width: 40px; height: 40px;
+    background: rgba(74,222,128,0.06);
+    border: 1px solid rgba(74,222,128,0.12);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .two-col { grid-template-columns: 1fr; }
+    .metric-strip { grid-template-columns: 1fr 1fr; }
+    .green-compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="page-header">
+  <div style="margin-bottom:12px;">
+    <img src="public/logo-tn.png" alt="TAYA NA! Logo" style="width:80px; height:80px;">
+  </div>
+  <h1><span>TAYA NA!</span> Design System</h1>
+  <p>Unified design language for Player App + Admin Backoffice</p>
+</div>
+
+<!-- ============ BRAND GREENS ============ -->
+<div class="section">
+  <div class="section-title">Brand Greens: Two Intensities, One Family</div>
+  <div class="green-compare">
+    <div class="green-panel player-green">
+      <div class="green-panel-label">Player App</div>
+      <div class="green-panel-hex">#39ff14</div>
+      <div class="green-panel-use">Neon. Bold. Place your bet.</div>
+    </div>
+    <div class="green-panel admin-green">
+      <div class="green-panel-label">Admin Backoffice</div>
+      <div class="green-panel-hex">#4ade80</div>
+      <div class="green-panel-use">Calm. Professional. 8-hour shifts.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SURFACES ============ -->
+<div class="section">
+  <div class="section-title">Core Surfaces <span class="tag tag-shared">Shared</span></div>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0b0e1c;"></div>
+      <div class="swatch-info"><div class="swatch-name">Page BG</div><div class="swatch-hex">#0b0e1c</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0f1225;"></div>
+      <div class="swatch-info"><div class="swatch-name">Panel Base</div><div class="swatch-hex">#0f1225</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#111631;"></div>
+      <div class="swatch-info"><div class="swatch-name">Panel Deep</div><div class="swatch-hex">#111631</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#161a35;"></div>
+      <div class="swatch-info"><div class="swatch-name">Panel Alt</div><div class="swatch-hex">#161a35</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#1a2040;"></div>
+      <div class="swatch-info"><div class="swatch-name">Panel Accent</div><div class="swatch-hex">#1a2040</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#1a1f3a;"></div>
+      <div class="swatch-info"><div class="swatch-name">Border Default</div><div class="swatch-hex">#1a1f3a</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#1e2243;"></div>
+      <div class="swatch-info"><div class="swatch-name">Border Strong</div><div class="swatch-hex">#1e2243</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#2a3050;"></div>
+      <div class="swatch-info"><div class="swatch-name">Border Hover</div><div class="swatch-hex">#2a3050</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TEXT ============ -->
+<div class="section">
+  <div class="section-title">Text Hierarchy <span class="tag tag-shared">Shared</span></div>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0f1225; color:#f8fafc; font-weight:700; font-size:14px;">Heading</div>
+      <div class="swatch-info"><div class="swatch-name">Primary</div><div class="swatch-hex">#f8fafc</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0f1225; color:#e2e8f0; font-size:14px;">Body text</div>
+      <div class="swatch-info"><div class="swatch-name">Body</div><div class="swatch-hex">#e2e8f0</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0f1225; color:#D3D3D3; font-size:13px;">Secondary</div>
+      <div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-hex">#D3D3D3</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0f1225; color:#64748b; font-size:13px;">Disabled</div>
+      <div class="swatch-info"><div class="swatch-name">Dim</div><div class="swatch-hex">#64748b</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SEMANTIC STATUS ============ -->
+<div class="section">
+  <div class="section-title">Status Colors <span class="tag tag-shared">Shared</span></div>
+  <div class="swatch-grid">
+    <div class="swatch">
+      <div class="swatch-color" style="background:rgba(34,197,94,0.12); color:#22c55e; font-size:12px; font-weight:600;">SUCCESS</div>
+      <div class="swatch-info"><div class="swatch-name">Success</div><div class="swatch-hex">#22c55e</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:rgba(239,68,68,0.12); color:#f87171; font-size:12px; font-weight:600;">DANGER</div>
+      <div class="swatch-info"><div class="swatch-name">Danger</div><div class="swatch-hex">#ef4444</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:rgba(251,191,36,0.12); color:#fbbf24; font-size:12px; font-weight:600;">WARNING</div>
+      <div class="swatch-info"><div class="swatch-name">Warning</div><div class="swatch-hex">#fbbf24</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:rgba(74,126,255,0.12); color:#4a7eff; font-size:12px; font-weight:600;">INFO</div>
+      <div class="swatch-info"><div class="swatch-name">Info</div><div class="swatch-hex">#4a7eff</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TYPOGRAPHY ============ -->
+<div class="section">
+  <div class="section-title">Typography Scale</div>
+  <div class="two-col">
+    <div>
+      <div class="col-label player">Player App</div>
+      <div class="type-sample">
+        <div style="font-size:40px; font-weight:900; color:#f8fafc; letter-spacing:-0.03em; line-height:1.15;">Hero Heading</div>
+        <div class="type-meta">40px / 900 / -0.03em</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:28px; font-weight:700; color:#f8fafc; letter-spacing:-0.02em;">Page Title</div>
+        <div class="type-meta">28px / 700 / -0.02em</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:18px; font-weight:800; color:#f8fafc; letter-spacing:-0.01em;">Section Title</div>
+        <div class="type-meta">18px / 800 / -0.01em</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:14px; font-weight:400; color:#e2e8f0; line-height:1.6;">Body text looks like this in the player app. Dense and efficient for scanning match data and odds.</div>
+        <div class="type-meta">14px / 400 / normal</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:11px; font-weight:700; color:#D3D3D3; text-transform:uppercase; letter-spacing:0.08em;">LABEL / MICRO</div>
+        <div class="type-meta">11px / 700 / 0.08em uppercase</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-family:'Orbitron',sans-serif; font-size:20px; font-weight:900; color:#39ff14;">TN</div>
+        <div class="type-meta">Orbitron 20px / 900 (badge accent only)</div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label admin">Admin Backoffice</div>
+      <div class="type-sample">
+        <div style="font-size:24px; font-weight:700; color:#f8fafc; letter-spacing:-0.01em;">Page Title</div>
+        <div class="type-meta">24px / 700 / -0.01em</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:18px; font-weight:600; color:#f8fafc; letter-spacing:-0.01em;">Section Title</div>
+        <div class="type-meta">18px / 600 / -0.01em</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:28px; font-weight:700; color:#f8fafc; letter-spacing:-0.02em; font-variant-numeric:tabular-nums;">$142,890</div>
+        <div style="font-size:12px; font-weight:500; color:#D3D3D3; margin-top:4px;">Total Wagered Today</div>
+        <div class="type-meta">28px metric value / 12px label</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:14px; font-weight:400; color:#e2e8f0; line-height:1.6;">Body text in the admin app. Slightly more breathing room for long-session readability.</div>
+        <div class="type-meta">14px / 400 / normal</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-size:12px; font-weight:600; color:#D3D3D3; text-transform:uppercase; letter-spacing:0.04em;">TABLE HEADER</div>
+        <div class="type-meta">12px / 600 / 0.04em uppercase</div>
+      </div>
+      <div class="type-sample">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#e2e8f0;">TXN-2026-04-14-A8F3C</div>
+        <div class="type-meta">IBM Plex Mono 13px (transaction IDs, amounts)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BORDER RADIUS ============ -->
+<div class="section">
+  <div class="section-title">Border Radius Comparison</div>
+  <div class="two-col">
+    <div>
+      <div class="col-label player">Player App</div>
+      <div class="radius-grid">
+        <div class="radius-sample"><div class="radius-box" style="border-radius:6px;"></div><div class="radius-label">6px sm</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:8px;"></div><div class="radius-label">8px md</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:10px;"></div><div class="radius-label">10px lg</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:14px;"></div><div class="radius-label">14px xl</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:18px;"></div><div class="radius-label">18px 2xl</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:20px;"></div><div class="radius-label">20px hero</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label admin">Admin Backoffice</div>
+      <div class="radius-grid">
+        <div class="radius-sample"><div class="radius-box" style="border-radius:4px;"></div><div class="radius-label">4px sm</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:6px;"></div><div class="radius-label">6px md</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:8px;"></div><div class="radius-label">8px lg</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:10px;"></div><div class="radius-label">10px xl</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:12px;"></div><div class="radius-label">12px 2xl</div></div>
+        <div class="radius-sample"><div class="radius-box" style="border-radius:999px; width:80px; height:28px;"></div><div class="radius-label">pill</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BUTTONS ============ -->
+<div class="section">
+  <div class="section-title">Buttons</div>
+  <div class="two-col">
+    <div>
+      <div class="col-label player">Player App</div>
+      <div class="component-preview">
+        <div class="btn-row">
+          <button class="btn btn-player-primary">Place Bet</button>
+          <button class="btn btn-player-outline">View All</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-destructive" style="border-radius:10px;">Remove</button>
+          <button class="btn btn-ghost" style="border-radius:10px;">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label admin">Admin Backoffice</div>
+      <div class="component-preview">
+        <div class="btn-row">
+          <button class="btn btn-admin-primary">Save Changes</button>
+          <button class="btn btn-admin-outline">Export</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-destructive">Suspend User</button>
+          <button class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SIDEBAR ============ -->
+<div class="section">
+  <div class="section-title">Sidebar Navigation</div>
+  <div class="two-col">
+    <div>
+      <div class="col-label player">Player App (220px)</div>
+      <div class="sidebar-preview" style="max-width:220px;">
+        <div class="sidebar-inner">
+          <div style="padding:12px 16px 16px; border-bottom:1px solid #1a1f3a; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <img src="public/logo-tn.png" alt="TN" style="width:36px; height:36px;">
+            <span style="font-size:15px; font-weight:700; color:#f8fafc;">TAYA NA!</span>
+          </div>
+          <div class="sidebar-section-label player">SPORTS</div>
+          <div class="sidebar-item active-player"><span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/><path d="M5.2 5.2l3.8 3.3 3-1.5 3 1.5 3.8-3.3"/><path d="M5.2 18.8l3.8-3.3 3 1.5 3-1.5 3.8 3.3"/></svg></span> Football</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 14.83l4.24 4.24"/><path d="M2.1 13.16A10 10 0 0 1 10.84 2.1"/><path d="M13.16 21.9A10 10 0 0 1 21.9 13.16"/><path d="M12 2v20"/><path d="M2 12h20"/></svg></span> Basketball</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M18.09 5.64A9.97 9.97 0 0 0 8.2 3.26c1.1 2.14 1.8 5.2 1.8 8.74s-.7 6.6-1.8 8.74a9.97 9.97 0 0 0 9.89-2.38"/></svg></span> Tennis</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 4.3c-.3 1.8-.3 3.7 0 5.5.4 2.1 1.3 4 2.5 5.7 1.2-1.7 2.1-3.6 2.5-5.7.3-1.8.3-3.7 0-5.5"/><path d="M9.5 19.7c-.3-1.8-.3-3.7 0-5.5.4-2.1 1.3-4 2.5-5.7 1.2 1.7 2.1 3.6 2.5 5.7.3 1.8.3 3.7 0 5.5"/></svg></span> Baseball</div>
+          <div class="sidebar-section-label player">QUICK LINKS</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="zap"></i></span> Live</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="star"></i></span> Favorites</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label admin">Admin Backoffice (240px)</div>
+      <div class="sidebar-preview" style="max-width:240px;">
+        <div class="sidebar-inner">
+          <div style="padding:12px 16px 16px; border-bottom:1px solid #1a1f3a; margin-bottom:8px; display:flex; align-items:center; gap:10px;">
+            <img src="public/logo-tn.png" alt="TN" style="width:36px; height:36px;">
+            <span style="font-size:14px; font-weight:600; color:#D3D3D3;">Backoffice</span>
+          </div>
+          <div class="sidebar-section-label admin">OPERATIONS</div>
+          <div class="sidebar-item active-admin"><span class="sidebar-icon"><i data-lucide="layout-dashboard" style="color:#4ade80;"></i></span> Dashboard</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="users"></i></span> Users</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="wallet"></i></span> Transactions</div>
+          <div class="sidebar-section-label admin">RISK</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="shield-alert"></i></span> Risk Management</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="search"></i></span> Bet Inspector</div>
+          <div class="sidebar-item"><span class="sidebar-icon"><i data-lucide="scroll-text"></i></span> Audit Logs</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PLAYER: FIXTURE + BETSLIP ============ -->
+<div class="section">
+  <div class="section-title">Player Components <span class="tag tag-player">Player</span></div>
+  <div class="two-col">
+    <div>
+      <p style="font-size:13px; color:#D3D3D3; margin-bottom:12px;">Fixture Card</p>
+      <div class="fixture-card">
+        <div class="fixture-status">
+          <div class="fixture-dot"></div>
+          <span class="fixture-label">live</span>
+          <span style="margin-left:auto; font-size:11px; color:#22c55e; font-weight:600;">67'</span>
+        </div>
+        <div class="fixture-teams">
+          <div class="fixture-team">Team Alpha</div>
+          <div class="fixture-vs">vs</div>
+          <div class="fixture-team">Team Beta</div>
+        </div>
+        <div class="odds-row">
+          <button class="odds-btn selected">Alpha 1.80</button>
+          <button class="odds-btn">Draw 3.40</button>
+          <button class="odds-btn">Beta 2.20</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:13px; color:#D3D3D3; margin-bottom:12px;">Betslip</p>
+      <div class="betslip-preview">
+        <div class="betslip-header">
+          <span class="betslip-title">Betslip</span>
+          <span class="betslip-count">1</span>
+        </div>
+        <div class="betslip-body">
+          <div class="betslip-selection">
+            <div class="betslip-match">Team Alpha vs Team Beta</div>
+            <div class="betslip-pick">Team Alpha <span class="betslip-odds">1.80</span></div>
+          </div>
+          <div class="betslip-stake">
+            <input class="stake-input" value="$10.00" readonly>
+            <span style="font-size:12px; color:#D3D3D3;">Win: <strong style="color:#f8fafc;">$18.00</strong></span>
+          </div>
+        </div>
+        <div class="betslip-footer">
+          <button class="btn btn-player-primary" style="width:100%; margin-top:8px;">Place Bet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN: METRICS + TABLE ============ -->
+<div class="section">
+  <div class="section-title">Admin Components <span class="tag tag-admin">Admin</span></div>
+
+  <p style="font-size:13px; color:#D3D3D3; margin-bottom:16px;">KPI Metric Strip</p>
+  <div class="metric-strip">
+    <div class="metric-card">
+      <div class="metric-label">Active Users</div>
+      <div class="metric-value">2,847</div>
+      <div class="metric-trend up">+12.3%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total Wagered</div>
+      <div class="metric-value" style="font-family:'IBM Plex Mono',monospace; font-size:24px;">$142,890</div>
+      <div class="metric-trend up">+8.1%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Open Bets</div>
+      <div class="metric-value">1,204</div>
+      <div class="metric-trend down">-3.2%</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">GGR Today</div>
+      <div class="metric-value" style="font-family:'IBM Plex Mono',monospace; font-size:24px;">$18,420</div>
+      <div class="metric-trend up">+15.7%</div>
+    </div>
+  </div>
+
+  <p style="font-size:13px; color:#D3D3D3; margin-bottom:16px;">Data Table with Tabs</p>
+  <div class="admin-tabs">
+    <button class="admin-tab active">Open Bets</button>
+    <button class="admin-tab">Settled</button>
+    <button class="admin-tab">Flagged</button>
+    <button class="admin-tab">Voided</button>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Bet ID</th>
+        <th>User</th>
+        <th>Event</th>
+        <th>Stake</th>
+        <th>Odds</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="mono">BET-A8F3C</td>
+        <td>john_doe</td>
+        <td>Team Alpha vs Team Beta</td>
+        <td class="mono">$50.00</td>
+        <td class="mono">1.80</td>
+        <td><span class="status-badge status-info">OPEN</span></td>
+      </tr>
+      <tr>
+        <td class="mono">BET-B2D7E</td>
+        <td>jane_smith</td>
+        <td>Finland vs Ireland</td>
+        <td class="mono">$120.00</td>
+        <td class="mono">2.40</td>
+        <td><span class="status-badge status-success">WON</span></td>
+      </tr>
+      <tr>
+        <td class="mono">BET-C9K1F</td>
+        <td>mark_w</td>
+        <td>NBA: Lakers vs Celtics</td>
+        <td class="mono">$200.00</td>
+        <td class="mono">1.55</td>
+        <td><span class="status-badge status-warning">FLAGGED</span></td>
+      </tr>
+      <tr>
+        <td class="mono">BET-D4M8G</td>
+        <td>sarah_j</td>
+        <td>Tennis: Sinner vs Alcaraz</td>
+        <td class="mono">$75.00</td>
+        <td class="mono">3.10</td>
+        <td><span class="status-badge status-danger">LOST</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ ADMIN: FORM + DETAIL ============ -->
+<div class="section">
+  <div class="two-col">
+    <div>
+      <p style="font-size:13px; color:#D3D3D3; margin-bottom:16px;">Admin Form</p>
+      <div class="component-preview">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input" value="john_doe" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" value="john@example.com" readonly>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Risk Segment</label>
+          <input class="form-input" placeholder="Select risk segment..." readonly>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:20px;">
+          <button class="btn btn-admin-primary">Save Changes</button>
+          <button class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:13px; color:#D3D3D3; margin-bottom:16px;">Detail Panel</p>
+      <div class="detail-panel">
+        <div class="detail-header">Transaction Detail</div>
+        <div class="kv-row"><span class="kv-key">Transaction ID</span><span class="kv-value mono">TXN-2026-04-14-A8F3C</span></div>
+        <div class="kv-row"><span class="kv-key">Type</span><span class="kv-value">Deposit</span></div>
+        <div class="kv-row"><span class="kv-key">Amount</span><span class="kv-value mono" style="color:#22c55e;">+$500.00</span></div>
+        <div class="kv-row"><span class="kv-key">Method</span><span class="kv-value">Credit Card</span></div>
+        <div class="kv-row"><span class="kv-key">Status</span><span class="kv-value"><span class="status-badge status-success">COMPLETED</span></span></div>
+        <div class="kv-row" style="border-bottom:none;"><span class="kv-key">Timestamp</span><span class="kv-value mono">2026-04-14 14:32:08 UTC</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ICONOGRAPHY ============ -->
+<div class="section">
+  <div class="section-title">Iconography <span class="tag tag-shared">Shared</span></div>
+  <p style="font-size:14px; color:#D3D3D3; margin-bottom:20px;">
+    Both apps use <a href="https://lucide.dev" style="color:#4a7eff; text-decoration:none;">Lucide</a> icons &mdash; clean, consistent, 24x24 SVG with 1.75px stroke. Never use emoji or raster icons in production UI.
+  </p>
+  <div class="two-col">
+    <div>
+      <div class="col-label player">Player App Icons</div>
+      <div class="component-preview" style="display:flex; flex-wrap:wrap; gap:24px;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><svg viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/><path d="M5.2 5.2l3.8 3.3 3-1.5 3 1.5 3.8-3.3"/><path d="M5.2 18.8l3.8-3.3 3 1.5 3-1.5 3.8 3.3"/></svg></div>
+          <span style="font-size:10px; color:#D3D3D3;">Football</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><svg viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 14.83l4.24 4.24"/><path d="M2.1 13.16A10 10 0 0 1 10.84 2.1"/><path d="M13.16 21.9A10 10 0 0 1 21.9 13.16"/><path d="M12 2v20"/><path d="M2 12h20"/></svg></div>
+          <span style="font-size:10px; color:#D3D3D3;">Basketball</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><svg viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="10"/><path d="M18.09 5.64A9.97 9.97 0 0 0 8.2 3.26c1.1 2.14 1.8 5.2 1.8 8.74s-.7 6.6-1.8 8.74a9.97 9.97 0 0 0 9.89-2.38"/></svg></div>
+          <span style="font-size:10px; color:#D3D3D3;">Tennis</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><svg viewBox="0 0 24 24" fill="none" stroke="#39ff14" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="10"/><path d="M9.5 4.3c-.3 1.8-.3 3.7 0 5.5.4 2.1 1.3 4 2.5 5.7 1.2-1.7 2.1-3.6 2.5-5.7.3-1.8.3-3.7 0-5.5"/><path d="M9.5 19.7c-.3-1.8-.3-3.7 0-5.5.4-2.1 1.3-4 2.5-5.7 1.2 1.7 2.1 3.6 2.5 5.7.3 1.8.3 3.7 0 5.5"/></svg></div>
+          <span style="font-size:10px; color:#D3D3D3;">Baseball</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><i data-lucide="zap" style="color:#39ff14; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Live</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><i data-lucide="star" style="color:#39ff14; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Favorites</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><i data-lucide="trophy" style="color:#39ff14; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Rewards</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-player"><i data-lucide="credit-card" style="color:#39ff14; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Cashier</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="col-label admin">Admin Backoffice Icons</div>
+      <div class="component-preview" style="display:flex; flex-wrap:wrap; gap:24px;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="layout-dashboard" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Dashboard</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="users" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Users</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="shield-alert" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Risk</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="wallet" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Wallet</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="scroll-text" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Audit</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="settings" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Settings</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="file-text" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Reports</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="icon-tile-admin"><i data-lucide="bell" style="color:#4ade80; width:20px; height:20px;"></i></div>
+          <span style="font-size:10px; color:#D3D3D3;">Alerts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:20px; background:#0f1225; border:1px solid #1a1f3a; border-radius:10px; padding:20px;">
+    <div style="font-size:14px; font-weight:600; color:#f8fafc; margin-bottom:8px;">Icon Standards</div>
+    <div style="font-size:13px; color:#D3D3D3; line-height:1.7;">
+      <strong style="color:#e2e8f0;">Library:</strong> <a href="https://lucide.dev" style="color:#4a7eff; text-decoration:none;">Lucide Icons</a> (lucide-react for React components)<br>
+      <strong style="color:#e2e8f0;">Base size:</strong> 18px sidebar, 20px icon tiles, 16px inline, 24px page headers<br>
+      <strong style="color:#e2e8f0;">Stroke width:</strong> 1.75px (default) &mdash; slightly thinner than Lucide's 2px default for a refined feel<br>
+      <strong style="color:#e2e8f0;">Color:</strong> Inherit from text color. Active states use brand green. Never use multi-color icons.<br>
+      <strong style="color:#e2e8f0;">Icon tiles:</strong> 40x40px container with soft-fill background and brand-border. Radius matches app context.
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="text-align:center; padding:40px 0 20px; border-top:1px solid #1a1f3a; margin-top:40px;">
+  <p style="font-size:12px; color:#64748b;">TAYA NA! Unified Design System Preview &mdash; Generated 2026-04-14</p>
+  <p style="font-size:11px; color:#64748b; margin-top:4px;">Open this file in any browser to view. Source: <code style="color:#D3D3D3;">DESIGN.md</code></p>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>
