@@ -212,7 +212,7 @@ export const SportsSidebar: React.FC = () => {
         >
           <span className="ps-sidebar-item-left">
             <span className="ps-sidebar-item-icon">
-              <Radio size={15} strokeWidth={2} />
+              <Radio size={18} strokeWidth={1.75} />
             </span>
             <span>{tx("IN_PLAY", "In-Play")}</span>
           </span>
@@ -224,7 +224,7 @@ export const SportsSidebar: React.FC = () => {
         >
           <span className="ps-sidebar-item-left">
             <span className="ps-sidebar-item-icon">
-              <Clock size={15} strokeWidth={2} />
+              <Clock size={18} strokeWidth={1.75} />
             </span>
             <span>{tx("UPCOMING", "Upcoming")}</span>
           </span>
