@@ -74,6 +74,7 @@ export const HeaderBar: React.FC = () => {
         label: tx("TAB_STARTING_SOON", "Starting Soon"),
         href: "/starting-soon",
       },
+      { label: tx("TAB_LEADERBOARDS", "Leaderboards"), href: "/leaderboards" },
     ],
     [tx],
   );
