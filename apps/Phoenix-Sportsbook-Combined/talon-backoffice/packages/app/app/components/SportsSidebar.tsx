@@ -197,9 +197,9 @@ export const SportsSidebar: React.FC = () => {
         <img
           src="/logo-tn.png"
           alt="TAYA NA!"
-          width={40}
-          height={40}
-          style={{ borderRadius: 8, objectFit: "contain" }}
+          width={48}
+          height={48}
+          style={{ borderRadius: 10, objectFit: "contain" }}
         />
         <div className="ps-sidebar-title">TAYA NA!</div>
       </div>

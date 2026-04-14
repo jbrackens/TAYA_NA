@@ -35,6 +35,18 @@ function getAuthToken(request: NextRequest): string | null {
 
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // Skip auth for static assets served from public/ — the config.matcher exclusions
+  // are not applied by Next.js 16's proxy loader, so we guard here directly
+  if (/\.(?:png|jpe?g|gif|svg|ico|webp|webm|mp4|css|js|woff2?|ttf|eot|map)$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Skip Next.js internal routes (in case matcher isn't applied)
+  if (pathname.startsWith("/_next/") || pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   const token = getAuthToken(request);
 
   if (isPublicRoute(pathname)) {

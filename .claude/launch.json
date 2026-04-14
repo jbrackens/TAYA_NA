@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "Player App (Next.js)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "--webpack"],
       "port": 3000,
       "cwd": "apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app",
       "env": {

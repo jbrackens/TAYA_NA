@@ -33,7 +33,7 @@
   .ps-sidebar::-webkit-scrollbar { width: 4px; }
   .ps-sidebar::-webkit-scrollbar-thumb { background: #1a1f3a; border-radius: 2px; }
   .ps-sidebar-brand {
-    padding: 18px 20px; display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; display: flex; align-items: center; gap: 8px;
     border-bottom: 1px solid #1a1f3a;
   }
   .ps-sidebar-title { font-size: 18px; font-weight: 800; color: #f8fafc; letter-spacing: -0.02em; }
