@@ -55,24 +55,43 @@ export default function Collapse({
     lineHeight: "1.6",
   };
 
+  const panelId = `collapse-panel-${title.toLowerCase().replace(/\s+/g, "-")}`;
+
   return (
     <div>
-      <div
-        style={headerStyle}
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        style={{
+          ...headerStyle,
+          background: "none",
+          border: "none",
+          width: "100%",
+          textAlign: "left",
+          fontFamily: "inherit",
+        }}
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={(e) => {
-          const el = e.currentTarget as HTMLDivElement;
-          el.style.color = "#39ff14";
+          e.currentTarget.style.color = "#39ff14";
         }}
         onMouseLeave={(e) => {
-          const el = e.currentTarget as HTMLDivElement;
-          el.style.color = "#e2e8f0";
+          e.currentTarget.style.color = "#e2e8f0";
         }}
       >
-        <span style={chevronStyle}>›</span>
+        <span style={chevronStyle} aria-hidden="true">
+          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </span>
         {title}
-      </div>
-      <div style={contentWrapperStyle}>
+      </button>
+      <div
+        id={panelId}
+        role="region"
+        aria-label={title}
+        style={contentWrapperStyle}
+      >
         <div style={contentStyle}>{children}</div>
       </div>
     </div>

@@ -58,20 +58,32 @@ export const MatchTimeline: React.FC<MatchTimelineProps> = ({
     };
   }, [fixtureId, maxIncidents, handleFixtureUpdate]);
 
-  const getIncidentIcon = (type: string): string => {
-    const iconMap: Record<string, string> = {
-      goal: "⚽",
-      "own goal": "⚽",
-      "yellow card": "🟨",
-      "red card": "🟥",
-      substitution: "🔄",
-      injury: "🏥",
-      "var review": "📺",
-      "match start": "🚀",
-      "match end": "🏁",
-      "half time": "⏸️",
-    };
-    return iconMap[type.toLowerCase()] || "●";
+  /** Inline Lucide-style SVG icons for match incidents — no emoji */
+  const incidentIcons: Record<string, string> = {
+    goal: '<circle cx="12" cy="12" r="10"/><path d="M12 2l-1.5 5.5L7 5.5M12 2l1.5 5.5L17 5.5M7 5.5L3.5 10l3.5 2M17 5.5l3.5 4.5-3.5 2M7 12l-1 5.5L10.5 19M17 12l1 5.5-4.5 1.5M10.5 19h3M12 7.5L7 12l3.5 7h3L17 12Z"/>',
+    "own goal": '<circle cx="12" cy="12" r="10"/><path d="M12 2l-1.5 5.5L7 5.5M12 2l1.5 5.5L17 5.5M7 5.5L3.5 10l3.5 2M17 5.5l3.5 4.5-3.5 2M7 12l-1 5.5L10.5 19M17 12l1 5.5-4.5 1.5M10.5 19h3M12 7.5L7 12l3.5 7h3L17 12Z"/>',
+    "yellow card": '<rect x="6" y="3" width="12" height="18" rx="2" fill="#fbbf24" stroke="#fbbf24"/>',
+    "red card": '<rect x="6" y="3" width="12" height="18" rx="2" fill="#ef4444" stroke="#ef4444"/>',
+    substitution: '<path d="M21 12a9 9 0 1 1-9-9"/><polyline points="21 3 21 9 15 9"/><path d="M3 12a9 9 0 0 1 9 9"/><polyline points="3 21 3 15 9 15"/>',
+    injury: '<path d="M3 3h18v18H3Z" rx="2"/><path d="M8 12h8M12 8v8"/>',
+    "var review": '<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/><path d="M10 14l2 2 4-4"/>',
+    "match start": '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14Z"/>',
+    "match end": '<path d="M5 3v18"/><path d="M5 3h8l-2 4h4l-6 8 2-5H5"/>',
+    "half time": '<circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/>',
+  };
+
+  const getIncidentIcon = (type: string): React.ReactNode => {
+    const paths = incidentIcons[type.toLowerCase()];
+    if (!paths) return <span style={{ fontSize: 12, color: "#64748b" }}>{"●"}</span>;
+    return (
+      <svg
+        width={16} height={16} viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" strokeWidth="1.75"
+        strokeLinecap="round" strokeLinejoin="round"
+        style={{ flexShrink: 0, verticalAlign: "middle" }}
+        dangerouslySetInnerHTML={{ __html: paths }}
+      />
+    );
   };
 
   const getTimeString = (clockSeconds?: number): string => {

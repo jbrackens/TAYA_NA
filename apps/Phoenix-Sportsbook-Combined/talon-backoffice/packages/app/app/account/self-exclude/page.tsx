@@ -2,6 +2,15 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import {
+  AlertTriangle,
+  Ban,
+  Wallet,
+  Lock,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import {
@@ -95,7 +104,7 @@ export default function SelfExcludePage() {
         {/* Warning Step */}
         {step === "warning" && (
           <div className="se-card se-warning-card">
-            <div className="se-warning-icon">⚠️</div>
+            <div className="se-warning-icon"><AlertTriangle size={48} strokeWidth={1.5} color="#ef4444" /></div>
             <h2>Important Notice</h2>
             <div className="se-warning-content">
               <p>
@@ -105,7 +114,7 @@ export default function SelfExcludePage() {
 
               <div className="se-consequence-list">
                 <div className="se-consequence-item">
-                  <span className="se-consequence-icon">🚫</span>
+                  <span className="se-consequence-icon"><Ban size={20} strokeWidth={1.75} /></span>
                   <div>
                     <strong>Account Closure</strong>
                     <p>
@@ -116,7 +125,7 @@ export default function SelfExcludePage() {
                 </div>
 
                 <div className="se-consequence-item">
-                  <span className="se-consequence-icon">💰</span>
+                  <span className="se-consequence-icon"><Wallet size={20} strokeWidth={1.75} /></span>
                   <div>
                     <strong>Balance Handling</strong>
                     <p>
@@ -127,7 +136,7 @@ export default function SelfExcludePage() {
                 </div>
 
                 <div className="se-consequence-item">
-                  <span className="se-consequence-icon">🔒</span>
+                  <span className="se-consequence-icon"><Lock size={20} strokeWidth={1.75} /></span>
                   <div>
                     <strong>No Access</strong>
                     <p>
@@ -138,7 +147,7 @@ export default function SelfExcludePage() {
                 </div>
 
                 <div className="se-consequence-item">
-                  <span className="se-consequence-icon">⏱️</span>
+                  <span className="se-consequence-icon"><Clock size={20} strokeWidth={1.75} /></span>
                   <div>
                     <strong>
                       {duration === "lifetime"
@@ -269,7 +278,7 @@ export default function SelfExcludePage() {
         {/* Confirmation Step */}
         {step === "confirm" && (
           <div className="se-card se-confirm-card">
-            <div className="se-confirm-icon">🔐</div>
+            <div className="se-confirm-icon"><ShieldCheck size={48} strokeWidth={1.5} color="#fbbf24" /></div>
             <h2>Confirm Self-Exclusion</h2>
             <p className="se-desc">
               Please review your request before proceeding
@@ -286,8 +295,9 @@ export default function SelfExcludePage() {
                 <div className="se-review-value">{reason}</div>
               </div>
 
-              <div className="se-review-warning">
-                ⚠️ This action cannot be undone. Your account will be
+              <div className="se-review-warning" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <AlertTriangle size={16} strokeWidth={2} style={{ flexShrink: 0 }} />
+                This action cannot be undone. Your account will be
                 permanently closed.
               </div>
             </div>
@@ -313,7 +323,7 @@ export default function SelfExcludePage() {
         {/* Success Step */}
         {step === "success" && result && (
           <div className="se-card se-success-card">
-            <div className="se-success-icon">✓</div>
+            <div className="se-success-icon"><CheckCircle2 size={56} strokeWidth={1.5} color="#22c55e" /></div>
             <h2>Self-Exclusion Confirmed</h2>
             <p className="se-desc">
               Your account has been successfully self-excluded

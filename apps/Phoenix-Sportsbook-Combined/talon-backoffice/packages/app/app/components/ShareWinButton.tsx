@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Trophy, Clipboard, Download } from 'lucide-react';
 import { copyBetCardToClipboard, downloadBetCard } from './ShareableBetCard';
 import { useToast } from './ToastProvider';
 import { logger } from '../lib/logger';
@@ -73,6 +74,8 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
     <div ref={containerRef} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+        aria-haspopup="true"
         style={{
           width: '100%',
           padding: '8px 14px',
@@ -86,6 +89,10 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
           cursor: 'pointer',
           textAlign: 'center',
           transition: 'background 0.2s',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = 'rgba(57,255,20,0.12)';
@@ -94,11 +101,13 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
           e.currentTarget.style.background = 'rgba(57,255,20,0.06)';
         }}
       >
-        Share this win &#127942;
+        Share this win <Trophy size={13} strokeWidth={2.5} />
       </button>
 
       {open && (
         <div
+          role="menu"
+          aria-label="Share options"
           style={{
             position: 'absolute',
             top: '100%',
@@ -115,6 +124,7 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
         >
           {clipboardSupported && (
             <button
+              role="menuitem"
               onClick={() => void handleCopy()}
               style={{
                 width: '100%',
@@ -127,6 +137,9 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
                 cursor: 'pointer',
                 textAlign: 'left',
                 transition: 'background 0.15s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = '#161a35';
@@ -135,10 +148,11 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
                 e.currentTarget.style.background = 'transparent';
               }}
             >
-              &#128203; Copy to clipboard
+              <Clipboard size={13} strokeWidth={2} /> Copy to clipboard
             </button>
           )}
           <button
+            role="menuitem"
             onClick={handleDownload}
             style={{
               width: '100%',
@@ -152,6 +166,9 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
               cursor: 'pointer',
               textAlign: 'left',
               transition: 'background 0.15s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = '#161a35';
@@ -160,7 +177,7 @@ export const ShareWinButton: React.FC<ShareWinButtonProps> = ({
               e.currentTarget.style.background = 'transparent';
             }}
           >
-            &#128229; Download PNG
+            <Download size={13} strokeWidth={2} /> Download PNG
           </button>
         </div>
       )}

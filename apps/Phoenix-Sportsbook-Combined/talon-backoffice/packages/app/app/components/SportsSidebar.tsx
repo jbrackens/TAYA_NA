@@ -194,16 +194,13 @@ export const SportsSidebar: React.FC = () => {
     <aside className="ps-sidebar">
       {/* Brand */}
       <div className="ps-sidebar-brand">
-        <div className="ps-sidebar-logo" aria-label="TAYA NA logo">
-          <span className="ps-sidebar-logo-mark" aria-hidden="true">
-            <span className="ps-sidebar-logo-t-top" />
-            <span className="ps-sidebar-logo-t-stem" />
-            <span className="ps-sidebar-logo-n-left" />
-            <span className="ps-sidebar-logo-n-diag" />
-            <span className="ps-sidebar-logo-n-right" />
-            <span className="ps-sidebar-logo-mid-slit" />
-          </span>
-        </div>
+        <img
+          src="/logo-tn.png"
+          alt="TAYA NA!"
+          width={32}
+          height={32}
+          style={{ borderRadius: 6, objectFit: "contain" }}
+        />
         <div className="ps-sidebar-title">TAYA NA!</div>
       </div>
 
@@ -309,14 +306,21 @@ export const SportsSidebar: React.FC = () => {
                   {sport.eventCount != null && sport.eventCount > 0 && (
                     <span className="ps-sidebar-badge">{sport.eventCount}</span>
                   )}
-                  <span
-                    role="button"
+                  <button
+                    type="button"
                     onClick={(e) => toggleFavorite(sport.sportId, e)}
-                    title={
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleFavorite(sport.sportId, e as unknown as React.MouseEvent);
+                      }
+                    }}
+                    aria-label={
                       favorites.has(sport.sportId)
-                        ? t("FAVOURITE") + " ✓"
-                        : t("FAVOURITE")
+                        ? `Remove ${sport.name} from favorites`
+                        : `Add ${sport.name} to favorites`
                     }
+                    aria-pressed={favorites.has(sport.sportId)}
                     style={{
                       cursor: "pointer",
                       fontSize: 14,
@@ -332,6 +336,9 @@ export const SportsSidebar: React.FC = () => {
                       width: 44,
                       height: 44,
                       margin: -12,
+                      background: "none",
+                      border: "none",
+                      padding: 0,
                     }}
                   >
                     <Star
@@ -341,7 +348,7 @@ export const SportsSidebar: React.FC = () => {
                         favorites.has(sport.sportId) ? "currentColor" : "none"
                       }
                     />
-                  </span>
+                  </button>
                 </span>
               </a>
 
