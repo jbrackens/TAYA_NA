@@ -438,7 +438,7 @@ function buttonStyle(disabled = false): CSSProperties {
   return {
     padding: '8px 16px',
     backgroundColor: disabled ? '#3b4c7a' : '#4a7eff',
-    color: '#1a1a2e',
+    color: '#0b0e1c',
     border: 'none',
     borderRadius: 4,
     cursor: disabled ? 'not-allowed' : 'pointer',

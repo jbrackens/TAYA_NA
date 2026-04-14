@@ -431,7 +431,7 @@ function tierVariant(tier: string): 'default' | 'success' | 'warning' | 'danger'
 
 function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSProperties {
   const backgrounds: Record<string, string> = {
-    default: '#0f3460',
+    default: '#1a1f3a',
     success: '#065f46',
     warning: '#92400e',
     danger: '#7f1d1d',
@@ -472,9 +472,9 @@ function qualificationBadgeStyle(state: string): CSSProperties {
 function buttonStyle(secondary: boolean): CSSProperties {
   return {
     padding: '8px 16px',
-    backgroundColor: secondary ? '#0f3460' : '#4a7eff',
-    color: secondary ? '#4a7eff' : '#1a1a2e',
-    border: secondary ? '1px solid #0f3460' : 'none',
+    backgroundColor: secondary ? '#1a1f3a' : '#4a7eff',
+    color: secondary ? '#4a7eff' : '#0b0e1c',
+    border: secondary ? '1px solid #1a1f3a' : 'none',
     borderRadius: 4,
     cursor: 'pointer',
     fontWeight: 600,
@@ -552,8 +552,8 @@ const metricsGridStyle: CSSProperties = {
 
 const surfaceCardStyle: CSSProperties = {
   padding: 16,
-  backgroundColor: '#16213e',
-  border: '1px solid #0f3460',
+  backgroundColor: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: 8,
 };
 
@@ -591,7 +591,7 @@ const ledgerListStyle: CSSProperties = {
 };
 
 const ledgerItemStyle: CSSProperties = {
-  border: '1px solid #0f3460',
+  border: '1px solid #1a1f3a',
   borderRadius: 8,
   padding: 14,
   background: 'rgba(15, 52, 96, 0.35)',
@@ -634,8 +634,8 @@ const labelStyle: CSSProperties = {
 
 const inputStyle: CSSProperties = {
   padding: '10px 12px',
-  backgroundColor: '#0f3460',
-  border: '1px solid #0f3460',
+  backgroundColor: '#1a1f3a',
+  border: '1px solid #1a1f3a',
   color: '#ffffff',
   borderRadius: 4,
   fontSize: 14,
@@ -644,8 +644,8 @@ const inputStyle: CSSProperties = {
 const textAreaStyle: CSSProperties = {
   minHeight: 96,
   padding: '10px 12px',
-  backgroundColor: '#0f3460',
-  border: '1px solid #0f3460',
+  backgroundColor: '#1a1f3a',
+  border: '1px solid #1a1f3a',
   color: '#ffffff',
   borderRadius: 4,
   fontSize: 14,
@@ -661,8 +661,8 @@ const helperTextStyle: CSSProperties = {
 /* Progress bar styles */
 
 const progressContainerStyle: CSSProperties = {
-  background: '#16213e',
-  border: '1px solid #0f3460',
+  background: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: 8,
   padding: 16,
   marginBottom: 20,
@@ -693,7 +693,7 @@ const referralRowStyle: CSSProperties = {
   alignItems: 'center',
   gap: 12,
   padding: 12,
-  border: '1px solid #0f3460',
+  border: '1px solid #1a1f3a',
   borderRadius: 8,
   background: 'rgba(15, 52, 96, 0.35)',
 };

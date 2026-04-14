@@ -4,8 +4,8 @@ import styled from 'styled-components';
 import { useState } from 'react';
 
 const TreeContainer = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 6px;
   padding: 20px;
   max-height: 500px;
@@ -21,7 +21,7 @@ const Title = styled.h3`
 
 const TreeNode = styled.div`
   margin-left: 16px;
-  border-left: 1px solid #0f3460;
+  border-left: 1px solid #1a1f3a;
   padding-left: 16px;
 `;
 

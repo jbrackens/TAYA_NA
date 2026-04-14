@@ -27,8 +27,8 @@ const FilterInput = styled.input`
   flex: 1;
   min-width: 200px;
   padding: 10px 16px;
-  background-color: #0f3460;
-  border: 1px solid #0f3460;
+  background-color: #1a1f3a;
+  border: 1px solid #1a1f3a;
   color: #ffffff;
   border-radius: 4px;
   font-size: 14px;
@@ -45,8 +45,8 @@ const FilterInput = styled.input`
 
 const FilterSelect = styled.select`
   padding: 10px 16px;
-  background-color: #0f3460;
-  border: 1px solid #0f3460;
+  background-color: #1a1f3a;
+  border: 1px solid #1a1f3a;
   color: #ffffff;
   border-radius: 4px;
   font-size: 14px;
@@ -58,7 +58,7 @@ const FilterSelect = styled.select`
   }
 
   option {
-    background-color: #16213e;
+    background-color: #111631;
     color: #ffffff;
   }
 `;

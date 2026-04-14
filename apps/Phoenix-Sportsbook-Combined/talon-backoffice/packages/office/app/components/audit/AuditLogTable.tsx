@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { DataTable, ColumnDef } from '../shared/DataTable';
 
 const TableContainer = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 6px;
   padding: 20px;
 `;
@@ -33,8 +33,8 @@ const DetailModal = styled.div<{ $isOpen?: boolean }>`
 `;
 
 const ModalContent = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 8px;
   padding: 24px;
   max-width: 600px;
@@ -51,7 +51,7 @@ const ModalTitle = styled.h2`
 `;
 
 const JsonDiff = styled.div`
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   padding: 12px;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
@@ -67,7 +67,7 @@ const JsonDiff = styled.div`
 
 const CloseButton = styled.button`
   background-color: #4a7eff;
-  color: #1a1a2e;
+  color: #0b0e1c;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;

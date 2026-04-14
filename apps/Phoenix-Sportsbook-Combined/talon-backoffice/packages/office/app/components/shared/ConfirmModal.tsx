@@ -16,8 +16,8 @@ const ModalOverlay = styled.div<{ $isOpen?: boolean }>`
 `;
 
 const ModalContent = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 8px;
   padding: 24px;
   max-width: 400px;
@@ -40,7 +40,7 @@ const ModalMessage = styled.p`
 `;
 
 const ImpactSummary = styled.div`
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 20px;
@@ -80,19 +80,19 @@ const BaseButton = styled.button`
 `;
 
 const CancelButton = styled(BaseButton)`
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   color: #4a7eff;
-  border: 1px solid #0f3460;
+  border: 1px solid #1a1f3a;
 
   &:hover:not(:disabled) {
-    background-color: #16213e;
+    background-color: #111631;
     border-color: #4a7eff;
   }
 `;
 
 const ConfirmButton = styled(BaseButton)`
   background-color: #4a7eff;
-  color: #1a1a2e;
+  color: #0b0e1c;
 
   &:hover:not(:disabled) {
     background-color: #6593ff;

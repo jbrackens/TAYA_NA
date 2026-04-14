@@ -38,7 +38,7 @@ const ReportMeta = styled.div`
   justify-content: space-between;
   align-items: center;
   padding-top: 12px;
-  border-top: 1px solid #0f3460;
+  border-top: 1px solid #1a1f3a;
 `;
 
 const ReportDate = styled.span`
@@ -60,7 +60,7 @@ const ChartTitle = styled.h2`
 
 const ChartPlaceholder = styled.div`
   height: 300px;
-  background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+  background: linear-gradient(135deg, #1a1f3a 0%, #111631 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -154,8 +154,8 @@ const leaderboardAnalyticsGridStyle = {
 
 const analyticsCardStyle = {
   padding: '20px',
-  background: '#16213e',
-  border: '1px solid #0f3460',
+  background: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: '12px',
 } as const;
 
@@ -177,7 +177,7 @@ const standingRowStyle = {
   gap: '12px',
   padding: '10px 12px',
   borderRadius: '8px',
-  background: '#0f3460',
+  background: '#1a1f3a',
 } as const;
 
 const reportCardStyle = {
@@ -189,7 +189,7 @@ const reportCardStyle = {
 const reportButtonStyle = {
   padding: '8px 14px',
   background: '#4a7eff',
-  color: '#1a1a2e',
+  color: '#0b0e1c',
   border: '1px solid #4a7eff',
   borderRadius: '6px',
   cursor: 'pointer',
@@ -199,7 +199,7 @@ const reportButtonStyle = {
 
 const secondaryButtonStyle = {
   ...reportButtonStyle,
-  background: '#0f3460',
+  background: '#1a1f3a',
   color: '#4a7eff',
   border: '1px solid #4a7eff',
 } as const;
@@ -210,8 +210,8 @@ const generatedReportRowStyle = {
   justifyContent: 'space-between',
   alignItems: 'center',
   gap: '16px',
-  background: '#16213e',
-  border: '1px solid #0f3460',
+  background: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: '12px',
 } as const;
 
@@ -365,25 +365,25 @@ function ReportsPageContent() {
       <ChartContainer>
         <ChartTitle>Key Metrics (Last 7 Days)</ChartTitle>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               ${metrics.totalRevenue.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Revenue</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               {metrics.totalBets.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Total Bets</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               {metrics.uniqueUsers.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Users</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               ${metrics.avgBetSize.toFixed(2)}
             </div>
@@ -397,25 +397,25 @@ function ReportsPageContent() {
       <ChartContainer>
         <ChartTitle>Leaderboard Analytics</ChartTitle>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '20px' }}>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               {leaderboards.length.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Boards</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               {leaderboards.filter((board) => board.status === 'active').length.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Active</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               {leaderboards.filter((board) => board.status === 'draft').length.toLocaleString()}
             </div>
             <div style={{ fontSize: '12px', color: '#a0a0a0', marginTop: '4px' }}>Draft</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '16px', background: '#0f3460', borderRadius: '4px' }}>
+          <div style={{ textAlign: 'center', padding: '16px', background: '#1a1f3a', borderRadius: '4px' }}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: '#4a7eff' }}>
               {leaderboards.filter((board) => board.status === 'closed').length.toLocaleString()}
             </div>
@@ -484,9 +484,9 @@ function ReportsPageContent() {
             type="button"
             style={{
               padding: '8px 16px',
-              backgroundColor: activePeriod === '7days' ? '#4a7eff' : '#0f3460',
-              color: activePeriod === '7days' ? '#1a1a2e' : '#4a7eff',
-              border: `1px solid ${activePeriod === '7days' ? '#4a7eff' : '#0f3460'}`,
+              backgroundColor: activePeriod === '7days' ? '#4a7eff' : '#1a1f3a',
+              color: activePeriod === '7days' ? '#0b0e1c' : '#4a7eff',
+              border: `1px solid ${activePeriod === '7days' ? '#4a7eff' : '#1a1f3a'}`,
               borderRadius: '4px',
               cursor: 'pointer',
               fontWeight: 600,
@@ -499,9 +499,9 @@ function ReportsPageContent() {
             type="button"
             style={{
               padding: '8px 16px',
-              backgroundColor: activePeriod === '30days' ? '#4a7eff' : '#0f3460',
-              color: activePeriod === '30days' ? '#1a1a2e' : '#4a7eff',
-              border: `1px solid ${activePeriod === '30days' ? '#4a7eff' : '#0f3460'}`,
+              backgroundColor: activePeriod === '30days' ? '#4a7eff' : '#1a1f3a',
+              color: activePeriod === '30days' ? '#0b0e1c' : '#4a7eff',
+              border: `1px solid ${activePeriod === '30days' ? '#4a7eff' : '#1a1f3a'}`,
               borderRadius: '4px',
               cursor: 'pointer',
               fontWeight: 600,
@@ -514,9 +514,9 @@ function ReportsPageContent() {
             type="button"
             style={{
               padding: '8px 16px',
-              backgroundColor: activePeriod === '90days' ? '#4a7eff' : '#0f3460',
-              color: activePeriod === '90days' ? '#1a1a2e' : '#4a7eff',
-              border: `1px solid ${activePeriod === '90days' ? '#4a7eff' : '#0f3460'}`,
+              backgroundColor: activePeriod === '90days' ? '#4a7eff' : '#1a1f3a',
+              color: activePeriod === '90days' ? '#0b0e1c' : '#4a7eff',
+              border: `1px solid ${activePeriod === '90days' ? '#4a7eff' : '#1a1f3a'}`,
               borderRadius: '4px',
               cursor: 'pointer',
               fontWeight: 600,
@@ -529,9 +529,9 @@ function ReportsPageContent() {
             type="button"
             style={{
               padding: '8px 16px',
-              backgroundColor: activePeriod === 'month' ? '#4a7eff' : '#0f3460',
-              color: activePeriod === 'month' ? '#1a1a2e' : '#4a7eff',
-              border: `1px solid ${activePeriod === 'month' ? '#4a7eff' : '#0f3460'}`,
+              backgroundColor: activePeriod === 'month' ? '#4a7eff' : '#1a1f3a',
+              color: activePeriod === 'month' ? '#0b0e1c' : '#4a7eff',
+              border: `1px solid ${activePeriod === 'month' ? '#4a7eff' : '#1a1f3a'}`,
               borderRadius: '4px',
               cursor: 'pointer',
               fontWeight: 600,
@@ -544,9 +544,9 @@ function ReportsPageContent() {
             type="button"
             style={{
               padding: '8px 16px',
-              backgroundColor: activePeriod === 'year' ? '#4a7eff' : '#0f3460',
-              color: activePeriod === 'year' ? '#1a1a2e' : '#4a7eff',
-              border: `1px solid ${activePeriod === 'year' ? '#4a7eff' : '#0f3460'}`,
+              backgroundColor: activePeriod === 'year' ? '#4a7eff' : '#1a1f3a',
+              color: activePeriod === 'year' ? '#0b0e1c' : '#4a7eff',
+              border: `1px solid ${activePeriod === 'year' ? '#4a7eff' : '#1a1f3a'}`,
               borderRadius: '4px',
               cursor: 'pointer',
               fontWeight: 600,
@@ -567,8 +567,8 @@ function ReportsPageContent() {
             key={report.type}
             style={{
               ...reportCardStyle,
-              background: '#16213e',
-              border: '1px solid #0f3460',
+              background: '#111631',
+              border: '1px solid #1a1f3a',
               borderRadius: '12px',
             }}
             onClick={() => handleGenerateReport(report.type)}

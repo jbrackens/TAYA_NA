@@ -5,8 +5,8 @@ import { Button, Badge } from '../shared';
 import { useState } from 'react';
 
 const PanelContainer = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 6px;
   padding: 20px;
 `;
@@ -27,7 +27,7 @@ const SelectionsList = styled.div`
 
 const SelectionRow = styled.div<{ $selected?: boolean }>`
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   border: 2px solid ${(props) => (props.$selected ? '#4a7eff' : 'transparent')};
   cursor: pointer;
@@ -67,7 +67,7 @@ const SelectCheckbox = styled.input`
 `;
 
 const SummaryContainer = styled.div`
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   padding: 16px;
   border-radius: 4px;
   margin-bottom: 20px;
@@ -193,7 +193,7 @@ export function SettlementPanel({
             <SummaryLabel>Affected Bets:</SummaryLabel>
             <SummaryValue>{affectedBets}</SummaryValue>
           </SummaryRow>
-          <SummaryRow style={{ fontSize: '14px', fontWeight: '600', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #16213e' }}>
+          <SummaryRow style={{ fontSize: '14px', fontWeight: '600', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #111631' }}>
             <SummaryLabel style={{ color: '#ffffff' }}>Total Payout:</SummaryLabel>
             <SummaryValue style={{ color: '#f87171' }}>
               ${totalPayout.toLocaleString()}

@@ -36,7 +36,7 @@ const TimelineItem = styled.div`
   display: flex;
   gap: 12px;
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   border-left: 3px solid #4a7eff;
 `;

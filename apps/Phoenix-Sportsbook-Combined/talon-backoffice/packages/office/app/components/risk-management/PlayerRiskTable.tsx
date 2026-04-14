@@ -5,8 +5,8 @@ import { Badge } from '../shared';
 import { DataTable, ColumnDef } from '../shared/DataTable';
 
 const TableWrapper = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 6px;
   padding: 20px;
 `;

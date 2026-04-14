@@ -5,7 +5,7 @@ import styled from 'styled-components';
 const ErrorContainer = styled.div`
   padding: 40px 24px;
   text-align: center;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 8px;
   border: 1px solid #d32f2f;
 `;
@@ -32,7 +32,7 @@ const ErrorMessage = styled.p`
 const RetryButton = styled.button`
   padding: 8px 16px;
   background-color: #4a7eff;
-  color: #1a1a2e;
+  color: #0b0e1c;
   border: none;
   border-radius: 4px;
   cursor: pointer;

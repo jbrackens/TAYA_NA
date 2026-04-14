@@ -758,8 +758,8 @@ const settingsGridStyle: CSSProperties = {
 };
 
 const surfaceCardStyle: CSSProperties = {
-  background: '#16213e',
-  border: '1px solid #0f3460',
+  background: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: 12,
   padding: 20,
 };
@@ -870,7 +870,7 @@ function buttonStyle(disabled = false): CSSProperties {
   return {
     padding: '10px 16px',
     backgroundColor: disabled ? '#3b4c7a' : '#4a7eff',
-    color: '#1a1a2e',
+    color: '#0b0e1c',
     border: 'none',
     borderRadius: 8,
     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -942,8 +942,8 @@ const removeBenefitBtnStyle: CSSProperties = {
 /* Tier Ladder Visual styles */
 
 const tierLadderContainerStyle: CSSProperties = {
-  background: '#16213e',
-  border: '1px solid #0f3460',
+  background: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: 12,
   padding: 20,
   marginBottom: 20,

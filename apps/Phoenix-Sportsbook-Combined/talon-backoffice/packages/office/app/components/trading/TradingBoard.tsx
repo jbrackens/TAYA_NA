@@ -13,7 +13,7 @@ const BoardContainer = styled.div`
 
 const FixtureCard = styled.div<{ $selected?: boolean }>`
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   border: 2px solid ${(props) => (props.$selected ? '#4a7eff' : 'transparent')};
   cursor: pointer;
@@ -69,7 +69,7 @@ const FixtureStats = styled.div`
 `;
 
 const StatBadge = styled.div`
-  background-color: #16213e;
+  background-color: #111631;
   padding: 4px 8px;
   border-radius: 3px;
   display: flex;

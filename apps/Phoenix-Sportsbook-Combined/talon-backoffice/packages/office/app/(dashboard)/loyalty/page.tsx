@@ -210,7 +210,7 @@ function tierVariant(tier: string): 'default' | 'success' | 'warning' | 'danger'
 
 function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSProperties {
   const backgroundByVariant: Record<string, string> = {
-    default: '#0f3460',
+    default: '#1a1f3a',
     success: '#065f46',
     warning: '#92400e',
     danger: '#7f1d1d',
@@ -236,7 +236,7 @@ function buttonStyle(): CSSProperties {
   return {
     padding: '8px 16px',
     backgroundColor: '#4a7eff',
-    color: '#1a1a2e',
+    color: '#0b0e1c',
     border: 'none',
     borderRadius: 4,
     cursor: 'pointer',
@@ -290,8 +290,8 @@ const metricValueStyle: CSSProperties = {
 
 const surfaceCardStyle: CSSProperties = {
   padding: 16,
-  backgroundColor: '#16213e',
-  border: '1px solid #0f3460',
+  backgroundColor: '#111631',
+  border: '1px solid #1a1f3a',
   borderRadius: 8,
 };
 
@@ -304,8 +304,8 @@ const filtersRowStyle: CSSProperties = {
 
 const inputStyle: CSSProperties = {
   padding: '10px 12px',
-  backgroundColor: '#0f3460',
-  border: '1px solid #0f3460',
+  backgroundColor: '#1a1f3a',
+  border: '1px solid #1a1f3a',
   color: '#ffffff',
   borderRadius: 4,
   fontSize: 14,
@@ -313,8 +313,8 @@ const inputStyle: CSSProperties = {
 
 const selectStyle: CSSProperties = {
   padding: '10px 12px',
-  backgroundColor: '#0f3460',
-  border: '1px solid #0f3460',
+  backgroundColor: '#1a1f3a',
+  border: '1px solid #1a1f3a',
   color: '#ffffff',
   borderRadius: 4,
   fontSize: 14,

@@ -27,7 +27,7 @@ const StatRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   margin-bottom: 12px;
 `;
@@ -47,7 +47,7 @@ const QuickLinkButton = styled.button`
   width: 100%;
   padding: 8px;
   background-color: #4a7eff;
-  color: #1a1a2e;
+  color: #0b0e1c;
   border: none;
   border-radius: 4px;
   font-weight: 600;
@@ -94,7 +94,7 @@ export function ActiveBetsWidget({
         </StatValue>
       </StatRow>
 
-      <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #0f3460' }}>
+      <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #1a1f3a' }}>
         <QuickLinkButton onClick={onViewBets}>View All Bets</QuickLinkButton>
       </div>
     </WidgetCard>

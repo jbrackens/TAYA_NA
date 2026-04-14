@@ -6,8 +6,8 @@ import { useState, useMemo } from 'react';
 import { DataTable, ColumnDef } from '../shared/DataTable';
 
 const SearchContainer = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 6px;
   padding: 20px;
   margin-bottom: 20px;
@@ -45,8 +45,8 @@ const Label = styled.label`
 `;
 
 const StyledInput = styled(Input)`
-  background-color: #0f3460;
-  border: 1px solid #0f3460;
+  background-color: #1a1f3a;
+  border: 1px solid #1a1f3a;
   color: #ffffff;
 
   &:focus {
@@ -55,8 +55,8 @@ const StyledInput = styled(Input)`
 `;
 
 const StyledSelect = styled.select`
-  background-color: #0f3460;
-  border: 1px solid #0f3460;
+  background-color: #1a1f3a;
+  border: 1px solid #1a1f3a;
   color: #ffffff;
   padding: 8px;
   border-radius: 4px;
@@ -69,14 +69,14 @@ const StyledSelect = styled.select`
   }
 
   option {
-    background-color: #16213e;
+    background-color: #111631;
     color: #ffffff;
   }
 `;
 
 const TableContainer = styled.div`
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   border-radius: 6px;
   padding: 20px;
 `;

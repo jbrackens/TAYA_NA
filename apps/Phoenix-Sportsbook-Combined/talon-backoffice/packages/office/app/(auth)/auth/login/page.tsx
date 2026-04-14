@@ -64,43 +64,41 @@ export default function LoginPage() {
   const inputStyle = (field: string): React.CSSProperties => ({
     width: '100%',
     padding: '12px 16px',
-    backgroundColor: '#1a1f36',
-    border: `1.5px solid ${focusedField === field ? '#6366f1' : '#2a2f4a'}`,
-    borderRadius: 10,
-    color: '#f1f5f9',
-    fontSize: 15,
+    backgroundColor: '#0b0e1c',
+    border: `1.5px solid ${focusedField === field ? '#4ade80' : '#1a1f3a'}`,
+    borderRadius: 6,
+    color: '#e2e8f0',
+    fontSize: 14,
+    fontFamily: "'IBM Plex Sans', sans-serif",
     outline: 'none',
     transition: 'border-color 0.2s, box-shadow 0.2s',
-    boxShadow: focusedField === field ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
+    boxShadow: focusedField === field ? '0 0 0 2px rgba(74,222,128,0.15)' : 'none',
     boxSizing: 'border-box' as const,
   });
 
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      minHeight: '100vh', background: 'linear-gradient(135deg, #0c0e1a 0%, #131631 50%, #0c0e1a 100%)',
+      minHeight: '100vh', background: 'linear-gradient(135deg, #0b0e1c 0%, #0f1225 50%, #0b0e1c 100%)',
       padding: 20,
     }}>
       <div style={{
         width: '100%', maxWidth: 420, padding: '44px 40px',
-        background: '#13162b', borderRadius: 16,
-        border: '1px solid #1e2243',
-        boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 120px rgba(99,102,241,0.04)',
+        background: '#0f1225', borderRadius: 12,
+        border: '1px solid #1a1f3a',
+        boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 120px rgba(74,222,128,0.03)',
       }}>
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 14,
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 16, boxShadow: '0 8px 24px rgba(99,102,241,0.25)',
-          }}>
-            <span style={{ fontSize: 24 }}>⚡</span>
-          </div>
+          <img
+            src="/logo-tn.png"
+            alt="TAYA NA!"
+            style={{ width: 56, height: 56, marginBottom: 16 }}
+          />
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#f8fafc', marginBottom: 6 }}>
-            Phoenix Backoffice
+            TAYA NA! Backoffice
           </h1>
-          <p style={{ fontSize: 14, color: '#64748b', fontWeight: 400 }}>
+          <p style={{ fontSize: 14, color: '#D3D3D3', fontWeight: 400 }}>
             Sign in to your admin account
           </p>
         </div>
@@ -109,7 +107,7 @@ export default function LoginPage() {
           {error && (
             <div style={{
               padding: '12px 16px', background: 'rgba(239,68,68,0.08)',
-              border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10,
+              border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8,
               color: '#f87171', fontSize: 13, fontWeight: 500,
             }}>
               {error}
@@ -117,12 +115,12 @@ export default function LoginPage() {
           )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', letterSpacing: '0.02em' }}>
+            <label style={{ fontSize: 13, fontWeight: 500, color: '#D3D3D3', letterSpacing: '0.02em' }}>
               Email
             </label>
             <input
               type="email"
-              placeholder="admin@phoenix.com"
+              placeholder="admin@phoenix.local"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocusedField('email')}
@@ -134,10 +132,10 @@ export default function LoginPage() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8', letterSpacing: '0.02em' }}>
+              <label style={{ fontSize: 13, fontWeight: 500, color: '#D3D3D3', letterSpacing: '0.02em' }}>
                 Password
               </label>
-              <a href="#" style={{ fontSize: 12, color: '#6366f1', fontWeight: 500 }}>
+              <a href="#" style={{ fontSize: 12, color: '#4ade80', fontWeight: 500 }}>
                 Forgot password?
               </a>
             </div>
@@ -157,20 +155,21 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             style={{
-              width: '100%', padding: '13px 20px', marginTop: 4,
-              background: loading ? '#4b4d8a' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
-              border: 'none', borderRadius: 10, color: '#fff',
-              fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+              width: '100%', padding: '12px 20px', marginTop: 4,
+              background: loading ? '#1a2040' : 'linear-gradient(135deg, #4ade80, #22c55e)',
+              border: 'none', borderRadius: 8, color: loading ? '#64748b' : '#101114',
+              fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+              fontFamily: "'IBM Plex Sans', sans-serif",
               transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
-              boxShadow: loading ? 'none' : '0 4px 16px rgba(99,102,241,0.3)',
+              boxShadow: loading ? 'none' : '0 4px 12px rgba(74,222,128,0.15)',
             }}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', marginTop: 28, fontSize: 13, color: '#475569' }}>
-          Phoenix Sportsbook Admin v2.0
+        <p style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: '#64748b' }}>
+          TAYA NA! Sportsbook Admin v2.0
         </p>
       </div>
     </div>

@@ -28,7 +28,7 @@ const loadingShellStyle: React.CSSProperties = {
 const loadingSpinnerStyle: React.CSSProperties = {
   width: 40,
   height: 40,
-  border: '3px solid #0f3460',
+  border: '3px solid #1a1f3a',
   borderTopColor: '#4a7eff',
   borderRadius: '50%',
   animation: 'office-dashboard-spin 0.8s linear infinite',

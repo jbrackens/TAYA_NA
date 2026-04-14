@@ -28,7 +28,7 @@ const SportRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 10px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -60,7 +60,7 @@ const ConnectionStatus = styled.div<{ $connected?: boolean }>`
   color: ${(props) => (props.$connected ? '#22c55e' : '#f87171')};
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #0f3460;
+  border-top: 1px solid #1a1f3a;
   display: flex;
   align-items: center;
   gap: 6px;

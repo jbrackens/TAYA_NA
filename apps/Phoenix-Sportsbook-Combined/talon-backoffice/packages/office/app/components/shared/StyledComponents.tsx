@@ -2,48 +2,50 @@
 
 import styled from 'styled-components';
 
-// Reusable Card component
+// Reusable Card component — TAYA NA! admin design tokens
 export const Card = styled.div`
-  padding: 16px;
-  background-color: #16213e;
-  border: 1px solid #0f3460;
-  border-radius: 8px;
+  padding: 20px;
+  background-color: #0f1225;
+  border: 1px solid #1a1f3a;
+  border-radius: 10px;
 `;
 
-// Reusable Badge component
+// Reusable Badge component — semantic status colors
 export const Badge = styled.span<{ $variant?: 'default' | 'success' | 'warning' | 'danger' }>`
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   background-color: ${(props) => {
     switch (props.$variant) {
       case 'success':
-        return '#065f46';
+        return 'rgba(34,197,94,0.12)';
       case 'warning':
-        return '#92400e';
+        return 'rgba(251,191,36,0.12)';
       case 'danger':
-        return '#7f1d1d';
+        return 'rgba(239,68,68,0.12)';
       default:
-        return '#0f3460';
+        return 'rgba(74,126,255,0.12)';
     }
   }};
   color: ${(props) => {
     switch (props.$variant) {
       case 'success':
-        return '#dcfce7';
+        return '#22c55e';
       case 'warning':
-        return '#fef3c7';
+        return '#fbbf24';
       case 'danger':
-        return '#fee2e2';
+        return '#f87171';
       default:
-        return '#93c5fd';
+        return '#4a7eff';
     }
   }};
 `;
 
-// Reusable Button component
+// Reusable Button component — admin green primary, ghost secondary
 export const Button = styled.button<{ $variant?: 'primary' | 'secondary' | 'danger'; $size?: 'sm' | 'md' | 'lg'; variant?: 'primary' | 'secondary' | 'danger'; size?: 'sm' | 'md' | 'lg' }>`
   padding: ${(props) => {
     const sz = props.$size || props.size;
@@ -53,86 +55,95 @@ export const Button = styled.button<{ $variant?: 'primary' | 'secondary' | 'dang
       case 'lg':
         return '12px 24px';
       default:
-        return '8px 16px';
+        return '10px 20px';
     }
   }};
-  background-color: ${(props) => {
+  background: ${(props) => {
     const variant = props.$variant || props.variant;
     switch (variant) {
       case 'secondary':
-        return '#0f3460';
+        return '#161a35';
       case 'danger':
-        return '#f87171';
+        return 'transparent';
       default:
-        return '#4a7eff';
+        return 'linear-gradient(135deg, #4ade80, #22c55e)';
     }
   }};
   color: ${(props) => {
     const variant = props.$variant || props.variant;
     switch (variant) {
       case 'secondary':
-        return '#4a7eff';
+        return '#e2e8f0';
       case 'danger':
-        return '#ffffff';
+        return '#f87171';
       default:
-        return '#1a1a2e';
+        return '#101114';
     }
   }};
   border: ${(props) => {
     const variant = props.$variant || props.variant;
     switch (variant) {
       case 'secondary':
-        return '1px solid #0f3460';
+        return '1px solid #1a1f3a';
+      case 'danger':
+        return '1.5px solid #ef4444';
       default:
         return 'none';
     }
   }};
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 600;
   font-size: ${(props) => {
     const sz = props.$size || props.size;
     return sz === 'sm' ? '12px' : '14px';
   }};
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  box-shadow: ${(props) => {
+    const variant = props.$variant || props.variant;
+    return variant === 'primary' || !variant ? '0 4px 12px rgba(74,222,128,0.15)' : 'none';
+  }};
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
     ${(props) => {
       const variant = props.$variant || props.variant;
       switch (variant) {
         case 'secondary':
-          return 'background-color: #16213e; border-color: #4a7eff;';
+          return 'background-color: #1a2040; border-color: #2a3050;';
         case 'danger':
-          return 'background-color: #ef4444;';
+          return 'background: rgba(239,68,68,0.12);';
         default:
-          return 'background-color: #6593ff;';
+          return 'box-shadow: 0 4px 16px rgba(74,222,128,0.25);';
       }
     }}
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
   }
 `;
 
-// Reusable Input component
+// Reusable Input component — admin form styling
 export const Input = styled.input`
-  padding: 10px 12px;
-  background-color: #0f3460;
-  border: 1px solid #0f3460;
-  color: #ffffff;
-  border-radius: 4px;
+  padding: 10px 14px;
+  background-color: #0b0e1c;
+  border: 1px solid #1a1f3a;
+  color: #e2e8f0;
+  border-radius: 6px;
   font-size: 14px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  height: 40px;
+  transition: all 0.15s ease;
 
   &::placeholder {
-    color: #a0a0a0;
+    color: #64748b;
   }
 
   &:focus {
     outline: none;
-    border-color: #4a7eff;
-    box-shadow: 0 0 0 3px rgba(74, 126, 255, 0.1);
+    border-color: #4ade80;
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.15);
   }
 `;

@@ -502,7 +502,7 @@ function badgeStyle(variant: 'default' | 'success' | 'warning'): CSSProperties {
 function miniButtonStyle(disabled = false): CSSProperties {
   return {
     padding: '6px 10px',
-    backgroundColor: disabled ? '#3b4c7a' : '#0f3460',
+    backgroundColor: disabled ? '#3b4c7a' : '#1a1f3a',
     color: disabled ? '#cbd5e1' : '#93c5fd',
     border: '1px solid #1e3a5f',
     borderRadius: 6,
@@ -516,7 +516,7 @@ function buttonStyle(disabled = false): CSSProperties {
   return {
     padding: '8px 16px',
     backgroundColor: disabled ? '#3b4c7a' : '#4a7eff',
-    color: '#1a1a2e',
+    color: '#0b0e1c',
     border: 'none',
     borderRadius: 4,
     cursor: disabled ? 'not-allowed' : 'pointer',

@@ -23,7 +23,7 @@ const CardTitle = styled.h3`
 
 const ChartPlaceholder = styled.div`
   height: 200px;
-  background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+  background: linear-gradient(135deg, #1a1f3a 0%, #111631 100%);
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -37,7 +37,7 @@ const MetricRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #0f3460;
+  border-bottom: 1px solid #1a1f3a;
 
   &:last-child {
     border-bottom: none;
@@ -63,7 +63,7 @@ const FixtureList = styled.div`
 
 const FixtureItem = styled.div`
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   display: flex;
   justify-content: space-between;

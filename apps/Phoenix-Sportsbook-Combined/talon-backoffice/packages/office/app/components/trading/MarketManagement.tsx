@@ -12,7 +12,7 @@ const Container = styled.div`
 
 const MarketRow = styled.div`
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr auto;
@@ -40,7 +40,7 @@ const MarketInfo = styled.div`
 `;
 
 const SelectionCount = styled.span`
-  background-color: #16213e;
+  background-color: #111631;
   padding: 2px 6px;
   border-radius: 3px;
   color: #4a7eff;

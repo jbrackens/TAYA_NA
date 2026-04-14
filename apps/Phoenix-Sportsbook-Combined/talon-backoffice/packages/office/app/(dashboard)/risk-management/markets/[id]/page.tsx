@@ -55,7 +55,7 @@ const Table = styled.table`
   th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #0f3460;
+    border-bottom: 1px solid #1a1f3a;
     font-weight: 600;
     font-size: 12px;
     color: #a0a0a0;
@@ -64,7 +64,7 @@ const Table = styled.table`
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #0f3460;
+    border-bottom: 1px solid #1a1f3a;
     font-size: 13px;
     color: #ffffff;
   }

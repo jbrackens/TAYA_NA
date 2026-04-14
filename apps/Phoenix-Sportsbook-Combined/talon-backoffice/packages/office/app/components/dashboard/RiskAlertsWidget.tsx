@@ -34,7 +34,7 @@ const AlertsList = styled.div`
 
 const AlertItem = styled.div<{ $severity?: string }>`
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-left: 3px solid ${(props) => {
     switch (props.$severity) {
       case 'critical':
@@ -80,7 +80,7 @@ const AlertTime = styled.span`
 const ActionButton = styled.button`
   padding: 4px 8px;
   background-color: #4a7eff;
-  color: #1a1a2e;
+  color: #0b0e1c;
   border: none;
   border-radius: 3px;
   font-size: 10px;

@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 const EditorRow = styled.div`
   padding: 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr auto;
@@ -35,7 +35,7 @@ const OddsButton = styled.button`
   width: 28px;
   height: 28px;
   background-color: #4a7eff;
-  color: #1a1a2e;
+  color: #0b0e1c;
   border: none;
   border-radius: 3px;
   cursor: pointer;
@@ -60,8 +60,8 @@ const OddsInput = styled.input`
   width: 70px;
   padding: 6px 8px;
   text-align: center;
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
   color: #4a7eff;
   font-weight: 600;
   border-radius: 3px;

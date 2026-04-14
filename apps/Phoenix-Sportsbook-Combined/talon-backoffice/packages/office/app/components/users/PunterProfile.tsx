@@ -66,7 +66,7 @@ const InfoRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #0f3460;
+  border-bottom: 1px solid #1a1f3a;
 
   &:last-child {
     border-bottom: none;
@@ -92,8 +92,8 @@ const TabsContainer = styled.div`
 
 const TabButton = styled.button<{ $active?: boolean }>`
   padding: 12px;
-  background-color: ${(props) => (props.$active ? '#4a7eff' : '#0f3460')};
-  color: ${(props) => (props.$active ? '#1a1a2e' : '#a0a0a0')};
+  background-color: ${(props) => (props.$active ? '#4a7eff' : '#1a1f3a')};
+  color: ${(props) => (props.$active ? '#0b0e1c' : '#a0a0a0')};
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -115,8 +115,8 @@ const ActionButtons = styled.div`
 
 const ContentArea = styled(Card)`
   padding: 20px;
-  background-color: #16213e;
-  border: 1px solid #0f3460;
+  background-color: #111631;
+  border: 1px solid #1a1f3a;
 `;
 
 const TabContent = styled.div`

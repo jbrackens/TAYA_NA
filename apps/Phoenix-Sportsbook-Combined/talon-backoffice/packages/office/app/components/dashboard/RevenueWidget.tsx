@@ -34,7 +34,7 @@ const PeriodRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 4px;
 `;
 
@@ -54,7 +54,7 @@ const ChangeContainer = styled.div`
   align-items: center;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid #0f3460;
+  border-top: 1px solid #1a1f3a;
 `;
 
 const ChangeValue = styled.span<{ $positive?: boolean }>`

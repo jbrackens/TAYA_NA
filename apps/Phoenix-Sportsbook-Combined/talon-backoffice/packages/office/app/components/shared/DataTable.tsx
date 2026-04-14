@@ -11,17 +11,17 @@ const TableContainer = styled.div`
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background-color: #16213e;
+  background-color: #111631;
 
   th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #0f3460;
+    border-bottom: 1px solid #1a1f3a;
     font-weight: 600;
     font-size: 12px;
     color: #a0a0a0;
     text-transform: uppercase;
-    background-color: #0f3460;
+    background-color: #1a1f3a;
     cursor: pointer;
     user-select: none;
 
@@ -32,7 +32,7 @@ const StyledTable = styled.table`
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #0f3460;
+    border-bottom: 1px solid #1a1f3a;
     font-size: 14px;
     color: #ffffff;
   }
@@ -60,7 +60,7 @@ const PaginationContainer = styled.div`
   justify-content: space-between;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #0f3460;
+  border-top: 1px solid #1a1f3a;
 `;
 
 const PaginationInfo = styled.span`
@@ -80,9 +80,9 @@ const SortIndicator = styled.span`
 
 const PaginationButton = styled.button<{ disabled?: boolean }>`
   padding: 6px 12px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   color: #4a7eff;
-  border: 1px solid #0f3460;
+  border: 1px solid #1a1f3a;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
@@ -90,7 +90,7 @@ const PaginationButton = styled.button<{ disabled?: boolean }>`
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: #16213e;
+    background-color: #111631;
     border-color: #4a7eff;
   }
 

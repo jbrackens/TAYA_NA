@@ -30,7 +30,7 @@ const SpinnerContainer = styled.div<{ $centered?: boolean }>`
 const Spinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 3px solid #0f3460;
+  border: 3px solid #1a1f3a;
   border-top-color: #4a7eff;
   border-radius: 50%;
   animation: ${spin} 0.8s linear infinite;
@@ -62,7 +62,7 @@ export function LoadingSpinner({ centered = true, text = 'Loading...' }: Loading
 // Skeleton for list items
 const SkeletonLine = styled.div`
   height: 16px;
-  background: linear-gradient(90deg, #0f3460 25%, #16213e 50%, #0f3460 75%);
+  background: linear-gradient(90deg, #1a1f3a 25%, #111631 50%, #1a1f3a 75%);
   background-size: 200% 100%;
   border-radius: 4px;
   margin-bottom: 12px;
@@ -75,7 +75,7 @@ const SkeletonLine = styled.div`
 
 const SkeletonCard = styled.div`
   padding: 16px;
-  background-color: #0f3460;
+  background-color: #1a1f3a;
   border-radius: 8px;
   margin-bottom: 12px;
 `;
