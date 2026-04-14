@@ -18,6 +18,8 @@ type SessionStore interface {
 	DeleteByAccessToken(accessToken string) error
 	DeleteByRefreshToken(refreshToken string) error
 	DeleteExpired(now time.Time) error
+	ListByUserID(userID string) ([]session, error)
+	DeleteBySessionID(sessionID string) error
 }
 
 type persistedSessionStore struct {
@@ -146,6 +148,33 @@ func (s *FileBackedSessionStore) DeleteExpired(now time.Time) error {
 		return nil
 	}
 	return s.persistLocked()
+}
+
+func (s *FileBackedSessionStore) ListByUserID(userID string) ([]session, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	var result []session
+	for _, current := range s.byRefresh {
+		if current.UserID == userID {
+			result = append(result, current)
+		}
+	}
+	return result, nil
+}
+
+func (s *FileBackedSessionStore) DeleteBySessionID(sessionID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for refreshDigest, current := range s.byRefresh {
+		if current.AccessTokenDigest == sessionID || current.RefreshTokenDigest == sessionID {
+			delete(s.byRefresh, refreshDigest)
+			delete(s.byAccess, current.AccessTokenDigest)
+			return s.persistLocked()
+		}
+	}
+	return nil
 }
 
 func (s *FileBackedSessionStore) load() error {

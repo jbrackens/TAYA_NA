@@ -22,13 +22,16 @@ import { getOddsFormatLabel } from "../lib/utils/odds";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES } from "../lib/i18n/config";
 import { getEvents, getSports } from "../lib/api/events-client";
-import { Event, Sport, League } from "../lib/api/events-client";
+import { Event, Sport } from "../lib/api/events-client";
 import {
   Search as SearchIcon,
   Wallet as WalletIcon,
   Bell as BellIcon,
   Ticket as TicketIcon,
   Globe,
+  User as UserIcon,
+  LogOut,
+  Settings,
 } from "lucide-react";
 
 export const HeaderBar: React.FC = () => {
@@ -44,7 +47,9 @@ export const HeaderBar: React.FC = () => {
   const searchRequestIdRef = useRef(0);
 
   // Auth state — providers are always mounted in layout.tsx
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Redux state — store is always available via StoreProvider in layout.tsx
   const oddsFormat = useAppSelector(selectOddsFormat);
@@ -75,8 +80,9 @@ export const HeaderBar: React.FC = () => {
 
   const isTabActive = useCallback(
     (href: string) => {
-      if (href === "/") return pathname === "/";
-      return pathname === href || pathname.startsWith(`${href}/`);
+      const p = pathname ?? "/";
+      if (href === "/") return p === "/";
+      return p === href || p.startsWith(`${href}/`);
     },
     [pathname],
   );
@@ -102,20 +108,37 @@ export const HeaderBar: React.FC = () => {
     dispatch(setOddsFormat(next));
   }, [dispatch, oddsFormat]);
 
-  // Handle Escape key to close search overlay
+  // Handle Escape key to close search overlay and user menu
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && searchOpen) {
-        setSearchOpen(false);
-        setSearchQuery("");
-        setSearchResults([]);
+      if (e.key === "Escape") {
+        if (searchOpen) {
+          setSearchOpen(false);
+          setSearchQuery("");
+          setSearchResults([]);
+        }
+        if (userMenuOpen) {
+          setUserMenuOpen(false);
+        }
       }
     };
-    if (searchOpen) {
+    if (searchOpen || userMenuOpen) {
       window.addEventListener("keydown", handleKeyDown);
       return () => window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [searchOpen]);
+  }, [searchOpen, userMenuOpen]);
+
+  // Close user menu on click outside
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [userMenuOpen]);
 
   // Auto-focus search input when opened + load quick-browse sports
   useEffect(() => {
@@ -311,10 +334,127 @@ export const HeaderBar: React.FC = () => {
                 <span className="badge" />
               </button>
 
-              {/* Avatar / Account */}
-              <Link href="/account" className="ps-avatar" title="Account">
-                {user?.username?.[0]?.toUpperCase() || "U"}
-              </Link>
+              {/* Avatar / Account Dropdown */}
+              <div ref={userMenuRef} style={{ position: "relative" }}>
+                <button
+                  className="ps-avatar"
+                  title="Account"
+                  onClick={() => setUserMenuOpen((prev) => !prev)}
+                  style={{
+                    cursor: "pointer",
+                    border: userMenuOpen ? "2px solid #39ff14" : undefined,
+                  }}
+                >
+                  {user?.username?.[0]?.toUpperCase() || "U"}
+                </button>
+
+                {userMenuOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      right: 0,
+                      minWidth: 200,
+                      background: "#141827",
+                      border: "1px solid #1f2940",
+                      borderRadius: 12,
+                      boxShadow: "0 12px 32px rgba(0,0,0,0.4)",
+                      zIndex: 1000,
+                      overflow: "hidden",
+                    }}
+                  >
+                    {/* User info header */}
+                    <div
+                      style={{
+                        padding: "14px 16px",
+                        borderBottom: "1px solid #1f2940",
+                      }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#f8fafc" }}>
+                        {user?.username || "Player"}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#8b8fa3", marginTop: 2 }}>
+                        {user?.email || ""}
+                      </div>
+                    </div>
+
+                    {/* Menu items */}
+                    <div style={{ padding: "6px 0" }}>
+                      <Link
+                        href="/account"
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#e2e8f0",
+                          textDecoration: "none",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <UserIcon size={15} strokeWidth={2} style={{ color: "#8b8fa3" }} />
+                        {tx("MENU_ACCOUNT", "My Account")}
+                      </Link>
+
+                      <Link
+                        href="/account/security"
+                        onClick={() => setUserMenuOpen(false)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#e2e8f0",
+                          textDecoration: "none",
+                          transition: "background 0.15s",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <Settings size={15} strokeWidth={2} style={{ color: "#8b8fa3" }} />
+                        {tx("MENU_SETTINGS", "Settings")}
+                      </Link>
+                    </div>
+
+                    {/* Logout */}
+                    <div style={{ borderTop: "1px solid #1f2940", padding: "6px 0" }}>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          logout();
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          width: "100%",
+                          padding: "10px 16px",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "#f87171",
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          transition: "background 0.15s",
+                          textAlign: "left",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.06)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <LogOut size={15} strokeWidth={2} />
+                        {tx("MENU_LOGOUT", "Log Out")}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           ) : (
             <>

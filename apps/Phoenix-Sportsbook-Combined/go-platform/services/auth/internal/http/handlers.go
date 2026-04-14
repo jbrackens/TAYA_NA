@@ -499,6 +499,79 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"status": "logged_out"})
 	}))
 
+	// ─── Sessions Management ────────────────────────────────────
+	mux.Handle("/api/v1/auth/sessions/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		// DELETE /api/v1/auth/sessions/{sessionId} — revoke a specific session
+		if r.Method != stdhttp.MethodDelete {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodDelete)
+		}
+
+		sessionID := strings.TrimPrefix(r.URL.Path, "/api/v1/auth/sessions/")
+		sessionID = strings.TrimSuffix(sessionID, "/")
+		if sessionID == "" {
+			return httpx.BadRequest("session ID required", nil)
+		}
+
+		if err := auth.store.DeleteBySessionID(sessionID); err != nil {
+			return httpx.Internal("failed to revoke session", err)
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"message": "session revoked"})
+	}))
+
+	mux.Handle("/api/v1/auth/sessions", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		// GET /api/v1/auth/sessions — list active sessions for the authenticated user
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+
+		auth.PruneExpiredSessions()
+
+		// Authenticate: read access token from cookie or header
+		var token string
+		if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
+			token = cookie.Value
+		} else {
+			var parseErr error
+			token, parseErr = parseBearerToken(r.Header.Get("Authorization"))
+			if parseErr != nil {
+				return parseErr
+			}
+		}
+
+		currentSession, err := auth.ValidateAccessToken(token)
+		if err != nil {
+			return err
+		}
+
+		sessions, err := auth.store.ListByUserID(currentSession.UserID)
+		if err != nil {
+			return httpx.Internal("failed to list sessions", err)
+		}
+
+		type sessionEntry struct {
+			ID         string `json:"id"`
+			Device     string `json:"device"`
+			Location   string `json:"location"`
+			LastActive string `json:"last_active"`
+			Current    bool   `json:"current"`
+		}
+
+		result := make([]sessionEntry, 0, len(sessions))
+		for _, s := range sessions {
+			isCurrent := s.AccessTokenDigest == currentSession.AccessTokenDigest
+			result = append(result, sessionEntry{
+				ID:         s.AccessTokenDigest,
+				Device:     r.Header.Get("User-Agent"),
+				Location:   r.RemoteAddr,
+				LastActive: s.IssuedAt.UTC().Format(time.RFC3339),
+				Current:    isCurrent,
+			})
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, result)
+	}))
+
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)

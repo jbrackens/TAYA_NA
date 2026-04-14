@@ -4,12 +4,87 @@ import React, { useEffect, useState, useMemo } from "react";
 import { logger } from "../../lib/logger";
 import MarketGroup from "../../components/MarketGroup";
 import MarketDetailLoading from "../../components/MarketDetailLoading";
-import {
-  bcGetGame,
-  type BCGameDetail,
-  type BCGameMarket,
-} from "../../lib/api/betconstruct-client";
 
+// ─── Gateway response types ────────────────────────────────────
+interface GatewayDisplayOdds {
+  american: string;
+  decimal: number;
+  fractional: string;
+}
+
+interface GatewaySelectionOdds {
+  selectionId: string;
+  selectionName: string;
+  active: boolean;
+  displayOdds?: GatewayDisplayOdds;
+}
+
+interface GatewayMarketStatus {
+  type: string;
+  changeReason: unknown;
+}
+
+interface GatewayMarket {
+  marketId: string;
+  marketName: string;
+  marketType: string;
+  marketCategory: string;
+  marketStatus: GatewayMarketStatus;
+  selectionOdds: GatewaySelectionOdds[];
+  specifiers: Record<string, string>;
+}
+
+interface GatewaySport {
+  sportId: string;
+  name: string;
+  abbreviation: string;
+}
+
+interface GatewayTournament {
+  tournamentId: string;
+  sportId: string;
+  name: string;
+  startTime: string;
+}
+
+interface GatewayCompetitor {
+  competitorId: string;
+  name: string;
+  qualifier: string;
+  score: number;
+}
+
+interface GatewayFixtureDetail {
+  fixtureId: string;
+  fixtureName: string;
+  startTime: string;
+  isLive: boolean;
+  sport: GatewaySport;
+  tournament: GatewayTournament;
+  status: string;
+  markets: GatewayMarket[];
+  marketsTotalCount: number;
+  competitors: Record<string, GatewayCompetitor>;
+}
+
+// ─── Market selection (mapped for MarketGroup) ──────────────────
+interface MappedSelection {
+  id: string;
+  name: string;
+  price: number;
+  odds: number;
+}
+
+interface MappedMarket {
+  id: string;
+  name: string;
+  status: string;
+  type: string;
+  displayKey: string;
+  selections: MappedSelection[];
+}
+
+// ─── Match page props ───────────────────────────────────────────
 interface MatchPageProps {
   params: Promise<{
     id: string;
@@ -23,41 +98,68 @@ function matchesAny(value: string | undefined, needles: string[]) {
   return needles.some((needle) => normalized.includes(needle.toLowerCase()));
 }
 
-function isMoneylineMarket(market: BCGameMarket) {
-  return (
-    matchesAny(market.type, ["p1xp2", "p1p2", "winner", "moneyline", "match result"]) ||
-    matchesAny(market.displayKey, ["winner", "moneyline", "match_result", "1x2"]) ||
-    matchesAny(market.name, ["match result", "moneyline", "winner"])
-  );
+function isMoneylineMarket(market: MappedMarket) {
+  return matchesAny(market.type, [
+    "match_winner", "moneyline", "winner", "p1xp2", "p1p2", "1x2",
+  ]) || matchesAny(market.name, [
+    "match result", "moneyline", "winner", "match winner", "to win",
+  ]);
 }
 
-function isHandicapMarket(market: BCGameMarket) {
-  return (
-    matchesAny(market.type, ["handicap", "spread", "run line", "puck line"]) ||
-    matchesAny(market.displayKey, ["handicap", "spread"]) ||
-    matchesAny(market.name, ["handicap", "spread", "run line", "puck line"])
-  );
+function isHandicapMarket(market: MappedMarket) {
+  return matchesAny(market.type, [
+    "handicap", "spread", "run_line", "puck_line", "point_spread",
+  ]) || matchesAny(market.name, [
+    "handicap", "spread", "run line", "puck line", "point spread",
+  ]);
 }
 
-function isTotalMarket(market: BCGameMarket) {
-  return (
-    matchesAny(market.type, ["total", "overunder", "over/under"]) ||
-    matchesAny(market.displayKey, ["total", "totals", "over_under"]) ||
-    matchesAny(market.name, ["total", "over/under"])
-  );
+function isTotalMarket(market: MappedMarket) {
+  return matchesAny(market.type, [
+    "total", "over_under", "overunder", "total_runs", "total_points",
+    "total_goals", "total_rounds",
+  ]) || matchesAny(market.name, [
+    "total", "over/under", "over under", "total runs", "total points",
+    "total goals", "total rounds",
+  ]);
 }
 
-function isPlayerPropMarket(market: BCGameMarket) {
-  return (
-    matchesAny(market.type, ["player"]) ||
-    matchesAny(market.displayKey, ["player"]) ||
-    matchesAny(market.name, ["player"])
-  );
+function isPlayerPropMarket(market: MappedMarket) {
+  return matchesAny(market.type, ["player"]) ||
+    matchesAny(market.name, ["player"]);
+}
+
+/** Normalize gateway market status to open/suspended/closed */
+function normalizeMarketStatus(raw: string): string {
+  const upper = (raw || "").toUpperCase();
+  if (upper === "BETTABLE" || upper === "ACTIVE" || upper === "OPEN") return "open";
+  if (upper === "SUSPENDED" || upper === "HALTED") return "suspended";
+  if (upper === "CLOSED" || upper === "RESULTED" || upper === "SETTLED") return "closed";
+  return raw.toLowerCase();
+}
+
+/** Map a gateway market to the shape MarketGroup/MarketRow expects */
+function mapGatewayMarket(gm: GatewayMarket): MappedMarket {
+  return {
+    id: gm.marketId,
+    name: gm.marketName,
+    status: normalizeMarketStatus(gm.marketStatus?.type || "open"),
+    type: gm.marketType,
+    displayKey: gm.marketCategory,
+    selections: (gm.selectionOdds || [])
+      .filter((s) => s.active)
+      .map((s) => ({
+        id: s.selectionId,
+        name: s.selectionName,
+        price: s.displayOdds?.decimal || 0,
+        odds: s.displayOdds?.decimal || 0,
+      })),
+  };
 }
 
 export default function MatchPage({ params }: MatchPageProps) {
   const { id: matchId } = React.use(params);
-  const [game, setGame] = useState<BCGameDetail | null>(null);
+  const [fixture, setFixture] = useState<GatewayFixtureDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<MarketTab>("Popular");
@@ -67,16 +169,25 @@ export default function MatchPage({ params }: MatchPageProps) {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await bcGetGame(matchId);
+        // Fetch from our Go gateway (proxied via next.config.js rewrites)
+        const res = await fetch(`/api/v1/fixtures/${encodeURIComponent(matchId)}`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          const msg = (body as Record<string, string> | null)?.error || `HTTP ${res.status}`;
+          throw new Error(msg);
+        }
+        const data: GatewayFixtureDetail = await res.json();
         if (!cancelled) {
-          setGame(data);
+          setFixture(data);
           setError(null);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         if (!cancelled) {
           const message =
             err instanceof Error ? err.message : "Failed to load match";
-          logger.error("MatchPage", "Failed to load game", message);
+          logger.error("MatchPage", "Failed to load fixture", message);
           setError(message);
         }
       } finally {
@@ -89,27 +200,27 @@ export default function MatchPage({ params }: MatchPageProps) {
     };
   }, [matchId]);
 
-  const filteredMarketGroups = useMemo(() => {
-    if (!game) return [];
+  // Map gateway markets → component format
+  const allMarkets = useMemo(() => {
+    if (!fixture?.markets) return [];
+    return fixture.markets.map(mapGatewayMarket);
+  }, [fixture]);
 
-    const markets = game.markets;
-    let filtered = markets;
-
+  const filteredMarkets = useMemo(() => {
     if (activeTab === "Popular") {
-      filtered = markets
+      const popular = allMarkets
         .filter((m) => isMoneylineMarket(m) || isHandicapMarket(m) || isTotalMarket(m))
         .slice(0, 10);
-      if (filtered.length === 0) {
-        filtered = markets.slice(0, 10);
-      }
-    } else if (activeTab === "Game Lines") {
-      filtered = markets.filter((m) => isHandicapMarket(m) || isTotalMarket(m));
-    } else if (activeTab === "Player Props") {
-      filtered = markets.filter((m) => isPlayerPropMarket(m));
+      return popular.length > 0 ? popular : allMarkets.slice(0, 10);
     }
-
-    return filtered;
-  }, [game, activeTab]);
+    if (activeTab === "Game Lines") {
+      return allMarkets.filter((m) => isHandicapMarket(m) || isTotalMarket(m));
+    }
+    if (activeTab === "Player Props") {
+      return allMarkets.filter((m) => isPlayerPropMarket(m));
+    }
+    return allMarkets;
+  }, [allMarkets, activeTab]);
 
   if (loading) {
     return (
@@ -120,7 +231,7 @@ export default function MatchPage({ params }: MatchPageProps) {
     );
   }
 
-  if (error || !game) {
+  if (error || !fixture) {
     return (
       <div style={{ padding: "40px" }}>
         <div style={{ color: "#f87171", fontSize: "16px", marginBottom: "16px" }}>
@@ -145,9 +256,12 @@ export default function MatchPage({ params }: MatchPageProps) {
     );
   }
 
-  const isLive = game.type === 1;
-  const startDate = new Date(game.startTs * 1000);
-  const fixtureName = `${game.team1} vs ${game.team2}`;
+  const fixtureName = fixture.fixtureName;
+  const homeTeam = fixture.competitors?.home?.name || fixtureName.split(" vs ")[0] || "Home";
+  const awayTeam = fixture.competitors?.away?.name || fixtureName.split(" vs ")[1] || "Away";
+  const startDate = new Date(fixture.startTime);
+  const sportLabel = fixture.sport?.name || "";
+  const tournamentLabel = fixture.tournament?.name || "";
 
   const tabs: MarketTab[] = ["Popular", "Game Lines", "Player Props", "All"];
   const tabDescription: Record<MarketTab, string> = {
@@ -171,9 +285,10 @@ export default function MatchPage({ params }: MatchPageProps) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px", flexWrap: "wrap" }}>
           <span style={{ fontSize: "11px", color: "#D3D3D3", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>
-            {game.sportName} &middot; {game.competitionName}
+            {sportLabel}
+            {tournamentLabel ? ` \u00B7 ${tournamentLabel}` : ""}
           </span>
-          {isLive && (
+          {fixture.isLive && (
             <span
               style={{
                 padding: "4px 9px",
@@ -195,7 +310,7 @@ export default function MatchPage({ params }: MatchPageProps) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "20px" }}>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#f8fafc", margin: 0, letterSpacing: "-0.02em" }}>
-              {game.team1}
+              {homeTeam}
             </h2>
           </div>
           <div style={{ fontSize: "12px", color: "#D3D3D3", fontWeight: "700", padding: "8px 12px", background: "rgba(11,14,28,0.75)", borderRadius: "999px", border: "1px solid #1a1f3a", letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -203,15 +318,15 @@ export default function MatchPage({ params }: MatchPageProps) {
           </div>
           <div style={{ flex: 1, textAlign: "right" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#f8fafc", margin: 0, letterSpacing: "-0.02em" }}>
-              {game.team2}
+              {awayTeam}
             </h2>
           </div>
         </div>
 
         <div style={{ fontSize: "12px", color: "#D3D3D3", marginTop: "14px" }}>
-          {!isLive && startDate.toLocaleDateString() + " " + startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          {isLive && "In Progress"}
-          {" "}&middot; {game.marketsCount} markets
+          {!fixture.isLive && startDate.toLocaleDateString() + " " + startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          {fixture.isLive && "In Progress"}
+          {" "}&middot; {fixture.marketsTotalCount} markets
         </div>
       </div>
 
@@ -253,18 +368,18 @@ export default function MatchPage({ params }: MatchPageProps) {
 
       {/* Market Groups */}
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {filteredMarketGroups.map((m) => (
+        {filteredMarkets.map((m) => (
           <MarketGroup
             key={m.id}
-            name={m.name + (m.base ? ` (${m.base})` : "")}
-            markets={[{ ...m, status: "open" }]}
-            fixtureId={String(game.id)}
+            name={m.name}
+            markets={[m]}
+            fixtureId={fixture.fixtureId}
             fixtureName={fixtureName}
           />
         ))}
       </div>
 
-      {filteredMarketGroups.length === 0 && (
+      {filteredMarkets.length === 0 && (
         <div
           style={{
             padding: "32px",
