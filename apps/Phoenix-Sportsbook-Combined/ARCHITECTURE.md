@@ -14,7 +14,7 @@ Phoenix Sportsbook is a distributed, event-driven betting platform consisting of
 ├──────────────────────────┬──────────────────────┬────────────────┤
 │ Player App               │ Backoffice Admin     │ Third-party    │
 │ (Next.js, React)         │ (Next.js, React)     │ Integrations   │
-│ :3002                    │ :3000                │                │
+│ :3000                    │ :3001                │                │
 └──────────┬───────────────┴──────────┬───────────┴────────────────┘
            │                          │
            └──────────┬───────────────┘
@@ -123,7 +123,7 @@ JWT_EXPIRY=24h
 }
 ```
 
-### 3. Player App Frontend (Next.js 14)
+### 3. Player App Frontend (Next.js 16)
 
 Modern, responsive React-based sportsbook interface for bettors. Features dark theme, live odds streaming, and complete bet lifecycle management.
 
@@ -133,12 +133,15 @@ Modern, responsive React-based sportsbook interface for bettors. Features dark t
 - Account management and deposit/withdrawal
 - Responsible gaming controls
 - Mobile-responsive design
+- Leaderboards — Competition rankings and prizes
+- Session management — Active session list with revoke
 
 **Tech Stack:**
-- Next.js 14 with App Router
-- React 18
+- Next.js 16 with App Router
+- React 19
 - TypeScript
-- Ant Design 4 (component library)
+- Tailwind CSS (utility-first styling)
+- lucide-react (icon library)
 - Real-time WebSocket client
 
 **Environment Variables:**
@@ -149,7 +152,7 @@ WS_GLOBAL_ENDPOINT=ws://gateway:18080/ws
 CDN_URL=https://cdn.example.com
 ```
 
-### 4. Backoffice Admin Dashboard (Next.js 14)
+### 4. Backoffice Admin Dashboard (Next.js 16)
 
 Administrative interface for risk managers, traders, and operators. Provides real-time exposure monitoring, market control, and user management.
 
@@ -163,8 +166,8 @@ Administrative interface for risk managers, traders, and operators. Provides rea
 - System health monitoring
 
 **Tech Stack:**
-- Next.js 14 with App Router
-- React 18
+- Next.js 16 with App Router
+- React 19
 - TypeScript
 - Ant Design 4
 - Real-time API polling
@@ -552,30 +555,32 @@ Sport (1) ──→ (N) Tournaments
 ### Request Authentication
 
 ```
-Client sends request with Authorization header:
-  Authorization: Bearer eyJhbGc...
+Client sends request with HttpOnly cookies (automatically included):
+  Cookie: access_token=eyJhbGc...; refresh_token=eyJhbGc...
+
+For mutating requests (POST/PUT/DELETE), client also sends:
+  X-CSRF-Token: <value matching csrf_token cookie>
 
 Gateway receives request:
-  ├─> Extract token from header
-  ├─> Verify JWT signature (using JWT_SECRET)
-  ├─> Check expiration timestamp
-  ├─> Query Auth Service for token validation
-  │   (optional: bypass if token is fresh)
+  ├─> Extract access_token from HttpOnly cookie
+  ├─> Validate cookie against Auth Service
   ├─> Check Redis for session existence
   ├─> Validate user status (not suspended)
+  ├─> For mutating requests: verify X-CSRF-Token header
+  │   matches csrf_token cookie (double-submit pattern)
   └─> Proceed with request or return 401
 
 Token Refresh:
   POST /auth/refresh
-  {
-    "token": "old_token"
-  }
+  (refresh_token cookie sent automatically)
   ↓
-  Auth Service validates old token
+  Auth Service validates refresh token
   ↓
-  Issues new token with fresh expiration
+  Sets new access_token and refresh_token HttpOnly cookies
   ↓
-  Invalidates old token in Redis
+  Sets new csrf_token cookie (non-HttpOnly, readable by JS)
+  ↓
+  Invalidates old session in Redis
 ```
 
 ## Deployment Topology
@@ -694,9 +699,10 @@ Token Refresh:
 | **Backend** | Go | 1.24+ | Core API services |
 | **Database** | PostgreSQL | 16 | Primary data store |
 | **Cache** | Redis | 7 | Session, cache, pub/sub |
-| **Frontend** | Next.js | 14 | Server-side rendering, routing |
-| **UI Framework** | React | 18 | Component library |
-| **UI Components** | Ant Design | 4 | Pre-built components |
+| **Frontend** | Next.js | 16 | Server-side rendering, routing |
+| **UI Framework** | React | 19 | Component library |
+| **UI Components** | Ant Design | 4 | Pre-built components (admin backoffice only) |
+| **Styling** | Tailwind CSS | 3+ | Utility-first CSS (player app) |
 | **Language** | TypeScript | 5+ | Type-safe JavaScript |
 | **Container** | Docker | 24+ | Containerization |
 | **Orchestration** | Kubernetes | 1.28+ | Container orchestration |

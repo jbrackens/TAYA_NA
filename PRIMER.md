@@ -1,12 +1,12 @@
-# TAYA NA! Sportsbook — Session Primer (2026-04-05)
+# TAYA NA! Sportsbook — Session Primer (2026-04-14)
 
 ## What This Is
 
-TAYA NA! Sportsbook platform targeting the Philippine market. Player-facing betting app (Next.js 16 App Router) with live BetConstruct odds feed. Monorepo at `/Users/john/Sandbox/PhoenixBotRevival/`.
+TAYA NA! Sportsbook platform targeting the Philippine market. Player-facing betting app (Next.js 16 App Router) with live BetConstruct odds feed. Monorepo at `/Users/john/Sandbox/TAYA_NA/`.
 
 ## GitHub
 
-Single repo: `jbrackens/PhoenixBotRevival` (branch: `main`)
+Single repo: `jbrackens/TAYA_NA` (branch: `main`)
 
 ## App Locations
 
@@ -20,14 +20,14 @@ Single repo: `jbrackens/PhoenixBotRevival` (branch: `main`)
 
 ### Frontend
 ```bash
-cd /Users/john/Sandbox/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined/talon-backoffice
-yarn install
-cd packages/app && PORT=3002 npx next dev -p 3002
+cd /Users/john/Sandbox/TAYA_NA/apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app
+npm install --legacy-peer-deps
+NEXT_PUBLIC_API_URL=http://localhost:18080 npm run dev
 ```
 
 ### Go Backend (Docker)
 ```bash
-cd /Users/john/Sandbox/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined
+cd /Users/john/Sandbox/TAYA_NA/apps/Phoenix-Sportsbook-Combined
 docker compose up -d
 # postgres (5432), redis (6379), gateway (18080), auth (18081)
 ```
@@ -111,24 +111,18 @@ OpenChatButton (fixed, bottom: 90px)
 - Mocked next-i18next for jest 25, excluded node:test files
 - Runs in ~7-15s now
 
-## What's Broken / Needs Debugging
+## Known Limitations (as of 2026-04-14)
 
-### Login Flow Issues
-- Login API works (gateway proxies to auth service)
-- After login redirect to `/`, some `ERR_FAILED` errors in console
-- Cool-off check fires but endpoint doesn't exist on Go backend (fails open, logs warning)
-- RSC payload fetch may fail during auth redirect
+### Resolved Since Last Primer
+- ~~Hydration mismatch~~ — Fixed (i18n deferred loading)
+- ~~Fixture shape mismatch~~ — Fixed (match page rewired to Go gateway)
+- ~~Login redirect errors~~ — Fixed (auth cookie flow stabilized)
 
-### Frontend Issues
-- **Hydration mismatch:** i18n keys flash before translations load on SSR
-- **Authenticated home page:** Shows heading but fixtures/sports may not load (Go backend fixture shape vs frontend expectations)
-- **Betslip side-sheet:** Implemented but needs testing with actual bet selection
-- **Many gap analysis features** call Go backend endpoints that are mock/stub implementations
-
-### Backend Issues
-- Redis URL format mismatch (gateway warns on startup, uses uncached repo)
-- No register endpoint on auth — only hardcoded demo user
-- Most compliance/wallet/betting endpoints are mock implementations
+### Still Open
+- **Payment processing** — Stub implementation only, needs payment provider integration
+- **Compliance services** — RG checks, geo-compliance, KYC are mock interfaces (see PRODUCTION_READINESS_AUDIT.md)
+- **Auth user store** — In-memory demo user only (no registration endpoint)
+- **Betslip** — Implemented but needs end-to-end testing with real bet placement flow
 
 ## Key Files
 
@@ -149,7 +143,7 @@ OpenChatButton (fixed, bottom: 90px)
 
 ## Docker Commands
 ```bash
-cd /Users/john/Sandbox/PhoenixBotRevival/apps/Phoenix-Sportsbook-Combined
+cd /Users/john/Sandbox/TAYA_NA/apps/Phoenix-Sportsbook-Combined
 docker compose up -d                      # start all
 docker compose up -d --build gateway      # rebuild gateway after Go changes
 docker compose logs -f gateway            # tail logs

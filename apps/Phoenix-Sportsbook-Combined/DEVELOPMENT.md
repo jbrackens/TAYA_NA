@@ -18,12 +18,6 @@ Ensure you have the following installed on your system:
   # v20.10.0 or later
   ```
 
-- **Yarn** 1.22.22
-  ```bash
-  yarn --version
-  # 1.22.22
-  ```
-
 - **Docker** and **Docker Compose**
   ```bash
   docker --version
@@ -79,8 +73,8 @@ Once complete, you'll see output like:
 ✓ Redis running at localhost:6379
 ✓ Gateway API at http://localhost:18080
 ✓ Auth Service at http://localhost:18081
-✓ Player App at http://localhost:3002
-✓ Backoffice at http://localhost:3000
+✓ Player App at http://localhost:3000
+✓ Backoffice at http://localhost:3001
 ```
 
 ## Manual Setup (Step-by-Step)
@@ -96,7 +90,7 @@ make bootstrap
 
 This installs:
 - Go module dependencies (via `go mod download`)
-- Node packages for Player App and Backoffice (via `yarn install`)
+- Node packages for Player App and Backoffice (via `npm install --legacy-peer-deps`)
 
 ### 2. Start Infrastructure
 
@@ -186,22 +180,22 @@ Expected output:
 
 **Terminal 3: Player App**
 ```bash
-cd phoenix-frontend-brand-viegg/packages/app
+cd talon-backoffice/packages/app
 
 # Create .env.local if not exists
 cat > .env.local << 'EOF'
 ENV_NAME=local
-API_GLOBAL_ENDPOINT=http://localhost:18080
-WS_GLOBAL_ENDPOINT=ws://localhost:18080/ws
-CDN_URL=http://localhost:3002/static
+NEXT_PUBLIC_API_URL=http://localhost:18080
+NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
+NEXT_PUBLIC_AUTH_URL=http://localhost:18081
 EOF
 
-yarn dev
+npm run dev
 ```
 
 Expected output:
 ```
-> ready - started server on 0.0.0.0:3002, url: http://localhost:3002
+> ready - started server on 0.0.0.0:3000, url: http://localhost:3000
 ```
 
 **Terminal 4: Backoffice**
@@ -210,15 +204,15 @@ cd talon-backoffice/packages/office
 
 # Create .env.local if not exists
 cat > .env.local << 'EOF'
-API_GLOBAL_ENDPOINT=http://localhost:18080
+NEXT_PUBLIC_API_URL=http://localhost:18080
 EOF
 
-yarn dev
+npm run dev
 ```
 
 Expected output:
 ```
-> ready - started server on 0.0.0.0:3000, url: http://localhost:3000
+> ready - started server on 0.0.0.0:3001, url: http://localhost:3001
 ```
 
 ## Service URLs and Ports
@@ -227,8 +221,8 @@ Once all services are running:
 
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
-| **Player App** | http://localhost:3002 | 3002 | Sportsbook UI for bettors |
-| **Backoffice** | http://localhost:3000 | 3000 | Admin dashboard |
+| **Player App** | http://localhost:3000 | 3000 | Sportsbook UI for bettors |
+| **Backoffice** | http://localhost:3001 | 3001 | Admin dashboard |
 | **Gateway API** | http://localhost:18080 | 18080 | REST API + WebSocket |
 | **Auth Service** | http://localhost:18081 | 18081 | Authentication |
 | **PostgreSQL** | localhost:5432 | 5432 | Database |
@@ -246,7 +240,7 @@ Use these test accounts to log in:
 ### Admin Account
 - **Email:** admin@phoenix.local
 - **Password:** admin123
-- **Access:** Backoffice at http://localhost:3000
+- **Access:** Backoffice at http://localhost:3001
 
 ### Other Test Accounts
 - **test1@phoenix.local** / **test123**
@@ -406,21 +400,21 @@ go tool cover -html=coverage.out
 Run Player App tests:
 
 ```bash
-cd phoenix-frontend-brand-viegg/packages/app
-yarn test
+cd talon-backoffice/packages/app
+npm test
 ```
 
 Run Backoffice tests:
 
 ```bash
 cd talon-backoffice/packages/office
-yarn test
+npm test
 ```
 
 Run with coverage:
 
 ```bash
-yarn test --coverage
+npm test -- --coverage
 ```
 
 ### End-to-End Tests (Playwright)
@@ -546,55 +540,73 @@ const MARKET_TYPES = [
 
 ### Add a New UI Component
 
-**1. Create the component in design-system:**
+Components are built inline using Tailwind CSS. Do **not** import from `@phoenix-ui/design-system` in the `app/` directory -- it uses styled-components and causes webpack hangs.
+
+**1. Create the component in the Player App:**
 
 ```typescript
-// talon-backoffice/packages/design-system/src/components/BetSlip.tsx
+// talon-backoffice/packages/app/app/components/BetSlip.tsx
 
-import React from 'react';
+'use client';
+
+import { useState } from 'react';
+
+interface Bet {
+  id: string;
+  selection: string;
+  stake: number;
+  potentialPayout: number;
+}
 
 interface BetSlipProps {
   bets: Bet[];
   onRemove: (betId: string) => void;
   onSubmit: () => void;
+  children?: React.ReactNode;
 }
 
-export const BetSlip: React.FC<BetSlipProps> = ({ bets, onRemove, onSubmit }) => {
+export function BetSlip({ bets, onRemove, onSubmit }: BetSlipProps) {
   const totalStake = bets.reduce((sum, bet) => sum + bet.stake, 0);
   const potentialPayout = bets.reduce((sum, bet) => sum + bet.potentialPayout, 0);
 
   return (
-    <div className="bet-slip">
-      <h3>Bet Slip</h3>
+    <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <h3 className="mb-3 text-lg font-semibold text-white">Bet Slip</h3>
       {bets.map(bet => (
-        <div key={bet.id} className="bet-item">
-          <span>{bet.selection}</span>
-          <button onClick={() => onRemove(bet.id)}>Remove</button>
+        <div key={bet.id} className="mb-2 flex items-center justify-between rounded bg-gray-700 px-3 py-2">
+          <span className="text-sm text-gray-200">{bet.selection}</span>
+          <button
+            onClick={() => onRemove(bet.id)}
+            className="text-xs text-red-400 hover:text-red-300"
+          >
+            Remove
+          </button>
         </div>
       ))}
-      <div className="summary">
+      <div className="mt-3 space-y-1 border-t border-gray-600 pt-3 text-sm text-gray-300">
         <p>Total Stake: ${(totalStake / 100).toFixed(2)}</p>
         <p>Potential Payout: ${(potentialPayout / 100).toFixed(2)}</p>
       </div>
-      <button onClick={onSubmit}>Place Bet</button>
+      <button
+        onClick={onSubmit}
+        className="mt-3 w-full rounded bg-green-600 py-2 text-sm font-medium text-white hover:bg-green-500"
+      >
+        Place Bet
+      </button>
     </div>
   );
-};
+}
 ```
 
-**2. Export from design-system:**
+**2. Use in a page:**
 
 ```typescript
-// talon-backoffice/packages/design-system/src/index.ts
-export { BetSlip } from './components/BetSlip';
-```
+// talon-backoffice/packages/app/app/bets/page.tsx
 
-**3. Use in Player App:**
+'use client';
 
-```typescript
-// phoenix-frontend-brand-viegg/packages/app/src/pages/bets.tsx
-
-import { BetSlip } from '@phoenix-ui/design-system';
+import { useState } from 'react';
+import { BetSlip } from '../components/BetSlip';
 
 export default function BetsPage() {
   const [bets, setBets] = useState<Bet[]>([]);
@@ -660,13 +672,13 @@ sudo ufw allow 18080
 
 ```bash
 # Clean and reinstall dependencies
-cd phoenix-frontend-brand-viegg
+cd talon-backoffice/packages/app
 rm -rf node_modules
-yarn install
+npm install --legacy-peer-deps
 
 # Clear Next.js cache
 rm -rf .next
-yarn dev
+npm run dev
 ```
 
 ### Token Expiration Issues
@@ -722,7 +734,7 @@ psql -U phoenix -d phoenix_sportsbook -f migrations/seed.sql
 
 1. **Enable production builds:**
    ```bash
-   yarn build && yarn start  # Use optimized Next.js build
+   npm run build && npm start  # Use optimized Next.js build
    ```
 
 2. **Use React DevTools Profiler** to identify slow renders

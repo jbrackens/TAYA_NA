@@ -19,7 +19,7 @@ Phoenix is a complete sportsbook solution featuring:
 
 ### Prerequisites
 - Go 1.24+
-- Node 20+ (with yarn 1.22.22)
+- Node.js 18+ (with npm)
 - Docker and Docker Compose
 - PostgreSQL 16 (via Docker)
 - Redis 7 (via Docker)
@@ -31,7 +31,7 @@ make bootstrap && make start
 ```
 
 This will:
-1. Install all dependencies (Go, Node, yarn)
+1. Install all dependencies (Go, Node, npm)
 2. Set up local environment files
 3. Start PostgreSQL, Redis, and all services via Docker
 4. Run database migrations
@@ -41,8 +41,8 @@ This will:
 
 Once running, access the platform at:
 
-- **Player App** — http://localhost:3002
-- **Backoffice** — http://localhost:3000
+- **Player App** — http://localhost:3000
+- **Backoffice** — http://localhost:3001
 - **Gateway API** — http://localhost:18080/api/v1
 - **Auth Service** — http://localhost:18081/auth
 - **PostgreSQL** — localhost:5432 (user: `phoenix`, password: `localdev`)
@@ -63,7 +63,7 @@ Log in with these test accounts:
 │ Client Layer                                                 │
 ├──────────────────────┬──────────────────────┐────────────────┤
 │ Player App (Next.js) │ Backoffice (Next.js) │ External APIs  │
-│ :3002                │ :3000                │                │
+│ :3000                │ :3001                │                │
 └──────────┬───────────┴──────────┬───────────┴────────────────┘
            │                      │
            └──────────┬───────────┘
@@ -111,19 +111,13 @@ Phoenix-Sportsbook-Combined/
 │   │   └── auth/                   # Authentication service
 │   └── go.work                     # Go workspace config
 │
-├── talon-backoffice/               # Backoffice admin dashboard
+├── talon-backoffice/               # Frontend applications
 │   └── packages/
-│       ├── office/                 # Admin UI (Next.js)
+│       ├── app/                    # Player app (Next.js, port 3000)
+│       ├── office/                 # Admin backoffice (Next.js, port 3001)
 │       ├── api-client/             # TypeScript API client
 │       ├── design-system/          # Shared UI components
 │       └── utils/                  # Utility functions
-│
-├── phoenix-frontend-brand-viegg/   # Player-facing sportsbook app
-│   └── packages/
-│       ├── app/                    # Player app (Next.js)
-│       ├── app-core/               # Core business logic
-│       ├── mock-server/            # Development mock API
-│       └── utils-core/             # Shared utilities
 │
 ├── scripts/                        # Automation and operations
 │   ├── local-stack.sh              # Local development setup
@@ -208,7 +202,7 @@ make release-launch-readiness
 ## Technology Stack
 
 - **Backend** — Go 1.24, PostgreSQL 16, Redis 7
-- **Frontend** — Next.js 14, React 18, TypeScript
+- **Frontend** — Next.js 16, React 19, TypeScript
 - **API** — REST + WebSocket (RFC 6455)
 - **Database** — PostgreSQL with JSON support
 - **Caching** — Redis with pub/sub

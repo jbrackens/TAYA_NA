@@ -14,6 +14,7 @@ TAYA NA! is a full-stack sportsbook with a player-facing web app and an admin ba
 - **Bet History** - Filterable by status (Open, Won, Lost, Cashed Out) with cashout offers
 - **Leaderboards** - Weekly competitions ranked by net profit, total stake, wins, and referrals
 - **Rewards Program** - Points-based tier system (Bronze, Silver, Gold, VIP) with earning mechanics
+- **Match Detail** - Market board with Popular, Game Lines, Player Props, and All tabs per fixture
 - **Account Management** - Profile, transaction history, responsible gaming controls, session management
 - **Search** - Debounced event search with live dropdown results
 - **i18n** - Full English and German localization across 60+ namespace files

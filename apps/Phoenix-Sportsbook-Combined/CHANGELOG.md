@@ -1,5 +1,57 @@
 # Phoenix Sportsbook: Release Changelog
 
+## [1.1.0] - 2026-04-14
+
+### TAYA NA! Design System & Feature Release
+
+Complete rebrand to TAYA NA! identity with unified design system, new player features, and production stabilization across 16 commits.
+
+### New Features
+
+- **Unified Design System** — Dark navy (`#0b0e1c`) surfaces with neon green (`#39ff14`) brand energy, IBM Plex Sans typography, consistent spacing tokens across both player app and admin backoffice
+- **Leaderboards in Navigation** — Competition leaderboards (Weekly Profit Race, Weekly Stake Ladder, Qualified Referral Race) now discoverable from the top nav bar
+- **Match Detail Page** — Rewired from BetConstruct Swarm to Go gateway; displays real markets with Popular, Game Lines, Player Props, and All tabs
+- **User Menu with Logout** — Avatar dropdown with account links, settings, and a visible logout button
+- **Session Management API** — `GET /api/v1/auth/sessions` and `DELETE /api/v1/auth/sessions/{id}` for viewing and revoking active sessions
+- **SVG Sport Icons** — Replaced all emoji icons with proper SVG icons across 10 sports
+- **Real Logo** — TN logo replaces CSS-constructed placeholder throughout
+
+### Production Stabilization
+
+- **Structured Logging** — `log/slog` JSON output in production across all Go services
+- **OpenTelemetry Tracing** — Request-scoped spans for wallet, settlement, and compliance flows
+- **Dead Letter Queue** — Failed settlements retry with exponential backoff, DLQ after 3 attempts
+- **Race Condition Fixes** — Concurrent bet placement and settlement serialized correctly
+- **26 Production Blockers Resolved** — Auth middleware, CSRF protection, atomic settlement, health checks, graceful shutdown
+
+### Seed Data
+
+- **26 fixtures across 10 sports** — Baseball, Basketball, Football, Tennis, MMA, Boxing, Cricket, Ice Hockey, Esports (CS2, Dota 2), with realistic teams, leagues, and market odds
+
+### Design Polish
+
+- Sidebar logo enlarged to 48px with correct aspect ratio
+- Topbar button touch targets increased to 44px minimum
+- Sidebar navigation icons normalized to 18px
+- 85 lines of dead CSS-constructed logo code removed
+- Static asset auth redirect fixed
+
+### Bug Fixes
+
+- Fixed 502 error on match detail page (BetConstruct `Number()` coercion of string fixture IDs)
+- Fixed i18n hydration mismatch and key flash on page reload
+- Eliminated 127 `any` types in legacy components
+- Resolved IDOR vulnerability and null safety crash
+- Fixed 14 code quality issues (stale closures, timer types, catch block typing)
+
+### Technology Stack (Updated)
+
+- **Player App** — Next.js 16, React 19, Tailwind CSS, lucide-react
+- **Admin Backoffice** — Next.js 16, React 19, Ant Design
+- **Backend** — Go 1.24, PostgreSQL 16, Redis 7
+
+---
+
 ## [1.0.0] - 2026-04-02
 
 ### Initial Production Release
@@ -89,9 +141,8 @@ Phoenix Sportsbook platform reaching production-ready status. Complete sportsboo
 - **Orchestration** — Kubernetes 1.28+ for production deployment
 
 #### Frontend Applications
-- **Player App** — Next.js 14, React 18, TypeScript
-- **Backoffice** — Next.js 14, React 18, TypeScript
-- **Design System** — Shared component library, Ant Design 4
+- **Player App** — Next.js 16, React 19, TypeScript, Tailwind CSS
+- **Backoffice** — Next.js 16, React 19, TypeScript, Ant Design
 - **API Client** — TypeScript client with OpenAPI integration
 
 #### DevOps & Infrastructure

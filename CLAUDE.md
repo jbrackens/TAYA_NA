@@ -7,28 +7,31 @@ This is the Phoenix Sportsbook platform — a real-time sports betting applicati
 ## Repository Structure
 
 ```
-PhoenixBotRevival/
+TAYA_NA/
 ├── apps/Phoenix-Sportsbook-Combined/
-│   ├── phoenix-frontend/packages/app/     ← Player app (Next.js 16 App Router)
-│   ├── talon-backoffice/packages/app/     ← Admin backoffice (Next.js 16 App Router)
-│   ├── phoenix-backend/                   ← Go backend services
-│   └── go-platform/                       ← Go platform layer
-├── services/                              ← Microservices
-├── libs/                                  ← Shared libraries
-├── scripts/                               ← Build/deploy scripts
-└── configs/                               ← Environment configs
+│   ├── talon-backoffice/packages/
+│   │   ├── app/                           ← Player app (Next.js 16 App Router, port 3000)
+│   │   └── office/                        ← Admin backoffice (Next.js 16 App Router, port 3001)
+│   ├── go-platform/
+│   │   ├── services/gateway/              ← API gateway (Go, port 18080)
+│   │   ├── services/auth/                 ← Auth service (Go, port 18081)
+│   │   └── modules/platform/             ← Shared Go libraries
+│   └── docker-compose.yml                 ← PostgreSQL + Redis + services
+├── CLAUDE.md                              ← Project instructions and patterns
+├── DESIGN.md                              ← Design system specification
+└── PRIMER.md                              ← Session primer and architecture
 ```
 
 ## GitHub Repos
 
-- Monorepo: https://github.com/jbrackens/PhoenixBotRevival
+- Monorepo: https://github.com/jbrackens/TAYA_NA (branch: `main`)
 - GitHub user: jbrackens
 
 ## Critical Rules
 
 ### Never Do These
 
-1. **Never give placeholder paths.** Always use the real, full paths from this project. The workspace is at `/Users/john/Sandbox/PhoenixBotRevival/`. Never use `~/path-to/...` or `your-project/...`.
+1. **Never give placeholder paths.** Always use the real, full paths from this project. The workspace is at `/Users/john/Sandbox/TAYA_NA/`. Never use `~/path-to/...` or `your-project/...`.
 2. **Never call any part of this project "legacy" or suggest skipping it.** Both the player app and the backoffice are active.
 3. **Never use `@phoenix-ui/design-system` imports in `app/`** — it uses styled-components and causes webpack hangs. Use inline components or Tailwind.
 4. **Never introduce `console.log/warn/error` in production code.** Use the structured `logger` from `app/lib/logger.ts`.
@@ -39,13 +42,13 @@ PhoenixBotRevival/
 ### Always Do These
 
 1. **Run `gate.sh`** before declaring any task complete (in the backoffice: `./gate.sh`).
-2. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/PhoenixBotRevival/`.
+2. **Use real paths** when giving the user instructions. The Mac workspace is `/Users/john/Sandbox/TAYA_NA/`.
 3. **Fix errors, don't work around them.** Zero bug policy. No shortcuts.
 4. **Update FEATURE_MANIFEST.json** when implementing or modifying features.
 
 ## Tech Stack — Player App
 
-**Path:** `apps/Phoenix-Sportsbook-Combined/phoenix-frontend/packages/app/`
+**Path:** `apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app/`
 
 - **Framework:** Next.js 16 with App Router (`app/` directory)
 - **React:** 19 — `React.FC` does NOT include `children` prop; add explicitly
