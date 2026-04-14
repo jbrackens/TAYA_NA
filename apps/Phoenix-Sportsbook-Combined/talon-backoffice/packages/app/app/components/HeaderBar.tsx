@@ -198,7 +198,7 @@ export const HeaderBar: React.FC = () => {
             onClick={cycleOddsFormat}
             title={`Odds: ${getOddsFormatLabel(oddsFormat)} — click to change`}
             style={{
-              padding: "6px 12px",
+              padding: "8px 12px",
               borderRadius: 8,
               fontSize: 11,
               fontWeight: 700,
@@ -209,6 +209,7 @@ export const HeaderBar: React.FC = () => {
               letterSpacing: "0.03em",
               transition: "all 0.15s",
               whiteSpace: "nowrap",
+              minHeight: 36,
             }}
           >
             {getOddsFormatLabel(oddsFormat).toUpperCase()}
@@ -220,7 +221,7 @@ export const HeaderBar: React.FC = () => {
             onClick={cycleLang}
             title={`Language: ${currentLang.toUpperCase()} — click to change`}
             style={{
-              padding: "6px 12px",
+              padding: "8px 12px",
               borderRadius: 8,
               fontSize: 11,
               fontWeight: 700,
@@ -234,6 +235,7 @@ export const HeaderBar: React.FC = () => {
               display: "flex",
               alignItems: "center",
               gap: 4,
+              minHeight: 36,
             }}
           >
             <Globe size={14} strokeWidth={2} />
