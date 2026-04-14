@@ -36,7 +36,7 @@ const AccountStatusBar: React.FC = () => {
     }
   }, [data]);
 
-  useEffect((): any => {
+  useEffect((): void => {
     setBalance(currentBalance);
   }, [currentBalance]);
 

@@ -78,7 +78,7 @@ const PasswordEditorComponent: React.FC = () => {
     }
   };
 
-  const onFinish = (values: any): void => {
+  const onFinish = (values: FormValues): void => {
     setFormValue(values);
     setFormFinished(true);
     setMfaCodeModalVisible(true);

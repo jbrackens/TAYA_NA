@@ -1,5 +1,5 @@
 export type PageProps = {
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export type PageNamespaces = string[];

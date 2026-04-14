@@ -20,7 +20,7 @@ const CurrentBalanceComponent: React.FC = () => {
 
   const reducerBalance = useSelector(selectCurrentBalance);
 
-  useEffect((): any => {
+  useEffect((): void => {
     setBalance(reducerBalance);
   }, [reducerBalance]);
 
@@ -40,11 +40,11 @@ const CurrentBalanceComponent: React.FC = () => {
     dispatch(setIsAccountDataUpdateNeeded(true));
   }, [balance]);
 
-  useEffect((): any => {
+  useEffect((): void => {
     fetchCurrentBalance();
   }, []);
 
-  useEffect((): any => {
+  useEffect((): void => {
     if (data) {
       setBalance(data.realMoney.value.amount);
       dispatch(setCurrentBalance(data.realMoney.value.amount));

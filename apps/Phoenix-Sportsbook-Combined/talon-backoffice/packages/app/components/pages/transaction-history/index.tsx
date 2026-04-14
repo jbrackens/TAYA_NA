@@ -124,7 +124,7 @@ function TransactionHistory() {
     });
   }, [range, type, p]);
 
-  const handleTimeFilter = (value: any) => {
+  const handleTimeFilter = (value: string) => {
     !hasRangeSelectInitialValue && setHasRangeSelectInitialValue(true);
 
     if (value === "all") {
@@ -145,7 +145,7 @@ function TransactionHistory() {
     });
   };
 
-  const handleTypeFilter = (value: any) => {
+  const handleTypeFilter = (value: string) => {
     !hasTypeSelectInitialValue && setHasTypeSelectInitialValue(true);
 
     if (value === "all") {

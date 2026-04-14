@@ -1,8 +1,8 @@
-import styled from "styled-components";
+import styled, { DefaultTheme } from "styled-components";
 import { Layout, Menu as MenuComponent } from "antd";
 import { PlusCircleFilled } from "@ant-design/icons";
 
-const extractMenuTheme = (props: any) => props.theme.menu || {};
+const extractMenuTheme = (props: { theme: DefaultTheme }) => props.theme.menu || {};
 
 export const Header = styled(Layout.Header)`
   z-index: 999;
@@ -32,40 +32,43 @@ export const Menu = styled(MenuComponent)`
   flex-grow: 1;
   text-align: center;
   display: block;
-  ${(props) =>
-    props.theme.backgroundColor &&
-    `
-      background: ${props.theme.backgroundColor};
+  ${(props) => {
+    const menu = props.theme.menu;
+    return menu?.backgroundColor
+      ? `
+      background: ${menu.backgroundColor};
       border-bottom: 0;
       a {
-        color: ${props.theme.inactiveAnchor} !important;
+        color: ${menu.inactiveAnchor} !important;
       }
       & .ant-menu-item {
         font-size: ${1.5 * props.theme.baseGutter}px;
         :hover {
           :after {
-            border-color: ${props.theme.activeBorder} !important;
+            border-color: ${menu.activeBorder} !important;
           }
         }
       }
       &>.ant-menu-item-active {
-        color: ${props.theme.activeHover} !important;
-        border-color: ${props.theme.activeBorder} !important;
+        color: ${menu.activeHover} !important;
+        border-color: ${menu.activeBorder} !important;
         a {
-          color: ${props.theme.activeHover} !important;
+          color: ${menu.activeHover} !important;
         }
       }
       &>.ant-menu-item-selected {
-        color: ${props.theme.active} !important;
+        color: ${menu.active} !important;
           :after {
-            border-color: ${props.theme.activeBorder} !important;
+            border-color: ${menu.activeBorder} !important;
           }
         a {
-          color: ${props.theme.active} !important;
+          color: ${menu.active} !important;
           font-weight: bold !important;
         }
       }
-    `}
+    `
+      : "";
+  }}
 `;
 
 export const MenuCollapseButton = styled.div`

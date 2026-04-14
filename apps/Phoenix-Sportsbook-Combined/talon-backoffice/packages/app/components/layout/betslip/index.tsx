@@ -87,7 +87,7 @@ const BetslipComponent: React.FC<BetslipComponentProps> = ({
       const betsWithBetId = bets.map((el) => {
         const uuid = `${el.brandMarketId}-${el.selectionId}`;
         const elementToObserve = data.find(
-          (dataEl: any) => `${dataEl.marketId}-${dataEl.selectionId}` === uuid,
+          (dataEl: { marketId: string; selectionId: string; betId: string }) => `${dataEl.marketId}-${dataEl.selectionId}` === uuid,
         );
         if (elementToObserve !== undefined) {
           return {
@@ -105,7 +105,7 @@ const BetslipComponent: React.FC<BetslipComponentProps> = ({
         setTimeout(() => {
           setStatusOfPendingBetsInterval(
             setInterval(() => {
-              const pendingBetsIds = data.map((el: any) => el.betId);
+              const pendingBetsIds = data.map((el: { betId: string }) => el.betId);
               getStatusOfPendingBets.triggerApi({
                 betIds: pendingBetsIds,
               });
@@ -118,7 +118,7 @@ const BetslipComponent: React.FC<BetslipComponentProps> = ({
 
   useEffect(() => {
     if (getStatusOfPendingBets.data) {
-      getStatusOfPendingBets.data.map((dataEl: any) => {
+      getStatusOfPendingBets.data.map((dataEl: Record<string, unknown>) => {
         handleBetUpdate(dataEl, dispatch);
       });
     }
@@ -188,7 +188,7 @@ const BetslipComponent: React.FC<BetslipComponentProps> = ({
 
   const { spy } = useSpy();
 
-  const removeErrorOnBetsLengthChange = (values: any) => {
+  const removeErrorOnBetsLengthChange = (values: { prevValues?: Array<Bet>; values?: Array<Bet> }) => {
     if (values.values?.length !== values.prevValues?.length) {
       dispatch(setIsErrorVisible(false));
     }

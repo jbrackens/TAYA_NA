@@ -162,7 +162,7 @@ function ESportsBets() {
   const dispatch = useDispatch();
   const currentOddsFormat = useSelector(selectOddsFormat);
 
-  const onOddsChange = (value: any) => {
+  const onOddsChange = (value: string) => {
     dispatch(setOddsFormat(value));
     saveOddsFormat(value);
   };

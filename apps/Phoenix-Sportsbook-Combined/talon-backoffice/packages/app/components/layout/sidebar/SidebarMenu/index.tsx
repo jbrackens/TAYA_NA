@@ -32,7 +32,7 @@ import { LinkWrapper } from "../../../linkWrapper";
 type SidebarMenuProps = {
   isCollapsed: boolean;
   isGamesListVisible: boolean;
-  ref: any;
+  ref: React.Ref<HTMLDivElement>;
   isLoading: boolean | undefined;
 };
 
@@ -188,7 +188,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = memo(
       return `/esports-bets/${abbreviation}`;
     };
 
-    const CustomHeader: React.FC<any> = ({ children, game }) => {
+    const CustomHeader: React.FC<{ children?: React.ReactNode; game: { iconUrl?: string; noStar?: boolean; abbreviation: string; id: string; name: string; isUrlSeparate?: boolean } }> = ({ children, game }) => {
       return (
         <LinkWrapper
           href={generateListItemHref(game.abbreviation, game.isUrlSeparate)}
@@ -246,7 +246,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = memo(
         ? [...accountNavMenuitems, rgMenuItem]
         : [...defualtMenuitems, ...sortedGames, rgMenuItem];
 
-    const CustomCollapse = ({ games, ...rest }: any) => {
+    const CustomCollapse = ({ games, ...rest }: { games: Array<LinkType | (Sport & { favourite: boolean })> } & Record<string, unknown>) => {
       const menuItems = (games: Array<Sport>) =>
         games.map((el) => {
           if (el.displayToPunters === false) {

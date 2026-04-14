@@ -100,7 +100,7 @@ const SelfExcludeComponent: React.FC = () => {
 
   const termsValidation = (
     _rule: RuleObject,
-    value: any,
+    value: unknown[],
     callback: (error?: string) => void,
   ) => {
     if (value.length === TOTAL_TERMS) {

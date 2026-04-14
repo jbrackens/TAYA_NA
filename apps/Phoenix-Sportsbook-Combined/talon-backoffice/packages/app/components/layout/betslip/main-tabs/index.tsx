@@ -14,11 +14,11 @@ const {
 } = require("next/config").default().publicRuntimeConfig;
 
 type MainTabsComponentProps = {
-  closeBetSlip: any;
-  mainTabs: any;
-  setMainTabs: any;
-  secondaryTabs: any;
-  setSecondaryTabs: any;
+  closeBetSlip: ((e: React.MouseEvent) => void) | undefined;
+  mainTabs: number;
+  setMainTabs: (tab: number) => void;
+  secondaryTabs: number;
+  setSecondaryTabs: (tab: number) => void;
 };
 
 const MainTabsComponent: React.FC<MainTabsComponentProps> = ({

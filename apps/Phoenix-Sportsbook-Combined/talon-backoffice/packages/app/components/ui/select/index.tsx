@@ -1,6 +1,8 @@
-import { LabeledValue } from "antd/lib/select";
+import { LabeledValue, SelectValue } from "antd/lib/select";
+import type { CustomTagProps, LabelValueType } from "rc-select/lib/interface/generator";
+import type { OptionData } from "rc-select/lib/interface";
 import React, { CSSProperties, ReactNode, useContext } from "react";
-import { StyledComponent, ThemeContext } from "styled-components";
+import { ThemeContext } from "styled-components";
 import { BaseSelect, StyledOptionContent } from "./index.styled";
 
 type CoreSelectProps = {
@@ -23,51 +25,51 @@ type CoreSelectProps = {
   dropdownClassName?: string;
   dropdownMatchSelectWidth?: boolean | number;
   dropdownRender?: (menu: React.ReactElement) => React.ReactElement;
-  dropdownStyle?: any;
-  filterOption?: any;
-  filterSort?: (optionA: any, optionB: any) => number;
-  getPopupContainer?: (triggerNode: any) => any;
+  dropdownStyle?: React.CSSProperties;
+  filterOption?: boolean | ((inputValue: string, option?: OptionData) => boolean);
+  filterSort?: (optionA: OptionData, optionB: OptionData) => number;
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
   labelInValue?: boolean;
   listHeight?: number;
   loading?: boolean;
   maxTagCount?: number;
-  maxTagPlaceholder?: ReactNode | ((omittedValues: any) => any);
+  maxTagPlaceholder?: ReactNode | ((omittedValues: LabelValueType[]) => ReactNode);
   maxTagTextLength?: number;
   mode?: "multiple" | "tags";
   notFoundContent?: ReactNode;
   optionFilterProp?: string;
   optionLabelProp?: string;
-  options?: { label: any; value: any }[];
+  options?: { label: React.ReactNode; value: string | number }[];
   placeholder?: ReactNode;
   removeIcon?: ReactNode;
   searchValue?: string;
   showArrow?: boolean;
   showSearch?: boolean;
   size?: "large" | "middle" | "small";
-  suffixIcon?: any;
-  tagRender?: (props: any) => React.ReactElement;
+  suffixIcon?: ReactNode;
+  tagRender?: (props: CustomTagProps) => React.ReactElement;
   tokenSeparators?: string[];
   value?: string | string[] | number | number[] | LabeledValue | LabeledValue[];
   virtual?: boolean;
-  onBlur?: any;
-  onChange?: (value: any, option: any | Array<any>) => void;
-  onClear?: any;
-  onDeselect?: (value: any, option: any) => void;
+  onBlur?: React.FocusEventHandler<HTMLElement>;
+  onChange?: (value: SelectValue, option: OptionData | OptionData[]) => void;
+  onClear?: () => void;
+  onDeselect?: (value: string | number | LabeledValue, option: OptionData) => void;
   onDropdownVisibleChange?: (open: boolean) => void;
-  onFocus?: any;
-  onInputKeyDown?: any;
-  onMouseEnter?: any;
-  onMouseLeave?: any;
-  onPopupScroll?: any;
+  onFocus?: React.FocusEventHandler<HTMLElement>;
+  onInputKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
+  onPopupScroll?: React.UIEventHandler<HTMLDivElement>;
   onSearch?: (value: string) => void;
-  onSelect?: (value: any, option: any) => void;
+  onSelect?: (value: string | number | LabeledValue, option: OptionData) => void;
   style?: CSSProperties;
   children?: React.ReactNode;
 };
 
 const CoreSelect: React.FC<CoreSelectProps> & {
-  Option: any;
-  OptionContent: StyledComponent<"div", any, {}, never>;
+  Option: typeof BaseSelect.Option;
+  OptionContent: typeof StyledOptionContent;
 } = ({
   allowClear,
   autoClearSearchValue,

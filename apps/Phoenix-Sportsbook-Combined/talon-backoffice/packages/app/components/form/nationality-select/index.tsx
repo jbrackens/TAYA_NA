@@ -10,9 +10,9 @@ const NationalitySelect: React.FC<Props> = (props) => {
   const { Option } = CoreSelect;
 
   const getNationalites = () => {
-    let content: any[] = [];
+    let content: React.ReactNode[] = [];
 
-    nationalites.map((nationality: any) =>
+    nationalites.map((nationality: string) =>
       content.push(
         <Option key={nationality} value={nationality}>
           {nationality}

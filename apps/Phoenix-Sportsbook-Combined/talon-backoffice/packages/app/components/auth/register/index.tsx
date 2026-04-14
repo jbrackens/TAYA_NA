@@ -101,13 +101,7 @@ const RegisterComponent: React.FC = () => {
     data,
     error,
     resetHookState,
-  }: {
-    triggerApi: (...args: any[]) => void;
-    isLoading: boolean;
-    data: RegisterPayload;
-    error: any;
-    resetHookState: () => void;
-  } = useApi("/registration-closed", "POST");
+  } = useApi<RegisterPayload>("/registration-closed", "POST");
 
   const fingerprintData = useFingerprint();
 

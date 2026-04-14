@@ -131,7 +131,7 @@ function Fixture() {
     data: ApiData;
     triggerApi: () => void;
     isLoading: boolean;
-    error: any;
+    error: unknown;
   };
   const [markets, setMarkets] = useState<Markets>([]);
   const [marketsWithMaps, setMarketsWithMaps] = useState<{
@@ -228,11 +228,11 @@ function Fixture() {
   }, [fixturesUpdatedData]);
 
   const filterMarketsByMap = (map: string): Markets => {
-    const filteredMarkets = markets.map((el: any) => {
+    const filteredMarkets = markets.map((el: Market) => {
       const key = Object.keys(el)[0];
       return {
         ...el,
-        [key]: el[key].filter((el: any) => el.specifiers.map === map),
+        [key]: el[key].filter((marketItem: MarketArrayValue) => marketItem.specifiers.map === map),
       };
     });
     return filteredMarkets.filter(
@@ -415,7 +415,7 @@ function Fixture() {
       return (
         <Tabs.TabPane tab={t("MATCH")} key="2">
           <FixtureComponent
-            markets={markets.filter((el: any) =>
+            markets={markets.filter((el: Market) =>
               Object.keys(el)[0].includes("MATCH"),
             )}
             fixtureName={fixtureData?.fixtureName}

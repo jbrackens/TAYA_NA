@@ -1,7 +1,7 @@
-import styled from "styled-components";
+import styled, { DefaultTheme } from "styled-components";
 import { Button } from "antd";
 
-const extractButtonsTheme = (props: any) =>
+const extractButtonsTheme = (props: { theme: DefaultTheme }) =>
   props.theme.uiComponents.buttons || {};
 
 export const BaseButton = styled(Button)`

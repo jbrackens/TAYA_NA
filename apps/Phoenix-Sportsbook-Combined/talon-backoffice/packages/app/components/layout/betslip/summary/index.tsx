@@ -45,7 +45,13 @@ import { StatusEnum } from "../../../results";
 import { CoreSwitch } from "../../../ui/switch";
 
 type BetslipSummaryProps = {
-  summaryValues: any;
+  summaryValues: {
+    totalOdds?: string | number;
+    totalStake?: string | number;
+    possibleReturn?: string | number;
+    multiBetsPossibleReturn?: string | number;
+    betValues?: Record<string, { bet: number }>;
+  };
   setReadyForSendSingleBets: (isReady: boolean) => void;
   setReadyForSendMultiBets: (isReady: boolean) => void;
   selectedTab: SecondaryTabs;

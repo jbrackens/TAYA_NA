@@ -56,8 +56,25 @@ dayjs.extend(LocalizedFormat);
 type FormValues = {
   password: string | undefined;
   username: string | undefined;
-  remember: boolean;
+  remember: boolean | null;
 };
+
+interface LoginResponseToken {
+  token: string;
+  refreshToken: string;
+  expiresIn: number;
+  refreshExpiresIn: number;
+  userId: string;
+}
+
+interface LoginResponse {
+  token: LoginResponseToken;
+  hasToAcceptTerms: boolean;
+  lastSignIn?: string;
+  sessionId: string;
+  type?: string;
+  verificationId?: string;
+}
 
 const LoginComponent: React.FC = () => {
   const { t } = useTranslation(["login", "responsible-gaming", "api-errors"]);
@@ -122,7 +139,7 @@ const LoginComponent: React.FC = () => {
     dispatch(logIn());
   };
 
-  const login = (data: any) => {
+  const login = (data: LoginResponse) => {
     setIsRoleErrorVisible(false);
     const now = dayjs().valueOf();
     const token = data.token;
@@ -201,7 +218,7 @@ const LoginComponent: React.FC = () => {
     dispatch(showResetPasswordModal());
   };
 
-  const onFinish = (values: any): void => {
+  const onFinish = (values: FormValues): void => {
     setFormValue(values);
     setFormFinished(true);
   };

@@ -11,7 +11,7 @@ import { ComingSoon } from "./index.styled";
 type ListComponentProps = {
   fixtures: Fixture[];
   isLoading: boolean;
-  renderFixture: any;
+  renderFixture: (item: Fixture) => React.ReactNode;
 };
 
 const ListComponent: React.FC<ListComponentProps> = ({

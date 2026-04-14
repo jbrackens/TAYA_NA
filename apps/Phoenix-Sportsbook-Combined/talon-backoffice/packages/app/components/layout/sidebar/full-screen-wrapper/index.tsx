@@ -51,7 +51,7 @@ const FullScreenWrapper: React.FC<FullScreenWrapperProps> = ({
         <RowFullHeight $isCollapsed={isCollapsed}>
           <Col span={24}>
             {children !== undefined &&
-              React.cloneElement(children as any, {
+              React.cloneElement(children as React.ReactElement, {
                 setHeaderBetsCount: setHeaderBetsCount,
                 closeBetSlip: closeBetSlip,
               })}

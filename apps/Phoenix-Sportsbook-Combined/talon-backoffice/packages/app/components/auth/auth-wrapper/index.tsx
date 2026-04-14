@@ -25,7 +25,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children, isLoggedIn }) => {
 
   const redirectCondition =
     router?.route &&
-    Object.values(SecureRoutes).includes(router.route as any) &&
+    Object.values(SecureRoutes).includes(router.route as SecureRoutes) &&
     !isLoggedIn;
 
   if (redirectCondition) {

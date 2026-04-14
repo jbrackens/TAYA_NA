@@ -7,7 +7,7 @@ import { CoreForm } from "../../../ui/form";
 
 const { Option, OptionContent } = CoreSelect;
 
-function handleChange(value: any) {
+function handleChange(value: string) {
   i18n.changeLanguage(value);
 }
 

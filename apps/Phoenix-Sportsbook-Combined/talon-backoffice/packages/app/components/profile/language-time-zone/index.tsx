@@ -58,15 +58,15 @@ const LanguageTimeZoneComponent: React.FC<LanguageTimeZoneComponentProps> = () =
       </Option>
     ));
 
-  const handleLanguageChange = (value: any) => {
+  const handleLanguageChange = (value: string) => {
     setLanguage(value);
   };
 
-  const handleTimezoneChange = (value: any) => {
+  const handleTimezoneChange = (value: string) => {
     setTimezone(value);
   };
 
-  const handleOddsFormatChange = (value: any) => {
+  const handleOddsFormatChange = (value: DisplayOddsEnum) => {
     setOddsFormat(value);
   };
 

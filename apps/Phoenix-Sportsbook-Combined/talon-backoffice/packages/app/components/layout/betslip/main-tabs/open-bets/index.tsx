@@ -115,7 +115,7 @@ export const OpenBetsTabContent: React.FC<OpenBetsTabContentProps> = ({
         dispatch(
           setOpenBets([
             ...previousOpenBets,
-            ...openBets.reduce((a: any, b: any) => a.concat(b)),
+            ...openBets.reduce((a: unknown[], b: unknown[]) => a.concat(b)),
           ]),
         );
       }

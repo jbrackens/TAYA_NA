@@ -29,8 +29,8 @@ dayjs.extend(timezone);
 dayjs.Ls.en.weekStart = 1;
 
 type limitFormat = {
-  limit: any;
-  since: any;
+  limit: number | null;
+  since: string;
 };
 
 type LimitFormProps = {
@@ -170,7 +170,7 @@ const LimitForm: React.FC<LimitFormProps> = ({
     setButtonState();
   }, [formattedValues]);
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: { dailyLimit?: number; monthlyLimit?: number; weeklyLimit?: number }) => {
     const { dailyLimit, monthlyLimit, weeklyLimit } = values;
     if (type === LimitEnum.SESSION) {
       triggerApi({
@@ -406,7 +406,7 @@ const LimitForm: React.FC<LimitFormProps> = ({
           min={0}
           step={1}
           testId={testId}
-          formatter={(value: any) =>
+          formatter={(value: string | number | undefined) =>
             `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
           }
           onChange={setButtonState}
@@ -426,7 +426,7 @@ const LimitForm: React.FC<LimitFormProps> = ({
               return (match1 + match3).replace(/\s/, "") + " " + match2;
             })
           }
-          parser={(value: any) => value.replace(" hours", "")}
+          parser={(value: string | undefined) => value ? value.replace(" hours", "") : ""}
           min={0}
           step={1}
           testId={testId}

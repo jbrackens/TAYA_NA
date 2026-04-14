@@ -95,7 +95,7 @@ function LandingPage() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const router = useRouter();
 
-  const handleNavigation = (e: any) => {
+  const handleNavigation = (e: Event) => {
     const window = e.currentTarget;
     setScrollingUp(
       y < AVOID_SCROLL_LIMIT ? true : y > window.scrollY ? true : false,

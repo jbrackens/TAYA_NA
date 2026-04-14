@@ -64,7 +64,7 @@ const BetslipList: React.FC<BetslipListProps> = ({
   const dispatch = useDispatch();
   const isListErrorVisible = useSelector(selectIsListErrorVisble);
 
-  const saveBets = (newBets: any) => {
+  const saveBets = (newBets: Array<BetSlipData>) => {
     !noInteract && dispatch(setIsListErrorVisible(false));
     dispatch(setBets(newBets));
     if (!newBets.length) {
@@ -161,10 +161,10 @@ const BetslipList: React.FC<BetslipListProps> = ({
 
   const firstItemWithErrorRef = useRef<null | HTMLLIElement>(null);
 
-  const scrollToBottom = (values: any) => {
+  const scrollToBottom = (values: { prevValues?: Array<BetSlipData>; values?: Array<BetSlipData> }) => {
     if (
       values.prevValues !== undefined &&
-      values.values?.length > values.prevValues?.length
+      (values.values?.length ?? 0) > (values.prevValues?.length ?? 0)
     ) {
       listEndRef?.current?.scrollIntoView({ behavior: "smooth" });
     }
@@ -194,7 +194,7 @@ const BetslipList: React.FC<BetslipListProps> = ({
           $nointeract={noInteract}
           itemLayout="vertical"
           dataSource={data}
-          renderItem={(item: any) => (
+          renderItem={(item: BetSlipData) => (
             <>
               {firstItemWithError?.betslipId === item.betslipId && (
                 <li ref={firstItemWithErrorRef} />

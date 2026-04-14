@@ -3,7 +3,7 @@ import { SidebarMenu } from "./SidebarMenu";
 import { CustomSider } from "../index.styled";
 
 type SidebarComponentProps = {
-  ref: any;
+  ref: React.Ref<unknown>;
   isLoading: boolean | undefined;
 };
 

@@ -2,7 +2,7 @@ import { createGlobalStyle } from "styled-components";
 import { StyledResult } from "../results/index.styled";
 import { StyledOptionContent } from "../ui/select/index.styled";
 
-export const GlobalStyle = createGlobalStyle<any>`
+export const GlobalStyle = createGlobalStyle`
   body {
     font-family: Mulish, sans-serif;
    

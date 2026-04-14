@@ -100,7 +100,7 @@ const CommunicationComponent: React.FC = () => {
       "signInNotifications",
     ];
     const communicationPreferences = communicationPreferencesKeys.reduce(
-      (obj: any, el) => {
+      (obj: Record<string, boolean>, el) => {
         obj[el] = checkedElements.includes(el);
         return obj;
       },

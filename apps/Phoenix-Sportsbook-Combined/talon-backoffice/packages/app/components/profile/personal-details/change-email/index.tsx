@@ -73,7 +73,7 @@ const ChangeEmailModal: React.FC<ChangeEmailModalProps> = ({
     });
   };
 
-  const onFinish = (values: any): void => {
+  const onFinish = (values: FormValues): void => {
     setFormValue(values);
     setMfaCodeModalVisible(true);
   };

@@ -111,7 +111,7 @@ const FixtureListComponent: React.FC<FixtureListComponentProps> = ({
   const [doFixturesHaveNextPage, setDoFixturesHaveNextPage] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [queryParams, setQueryParams] = useState({});
-  const [listsToRender, setListsToRender] = useState<any>([]);
+  const [listsToRender, setListsToRender] = useState<Array<{ fixtures: Fixture[]; isLoading: boolean }>>([]);
   const [shouldResetData, setShouldResetData] = useState(false);
   const [isRefreshLoading, setIsRefreshLoading] = useState(false);
   const { spy } = useSpy();
@@ -178,7 +178,7 @@ const FixtureListComponent: React.FC<FixtureListComponentProps> = ({
     }
   }, [currentPage]);
 
-  const fetchFxitures = (query: any) => {
+  const fetchFxitures = (query: Record<string, unknown>) => {
     if (!isEmpty(query)) {
       triggerApi(undefined, {
         query: queryParams,
@@ -192,7 +192,7 @@ const FixtureListComponent: React.FC<FixtureListComponentProps> = ({
 
   useEffect(() => {
     if (data) {
-      setListsToRender((prev: any) => [
+      setListsToRender((prev: Array<{ fixtures: Fixture[]; isLoading: boolean }>) => [
         ...(shouldResetData ? [] : prev),
         {
           fixtures: data.data,
@@ -287,14 +287,14 @@ const FixtureListComponent: React.FC<FixtureListComponentProps> = ({
 
     const getWinner = () => {
       if (isFinished && !isDraw) {
-        return Object.values(fixture.competitors).reduce<Record<any, any>>(
+        return Object.values(fixture.competitors).reduce<{ score?: number; qualifier?: string }>(
           (acc, cur) => {
             if (acc.score) {
               return {
                 score: acc.score > cur.score ? acc.score : cur.score,
                 qualifier:
                   acc.score > cur.score
-                    ? acc.qualifier.toLowerCase()
+                    ? (acc.qualifier ?? "").toLowerCase()
                     : cur.qualifier.toLowerCase(),
               };
             }
@@ -477,7 +477,7 @@ const FixtureListComponent: React.FC<FixtureListComponentProps> = ({
   };
 
   const renderLists = () =>
-    listsToRender.map((list: any, idx: number) => (
+    listsToRender.map((list: { fixtures: Fixture[]; isLoading: boolean }, idx: number) => (
       <ListComponent
         key={idx}
         fixtures={list.fixtures}

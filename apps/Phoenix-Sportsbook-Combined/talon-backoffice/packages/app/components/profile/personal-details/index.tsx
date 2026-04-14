@@ -176,7 +176,7 @@ const PersonalDetailsComponent: React.FC<PersonalDetailsComponentProps> = ({
     }
   };
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: { address?: PersonalDetailsComponentProps["address"]; phoneNumber?: string }) => {
     triggerApi({
       name: name,
       address:

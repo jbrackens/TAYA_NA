@@ -147,7 +147,7 @@ const AcceptTermsComponent: React.FC = () => {
         ) : (
           <>
             <ContentContainer
-              onScroll={onScroll as any}
+              onScroll={onScroll as unknown as React.UIEventHandler<HTMLDivElement>}
               dangerouslySetInnerHTML={{ __html: termsContent }}
             ></ContentContainer>
           </>

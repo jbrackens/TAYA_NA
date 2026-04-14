@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { List } from "antd";
 
-export const ScrollableBetslipList = styled(List)<any>`
+export const ScrollableBetslipList = styled(List)<{ $nointeract?: boolean }>`
   @media (max-width: 1200px) {
     overflow: scroll;
     background-color: ${(props) => props.theme.betslip.backgroundColor};

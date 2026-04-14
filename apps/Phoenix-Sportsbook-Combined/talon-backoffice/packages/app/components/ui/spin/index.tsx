@@ -3,11 +3,11 @@ import { BaseSpin } from "./index.styles";
 
 export type CoreSpinProps = {
   delay?: number;
-  indicator?: any;
+  indicator?: React.ReactNode;
   size?: "small" | "default" | "large" | undefined;
   spinning?: boolean;
   tip?: string;
-  wrapperClassName?: any;
+  wrapperClassName?: string;
   children?: React.ReactNode;
 };
 

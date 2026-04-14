@@ -5,8 +5,8 @@ const defaultValue: UseWebsocket = {
   data: null,
   closeConnection: () => {},
   openConnection: () => {},
-  sendMessage: (msg: any) => {
-    msg;
+  sendMessage: (_msg: unknown) => {
+    // no-op default
   },
   error: null,
   isConnectionOpen: false,

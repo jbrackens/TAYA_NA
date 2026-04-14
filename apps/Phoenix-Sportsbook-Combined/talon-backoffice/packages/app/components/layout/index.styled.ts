@@ -41,7 +41,7 @@ export const BetslipContainer = styled(Layout.Sider)`
 `;
 
 type LayoutProps = {
-  main?: any;
+  main?: boolean;
 };
 
 export const StyledLayout = styled(Layout)<LayoutProps>`

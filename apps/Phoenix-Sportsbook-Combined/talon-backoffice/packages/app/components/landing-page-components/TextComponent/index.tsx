@@ -5,9 +5,9 @@ import { ResponsibleGaming } from "../RespGambling";
 interface TextProps {
   subHeading: string;
   heading: string;
-  children: any;
+  children: React.ReactNode;
   buttonStyle: string;
-  reverse?: boolean | any;
+  reverse?: boolean;
   hideCta?: boolean;
 }
 
@@ -20,7 +20,7 @@ export const TextComponent: React.FC<TextProps> = ({
   hideCta,
 }: TextProps) => {
   return (
-    <TextContainer $reverse={reverse} $hideCTA={hideCta ? true : false}>
+    <TextContainer $reverse={reverse ?? false} $hideCTA={hideCta ? true : false}>
       <div className="sub-header">{subHeading}</div>
       <div className="header">{heading}</div>
       {children}

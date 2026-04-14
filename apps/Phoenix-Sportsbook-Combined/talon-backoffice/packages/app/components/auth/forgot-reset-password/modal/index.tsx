@@ -49,7 +49,7 @@ export const ForgotResetPasswordModalComponent: React.FC<ForgotResetPasswordModa
       : dispatch(hideResetPasswordModal());
   };
 
-  const onFinish = (values: any): void => {
+  const onFinish = (values: Record<string, unknown>): void => {
     triggerApi(
       {
         email: values.email,
@@ -61,7 +61,7 @@ export const ForgotResetPasswordModalComponent: React.FC<ForgotResetPasswordModa
     );
   };
 
-  const onFinishFailed = (errorInfo: ValidateErrorEntity<any>): void => {
+  const onFinishFailed = (errorInfo: ValidateErrorEntity): void => {
     // Form validation failed — errorInfo contains field-level details
   };
 

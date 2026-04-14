@@ -1,4 +1,7 @@
 import { FormItemProps } from "antd";
+import type { FormInstance } from "antd/lib/form/Form";
+import type { ColProps } from "antd/lib/grid/col";
+import type { Callbacks, FieldData, ValidateMessages, ValidateErrorEntity } from "rc-field-form/lib/interface";
 import React, {
   ComponentType,
   JSXElementConstructor,
@@ -9,32 +12,24 @@ import { BaseForm } from "./index.styled";
 type CoreFormProps = {
   colon?: boolean;
   component?: ComponentType | false;
-  fields?: Array<any>;
-  form?: any;
-  initialValues?: any;
+  fields?: FieldData[];
+  form?: FormInstance;
+  initialValues?: Record<string, unknown>;
   labelAlign?: "left" | "right";
-  labelCol?: any;
+  labelCol?: ColProps;
   layout?: "horizontal" | "vertical" | "inline";
   name?: string;
   preserve?: boolean;
   requiredMark?: boolean;
   scrollToFirstError?: boolean;
   size?: "small" | "middle" | "large";
-  validateMessages?: any;
+  validateMessages?: ValidateMessages;
   validateTrigger?: string | Array<string>;
-  wrapperCol?: any;
-  onFieldsChange?: (changedFields: any, allFields: any) => void;
-  onFinish?: (values: any) => void;
-  onFinishFailed?: ({
-    values,
-    errorFields,
-    outOfDate,
-  }: {
-    values: any;
-    errorFields: any;
-    outOfDate: any;
-  }) => void;
-  onValuesChange?: (changedValues: any, allValues: any) => void;
+  wrapperCol?: ColProps;
+  onFieldsChange?: (changedFields: FieldData[], allFields: FieldData[]) => void;
+  onFinish?: (values: Record<string, unknown>) => void;
+  onFinishFailed?: (errorInfo: ValidateErrorEntity<Record<string, unknown>>) => void;
+  onValuesChange?: (changedValues: Record<string, unknown>, allValues: Record<string, unknown>) => void;
   role?: string;
   testId?: string;
   className?: string;
@@ -42,11 +37,14 @@ type CoreFormProps = {
   children?: React.ReactNode;
 };
 
+/** Adapts narrowly-typed wrapper callbacks to the broader types expected by antd's styled Form. */
+type AntdFormCallbacks = Pick<Callbacks, 'onFinish' | 'onFinishFailed' | 'onValuesChange'>;
+
 const CoreForm: React.FC<CoreFormProps> & {
-  useForm?: any;
-  Item: <Values = any>(
+  useForm?: typeof BaseForm.useForm;
+  Item: <Values = unknown>(
     props: FormItemProps<Values>,
-  ) => ReactElement<any, string | JSXElementConstructor<any>>;
+  ) => ReactElement<unknown, string | JSXElementConstructor<unknown>>;
 } = ({
   colon,
   component,
@@ -74,6 +72,26 @@ const CoreForm: React.FC<CoreFormProps> & {
   className,
   onChange,
 }) => {
+  // Antd Form's styled wrapper expects callbacks typed with Values = unknown.
+  // Our public API uses Record<string, unknown> for better consumer DX.
+  // These wrappers bridge the two without using 'any'.
+  const adaptedCallbacks: AntdFormCallbacks = {
+    onFinish: onFinish
+      ? (values: unknown) => onFinish(values as Record<string, unknown>)
+      : undefined,
+    onFinishFailed: onFinishFailed
+      ? (errorInfo: ValidateErrorEntity) =>
+          onFinishFailed(errorInfo as ValidateErrorEntity<Record<string, unknown>>)
+      : undefined,
+    onValuesChange: onValuesChange
+      ? (changedValues: unknown, allValues: unknown) =>
+          onValuesChange(
+            changedValues as Record<string, unknown>,
+            allValues as Record<string, unknown>,
+          )
+      : undefined,
+  };
+
   return (
     <BaseForm
       className={className}
@@ -94,9 +112,9 @@ const CoreForm: React.FC<CoreFormProps> & {
       validateTrigger={validateTrigger}
       wrapperCol={wrapperCol}
       onFieldsChange={onFieldsChange}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      onValuesChange={onValuesChange}
+      onFinish={adaptedCallbacks.onFinish}
+      onFinishFailed={adaptedCallbacks.onFinishFailed}
+      onValuesChange={adaptedCallbacks.onValuesChange}
       onChange={onChange}
       role={role}
       data-testid={testId}

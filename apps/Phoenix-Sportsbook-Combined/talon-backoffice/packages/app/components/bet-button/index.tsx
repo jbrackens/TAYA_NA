@@ -197,7 +197,7 @@ const BetButtonComponent: React.FC<Props> = ({
     //   setSelectionDisabled(selectionMarketStatusValue !== "BETTABLE");
   }, [selectionMarketStatusValue]);
 
-  const generateSelectionName = (selectionName: string, specifiers: any) => {
+  const generateSelectionName = (selectionName: string, specifiers: Props["specifiers"]) => {
     let name = selectionName;
 
     if (competitors?.home && selectionName === "home")

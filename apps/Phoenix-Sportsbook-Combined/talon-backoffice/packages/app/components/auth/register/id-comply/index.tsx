@@ -91,7 +91,7 @@ const IdComplyComponent: React.FC<IdComplyProps> = ({
     </Radio.Group>
   );
 
-  const sendAnswers = (values: any) => {
+  const sendAnswers = (values: Record<string, unknown>) => {
     const answers = Object.entries(values).map(([key, value]) => ({
       questionId: key,
       choice: value,

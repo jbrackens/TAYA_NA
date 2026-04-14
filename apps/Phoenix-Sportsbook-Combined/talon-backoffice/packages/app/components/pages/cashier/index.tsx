@@ -112,7 +112,7 @@ function Cashier() {
     );
   }, [useCashWithdrawal.statusOk]);
 
-  const onFinish = (values: any): void => {
+  const onFinish = (values: FormValues): void => {
     useDeposit.resetHookState();
     useWithdrawal.resetHookState();
     useCashWithdrawal.resetHookState();
@@ -126,7 +126,7 @@ function Cashier() {
 
   const depositAmountValidation = (
     _rule: RuleObject,
-    value: any,
+    value: number | undefined,
     callback: (error?: string) => void,
   ) => {
     if (value && value < minDepositValue) {
@@ -143,7 +143,7 @@ function Cashier() {
 
   const withdrawAmountValidation = (
     _rule: RuleObject,
-    value: any,
+    value: number | undefined,
     callback: (error?: string) => void,
   ) => {
     if (value && value < minWithdrawalValue) {

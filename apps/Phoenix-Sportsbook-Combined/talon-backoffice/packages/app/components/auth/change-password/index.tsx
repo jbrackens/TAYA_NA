@@ -42,7 +42,7 @@ const ChangePasswordComponent: React.FC = () => {
     }
   }, [token]);
 
-  const onFinish = (values: any): void => {
+  const onFinish = (values: { password: string }): void => {
     setIsMfaModalVisible(true);
     setNewPassword(values.password);
   };

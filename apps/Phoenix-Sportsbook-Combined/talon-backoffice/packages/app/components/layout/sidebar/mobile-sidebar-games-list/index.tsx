@@ -4,7 +4,7 @@ import { MobileSider, SliderMask } from "./index.styled";
 
 type MobileSidebarComponentProps = {
   isGamesListVisible: boolean;
-  ref: any;
+  ref: React.Ref<unknown>;
   isLoading: boolean | undefined;
 };
 

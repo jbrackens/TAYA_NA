@@ -82,7 +82,7 @@ export const StyledResult = styled.div`
 `;
 
 type IconBackgroundProps = {
-  backgroundColorType: any;
+  backgroundColorType: StatusEnum;
 };
 
 export const IconBackground = styled.div<IconBackgroundProps>`

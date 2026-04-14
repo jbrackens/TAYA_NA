@@ -24,7 +24,7 @@ const Step4: React.FC<Props> = ({ currentStep, form }) => {
 
   const termsValidation = (
     _rule: RuleObject,
-    value: any,
+    value: unknown[],
     callback: (error?: string) => void,
   ) => {
     if (value.length === terms.length) {

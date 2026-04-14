@@ -9,12 +9,13 @@ import {
   SelectContainer,
 } from "../../../ui/form/index.styled";
 import { CoreForm } from "../../../ui/form";
+import { FormInstance } from "antd/lib/form";
 
 const { Option, OptionContent } = CoreSelect;
 
 type Props = {
   currentStep: number;
-  form: any;
+  form: FormInstance;
 };
 
 const Step1: React.FC<Props> = ({ currentStep, form }) => {

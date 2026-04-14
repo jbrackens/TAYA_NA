@@ -8,6 +8,7 @@ import {
   StyledLink,
 } from "./index.styled";
 import { CoreForm } from "../../../ui/form";
+import { FormInstance } from "antd/lib/form";
 import { useApi } from "../../../../services/api/api-service";
 import { Method, useFingerprint } from "@phoenix-ui/utils";
 import { Col } from "antd";
@@ -17,7 +18,7 @@ import { CoreSpin } from "../../../ui/spin";
 
 type Props = {
   currentStep: number;
-  form: any;
+  form: FormInstance;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 };
 

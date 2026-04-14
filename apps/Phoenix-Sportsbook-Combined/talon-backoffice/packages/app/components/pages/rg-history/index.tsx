@@ -33,7 +33,7 @@ function RgHistory() {
 
   const coolOffHistoryApi = useApi("punters/cool-offs-history", Method.GET);
 
-  const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState<Array<{ key: number; LIMIT_TYPE?: string; PERIOD?: string; LIMIT?: string; REASON?: string; REQUESTED_AT?: string; EFFECTIVE_FROM?: string; COOL_OFF_START?: string; COOL_OFF_END?: string }>>([]);
   useNavigation(changeLocationToAccount, changeLocationToStandard);
 
   const router = useRouter();
@@ -77,8 +77,19 @@ function RgHistory() {
     });
   }, []);
 
-  const normalizeData = (data: any) =>
-    data.map((el: any, idx: number) => ({
+  interface RgHistoryElement {
+    limitType?: string;
+    period?: string;
+    limit?: string;
+    coolOffCause?: string;
+    requestedAt?: string;
+    effectiveFrom?: string;
+    coolOffStart?: string;
+    coolOffEnd?: string;
+  }
+
+  const normalizeData = (data: RgHistoryElement[]) =>
+    data.map((el: RgHistoryElement, idx: number) => ({
       key: idx,
       ...(el.limitType && { LIMIT_TYPE: t(el.limitType) }),
       ...(el.period && { PERIOD: t(el.period) }),

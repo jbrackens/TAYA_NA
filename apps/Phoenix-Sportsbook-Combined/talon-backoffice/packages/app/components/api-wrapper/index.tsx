@@ -56,7 +56,7 @@ const ApiWrapper: React.FC<ApiWrapperProps> = ({
     }
   }, [disableWebsocket]);
 
-  const showModalBasedOnLoginState = (values: any) => {
+  const showModalBasedOnLoginState = (values: { values: unknown; prevValues: unknown }) => {
     if (!values.values && values.prevValues) {
       setIsInfoModalVisvisible(true);
     }

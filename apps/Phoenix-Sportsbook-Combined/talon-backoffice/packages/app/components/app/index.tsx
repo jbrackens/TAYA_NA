@@ -1,10 +1,28 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { ThemeProvider } from "styled-components";
+import { DefaultTheme, ThemeProvider } from "styled-components";
 import { MenuProvider } from "../../providers/menu";
 import ApiWrapper from "../api-wrapper/index";
 import { GlobalStyle } from "./index.styled";
 import { Layout } from "../layout";
+import { Store } from "redux";
+import { MenuItem } from "../../providers/menu/types";
+
+interface PageProps {
+  disableWebsocket?: boolean;
+  disableGeoComply?: boolean;
+  disableLayout?: boolean;
+  [key: string]: unknown;
+}
+
+interface AppProps {
+  Component: React.ComponentType<Record<string, unknown>>;
+  pageProps: PageProps;
+  store: Store;
+  theme: DefaultTheme;
+  menuItems?: MenuItem[];
+  layoutConfig?: { home?: boolean; children?: React.ReactNode };
+}
 
 export default function App({
   Component,
@@ -13,7 +31,7 @@ export default function App({
   theme,
   menuItems = [],
   layoutConfig,
-}: any) {
+}: AppProps) {
   return (
     <ThemeProvider theme={theme}>
       {/* overriding modals etc */}
@@ -21,8 +39,8 @@ export default function App({
       <Provider store={store}>
         <MenuProvider value={menuItems}>
           <ApiWrapper
-            {...pageProps}
-            disableWebsocket={pageProps.disableWebsocket}
+            disableWebsocket={pageProps.disableWebsocket ?? false}
+            disableGeoComply={pageProps.disableGeoComply ?? false}
           >
             <>
               {pageProps.disableLayout ? (

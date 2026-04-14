@@ -1,7 +1,9 @@
 import React from "react";
 import { useEffect } from "react";
 
-declare var LiveAgent: any;
+declare var LiveAgent: {
+  createButton: (id: string, element: HTMLElement | null) => void;
+};
 
 type LiveChatComponentProps = {};
 

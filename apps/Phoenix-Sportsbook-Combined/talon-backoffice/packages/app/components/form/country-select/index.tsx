@@ -23,9 +23,9 @@ const CountrySelect: React.FC<Props> = (props) => {
     : false;
 
   const getCountries = () => {
-    let content: any[] = [];
+    let content: React.ReactNode[] = [];
 
-    countries.map((country: any) => {
+    countries.map((country: { value: string; label: string }) => {
       const disabled =
         countryRestriction && countryRestriction != country.value
           ? true

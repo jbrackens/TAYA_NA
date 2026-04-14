@@ -17,14 +17,14 @@ const CodeInput: React.FC<Props> = ({
   inputMode,
   type,
 }) => {
-  const codeRef = useRef<any>(undefined);
+  const codeRef = useRef<ReactCodeInput>(null);
   const [wasValuePasted, setWasValuePasted] = useState(false);
 
   const onInputChange = (value: string) => {
     const idxOfElementToFocus =
       value.length < fields ? value.length : value.length - 1;
     if (wasValuePasted) {
-      codeRef.current.textInput[idxOfElementToFocus].focus();
+      (codeRef.current as unknown as { textInput: HTMLInputElement[] }).textInput[idxOfElementToFocus].focus();
       setWasValuePasted(false);
     }
     onChange(value);
@@ -35,9 +35,10 @@ const CodeInput: React.FC<Props> = ({
     const isInput = target.tagName === "INPUT";
     if (isInput) {
       setWasValuePasted(true);
-      codeRef.current.textInput[0].focus();
+      const ref = codeRef.current as unknown as { textInput: HTMLInputElement[]; state: { input: string[] } };
+      ref.textInput[0].focus();
       Array.from(Array(fields)).forEach((_x, idx) => {
-        codeRef.current.state.input[idx] = "";
+        ref.state.input[idx] = "";
       });
     }
   };

@@ -82,7 +82,7 @@ const DepositLimitsComponent: React.FC = () => {
     form.resetFields();
   }, [depositLimits]);
 
-  const onBreakFormFinish = (values: any) => {
+  const onBreakFormFinish = (values: { days: string }) => {
     breakApi.triggerApi({
       duration: { length: parseFloat(values.days), unit: "DAYS" },
     });
