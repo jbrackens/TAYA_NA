@@ -4,8 +4,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { getEvents, Event } from "../lib/api/events-client";
-import { useAppDispatch, useAppSelector } from "../lib/store/hooks";
-import { toggleBetElement, selectBets } from "../lib/store/betSlice";
+import { useBetslip } from "../hooks/useBetslip";
+import { BetSelection } from "./BetslipProvider";
 
 interface FixtureListProps {
   sportKey: string;
@@ -26,8 +26,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
-  const dispatch = useAppDispatch();
-  const betslipSelections = useAppSelector(selectBets);
+  const betslip = useBetslip();
   const { t } = useTranslation(["fixture-list", "common"]);
 
   const loadFixtures = useCallback(
@@ -70,26 +69,43 @@ export const FixtureList: React.FC<FixtureListProps> = ({
   }, [filterStatus]);
 
   const handleBet = (match: Event, position: "home" | "draw" | "away") => {
-    dispatch(
-      toggleBetElement({
-        selectionId: `${match.fixtureId}-${position}`,
-        brandMarketId: `${match.fixtureId}-match-result`,
-        selectionName:
-          position === "home"
-            ? match.homeTeam
-            : position === "away"
-              ? match.awayTeam
-              : t("common:DRAW_LABEL"),
-        marketName: t("common:MATCH_RESULT", { defaultValue: "Match Result" }),
-        fixtureName: `${match.homeTeam} ${t("common:VS")} ${match.awayTeam}`,
-        fixtureId: match.fixtureId,
-        odds: { decimal: 0, american: "0", fractional: "0/0" },
-      }),
+    const selectionId = `${match.fixtureId}-${position}`;
+    const marketId = `${match.fixtureId}-match-result`;
+    const selectionName =
+      position === "home"
+        ? match.homeTeam
+        : position === "away"
+          ? match.awayTeam
+          : t("common:DRAW_LABEL", { defaultValue: "Draw" });
+
+    const existing = betslip.selections.find(
+      (s) => s.selectionId === selectionId && s.marketId === marketId,
     );
+
+    if (existing) {
+      betslip.removeSelection(existing.id);
+    } else {
+      const selection: BetSelection = {
+        id: `${marketId}-${selectionId}`,
+        fixtureId: match.fixtureId,
+        marketId,
+        selectionId,
+        matchName: `${match.homeTeam} ${t("common:VS", { defaultValue: "vs" })} ${match.awayTeam}`,
+        marketName: t("common:MATCH_RESULT", { defaultValue: "Match Result" }),
+        selectionName,
+        odds: 1.0,
+        initialOdds: 1.0,
+      };
+      betslip.addSelection(selection);
+    }
   };
 
   const isSelected = (fixtureId: string, position: string) =>
-    betslipSelections.some((b) => b.selectionId === `${fixtureId}-${position}`);
+    betslip.selections.some(
+      (s) =>
+        s.selectionId === `${fixtureId}-${position}` &&
+        s.marketId === `${fixtureId}-match-result`,
+    );
 
   if (loading) {
     return <div style={{ color: "#D3D3D3" }}>{t("fixture-list:LOADING")}</div>;
@@ -237,12 +253,14 @@ export const FixtureList: React.FC<FixtureListProps> = ({
                         flex: 1,
                         padding: "8px 12px",
                         backgroundColor: isSelected(fixture.fixtureId, pos)
-                          ? "#4f46e5"
+                          ? "rgba(57,255,20,0.15)"
                           : "#1a1f3a",
-                        color: "#e2e8f0",
+                        color: isSelected(fixture.fixtureId, pos)
+                          ? "#39ff14"
+                          : "#e2e8f0",
                         border: `1px solid ${
                           isSelected(fixture.fixtureId, pos)
-                            ? "#4f46e5"
+                            ? "rgba(57,255,20,0.5)"
                             : "#2d3748"
                         }`,
                         borderRadius: "6px",
