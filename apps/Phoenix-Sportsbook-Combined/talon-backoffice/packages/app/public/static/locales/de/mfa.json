@@ -1,0 +1,11 @@
+{
+  "MODAL_TITLE": "Verifizierungscode",
+  "MODAL_SUBMIT": "Abschicken",
+  "MODAL_CANCEL": "Abbrechen",
+  "MODAL_ERROR": "Fehler beim Senden des MFA-Codes",
+  "MODAL_CODE": "Code",
+  "MODAL_CODE_REQUIRED": "6-stelliger Code erforderlich",
+  "MODAL_CODE_LENGTH_ERROR": "Es muss ein 6-stelliger Code sein",
+  "SETTINGS_TITLE": "Multifaktor-Authentifizierung",
+  "MFA_MESSAGE": "Bitte prüfen Sie Ihre SMS auf Ihrem Telefon nach dem Code."
+}

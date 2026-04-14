@@ -1,0 +1,13 @@
+{
+  "DATE_FORMAT": "DD/MM/YYYY",
+  "TIME_FORMAT": "HH:mm:ss",
+  "DATE_TIME_FORMAT": "DD/MM/YYYY, HH:mm:ss",
+  "VS": "vs",
+  "HOME_LABEL": "Heim",
+  "DRAW_LABEL": "Unentschieden",
+  "AWAY_LABEL": "Auswärts",
+  "ERROR_MESSAGE": "Fehler: {{message}}",
+  "PREVIOUS": "Zurück",
+  "NEXT": "Weiter",
+  "PAGE_OF": "Seite {{current}} von {{total}}"
+}

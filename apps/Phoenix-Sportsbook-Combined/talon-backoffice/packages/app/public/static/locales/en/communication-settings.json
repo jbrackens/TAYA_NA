@@ -1,0 +1,13 @@
+{
+  "GENERAL": "General",
+  "SEND_EMAILS_FOR": "Send me emails for:",
+  "ESP_ANNOUNCEMENTS": "Announcements",
+  "ESP_PROMOTIONS": "Promotions",
+  "SUBSCRIPTION_UPDATES": "Subscription Updates",
+  "BETTING": "Betting",
+  "MATCHES_RESOLVED": "Matches Resolved",
+  "NEW_MATCHES": "New matches for events I've made bets in",
+  "SETTINGS_UPDATED": "Your settings have been updated",
+  "SETTINGS_UPDATE_ERROR": "Error updating settings, please try again",
+  "SIGN_IN_NOTIFICATIONS": "Sign In Notifications"
+}

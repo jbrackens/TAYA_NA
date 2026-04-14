@@ -1,0 +1,11 @@
+{
+  "TITLE": "Kontostatus:",
+  "SELF_EXCLUDED": "Das Konto befindet sich im Ausnahmezustand. Der Benutzer kann keine Einzahlungen tätigen, Auszahlungen vornehmen, Wetten platzieren oder Änderungen an seinem Konto vornehmen.",
+  "SUSPENDED": "Das Konto befindet sich im Ausnahmezustand. Der Benutzer kann keine Einzahlungen tätigen, Wetten platzieren oder Änderungen an seinem Konto vornehmen.",
+  "COOLING_OFF": "Das Konto befindet sich in der Abkühlphase. Der Benutzer kann keine Einzahlungen tätigen, Wetten platzieren oder Änderungen an seinem Konto vornehmen.",
+  "SESSION_LIMIT_BREACH": "Das Sitzungszeitlimit wurde erreicht",
+  "UNVERIFIED": "Das Konto ist nicht verifiziert. Bitte verifizieren Sie es für vollständigen Zugriff.",
+  "VERIFY": "Jetzt verifizieren",
+  "NEGATIVE_BALANCE": "Ihr Konto hat einen negativen Kontostand. Bitte führen Sie eine Einzahlung durch.",
+  "DEPOSIT": "Einzahlung"
+}

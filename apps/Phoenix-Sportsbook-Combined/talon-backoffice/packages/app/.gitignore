@@ -33,5 +33,5 @@ yarn-error.log*
 # vercel
 .vercel
 
-# app
-public/static/locales/*
+# app — locale files ARE tracked (remove this line if locales reappear in ignore)
+# public/static/locales/*

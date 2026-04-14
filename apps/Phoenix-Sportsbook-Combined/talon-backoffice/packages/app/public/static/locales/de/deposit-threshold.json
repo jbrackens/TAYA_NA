@@ -1,0 +1,8 @@
+{
+  "TITLE": "Einzahlungslimit",
+  "MODAL_CONTENT": "Sie haben das Einzahlungslimit von {{currency}}{{value}} erreicht. Möchten Sie weiter wetten?",
+  "LOGOUT": "Abmelden",
+  "ACCEPT": "Akzeptieren",
+  "TITLE_FAIL": "Ein Fehler ist aufgetreten. Bitte kontaktieren Sie den Support.",
+  "OK": "Ok"
+}

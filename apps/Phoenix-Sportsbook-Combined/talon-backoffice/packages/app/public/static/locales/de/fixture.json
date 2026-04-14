@@ -1,0 +1,20 @@
+{
+  "ALL": "Alle",
+  "MATCH": "Spiel",
+  "MAP": "Karte {{number}}",
+  "NOT_STARTED": "Nicht gestartet",
+  "LIVE": "Live",
+  "SUSPENDED": "Ausgesetzt",
+  "ENDED": "Beendet",
+  "FINISHED": "Abgeschlossen",
+  "CANCELLED": "Abgebrochen",
+  "ABANDONED": "Aufgegeben",
+  "DELAYED": "Verzögert",
+  "UNKNOWN": "Unbekannt",
+  "POSTPONED": "Verschoben",
+  "INTERRUPTED": "Unterbrochen",
+  "FINALIZED": "Abgeschlossen",
+  "CLOSED": "Geschlossen",
+  "STOPPED": "Gestoppt",
+  "PAUSED": "Unterbrochen"
+}
