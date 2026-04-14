@@ -472,6 +472,60 @@ export async function getEvents(
       }
     }
 
+    // Cross-sport BetConstruct search when query provided without sport filter
+    if (params?.query && !params?.sport) {
+      try {
+        const sports = await getSports();
+        const allEvents: Event[] = [];
+        const fetches = sports.map(async (s) => {
+          try {
+            const alias = await getBcAlias(s.sportKey);
+            const games = await bcGetGames(alias);
+            if (!Array.isArray(games)) return;
+            for (const g of games) {
+              allEvents.push({
+                eventId: String(g.id),
+                fixtureId: String(g.id),
+                sportId: s.sportId,
+                leagueId: String((g as unknown as Record<string, unknown>).competitionId || ""),
+                homeTeam: g.team1_name || "TBD",
+                awayTeam: g.team2_name || "TBD",
+                sportKey: s.sportKey,
+                leagueKey: String((g as unknown as Record<string, unknown>).competitionId || ""),
+                startTime: new Date(g.start_ts * 1000).toISOString(),
+                status: g.type === 1 ? "in_play" : "scheduled",
+                hasMarkets: (g.markets_count || 0) > 0,
+              });
+            }
+          } catch {
+            // Skip sports that fail to load
+          }
+        });
+        await Promise.all(fetches);
+        if (allEvents.length > 0) {
+          const limit = params?.limit || 50;
+          const result: GetEventsPaginatedResponse = {
+            events: allEvents,
+            total: allEvents.length,
+            page: 1,
+            limit,
+            totalPages: 1,
+          };
+          eventsCache.set(cacheKey, {
+            entry: { data: result, ts: Date.now() },
+            promise: null,
+          });
+          return result;
+        }
+      } catch (err) {
+        logger.info(
+          "Events",
+          "BetConstruct cross-sport search unavailable, trying Go backend",
+          err,
+        );
+      }
+    }
+
     // Fall back to Go backend
     const queryParams: Record<string, string> = {};
     if (params?.sport) queryParams.sport = params.sport;

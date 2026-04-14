@@ -169,25 +169,98 @@ export default function MatchPage({ params }: MatchPageProps) {
     const load = async () => {
       try {
         setLoading(true);
-        // Fetch from our Go gateway (proxied via next.config.js rewrites)
+
+        // Try Go gateway first
         const res = await fetch(`/api/v1/fixtures/${encodeURIComponent(matchId)}`, {
           credentials: "include",
         });
-        if (!res.ok) {
-          const body = await res.json().catch(() => null);
-          const msg = (body as Record<string, string> | null)?.error || `HTTP ${res.status}`;
-          throw new Error(msg);
+
+        if (res.ok) {
+          const data: GatewayFixtureDetail = await res.json();
+          if (!cancelled) {
+            setFixture(data);
+            setError(null);
+          }
+          return;
         }
-        const data: GatewayFixtureDetail = await res.json();
-        if (!cancelled) {
-          setFixture(data);
-          setError(null);
+
+        // Go gateway failed — try BetConstruct game endpoint
+        const bcRes = await fetch(`/api/bc/game/?id=${encodeURIComponent(matchId)}`);
+        if (bcRes.ok) {
+          const bcData = await bcRes.json();
+          if (bcData && !bcData.error) {
+            // Map BetConstruct game (camelCase) to GatewayFixtureDetail shape
+            const bcTeam1 = bcData.team1 || bcData.team1_name || "TBD";
+            const bcTeam2 = bcData.team2 || bcData.team2_name || "TBD";
+            const bcStartTs = bcData.startTs || bcData.start_ts || 0;
+            const mapped: GatewayFixtureDetail = {
+              fixtureId: String(bcData.id),
+              fixtureName: `${bcTeam1} vs ${bcTeam2}`,
+              startTime: new Date(bcStartTs * 1000).toISOString(),
+              isLive: bcData.type === 1,
+              sport: {
+                sportId: String(bcData.sportAlias || bcData.sport?.id || ""),
+                name: bcData.sportName || bcData.sport?.name || "",
+                abbreviation: "",
+                displayToPunters: true,
+              },
+              tournament: {
+                tournamentId: String(bcData.competitionName || bcData.competition?.id || ""),
+                sportId: String(bcData.sportAlias || bcData.sport?.id || ""),
+                name: bcData.competitionName || bcData.competition?.name || "",
+                startTime: new Date(bcStartTs * 1000).toISOString(),
+              },
+              status: bcData.type === 1 ? "LIVE" : "NOT_STARTED",
+              competitors: {
+                home: { name: bcTeam1 },
+                away: { name: bcTeam2 },
+              },
+              markets: Array.isArray(bcData.markets)
+                ? bcData.markets.map((m: Record<string, unknown>) => ({
+                    marketId: String(m.id || ""),
+                    marketName: String(m.name || ""),
+                    marketType: String(m.type || ""),
+                    marketCategory: String(m.type || ""),
+                    status: "OPEN",
+                    selections: Array.isArray(m.selections || m.events)
+                      ? ((m.selections || m.events) as Record<string, unknown>[]).map(
+                          (ev: Record<string, unknown>) => ({
+                            selectionId: String(ev.id || ""),
+                            selectionName: String(ev.name || ""),
+                            displayOdds: {
+                              decimal: Number(ev.price || 0),
+                              american: "",
+                              fractional: "",
+                            },
+                          }),
+                        )
+                      : [],
+                  }))
+                : [],
+            };
+            if (!cancelled) {
+              setFixture(mapped);
+              setError(null);
+            }
+            return;
+          }
         }
+
+        // Both sources failed
+        const body = await res.json().catch(() => null);
+        const errField = (body as Record<string, unknown> | null)?.error;
+        const msg =
+          typeof errField === "string"
+            ? errField
+            : typeof errField === "object" && errField !== null
+              ? (errField as Record<string, string>).message || `HTTP ${res.status}`
+              : `HTTP ${res.status}`;
+        throw new Error(msg);
       } catch (err: unknown) {
         if (!cancelled) {
           const message =
             err instanceof Error ? err.message : "Failed to load match";
-          logger.error("MatchPage", "Failed to load fixture", message);
+          logger.error("MatchPage", `Failed to load fixture: ${message}`);
           setError(message);
         }
       } finally {
