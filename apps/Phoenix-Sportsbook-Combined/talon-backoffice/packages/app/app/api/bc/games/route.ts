@@ -50,26 +50,37 @@ export async function GET(request: NextRequest) {
       where.competition = { id: Number(competitionId) };
     }
 
+    // For competition-scoped requests, fetch full market + selection
+    // data. For sport-wide lists, fetch only game-level info to avoid
+    // Swarm timeouts (Soccer alone has thousands of games × 50+
+    // markets × 3+ selections = millions of data points).
+    const wantMarkets = !!competitionId;
+
+    const what: Record<string, unknown> = {
+      sport: ["id", "name", "alias"],
+      region: ["id", "name", "alias"],
+      game: [
+        [
+          "id",
+          "start_ts",
+          "team1_name",
+          "team2_name",
+          "type",
+          "markets_count",
+          "info",
+        ],
+      ],
+      competition: ["id", "name"],
+    };
+
+    if (wantMarkets) {
+      what.market = ["id", "type", "name", "display_key", "main_order", "base"];
+      what.event = ["id", "price", "type", "name", "order", "base"];
+    }
+
     const data = await swarmQuery({
       source: "betting",
-      what: {
-        sport: ["id", "name", "alias"],
-        region: ["id", "name", "alias"],
-        game: [
-          [
-            "id",
-            "start_ts",
-            "team1_name",
-            "team2_name",
-            "type",
-            "markets_count",
-            "info",
-          ],
-        ],
-        competition: ["id", "name"],
-        market: ["id", "type", "name", "display_key", "main_order", "base"],
-        event: ["id", "price", "type", "name", "order", "base"],
-      },
+      what,
       where,
     });
 

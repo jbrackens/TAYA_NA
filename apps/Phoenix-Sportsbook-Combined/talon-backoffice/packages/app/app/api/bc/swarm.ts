@@ -134,7 +134,7 @@ export async function swarmQuery(
     const timeout = setTimeout(() => {
       pending.delete(rid);
       reject(new Error("Swarm query timeout"));
-    }, 8000);
+    }, 15000);
 
     pending.set(rid, {
       resolve: (data) => {
