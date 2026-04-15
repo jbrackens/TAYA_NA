@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSports, getLeagues, getEvents } from '../api/events-client';
 import { getUserBets } from '../api/betting-client';
 import { getLeaderboards } from '../api/leaderboards-client';
-import type { Sport, League, GetEventsPaginatedResponse } from '../api/events-client';
+import type { Sport, League, Event, GetEventsPaginatedResponse } from '../api/events-client';
 import type { UserBet } from '../api/betting-client';
 import type { LeaderboardDefinition } from '../api/leaderboards-client';
 
@@ -56,19 +56,31 @@ export function useUserBets(userId: string, enabled = true) {
 }
 
 // ─── Fixtures (homepage feed) ───────────────────────────────
-async function fetchFixtures(): Promise<unknown[]> {
-  const res = await fetch('/api/v1/fixtures/', { credentials: 'include' });
-  if (!res.ok) return [];
-  const data = await res.json();
-  const list = data.data || data.fixtures || data;
-  return Array.isArray(list) ? list : [];
+// Fetches from top sports via BetConstruct (no auth required, real odds).
+// The old raw fetch to /api/v1/fixtures/ required Go auth and
+// silently cached empty results on 401, breaking first-login UX.
+async function fetchFixtures(): Promise<Event[]> {
+  // Get the top 4 sports by game count, then fetch events from each
+  const sports = await getSports();
+  const topSports = sports
+    .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
+    .slice(0, 4);
+  const batches = await Promise.all(
+    topSports.map((s) =>
+      getEvents({ sport: s.sportKey, limit: 5 })
+        .then((r) => r.events)
+        .catch(() => [] as Event[]),
+    ),
+  );
+  return batches.flat();
 }
 
 export function useFixtures() {
-  return useQuery<unknown[]>({
+  return useQuery<Event[]>({
     queryKey: queryKeys.fixtures,
     queryFn: fetchFixtures,
     staleTime: 30 * 1000, // fixtures change frequently
+    retry: 2,
   });
 }
 

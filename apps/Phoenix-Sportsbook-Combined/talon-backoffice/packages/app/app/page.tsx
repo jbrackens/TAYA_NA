@@ -21,6 +21,8 @@ import { useAuth } from "./hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { logger } from "./lib/logger";
 import { useSports, useFixtures, useLeaderboards } from "./lib/query/hooks";
+import { getEvents } from "./lib/api/events-client";
+import type { Event as BCEvent } from "./lib/api/events-client";
 
 const LandingPage = dynamic(() => import("./components/LandingPage"));
 
@@ -231,6 +233,41 @@ function normalizeMarket(rawMarket: Record<string, unknown>, fixtureId: string):
   };
 }
 
+/** Convert a BetConstruct Event (from events-client) into the raw shape
+ *  that normalizeFixture() can parse. This bridges the homepage's fixture
+ *  rendering with the working BetConstruct data path. */
+function eventToRawFixture(event: BCEvent): Record<string, unknown> {
+  const selections: Record<string, unknown>[] = [
+    { selectionId: `${event.fixtureId}-home`, name: event.homeTeam, odds: event.homeOdds, status: "open" },
+  ];
+  if (event.drawOdds > 0) {
+    selections.push({ selectionId: `${event.fixtureId}-draw`, name: "Draw", odds: event.drawOdds, status: "open" });
+  }
+  selections.push({ selectionId: `${event.fixtureId}-away`, name: event.awayTeam, odds: event.awayOdds, status: "open" });
+
+  return {
+    fixtureId: event.fixtureId,
+    fixtureName: `${event.homeTeam} vs ${event.awayTeam}`,
+    startTime: event.startTime,
+    isLive: event.status === "in_play",
+    status: event.status === "in_play" ? "IN_PLAY" : "NOT_STARTED",
+    sport: { sportId: event.sportId, name: event.sportKey },
+    tournament: { tournamentId: event.leagueId, sportId: event.sportId, name: event.leagueKey },
+    competitors: {
+      home: { competitorId: "home", name: event.homeTeam, score: 0, qualifier: "home" },
+      away: { competitorId: "away", name: event.awayTeam, score: 0, qualifier: "away" },
+    },
+    markets: [{
+      marketId: `${event.fixtureId}-main`,
+      fixtureId: event.fixtureId,
+      name: "Match Winner",
+      status: "open",
+      selections,
+    }],
+    marketsTotalCount: event.hasMarkets ? 1 : 0,
+  };
+}
+
 function normalizeFixture(rawFixture: Record<string, unknown>): Fixture {
   const fixtureId = String(rawFixture?.fixtureId || rawFixture?.id || "");
   const rawMarkets = Array.isArray(rawFixture?.markets) ? rawFixture.markets : [];
@@ -350,7 +387,11 @@ function AuthenticatedHome() {
   const { data: rawLeaderboards = [] } = useLeaderboards();
 
   const fixtures = useMemo(() => {
-    const normalized = rawFixtures.map((f) => normalizeFixture(f as Record<string, unknown>));
+    // useFixtures() now returns Event[] from BetConstruct; convert to Fixture[]
+    const normalized = rawFixtures.map((f) => {
+      const raw = eventToRawFixture(f as BCEvent);
+      return normalizeFixture(raw);
+    });
     return normalized.filter(isValidFixture);
   }, [rawFixtures]);
 
@@ -450,7 +491,15 @@ function AuthenticatedHome() {
 
   // Data fetching handled by React Query hooks above — cached across navigations
 
-  // Issue #11: Debounced search API query
+  // Stable ref for fixtures so the search effect can read them without
+  // adding fixtures to its dependency array (which causes infinite loops).
+  const fixturesRef = useRef(fixtures);
+  useEffect(() => { fixturesRef.current = fixtures; });
+
+  // Issue #11: Debounced search via BetConstruct.
+  // Strategy: (1) if query matches a sport name, fetch that sport's events
+  // (fast, single BC call). (2) Otherwise, filter already-loaded fixtures
+  // by team name. The old code called a non-existent Go endpoint.
   useEffect(() => {
     if (deferredSearchQuery.length < 3) {
       setSearchResults([]);
@@ -464,16 +513,36 @@ function AuthenticatedHome() {
 
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/v1/search/events?q=${encodeURIComponent(deferredSearchQuery)}`, {
-          credentials: "include",
-        });
-        if (!cancelled && res.ok) {
-          const data = await res.json();
-          const list = data.data || data.results || data.fixtures || data;
-          setSearchResults(Array.isArray(list) ? list.map(normalizeFixture).filter(isValidFixture).slice(0, 10) : []);
+        const q = deferredSearchQuery.toLowerCase();
+        const { getSports: fetchSports } = await import("./lib/api/events-client");
+        const allSports = await fetchSports();
+
+        // Check if query matches a sport name
+        const matchedSport = allSports.find(
+          (s) =>
+            s.sportName.toLowerCase().includes(q) ||
+            s.sportKey.toLowerCase().includes(q),
+        );
+
+        let results: Fixture[] = [];
+
+        if (matchedSport) {
+          // Sport match: fetch events for that sport directly (fast)
+          const response = await getEvents({ sport: matchedSport.sportKey, limit: 10 });
+          results = response.events
+            .map((e) => normalizeFixture(eventToRawFixture(e)))
+            .filter(isValidFixture);
+        } else {
+          // Team/league name match: filter already-loaded fixtures
+          results = fixturesRef.current.filter((f) => {
+            const teams = getTeams(f.competitors);
+            const haystack = `${teams.home} ${teams.away} ${f.tournament.name} ${f.fixtureName}`.toLowerCase();
+            return haystack.includes(q);
+          });
         }
+
+        if (!cancelled) setSearchResults(results.slice(0, 10));
       } catch {
-        // Search API may not exist yet, silently fall back to local filtering
         if (!cancelled) setSearchResults([]);
       } finally {
         if (!cancelled) setSearchLoading(false);

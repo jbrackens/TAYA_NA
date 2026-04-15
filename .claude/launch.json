@@ -6,6 +6,7 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["next", "dev", "--webpack"],
       "port": 3000,
+      "autoPort": true,
       "cwd": "apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app",
       "env": {
         "NEXT_PUBLIC_API_URL": "http://localhost:18080",

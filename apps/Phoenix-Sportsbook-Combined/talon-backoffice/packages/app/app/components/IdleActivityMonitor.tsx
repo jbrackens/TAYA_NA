@@ -30,6 +30,16 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   const refreshTimeoutRef = useRef<number | null>(null);
   const warningShownRef = useRef(false);
 
+  // ── Stable callback refs (CLAUDE.md pattern) ──────────────
+  // Props like onLogout and onRefreshToken come from useCallback chains
+  // that depend on context values (toast, etc.) and can recreate every
+  // render. Storing them in refs keeps our effects stable.
+  const onLogoutRef = useRef(onLogout);
+  useEffect(() => { onLogoutRef.current = onLogout; });
+
+  const onRefreshTokenRef = useRef(onRefreshToken);
+  useEffect(() => { onRefreshTokenRef.current = onRefreshToken; });
+
   const clearSessionTimers = useCallback(() => {
     if (warningTimeoutRef.current) {
       clearTimeout(warningTimeoutRef.current);
@@ -41,21 +51,10 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     }
   }, []);
 
-  const refreshAuthToken = useCallback(async () => {
-    try {
-      if (onRefreshToken) {
-        await onRefreshToken();
-      }
-    } catch (err) {
-      logger.error("IdleMonitor", "Token refresh failed", err);
-    }
-  }, [onRefreshToken]);
-
+  // scheduleSessionTimers uses refs for callbacks, so it only depends
+  // on primitive values — no cascading function reference changes.
   const scheduleSessionTimers = useCallback(() => {
     clearSessionTimers();
-    if (!isAuthenticated) {
-      return;
-    }
 
     const idleMs = Date.now() - lastActivityRef.current;
     const refreshInMs = Math.max(
@@ -64,9 +63,13 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     );
     const warningInMs = Math.max(0, sessionTimeoutSeconds * 1000 - idleMs);
 
-    refreshTimeoutRef.current = window.setTimeout(() => {
+    refreshTimeoutRef.current = window.setTimeout(async () => {
       if (!warningShownRef.current) {
-        refreshAuthToken();
+        try {
+          await onRefreshTokenRef.current?.();
+        } catch (err) {
+          logger.error("IdleMonitor", "Token refresh failed", err);
+        }
       }
     }, refreshInMs);
 
@@ -75,13 +78,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
       setShowWarning(true);
       setCountdown(warningSeconds);
     }, warningInMs);
-  }, [
-    clearSessionTimers,
-    isAuthenticated,
-    refreshAuthToken,
-    sessionTimeoutSeconds,
-    warningSeconds,
-  ]);
+  }, [clearSessionTimers, sessionTimeoutSeconds, warningSeconds]);
 
   const handleActivity = useCallback(() => {
     lastActivityRef.current = Date.now();
@@ -92,11 +89,10 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
       setCountdown(warningSeconds);
     }
 
-    if (isAuthenticated) {
-      scheduleSessionTimers();
-    }
-  }, [isAuthenticated, scheduleSessionTimers, warningSeconds]);
+    scheduleSessionTimers();
+  }, [scheduleSessionTimers, warningSeconds]);
 
+  // Start/stop timers when auth state changes
   useEffect(() => {
     if (!isAuthenticated) {
       clearSessionTimers();
@@ -113,6 +109,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     };
   }, [clearSessionTimers, isAuthenticated, scheduleSessionTimers]);
 
+  // Attach activity listeners
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -132,6 +129,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
     };
   }, [isAuthenticated, handleActivity]);
 
+  // Countdown tick when warning is visible
   useEffect(() => {
     if (!showWarning) return;
 
@@ -141,7 +139,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
           if (countdownIntervalRef.current) {
             clearInterval(countdownIntervalRef.current);
           }
-          onLogout();
+          onLogoutRef.current();
           return 0;
         }
         return prev - 1;
@@ -154,8 +152,9 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
         countdownIntervalRef.current = null;
       }
     };
-  }, [showWarning, onLogout]);
+  }, [showWarning]);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       clearSessionTimers();
@@ -275,7 +274,7 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
           </button>
 
           <button
-            onClick={onLogout}
+            onClick={() => onLogoutRef.current()}
             style={{
               padding: "10px 16px",
               borderRadius: 8,
