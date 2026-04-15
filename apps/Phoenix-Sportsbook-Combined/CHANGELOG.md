@@ -1,5 +1,37 @@
 # Phoenix Sportsbook: Release Changelog
 
+## [1.2.0] - 2026-04-16
+
+### UAT Defect Resolution (34 defects fixed)
+
+Comprehensive UAT uncovered 36 defects; 34 confirmed and fixed in this release. Full report: `UAT-REPORT-2026-04-15.md`.
+
+### Critical Fixes
+- **Odds Display Restored** — Fixed `selectionOdds` field name mismatch in BetConstruct market mapping; all match pages and event cards now show real decimal odds
+- **SSR Crash Fix** — Guarded `window.location.origin` access in `apiClient.get()` during server-side rendering; /leaderboards, /responsible-gaming, /rewards, /promotions no longer crash the server
+- **i18n Namespace** — Added `rewards` to `INIT_NAMESPACES` to prevent hydration mismatch on rewards page
+
+### Search & Navigation
+- Search now matches sport display names (searching "Football" finds soccer events)
+- Search results show human-readable sport names instead of raw keys
+- Internal competition IDs removed from search result labels
+- Duplicate React key for rugby sports fixed in Quick Browse chips
+- Notification bell linked to /account/notifications
+
+### Data Quality
+- Leaderboard metrics humanized (net_profit_cents → "Net Profit")
+- Raw player IDs replaced with "Player N" in standings
+- Reward activity labels humanized (first_qualified_referral → "First Qualified Referral")
+- Cashier balance fallback changed from "—" to "$0.00"
+- Non-league entries (Outright, Transfer Specials) filtered from league tabs
+- TBD season template entries filtered from Starting Soon page
+
+### Match Page
+- Live score display added between team names for in-progress matches
+- Duplicate market groups deduplicated
+- Popular tab now prioritizes moneyline markets over niche Asian handicaps
+- Internal event IDs removed from homepage featured cards
+
 ## [1.1.0] - 2026-04-14
 
 ### TAYA NA! Design System & Feature Release
