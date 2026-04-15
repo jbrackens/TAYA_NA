@@ -12,6 +12,7 @@ import { HeaderBar } from "./HeaderBar";
 import { BetslipPanel } from "./BetslipPanel";
 import { ToastProvider } from "./ToastProvider";
 import { AccountStatusBar } from "./AccountStatusBar";
+import { BackendStatusBanner } from "./BackendStatusBanner";
 import OpenChatButton from "./OpenChatButton";
 
 export default function AppShell({
@@ -38,6 +39,7 @@ export default function AppShell({
                       <div className="ps-main">
                         <div className="ps-main-inner">
                           <HeaderBar />
+                          <BackendStatusBanner />
                           <AccountStatusBar />
                           <div className="ps-page">{children}</div>
                         </div>
