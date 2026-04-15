@@ -11,5 +11,11 @@
   "LOGIN_ERROR": "Error, incorrect username or password",
   "LAST_LOGIN": "Last Login",
   "ERROR_NOT_ELIGIBLE": "You're not eligible to proceed further",
-  "RESET_PASSWORD_LINK": "To reset you password click here."
+  "RESET_PASSWORD_LINK": "To reset you password click here.",
+  "ENTER_CREDENTIALS": "Please enter both username and password",
+  "PASSWORD_MIN_LENGTH": "Password must be at least 6 characters",
+  "LOGIN_FAILED": "Login failed. Please try again.",
+  "USERNAME_PLACEHOLDER": "Enter your username or email",
+  "PASSWORD_PLACEHOLDER": "Enter your password",
+  "SIGNING_IN": "Signing In..."
 }

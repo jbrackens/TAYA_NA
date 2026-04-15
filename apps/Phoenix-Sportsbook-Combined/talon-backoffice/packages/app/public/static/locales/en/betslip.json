@@ -40,5 +40,17 @@
   "LIVE": "LIVE",
   "CANCEL": "Cancel",
   "CLEAR_CONFIRMATION_MODAL_CONTENT": "Bets are processing, if you clear the betslip bets could still be placed. Please check open bets to confirm placement.",
-  "CLEAR_CONFIRMATION_MODAL_TITLE": "Are you sure?"
+  "CLEAR_CONFIRMATION_MODAL_TITLE": "Are you sure?",
+  "ENTER_CREDENTIALS": "Please enter both username and password",
+  "BET_CONFIRMED": "Your ticket is locked in.",
+  "PLACE_BET_FAILED": "We couldn't lock that ticket. Please try again.",
+  "PLACING": "Placing...",
+  "PLACED": "Locked In!",
+  "OPEN_BETSLIP": "Open Slip",
+  "LOADING": "Loading...",
+  "STAKE_LABEL": "Stake:",
+  "RETURN_LABEL": "Return:",
+  "CASHING_OUT": "Cashing out...",
+  "CASH_OUT": "Cash Out",
+  "NO_OPEN_BETS": "No open tickets at the moment."
 }

@@ -40,5 +40,16 @@
   "LIVE": "LIVE",
   "CANCEL": "Abbrechen",
   "CLEAR_CONFIRMATION_MODAL_CONTENT": "Wetten werden verarbeitet. Wenn Sie den Wettschein leeren, könnten Wetten trotzdem platziert werden.",
-  "CLEAR_CONFIRMATION_MODAL_TITLE": "Sind Sie sicher?"
+  "CLEAR_CONFIRMATION_MODAL_TITLE": "Sind Sie sicher?",
+  "ENTER_CREDENTIALS": "Bitte geben Sie Benutzername und Passwort ein",
+  "BET_CONFIRMED": "Ihre Wette wurde bestätigt.",
+  "PLACE_BET_FAILED": "Wette konnte nicht platziert werden. Bitte versuchen Sie es erneut.",
+  "PLACING": "Wird platziert...",
+  "PLACED": "Platziert!",
+  "OPEN_BETSLIP": "Wettschein öffnen",
+  "LOADING": "Laden...",
+  "STAKE_LABEL": "Einsatz:",
+  "RETURN_LABEL": "Auszahlung:",
+  "CASHING_OUT": "Wird ausgezahlt...",
+  "CASH_OUT": "Auszahlung"
 }

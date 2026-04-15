@@ -8,5 +8,11 @@
   "FORGOT_PASSWORD": "Passwort vergessen?",
   "SIGN_IN": "EINLOGGEN",
   "SIGN_UP": "Anmelden",
-  "LOGIN_ERROR": "Fehler, falscher Benutzername oder Passwort"
+  "LOGIN_ERROR": "Fehler, falscher Benutzername oder Passwort",
+  "ENTER_CREDENTIALS": "Bitte geben Sie Benutzername und Passwort ein",
+  "PASSWORD_MIN_LENGTH": "Passwort muss mindestens 6 Zeichen lang sein",
+  "LOGIN_FAILED": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+  "USERNAME_PLACEHOLDER": "Benutzername oder E-Mail eingeben",
+  "PASSWORD_PLACEHOLDER": "Passwort eingeben",
+  "SIGNING_IN": "Wird angemeldet..."
 }
