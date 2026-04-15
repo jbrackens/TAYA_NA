@@ -135,7 +135,14 @@ export const UpcomingMatches: React.FC<UpcomingMatchesProps> = ({
     return `${Math.floor(diff / 86400000)}d`;
   };
 
-  const groupedEntries = useMemo(() => Object.entries(matchesByGroup), [matchesByGroup]);
+  const groupedEntries = useMemo(() => {
+    const filtered: Record<string, BoardEvent[]> = {};
+    for (const [sport, matches] of Object.entries(matchesByGroup)) {
+      const real = matches.filter((m: BoardEvent) => m.awayTeam !== "TBD" && m.homeTeam !== "TBD");
+      if (real.length > 0) filtered[sport] = real;
+    }
+    return Object.entries(filtered);
+  }, [matchesByGroup]);
   const totalMatches = useMemo(
     () => groupedEntries.reduce((sum, [, matches]) => sum + matches.length, 0),
     [groupedEntries],

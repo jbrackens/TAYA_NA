@@ -153,6 +153,28 @@ export const HeaderBar: React.FC = () => {
     }
   }, [searchOpen, quickSports.length]);
 
+  // Sport key → display name mapping for search and display
+  const sportDisplayNames: Record<string, string> = useMemo(() => ({
+    soccer: "Football",
+    basketball: "Basketball",
+    tennis: "Tennis",
+    baseball: "Baseball",
+    boxing: "Boxing",
+    mma: "MMA",
+    cricket: "Cricket",
+    "ice-hockey": "Ice Hockey",
+    "ice_hockey": "Ice Hockey",
+    "league-of-legends": "League of Legends",
+    "counter-strike-2": "Counter-Strike 2",
+    volleyball: "Volleyball",
+    "rugby-union": "Rugby Union",
+    "rugby-league": "Rugby League",
+    motorbike: "Motorbike",
+    valorant: "Valorant",
+    dota2: "Dota 2",
+    "virtual-horse-racing": "Virtual Horse Racing",
+  }), []);
+
   // Debounced search against events API
   useEffect(() => {
     if (debounceRef.current) {
@@ -173,11 +195,16 @@ export const HeaderBar: React.FC = () => {
         const response = await getEvents({ limit: 50, query });
         const lowerQuery = query.toLowerCase();
         const filtered = response.events.filter(
-          (e: Event) =>
-            e.homeTeam.toLowerCase().includes(lowerQuery) ||
-            e.awayTeam.toLowerCase().includes(lowerQuery) ||
-            e.sportKey.toLowerCase().includes(lowerQuery) ||
-            e.leagueKey.toLowerCase().includes(lowerQuery),
+          (e: Event) => {
+            const sportName = (sportDisplayNames[e.sportKey] || e.sportKey).toLowerCase();
+            return (
+              e.homeTeam.toLowerCase().includes(lowerQuery) ||
+              e.awayTeam.toLowerCase().includes(lowerQuery) ||
+              e.sportKey.toLowerCase().includes(lowerQuery) ||
+              sportName.includes(lowerQuery) ||
+              e.leagueKey.toLowerCase().includes(lowerQuery)
+            );
+          },
         );
         if (requestId !== searchRequestIdRef.current) {
           return;
@@ -330,10 +357,10 @@ export const HeaderBar: React.FC = () => {
               </Link>
 
               {/* Notifications */}
-              <button className="ps-topbar-icon" title="Notifications">
+              <Link href="/account/notifications" className="ps-topbar-icon" title="Notifications">
                 <BellIcon size={18} strokeWidth={2} />
                 <span className="badge" />
-              </button>
+              </Link>
 
               {/* Avatar / Account Dropdown */}
               <div ref={userMenuRef} style={{ position: "relative" }}>
@@ -551,7 +578,7 @@ export const HeaderBar: React.FC = () => {
                       >
                         {quickSports.map((s: Sport) => (
                           <Link
-                            key={s.sportKey}
+                            key={`${s.sportKey}-${s.sportId}`}
                             href={`/sports/${s.sportKey}`}
                             onClick={() => {
                               setSearchOpen(false);
@@ -659,7 +686,7 @@ export const HeaderBar: React.FC = () => {
                             marginTop: 2,
                           }}
                         >
-                          {event.sportKey} · {event.leagueKey}
+                          {sportDisplayNames[event.sportKey] || event.sportKey}
                         </div>
                       </div>
                       <div

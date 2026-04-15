@@ -351,7 +351,7 @@ export default function CashierPage() {
           <div>
             <span className="cashier-balance-label">Available Balance</span>
             <span className="cashier-balance-value">
-              ${balance ? balance.availableBalance.toFixed(2) : "—"}
+              ${balance ? balance.availableBalance.toFixed(2) : "0.00"}
             </span>
           </div>
           {balance && (

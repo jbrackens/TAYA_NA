@@ -71,9 +71,9 @@ class ApiClient {
 
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
     const normalizedPath = this.normalizePath(path);
-    const url = this.baseUrl
-      ? new URL(`${this.baseUrl}${normalizedPath}`)
-      : new URL(normalizedPath, window.location.origin);
+    const origin = this.baseUrl
+      || (typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"));
+    const url = new URL(`${origin}${normalizedPath}`);
     if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     const res = await fetch(url.toString(), { headers: this.getHeaders(), credentials: 'include' });
     if (!res.ok) throw new ApiError(res.status, await res.text());

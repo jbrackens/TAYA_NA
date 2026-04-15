@@ -342,14 +342,14 @@ export default function AccountPage() {
                     <div>
                       <div className="competition-board-title">{board.name}</div>
                       <div className="competition-board-meta">
-                        {board.rankingMode.toUpperCase()} · {board.order.toUpperCase()} · {board.metricKey}
+                        {({net_profit_cents: "Net Profit", stake_cents: "Total Stake", win_count: "Wins", referral_count: "Referrals"} as Record<string, string>)[board.metricKey] || board.name}
                       </div>
                     </div>
                     {index === 0 && featuredStandings.length > 0 ? (
                       <div className="competition-standing-stack">
                         {featuredStandings.map((standing) => (
                           <div key={standing.playerId} className="competition-standing-row">
-                            <span>#{standing.rank} {standing.playerId}</span>
+                            <span>#{standing.rank} Player {standing.rank}</span>
                             <strong>{standing.score.toLocaleString()}</strong>
                           </div>
                         ))}
@@ -454,7 +454,10 @@ function formatLedgerLabel(entry: LoyaltyLedgerEntry): string {
   if (entry.sourceType === "admin_manual") {
     return "Manual loyalty adjustment";
   }
-  return entry.entrySubtype || entry.entryType;
+  const raw = entry.entrySubtype || entry.entryType;
+  return raw
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const accountPageStyles = `

@@ -27,8 +27,9 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
       try {
         setLoading(true);
         const data = await getLeagues(sportKey);
+        const SPECIAL_PATTERNS = /outright|transfer\s*specials?|matchday\s*statistics?|player\s*specials?/i;
         if (!cancelled) {
-          setLeagues(data);
+          setLeagues(data.filter((l) => !SPECIAL_PATTERNS.test(l.leagueName)));
           setError(null);
         }
       } catch (err) {

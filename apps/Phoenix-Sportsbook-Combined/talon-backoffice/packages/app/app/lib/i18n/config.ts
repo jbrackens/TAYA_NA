@@ -48,7 +48,7 @@ const fetchBackend = {
  * Critical namespaces loaded at init (blocks render).
  * Page-specific namespaces are loaded on demand by useTranslation().
  */
-const INIT_NAMESPACES = ['common', 'header', 'sidebar', 'footer', 'landing'];
+const INIT_NAMESPACES = ['common', 'header', 'sidebar', 'footer', 'landing', 'rewards'];
 
 // Only initialize once
 if (!i18n.isInitialized) {

@@ -221,12 +221,14 @@ export default function MatchPage({ params }: MatchPageProps) {
                     marketName: String(m.name || ""),
                     marketType: String(m.type || ""),
                     marketCategory: String(m.type || ""),
-                    status: "OPEN",
-                    selections: Array.isArray(m.selections || m.events)
+                    marketStatus: { type: "OPEN", changeReason: null },
+                    specifiers: {},
+                    selectionOdds: Array.isArray(m.selections || m.events)
                       ? ((m.selections || m.events) as Record<string, unknown>[]).map(
                           (ev: Record<string, unknown>) => ({
                             selectionId: String(ev.id || ""),
                             selectionName: String(ev.name || ""),
+                            active: true,
                             displayOdds: {
                               decimal: Number(ev.price || 0),
                               american: "",
@@ -279,21 +281,32 @@ export default function MatchPage({ params }: MatchPageProps) {
     return fixture.markets.map(mapGatewayMarket);
   }, [fixture]);
 
+  const deduplicatedMarkets = useMemo(() => {
+    const seen = new Set<string>();
+    return allMarkets.filter((m) => {
+      const key = `${m.name}-${m.type}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [allMarkets]);
+
   const filteredMarkets = useMemo(() => {
     if (activeTab === "Popular") {
-      const popular = allMarkets
-        .filter((m) => isMoneylineMarket(m) || isHandicapMarket(m) || isTotalMarket(m))
-        .slice(0, 10);
-      return popular.length > 0 ? popular : allMarkets.slice(0, 10);
+      const moneyline = deduplicatedMarkets.filter((m) => isMoneylineMarket(m));
+      const totals = deduplicatedMarkets.filter((m) => isTotalMarket(m) && !isMoneylineMarket(m));
+      const handicaps = deduplicatedMarkets.filter((m) => isHandicapMarket(m) && !isTotalMarket(m) && !isMoneylineMarket(m));
+      const popular = [...moneyline, ...totals, ...handicaps].slice(0, 10);
+      return popular.length > 0 ? popular : deduplicatedMarkets.slice(0, 10);
     }
     if (activeTab === "Game Lines") {
-      return allMarkets.filter((m) => isHandicapMarket(m) || isTotalMarket(m));
+      return deduplicatedMarkets.filter((m) => isHandicapMarket(m) || isTotalMarket(m));
     }
     if (activeTab === "Player Props") {
-      return allMarkets.filter((m) => isPlayerPropMarket(m));
+      return deduplicatedMarkets.filter((m) => isPlayerPropMarket(m));
     }
-    return allMarkets;
-  }, [allMarkets, activeTab]);
+    return deduplicatedMarkets;
+  }, [deduplicatedMarkets, activeTab]);
 
   if (loading) {
     return (
@@ -386,9 +399,15 @@ export default function MatchPage({ params }: MatchPageProps) {
               {homeTeam}
             </h2>
           </div>
-          <div style={{ fontSize: "12px", color: "#D3D3D3", fontWeight: "700", padding: "8px 12px", background: "rgba(11,14,28,0.75)", borderRadius: "999px", border: "1px solid #1a1f3a", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            vs
-          </div>
+          {fixture.isLive && fixture.competitors?.home?.score != null ? (
+            <div style={{ fontSize: "24px", color: "#39ff14", fontWeight: "800", padding: "8px 16px", background: "rgba(11,14,28,0.75)", borderRadius: "999px", border: "1px solid #1a1f3a", letterSpacing: "0.04em", minWidth: "80px", textAlign: "center" }}>
+              {fixture.competitors.home.score} - {fixture.competitors.away?.score ?? 0}
+            </div>
+          ) : (
+            <div style={{ fontSize: "12px", color: "#D3D3D3", fontWeight: "700", padding: "8px 12px", background: "rgba(11,14,28,0.75)", borderRadius: "999px", border: "1px solid #1a1f3a", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              vs
+            </div>
+          )}
           <div style={{ flex: 1, textAlign: "right" }}>
             <h2 style={{ fontSize: "24px", fontWeight: "800", color: "#f8fafc", margin: 0, letterSpacing: "-0.02em" }}>
               {awayTeam}

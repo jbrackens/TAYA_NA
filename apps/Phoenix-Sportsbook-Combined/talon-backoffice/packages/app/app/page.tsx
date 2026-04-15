@@ -24,6 +24,16 @@ import { useSports, useFixtures, useLeaderboards } from "./lib/query/hooks";
 import { getEvents } from "./lib/api/events-client";
 import type { Event as BCEvent } from "./lib/api/events-client";
 
+const SPORT_DISPLAY_NAMES: Record<string, string> = {
+  soccer: "Football", basketball: "Basketball", tennis: "Tennis",
+  baseball: "Baseball", boxing: "Boxing", mma: "MMA", cricket: "Cricket",
+  "ice-hockey": "Ice Hockey", "ice_hockey": "Ice Hockey",
+  "league-of-legends": "League of Legends", "counter-strike-2": "Counter-Strike 2",
+  volleyball: "Volleyball", "rugby-union": "Rugby Union", "rugby-league": "Rugby League",
+  motorbike: "Motorbike", valorant: "Valorant", dota2: "Dota 2",
+  "virtual-horse-racing": "Virtual Horse Racing",
+};
+
 const LandingPage = dynamic(() => import("./components/LandingPage"));
 
 interface Selection {
@@ -251,8 +261,8 @@ function eventToRawFixture(event: BCEvent): Record<string, unknown> {
     startTime: event.startTime,
     isLive: event.status === "in_play",
     status: event.status === "in_play" ? "IN_PLAY" : "NOT_STARTED",
-    sport: { sportId: event.sportId, name: event.sportKey },
-    tournament: { tournamentId: event.leagueId, sportId: event.sportId, name: event.leagueKey },
+    sport: { sportId: event.sportId, name: SPORT_DISPLAY_NAMES[event.sportKey] || event.sportKey },
+    tournament: { tournamentId: event.leagueId, sportId: event.sportId, name: "" },
     competitors: {
       home: { competitorId: "home", name: event.homeTeam, score: 0, qualifier: "home" },
       away: { competitorId: "away", name: event.awayTeam, score: 0, qualifier: "away" },
