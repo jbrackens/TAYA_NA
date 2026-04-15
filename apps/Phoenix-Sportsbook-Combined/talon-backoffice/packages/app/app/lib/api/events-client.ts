@@ -483,7 +483,25 @@ export async function getEvents(
     if (params?.sport) {
       try {
         const bcAlias = await getBcAlias(params.sport);
-        const bcGames = await bcGetGames(bcAlias, params?.league);
+        let bcGames = await bcGetGames(bcAlias, params?.league).catch(() => []);
+
+        // DEF-010: When the "All" tab query fails (Swarm error 22 on unfiltered
+        // sport queries), fan out across the top competitions for this sport.
+        if ((!Array.isArray(bcGames) || bcGames.length === 0) && !params?.league) {
+          const leagues = await getLeagues(params.sport);
+          if (leagues.length > 0) {
+            const topLeagues = leagues
+              .sort((a, b) => (b.eventCount || 0) - (a.eventCount || 0))
+              .slice(0, 8);
+            const batches = await Promise.all(
+              topLeagues.map((l) =>
+                bcGetGames(bcAlias, l.leagueId).catch(() => []),
+              ),
+            );
+            bcGames = batches.flat();
+          }
+        }
+
         if (Array.isArray(bcGames) && bcGames.length > 0) {
           const page = params?.page || 1;
           const limit = params?.limit || 12;

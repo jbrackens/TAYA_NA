@@ -19,11 +19,9 @@ interface I18nProviderProps {
  * `false` — producing a different component tree and a React hydration
  * error.
  *
- * We wait for the `initialized` event, which fires only after ALL
- * namespaces listed in the config `ns` array have been fetched.  This
- * prevents the flash of raw i18n keys (e.g. "HERO_KICKER") that occurred
- * when we gated only on the "common" namespace while page-specific
- * namespaces like "home" or "landing" were still in flight.
+ * We wait for the `initialized` event, which fires after the INIT_NAMESPACES
+ * (common, header, sidebar, footer, landing) have been fetched.  Page-specific
+ * namespaces (cashier, betslip, etc.) are loaded lazily by useTranslation().
  */
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   // Always false on first render — matches the server-rendered HTML.

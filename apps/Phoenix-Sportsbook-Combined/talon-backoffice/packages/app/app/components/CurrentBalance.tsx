@@ -38,8 +38,8 @@ export default function CurrentBalance({ compact = false }: CurrentBalanceProps)
     fetchBalance();
   }, [user?.id]);
 
-  const formatCurrency = (amountCents: number): string => {
-    const amount = amountCents / 100;
+  const formatCurrency = (amount: number): string => {
+    // wallet-client already converts cents→dollars, so amount is in dollars
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

@@ -44,6 +44,12 @@ const fetchBackend = {
   },
 };
 
+/**
+ * Critical namespaces loaded at init (blocks render).
+ * Page-specific namespaces are loaded on demand by useTranslation().
+ */
+const INIT_NAMESPACES = ['common', 'header', 'sidebar', 'footer', 'landing'];
+
 // Only initialize once
 if (!i18n.isInitialized) {
   i18n
@@ -53,8 +59,9 @@ if (!i18n.isInitialized) {
       lng: 'en',
       fallbackLng: 'en',
       supportedLngs: SUPPORTED_LANGUAGES,
-      ns: NAMESPACES,
+      ns: INIT_NAMESPACES,
       defaultNS: 'common',
+      partialBundledLanguages: true,
       interpolation: {
         escapeValue: false, // React handles XSS
       },
