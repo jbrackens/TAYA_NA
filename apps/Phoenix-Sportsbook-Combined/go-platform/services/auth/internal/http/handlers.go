@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	stdhttp "net/http"
 	"os"
 	"strconv"
@@ -16,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 	"phoenix-revival/platform/transport/httpx"
 )
@@ -41,9 +43,9 @@ type AuthService struct {
 	accessTTL  time.Duration
 	refreshTTL time.Duration
 
-	loginLimiter    *rateLimiter
-	registerLimiter *rateLimiter
-	lockout         *lockoutTracker
+	loginLimiter    RateLimiterBackend
+	registerLimiter RateLimiterBackend
+	lockout         LockoutBackend
 }
 
 type registerRequest struct {
@@ -159,6 +161,10 @@ func NewAuthService() *AuthService {
 		}
 	}
 	sessionStorePath := os.Getenv("AUTH_SESSION_STORE_FILE")
+	isProduction := env == "production" || env == "staging"
+	if isProduction && sessionStorePath == "" {
+		log.Fatalf("FATAL: AUTH_SESSION_STORE_FILE must be set in production; sessions would be lost on restart")
+	}
 
 	// Hash seed passwords with bcrypt for consistency
 	demoHash, _ := bcrypt.GenerateFromPassword([]byte(demoPassword), bcryptCost)
@@ -183,15 +189,36 @@ func NewAuthService() *AuthService {
 		}
 	}
 
+	// Select rate-limiting backend: Redis (for multi-instance prod) or in-memory (dev).
+	var loginLimiter, registerLimiter RateLimiterBackend
+	var lockoutBackend LockoutBackend
+	redisURL := strings.TrimSpace(os.Getenv("AUTH_REDIS_URL"))
+	if redisURL != "" {
+		opts, redisErr := redis.ParseURL(redisURL)
+		if redisErr != nil {
+			log.Fatalf("FATAL: AUTH_REDIS_URL is invalid: %v", redisErr)
+		}
+		rc := redis.NewClient(opts)
+		loginLimiter = newRedisRateLimiter(rc, "rl:login")
+		registerLimiter = newRedisRateLimiter(rc, "rl:register")
+		lockoutBackend = newRedisLockoutTracker(rc)
+		slog.Info("auth: rate limiting backed by Redis", "url", redisURL)
+	} else {
+		loginLimiter = newRateLimiter()
+		registerLimiter = newRateLimiter()
+		lockoutBackend = newLockoutTracker()
+		slog.Info("auth: rate limiting backed by in-memory (single-instance only)")
+	}
+
 	svc := &AuthService{
 		usersByUsername:  users,
 		store:           NewFileBackedSessionStore(sessionStorePath),
 		audit:           &structuredAuditLogger{logger: log.Default()},
 		accessTTL:       durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
 		refreshTTL:      durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
-		loginLimiter:    newRateLimiter(),
-		registerLimiter: newRateLimiter(),
-		lockout:         newLockoutTracker(),
+		loginLimiter:    loginLimiter,
+		registerLimiter: registerLimiter,
+		lockout:         lockoutBackend,
 	}
 
 	// Optionally initialize DB-backed user store
@@ -295,6 +322,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
+		r.Body = stdhttp.MaxBytesReader(w, r.Body, 64<<10) // 64KB for auth payloads
 		auth.PruneExpiredSessions()
 
 		var body loginRequest
@@ -339,10 +367,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
+		r.Body = stdhttp.MaxBytesReader(w, r.Body, 64<<10) // 64KB for auth payloads
 
 		// Rate limit: 3 registrations per minute per IP
 		remoteIP := extractIP(r)
-		if !auth.registerLimiter.allow("register:"+remoteIP, 3, time.Minute) {
+		if !auth.registerLimiter.Allow("register:"+remoteIP, 3, time.Minute) {
 			return httpx.TooManyRequests("too many registration attempts, try again later")
 		}
 
@@ -367,6 +396,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
+		r.Body = stdhttp.MaxBytesReader(w, r.Body, 64<<10) // 64KB for auth payloads
 		auth.PruneExpiredSessions()
 
 		// Read refresh token from HttpOnly cookie first, fall back to request body
@@ -450,6 +480,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
+		r.Body = stdhttp.MaxBytesReader(w, r.Body, 64<<10) // 64KB for auth payloads
 
 		// Verify CSRF token on state-changing request.
 		// Skip CSRF check if no CSRF cookie exists (e.g., client clearing
@@ -648,10 +679,24 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 			auth.usersByUsername[email] = user{
 				ID:       newID,
 				Username: email,
-				Password: "", // No password for OAuth users
+				Password: "",
+				Role:     rolePlayer,
 			}
 			account = auth.usersByUsername[email]
 			auth.mu.Unlock()
+			if auth.db != nil {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				_, dbErr := auth.db.ExecContext(ctx,
+					`INSERT INTO auth_users (id, username, password_hash, role, created_at)
+					 VALUES ($1, $2, '', $3, NOW())
+					 ON CONFLICT (username) DO NOTHING`,
+					newID, email, rolePlayer,
+				)
+				if dbErr != nil {
+					slog.Error("auth: failed to persist Google OAuth user", "email", email, "error", dbErr)
+				}
+			}
 			auth.audit.Event("auth.oauth.google.user_created", map[string]any{"email": email, "userId": newID})
 		}
 
@@ -744,9 +789,23 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 				ID:       newID,
 				Username: email,
 				Password: "",
+				Role:     rolePlayer,
 			}
 			account = auth.usersByUsername[email]
 			auth.mu.Unlock()
+			if auth.db != nil {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				_, dbErr := auth.db.ExecContext(ctx,
+					`INSERT INTO auth_users (id, username, password_hash, role, created_at)
+					 VALUES ($1, $2, '', $3, NOW())
+					 ON CONFLICT (username) DO NOTHING`,
+					newID, email, rolePlayer,
+				)
+				if dbErr != nil {
+					slog.Error("auth: failed to persist Apple OAuth user", "email", email, "error", dbErr)
+				}
+			}
 			auth.audit.Event("auth.oauth.apple.user_created", map[string]any{"email": email, "userId": newID})
 		}
 
@@ -781,27 +840,27 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 	a.PruneExpiredSessions()
 
 	// Rate limit: 10 login attempts per minute per username
-	if !a.loginLimiter.allow("login:"+username, 10, time.Minute) {
+	if !a.loginLimiter.Allow("login:"+username, 10, time.Minute) {
 		a.audit.Event("auth.login.rate_limited", map[string]any{"username": username})
 		return tokenResponse{}, httpx.TooManyRequests("too many login attempts, try again later")
 	}
 
 	// Account lockout check
-	if a.lockout.isLocked(username) {
+	if a.lockout.IsLocked(username) {
 		a.audit.Event("auth.login.locked_out", map[string]any{"username": username})
 		return tokenResponse{}, httpx.TooManyRequests("account temporarily locked due to repeated failures")
 	}
 
 	account, exists := a.lookupUser(username)
 	if !exists || !a.verifyPassword(account, password) {
-		a.lockout.recordFailure(username)
+		a.lockout.RecordFailure(username)
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
 		return tokenResponse{}, httpx.Unauthorized("invalid username or password")
 	}
 
 	// Successful login clears lockout state
-	a.lockout.clearFailures(username)
+	a.lockout.ClearFailures(username)
 
 	s, response, err := newSession(account, a.accessTTL, a.refreshTTL)
 	if err != nil {
@@ -1287,7 +1346,8 @@ func newRateLimiter() *rateLimiter {
 	return rl
 }
 
-func (rl *rateLimiter) allow(key string, limit int, window time.Duration) bool {
+// Allow satisfies the RateLimiterBackend interface.
+func (rl *rateLimiter) Allow(key string, limit int, window time.Duration) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
 	now := time.Now()
@@ -1355,7 +1415,8 @@ func newLockoutTracker() *lockoutTracker {
 	return lt
 }
 
-func (lt *lockoutTracker) isLocked(username string) bool {
+// IsLocked satisfies the LockoutBackend interface.
+func (lt *lockoutTracker) IsLocked(username string) bool {
 	lt.mu.Lock()
 	defer lt.mu.Unlock()
 	until, ok := lt.lockouts[username]
@@ -1370,7 +1431,8 @@ func (lt *lockoutTracker) isLocked(username string) bool {
 	return true
 }
 
-func (lt *lockoutTracker) recordFailure(username string) {
+// RecordFailure satisfies the LockoutBackend interface.
+func (lt *lockoutTracker) RecordFailure(username string) {
 	lt.mu.Lock()
 	defer lt.mu.Unlock()
 	now := time.Now()
@@ -1388,7 +1450,8 @@ func (lt *lockoutTracker) recordFailure(username string) {
 	}
 }
 
-func (lt *lockoutTracker) clearFailures(username string) {
+// ClearFailures satisfies the LockoutBackend interface.
+func (lt *lockoutTracker) ClearFailures(username string) {
 	lt.mu.Lock()
 	defer lt.mu.Unlock()
 	delete(lt.failures, username)

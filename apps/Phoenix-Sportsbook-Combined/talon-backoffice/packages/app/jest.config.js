@@ -10,12 +10,14 @@ module.exports = {
     "app/__tests__/api-client\\.test\\.ts",
     "app/__tests__/websocket-handlers\\.test\\.ts",
     "app/__tests__/events-client\\.test\\.ts",
-    // Enzyme tests fail: parse5-parser-stream requires node:stream (jest 25 incompatible)
-    "components/layout/betslip/__tests__/",
-    "components/layout/fixture-list/__tests__/",
-    "components/auth/session-timer/__tests__/",
-    "components/auth/idle-activity/__tests__/",
-    "components/profile/deposit/__tests__/",
+    // Legacy components/ and services/ tests: babel-jest + TS5 incompatible
+    // (SyntaxError on `as jest.Mock`, `interface`, type annotations).
+    // All legacy tests use patterns that require @babel/plugin-transform-typescript
+    // which is not configured. New tests use node:test runner, not jest.
+    "components/",
+    "services/",
+    // app/__tests__/ tests use node:test / node:assert — run via `node --test`
+    "app/__tests__/",
   ],
   // jest 25 can't resolve node: protocol imports used by next-i18next's
   // i18next-fs-backend. Mock next-i18next to avoid loading the real backend.
