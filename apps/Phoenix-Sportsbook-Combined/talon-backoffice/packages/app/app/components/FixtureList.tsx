@@ -6,6 +6,9 @@ import { useTranslation } from "react-i18next";
 import { getEvents, Event } from "../lib/api/events-client";
 import { useBetslip } from "../hooks/useBetslip";
 import { BetSelection } from "./BetslipProvider";
+import { useAppSelector } from "../lib/store/hooks";
+import { selectOddsFormat } from "../lib/store/settingsSlice";
+import { formatOdds } from "../lib/utils/odds";
 
 interface FixtureListProps {
   sportKey: string;
@@ -27,6 +30,7 @@ export const FixtureList: React.FC<FixtureListProps> = ({
   const [totalPages, setTotalPages] = useState(1);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const betslip = useBetslip();
+  const oddsFormat = useAppSelector(selectOddsFormat);
   const { t } = useTranslation(["fixture-list", "common"]);
 
   const loadFixtures = useCallback(
@@ -68,7 +72,16 @@ export const FixtureList: React.FC<FixtureListProps> = ({
     setCurrentPage(1);
   }, [filterStatus]);
 
+  const getOddsForPosition = (match: Event, position: "home" | "draw" | "away"): number => {
+    if (position === "home") return match.homeOdds || 0;
+    if (position === "away") return match.awayOdds || 0;
+    return match.drawOdds || 0;
+  };
+
   const handleBet = (match: Event, position: "home" | "draw" | "away") => {
+    const odds = getOddsForPosition(match, position);
+    if (odds <= 0) return; // No odds available — can't bet
+
     const selectionId = `${match.fixtureId}-${position}`;
     const marketId = `${match.fixtureId}-match-result`;
     const selectionName =
@@ -93,8 +106,8 @@ export const FixtureList: React.FC<FixtureListProps> = ({
         matchName: `${match.homeTeam} ${t("common:VS", { defaultValue: "vs" })} ${match.awayTeam}`,
         marketName: t("common:MATCH_RESULT", { defaultValue: "Match Result" }),
         selectionName,
-        odds: 1.0,
-        initialOdds: 1.0,
+        odds,
+        initialOdds: odds,
       };
       betslip.addSelection(selection);
     }
@@ -245,38 +258,64 @@ export const FixtureList: React.FC<FixtureListProps> = ({
               </Link>
               {fixture.status !== "finished" && (
                 <div style={{ display: "flex", gap: "8px" }}>
-                  {(["home", "draw", "away"] as const).map((pos) => (
-                    <button
-                      key={pos}
-                      onClick={() => handleBet(fixture, pos)}
-                      style={{
-                        flex: 1,
-                        padding: "8px 12px",
-                        backgroundColor: isSelected(fixture.fixtureId, pos)
-                          ? "rgba(57,255,20,0.15)"
-                          : "#1a1f3a",
-                        color: isSelected(fixture.fixtureId, pos)
-                          ? "#39ff14"
-                          : "#e2e8f0",
-                        border: `1px solid ${
-                          isSelected(fixture.fixtureId, pos)
-                            ? "rgba(57,255,20,0.5)"
-                            : "#2d3748"
-                        }`,
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {pos === "home"
-                        ? fixture.homeTeam.slice(0, 8)
-                        : pos === "away"
-                          ? fixture.awayTeam.slice(0, 8)
-                          : t("common:DRAW_LABEL")}
-                    </button>
-                  ))}
+                  {(["home", "draw", "away"] as const).map((pos) => {
+                    const posOdds = getOddsForPosition(fixture, pos);
+                    const hasOdds = posOdds > 0;
+                    const selected = isSelected(fixture.fixtureId, pos);
+                    return (
+                      <button
+                        key={pos}
+                        onClick={() => handleBet(fixture, pos)}
+                        disabled={!hasOdds}
+                        style={{
+                          flex: 1,
+                          padding: "6px 8px",
+                          backgroundColor: selected
+                            ? "rgba(57,255,20,0.15)"
+                            : "#1a1f3a",
+                          color: selected
+                            ? "#39ff14"
+                            : "#e2e8f0",
+                          border: `1px solid ${
+                            selected
+                              ? "rgba(57,255,20,0.5)"
+                              : "#2d3748"
+                          }`,
+                          borderRadius: "6px",
+                          fontSize: "11px",
+                          cursor: hasOdds ? "pointer" : "default",
+                          opacity: hasOdds ? 1 : 0.4,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: "2px",
+                        }}
+                      >
+                        <span style={{
+                          fontSize: "10px",
+                          fontWeight: 500,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "100%",
+                        }}>
+                          {pos === "home"
+                            ? fixture.homeTeam.slice(0, 8)
+                            : pos === "away"
+                              ? fixture.awayTeam.slice(0, 8)
+                              : t("common:DRAW_LABEL")}
+                        </span>
+                        <span style={{
+                          fontSize: "13px",
+                          fontWeight: 800,
+                          fontVariantNumeric: "tabular-nums",
+                          color: selected ? "#39ff14" : hasOdds ? "#39ff14" : "#D3D3D3",
+                        }}>
+                          {hasOdds ? formatOdds(posOdds, oddsFormat) : "-"}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

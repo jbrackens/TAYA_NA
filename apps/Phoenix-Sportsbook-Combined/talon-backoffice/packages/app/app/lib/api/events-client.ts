@@ -2,10 +2,57 @@ import { apiClient } from "./client";
 import {
   bcGetSports,
   bcGetRegions,
-  bcGetCompetitions,
   bcGetGames,
+  BCGameMarketSummary,
 } from "./betconstruct-client";
 import { logger } from "../logger";
+
+/**
+ * Extract main market (P1XP2 / Match Winner) odds from a BC game's markets array.
+ * Returns { home, draw, away } odds, defaulting to 0 when not available.
+ */
+function extractMainMarketOdds(markets?: BCGameMarketSummary[]): {
+  home: number;
+  draw: number;
+  away: number;
+} {
+  if (!markets || markets.length === 0) return { home: 0, draw: 0, away: 0 };
+
+  // Find the main market — typically P1XP2 (match winner) or P1P2 (no draw)
+  const mainMarket =
+    markets.find((m) => m.type === "P1XP2") ||
+    markets.find((m) => m.type === "P1P2") ||
+    markets.find((m) => m.mainOrder === 0) ||
+    markets[0];
+
+  if (!mainMarket?.selections?.length) return { home: 0, draw: 0, away: 0 };
+
+  let home = 0;
+  let draw = 0;
+  let away = 0;
+
+  for (const sel of mainMarket.selections) {
+    const t = (sel.type || "").toUpperCase();
+    if (t === "P1" || t === "HOME" || t === "W1") {
+      home = sel.price || 0;
+    } else if (t === "X" || t === "DRAW") {
+      draw = sel.price || 0;
+    } else if (t === "P2" || t === "AWAY" || t === "W2") {
+      away = sel.price || 0;
+    }
+  }
+
+  // Fallback: if types aren't labeled, use positional (first=home, last=away)
+  if (home === 0 && away === 0 && mainMarket.selections.length >= 2) {
+    home = mainMarket.selections[0].price || 0;
+    away = mainMarket.selections[mainMarket.selections.length - 1].price || 0;
+    if (mainMarket.selections.length >= 3) {
+      draw = mainMarket.selections[1].price || 0;
+    }
+  }
+
+  return { home, draw, away };
+}
 
 // Request types
 export interface GetEventsParams {
@@ -99,6 +146,10 @@ export interface Event {
   startTime: string;
   status: string;
   hasMarkets: boolean;
+  /** Main market odds (P1XP2 / Match Winner) from BetConstruct */
+  homeOdds: number;
+  drawOdds: number;
+  awayOdds: number;
 }
 
 export interface EventDetail {
@@ -439,19 +490,25 @@ export async function getEvents(
           const start = (page - 1) * limit;
           const paged = bcGames.slice(start, start + limit);
           const result: GetEventsPaginatedResponse = {
-            events: paged.map((g) => ({
-              eventId: String(g.id),
-              fixtureId: String(g.id),
-              sportId: "",
-              leagueId: String((g as Record<string, unknown>).competitionId || ""),
-              homeTeam: g.team1_name || "TBD",
-              awayTeam: g.team2_name || "TBD",
-              sportKey: params.sport || "",
-              leagueKey: String((g as Record<string, unknown>).competitionId || ""),
-              startTime: new Date(g.start_ts * 1000).toISOString(),
-              status: g.type === 1 ? "in_play" : "scheduled",
-              hasMarkets: (g.markets_count || 0) > 0,
-            })),
+            events: paged.map((g) => {
+              const odds = extractMainMarketOdds(g.markets);
+              return {
+                eventId: String(g.id),
+                fixtureId: String(g.id),
+                sportId: "",
+                leagueId: String((g as Record<string, unknown>).competitionId || ""),
+                homeTeam: g.team1_name || "TBD",
+                awayTeam: g.team2_name || "TBD",
+                sportKey: params.sport || "",
+                leagueKey: String((g as Record<string, unknown>).competitionId || ""),
+                startTime: new Date(g.start_ts * 1000).toISOString(),
+                status: g.type === 1 ? "in_play" : "scheduled",
+                hasMarkets: (g.markets_count || 0) > 0,
+                homeOdds: odds.home,
+                drawOdds: odds.draw,
+                awayOdds: odds.away,
+              };
+            }),
             total: bcGames.length,
             page,
             limit,
@@ -483,6 +540,7 @@ export async function getEvents(
             const games = await bcGetGames(alias);
             if (!Array.isArray(games)) return;
             for (const g of games) {
+              const odds = extractMainMarketOdds(g.markets);
               allEvents.push({
                 eventId: String(g.id),
                 fixtureId: String(g.id),
@@ -495,6 +553,9 @@ export async function getEvents(
                 startTime: new Date(g.start_ts * 1000).toISOString(),
                 status: g.type === 1 ? "in_play" : "scheduled",
                 hasMarkets: (g.markets_count || 0) > 0,
+                homeOdds: odds.home,
+                drawOdds: odds.draw,
+                awayOdds: odds.away,
               });
             }
           } catch {
@@ -539,7 +600,17 @@ export async function getEvents(
       "/api/v1/events",
       queryParams,
     );
-    const result = normalizeSnakeCase(raw) as GetEventsPaginatedResponse;
+    const normalized = normalizeSnakeCase(raw) as GetEventsPaginatedResponse;
+    // Go backend doesn't return odds — default to 0
+    const result: GetEventsPaginatedResponse = {
+      ...normalized,
+      events: (normalized.events || []).map((e) => ({
+        ...e,
+        homeOdds: e.homeOdds || 0,
+        drawOdds: e.drawOdds || 0,
+        awayOdds: e.awayOdds || 0,
+      })),
+    };
     eventsCache.set(cacheKey, {
       entry: { data: result, ts: Date.now() },
       promise: null,

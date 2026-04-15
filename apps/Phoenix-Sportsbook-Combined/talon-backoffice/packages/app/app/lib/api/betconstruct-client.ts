@@ -34,6 +34,24 @@ export interface BCCompetition {
   gameCount: number;
 }
 
+export interface BCGameMarketSelection {
+  id: string;
+  name: string;
+  price: number;
+  type: string;
+  order: number;
+}
+
+export interface BCGameMarketSummary {
+  id: string;
+  type: string;
+  name: string;
+  displayKey: string;
+  mainOrder: number;
+  base: number | null;
+  selections: BCGameMarketSelection[];
+}
+
 export interface BCGame {
   id: number;
   start_ts: number;
@@ -45,6 +63,7 @@ export interface BCGame {
   sportAlias?: string;
   competitionName?: string;
   regionName?: string;
+  markets?: BCGameMarketSummary[];
 }
 
 export interface BCGameSelection {
