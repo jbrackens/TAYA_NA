@@ -1,16 +1,20 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-import { MarketCard } from '../../components/prediction/MarketCard';
-import type { PredictionMarket, Category } from '@phoenix-ui/api-client/src/prediction-types';
-import { createPredictionClient } from '@phoenix-ui/api-client/src/prediction-client';
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { MarketCard } from "../../components/prediction/MarketCard";
+import type {
+  PredictionMarket,
+  Category,
+} from "@phoenix-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 
 const api = createPredictionClient();
 
 export default function CategoryPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+  // useParams() returns null during the initial static render.
+  const params = useParams() ?? {};
+  const slug = (params.slug as string | undefined) ?? "";
 
   const [category, setCategory] = useState<Category | null>(null);
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
@@ -21,11 +25,15 @@ export default function CategoryPage() {
       try {
         const cat = await api.getCategory(slug);
         setCategory(cat);
-        const res = await api.getMarkets({ status: 'open', page: 1, pageSize: 50 });
+        const res = await api.getMarkets({
+          status: "open",
+          page: 1,
+          pageSize: 50,
+        });
         setMarkets(res.data);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error('Category load failed:', msg);
+        console.error("Category load failed:", msg);
       } finally {
         setLoading(false);
       }
@@ -47,7 +55,7 @@ export default function CategoryPage() {
         {category?.name || slug}
       </h1>
       <p className="text-sm text-gray-400 mb-6">
-        {markets.length} open market{markets.length !== 1 ? 's' : ''}
+        {markets.length} open market{markets.length !== 1 ? "s" : ""}
       </p>
 
       {markets.length === 0 ? (
@@ -56,7 +64,7 @@ export default function CategoryPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {markets.map(m => (
+          {markets.map((m) => (
             <MarketCard
               key={m.id}
               ticker={m.ticker}

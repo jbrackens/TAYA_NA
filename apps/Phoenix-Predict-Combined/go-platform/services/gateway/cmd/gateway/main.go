@@ -81,6 +81,19 @@ func main() {
 		"/api/v1/status",
 	}
 
+	// CORS origins. Comma-separated list; credentials require exact origin match
+	// (no "*"). Defaults cover the local dev ports for the player app and the
+	// backoffice. For production set GATEWAY_CORS_ORIGINS to real domains.
+	corsOrigins := os.Getenv("GATEWAY_CORS_ORIGINS")
+	if corsOrigins == "" {
+		corsOrigins = "http://localhost:3000,http://localhost:3001"
+	}
+	allowedOrigins := map[string]struct{}{}
+	for _, o := range strings.Split(corsOrigins, ",") {
+		allowedOrigins[strings.TrimSpace(o)] = struct{}{}
+	}
+	corsMW := cors(allowedOrigins)
+
 	// Build middleware chain — execution order is right-to-left:
 	// Recovery -> Metrics -> AccessLog -> CSRF -> Auth -> RequestID -> handler
 	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
@@ -89,6 +102,7 @@ func main() {
 		httpx.RequestID(),
 		tracing.Middleware(),
 		httpx.SecurityHeaders(),
+		corsMW,
 		httpx.AccessLog(log.Default()),
 		httpx.Metrics(metricsRegistry),
 		httpx.Recovery(log.Default()),
@@ -100,6 +114,7 @@ func main() {
 			httpx.RequestID(),
 			tracing.Middleware(),
 			httpx.SecurityHeaders(),
+			corsMW,
 			httpx.Auth(authServiceURL, publicPrefixes),
 			httpx.CSRF(csrfSkipPrefixes),
 			httpx.AccessLog(log.Default()),
@@ -111,6 +126,7 @@ func main() {
 	} else {
 		slog.Warn("auth middleware DISABLED — all routes are unprotected", "reason", "GATEWAY_AUTH_ENABLED=false")
 	}
+	slog.Info("CORS configured", "origins", corsOrigins)
 
 	handler := httpx.Chain(mux, middlewares...)
 
@@ -123,4 +139,32 @@ func main() {
 		log.Fatalf("%s service failed: %v", cfg.Name, err)
 	}
 	slog.Info("service stopped gracefully", "service", cfg.Name)
+}
+
+// cors returns a middleware that attaches CORS headers for allowed origins.
+// The preflight OPTIONS request short-circuits with 204 before any route
+// handler runs. Credentials are allowed so cookie-based auth works cross-origin
+// — this REQUIRES an exact origin match (not "*") per the CORS spec, which is
+// why the caller provides an allow-list instead of a wildcard.
+func cors(allowed map[string]struct{}) httpx.Middleware {
+	return func(next stdhttp.Handler) stdhttp.Handler {
+		return stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				if _, ok := allowed[origin]; ok {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Vary", "Origin")
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
+					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRF-Token, X-User-ID")
+					w.Header().Set("Access-Control-Max-Age", "86400")
+				}
+			}
+			if r.Method == stdhttp.MethodOptions {
+				w.WriteHeader(stdhttp.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }

@@ -5,7 +5,26 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/sports", "/match", "/fixtures", "/live", "/starting-soon", "/auth", "/responsible-gaming", "/contact-us", "/about", "/terms", "/privacy-policy", "/betting-rules"];
+// Public routes — no auth required. Must stay in sync with the Go gateway's
+// publicPrefixes list in cmd/gateway/main.go so browser-side and server-side
+// auth rules agree.
+const PUBLIC_ROUTES = [
+  // Landing + auth
+  "/",
+  "/auth",
+  // Prediction discovery (read-only)
+  "/predict",
+  "/market",
+  "/category",
+  // Informational pages
+  "/responsible-gaming",
+  "/contact-us",
+  "/about",
+  "/terms",
+  "/privacy-policy",
+  "/privacy",
+  "/terms-and-conditions",
+];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
@@ -38,7 +57,11 @@ export function proxy(request: NextRequest) {
 
   // Skip auth for static assets served from public/ — the config.matcher exclusions
   // are not applied by Next.js 16's proxy loader, so we guard here directly
-  if (/\.(?:png|jpe?g|gif|svg|ico|webp|webm|mp4|css|js|woff2?|ttf|eot|map)$/.test(pathname)) {
+  if (
+    /\.(?:png|jpe?g|gif|svg|ico|webp|webm|mp4|css|js|woff2?|ttf|eot|map)$/.test(
+      pathname,
+    )
+  ) {
     return NextResponse.next();
   }
 

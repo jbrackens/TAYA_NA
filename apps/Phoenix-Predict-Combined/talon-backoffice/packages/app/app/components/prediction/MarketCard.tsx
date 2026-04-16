@@ -1,7 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
+import Link from "next/link";
 
 interface MarketCardProps {
   ticker: string;
@@ -11,7 +10,7 @@ interface MarketCardProps {
   volumeCents: number;
   closeAt: string;
   status: string;
-  movement?: 'up' | 'down';
+  movement?: "up" | "down";
 }
 
 export function MarketCard({
@@ -35,10 +34,12 @@ export function MarketCard({
           <h3 className="text-sm font-medium text-white leading-snug flex-1 pr-2">
             {title}
           </h3>
-          {status === 'open' && (
-            <span className="text-xs text-gray-400 whitespace-nowrap">{timeLeft}</span>
+          {status === "open" && (
+            <span className="text-xs text-gray-400 whitespace-nowrap">
+              {timeLeft}
+            </span>
           )}
-          {status === 'settled' && (
+          {status === "settled" && (
             <span className="text-xs text-green-400 font-medium">Settled</span>
           )}
         </div>
@@ -46,7 +47,9 @@ export function MarketCard({
         {/* Probability bar */}
         <div className="mb-3">
           <div className="flex justify-between text-xs mb-1">
-            <span className={`font-semibold ${movement === 'up' ? 'text-green-400' : movement === 'down' ? 'text-red-400' : 'text-emerald-400'}`}>
+            <span
+              className={`font-semibold ${movement === "up" ? "text-green-400" : movement === "down" ? "text-red-400" : "text-emerald-400"}`}
+            >
               Yes {yesPriceCents}%
             </span>
             <span className="text-red-400 font-semibold">
@@ -73,7 +76,7 @@ export function MarketCard({
 
 function getTimeLeft(closeAt: string): string {
   const diff = new Date(closeAt).getTime() - Date.now();
-  if (diff <= 0) return 'Closed';
+  if (diff <= 0) return "Closed";
   const hours = Math.floor(diff / (1000 * 60 * 60));
   if (hours < 1) {
     const mins = Math.floor(diff / (1000 * 60));
