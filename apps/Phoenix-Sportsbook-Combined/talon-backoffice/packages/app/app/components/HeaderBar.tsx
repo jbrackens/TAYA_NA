@@ -18,6 +18,7 @@ import {
   DisplayOddsEnum,
 } from "../lib/store/settingsSlice";
 import { selectCurrentBalance } from "../lib/store/cashierSlice";
+import { selectWalletBreakdown } from "../lib/store/bonusSlice";
 import { getOddsFormatLabel } from "../lib/utils/odds";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES } from "../lib/i18n/config";
@@ -33,6 +34,36 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
+
+/**
+ * Inline wallet display: shows total balance, plus bonus breakdown
+ * indicator when bonus funds exist. Falls back to plain balance.
+ */
+const WalletBreakdownInline: React.FC = () => {
+  const walletBalance = useAppSelector(selectCurrentBalance);
+  const breakdown = useAppSelector(selectWalletBreakdown);
+
+  // If we have a breakdown with bonus funds, show split
+  if (breakdown && breakdown.bonusFundCents > 0) {
+    const total = (breakdown.totalCents / 100).toFixed(2);
+    return (
+      <span className="flex items-center gap-1">
+        <span>${total}</span>
+        <span
+          className="w-1.5 h-1.5 rounded-full bg-yellow-400"
+          title="Includes bonus funds"
+        />
+      </span>
+    );
+  }
+
+  // Default: single balance
+  return (
+    <span>
+      ${typeof walletBalance === "number" ? walletBalance.toFixed(2) : "0.00"}
+    </span>
+  );
+};
 
 export const HeaderBar: React.FC = () => {
   const pathname = usePathname();
@@ -53,7 +84,6 @@ export const HeaderBar: React.FC = () => {
 
   // Redux state — store is always available via StoreProvider in layout.tsx
   const oddsFormat = useAppSelector(selectOddsFormat);
-  const walletBalance = useAppSelector(selectCurrentBalance);
   const dispatch = useAppDispatch();
 
   // i18n
@@ -133,7 +163,10 @@ export const HeaderBar: React.FC = () => {
   useEffect(() => {
     if (!userMenuOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
         setUserMenuOpen(false);
       }
     };
@@ -154,26 +187,29 @@ export const HeaderBar: React.FC = () => {
   }, [searchOpen, quickSports.length]);
 
   // Sport key → display name mapping for search and display
-  const sportDisplayNames: Record<string, string> = useMemo(() => ({
-    soccer: "Football",
-    basketball: "Basketball",
-    tennis: "Tennis",
-    baseball: "Baseball",
-    boxing: "Boxing",
-    mma: "MMA",
-    cricket: "Cricket",
-    "ice-hockey": "Ice Hockey",
-    "ice_hockey": "Ice Hockey",
-    "league-of-legends": "League of Legends",
-    "counter-strike-2": "Counter-Strike 2",
-    volleyball: "Volleyball",
-    "rugby-union": "Rugby Union",
-    "rugby-league": "Rugby League",
-    motorbike: "Motorbike",
-    valorant: "Valorant",
-    dota2: "Dota 2",
-    "virtual-horse-racing": "Virtual Horse Racing",
-  }), []);
+  const sportDisplayNames: Record<string, string> = useMemo(
+    () => ({
+      soccer: "Football",
+      basketball: "Basketball",
+      tennis: "Tennis",
+      baseball: "Baseball",
+      boxing: "Boxing",
+      mma: "MMA",
+      cricket: "Cricket",
+      "ice-hockey": "Ice Hockey",
+      ice_hockey: "Ice Hockey",
+      "league-of-legends": "League of Legends",
+      "counter-strike-2": "Counter-Strike 2",
+      volleyball: "Volleyball",
+      "rugby-union": "Rugby Union",
+      "rugby-league": "Rugby League",
+      motorbike: "Motorbike",
+      valorant: "Valorant",
+      dota2: "Dota 2",
+      "virtual-horse-racing": "Virtual Horse Racing",
+    }),
+    [],
+  );
 
   // Debounced search against events API
   useEffect(() => {
@@ -194,18 +230,18 @@ export const HeaderBar: React.FC = () => {
         // client-side filtering in case the backend ignores the param.
         const response = await getEvents({ limit: 50, query });
         const lowerQuery = query.toLowerCase();
-        const filtered = response.events.filter(
-          (e: Event) => {
-            const sportName = (sportDisplayNames[e.sportKey] || e.sportKey).toLowerCase();
-            return (
-              e.homeTeam.toLowerCase().includes(lowerQuery) ||
-              e.awayTeam.toLowerCase().includes(lowerQuery) ||
-              e.sportKey.toLowerCase().includes(lowerQuery) ||
-              sportName.includes(lowerQuery) ||
-              e.leagueKey.toLowerCase().includes(lowerQuery)
-            );
-          },
-        );
+        const filtered = response.events.filter((e: Event) => {
+          const sportName = (
+            sportDisplayNames[e.sportKey] || e.sportKey
+          ).toLowerCase();
+          return (
+            e.homeTeam.toLowerCase().includes(lowerQuery) ||
+            e.awayTeam.toLowerCase().includes(lowerQuery) ||
+            e.sportKey.toLowerCase().includes(lowerQuery) ||
+            sportName.includes(lowerQuery) ||
+            e.leagueKey.toLowerCase().includes(lowerQuery)
+          );
+        });
         if (requestId !== searchRequestIdRef.current) {
           return;
         }
@@ -340,15 +376,10 @@ export const HeaderBar: React.FC = () => {
             </div>
           ) : isAuthenticated ? (
             <>
-              {/* Wallet Balance */}
+              {/* Wallet Balance with Bonus Breakdown */}
               <Link href="/cashier" className="ps-wallet-badge">
                 <WalletIcon size={14} strokeWidth={2} />
-                <span>
-                  $
-                  {typeof walletBalance === "number"
-                    ? walletBalance.toFixed(2)
-                    : "0.00"}
-                </span>
+                <WalletBreakdownInline />
               </Link>
 
               {/* My Bets */}
@@ -357,7 +388,11 @@ export const HeaderBar: React.FC = () => {
               </Link>
 
               {/* Notifications */}
-              <Link href="/account/notifications" className="ps-topbar-icon" title="Notifications">
+              <Link
+                href="/account/notifications"
+                className="ps-topbar-icon"
+                title="Notifications"
+              >
                 <BellIcon size={18} strokeWidth={2} />
                 <span className="badge" />
               </Link>
@@ -398,10 +433,18 @@ export const HeaderBar: React.FC = () => {
                         borderBottom: "1px solid #1f2940",
                       }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#f8fafc" }}>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#f8fafc",
+                        }}
+                      >
                         {user?.username || "Player"}
                       </div>
-                      <div style={{ fontSize: 11, color: "#8b8fa3", marginTop: 2 }}>
+                      <div
+                        style={{ fontSize: 11, color: "#8b8fa3", marginTop: 2 }}
+                      >
                         {user?.email || ""}
                       </div>
                     </div>
@@ -422,10 +465,19 @@ export const HeaderBar: React.FC = () => {
                           textDecoration: "none",
                           transition: "background 0.15s",
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "rgba(255,255,255,0.04)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        <UserIcon size={15} strokeWidth={2} style={{ color: "#8b8fa3" }} />
+                        <UserIcon
+                          size={15}
+                          strokeWidth={2}
+                          style={{ color: "#8b8fa3" }}
+                        />
                         {tx("MENU_ACCOUNT", "My Account")}
                       </Link>
 
@@ -443,16 +495,30 @@ export const HeaderBar: React.FC = () => {
                           textDecoration: "none",
                           transition: "background 0.15s",
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "rgba(255,255,255,0.04)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
                       >
-                        <Settings size={15} strokeWidth={2} style={{ color: "#8b8fa3" }} />
+                        <Settings
+                          size={15}
+                          strokeWidth={2}
+                          style={{ color: "#8b8fa3" }}
+                        />
                         {tx("MENU_SETTINGS", "Settings")}
                       </Link>
                     </div>
 
                     {/* Logout */}
-                    <div style={{ borderTop: "1px solid #1f2940", padding: "6px 0" }}>
+                    <div
+                      style={{
+                        borderTop: "1px solid #1f2940",
+                        padding: "6px 0",
+                      }}
+                    >
                       <button
                         onClick={() => {
                           setUserMenuOpen(false);
@@ -473,8 +539,13 @@ export const HeaderBar: React.FC = () => {
                           transition: "background 0.15s",
                           textAlign: "left",
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.06)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background =
+                            "rgba(248,113,113,0.06)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                        }}
                       >
                         <LogOut size={15} strokeWidth={2} />
                         {tx("MENU_LOGOUT", "Log Out")}

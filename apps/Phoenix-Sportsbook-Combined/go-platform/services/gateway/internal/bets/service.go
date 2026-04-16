@@ -754,6 +754,39 @@ func (s *Service) Settle(request SettleBetRequest) (Bet, error) {
 		}
 	}
 	s.mu.Unlock()
+
+	// Record wagering contribution for bonus tracking (best-effort, non-blocking)
+	if err == nil && s.wallet != nil && (result.Status == statusSettledWon || result.Status == statusSettledLost) {
+		betType := "single"
+		legCount := 1
+		if len(result.Legs) > 1 {
+			betType = "parlay"
+			legCount = len(result.Legs)
+		}
+		// Contribution equals the full stake (both wins and losses count toward wagering)
+		contributionCents := result.StakeCents
+		if betType == "parlay" {
+			// Parlays get 1.5x contribution by default (matches doc 09 spec)
+			contributionCents = result.StakeCents * 3 / 2
+		}
+
+		_, wagerErr := s.wallet.RecordWageringContribution(wallet.WageringContributionRecord{
+			PlayerBonusID:    0, // TODO: look up active bonus for user
+			BetID:            result.BetID,
+			BetType:          betType,
+			StakeCents:       result.StakeCents,
+			ContributionCents: contributionCents,
+			OddsDecimal:      result.Odds,
+			LegCount:         legCount,
+		})
+		if wagerErr != nil {
+			slog.Warn("wagering contribution recording failed",
+				"betId", result.BetID,
+				"userId", result.UserID,
+				"error", wagerErr)
+		}
+	}
+
 	return result, err
 }
 
@@ -1465,15 +1498,35 @@ func (s *Service) placeDB(request PlaceBetRequest) (Bet, error) {
 		return existing, nil
 	}
 
-	walletEntry, err := s.wallet.Debit(wallet.MutationRequest{
+	// Parlay validation: if multi-leg, check qualification rules
+	if len(request.Items) > 1 {
+		legs := make([]ParlayLegInput, 0, len(request.Items))
+		for _, item := range request.Items {
+			legs = append(legs, ParlayLegInput{
+				FixtureID: item.MarketID, // market ID proxies as fixture scope
+				MarketID:  item.MarketID,
+				Odds:      item.Odds,
+			})
+		}
+		validation := ValidateParlay(DefaultParlayRules(), legs)
+		if !validation.Valid {
+			return Bet{}, fmt.Errorf("parlay validation failed: %s", validation.Errors[0].Message)
+		}
+	}
+
+	// Use DrawdownDebit for bonus-aware balance deduction (real-first)
+	drawdownResult, err := s.wallet.DrawdownDebit(wallet.DrawdownRequest{
 		UserID:         request.UserID,
 		AmountCents:    request.StakeCents,
+		DrawdownOrder:  "real_first",
 		IdempotencyKey: "bet:" + request.IdempotencyKey,
 		Reason:         "bet placement " + request.MarketID,
 	})
 	if err != nil {
 		return Bet{}, err
 	}
+	// Use the first ledger entry for compatibility with existing code
+	walletEntry := drawdownResult.LedgerEntries[0]
 
 	promotionDecision, err := s.applyFreebetForPlacement(request, decision, walletEntry.BalanceCents)
 	if err != nil {

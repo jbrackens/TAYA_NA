@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { apiClient } from "../lib/api/client";
+import { getActiveBonuses, type PlayerBonus } from "../lib/api/bonus-client";
+import { WageringProgress } from "../components/WageringProgress";
+import { useAuth } from "../hooks/useAuth";
 import Collapse from "../components/Collapse";
 
 interface Promotion {
@@ -142,6 +145,9 @@ export default function PromotionsPage() {
         </div>
       )}
 
+      {/* Active Bonuses Section */}
+      <ActiveBonusesSection />
+
       {promotions.length === 0 ? (
         <div style={emptyStateStyle}>
           <div style={emptyTitleStyle}>No Promotions Available</div>
@@ -202,6 +208,106 @@ export default function PromotionsPage() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function ActiveBonusesSection() {
+  const { isAuthenticated } = useAuth();
+  const [bonuses, setBonuses] = useState<PlayerBonus[]>([]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    getActiveBonuses()
+      .then((data) => {
+        if (!cancelled) setBonuses(data);
+      })
+      .catch(() => {
+        /* ignore — section just won't show */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated || bonuses.length === 0) return null;
+
+  return (
+    <div style={{ marginBottom: "32px" }}>
+      <h2
+        style={{
+          fontSize: "20px",
+          fontWeight: "700",
+          color: "#e2e8f0",
+          marginBottom: "16px",
+        }}
+      >
+        Your Active Bonuses
+      </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {bonuses.map((bonus) => (
+          <div
+            key={bonus.bonusId}
+            style={{
+              padding: "16px",
+              backgroundColor: "#0f1225",
+              border: "1px solid #1a1f3a",
+              borderRadius: "8px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "8px",
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    color: "#e2e8f0",
+                  }}
+                >
+                  {bonus.campaignName || bonus.bonusType}
+                </span>
+                <span
+                  style={{
+                    marginLeft: "8px",
+                    padding: "2px 6px",
+                    borderRadius: "4px",
+                    fontSize: "10px",
+                    fontWeight: "600",
+                    textTransform: "uppercase",
+                    backgroundColor: "rgba(57, 255, 20, 0.1)",
+                    color: "#39ff14",
+                  }}
+                >
+                  {bonus.status}
+                </span>
+              </div>
+              <span
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "#39ff14",
+                }}
+              >
+                ${(bonus.grantedAmountCents / 100).toFixed(2)}
+              </span>
+            </div>
+            <WageringProgress
+              requiredCents={bonus.wageringRequiredCents}
+              completedCents={bonus.wageringCompletedCents}
+              progressPct={bonus.wageringProgressPct}
+              expiresAt={bonus.expiresAt}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

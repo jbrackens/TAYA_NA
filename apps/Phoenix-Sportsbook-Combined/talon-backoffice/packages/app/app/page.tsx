@@ -23,14 +23,26 @@ import { logger } from "./lib/logger";
 import { useSports, useFixtures, useLeaderboards } from "./lib/query/hooks";
 import { getEvents } from "./lib/api/events-client";
 import type { Event as BCEvent } from "./lib/api/events-client";
+import { BannerCarousel } from "./components/BannerCarousel";
 
 const SPORT_DISPLAY_NAMES: Record<string, string> = {
-  soccer: "Football", basketball: "Basketball", tennis: "Tennis",
-  baseball: "Baseball", boxing: "Boxing", mma: "MMA", cricket: "Cricket",
-  "ice-hockey": "Ice Hockey", "ice_hockey": "Ice Hockey",
-  "league-of-legends": "League of Legends", "counter-strike-2": "Counter-Strike 2",
-  volleyball: "Volleyball", "rugby-union": "Rugby Union", "rugby-league": "Rugby League",
-  motorbike: "Motorbike", valorant: "Valorant", dota2: "Dota 2",
+  soccer: "Football",
+  basketball: "Basketball",
+  tennis: "Tennis",
+  baseball: "Baseball",
+  boxing: "Boxing",
+  mma: "MMA",
+  cricket: "Cricket",
+  "ice-hockey": "Ice Hockey",
+  ice_hockey: "Ice Hockey",
+  "league-of-legends": "League of Legends",
+  "counter-strike-2": "Counter-Strike 2",
+  volleyball: "Volleyball",
+  "rugby-union": "Rugby Union",
+  "rugby-league": "Rugby League",
+  motorbike: "Motorbike",
+  valorant: "Valorant",
+  dota2: "Dota 2",
   "virtual-horse-racing": "Virtual Horse Racing",
 };
 
@@ -100,30 +112,38 @@ interface LeaderboardSummary {
 }
 
 const METRIC_KEYS: Record<string, string> = {
-  net_profit_cents: 'NET_PROFIT',
-  stake_cents: 'TOTAL_STAKE',
-  win_count: 'WINS',
-  bet_count: 'TOTAL_BETS',
-  qualified_referrals: 'REFERRALS',
-  referral_count: 'REFERRALS',
+  net_profit_cents: "NET_PROFIT",
+  stake_cents: "TOTAL_STAKE",
+  win_count: "WINS",
+  bet_count: "TOTAL_BETS",
+  qualified_referrals: "REFERRALS",
+  referral_count: "REFERRALS",
 };
 
 function humanizeLabel(key: string, t: (k: string) => string): string {
   const i18nKey = METRIC_KEYS[key];
   if (i18nKey) return t(i18nKey);
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 /* Inline SVG paths for sport pill icons — replace emoji with real sport artwork */
 const SPORT_SVG_PATHS: Record<string, string> = {
-  soccer: '<circle cx="12" cy="12" r="10"/><path d="M12 2l-1.5 5.5L7 5.5M12 2l1.5 5.5L17 5.5M7 5.5L3.5 10l3.5 2M17 5.5l3.5 4.5-3.5 2M7 12l-1 5.5L10.5 19M17 12l1 5.5-4.5 1.5M10.5 19h3M12 7.5L7 12l3.5 7h3L17 12Z"/>',
-  football: '<path d="M6.5 3.5C9 2 15 2 17.5 3.5 20 5 22 9 22 12s-2 7-4.5 8.5C15 22 9 22 6.5 20.5 4 19 2 15 2 12s2-7 4.5-8.5Z"/><path d="M9 12h6M12 8v8"/>',
-  basketball: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20"/><path d="M5.2 5.2c3.9 1.8 5.8 5.8 5.8 5.8M18.8 5.2c-3.9 1.8-5.8 5.8-5.8 5.8M5.2 18.8c3.9-1.8 5.8-5.8 5.8-5.8M18.8 18.8c-3.9-1.8-5.8-5.8-5.8-5.8"/>',
-  tennis: '<circle cx="12" cy="12" r="10"/><path d="M18.5 5.5C16 8 16 12 18.5 18.5M5.5 5.5C8 8 8 12 5.5 18.5"/>',
-  baseball: '<circle cx="12" cy="12" r="10"/><path d="M7 4c1 3 1 6 0 9M17 4c-1 3-1 6 0 9"/>',
-  esports: '<path d="M6 11h4M8 9v4"/><path d="M15 12h.01M18 10h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5Z"/>',
-  volleyball: '<circle cx="12" cy="12" r="10"/><path d="M12 2C8 6 8 12 12 16s4 2 6 6M12 2c4 4 4 10 0 14s-4 2-6 6M2 12h20"/>',
-  boxing: '<path d="M9 3c-2 0-4 2-4 4v4c0 3 2 6 5 7l2 1v2h6v-2l1-1c2-2 3-4 3-6V8c0-3-2-5-5-5H9Z"/><path d="M9 8h6"/>',
+  soccer:
+    '<circle cx="12" cy="12" r="10"/><path d="M12 2l-1.5 5.5L7 5.5M12 2l1.5 5.5L17 5.5M7 5.5L3.5 10l3.5 2M17 5.5l3.5 4.5-3.5 2M7 12l-1 5.5L10.5 19M17 12l1 5.5-4.5 1.5M10.5 19h3M12 7.5L7 12l3.5 7h3L17 12Z"/>',
+  football:
+    '<path d="M6.5 3.5C9 2 15 2 17.5 3.5 20 5 22 9 22 12s-2 7-4.5 8.5C15 22 9 22 6.5 20.5 4 19 2 15 2 12s2-7 4.5-8.5Z"/><path d="M9 12h6M12 8v8"/>',
+  basketball:
+    '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20"/><path d="M5.2 5.2c3.9 1.8 5.8 5.8 5.8 5.8M18.8 5.2c-3.9 1.8-5.8 5.8-5.8 5.8M5.2 18.8c3.9-1.8 5.8-5.8 5.8-5.8M18.8 18.8c-3.9-1.8-5.8-5.8-5.8-5.8"/>',
+  tennis:
+    '<circle cx="12" cy="12" r="10"/><path d="M18.5 5.5C16 8 16 12 18.5 18.5M5.5 5.5C8 8 8 12 5.5 18.5"/>',
+  baseball:
+    '<circle cx="12" cy="12" r="10"/><path d="M7 4c1 3 1 6 0 9M17 4c-1 3-1 6 0 9"/>',
+  esports:
+    '<path d="M6 11h4M8 9v4"/><path d="M15 12h.01M18 10h.01"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5Z"/>',
+  volleyball:
+    '<circle cx="12" cy="12" r="10"/><path d="M12 2C8 6 8 12 12 16s4 2 6 6M12 2c4 4 4 10 0 14s-4 2-6 6M2 12h20"/>',
+  boxing:
+    '<path d="M9 3c-2 0-4 2-4 4v4c0 3 2 6 5 7l2 1v2h6v-2l1-1c2-2 3-4 3-6V8c0-3-2-5-5-5H9Z"/><path d="M9 8h6"/>',
   mma: '<path d="M9 3c-2 0-4 2-4 4v4c0 3 2 6 5 7l2 1v2h6v-2l1-1c2-2 3-4 3-6V8c0-3-2-5-5-5H9Z"/><path d="M9 8h6"/>',
 };
 
@@ -133,7 +153,16 @@ function SportPillIcon({ sportKey }: { sportKey: string }) {
   if (!paths) {
     // Fallback — generic sport icon
     return (
-      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        width={14}
+        height={14}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="12" cy="12" r="10" />
         <path d="M12 8v4l3 3" />
       </svg>
@@ -141,15 +170,23 @@ function SportPillIcon({ sportKey }: { sportKey: string }) {
   }
   return (
     <svg
-      width={14} height={14} viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" strokeWidth="1.75"
-      strokeLinecap="round" strokeLinejoin="round"
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       dangerouslySetInnerHTML={{ __html: paths }}
     />
   );
 }
 
-function getTeams(competitors: Record<string, Competitor> | undefined, tbd = "TBD") {
+function getTeams(
+  competitors: Record<string, Competitor> | undefined,
+  tbd = "TBD",
+) {
   if (!competitors) return { home: tbd, away: tbd };
   const home = competitors["home"] || Object.values(competitors)[0];
   const away = competitors["away"] || Object.values(competitors)[1];
@@ -169,7 +206,8 @@ function formatDate(dateStr: string, t?: (k: string) => string) {
     });
     const todayLabel = t ? t("TODAY") : "Today";
     const tomorrowLabel = t ? t("TOMORROW") : "Tomorrow";
-    if (d.toDateString() === now.toDateString()) return `${todayLabel}, ${timeStr}`;
+    if (d.toDateString() === now.toDateString())
+      return `${todayLabel}, ${timeStr}`;
     if (d.toDateString() === tomorrow.toDateString())
       return `${tomorrowLabel}, ${timeStr}`;
     return (
@@ -182,7 +220,8 @@ function formatDate(dateStr: string, t?: (k: string) => string) {
 }
 
 function getSportAccent(sport?: Sport | Fixture["sport"]): React.ReactNode {
-  const key = sport?.abbreviation?.toLowerCase() || sport?.name?.toLowerCase() || "";
+  const key =
+    sport?.abbreviation?.toLowerCase() || sport?.name?.toLowerCase() || "";
   return <SportPillIcon sportKey={key} />;
 }
 
@@ -201,11 +240,19 @@ function getSearchText(fixture: Fixture) {
 }
 
 function getPrimaryMarket(fixture: Fixture) {
-  return fixture.markets?.find((market) => market.selections?.length >= 3) || fixture.markets?.[0];
+  return (
+    fixture.markets?.find((market) => market.selections?.length >= 3) ||
+    fixture.markets?.[0]
+  );
 }
 
-function normalizeSelection(rawSelection: Record<string, unknown>, marketId: string): Selection {
-  const displayOdds = rawSelection?.displayOdds as Record<string, unknown> | undefined;
+function normalizeSelection(
+  rawSelection: Record<string, unknown>,
+  marketId: string,
+): Selection {
+  const displayOdds = rawSelection?.displayOdds as
+    | Record<string, unknown>
+    | undefined;
   return {
     selectionId: String(rawSelection?.selectionId || rawSelection?.id || ""),
     marketId,
@@ -222,21 +269,28 @@ function normalizeSelection(rawSelection: Record<string, unknown>, marketId: str
   };
 }
 
-function normalizeMarket(rawMarket: Record<string, unknown>, fixtureId: string): Market {
+function normalizeMarket(
+  rawMarket: Record<string, unknown>,
+  fixtureId: string,
+): Market {
   const marketId = String(rawMarket?.marketId || rawMarket?.id || "");
   const rawSelections = Array.isArray(rawMarket?.selections)
     ? rawMarket.selections
     : Array.isArray(rawMarket?.selectionOdds)
       ? rawMarket.selectionOdds
       : [];
-  const marketStatus = rawMarket?.marketStatus as Record<string, unknown> | undefined;
+  const marketStatus = rawMarket?.marketStatus as
+    | Record<string, unknown>
+    | undefined;
 
   return {
     marketId,
     fixtureId,
     name: String(rawMarket?.name || rawMarket?.marketName || "Featured Market"),
     status:
-      (rawMarket?.status as string) || (marketStatus?.type as string) || "ACTIVE",
+      (rawMarket?.status as string) ||
+      (marketStatus?.type as string) ||
+      "ACTIVE",
     selections: rawSelections.map((selection: Record<string, unknown>) =>
       normalizeSelection(selection, marketId),
     ),
@@ -248,12 +302,27 @@ function normalizeMarket(rawMarket: Record<string, unknown>, fixtureId: string):
  *  rendering with the working BetConstruct data path. */
 function eventToRawFixture(event: BCEvent): Record<string, unknown> {
   const selections: Record<string, unknown>[] = [
-    { selectionId: `${event.fixtureId}-home`, name: event.homeTeam, odds: event.homeOdds, status: "open" },
+    {
+      selectionId: `${event.fixtureId}-home`,
+      name: event.homeTeam,
+      odds: event.homeOdds,
+      status: "open",
+    },
   ];
   if (event.drawOdds > 0) {
-    selections.push({ selectionId: `${event.fixtureId}-draw`, name: "Draw", odds: event.drawOdds, status: "open" });
+    selections.push({
+      selectionId: `${event.fixtureId}-draw`,
+      name: "Draw",
+      odds: event.drawOdds,
+      status: "open",
+    });
   }
-  selections.push({ selectionId: `${event.fixtureId}-away`, name: event.awayTeam, odds: event.awayOdds, status: "open" });
+  selections.push({
+    selectionId: `${event.fixtureId}-away`,
+    name: event.awayTeam,
+    odds: event.awayOdds,
+    status: "open",
+  });
 
   return {
     fixtureId: event.fixtureId,
@@ -261,28 +330,51 @@ function eventToRawFixture(event: BCEvent): Record<string, unknown> {
     startTime: event.startTime,
     isLive: event.status === "in_play",
     status: event.status === "in_play" ? "IN_PLAY" : "NOT_STARTED",
-    sport: { sportId: event.sportId, name: SPORT_DISPLAY_NAMES[event.sportKey] || event.sportKey },
-    tournament: { tournamentId: event.leagueId, sportId: event.sportId, name: "" },
-    competitors: {
-      home: { competitorId: "home", name: event.homeTeam, score: 0, qualifier: "home" },
-      away: { competitorId: "away", name: event.awayTeam, score: 0, qualifier: "away" },
+    sport: {
+      sportId: event.sportId,
+      name: SPORT_DISPLAY_NAMES[event.sportKey] || event.sportKey,
     },
-    markets: [{
-      marketId: `${event.fixtureId}-main`,
-      fixtureId: event.fixtureId,
-      name: "Match Winner",
-      status: "open",
-      selections,
-    }],
+    tournament: {
+      tournamentId: event.leagueId,
+      sportId: event.sportId,
+      name: "",
+    },
+    competitors: {
+      home: {
+        competitorId: "home",
+        name: event.homeTeam,
+        score: 0,
+        qualifier: "home",
+      },
+      away: {
+        competitorId: "away",
+        name: event.awayTeam,
+        score: 0,
+        qualifier: "away",
+      },
+    },
+    markets: [
+      {
+        marketId: `${event.fixtureId}-main`,
+        fixtureId: event.fixtureId,
+        name: "Match Winner",
+        status: "open",
+        selections,
+      },
+    ],
     marketsTotalCount: event.hasMarkets ? 1 : 0,
   };
 }
 
 function normalizeFixture(rawFixture: Record<string, unknown>): Fixture {
   const fixtureId = String(rawFixture?.fixtureId || rawFixture?.id || "");
-  const rawMarkets = Array.isArray(rawFixture?.markets) ? rawFixture.markets : [];
+  const rawMarkets = Array.isArray(rawFixture?.markets)
+    ? rawFixture.markets
+    : [];
   const sport = rawFixture?.sport as Record<string, unknown> | undefined;
-  const tournament = rawFixture?.tournament as Record<string, unknown> | undefined;
+  const tournament = rawFixture?.tournament as
+    | Record<string, unknown>
+    | undefined;
 
   return {
     fixtureId,
@@ -294,7 +386,9 @@ function normalizeFixture(rawFixture: Record<string, unknown>): Fixture {
       name: String(sport?.name || "Featured"),
       abbreviation: String(
         sport?.abbreviation ||
-          (typeof sport?.name === "string" ? sport.name.slice(0, 3).toUpperCase() : ""),
+          (typeof sport?.name === "string"
+            ? sport.name.slice(0, 3).toUpperCase()
+            : ""),
       ),
       displayToPunters: sport?.displayToPunters !== false,
     },
@@ -305,7 +399,9 @@ function normalizeFixture(rawFixture: Record<string, unknown>): Fixture {
       startTime: String(tournament?.startTime || rawFixture?.startTime || ""),
     },
     status: String(rawFixture?.status || "NOT_STARTED"),
-    markets: rawMarkets.map((market: Record<string, unknown>) => normalizeMarket(market, fixtureId)),
+    markets: rawMarkets.map((market: Record<string, unknown>) =>
+      normalizeMarket(market, fixtureId),
+    ),
     marketsTotalCount:
       typeof rawFixture?.marketsTotalCount === "number"
         ? rawFixture.marketsTotalCount
@@ -317,18 +413,24 @@ function normalizeFixture(rawFixture: Record<string, unknown>): Fixture {
 /** Issue #9: Validate fixtures have real data before displaying */
 function isValidFixture(fixture: Fixture): boolean {
   const teams = getTeams(fixture.competitors);
-  if (teams.home === 'TBD' && teams.away === 'TBD') {
-    logger.warn('Home', 'Filtered out fixture with missing teams', fixture.fixtureId);
+  if (teams.home === "TBD" && teams.away === "TBD") {
+    logger.warn(
+      "Home",
+      "Filtered out fixture with missing teams",
+      fixture.fixtureId,
+    );
     return false;
   }
   if (!fixture.startTime) {
-    logger.warn('Home', 'Filtered out fixture with no start time', fixture.fixtureId);
+    logger.warn(
+      "Home",
+      "Filtered out fixture with no start time",
+      fixture.fixtureId,
+    );
     return false;
   }
   return true;
 }
-
-
 
 function getFixtureStatusLabel(fixture: Fixture, t: (k: string) => string) {
   if (fixture.isLive) return t("LIVE");
@@ -392,7 +494,11 @@ function AuthenticatedHome() {
   const { t } = useTranslation("home");
 
   // React Query — cached data survives navigation, no re-fetch on return visits
-  const { data: rawFixtures = [], isLoading: fixturesLoading, error: fixturesError } = useFixtures();
+  const {
+    data: rawFixtures = [],
+    isLoading: fixturesLoading,
+    error: fixturesError,
+  } = useFixtures();
   const { data: rawSportsData = [] } = useSports();
   const { data: rawLeaderboards = [] } = useLeaderboards();
 
@@ -504,7 +610,9 @@ function AuthenticatedHome() {
   // Stable ref for fixtures so the search effect can read them without
   // adding fixtures to its dependency array (which causes infinite loops).
   const fixturesRef = useRef(fixtures);
-  useEffect(() => { fixturesRef.current = fixtures; });
+  useEffect(() => {
+    fixturesRef.current = fixtures;
+  });
 
   // Issue #11: Debounced search via BetConstruct.
   // Strategy: (1) if query matches a sport name, fetch that sport's events
@@ -524,7 +632,8 @@ function AuthenticatedHome() {
     const timer = setTimeout(async () => {
       try {
         const q = deferredSearchQuery.toLowerCase();
-        const { getSports: fetchSports } = await import("./lib/api/events-client");
+        const { getSports: fetchSports } =
+          await import("./lib/api/events-client");
         const allSports = await fetchSports();
 
         // Check if query matches a sport name
@@ -538,7 +647,10 @@ function AuthenticatedHome() {
 
         if (matchedSport) {
           // Sport match: fetch events for that sport directly (fast)
-          const response = await getEvents({ sport: matchedSport.sportKey, limit: 10 });
+          const response = await getEvents({
+            sport: matchedSport.sportKey,
+            limit: 10,
+          });
           results = response.events
             .map((e) => normalizeFixture(eventToRawFixture(e)))
             .filter(isValidFixture);
@@ -546,7 +658,8 @@ function AuthenticatedHome() {
           // Team/league name match: filter already-loaded fixtures
           results = fixturesRef.current.filter((f) => {
             const teams = getTeams(f.competitors);
-            const haystack = `${teams.home} ${teams.away} ${f.tournament.name} ${f.fixtureName}`.toLowerCase();
+            const haystack =
+              `${teams.home} ${teams.away} ${f.tournament.name} ${f.fixtureName}`.toLowerCase();
             return haystack.includes(q);
           });
         }
@@ -583,22 +696,13 @@ function AuthenticatedHome() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key !== "/" ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.altKey
-      ) {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) {
         return;
       }
 
       const target = event.target as HTMLElement | null;
       const tag = target?.tagName?.toLowerCase();
-      if (
-        tag === "input" ||
-        tag === "textarea" ||
-        target?.isContentEditable
-      ) {
+      if (tag === "input" || tag === "textarea" || target?.isContentEditable) {
         return;
       }
 
@@ -625,7 +729,10 @@ function AuthenticatedHome() {
         continue;
       }
 
-      if (normalizedQuery && !getSearchText(fixture).includes(normalizedQuery)) {
+      if (
+        normalizedQuery &&
+        !getSearchText(fixture).includes(normalizedQuery)
+      ) {
         continue;
       }
 
@@ -648,7 +755,8 @@ function AuthenticatedHome() {
           return left.isLive ? -1 : 1;
         }
         return (
-          new Date(left.startTime).getTime() - new Date(right.startTime).getTime()
+          new Date(left.startTime).getTime() -
+          new Date(right.startTime).getTime()
         );
       })
       .slice(0, 10);
@@ -679,7 +787,9 @@ function AuthenticatedHome() {
   const { topSports, filteredFixtures, topPicks, popularRows } = discoveryData;
   const featuredMoment = topPicks[0];
   const secondaryMoments = topPicks.slice(1, 4);
-  const liveNowCount = filteredFixtures.filter((fixture) => fixture.isLive).length;
+  const liveNowCount = filteredFixtures.filter(
+    (fixture) => fixture.isLive,
+  ).length;
 
   const renderDiscoveryCard = useCallback(
     (fixture: Fixture, compact = false) => {
@@ -747,7 +857,12 @@ function AuthenticatedHome() {
     (fixture: Fixture, index: number, lead = false) => {
       const teams = getTeams(fixture.competitors);
       const market = getPrimaryMarket(fixture);
-      const angle = getEditorialAngle(fixture, index, leaderboards.length > 0, t);
+      const angle = getEditorialAngle(
+        fixture,
+        index,
+        leaderboards.length > 0,
+        t,
+      );
 
       if (!market || !market.selections?.length) return null;
 
@@ -760,7 +875,9 @@ function AuthenticatedHome() {
             <div>
               <div className="feature-spotlight-tag">{angle.tag}</div>
               <div className="feature-spotlight-league">
-                {fixture.tournament?.name || fixture.sport?.name || t("HOT_PICK")}
+                {fixture.tournament?.name ||
+                  fixture.sport?.name ||
+                  t("HOT_PICK")}
               </div>
             </div>
             <div
@@ -815,9 +932,14 @@ function AuthenticatedHome() {
             <span>
               {fixture.isLive
                 ? t("LIVE_BOARD_ACTIVE")
-                : t("MARKET_ANGLES_COUNT", { count: fixture.marketsTotalCount || market.selections.length })}
+                : t("MARKET_ANGLES_COUNT", {
+                    count:
+                      fixture.marketsTotalCount || market.selections.length,
+                  })}
             </span>
-            <Link href={`/match/${fixture.fixtureId}`}>{t("OPEN_FULL_MARKET_LINK")}</Link>
+            <Link href={`/match/${fixture.fixtureId}`}>
+              {t("OPEN_FULL_MARKET_LINK")}
+            </Link>
           </div>
         </article>
       );
@@ -827,17 +949,20 @@ function AuthenticatedHome() {
 
   return (
     <>
+      {/* CMS Banner Carousel */}
+      <BannerCarousel position="hero" />
+
       {/* Hero */}
       <div className="home-hero">
         <div className="home-hero-main">
           <div className="home-hero-copy">
             <div className="home-hero-kicker">{t("HERO_KICKER")}</div>
             <h1>
-              {t("HERO_TITLE_PREFIX")}<span className="accent">{t("HERO_TITLE_ACCENT")}</span>{t("HERO_TITLE_SUFFIX")}
+              {t("HERO_TITLE_PREFIX")}
+              <span className="accent">{t("HERO_TITLE_ACCENT")}</span>
+              {t("HERO_TITLE_SUFFIX")}
             </h1>
-            <p>
-              {t("HERO_SUBTITLE")}
-            </p>
+            <p>{t("HERO_SUBTITLE")}</p>
 
             <div className="home-hero-actions">
               <button
@@ -860,11 +985,15 @@ function AuthenticatedHome() {
 
             <div className="home-hero-stats">
               <div className="home-hero-chip">
-                <span className="home-hero-chip-value">{liveNowCount || "—"}</span>
+                <span className="home-hero-chip-value">
+                  {liveNowCount || "—"}
+                </span>
                 <span className="home-hero-chip-label">{t("LIVE_NOW")}</span>
               </div>
               <div className="home-hero-chip">
-                <span className="home-hero-chip-value">{topPicks.length || "—"}</span>
+                <span className="home-hero-chip-value">
+                  {topPicks.length || "—"}
+                </span>
                 <span className="home-hero-chip-label">{t("HOT_PICKS")}</span>
               </div>
               <div className="home-hero-chip">
@@ -881,7 +1010,9 @@ function AuthenticatedHome() {
               <>
                 <div className="home-hero-feature-top">
                   <div>
-                    <div className="home-hero-feature-kicker">{t("FEATURED_RIGHT_NOW")}</div>
+                    <div className="home-hero-feature-kicker">
+                      {t("FEATURED_RIGHT_NOW")}
+                    </div>
                     <div className="home-hero-feature-league">
                       {featuredMoment.tournament?.name ||
                         featuredMoment.sport?.name ||
@@ -910,7 +1041,8 @@ function AuthenticatedHome() {
                 </div>
 
                 <div className="home-hero-feature-note">
-                  {getPrimaryMarket(featuredMoment)?.name || t("MATCH_RESULT")} ·{" "}
+                  {getPrimaryMarket(featuredMoment)?.name || t("MATCH_RESULT")}{" "}
+                  ·{" "}
                   {featuredMoment.isLive
                     ? t("PRICES_MOVING")
                     : t("QUICK_ENTRY_ANGLE")}
@@ -975,7 +1107,11 @@ function AuthenticatedHome() {
               >
                 <div className="home-hero-rail-top">
                   <span>{fixture.sport?.name || t("BOARD")}</span>
-                  <span>{fixture.isLive ? t("LIVE") : formatDate(fixture.startTime, t)}</span>
+                  <span>
+                    {fixture.isLive
+                      ? t("LIVE")
+                      : formatDate(fixture.startTime, t)}
+                  </span>
                 </div>
                 <div className="home-hero-rail-title">
                   {getTeams(fixture.competitors).home} vs{" "}
@@ -1012,20 +1148,30 @@ function AuthenticatedHome() {
 
         {/* Issue #11: Search API results dropdown */}
         {showSearchDropdown && deferredSearchQuery.length >= 3 && (
-          <div ref={searchDropdownRef} className="search-results-dropdown" style={{
-            position: "relative",
-            zIndex: 20,
-            background: "rgba(15, 18, 37, 0.98)",
-            border: "1px solid rgba(57, 255, 20, 0.18)",
-            borderRadius: "12px",
-            marginTop: "-4px",
-            padding: "8px 0",
-            maxHeight: "320px",
-            overflowY: "auto",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
-          }}>
+          <div
+            ref={searchDropdownRef}
+            className="search-results-dropdown"
+            style={{
+              position: "relative",
+              zIndex: 20,
+              background: "rgba(15, 18, 37, 0.98)",
+              border: "1px solid rgba(57, 255, 20, 0.18)",
+              borderRadius: "12px",
+              marginTop: "-4px",
+              padding: "8px 0",
+              maxHeight: "320px",
+              overflowY: "auto",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+            }}
+          >
             {searchLoading ? (
-              <div style={{ padding: "16px 20px", color: "#94a3b8", fontSize: "13px" }}>
+              <div
+                style={{
+                  padding: "16px 20px",
+                  color: "#94a3b8",
+                  fontSize: "13px",
+                }}
+              >
                 {t("SEARCHING")}
               </div>
             ) : searchResults.length > 0 ? (
@@ -1043,15 +1189,34 @@ function AuthenticatedHome() {
                       transition: "background 0.15s",
                       borderBottom: "1px solid rgba(255,255,255,0.04)",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(57,255,20,0.06)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(57,255,20,0.06)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
                   >
                     <div>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#f8fafc" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 600,
+                          color: "#f8fafc",
+                        }}
+                      >
                         {teams.home} vs {teams.away}
                       </div>
-                      <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
-                        {fixture.sport.name?.toUpperCase()} {fixture.tournament.name ? `· ${fixture.tournament.name}` : ""}
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#94a3b8",
+                          marginTop: "2px",
+                        }}
+                      >
+                        {fixture.sport.name?.toUpperCase()}{" "}
+                        {fixture.tournament.name
+                          ? `· ${fixture.tournament.name}`
+                          : ""}
                       </div>
                     </div>
                     <div style={{ fontSize: "12px", color: "#94a3b8" }}>
@@ -1061,7 +1226,13 @@ function AuthenticatedHome() {
                 );
               })
             ) : (
-              <div style={{ padding: "16px 20px", color: "#64748b", fontSize: "13px" }}>
+              <div
+                style={{
+                  padding: "16px 20px",
+                  color: "#64748b",
+                  fontSize: "13px",
+                }}
+              >
                 {t("NO_EVENTS_FOUND", { query: deferredSearchQuery })}
               </div>
             )}
@@ -1071,16 +1242,26 @@ function AuthenticatedHome() {
         <div className="discovery-context">
           <div>
             <div className="discovery-kicker">{t("BOARD_CONTROL")}</div>
-            <div className="discovery-context-copy" dangerouslySetInnerHTML={{ __html: t("MATCHES_READY", { count: filteredFixtures.length }) }} />
+            <div
+              className="discovery-context-copy"
+              dangerouslySetInnerHTML={{
+                __html: t("MATCHES_READY", { count: filteredFixtures.length }),
+              }}
+            />
           </div>
-          <div className="discovery-context-copy" dangerouslySetInnerHTML={{ __html: t("BOARD_CONTROL_HINT") }} />
+          <div
+            className="discovery-context-copy"
+            dangerouslySetInnerHTML={{ __html: t("BOARD_CONTROL_HINT") }}
+          />
         </div>
 
         {leaderboards.length > 0 && (
           <div className="leaderboard-strip">
             <div className="leaderboard-strip-head">
               <div>
-                <div className="discovery-kicker">{t("COMPETITION_PULSE_KICKER")}</div>
+                <div className="discovery-kicker">
+                  {t("COMPETITION_PULSE_KICKER")}
+                </div>
                 <div className="leaderboard-strip-title">
                   {t("COMPETITION_PULSE_TITLE")}
                 </div>
@@ -1112,7 +1293,20 @@ function AuthenticatedHome() {
               className={`sport-pill ${activeSport === "all" ? "active" : ""}`}
               onClick={() => setActiveSport("all")}
             >
-              <span className="sport-pill-icon"><svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>
+              <span className="sport-pill-icon">
+                <svg
+                  width={14}
+                  height={14}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+                </svg>
+              </span>
               {t("ALL_SPORTS")}
             </button>
             {topSports.map((sport) => (
@@ -1136,7 +1330,20 @@ function AuthenticatedHome() {
           <div className="discovery-section-head">
             <div>
               <div className="discovery-title-wrap">
-                <span className="discovery-title-icon"><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
+                <span className="discovery-title-icon">
+                  <svg
+                    width={18}
+                    height={18}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+                  </svg>
+                </span>
                 <span className="discovery-title">{t("HOT_PICKS_TITLE")}</span>
               </div>
               <div className="discovery-subtitle">
@@ -1150,17 +1357,17 @@ function AuthenticatedHome() {
               <>
                 {renderFeatureSpotlight(topPicks[0], 0, true)}
                 <div className="featured-picks-stack">
-                  {topPicks.slice(1, 5).map((fixture, index) =>
-                    renderFeatureSpotlight(fixture, index + 1),
-                  )}
+                  {topPicks
+                    .slice(1, 5)
+                    .map((fixture, index) =>
+                      renderFeatureSpotlight(fixture, index + 1),
+                    )}
                 </div>
               </>
             ) : (
               <div className="empty-state" style={{ width: "100%" }}>
                 <div className="empty-title">{t("NO_TOP_PICKS")}</div>
-                <div className="empty-sub">
-                  {t("NO_TOP_PICKS_SUB")}
-                </div>
+                <div className="empty-sub">{t("NO_TOP_PICKS_SUB")}</div>
               </div>
             )}
           </div>
@@ -1169,16 +1376,24 @@ function AuthenticatedHome() {
         {popularRows.length > 0 && (
           <div className="popular-sport-grid">
             {popularRows.map(({ sport, fixtures }) => (
-              <section key={`popular-${sport.sportId}`} className="popular-sport-block">
+              <section
+                key={`popular-${sport.sportId}`}
+                className="popular-sport-block"
+              >
                 <div className="popular-sport-head">
                   <div className="popular-sport-title">
-                    {getSportAccent(sport)} {t("POPULAR_IN", { sport: sport.name })}
+                    {getSportAccent(sport)}{" "}
+                    {t("POPULAR_IN", { sport: sport.name })}
                   </div>
-                  <div className="popular-sport-meta">{t("FEATURED_EVENTS", { count: fixtures.length })}</div>
+                  <div className="popular-sport-meta">
+                    {t("FEATURED_EVENTS", { count: fixtures.length })}
+                  </div>
                 </div>
 
                 <div className="sport-ribbon-track">
-                  {fixtures.map((fixture) => renderDiscoveryCard(fixture, true))}
+                  {fixtures.map((fixture) =>
+                    renderDiscoveryCard(fixture, true),
+                  )}
                 </div>
               </section>
             ))}
@@ -1199,11 +1414,14 @@ function AuthenticatedHome() {
                   ? t("FULL_BOARD_TITLE")
                   : activeSport === "all"
                     ? t("FULL_BOARD_TITLE")
-                    : t("SELECTED_SPORT_BOARD", { sport: topSports.find((sport) => sport.sportId === activeSport)?.name || "" })}
+                    : t("SELECTED_SPORT_BOARD", {
+                        sport:
+                          topSports.find(
+                            (sport) => sport.sportId === activeSport,
+                          )?.name || "",
+                      })}
             </span>
-            <div className="section-subtitle">
-              {t("FULL_BOARD_SUBTITLE")}
-            </div>
+            <div className="section-subtitle">{t("FULL_BOARD_SUBTITLE")}</div>
           </div>
           {!loading && (
             <span className="section-count">
@@ -1239,7 +1457,9 @@ function AuthenticatedHome() {
                       fixture.isLive ? "live" : "upcoming"
                     }`}
                   >
-                    {fixture.isLive ? t("LIVE_LABEL") : formatDate(fixture.startTime, t)}
+                    {fixture.isLive
+                      ? t("LIVE_LABEL")
+                      : formatDate(fixture.startTime, t)}
                   </span>
                 </div>
 
@@ -1302,7 +1522,9 @@ function AuthenticatedHome() {
                     href={`/fixtures/${fixture.fixtureId}`}
                     className="more-markets"
                   >
-                    {t("MORE_MARKETS_LINK", { count: fixture.marketsTotalCount - 1 })}
+                    {t("MORE_MARKETS_LINK", {
+                      count: fixture.marketsTotalCount - 1,
+                    })}
                   </a>
                 )}
               </div>
@@ -1311,11 +1533,23 @@ function AuthenticatedHome() {
 
         {!loading && filteredFixtures.length === 0 && !error && (
           <div className="empty-state">
-            <div className="empty-icon"><svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2l-1.5 5.5L7 5.5M12 2l1.5 5.5L17 5.5M7 5.5L3.5 10l3.5 2M17 5.5l3.5 4.5-3.5 2M7 12l-1 5.5L10.5 19M17 12l1 5.5-4.5 1.5M10.5 19h3M12 7.5L7 12l3.5 7h3L17 12Z"/></svg></div>
-            <div className="empty-title">{t("NO_MATCHES")}</div>
-            <div className="empty-sub">
-              {t("EMPTY_SUB")}
+            <div className="empty-icon">
+              <svg
+                width={32}
+                height={32}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 2l-1.5 5.5L7 5.5M12 2l1.5 5.5L17 5.5M7 5.5L3.5 10l3.5 2M17 5.5l3.5 4.5-3.5 2M7 12l-1 5.5L10.5 19M17 12l1 5.5-4.5 1.5M10.5 19h3M12 7.5L7 12l3.5 7h3L17 12Z" />
+              </svg>
             </div>
+            <div className="empty-title">{t("NO_MATCHES")}</div>
+            <div className="empty-sub">{t("EMPTY_SUB")}</div>
           </div>
         )}
       </div>
