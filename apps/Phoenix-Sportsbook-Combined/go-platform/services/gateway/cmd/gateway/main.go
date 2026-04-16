@@ -15,6 +15,8 @@ import (
 	"phoenix-revival/platform/logging"
 	"phoenix-revival/platform/runtime"
 	"phoenix-revival/platform/transport/httpx"
+
+	_ "github.com/lib/pq" // Register PostgreSQL driver for database/sql
 )
 
 func main() {
@@ -55,7 +57,9 @@ func main() {
 		"/api/v1/status",
 		"/api/v1/auth/",
 		"/auth/",
-		"/ws", // WebSocket has its own auth (Task 1.5)
+		"/ws",              // WebSocket has its own auth
+		"/api/v1/content/", // CMS content delivery (public)
+		"/api/v1/banners",  // CMS banner delivery (public)
 	}
 
 	// CSRF-exempt prefixes (auth endpoints handle their own CSRF)

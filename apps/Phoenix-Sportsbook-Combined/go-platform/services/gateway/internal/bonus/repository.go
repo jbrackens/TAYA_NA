@@ -214,8 +214,8 @@ func (r *Repository) GetPlayerBonus(ctx context.Context, id int64) (PlayerBonus,
 SELECT id, user_id, campaign_id, bonus_type, status,
        granted_amount_cents, remaining_amount_cents,
        wagering_required_cents, wagering_completed_cents,
-       expires_at, granted_at, completed_at, forfeited_at, forfeited_by,
-       metadata, created_at, updated_at
+       expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
+       COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses WHERE id = $1`, id).Scan(
 		&pb.ID, &pb.UserID, &pb.CampaignID, &pb.BonusType, &pb.Status,
 		&pb.GrantedAmountCents, &pb.RemainingAmountCents,
@@ -241,8 +241,8 @@ func (r *Repository) ListPlayerBonuses(ctx context.Context, userID string, statu
 SELECT id, user_id, campaign_id, bonus_type, status,
        granted_amount_cents, remaining_amount_cents,
        wagering_required_cents, wagering_completed_cents,
-       expires_at, granted_at, completed_at, forfeited_at, forfeited_by,
-       metadata, created_at, updated_at
+       expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
+       COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses WHERE 1=1`
 	args := []any{}
 	argIdx := 1
@@ -308,8 +308,8 @@ func (r *Repository) ListExpiredActiveBonuses(ctx context.Context) ([]PlayerBonu
 SELECT id, user_id, campaign_id, bonus_type, status,
        granted_amount_cents, remaining_amount_cents,
        wagering_required_cents, wagering_completed_cents,
-       expires_at, granted_at, completed_at, forfeited_at, forfeited_by,
-       metadata, created_at, updated_at
+       expires_at, granted_at, completed_at, forfeited_at, COALESCE(forfeited_by, ''),
+       COALESCE(metadata, '{}'), created_at, updated_at
 FROM player_bonuses
 WHERE status = 'active' AND expires_at < NOW()
 LIMIT 500`)
