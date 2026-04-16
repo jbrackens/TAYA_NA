@@ -1,30 +1,31 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: phoenix_postgres
+    container_name: predict_postgres
     environment:
-      POSTGRES_DB: phoenix_sportsbook
-      POSTGRES_USER: phoenix
+      POSTGRES_DB: predict
+      POSTGRES_USER: predict
       POSTGRES_PASSWORD: localdev
+    # Port 5434 on host to avoid collision with the existing sportsbook container
+    # on 5432 and the swarmqa one on 5433.
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U phoenix -d phoenix_sportsbook"]
+      test: ["CMD-SHELL", "pg_isready -U predict -d predict"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - phoenix_network
+      - predict_network
 
   redis:
     image: redis:7-alpine
-    container_name: phoenix_redis
+    container_name: predict_redis
+    # Port 6380 on host to avoid collision with the existing sportsbook redis on 6379.
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -33,13 +34,13 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - phoenix_network
+      - predict_network
 
   gateway:
     build:
       context: ./go-platform
       dockerfile: services/gateway/Dockerfile
-    container_name: phoenix_gateway
+    container_name: predict_gateway
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,19 +50,18 @@ services:
       - "18080:18080"
     environment:
       GATEWAY_PORT: "18080"
-      GATEWAY_DB_DSN: "postgres://phoenix:localdev@postgres:5432/phoenix_sportsbook"
+      GATEWAY_DB_DSN: "postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
       REDIS_URL: "redis://redis:6379/0"
       AUTH_SERVICE_URL: "http://auth:18081"
       LOG_LEVEL: "debug"
-      NODE_ENV: "development"
     networks:
-      - phoenix_network
+      - predict_network
 
   auth:
     build:
       context: ./go-platform
       dockerfile: services/auth/Dockerfile
-    container_name: phoenix_auth
+    container_name: predict_auth
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,18 +71,18 @@ services:
       - "18081:18081"
     environment:
       AUTH_PORT: "18081"
-      AUTH_DB_DSN: "postgres://phoenix:localdev@postgres:5432/phoenix_sportsbook"
+      AUTH_DB_DSN: "postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
       REDIS_URL: "redis://redis:6379/0"
       LOG_LEVEL: "debug"
-      NODE_ENV: "development"
       JWT_SECRET: "dev-secret-key-change-in-production"
+      AUTH_COOKIE_SECURE: "false"
     networks:
-      - phoenix_network
+      - predict_network
 
 volumes:
   postgres_data:
   redis_data:
 
 networks:
-  phoenix_network:
+  predict_network:
     driver: bridge

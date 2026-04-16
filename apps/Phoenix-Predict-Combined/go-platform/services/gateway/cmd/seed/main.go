@@ -67,15 +67,15 @@ func main() {
 func findSeedFile() string {
 	// Check common locations
 	candidates := []string{
-		"migrations/seed_prediction.sql",
-		"../migrations/seed_prediction.sql",
-		"../../migrations/seed_prediction.sql",
+		"seed-data/seed_prediction.sql",
+		"../seed-data/seed_prediction.sql",
+		"../../seed-data/seed_prediction.sql",
 	}
 
 	// Also try relative to executable
 	if exePath, err := os.Executable(); err == nil {
 		candidates = append(candidates,
-			filepath.Join(filepath.Dir(exePath), "..", "..", "migrations", "seed_prediction.sql"),
+			filepath.Join(filepath.Dir(exePath), "..", "..", "seed-data", "seed_prediction.sql"),
 		)
 	}
 

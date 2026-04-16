@@ -10,12 +10,17 @@ import (
 
 // SettlementEngine handles resolving markets and distributing payouts.
 type SettlementEngine struct {
-	repo Repository
+	repo   Repository
+	wallet WalletAdapter
 }
 
 // NewSettlementEngine creates a new settlement engine.
-func NewSettlementEngine(repo Repository) *SettlementEngine {
-	return &SettlementEngine{repo: repo}
+// If wallet is nil, payouts are logged but not credited (useful for tests).
+func NewSettlementEngine(repo Repository, wallet WalletAdapter) *SettlementEngine {
+	if wallet == nil {
+		wallet = NoopWallet{}
+	}
+	return &SettlementEngine{repo: repo, wallet: wallet}
 }
 
 // ResolveMarket settles a market with the given result and attestation.
@@ -77,6 +82,18 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		payout := s.calculatePayout(pos, result, settlement.ID)
 		if err := s.repo.CreatePayout(ctx, &payout); err != nil {
 			return nil, nil, fmt.Errorf("create payout for position %s: %w", pos.ID, err)
+		}
+
+		// Credit the winner's wallet. Losers get 0 — no credit needed.
+		// Idempotency key scopes the credit to this settlement + position so
+		// re-runs of a settle operation don't double-credit.
+		if payout.PayoutCents > 0 {
+			idempKey := fmt.Sprintf("prediction_payout:%s:%s", settlement.ID, pos.ID)
+			reason := fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
+				marketID, result, pos.Side)
+			if err := s.wallet.Credit(pos.UserID, payout.PayoutCents, idempKey, reason); err != nil {
+				return nil, nil, fmt.Errorf("wallet credit failed for user %s: %w", pos.UserID, err)
+			}
 		}
 
 		payouts = append(payouts, payout)
@@ -196,6 +213,13 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 			PnlCents:        0,
 			PayoutCents:     pos.TotalCostCents,
 			PaidAt:          time.Now().UTC(),
+		}
+		// Refund the stake to the user's wallet. Idempotency scopes to this
+		// void operation + position so re-runs don't double-refund.
+		idempKey := fmt.Sprintf("prediction_void:%s:%s", marketID, pos.ID)
+		refundReason := fmt.Sprintf("prediction refund: market %s voided, returning stake", market.Ticker)
+		if err := s.wallet.Credit(pos.UserID, pos.TotalCostCents, idempKey, refundReason); err != nil {
+			return nil, fmt.Errorf("wallet refund failed for user %s: %w", pos.UserID, err)
 		}
 		payouts = append(payouts, payout)
 	}

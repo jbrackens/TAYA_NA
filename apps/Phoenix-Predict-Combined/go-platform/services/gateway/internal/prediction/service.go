@@ -9,16 +9,22 @@ import (
 // Service is the primary business logic layer for the prediction platform.
 type Service struct {
 	repo       Repository
+	wallet     WalletAdapter
 	amm        *AMMEngine
 	settlement *SettlementEngine
 }
 
 // NewService creates a new prediction service.
-func NewService(repo Repository) *Service {
+// If wallet is nil, a NoopWallet is used (useful for tests).
+func NewService(repo Repository, wallet WalletAdapter) *Service {
+	if wallet == nil {
+		wallet = NoopWallet{}
+	}
 	return &Service{
 		repo:       repo,
+		wallet:     wallet,
 		amm:        &AMMEngine{},
-		settlement: NewSettlementEngine(repo),
+		settlement: NewSettlementEngine(repo, wallet),
 	}
 }
 
@@ -82,11 +88,9 @@ func (s *Service) PreviewOrder(ctx context.Context, req PlaceOrderRequest) (*Ord
 }
 
 // PlaceOrder executes a market order against the AMM.
-// Returns the created order and the trade fill.
-//
-// The caller is responsible for:
-// 1. Reserving funds from the user's wallet before calling this
-// 2. Broadcasting the trade via WebSocket after
+// Debits the user's wallet, updates the order book and position, and returns
+// the created order and trade fill. Broadcasts the trade via WebSocket is the
+// caller's responsibility.
 func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID string) (*Order, *Trade, error) {
 	// Idempotency check
 	if req.IdempotencyKey != nil {
@@ -109,13 +113,39 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("sell orders not yet supported (requires existing position)")
 	}
 
-	// Execute against AMM
+	// Preview cost without mutating market state, so we can check balance first.
+	preview, err := s.amm.PreviewTrade(market, req.Side, req.Action, req.Quantity)
+	if err != nil {
+		return nil, nil, fmt.Errorf("AMM preview failed: %w", err)
+	}
+
+	// Balance check — reject early before mutating anything.
+	totalCost := preview.TotalCost + preview.FeeCents
+	if balance := s.wallet.Balance(userID); balance > 0 && balance < totalCost {
+		return nil, nil, fmt.Errorf("insufficient balance: have %d cents, need %d cents", balance, totalCost)
+	}
+
+	// Debit the wallet. Idempotent via the order's idempotency key when provided.
+	debitKey := ""
+	if req.IdempotencyKey != nil {
+		debitKey = "prediction_order:" + *req.IdempotencyKey
+	}
+	debitReason := fmt.Sprintf("prediction order: %s %s x%d", req.Side, market.Ticker, req.Quantity)
+	if err := s.wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
+		return nil, nil, fmt.Errorf("wallet debit failed: %w", err)
+	}
+
+	// Execute against AMM (mutates market.AMMYesShares / AMMNoShares / prices)
 	costCents, feeCents, err := s.amm.ExecuteTrade(market, req.Side, req.Quantity)
 	if err != nil {
+		// Refund the wallet — AMM rejected after we debited.
+		_ = s.wallet.Credit(userID, totalCost, debitKey+":refund",
+			fmt.Sprintf("refund: AMM rejected order for %s", market.Ticker))
 		return nil, nil, fmt.Errorf("AMM execution failed: %w", err)
 	}
 
-	totalCost := costCents + feeCents
+	// Use the actual executed cost (should match preview, but trust the engine).
+	totalCost = costCents + feeCents
 	now := time.Now().UTC()
 	priceCents := market.YesPriceCents
 	if req.Side == OrderSideNo {

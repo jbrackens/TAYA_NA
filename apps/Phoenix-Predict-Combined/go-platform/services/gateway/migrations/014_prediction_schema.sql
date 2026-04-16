@@ -1,8 +1,7 @@
+-- +goose Up
 -- 014_prediction_schema.sql
 -- Prediction platform schema: Categories > Series > Events > Markets
 -- Replaces sportsbook sports/tournaments/fixtures/markets/selections/bets
-
-BEGIN;
 
 -- Categories replace sports
 CREATE TABLE prediction_categories (
@@ -45,7 +44,7 @@ CREATE TABLE prediction_events (
     settle_at       TIMESTAMPTZ,
     settled_at      TIMESTAMPTZ,
     metadata        JSONB DEFAULT '{}',
-    created_by      UUID,
+    created_by      TEXT,
     created_at      TIMESTAMPTZ DEFAULT now(),
     updated_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -93,7 +92,7 @@ CREATE TABLE prediction_markets (
 -- Orders (unified book: YES and NO in one table)
 CREATE TABLE prediction_orders (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id             UUID NOT NULL REFERENCES punters(id),
+    user_id             TEXT NOT NULL REFERENCES punters(id),
     market_id           UUID NOT NULL REFERENCES prediction_markets(id),
     side                TEXT NOT NULL CHECK (side IN ('yes','no')),
     action              TEXT NOT NULL CHECK (action IN ('buy','sell')),
@@ -117,7 +116,7 @@ CREATE TABLE prediction_orders (
 -- Positions (net holdings per user per market per side)
 CREATE TABLE prediction_positions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES punters(id),
+    user_id         TEXT NOT NULL REFERENCES punters(id),
     market_id       UUID NOT NULL REFERENCES prediction_markets(id),
     side            TEXT NOT NULL CHECK (side IN ('yes','no')),
     quantity        INT NOT NULL DEFAULT 0,
@@ -135,8 +134,8 @@ CREATE TABLE prediction_trades (
     market_id       UUID NOT NULL REFERENCES prediction_markets(id),
     buy_order_id    UUID REFERENCES prediction_orders(id),
     sell_order_id   UUID REFERENCES prediction_orders(id),
-    buyer_id        UUID NOT NULL REFERENCES punters(id),
-    seller_id       UUID,
+    buyer_id        TEXT NOT NULL REFERENCES punters(id),
+    seller_id       TEXT,
     side            TEXT NOT NULL CHECK (side IN ('yes','no')),
     price_cents     INT NOT NULL,
     quantity        INT NOT NULL,
@@ -154,7 +153,7 @@ CREATE TABLE prediction_settlements (
     attestation_id      TEXT,
     attestation_digest  TEXT,
     attestation_data    JSONB,
-    settled_by          UUID,
+    settled_by          TEXT,
     settled_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     total_payout_cents  BIGINT NOT NULL DEFAULT 0,
     positions_settled   INT NOT NULL DEFAULT 0
@@ -165,7 +164,7 @@ CREATE TABLE prediction_payouts (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     settlement_id   UUID NOT NULL REFERENCES prediction_settlements(id),
     position_id     UUID NOT NULL REFERENCES prediction_positions(id),
-    user_id         UUID NOT NULL REFERENCES punters(id),
+    user_id         TEXT NOT NULL REFERENCES punters(id),
     market_id       UUID NOT NULL REFERENCES prediction_markets(id),
     side            TEXT NOT NULL,
     quantity        INT NOT NULL,
@@ -181,7 +180,7 @@ CREATE TABLE prediction_lifecycle_events (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     market_id   UUID NOT NULL REFERENCES prediction_markets(id),
     event_type  TEXT NOT NULL,
-    actor_id    UUID,
+    actor_id    TEXT,
     actor_type  TEXT NOT NULL DEFAULT 'system',
     reason      TEXT,
     metadata    JSONB DEFAULT '{}',
@@ -191,7 +190,7 @@ CREATE TABLE prediction_lifecycle_events (
 -- Bot API keys
 CREATE TABLE prediction_api_keys (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID NOT NULL REFERENCES punters(id),
+    user_id     TEXT NOT NULL REFERENCES punters(id),
     name        TEXT NOT NULL,
     key_hash    TEXT NOT NULL,
     key_prefix  TEXT NOT NULL,
@@ -233,4 +232,15 @@ INSERT INTO prediction_categories (slug, name, icon, sort_order) VALUES
     ('tech', 'Technology', 'cpu', 5),
     ('economics', 'Economics', 'trending-up', 6);
 
-COMMIT;
+-- +goose Down
+DROP TABLE IF EXISTS prediction_api_keys CASCADE;
+DROP TABLE IF EXISTS prediction_lifecycle_events CASCADE;
+DROP TABLE IF EXISTS prediction_payouts CASCADE;
+DROP TABLE IF EXISTS prediction_settlements CASCADE;
+DROP TABLE IF EXISTS prediction_trades CASCADE;
+DROP TABLE IF EXISTS prediction_positions CASCADE;
+DROP TABLE IF EXISTS prediction_orders CASCADE;
+DROP TABLE IF EXISTS prediction_markets CASCADE;
+DROP TABLE IF EXISTS prediction_events CASCADE;
+DROP TABLE IF EXISTS prediction_series CASCADE;
+DROP TABLE IF EXISTS prediction_categories CASCADE;

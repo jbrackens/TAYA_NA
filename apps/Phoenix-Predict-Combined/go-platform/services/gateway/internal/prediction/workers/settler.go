@@ -20,11 +20,13 @@ type AutoSettler struct {
 }
 
 // NewAutoSettler creates a new auto-settlement worker.
-func NewAutoSettler(repo prediction.Repository, feeds *feed.Registry, interval time.Duration) *AutoSettler {
+// wallet can be nil for test mode; real deployments must supply a WalletAdapter
+// so settlement payouts actually credit user wallets.
+func NewAutoSettler(repo prediction.Repository, feeds *feed.Registry, wallet prediction.WalletAdapter, interval time.Duration) *AutoSettler {
 	return &AutoSettler{
 		repo:     repo,
 		feeds:    feeds,
-		engine:   prediction.NewSettlementEngine(repo),
+		engine:   prediction.NewSettlementEngine(repo, wallet),
 		interval: interval,
 	}
 }
@@ -94,11 +96,7 @@ func (w *AutoSettler) tick(ctx context.Context) {
 			"payouts", len(payouts),
 			"total_payout_cents", settlement.TotalPayoutCents,
 		)
-
-		// TODO: Credit wallets for each payout
-		// for _, p := range payouts {
-		//     walletService.Credit(p.UserID, p.PayoutCents, "prediction_settlement", m.ID)
-		// }
+		// Wallets are credited inside engine.ResolveMarket via the WalletAdapter.
 	}
 }
 

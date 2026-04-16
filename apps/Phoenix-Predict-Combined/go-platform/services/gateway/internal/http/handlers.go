@@ -120,7 +120,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	} else {
 		slog.Warn("prediction: no DB available, prediction service will not function")
 	}
-	predictionService := prediction.NewService(predRepo)
+	predWallet := newPredictionWalletAdapter(walletService)
+	predictionService := prediction.NewService(predRepo, predWallet)
 	registerPredictionRoutes(mux, predictionService)
 	registerOrderRoutes(mux, predictionService)
 	registerPortfolioRoutes(mux, predictionService)
@@ -137,7 +138,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		go closer.Run(context.Background())
 
 		// Auto-settler: check every 60 seconds for closed markets with automated sources
-		settler := workers.NewAutoSettler(predRepo, feedRegistry, 60*time.Second)
+		settler := workers.NewAutoSettler(predRepo, feedRegistry, predWallet, 60*time.Second)
 		go settler.Run(context.Background())
 
 		slog.Info("prediction: background workers started (closer, settler)")

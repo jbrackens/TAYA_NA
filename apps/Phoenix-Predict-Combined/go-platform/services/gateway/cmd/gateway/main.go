@@ -60,6 +60,15 @@ func main() {
 		"/ws",              // WebSocket has its own auth
 		"/api/v1/content/", // CMS content delivery (public)
 		"/api/v1/banners",  // CMS banner delivery (public)
+
+		// Prediction platform — public read-only endpoints
+		"/api/v1/discovery",
+		"/api/v1/categories",
+		"/api/v1/events",
+		"/api/v1/markets",
+
+		// Bot API uses its own API-key auth middleware, not the session auth
+		"/api/v1/bot/",
 	}
 
 	// CSRF-exempt prefixes (auth endpoints handle their own CSRF)

@@ -15,7 +15,10 @@ CREATE INDEX idx_bets_pending ON bets(punter_id) WHERE status = 'pending';
 CREATE INDEX idx_bets_settled_recent ON bets(punter_id, settled_at) WHERE status IN ('won', 'lost', 'void');
 CREATE INDEX idx_fixtures_upcoming ON fixtures(starts_at) WHERE status IN ('pending', 'scheduled');
 CREATE INDEX idx_markets_open ON markets(fixture_id) WHERE status = 'open';
-CREATE INDEX idx_freebets_available ON freebets(punter_id) WHERE status = 'active' AND expires_at > CURRENT_TIMESTAMP;
+-- Note: original index used `expires_at > CURRENT_TIMESTAMP` in the predicate,
+-- but Postgres requires IMMUTABLE functions in index predicates. Rewriting to
+-- drop the time filter — callers can filter on expires_at at query time.
+CREATE INDEX idx_freebets_available ON freebets(punter_id, expires_at) WHERE status = 'active';
 
 -- +goose Down
 DROP INDEX IF EXISTS idx_bets_punter_settled;

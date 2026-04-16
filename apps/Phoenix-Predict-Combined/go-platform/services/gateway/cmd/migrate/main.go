@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -68,7 +69,7 @@ func main() {
 		args = append(args, os.Args[2:]...)
 	}
 
-	if err := goose.RunContext(nil, command, db, migrationsDir, args...); err != nil {
+	if err := goose.RunContext(context.Background(), command, db, migrationsDir, args...); err != nil {
 		log.Fatalf("error: migration command '%s' failed: %v", command, err)
 	}
 }
