@@ -168,6 +168,12 @@
       "app_equivalent": "app/terms/page.tsx",
       "status": "REAL",
       "notes": "Static page"
+    },
+    {
+      "route": "/promotions (active bonuses section)",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "ActiveBonusesSection with WageringProgress"
     }
   ],
   "components": [
@@ -494,6 +500,54 @@
       "app_equivalent": "app/components/SportSidebar.tsx",
       "status": "REAL",
       "notes": ""
+    },
+    {
+      "name": "WalletBreakdown",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Real+bonus balance display"
+    },
+    {
+      "name": "WageringProgress",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Progress bar toward bonus completion"
+    },
+    {
+      "name": "BonusBadge",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Freebet/bonus indicator on bet cards"
+    },
+    {
+      "name": "BannerCarousel",
+      "status": "REAL",
+      "module": "content",
+      "notes": "CMS banner rotation on homepage"
+    },
+    {
+      "name": "ContentPageRenderer",
+      "status": "REAL",
+      "module": "content",
+      "notes": "CMS-driven page renderer with fallback"
+    },
+    {
+      "name": "WalletBreakdownInline",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Header balance with bonus dot indicator"
+    },
+    {
+      "name": "BonusSyncEffect",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Syncs bonus state into Redux on auth"
+    },
+    {
+      "name": "ActiveBonusesSection",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Active bonuses with wagering progress on promotions page"
     }
   ],
   "services": [
@@ -550,6 +604,18 @@
       "app_equivalent": "app/lib/websocket/handlers/wallets-handler.ts",
       "status": "REAL",
       "notes": ""
+    },
+    {
+      "name": "bonus-client",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Active bonuses + wallet breakdown API client"
+    },
+    {
+      "name": "content-client",
+      "status": "REAL",
+      "module": "content",
+      "notes": "CMS page + banner delivery API client"
     }
   ],
   "slices": [
@@ -624,6 +690,12 @@
       "app_equivalent": "app/lib/store/channelSubscriptionSlice.ts",
       "status": "REAL",
       "notes": "Equivalent functionality in channelSubscriptionSlice with add/remove/cleanup subscriptions"
+    },
+    {
+      "name": "bonusSlice",
+      "status": "REAL",
+      "module": "bonus",
+      "notes": "Active bonuses + wallet breakdown Redux state"
     }
   ]
 }
