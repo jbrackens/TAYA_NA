@@ -119,9 +119,11 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("AMM preview failed: %w", err)
 	}
 
-	// Balance check — reject early before mutating anything.
+	// Balance check — reject early before mutating anything. NoopWallet returns
+	// math.MaxInt64 so test paths that don't care about wallet state pass
+	// through; real wallets return actual balances and will reject correctly.
 	totalCost := preview.TotalCost + preview.FeeCents
-	if balance := s.wallet.Balance(userID); balance > 0 && balance < totalCost {
+	if balance := s.wallet.Balance(userID); balance < totalCost {
 		return nil, nil, fmt.Errorf("insufficient balance: have %d cents, need %d cents", balance, totalCost)
 	}
 

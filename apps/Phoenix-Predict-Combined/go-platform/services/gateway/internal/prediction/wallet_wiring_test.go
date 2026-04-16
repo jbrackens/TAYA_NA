@@ -249,6 +249,56 @@ func TestPlaceOrder_InsufficientBalance_Rejected(t *testing.T) {
 	}
 }
 
+// TestPlaceOrder_ZeroBalance_Rejected guards against a regression where the
+// balance check was skipped when balance == 0, letting users with empty
+// wallets place orders that would only fail later at debit time.
+func TestPlaceOrder_ZeroBalance_Rejected(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo)
+	wallet := &fakeWallet{balances: map[string]int64{"user1": 0}}
+	svc := NewService(repo, wallet)
+
+	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}, "user1")
+	if err == nil {
+		t.Fatal("expected rejection for zero balance")
+	}
+	if len(wallet.debitCalls) != 0 {
+		t.Errorf("wallet.Debit must not be called when pre-check rejects; got %d calls", len(wallet.debitCalls))
+	}
+	if len(repo.orders) != 0 {
+		t.Errorf("no order should be created on rejection")
+	}
+}
+
+// TestPlaceOrder_NoopWallet_AllowsAnyBalance ensures the NoopWallet sentinel
+// (math.MaxInt64 from Balance) short-circuits the pre-check, so tests that
+// don't care about wallet behavior can still exercise trading paths.
+func TestPlaceOrder_NoopWallet_AllowsAnyBalance(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo)
+	svc := NewService(repo, nil) // nil → NoopWallet
+
+	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10,
+	}, "anyone")
+	if err != nil {
+		t.Fatalf("NoopWallet should allow order; got error: %v", err)
+	}
+	if len(repo.orders) != 1 {
+		t.Errorf("expected 1 order created under NoopWallet, got %d", len(repo.orders))
+	}
+}
+
 func TestResolveMarket_CreditsWinnersOnly(t *testing.T) {
 	repo := newMemRepo()
 	m := seedMarket(t, repo)
