@@ -93,6 +93,16 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 			return httpx.Forbidden("cannot access another user's wallet")
 		}
 
+		if len(parts) == 2 && parts[1] == "breakdown" {
+			breakdown := service.BalanceWithBreakdown(userID)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"realMoneyCents":   breakdown.RealMoneyCents,
+				"bonusFundCents":   breakdown.BonusFundCents,
+				"totalCents":       breakdown.TotalCents,
+				"currency":         "USD",
+			})
+		}
+
 		if len(parts) == 2 && parts[1] == "ledger" {
 			limit := 50
 			if raw := strings.TrimSpace(r.URL.Query().Get("limit")); raw != "" {

@@ -3,6 +3,7 @@ package httpx
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -128,5 +129,33 @@ func TestMetricsHandlerOutputsPrometheusFormat(t *testing.T) {
 		if !strings.Contains(body, expected) {
 			t.Fatalf("expected metrics output to contain %q, got: %s", expected, body)
 		}
+	}
+}
+
+func TestMaxBodySizeRejectsOversized(t *testing.T) {
+	handler := MaxBodySize(100)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "too large", http.StatusRequestEntityTooLarge)
+			return
+		}
+		w.Write(body)
+	}))
+
+	// Small body — should pass
+	small := httptest.NewRequest("POST", "/", strings.NewReader("hello"))
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, small)
+	if rec.Code != 200 {
+		t.Fatalf("expected 200 for small body, got %d", rec.Code)
+	}
+
+	// Oversized body — should be rejected
+	big := httptest.NewRequest("POST", "/", strings.NewReader(strings.Repeat("x", 200)))
+	big.ContentLength = 200
+	rec2 := httptest.NewRecorder()
+	handler.ServeHTTP(rec2, big)
+	if rec2.Code != 413 {
+		t.Fatalf("expected 413 for oversized body, got %d", rec2.Code)
 	}
 }

@@ -1,0 +1,41 @@
+{
+  "activeBonus": "Active Bonus",
+  "activeBonuses": "Active Bonuses",
+  "noBonuses": "No active bonuses",
+  "wageringProgress": "Wagering Progress",
+  "wageringRequired": "{{completed}} of {{required}} wagered",
+  "wageringProgressPct": "{{pct}}% complete",
+  "expiresIn": "Expires in {{days}} days",
+  "expired": "Expired",
+  "bonusFunds": "Bonus Funds",
+  "realMoney": "Real Money",
+  "totalBalance": "Total Balance",
+  "claimBonus": "Claim Bonus",
+  "bonusClaimed": "Bonus claimed successfully",
+  "alreadyClaimed": "You have already claimed this bonus",
+  "notEligible": "You are not eligible for this bonus",
+  "bonusRules": "Bonus wagering requirements apply",
+  "bonusType": {
+    "deposit_match": "Deposit Match",
+    "freebet_grant": "Free Bet",
+    "odds_boost_grant": "Odds Boost",
+    "signup_bonus": "Welcome Bonus",
+    "reload_bonus": "Reload Bonus",
+    "referral_bonus": "Referral Bonus",
+    "custom": "Promotional Bonus"
+  },
+  "parlayBoostEligible": "Parlay Boost Eligible",
+  "freeBetApplied": "Free Bet Applied",
+  "bonusFunded": "Bonus Funded",
+  "wageringContribution": "This bet contributes {{amount}} toward your bonus",
+  "bonusCompleted": "Bonus completed! Funds converted to real money.",
+  "bonusExpired": "Your bonus has expired.",
+  "bonusForfeited": "Your bonus has been forfeited.",
+  "viewProgress": "View Progress",
+  "status": {
+    "active": "Active",
+    "completed": "Completed",
+    "expired": "Expired",
+    "forfeited": "Forfeited"
+  }
+}

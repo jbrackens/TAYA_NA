@@ -79,6 +79,7 @@ func main() {
 		httpx.AccessLog(log.Default()),
 		httpx.Metrics(metricsRegistry),
 		httpx.Recovery(log.Default()),
+		httpx.MaxBodySize(1 << 20), // 1 MB — applied first (outermost)
 	}
 
 	if authEnabled {
@@ -91,6 +92,7 @@ func main() {
 			httpx.AccessLog(log.Default()),
 			httpx.Metrics(metricsRegistry),
 			httpx.Recovery(log.Default()),
+			httpx.MaxBodySize(1 << 20), // 1 MB — applied first (outermost)
 		}
 		slog.Info("auth middleware enabled", "auth_service", authServiceURL)
 	} else {

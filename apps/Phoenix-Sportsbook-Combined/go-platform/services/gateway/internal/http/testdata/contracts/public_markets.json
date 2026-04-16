@@ -69,16 +69,16 @@
         }
       },
       "sport": {
-        "abbreviation": "FOOT",
+        "abbreviation": "ESPT",
         "displayToPunters": true,
-        "name": "Football",
-        "sportId": "s:football"
+        "name": "Esports",
+        "sportId": "s:esports"
       },
       "startTime": "2030-04-10T20:00:00Z",
       "status": "NOT_STARTED",
       "tournament": {
         "name": "Premier League",
-        "sportId": "s:football",
+        "sportId": "s:esports",
         "startTime": "2030-04-10T20:00:00Z",
         "tournamentId": "t:premier-league"
       }
@@ -141,16 +141,16 @@
         }
       },
       "sport": {
-        "abbreviation": "FOOT",
+        "abbreviation": "ESPT",
         "displayToPunters": true,
-        "name": "Football",
-        "sportId": "s:football"
+        "name": "Esports",
+        "sportId": "s:esports"
       },
       "startTime": "2030-04-10T20:00:00Z",
       "status": "NOT_STARTED",
       "tournament": {
         "name": "Premier League",
-        "sportId": "s:football",
+        "sportId": "s:esports",
         "startTime": "2030-04-10T20:00:00Z",
         "tournamentId": "t:premier-league"
       }

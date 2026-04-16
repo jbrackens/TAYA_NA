@@ -895,6 +895,20 @@ func (s *Service) applyMutationMemory(kind string, request MutationRequest) (Led
 	}
 
 	s.balances[request.UserID] = balance
+
+	// Defence-in-depth: if a debit somehow produced a negative balance, revert it.
+	if kind == "debit" {
+		if newBal := s.balances[request.UserID]; newBal < 0 {
+			slog.Error("wallet: negative balance detected in memory mode, reverting",
+				"userId", request.UserID,
+				"balance", newBal,
+				"amount", request.AmountCents,
+			)
+			s.balances[request.UserID] = newBal + request.AmountCents
+			return LedgerEntry{}, ErrInsufficientFunds
+		}
+	}
+
 	s.ledger[request.UserID] = append(s.ledger[request.UserID], entry)
 	s.idempotencyMap[idempotencyIndex] = entry
 
@@ -1253,11 +1267,12 @@ func (s *Service) collectCorrectionIssuesDB() ([]correctionIssue, error) {
 SELECT
   b.user_id,
   b.balance_cents,
+  b.bonus_balance_cents,
   COALESCE(
     (
       SELECT l.balance_cents
       FROM wallet_ledger l
-      WHERE l.user_id = b.user_id
+      WHERE l.user_id = b.user_id AND (l.fund_type = 'real' OR l.fund_type IS NULL)
       ORDER BY l.id DESC
       LIMIT 1
     ),
@@ -1274,9 +1289,10 @@ FROM wallet_balances b`)
 		var (
 			userID            string
 			balance           int64
+			bonusBalance      int64
 			lastLedgerBalance int64
 		)
-		if err := rows.Scan(&userID, &balance, &lastLedgerBalance); err != nil {
+		if err := rows.Scan(&userID, &balance, &bonusBalance, &lastLedgerBalance); err != nil {
 			return nil, err
 		}
 		if balance < 0 {
@@ -1287,7 +1303,7 @@ FROM wallet_balances b`)
 				SuggestedAdjustmentCents: -balance,
 				Reason:                   "negative wallet balance detected",
 				Details:                  fmt.Sprintf("balance=%d", balance),
-				AutomationSource:         "scanner_v1",
+				AutomationSource:         "scanner_v2",
 			})
 		}
 		if lastLedgerBalance != balance {
@@ -1298,7 +1314,19 @@ FROM wallet_balances b`)
 				SuggestedAdjustmentCents: lastLedgerBalance - balance,
 				Reason:                   "ledger and balance mismatch",
 				Details:                  fmt.Sprintf("balance=%d expectedFromLedger=%d", balance, lastLedgerBalance),
-				AutomationSource:         "scanner_v1",
+				AutomationSource:         "scanner_v2",
+			})
+		}
+		// Bonus-specific checks
+		if bonusBalance < 0 {
+			out = append(out, correctionIssue{
+				UserID:                   userID,
+				Type:                     "negative_bonus_balance",
+				CurrentBalanceCents:      bonusBalance,
+				SuggestedAdjustmentCents: -bonusBalance,
+				Reason:                   "negative bonus balance detected",
+				Details:                  fmt.Sprintf("bonus_balance=%d", bonusBalance),
+				AutomationSource:         "scanner_v2",
 			})
 		}
 	}
@@ -1417,6 +1445,14 @@ func (s *Service) loadFromDisk() error {
 
 	if state.Balances != nil {
 		s.balances = state.Balances
+		// Correct any negative balances persisted by older versions.
+		for userID, balance := range s.balances {
+			if balance < 0 {
+				slog.Warn("wallet: correcting negative balance from snapshot",
+					"userId", userID, "balance", balance)
+				s.balances[userID] = 0
+			}
+		}
 	}
 	if state.Ledger != nil {
 		s.ledger = state.Ledger

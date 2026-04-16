@@ -11,9 +11,12 @@ import (
 	"time"
 
 	"phoenix-revival/gateway/internal/bets"
+	"phoenix-revival/gateway/internal/bonus"
 	"phoenix-revival/gateway/internal/cache"
+	"phoenix-revival/gateway/internal/content"
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/domain"
+	"phoenix-revival/gateway/internal/events"
 	"phoenix-revival/gateway/internal/freebets"
 	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
@@ -149,6 +152,52 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerOddsBoostRoutes(mux, oddsBoostService)
 	registerLoyaltyRoutes(mux, loyaltyService)
 	registerLeaderboardRoutes(mux, leaderboardService)
+
+	// Initialize bonus service if wallet DB is available
+	eventBus := events.NewBus()
+	if walletDB := walletService.DB(); walletDB != nil {
+		bonusRepo := bonus.NewRepository(walletDB)
+		bonusService := bonus.NewService(bonusRepo, walletService, eventBus)
+		registerBonusRoutes(mux, bonusService)
+
+		// Background job: expire active bonuses every 60 seconds
+		go func() {
+			ticker := time.NewTicker(60 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				expired, err := bonusService.ExpireActiveBonuses(context.Background())
+				if err != nil {
+					slog.Warn("bonus expiry scan failed", "error", err)
+				} else if expired > 0 {
+					slog.Info("bonus: expired active bonuses", "count", expired)
+				}
+			}
+		}()
+
+		// Background job: close expired campaigns every 5 minutes
+		go func() {
+			ticker := time.NewTicker(5 * time.Minute)
+			defer ticker.Stop()
+			for range ticker.C {
+				closed, err := bonusService.CloseExpiredCampaigns(context.Background())
+				if err != nil {
+					slog.Warn("campaign auto-close failed", "error", err)
+				} else if closed > 0 {
+					slog.Info("bonus: auto-closed expired campaigns", "count", closed)
+				}
+			}
+		}()
+
+		slog.Info("bonus service initialized in DB mode")
+
+		// Initialize content service (shares same DB)
+		contentService := content.NewService(walletDB)
+		registerContentRoutes(mux, contentService)
+		slog.Info("content service initialized in DB mode")
+	} else {
+		slog.Info("bonus and content services skipped (no DB available)")
+	}
+
 	// File-backed persistence: auto-save state every 5 seconds
 	loyaltyService.StartAutoSave(5 * time.Second)
 	leaderboardService.StartAutoSave(5 * time.Second)
