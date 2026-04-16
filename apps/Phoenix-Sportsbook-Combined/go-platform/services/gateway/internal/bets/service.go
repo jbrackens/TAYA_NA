@@ -1955,14 +1955,57 @@ func (s *Service) applySettlementTransitionAtomic(ctx context.Context, tx *sql.T
 		return Bet{}, settlementTransitionMeta{}, ErrBetStateConflict
 	}
 
-	isWinningBet := isWinningSettlement(bet, winningSelectionSet)
+	// Parlay settlement: if multi-leg, use SettleParlay for void/push/reduced-leg handling
+	var isWinningBet bool
 	targetStatus := statusSettledLost
 	targetOutcome := "lost"
 	targetPayoutCents := int64(0)
-	if isWinningBet {
-		targetStatus = statusSettledWon
-		targetOutcome = "won"
-		targetPayoutCents = int64(math.Round(float64(bet.PotentialPayoutCents) * deadHeatFactor))
+
+	if len(bet.Legs) > 1 {
+		parlayLegs := make([]ParlayLegOutcome, len(bet.Legs))
+		for i, leg := range bet.Legs {
+			legOutcome := "lost"
+			if _, found := winningSelectionSet[leg.SelectionID]; found {
+				legOutcome = "won"
+			}
+			if _, found := winningSelectionSet["void:"+leg.SelectionID]; found {
+				legOutcome = "void"
+			}
+			if _, found := winningSelectionSet["push:"+leg.SelectionID]; found {
+				legOutcome = "push"
+			}
+			parlayLegs[i] = ParlayLegOutcome{
+				LegIndex:       i,
+				Outcome:        legOutcome,
+				Odds:           leg.FinalOdds,
+				DeadHeatFactor: deadHeatFactor,
+			}
+		}
+		parlayResult := SettleParlay(parlayLegs, DefaultParlayRules().MinLegs)
+		switch parlayResult.FinalOutcome {
+		case "won":
+			isWinningBet = true
+			targetStatus = statusSettledWon
+			targetOutcome = "won"
+			targetPayoutCents = int64(math.Round(float64(bet.StakeCents) * parlayResult.PayoutMultiple))
+		case "void":
+			targetStatus = statusRefunded
+			targetOutcome = "void"
+			targetPayoutCents = bet.StakeCents
+		case "push":
+			targetStatus = statusPush
+			targetOutcome = "push"
+			targetPayoutCents = bet.StakeCents
+		default:
+			isWinningBet = false
+		}
+	} else {
+		isWinningBet = isWinningSettlement(bet, winningSelectionSet)
+		if isWinningBet {
+			targetStatus = statusSettledWon
+			targetOutcome = "won"
+			targetPayoutCents = int64(math.Round(float64(bet.PotentialPayoutCents) * deadHeatFactor))
+		}
 	}
 
 	// Idempotent replay check

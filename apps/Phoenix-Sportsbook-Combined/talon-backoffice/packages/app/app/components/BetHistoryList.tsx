@@ -23,6 +23,8 @@ interface Bet {
   selectionId: string;
   selectionName?: string;
   settledAt?: string;
+  freebetId?: string;
+  bonusFundedCents?: number;
 }
 
 type BetStatus = "all" | "open" | "won" | "lost" | "cashed_out";
@@ -58,7 +60,9 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
   const [cashoutOffers, setCashoutOffers] = useState<
     Record<string, CashoutOffer>
   >({});
-  const [pointsByBetId, setPointsByBetId] = useState<Record<string, number>>({});
+  const [pointsByBetId, setPointsByBetId] = useState<Record<string, number>>(
+    {},
+  );
   const [cashingOut, setCashingOut] = useState<string | null>(null);
   const toast = useToast();
 
@@ -105,9 +109,7 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
         setPointsByBetId(loyaltyMap);
 
         // Fetch cashout offers for open/pending bets
-        const cashable = normalized.filter(
-          (b) => b.status === "open",
-        );
+        const cashable = normalized.filter((b) => b.status === "open");
         const offers: Record<string, CashoutOffer> = {};
         const offerResults = await Promise.all(
           cashable.map(async (bet) => {
@@ -250,7 +252,10 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {(() => {
-        const totalPoints = Object.values(pointsByBetId).reduce((sum, pts) => sum + pts, 0);
+        const totalPoints = Object.values(pointsByBetId).reduce(
+          (sum, pts) => sum + pts,
+          0,
+        );
         return totalPoints > 0 ? (
           <div
             style={{
@@ -279,8 +284,11 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
               >
                 Rewards Posted
               </div>
-              <div style={{ color: "#D3D3D3", fontSize: "12px", lineHeight: 1.5 }}>
-                Settled tickets on this page already pushed points into your TAYA NA! climb.
+              <div
+                style={{ color: "#D3D3D3", fontSize: "12px", lineHeight: 1.5 }}
+              >
+                Settled tickets on this page already pushed points into your
+                TAYA NA! climb.
               </div>
             </div>
             <div
@@ -361,8 +369,9 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                           "linear-gradient(135deg, rgba(57,255,20,0.12), rgba(8,18,11,0.92))",
                         borderLeft: "1px solid rgba(57,255,20,0.24)",
                         borderRight: "1px solid rgba(57,255,20,0.24)",
-                        borderBottom:
-                          offer ? "none" : "1px solid rgba(57,255,20,0.24)",
+                        borderBottom: offer
+                          ? "none"
+                          : "1px solid rgba(57,255,20,0.24)",
                         marginTop: "-8px",
                       }}
                     >
@@ -379,11 +388,24 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                         >
                           Points Earned
                         </div>
-                        <div style={{ color: "#D3D3D3", fontSize: "12px", lineHeight: 1.5 }}>
-                          This settled ticket already pushed your loyalty balance forward.
+                        <div
+                          style={{
+                            color: "#D3D3D3",
+                            fontSize: "12px",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          This settled ticket already pushed your loyalty
+                          balance forward.
                         </div>
                       </div>
-                      <div style={{ display: "grid", justifyItems: "end", gap: "4px" }}>
+                      <div
+                        style={{
+                          display: "grid",
+                          justifyItems: "end",
+                          gap: "4px",
+                        }}
+                      >
                         <div
                           style={{
                             color: "#39ff14",

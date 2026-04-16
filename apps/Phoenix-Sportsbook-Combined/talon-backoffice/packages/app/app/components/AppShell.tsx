@@ -14,12 +14,15 @@ import { ToastProvider } from "./ToastProvider";
 import { AccountStatusBar } from "./AccountStatusBar";
 import { BackendStatusBanner } from "./BackendStatusBanner";
 import OpenChatButton from "./OpenChatButton";
+import { useBonusSync } from "../hooks/useBonusSync";
 
-export default function AppShell({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/** Syncs bonus/wallet breakdown state into Redux once auth is available */
+function BonusSyncEffect() {
+  useBonusSync();
+  return null;
+}
+
+export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname?.startsWith("/auth/");
 
@@ -29,6 +32,7 @@ export default function AppShell({
         <I18nProvider>
           <ToastProvider>
             <AuthProvider>
+              <BonusSyncEffect />
               <BetslipProvider>
                 {isAuthRoute ? (
                   <div className="ps-auth-layout">{children}</div>

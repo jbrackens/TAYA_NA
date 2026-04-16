@@ -41,6 +41,8 @@ interface Bet {
   marketId: string;
   selectionId: string;
   settledAt?: string;
+  freebetId?: string;
+  bonusFundedCents?: number;
 }
 
 interface BetCardProps {
@@ -124,6 +126,36 @@ export const BetCard: React.FC<BetCardProps> = ({ bet }) => {
           <Badge variant={getStatusVariant(bet.status)}>
             {bet.status.charAt(0).toUpperCase() + bet.status.slice(1)}
           </Badge>
+          {bet.freebetId && (
+            <span
+              style={{
+                padding: "2px 6px",
+                borderRadius: "4px",
+                fontSize: "10px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                backgroundColor: "rgba(59,130,246,0.15)",
+                color: "#60a5fa",
+              }}
+            >
+              Free Bet
+            </span>
+          )}
+          {(bet.bonusFundedCents ?? 0) > 0 && (
+            <span
+              style={{
+                padding: "2px 6px",
+                borderRadius: "4px",
+                fontSize: "10px",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                backgroundColor: "rgba(234,179,8,0.15)",
+                color: "#facc15",
+              }}
+            >
+              Bonus
+            </span>
+          )}
         </div>
       </div>
 

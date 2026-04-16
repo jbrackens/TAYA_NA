@@ -188,6 +188,32 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			}
 		}()
 
+		// Bridge event bus → WebSocket hub for bonus lifecycle events
+		eventBus.Subscribe("bonus.granted", func(ctx context.Context, event events.Event) error {
+			wsHub.BroadcastEvent("bonus", event.Type, "update", map[string]any{
+				"type": event.Type, "bonus_id": 0, "user_id": event.UserID,
+			})
+			return nil
+		})
+		eventBus.Subscribe("bonus.completed", func(ctx context.Context, event events.Event) error {
+			wsHub.BroadcastEvent("bonus", event.Type, "update", map[string]any{
+				"type": event.Type, "user_id": event.UserID,
+			})
+			return nil
+		})
+		eventBus.Subscribe("bonus.expired", func(ctx context.Context, event events.Event) error {
+			wsHub.BroadcastEvent("bonus", event.Type, "update", map[string]any{
+				"type": event.Type, "user_id": event.UserID,
+			})
+			return nil
+		})
+		eventBus.Subscribe("bonus.forfeited", func(ctx context.Context, event events.Event) error {
+			wsHub.BroadcastEvent("bonus", event.Type, "update", map[string]any{
+				"type": event.Type, "user_id": event.UserID,
+			})
+			return nil
+		})
+
 		slog.Info("bonus service initialized in DB mode")
 
 		// Initialize content service (shares same DB)

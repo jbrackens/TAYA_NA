@@ -11,17 +11,29 @@ import (
 	"phoenix-revival/gateway/internal/wallet"
 )
 
+// FreebetGranter is an interface for creating freebets from campaign grants.
+// This avoids a circular dependency between bonus/ and freebets/ packages.
+type FreebetGranter interface {
+	GrantFromCampaign(userID string, campaignID int64, amountCents int64, minOdds float64, expiresAt time.Time) error
+}
+
 // Service manages campaigns and player bonuses.
 type Service struct {
-	repo      *Repository
-	walletSvc *wallet.Service
-	bus       *events.Bus
+	repo            *Repository
+	walletSvc       *wallet.Service
+	bus             *events.Bus
+	freebetGranter  FreebetGranter
 }
 
 // NewService creates a bonus service. If db is nil, the service operates
 // as a no-op (no-database mode for development).
 func NewService(repo *Repository, walletSvc *wallet.Service, bus *events.Bus) *Service {
 	return &Service{repo: repo, walletSvc: walletSvc, bus: bus}
+}
+
+// SetFreebetGranter sets the freebet granter for campaign-driven freebet issuance.
+func (s *Service) SetFreebetGranter(g FreebetGranter) {
+	s.freebetGranter = g
 }
 
 // --- Campaign CRUD ---
@@ -211,6 +223,19 @@ func (s *Service) ClaimBonus(ctx context.Context, req ClaimBonusRequest) (Player
 		slog.Error("failed to credit bonus to wallet",
 			"userId", req.UserID, "bonusId", created.ID, "error", err)
 		return PlayerBonus{}, fmt.Errorf("credit bonus to wallet: %w", err)
+	}
+
+	// For freebet_grant campaigns, also create a freebet
+	if campaign.CampaignType == "freebet_grant" && s.freebetGranter != nil {
+		minOdds := wageringCfg.MinOddsDecimal
+		if minOdds <= 0 {
+			minOdds = 1.50 // default minimum odds for freebets
+		}
+		if err := s.freebetGranter.GrantFromCampaign(req.UserID, req.CampaignID, bonusAmount, minOdds, expiresAt); err != nil {
+			slog.Error("failed to create freebet from campaign",
+				"userId", req.UserID, "campaignId", req.CampaignID, "error", err)
+			// Non-fatal: bonus is still active, freebet just wasn't created
+		}
 	}
 
 	// Update campaign claim count
