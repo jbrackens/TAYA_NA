@@ -10,10 +10,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>TAYA NA!</title>
+        <title>TAYA NA Predict</title>
         <meta
           name="description"
-          content="The ultimate sports betting platform"
+          content="Trade on the outcome of real-world events — politics, crypto, sports, and more."
         />
         <link
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Orbitron:wght@900&display=swap"

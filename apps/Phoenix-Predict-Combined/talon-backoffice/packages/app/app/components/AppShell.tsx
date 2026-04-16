@@ -1,26 +1,27 @@
 "use client";
 
+/**
+ * AppShell — root client boundary that composes providers and chrome.
+ *
+ * Historical note: the previous shell wrapped sportsbook chrome (SportsSidebar,
+ * HeaderBar, BetslipProvider, BetslipPanel) around the page. Those components
+ * stuck around for reference under app/components/ but are no longer rendered.
+ * The prediction chrome (PredictHeader, PredictSidebar, PredictFooter) is
+ * thinner and doesn't need a cross-page betslip since each market has its own
+ * TradeTicket.
+ */
+
 import React from "react";
 import { usePathname } from "next/navigation";
 import StoreProvider from "../lib/store/StoreProvider";
 import { QueryProvider } from "../lib/query/QueryProvider";
 import { I18nProvider } from "../lib/i18n/I18nProvider";
 import { AuthProvider } from "./AuthProvider";
-import { BetslipProvider } from "./BetslipProvider";
-import { SportsSidebar } from "./SportsSidebar";
-import { HeaderBar } from "./HeaderBar";
-import { BetslipPanel } from "./BetslipPanel";
 import { ToastProvider } from "./ToastProvider";
-import { AccountStatusBar } from "./AccountStatusBar";
+import { PredictHeader } from "./prediction/PredictHeader";
+import { PredictSidebar } from "./prediction/PredictSidebar";
+import { PredictFooter } from "./prediction/PredictFooter";
 import { BackendStatusBanner } from "./BackendStatusBanner";
-import OpenChatButton from "./OpenChatButton";
-import { useBonusSync } from "../hooks/useBonusSync";
-
-/** Syncs bonus/wallet breakdown state into Redux once auth is available */
-function BonusSyncEffect() {
-  useBonusSync();
-  return null;
-}
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -32,28 +33,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <I18nProvider>
           <ToastProvider>
             <AuthProvider>
-              <BonusSyncEffect />
-              <BetslipProvider>
-                {isAuthRoute ? (
-                  <div className="ps-auth-layout">{children}</div>
-                ) : (
-                  <>
-                    <div className="ps-shell">
-                      <SportsSidebar />
-                      <div className="ps-main">
-                        <div className="ps-main-inner">
-                          <HeaderBar />
-                          <BackendStatusBanner />
-                          <AccountStatusBar />
-                          <div className="ps-page">{children}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <BetslipPanel />
-                    <OpenChatButton />
-                  </>
-                )}
-              </BetslipProvider>
+              {isAuthRoute ? (
+                <div className="min-h-screen flex items-center justify-center bg-black">
+                  {children}
+                </div>
+              ) : (
+                <div className="min-h-screen flex flex-col bg-black text-white">
+                  <PredictHeader />
+                  <BackendStatusBanner />
+                  <div className="flex-1 flex">
+                    <PredictSidebar />
+                    <main className="flex-1 min-w-0">{children}</main>
+                  </div>
+                  <PredictFooter />
+                </div>
+              )}
             </AuthProvider>
           </ToastProvider>
         </I18nProvider>
