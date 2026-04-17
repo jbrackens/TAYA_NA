@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { MarketCard } from "../../components/prediction/MarketCard";
+import { logger } from "../../lib/logger";
 import type {
   PredictionMarket,
   Category,
@@ -12,7 +13,6 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 const api = createPredictionClient();
 
 export default function CategoryPage() {
-  // useParams() returns null during the initial static render.
   const params = useParams() ?? {};
   const slug = (params.slug as string | undefined) ?? "";
 
@@ -21,63 +21,118 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
       try {
         const cat = await api.getCategory(slug);
+        if (cancelled) return;
         setCategory(cat);
-        const res = await api.getMarkets({
+        // Category → events (by categoryId) → flatten markets.
+        // The markets endpoint doesn't accept a categoryId filter directly;
+        // events do. Fetching one event per page isn't ideal at scale,
+        // but seed data stays small and dropping the hydrated markets
+        // array per event is fine here.
+        const eventsRes = await api.getEvents({
+          categoryId: cat.id,
           status: "open",
-          page: 1,
           pageSize: 50,
         });
-        setMarkets(res.data);
+        if (cancelled) return;
+        const events = eventsRes.data;
+        const hydrated = await Promise.all(
+          events.map((e) => api.getEvent(e.id).catch(() => null)),
+        );
+        if (cancelled) return;
+        const collected: PredictionMarket[] = [];
+        for (const ev of hydrated) {
+          if (!ev?.markets) continue;
+          for (const m of ev.markets) {
+            if (m.status === "open") collected.push(m);
+          }
+        }
+        setMarkets(collected);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("Category load failed:", msg);
+        logger.error("CategoryPage", "load failed", err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     load();
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400 text-sm">Loading...</div>
+      <div
+        style={{
+          color: "var(--t3)",
+          fontSize: 13,
+          padding: 80,
+          textAlign: "center",
+        }}
+      >
+        Loading…
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-white mb-1">
-        {category?.name || slug}
-      </h1>
-      <p className="text-sm text-gray-400 mb-6">
-        {markets.length} open market{markets.length !== 1 ? "s" : ""}
-      </p>
+    <>
+      <style>{`
+        .cat-wrap { max-width: 1440px; margin: 0 auto; padding: 24px 24px 60px; }
+        .cat-head { margin-bottom: 20px; }
+        .cat-title {
+          font-size: 28px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          color: var(--t1);
+          margin: 0 0 4px;
+        }
+        .cat-sub {
+          font-size: 13px;
+          color: var(--t3);
+        }
+        .cat-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 14px;
+        }
+        .cat-empty {
+          padding: 60px 20px;
+          text-align: center;
+          color: var(--t3);
+          font-size: 13px;
+        }
+      `}</style>
+      <div className="cat-wrap">
+        <header className="cat-head">
+          <h1 className="cat-title">{category?.name || slug}</h1>
+          <p className="cat-sub">
+            {markets.length} open market{markets.length !== 1 ? "s" : ""}
+          </p>
+        </header>
 
-      {markets.length === 0 ? (
-        <div className="text-center text-gray-500 text-sm py-12">
-          No open markets in this category yet
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {markets.map((m) => (
-            <MarketCard
-              key={m.id}
-              ticker={m.ticker}
-              title={m.title}
-              yesPriceCents={m.yesPriceCents}
-              noPriceCents={m.noPriceCents}
-              volumeCents={m.volumeCents}
-              closeAt={m.closeAt}
-              status={m.status}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+        {markets.length === 0 ? (
+          <div className="cat-empty">No open markets in this category yet.</div>
+        ) : (
+          <div className="cat-grid">
+            {markets.map((m) => (
+              <MarketCard
+                key={m.id}
+                ticker={m.ticker}
+                title={m.title}
+                yesPriceCents={m.yesPriceCents}
+                noPriceCents={m.noPriceCents}
+                volumeCents={m.volumeCents}
+                closeAt={m.closeAt}
+                status={m.status}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
