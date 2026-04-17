@@ -213,11 +213,18 @@ npm run dev
 
 ### Test credentials
 
-Seeded users (password for all: `predict123`):
-- `alice@predict.dev` — $1,000.00 balance
-- `bob@predict.dev` — $500.00 balance
-- `charlie@predict.dev` — $2,500.00 balance
-- `bot@predict.dev` — $10,000.00 balance (for testing the bot API)
+**Active login:** `demo@phoenix.local` / `demo123`
+
+The auth service (port 18081) auto-seeds `demo@phoenix.local` / `demo123` (player role) and `admin@phoenix.local` / `admin123` (admin role) into the `auth_users` table on startup. These are the only credentials the player app can log in with out of the box.
+
+The `punters`/`wallets` test users below are seeded by `go run ./cmd/seed` for prediction-side data (positions, orders, wallet balances) but **are not yet wired into the auth service's `auth_users` table**. To log in as them, register via `POST /api/v1/auth/register` with the matching email, or add them to the auth service's seed helper (see `services/auth/internal/http/handlers.go` `seedDBUsers`).
+
+| User | Role | Wallet balance (prediction seed) |
+|------|------|---------------------------------:|
+| `alice@predict.dev` / `predict123` | player | $1,000.00 |
+| `bob@predict.dev` / `predict123` | player | $500.00 |
+| `charlie@predict.dev` / `predict123` | player | $2,500.00 |
+| `bot@predict.dev` / `predict123` | bot | $10,000.00 |
 
 ### Known macOS Issue — Brotli
 
