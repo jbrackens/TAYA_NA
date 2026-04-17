@@ -1,43 +1,27 @@
 "use client";
 
 /**
- * PredictHeader — top nav for the prediction platform.
+ * PredictHeader — slim chrome + horizontal category strip.
  *
- * Replaces HeaderBar (which carried sportsbook concerns: betslip icon, odds
- * format toggle, BetConstruct event search, sport tabs). This header has:
- *  - brand / home link
- *  - primary nav: Predict, Portfolio, Leaderboards
- *  - wallet balance (only when authenticated)
- *  - user menu (login/register OR account/logout)
+ * Top row: logo on left, search in the middle, auth pair on the right.
+ * Bottom row: auto-scrolling category chips (All / Trending / Politics / …).
  *
- * Keeps the auth state and click-outside patterns from HeaderBar but drops the
- * ~600 lines of sportsbook-specific UI.
+ * The whole chrome is 100–110px tall with backdrop blur so the ticker's
+ * translucent background still shows through on scroll. No left sidebar —
+ * category navigation lives here and here only.
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  User as UserIcon,
-  LogOut,
-  Wallet as WalletIcon,
-  Settings,
-} from "lucide-react";
+import { Search, Wallet, LogOut, User as UserIcon, Settings } from "lucide-react";
+import type { Category } from "@phoenix-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { useAuth } from "../../hooks/useAuth";
 import { useAppSelector } from "../../lib/store/hooks";
 import { selectCurrentBalance } from "../../lib/store/cashierSlice";
 
-interface NavItem {
-  href: string;
-  label: string;
-  requiresAuth?: boolean;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { href: "/predict", label: "Markets" },
-  { href: "/portfolio", label: "Portfolio", requiresAuth: true },
-  { href: "/leaderboards", label: "Leaderboard" },
-];
+const api = createPredictionClient();
 
 export function PredictHeader() {
   const pathname = usePathname();
@@ -45,16 +29,21 @@ export function PredictHeader() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const balance = useAppSelector(selectCurrentBalance);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const isActive = useCallback(
-    (href: string) => {
-      const p = pathname ?? "/";
-      return p === href || p.startsWith(`${href}/`);
-    },
-    [pathname],
-  );
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getCategories()
+      .then((cats) => {
+        if (!cancelled) setCategories(cats);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  // Close user menu on outside click and Escape
   useEffect(() => {
     if (!userMenuOpen) return;
     const onClick = (e: MouseEvent) => {
@@ -78,112 +67,290 @@ export function PredictHeader() {
     await logout();
   }, [logout]);
 
+  const initial = (user?.username || user?.email || "?").charAt(0).toUpperCase();
+  const isActiveCategory = (slug: string) =>
+    pathname?.startsWith(`/category/${slug}`) ?? false;
+  const isDiscovery = pathname === "/predict" || pathname === "/predict/";
+
   return (
-    <header className="border-b border-gray-800 bg-black/80 backdrop-blur sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        {/* Brand */}
-        <Link
-          href="/predict"
-          className="text-lg font-bold text-white tracking-tight whitespace-nowrap"
-        >
-          TAYA <span className="text-emerald-400">Predict</span>
-        </Link>
+    <>
+      <style>{`
+        .ph {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          background: rgba(17, 24, 39, 0.92);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--b1);
+        }
+        .ph-row {
+          max-width: 1440px;
+          margin: 0 auto;
+          padding: 14px 24px;
+          display: flex;
+          align-items: center;
+          gap: 24px;
+        }
+        .ph-logo {
+          font-weight: 800;
+          font-size: 20px;
+          letter-spacing: -0.02em;
+          color: var(--t1);
+          text-decoration: none;
+        }
+        .ph-logo span { color: var(--accent); }
+        .ph-search {
+          flex: 1;
+          max-width: 480px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 9px 14px;
+          background: var(--s2);
+          border: 1px solid var(--b1);
+          border-radius: 999px;
+          color: var(--t3);
+          font-size: 13px;
+          transition: all 0.15s;
+          cursor: text;
+        }
+        .ph-search:hover, .ph-search:focus-within {
+          border-color: var(--accent);
+          box-shadow: var(--accent-glow);
+          color: var(--t2);
+        }
+        .ph-search input {
+          flex: 1;
+          background: transparent;
+          border: 0;
+          outline: 0;
+          color: inherit;
+          font: inherit;
+          min-width: 0;
+        }
+        .ph-right {
+          margin-left: auto;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .ph-wallet {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 14px;
+          background: var(--s1);
+          border: 1px solid var(--b1);
+          border-radius: 999px;
+          color: var(--t1);
+          font-weight: 600;
+          font-size: 13px;
+        }
+        .ph-wallet svg { color: var(--accent); }
+        .ph-btn {
+          padding: 8px 16px;
+          border-radius: 999px;
+          font-weight: 600;
+          font-size: 13px;
+          border: 0;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-family: inherit;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .ph-btn-ghost { background: transparent; color: var(--t1); }
+        .ph-btn-ghost:hover { background: var(--s1); }
+        .ph-btn-accent {
+          background: var(--accent);
+          color: #06222b;
+          box-shadow: var(--accent-glow);
+        }
+        .ph-btn-accent:hover { background: var(--accent-hi); }
+        .ph-avatar {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--accent-soft);
+          color: var(--accent);
+          font-weight: 700;
+          font-size: 13px;
+          border: 1px solid rgba(34,211,238,0.3);
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .ph-avatar:hover { background: rgba(34,211,238,0.2); }
 
-        {/* Primary nav */}
-        <nav className="hidden sm:flex items-center gap-1 flex-1">
-          {NAV_ITEMS.map((item) => {
-            if (item.requiresAuth && !isAuthenticated) return null;
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  active
-                    ? "text-white bg-gray-800"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800/50"
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        .ph-cat-strip {
+          border-top: 1px solid var(--b1);
+        }
+        .ph-cat-row {
+          max-width: 1440px;
+          margin: 0 auto;
+          padding: 10px 24px;
+          display: flex;
+          gap: 4px;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .ph-cat-row::-webkit-scrollbar { display: none; }
+        .ph-cat {
+          padding: 8px 14px;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--t2);
+          border-radius: 999px;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: all 0.15s;
+          text-decoration: none;
+          border: 0;
+          background: transparent;
+          font-family: inherit;
+        }
+        .ph-cat:hover { color: var(--t1); background: var(--s1); }
+        .ph-cat.active { color: var(--accent); background: var(--accent-soft); }
 
-        {/* Wallet + user menu */}
-        <div className="flex items-center gap-3">
-          {isAuthenticated && (
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gray-900 border border-gray-800 text-sm">
-              <WalletIcon className="w-3.5 h-3.5 text-gray-500" />
-              <span className="text-white font-medium">
-                ${typeof balance === "number" ? balance.toFixed(2) : "0.00"}
-              </span>
-            </div>
-          )}
+        .ph-menu {
+          position: absolute;
+          right: 0;
+          top: calc(100% + 6px);
+          min-width: 200px;
+          background: var(--s1);
+          border: 1px solid var(--b1);
+          border-radius: var(--r-md);
+          padding: 4px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+          z-index: 60;
+        }
+        .ph-menu a, .ph-menu button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          border-radius: var(--r-sm);
+          font-size: 13px;
+          color: var(--t1);
+          background: transparent;
+          border: 0;
+          text-decoration: none;
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .ph-menu a:hover, .ph-menu button:hover { background: var(--s2); }
+      `}</style>
 
-          {isLoading ? (
-            <div className="w-20 h-8 bg-gray-800 rounded animate-pulse" />
-          ) : isAuthenticated ? (
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={() => setUserMenuOpen((o) => !o)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-gray-800 transition-colors"
-                aria-haspopup="menu"
-                aria-expanded={userMenuOpen}
-              >
-                <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-semibold">
-                  {(user?.username || user?.email || "?")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-                <span className="hidden md:inline text-sm text-gray-300">
-                  {user?.username || user?.email || "Account"}
+      <header className="ph">
+        <div className="ph-row">
+          <Link href="/predict" className="ph-logo">
+            TAYA <span>Predict</span>
+          </Link>
+
+          <label className="ph-search">
+            <Search size={14} />
+            <input
+              type="search"
+              placeholder="Search markets, candidates, teams…"
+              aria-label="Search markets"
+            />
+          </label>
+
+          <div className="ph-right">
+            {isAuthenticated && (
+              <div className="ph-wallet">
+                <Wallet size={14} />
+                <span className="mono">
+                  ${typeof balance === "number" ? balance.toFixed(2) : "0.00"}
                 </span>
-              </button>
+              </div>
+            )}
 
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-gray-900 border border-gray-800 rounded-md shadow-lg py-1">
-                  <Link
-                    href="/account"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800"
-                  >
-                    <UserIcon className="w-4 h-4" /> Account
-                  </Link>
-                  <Link
-                    href="/account/settings"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800"
-                  >
-                    <Settings className="w-4 h-4" /> Settings
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:bg-gray-800 text-left"
-                  >
-                    <LogOut className="w-4 h-4" /> Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/auth/login"
-                className="text-sm text-gray-300 hover:text-white px-3 py-1.5"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/auth/register"
-                className="text-sm font-medium bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-md transition-colors"
-              >
-                Sign up
-              </Link>
-            </div>
-          )}
+            {isLoading ? null : isAuthenticated ? (
+              <div style={{ position: "relative" }} ref={menuRef}>
+                <button
+                  type="button"
+                  className="ph-avatar"
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                >
+                  {initial}
+                </button>
+                {userMenuOpen && (
+                  <div className="ph-menu" role="menu">
+                    <Link href="/account" onClick={() => setUserMenuOpen(false)}>
+                      <UserIcon size={14} /> Account
+                    </Link>
+                    <Link
+                      href="/portfolio"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Wallet size={14} /> Portfolio
+                    </Link>
+                    <Link
+                      href="/account/settings"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Settings size={14} /> Settings
+                    </Link>
+                    <div
+                      style={{
+                        height: 1,
+                        background: "var(--b1)",
+                        margin: "4px 0",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      style={{ color: "var(--no)" }}
+                    >
+                      <LogOut size={14} /> Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link href="/auth/login" className="ph-btn ph-btn-ghost">
+                  Log in
+                </Link>
+                <Link href="/auth/register" className="ph-btn ph-btn-accent">
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+
+        <div className="ph-cat-strip">
+          <div className="ph-cat-row">
+            <Link
+              href="/predict"
+              className={`ph-cat ${isDiscovery ? "active" : ""}`}
+            >
+              All
+            </Link>
+            {categories.map((c) => (
+              <Link
+                key={c.slug}
+                href={`/category/${c.slug}`}
+                className={`ph-cat ${isActiveCategory(c.slug) ? "active" : ""}`}
+              >
+                {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

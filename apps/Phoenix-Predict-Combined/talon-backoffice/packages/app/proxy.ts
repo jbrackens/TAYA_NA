@@ -58,7 +58,7 @@ export function proxy(request: NextRequest) {
   // Skip auth for static assets served from public/ — the config.matcher exclusions
   // are not applied by Next.js 16's proxy loader, so we guard here directly
   if (
-    /\.(?:png|jpe?g|gif|svg|ico|webp|webm|mp4|css|js|woff2?|ttf|eot|map)$/.test(
+    /\.(?:png|jpe?g|gif|svg|ico|webp|webm|mp4|css|js|woff2?|ttf|eot|map|html|txt|xml|json)$/.test(
       pathname,
     )
   ) {

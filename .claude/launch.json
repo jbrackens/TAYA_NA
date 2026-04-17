@@ -2,29 +2,36 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "Player App (Next.js)",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["next", "dev", "--webpack"],
-      "port": 3000,
-      "autoPort": true,
-      "cwd": "apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/app",
-      "env": {
-        "NEXT_PUBLIC_API_URL": "http://localhost:18080",
-        "NEXT_PUBLIC_AUTH_URL": "http://localhost:18081",
-        "NEXT_PUBLIC_WS_URL": "ws://localhost:18080/ws"
-      }
+      "name": "PostgreSQL (Docker)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "postgres"],
+      "port": 5434,
+      "cwd": "apps/Phoenix-Predict-Combined"
+    },
+    {
+      "name": "Redis (Docker)",
+      "runtimeExecutable": "docker",
+      "runtimeArgs": ["compose", "up", "redis"],
+      "port": 6380,
+      "cwd": "apps/Phoenix-Predict-Combined"
     },
     {
       "name": "Go Gateway",
       "runtimeExecutable": "go",
       "runtimeArgs": ["run", "./cmd/gateway"],
       "port": 18080,
-      "cwd": "apps/Phoenix-Sportsbook-Combined/go-platform/services/gateway",
+      "cwd": "apps/Phoenix-Predict-Combined/go-platform/services/gateway",
       "env": {
         "GATEWAY_PORT": "18080",
-        "LOG_LEVEL": "debug",
-        "GATEWAY_READ_MODEL_FILE": "seed-data.json",
-        "GATEWAY_ALLOW_ADMIN_ANON": "true"
+        "GATEWAY_DB_DRIVER": "postgres",
+        "GATEWAY_DB_DSN": "postgres://predict:localdev@localhost:5434/predict?sslmode=disable",
+        "GATEWAY_READ_REPO_MODE": "db",
+        "WALLET_DB_DSN": "postgres://predict:localdev@localhost:5434/predict?sslmode=disable",
+        "WALLET_STORE_MODE": "db",
+        "REDIS_URL": "redis://localhost:6380/0",
+        "AUTH_SERVICE_URL": "http://localhost:18081",
+        "GATEWAY_CORS_ORIGINS": "http://localhost:3000,http://localhost:3001",
+        "LOG_LEVEL": "debug"
       }
     },
     {
@@ -32,37 +39,38 @@
       "runtimeExecutable": "go",
       "runtimeArgs": ["run", "./cmd/auth"],
       "port": 18081,
-      "cwd": "apps/Phoenix-Sportsbook-Combined/go-platform/services/auth",
+      "cwd": "apps/Phoenix-Predict-Combined/go-platform/services/auth",
       "env": {
         "AUTH_PORT": "18081",
-        "LOG_LEVEL": "debug",
-        "AUTH_COOKIE_SECURE": "false"
+        "AUTH_DB_DSN": "postgres://predict:localdev@localhost:5434/predict?sslmode=disable",
+        "REDIS_URL": "redis://localhost:6380/0",
+        "AUTH_COOKIE_SECURE": "false",
+        "JWT_SECRET": "dev-secret-key-change-in-production",
+        "LOG_LEVEL": "debug"
+      }
+    },
+    {
+      "name": "Player App (Next.js)",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "--webpack", "-p", "3000"],
+      "port": 3000,
+      "cwd": "apps/Phoenix-Predict-Combined/talon-backoffice/packages/app",
+      "env": {
+        "NEXT_PUBLIC_API_URL": "http://localhost:18080",
+        "NEXT_PUBLIC_AUTH_URL": "http://localhost:18081",
+        "NEXT_PUBLIC_WS_URL": "ws://localhost:18080/ws"
       }
     },
     {
       "name": "Back-Office App (Next.js)",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "--webpack", "-p", "3001"],
       "port": 3001,
-      "cwd": "apps/Phoenix-Sportsbook-Combined/talon-backoffice/packages/office",
+      "cwd": "apps/Phoenix-Predict-Combined/talon-backoffice/packages/office",
       "env": {
         "NEXT_PUBLIC_API_URL": "http://localhost:18080",
         "NEXT_PUBLIC_AUTH_URL": "http://localhost:18081"
       }
-    },
-    {
-      "name": "PostgreSQL (Docker)",
-      "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up", "postgres"],
-      "port": 5432,
-      "cwd": "apps/Phoenix-Sportsbook-Combined"
-    },
-    {
-      "name": "Redis (Docker)",
-      "runtimeExecutable": "docker",
-      "runtimeArgs": ["compose", "up", "redis"],
-      "port": 6379,
-      "cwd": "apps/Phoenix-Sportsbook-Combined"
     }
   ]
 }

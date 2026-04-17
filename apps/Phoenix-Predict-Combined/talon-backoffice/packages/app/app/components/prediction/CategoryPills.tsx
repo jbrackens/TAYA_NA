@@ -1,10 +1,18 @@
 "use client";
 
+/**
+ * CategoryPills — horizontal category filter.
+ *
+ * Uses the sportsbook .sport-pills / .sport-pill / .sport-pill-icon classes
+ * from globals.css — same look as the sport navigation on the sportsbook
+ * discovery page, just with category labels instead of sports.
+ */
+
 import Link from "next/link";
 import type { Category } from "@phoenix-ui/api-client/src/prediction-types";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  politics: "\u{1F3DB}",
+const CATEGORY_EMOJI: Record<string, string> = {
+  politics: "\u{1F3DB}\u{FE0F}",
   crypto: "\u{1FA99}",
   sports: "\u{1F3C6}",
   entertainment: "\u{1F3AC}",
@@ -24,37 +32,36 @@ export function CategoryPills({
   onSelect,
 }: CategoryPillsProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="sport-pills">
       <button
+        type="button"
         onClick={() => onSelect?.(null)}
-        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-          !activeSlug
-            ? "bg-blue-600 text-white"
-            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-        }`}
+        className={`sport-pill${!activeSlug ? " active" : ""}`}
       >
+        <span className="sport-pill-icon">{"\u{2728}"}</span>
         All
       </button>
-      {categories.map((cat) => (
-        <Link
-          key={cat.slug}
-          href={`/category/${cat.slug}`}
-          onClick={(e) => {
-            if (onSelect) {
-              e.preventDefault();
-              onSelect(cat.slug);
-            }
-          }}
-          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-            activeSlug === cat.slug
-              ? "bg-blue-600 text-white"
-              : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-          }`}
-        >
-          <span className="mr-1">{CATEGORY_ICONS[cat.slug] || ""}</span>
-          {cat.name}
-        </Link>
-      ))}
+      {categories.map((cat) => {
+        const active = activeSlug === cat.slug;
+        return (
+          <Link
+            key={cat.slug}
+            href={`/category/${cat.slug}`}
+            onClick={(e) => {
+              if (onSelect) {
+                e.preventDefault();
+                onSelect(cat.slug);
+              }
+            }}
+            className={`sport-pill${active ? " active" : ""}`}
+          >
+            <span className="sport-pill-icon">
+              {CATEGORY_EMOJI[cat.slug] ?? "\u{2022}"}
+            </span>
+            {cat.name}
+          </Link>
+        );
+      })}
     </div>
   );
 }

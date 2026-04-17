@@ -1,41 +1,55 @@
 "use client";
 
 /**
- * PredictFooter — legal and info links for the prediction platform.
+ * PredictFooter — legal and info links.
  *
- * Replaces Footer (which referenced sportsbook pages like betting-rules and
- * bonus-rules). This footer links only to pages that still exist on the
- * prediction site: About, Terms, Privacy, Responsible Gaming, Contact.
+ * Intentionally minimal — most of the visual weight lives in .ps-topbar and
+ * .ps-sidebar. This bar just sits at the bottom of the page with the brand,
+ * copyright, and legal/info links.
  */
 
 import Link from "next/link";
 
 const YEAR = new Date().getFullYear();
 
+const LINKS = [
+  { href: "/about", label: "About" },
+  { href: "/terms", label: "Terms" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/responsible-gaming", label: "Responsible Gaming" },
+  { href: "/contact-us", label: "Contact" },
+];
+
 export function PredictFooter() {
   return (
-    <footer className="border-t border-gray-800 bg-black/60 mt-12">
-      <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="text-xs text-gray-500">
-          © {YEAR} TAYA NA Predict. Trade event contracts, not sports bets.
-        </div>
-        <nav className="flex flex-wrap gap-4 text-xs text-gray-400">
-          <Link href="/about" className="hover:text-white">
-            About
+    <footer
+      style={{
+        borderTop: "1px solid #1a1f3a",
+        padding: "16px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        fontSize: 12,
+        color: "#D3D3D3",
+      }}
+    >
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+        {LINKS.map((l) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            style={{ color: "#D3D3D3", textDecoration: "none" }}
+          >
+            {l.label}
           </Link>
-          <Link href="/terms" className="hover:text-white">
-            Terms
-          </Link>
-          <Link href="/privacy" className="hover:text-white">
-            Privacy
-          </Link>
-          <Link href="/responsible-gaming" className="hover:text-white">
-            Responsible Gaming
-          </Link>
-          <Link href="/contact-us" className="hover:text-white">
-            Contact
-          </Link>
-        </nav>
+        ))}
+      </div>
+      <div style={{ opacity: 0.7 }}>
+        <span style={{ color: "#f8fafc", fontWeight: 700 }}>
+          TAYA <span style={{ color: "#39ff14" }}>Predict</span>
+        </span>
+        {" · "}© {YEAR}
+        {" · "}Trade event contracts, not sports bets
       </div>
     </footer>
   );

@@ -771,7 +771,25 @@ func (r *SQLRepository) ListSettledPositions(ctx context.Context, userID string,
 // --- Discovery ---
 
 func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, error) {
-	d := &DiscoveryResponse{}
+	// Initialize with empty (non-nil) slices so the JSON encoder emits `[]`
+	// rather than `null` when a section has no rows — the frontend treats
+	// the response as `.featured.length` and would NPE on null.
+	d := &DiscoveryResponse{
+		Featured:    []Market{},
+		Trending:    []Market{},
+		ClosingSoon: []Market{},
+		Recent:      []Market{},
+	}
+
+	// scanMarkets returns nil when a query has zero rows. Assigning that back
+	// to d.Featured etc. would overwrite the [] init and let the JSON encoder
+	// emit null. assign() copies only when scanMarkets returned a populated
+	// slice, preserving the [] init for empty results.
+	assign := func(dst *[]Market, src []Market) {
+		if src != nil {
+			*dst = src
+		}
+	}
 
 	// Featured: markets flagged in featured events
 	rows, err := r.db.QueryContext(ctx,
@@ -779,17 +797,19 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 		  AND m.event_id IN (SELECT id FROM prediction_events WHERE featured = true)
 		  ORDER BY m.volume_cents DESC LIMIT 6`)
 	if err == nil {
-		d.Featured, _ = scanMarkets(rows)
+		got, _ := scanMarkets(rows)
 		rows.Close()
+		assign(&d.Featured, got)
 	}
 
-	// Trending: highest volume in last hour
+	// Trending: highest volume (proxied by lifetime volume until last-hour tracking lands)
 	rows, err = r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'
 		  ORDER BY m.volume_cents DESC LIMIT 6`)
 	if err == nil {
-		d.Trending, _ = scanMarkets(rows)
+		got, _ := scanMarkets(rows)
 		rows.Close()
+		assign(&d.Trending, got)
 	}
 
 	// Closing soon: markets closing within 24h
@@ -798,8 +818,9 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 		  AND m.close_at BETWEEN NOW() AND NOW() + INTERVAL '24 hours'
 		  ORDER BY m.close_at ASC LIMIT 6`)
 	if err == nil {
-		d.ClosingSoon, _ = scanMarkets(rows)
+		got, _ := scanMarkets(rows)
 		rows.Close()
+		assign(&d.ClosingSoon, got)
 	}
 
 	// Recent: newest markets
@@ -807,8 +828,9 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 		marketSelectQuery()+` WHERE m.status = 'open'
 		  ORDER BY m.created_at DESC LIMIT 6`)
 	if err == nil {
-		d.Recent, _ = scanMarkets(rows)
+		got, _ := scanMarkets(rows)
 		rows.Close()
+		assign(&d.Recent, got)
 	}
 
 	return d, nil

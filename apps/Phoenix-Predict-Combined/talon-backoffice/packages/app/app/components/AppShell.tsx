@@ -1,14 +1,16 @@
 "use client";
 
 /**
- * AppShell — root client boundary that composes providers and chrome.
+ * AppShell — root client boundary for the prediction player app.
  *
- * Historical note: the previous shell wrapped sportsbook chrome (SportsSidebar,
- * HeaderBar, BetslipProvider, BetslipPanel) around the page. Those components
- * stuck around for reference under app/components/ but are no longer rendered.
- * The prediction chrome (PredictHeader, PredictSidebar, PredictFooter) is
- * thinner and doesn't need a cross-page betslip since each market has its own
- * TradeTicket.
+ * Layout (matches the approved design preview — not the sportsbook shell):
+ *   [WhaleTicker]           ← slim auto-scrolling band at the top
+ *   [PredictHeader]         ← logo + search + auth, with category strip below
+ *   [page content]          ← max-width centered
+ *
+ * No left sidebar. All three researched references (Kalshi, Polymarket,
+ * Pariflow) use horizontal category navigation at the top; the sportsbook's
+ * .ps-sidebar doesn't belong in fintech/broadcast product.
  */
 
 import React from "react";
@@ -19,8 +21,7 @@ import { I18nProvider } from "../lib/i18n/I18nProvider";
 import { AuthProvider } from "./AuthProvider";
 import { ToastProvider } from "./ToastProvider";
 import { PredictHeader } from "./prediction/PredictHeader";
-import { PredictSidebar } from "./prediction/PredictSidebar";
-import { PredictFooter } from "./prediction/PredictFooter";
+import { WhaleTicker } from "./prediction/WhaleTicker";
 import { BackendStatusBanner } from "./BackendStatusBanner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -34,18 +35,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <ToastProvider>
             <AuthProvider>
               {isAuthRoute ? (
-                <div className="min-h-screen flex items-center justify-center bg-black">
-                  {children}
-                </div>
+                <div className="ps-auth-layout">{children}</div>
               ) : (
-                <div className="min-h-screen flex flex-col bg-black text-white">
+                <div style={{ minHeight: "100vh", background: "var(--s0)" }}>
+                  <WhaleTicker />
                   <PredictHeader />
                   <BackendStatusBanner />
-                  <div className="flex-1 flex">
-                    <PredictSidebar />
-                    <main className="flex-1 min-w-0">{children}</main>
-                  </div>
-                  <PredictFooter />
+                  <main
+                    style={{
+                      maxWidth: 1440,
+                      margin: "0 auto",
+                      padding: "24px 24px 80px",
+                    }}
+                  >
+                    {children}
+                  </main>
                 </div>
               )}
             </AuthProvider>

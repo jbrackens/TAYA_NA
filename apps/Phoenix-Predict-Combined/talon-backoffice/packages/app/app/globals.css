@@ -1,3 +1,12 @@
+/* Tailwind v4 — gives all utility classes used by app/components/prediction/*
+ * and the prediction pages (predict, market, portfolio, category). The
+ * @source directives tell Tailwind where to scan for class names; defaults
+ * usually pick these up, but we declare them explicitly to be safe with
+ * Next.js's App Router directory layout. */
+@import "tailwindcss";
+
+@source "./";
+@source "../components/";
 
   @keyframes ps-spin { to { transform: rotate(360deg); } }
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
@@ -6,10 +15,72 @@
     height: 100%;
   }
   body {
-    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: #0b0e1c; color: #e2e8f0;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--s0, #111827);
+    color: var(--t1, #ffffff);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── Predict design system tokens ─────────────────────────────────────
+   * Dark broadcast / fintech-editorial aesthetic. Derived from research of
+   * Pariflow, Polymarket, and Kalshi. Lives alongside the sportsbook
+   * ps-* / discovery-* / sport-pill classes above — those still render the
+   * sportsbook surfaces, these render prediction pages.
+   * See DESIGN.md in the repo root for the full spec and rationale. */
+  :root {
+    /* Surfaces */
+    --s0: #111827;            /* page */
+    --s1: #1f2937;            /* cards */
+    --s2: #0f1623;            /* inputs, insets */
+    --s3: #0b111c;            /* deepest (ticker band) */
+    /* Borders */
+    --b1: #1f2a3d;
+    --b2: #374151;
+    --b3: #4b5563;
+    /* Text */
+    --t1: #ffffff;
+    --t2: rgba(255, 255, 255, 0.72);
+    --t3: rgba(255, 255, 255, 0.45);
+    --t4: rgba(255, 255, 255, 0.28);
+    /* Accent (cyan / broadcast-live) */
+    --accent: #22d3ee;
+    --accent-hi: #67e8f9;
+    --accent-soft: rgba(34, 211, 238, 0.14);
+    --accent-glow: 0 0 28px rgba(34, 211, 238, 0.35);
+    /* Semantic */
+    --yes: #34d399;
+    --no: #f87171;
+    --live: #ef4444;
+    --whale: #fbbf24;
+    --whale-soft: rgba(251, 191, 36, 0.14);
+    /* Radius */
+    --r-sm: 6px;
+    --r-md: 12px;
+    --r-lg: 20px;
+  }
+
+  /* Mono utility for prices/volumes/tabular numbers. Use on any element
+   * displaying cents or dollar amounts — gives tabular-nums alignment so
+   * "41¢" and "59¢" sit at the same visual width. */
+  .mono {
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Pulsing red dot used by the LIVE pill and the whale ticker. */
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--live);
+    box-shadow: 0 0 10px var(--live);
+    animation: predict-pulse 1.6s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes predict-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
   }
   a { color: inherit; text-decoration: none; }
   button { font-family: inherit; }

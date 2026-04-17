@@ -1,161 +1,180 @@
 "use client";
 
+/**
+ * PredictDiscoveryPage — the prediction homepage.
+ *
+ * Structure (matches the approved design preview):
+ *   [FeaturedHero]           ← one marquee market + whale card + top movers
+ *   [Featured markets grid]  ← full grid of MarketCards
+ *   [Trending markets grid]  ← same card, trending slice
+ *   [Closing soon]           ← narrow when empty — safe
+ *   [Recently added]
+ *
+ * The horizontal category chips live in PredictHeader (the app chrome), not
+ * here. This page is responsible only for data fetch + layout; chrome is
+ * always present.
+ */
+
 import { useEffect, useState } from "react";
 import { MarketCard } from "../components/prediction/MarketCard";
-import { CategoryPills } from "../components/prediction/CategoryPills";
+import { FeaturedHero } from "../components/prediction/FeaturedHero";
 import type {
-  Category,
   DiscoveryResponse,
+  PredictionMarket,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 
 const api = createPredictionClient();
 
+function MarketGrid({ markets }: { markets: PredictionMarket[] }) {
+  if (!markets || markets.length === 0) return null;
+  return (
+    <>
+      <style>{`
+        .pred-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 14px;
+        }
+      `}</style>
+      <div className="pred-grid">
+        {markets.map((m) => (
+          <MarketCard
+            key={m.id}
+            ticker={m.ticker}
+            title={m.title}
+            yesPriceCents={m.yesPriceCents}
+            noPriceCents={m.noPriceCents}
+            volumeCents={m.volumeCents}
+            closeAt={m.closeAt}
+            status={m.status}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function SectionHead({
+  title,
+  count,
+  href,
+}: {
+  title: string;
+  count?: number;
+  href?: string;
+}) {
+  return (
+    <>
+      <style>{`
+        .pred-section-head {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          margin: 28px 0 14px;
+        }
+        .pred-section-title {
+          font-size: 22px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          margin: 0;
+          color: var(--t1);
+        }
+        .pred-section-link {
+          font-size: 13px;
+          color: var(--accent);
+          text-decoration: none;
+        }
+        .pred-section-link:hover { text-decoration: underline; }
+      `}</style>
+      <div className="pred-section-head">
+        <h2 className="pred-section-title">{title}</h2>
+        {href && (
+          <a href={href} className="pred-section-link">
+            {count != null ? `See all ${count} →` : "See all →"}
+          </a>
+        )}
+      </div>
+    </>
+  );
+}
+
 export default function PredictDiscoveryPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [cats, disc] = await Promise.all([
-          api.getCategories(),
-          api.getDiscovery(),
-        ]);
-        setCategories(cats);
-        setDiscovery(disc);
-      } catch (err: unknown) {
+    let cancelled = false;
+    api
+      .getDiscovery()
+      .then((d) => {
+        if (!cancelled) setDiscovery(d);
+      })
+      .catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);
         console.error("Discovery load failed:", msg);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const featured = discovery?.featured ?? [];
+  const trending = discovery?.trending ?? [];
+  const closingSoon = discovery?.closingSoon ?? [];
+  const recent = discovery?.recent ?? [];
+
+  // Marquee is the #1 featured market by volume.
+  const marquee = featured[0] ?? trending[0] ?? null;
+  const featuredRest = marquee ? featured.filter((m) => m.id !== marquee.id) : featured;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400 text-sm">Loading markets...</div>
+      <div
+        style={{
+          color: "var(--t3)",
+          fontSize: 13,
+          padding: 80,
+          textAlign: "center",
+        }}
+      >
+        Loading markets…
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white mb-1">Predict</h1>
-        <p className="text-sm text-gray-400">
-          Trade on the outcome of real-world events
-        </p>
-      </div>
+    <div>
+      <FeaturedHero market={marquee} topMovers={trending.slice(0, 4)} />
 
-      {/* Category pills */}
-      <div className="mb-6">
-        <CategoryPills
-          categories={categories}
-          activeSlug={activeCategory}
-          onSelect={setActiveCategory}
-        />
-      </div>
-
-      {discovery && (
+      {featuredRest.length > 0 && (
         <>
-          {/* Featured */}
-          {discovery.featured.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-lg font-semibold text-white mb-3">
-                Featured
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {discovery.featured.map((m) => (
-                  <MarketCard
-                    key={m.id}
-                    ticker={m.ticker}
-                    title={m.title}
-                    yesPriceCents={m.yesPriceCents}
-                    noPriceCents={m.noPriceCents}
-                    volumeCents={m.volumeCents}
-                    closeAt={m.closeAt}
-                    status={m.status}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+          <SectionHead title="Featured markets" count={featured.length} />
+          <MarketGrid markets={featuredRest} />
+        </>
+      )}
 
-          {/* Trending */}
-          {discovery.trending.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-lg font-semibold text-white mb-3">
-                Trending
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {discovery.trending.map((m) => (
-                  <MarketCard
-                    key={m.id}
-                    ticker={m.ticker}
-                    title={m.title}
-                    yesPriceCents={m.yesPriceCents}
-                    noPriceCents={m.noPriceCents}
-                    volumeCents={m.volumeCents}
-                    closeAt={m.closeAt}
-                    status={m.status}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+      {trending.length > 0 && (
+        <>
+          <SectionHead title="Trending" count={trending.length} />
+          <MarketGrid markets={trending} />
+        </>
+      )}
 
-          {/* Closing Soon */}
-          {discovery.closingSoon.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-lg font-semibold text-white mb-3">
-                Closing Soon
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {discovery.closingSoon.map((m) => (
-                  <MarketCard
-                    key={m.id}
-                    ticker={m.ticker}
-                    title={m.title}
-                    yesPriceCents={m.yesPriceCents}
-                    noPriceCents={m.noPriceCents}
-                    volumeCents={m.volumeCents}
-                    closeAt={m.closeAt}
-                    status={m.status}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+      {closingSoon.length > 0 && (
+        <>
+          <SectionHead title="Closing soon" count={closingSoon.length} />
+          <MarketGrid markets={closingSoon} />
+        </>
+      )}
 
-          {/* Recent */}
-          {discovery.recent.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-lg font-semibold text-white mb-3">
-                Recently Added
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {discovery.recent.map((m) => (
-                  <MarketCard
-                    key={m.id}
-                    ticker={m.ticker}
-                    title={m.title}
-                    yesPriceCents={m.yesPriceCents}
-                    noPriceCents={m.noPriceCents}
-                    volumeCents={m.volumeCents}
-                    closeAt={m.closeAt}
-                    status={m.status}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
+      {recent.length > 0 && (
+        <>
+          <SectionHead title="Recently added" count={recent.length} />
+          <MarketGrid markets={recent} />
         </>
       )}
     </div>

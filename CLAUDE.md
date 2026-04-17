@@ -38,7 +38,8 @@ Taya_Na_Predict/
 │   └── docker-compose.yml                 ← PostgreSQL (5434) + Redis (6380) + services
 ├── reference/v2-prediction/               ← Old v2 prediction prototype kept for reference
 ├── CLAUDE.md                              ← this file
-├── DESIGN.md                              ← design system (from sportsbook — still relevant for UI primitives)
+├── DESIGN.md                              ← prediction design system (dark broadcast, Outfit + IBM Plex Mono, cyan accent) — READ BEFORE ANY UI CHANGE
+├── DESIGN-SPORTSBOOK.md                   ← archived sportsbook spec (backoffice still uses this)
 └── PRIMER.md                              ← session primer (older — parts are out of date)
 ```
 

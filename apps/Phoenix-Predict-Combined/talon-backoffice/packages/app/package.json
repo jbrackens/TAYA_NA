@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@reduxjs/toolkit": "^1.1.0",
+    "@tailwindcss/postcss": "^4",
     "@types/jest": "24.0.23",
     "@types/jsonwebtoken": "^7.2.7",
     "@types/node": "^14.6.4",
@@ -59,6 +60,7 @@
     "dom-accessibility-api": "^0.5.2",
     "i18next-hmr": "^1.6.0",
     "react-test-renderer": "19.2.4",
+    "tailwindcss": "^4",
     "typescript": "5.3.3"
   },
   "serial-number": 188

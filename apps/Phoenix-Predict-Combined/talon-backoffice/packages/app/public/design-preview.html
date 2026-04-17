@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TAYA NA Predict — Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    /* Surfaces */
+    --s0: #111827;           /* page */
+    --s1: #1f2937;           /* cards */
+    --s2: #0f1623;           /* deep/inset */
+    --s3: #0b111c;           /* deepest */
+    /* Borders */
+    --b1: #1f2a3d;
+    --b2: #374151;
+    --b3: #4b5563;
+    /* Text */
+    --t1: #ffffff;
+    --t2: rgba(255,255,255,0.72);
+    --t3: rgba(255,255,255,0.45);
+    --t4: rgba(255,255,255,0.28);
+    /* Accent */
+    --accent: #22d3ee;
+    --accent-hi: #67e8f9;
+    --accent-soft: rgba(34,211,238,0.14);
+    --accent-glow: 0 0 28px rgba(34,211,238,0.35);
+    /* Semantic */
+    --yes: #34d399;
+    --no: #f87171;
+    --live: #ef4444;
+    --whale: #fbbf24;
+    --whale-soft: rgba(251,191,36,0.14);
+    /* Radius */
+    --r-sm: 6px;
+    --r-md: 12px;
+    --r-lg: 20px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--s0); color: var(--t1); font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  /* === Top chrome === */
+  .chrome { border-bottom: 1px solid var(--b1); position: sticky; top: 0; background: rgba(17,24,39,0.92); backdrop-filter: blur(12px); z-index: 50; }
+  .chrome-row { max-width: 1440px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; gap: 24px; }
+  .logo { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+  .searchbox { flex: 1; max-width: 480px; display: flex; align-items: center; gap: 8px; padding: 9px 14px; background: var(--s2); border: 1px solid var(--b1); border-radius: 999px; color: var(--t3); font-size: 13px; }
+  .searchbox:focus-within { border-color: var(--accent); box-shadow: var(--accent-glow); }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .btn { padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 13px; border: 0; cursor: pointer; transition: all 0.15s; }
+  .btn-ghost { background: transparent; color: var(--t1); }
+  .btn-ghost:hover { background: var(--s1); }
+  .btn-accent { background: var(--accent); color: #06222b; box-shadow: var(--accent-glow); }
+  .btn-accent:hover { background: var(--accent-hi); }
+
+  /* Category strip */
+  .cat-strip { border-bottom: 1px solid var(--b1); }
+  .cat-row { max-width: 1440px; margin: 0 auto; padding: 10px 24px; display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .cat-row::-webkit-scrollbar { display: none; }
+  .cat-chip { padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--t2); border-radius: 999px; white-space: nowrap; cursor: pointer; transition: all 0.15s; }
+  .cat-chip:hover { color: var(--t1); background: var(--s1); }
+  .cat-chip.active { color: var(--accent); background: var(--accent-soft); }
+  .live-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(239,68,68,0.14); border: 1px solid rgba(239,68,68,0.4); color: var(--live); border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+  /* === Layout === */
+  .page { max-width: 1440px; margin: 0 auto; padding: 24px; }
+
+  /* Hero */
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr); gap: 16px; margin-bottom: 28px; }
+  .hero { position: relative; overflow: hidden; border-radius: var(--r-lg); min-height: 280px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--b1); display: flex; flex-direction: column; justify-content: flex-end; padding: 28px; }
+  .hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at top right, rgba(34,211,238,0.2), transparent 45%), radial-gradient(ellipse at bottom left, rgba(239,68,68,0.1), transparent 50%); pointer-events: none; }
+  .hero-img { position: absolute; right: -5%; top: -10%; width: 65%; height: 130%; background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 50%; filter: blur(80px); opacity: 0.28; }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--t3); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+  .hero-title { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; max-width: 640px; margin: 0 0 18px; }
+  .hero-cta { display: flex; gap: 8px; align-items: center; }
+  .hero-volume { font-size: 12px; color: var(--t3); margin-left: auto; }
+
+  /* Side cards column */
+  .side-col { display: flex; flex-direction: column; gap: 12px; }
+  .side-card { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r-md); padding: 16px; }
+  .whale-card { background: linear-gradient(180deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02)); border-color: rgba(251,191,36,0.22); }
+  .side-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .side-head-title { font-weight: 700; font-size: 14px; }
+  .side-head-icon { width: 24px; height: 24px; border-radius: 6px; background: var(--whale-soft); color: var(--whale); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+  .whale-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; border-top: 1px dashed var(--b1); }
+  .whale-row:first-of-type { border-top: 0; }
+  .whale-addr { color: var(--whale); font-weight: 600; }
+  .whale-size { color: var(--t1); font-weight: 600; }
+  .whale-detail { color: var(--t3); flex: 1; }
+
+  /* Section heading */
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 28px 0 14px; }
+  .section-title { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+  .section-link { font-size: 13px; color: var(--accent); }
+
+  /* Market grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+
+  /* Market card */
+  .mkt { background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r-md); padding: 16px; transition: border-color 0.15s, transform 0.15s; display: flex; flex-direction: column; gap: 14px; cursor: pointer; }
+  .mkt:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .mkt-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+  .mkt-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--t3); display: flex; align-items: center; gap: 6px; }
+  .mkt-cat-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .mkt-chip { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--s2); color: var(--t2); white-space: nowrap; letter-spacing: 0.04em; text-transform: uppercase; }
+  .mkt-chip.soon { background: rgba(251,191,36,0.14); color: var(--whale); border: 1px solid rgba(251,191,36,0.3); }
+  .mkt-title { font-size: 15px; font-weight: 600; line-height: 1.35; color: var(--t1); margin: 0; }
+  .mkt-mid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mkt-side { padding: 10px 12px; border-radius: var(--r-sm); background: var(--s2); border: 1px solid transparent; transition: all 0.15s; }
+  .mkt-side:hover { border-color: var(--accent); }
+  .mkt-side.yes { }
+  .mkt-side.yes:hover { background: rgba(52,211,153,0.1); border-color: var(--yes); }
+  .mkt-side.no:hover { background: rgba(248,113,113,0.1); border-color: var(--no); }
+  .mkt-side-label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: var(--t3); margin-bottom: 2px; text-transform: uppercase; }
+  .mkt-side-price { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+  .mkt-side-price strong { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .mkt-side.yes strong { color: var(--yes); }
+  .mkt-side.no strong { color: var(--no); }
+  .mkt-delta { font-size: 11px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .mkt-delta.up { color: var(--yes); }
+  .mkt-delta.dn { color: var(--no); }
+  .mkt-foot { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--t3); padding-top: 10px; border-top: 1px solid var(--b1); }
+  .mkt-foot .vol { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; color: var(--t2); font-weight: 600; }
+  /* Sparkline */
+  .spark { height: 32px; width: 100%; opacity: 0.9; }
+
+  /* Trending ladder card (used in side-col or as a full card) */
+  .trend { display: flex; flex-direction: column; gap: 2px; }
+  .trend-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px dashed var(--b1); font-size: 13px; gap: 10px; }
+  .trend-row:first-of-type { border-top: 0; }
+  .trend-q { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--t2); }
+  .trend-pct { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
+
+  /* Outcome ladder (Kalshi-style) for the market detail demo */
+  .ladder { display: grid; gap: 6px; }
+  .ladder-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--s2); border: 1px solid var(--b1); border-radius: var(--r-sm); font-size: 13px; }
+  .ladder-out { color: var(--t1); font-weight: 500; }
+  .ladder-pct { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--t1); }
+  .ladder-yes { padding: 4px 10px; background: rgba(52,211,153,0.12); color: var(--yes); border-radius: var(--r-sm); font-weight: 700; font-size: 12px; }
+
+  /* Ticker */
+  .ticker { background: var(--s3); border-bottom: 1px solid var(--b1); overflow: hidden; }
+  .ticker-inner { display: flex; gap: 24px; padding: 8px 0; animation: scroll 60s linear infinite; white-space: nowrap; font-size: 12px; }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+  .ticker-item { display: inline-flex; align-items: center; gap: 8px; color: var(--t2); }
+  .ticker-item .mono { color: var(--whale); font-weight: 700; }
+  .ticker-sep { color: var(--t4); }
+
+  /* Typography spec page */
+  .spec { max-width: 960px; margin: 64px auto; padding: 32px; border-top: 1px solid var(--b1); }
+  .spec h2 { font-size: 24px; margin-top: 40px; letter-spacing: -0.02em; }
+  .spec-row { display: grid; grid-template-columns: 140px 1fr; gap: 24px; padding: 12px 0; border-top: 1px dashed var(--b1); align-items: center; }
+  .spec-row:first-of-type { border-top: 0; }
+  .spec-label { font-size: 11px; color: var(--t3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .swatch { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; color: var(--t2); }
+  .swatch-box { width: 40px; height: 40px; border-radius: var(--r-sm); border: 1px solid var(--b1); }
+</style>
+</head>
+<body>
+
+<!-- === Whale ticker (top band) === -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$42K</span><span>at 57¢ on Fed cuts in June</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$88K</span><span>at 64¢ on BTC new ATH</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$31K</span><span>at 49¢ on Election margin</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$26K</span><span>at 72¢ on F1 champion</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$120K</span><span>at 38¢ on GPT-5 by July</span></span>
+    <span class="ticker-sep">·</span>
+    <!-- duplicate to make the scroll seamless -->
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$42K</span><span>at 57¢ on Fed cuts in June</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$88K</span><span>at 64¢ on BTC new ATH</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$31K</span><span>at 49¢ on Election margin</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$26K</span><span>at 72¢ on F1 champion</span></span>
+    <span class="ticker-sep">·</span>
+    <span class="ticker-item"><span class="live-dot"></span><span>WHALE</span><span class="mono">$120K</span><span>at 38¢ on GPT-5 by July</span></span>
+  </div>
+</div>
+
+<!-- === Chrome === -->
+<header class="chrome">
+  <div class="chrome-row">
+    <a href="#" class="logo">TAYA <span>Predict</span></a>
+    <div class="searchbox">
+      <span>🔍</span>
+      <span>Search markets, candidates, teams…</span>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-ghost">Log in</button>
+      <button class="btn btn-accent">Sign up</button>
+    </div>
+  </div>
+  <div class="cat-strip">
+    <div class="cat-row">
+      <span class="cat-chip active">All</span>
+      <span class="cat-chip">🔥 Trending</span>
+      <span class="cat-chip">Politics</span>
+      <span class="cat-chip">Crypto</span>
+      <span class="cat-chip">Sports</span>
+      <span class="cat-chip">Economy</span>
+      <span class="cat-chip">Tech</span>
+      <span class="cat-chip">Entertainment</span>
+      <span class="cat-chip">World</span>
+      <span class="cat-chip">Science</span>
+      <span class="cat-chip">Culture</span>
+      <span class="cat-chip">Finance</span>
+      <span class="cat-chip">Elections</span>
+    </div>
+  </div>
+</header>
+
+<!-- === Main content === -->
+<main class="page">
+  <!-- Hero -->
+  <div class="hero-grid">
+    <!-- Featured market -->
+    <div class="hero">
+      <div class="hero-img"></div>
+      <div class="hero-content">
+        <div class="hero-meta">
+          <span class="live-pill"><span class="live-dot"></span>LIVE</span>
+          <span>Elections · 2026 Midterms</span>
+        </div>
+        <h2 class="hero-title">Will Democrats control the Senate after 2026 midterms?</h2>
+        <div class="hero-cta">
+          <button class="btn btn-accent">Trade now</button>
+          <button class="btn btn-ghost">View details</button>
+          <div class="hero-volume mono">Vol $4.56M · 1,248 traders</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side column: whale + trending -->
+    <div class="side-col">
+      <div class="side-card whale-card">
+        <div class="side-head">
+          <span class="side-head-icon">🐋</span>
+          <span class="side-head-title">Whale activity</span>
+          <span class="mkt-chip" style="margin-left:auto">24h</span>
+        </div>
+        <div class="trend">
+          <div class="whale-row">
+            <span class="whale-addr mono">0x4f…a2</span>
+            <span class="whale-size mono">$88K</span>
+            <span class="whale-detail">BTC new ATH @ 64¢</span>
+          </div>
+          <div class="whale-row">
+            <span class="whale-addr mono">0xc1…9e</span>
+            <span class="whale-size mono">$42K</span>
+            <span class="whale-detail">Fed cuts June @ 57¢</span>
+          </div>
+          <div class="whale-row">
+            <span class="whale-addr mono">0x82…b3</span>
+            <span class="whale-size mono">$31K</span>
+            <span class="whale-detail">GOP margin @ 49¢</span>
+          </div>
+          <div class="whale-row">
+            <span class="whale-addr mono">0x00…7c</span>
+            <span class="whale-size mono">$26K</span>
+            <span class="whale-detail">F1 champion @ 72¢</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-head">
+          <span class="side-head-icon" style="background:var(--accent-soft);color:var(--accent)">↗</span>
+          <span class="side-head-title">Top movers</span>
+        </div>
+        <div class="trend">
+          <div class="trend-row">
+            <span class="trend-q">GPT-5 released before July 2026</span>
+            <span class="mkt-delta up">+8%</span>
+            <span class="trend-pct">35¢</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-q">Fed cuts rates at May FOMC</span>
+            <span class="mkt-delta dn">−4%</span>
+            <span class="trend-pct">45¢</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-q">Bitcoin above $100K by April 30</span>
+            <span class="mkt-delta up">+3%</span>
+            <span class="trend-pct">62¢</span>
+          </div>
+          <div class="trend-row">
+            <span class="trend-q">Apple ships on-device LLM in 2026</span>
+            <span class="mkt-delta up">+6%</span>
+            <span class="trend-pct">68¢</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Market grid -->
+  <div class="section-head">
+    <h2 class="section-title">Featured markets</h2>
+    <a class="section-link" href="#">See all 312 →</a>
+  </div>
+
+  <div class="grid">
+    <!-- Card 1 -->
+    <div class="mkt">
+      <div class="mkt-head">
+        <span class="mkt-cat"><span class="mkt-cat-dot"></span>Elections · Senate</span>
+        <span class="mkt-chip">200d left</span>
+      </div>
+      <h3 class="mkt-title">Democrats control Senate after 2026 midterms</h3>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#22d3ee" stroke-width="1.5" points="0,20 20,18 40,22 60,15 80,24 100,12 120,22 140,16 160,10 180,14 200,8" />
+        <polyline fill="url(#g1)" stroke="none" points="0,40 0,20 20,18 40,22 60,15 80,24 100,12 120,22 140,16 160,10 180,14 200,8 200,40" opacity="0.18" />
+        <defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0"/></linearGradient></defs>
+      </svg>
+      <div class="mkt-mid">
+        <div class="mkt-side yes">
+          <span class="mkt-side-label">Yes</span>
+          <div class="mkt-side-price"><strong>41¢</strong><span class="mkt-delta up">+2¢</span></div>
+        </div>
+        <div class="mkt-side no">
+          <span class="mkt-side-label">No</span>
+          <div class="mkt-side-price"><strong>59¢</strong><span class="mkt-delta dn">−2¢</span></div>
+        </div>
+      </div>
+      <div class="mkt-foot"><span>1,248 traders</span><span class="vol">$45.6K vol</span></div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="mkt">
+      <div class="mkt-head">
+        <span class="mkt-cat"><span class="mkt-cat-dot" style="background:var(--yes)"></span>Crypto · Bitcoin</span>
+        <span class="mkt-chip soon">13d left</span>
+      </div>
+      <h3 class="mkt-title">Bitcoin above $100,000 by April 30</h3>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#34d399" stroke-width="1.5" points="0,30 20,28 40,24 60,22 80,18 100,16 120,14 140,10 160,8 180,6 200,4" />
+      </svg>
+      <div class="mkt-mid">
+        <div class="mkt-side yes">
+          <span class="mkt-side-label">Yes</span>
+          <div class="mkt-side-price"><strong>62¢</strong><span class="mkt-delta up">+3¢</span></div>
+        </div>
+        <div class="mkt-side no">
+          <span class="mkt-side-label">No</span>
+          <div class="mkt-side-price"><strong>38¢</strong><span class="mkt-delta dn">−3¢</span></div>
+        </div>
+      </div>
+      <div class="mkt-foot"><span>892 traders</span><span class="vol">$12.4K vol</span></div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="mkt">
+      <div class="mkt-head">
+        <span class="mkt-cat"><span class="mkt-cat-dot" style="background:var(--whale)"></span>Economy · FOMC</span>
+        <span class="mkt-chip">20d left</span>
+      </div>
+      <h3 class="mkt-title">Fed cuts rates at May FOMC meeting</h3>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#f87171" stroke-width="1.5" points="0,10 20,14 40,12 60,18 80,16 100,24 120,22 140,28 160,26 180,32 200,30" />
+      </svg>
+      <div class="mkt-mid">
+        <div class="mkt-side yes">
+          <span class="mkt-side-label">Yes</span>
+          <div class="mkt-side-price"><strong>45¢</strong><span class="mkt-delta dn">−4¢</span></div>
+        </div>
+        <div class="mkt-side no">
+          <span class="mkt-side-label">No</span>
+          <div class="mkt-side-price"><strong>55¢</strong><span class="mkt-delta up">+4¢</span></div>
+        </div>
+      </div>
+      <div class="mkt-foot"><span>2,104 traders</span><span class="vol">$23.4K vol</span></div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="mkt">
+      <div class="mkt-head">
+        <span class="mkt-cat"><span class="mkt-cat-dot" style="background:var(--accent)"></span>Tech · AI</span>
+        <span class="mkt-chip">74d left</span>
+      </div>
+      <h3 class="mkt-title">GPT-5 released before July 2026</h3>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#22d3ee" stroke-width="1.5" points="0,32 20,30 40,28 60,26 80,22 100,18 120,14 140,12 160,10 180,8 200,6" />
+      </svg>
+      <div class="mkt-mid">
+        <div class="mkt-side yes">
+          <span class="mkt-side-label">Yes</span>
+          <div class="mkt-side-price"><strong>35¢</strong><span class="mkt-delta up">+8¢</span></div>
+        </div>
+        <div class="mkt-side no">
+          <span class="mkt-side-label">No</span>
+          <div class="mkt-side-price"><strong>65¢</strong><span class="mkt-delta dn">−8¢</span></div>
+        </div>
+      </div>
+      <div class="mkt-foot"><span>4,890 traders</span><span class="vol">$17.8K vol</span></div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="mkt">
+      <div class="mkt-head">
+        <span class="mkt-cat"><span class="mkt-cat-dot" style="background:var(--yes)"></span>Tech · Apple</span>
+        <span class="mkt-chip">365d left</span>
+      </div>
+      <h3 class="mkt-title">Apple ships on-device LLM in iOS 2026 release</h3>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#34d399" stroke-width="1.5" points="0,35 20,32 40,30 60,28 80,26 100,22 120,18 140,14 160,12 180,10 200,8" />
+      </svg>
+      <div class="mkt-mid">
+        <div class="mkt-side yes">
+          <span class="mkt-side-label">Yes</span>
+          <div class="mkt-side-price"><strong>68¢</strong><span class="mkt-delta up">+6¢</span></div>
+        </div>
+        <div class="mkt-side no">
+          <span class="mkt-side-label">No</span>
+          <div class="mkt-side-price"><strong>32¢</strong><span class="mkt-delta dn">−6¢</span></div>
+        </div>
+      </div>
+      <div class="mkt-foot"><span>1,487 traders</span><span class="vol">$9.2K vol</span></div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="mkt">
+      <div class="mkt-head">
+        <span class="mkt-cat"><span class="mkt-cat-dot" style="background:var(--no)"></span>Sports · UCL</span>
+        <span class="mkt-chip">43d left</span>
+      </div>
+      <h3 class="mkt-title">Real Madrid wins UEFA Champions League 2025/26</h3>
+      <svg class="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
+        <polyline fill="none" stroke="#f87171" stroke-width="1.5" points="0,20 20,24 40,22 60,26 80,28 100,30 120,32 140,34 160,32 180,34 200,36" />
+      </svg>
+      <div class="mkt-mid">
+        <div class="mkt-side yes">
+          <span class="mkt-side-label">Yes</span>
+          <div class="mkt-side-price"><strong>22¢</strong><span class="mkt-delta dn">−1¢</span></div>
+        </div>
+        <div class="mkt-side no">
+          <span class="mkt-side-label">No</span>
+          <div class="mkt-side-price"><strong>78¢</strong><span class="mkt-delta up">+1¢</span></div>
+        </div>
+      </div>
+      <div class="mkt-foot"><span>623 traders</span><span class="vol">$7.8K vol</span></div>
+    </div>
+  </div>
+
+  <!-- Outcome ladder demo -->
+  <div class="section-head">
+    <h2 class="section-title">2028 Presidential Nominee — Democratic</h2>
+    <a class="section-link" href="#">View market →</a>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-md);padding:16px">
+    <div class="ladder">
+      <div class="ladder-row"><span class="ladder-out">Gavin Newsom</span><span class="ladder-pct">23%</span><span class="ladder-yes">Yes 23¢</span></div>
+      <div class="ladder-row"><span class="ladder-out">Kamala Harris</span><span class="ladder-pct">18%</span><span class="ladder-yes">Yes 18¢</span></div>
+      <div class="ladder-row"><span class="ladder-out">Alexandria Ocasio-Cortez</span><span class="ladder-pct">12%</span><span class="ladder-yes">Yes 12¢</span></div>
+      <div class="ladder-row"><span class="ladder-out">Pete Buttigieg</span><span class="ladder-pct">9%</span><span class="ladder-yes">Yes 9¢</span></div>
+      <div class="ladder-row"><span class="ladder-out">Gretchen Whitmer</span><span class="ladder-pct">7%</span><span class="ladder-yes">Yes 7¢</span></div>
+      <div class="ladder-row"><span class="ladder-out">Josh Shapiro</span><span class="ladder-pct">6%</span><span class="ladder-yes">Yes 6¢</span></div>
+    </div>
+  </div>
+</main>
+
+<!-- === Type & color spec === -->
+<section class="spec">
+  <h2>Typography</h2>
+  <div class="spec-row">
+    <span class="spec-label">Display / 900 / 32px</span>
+    <div style="font-weight:900;font-size:32px;letter-spacing:-0.02em">Predict what happens next.</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Heading / 800 / 22px</span>
+    <div style="font-weight:800;font-size:22px;letter-spacing:-0.02em">Featured markets</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Card title / 600 / 15px</span>
+    <div style="font-weight:600;font-size:15px">Democrats control Senate after 2026 midterms</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Body / 400 / 14px</span>
+    <div style="font-weight:400;font-size:14px;color:var(--t2)">Trade binary event contracts. Winners collect 100¢ per contract.</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Eyebrow / 700 / 11px</span>
+    <div style="font-weight:700;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--t3)">Elections · 2026 Midterms</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Data / IBM Plex Mono / 18px</span>
+    <div class="mono" style="font-size:18px;font-weight:700">$4,567,823 · 41¢ · +2¢</div>
+  </div>
+
+  <h2>Color</h2>
+  <div class="spec-row">
+    <span class="spec-label">Surfaces</span>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <span class="swatch"><span class="swatch-box" style="background:var(--s0)"></span>Page #111827</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--s1)"></span>Card #1f2937</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--s2)"></span>Inset #0f1623</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--s3)"></span>Deep #0b111c</span>
+    </div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Accent / Semantic</span>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <span class="swatch"><span class="swatch-box" style="background:var(--accent)"></span>Cyan #22d3ee</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--yes)"></span>Yes #34d399</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--no)"></span>No #f87171</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--whale)"></span>Whale #fbbf24</span>
+      <span class="swatch"><span class="swatch-box" style="background:var(--live)"></span>Live #ef4444</span>
+    </div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Components</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn btn-accent">Trade now</button>
+      <button class="btn btn-ghost">Log in</button>
+      <span class="mkt-chip">Default chip</span>
+      <span class="mkt-chip soon">Soon chip</span>
+      <span class="live-pill"><span class="live-dot"></span>LIVE</span>
+    </div>
+  </div>
+
+  <h2>Motion</h2>
+  <div class="spec-row">
+    <span class="spec-label">Ticker scroll</span>
+    <div style="color:var(--t2);font-size:13px">The whale ticker above the chrome scrolls 60s linear infinite. Pause on hover in production.</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Price change</span>
+    <div style="color:var(--t2);font-size:13px">Number-roll animation when YES/NO prices update via WebSocket. 250ms ease-out.</div>
+  </div>
+  <div class="spec-row">
+    <span class="spec-label">Card hover</span>
+    <div style="color:var(--t2);font-size:13px">translateY(-2px) + border cyan — 150ms ease.</div>
+  </div>
+</section>
+
+</body>
+</html>
