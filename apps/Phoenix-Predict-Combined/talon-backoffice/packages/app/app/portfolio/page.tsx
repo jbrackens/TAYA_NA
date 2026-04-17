@@ -1,247 +1,830 @@
 "use client";
 
-import { useEffect, useState } from "react";
+/**
+ * PortfolioPage — positions, orders, settled history.
+ *
+ * Layout (matches DESIGN.md tokens):
+ *   [summary strip — 4 stat cards]
+ *   [tab bar — Positions · Orders · History]
+ *   [table for the active tab]
+ *
+ * Positions and orders reference markets by UUID; we hydrate the
+ * distinct set of IDs once per load so the table shows ticker + title
+ * instead of a truncated hex string.
+ *
+ * Any of the four fetches may 401 on a fresh session (the gateway
+ * protects portfolio/orders). We surface a single friendly empty
+ * state rather than cascading errors.
+ */
+
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { logger } from "../lib/logger";
 import type {
   Position,
   PortfolioSummary,
   PredictionOrder,
+  PredictionMarket,
+  SettledPayout,
+  OrderStatus,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 
 const api = createPredictionClient();
 
+type TabKey = "positions" | "orders" | "history";
+
 export default function PortfolioPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [orders, setOrders] = useState<PredictionOrder[]>([]);
+  const [history, setHistory] = useState<SettledPayout[]>([]);
+  const [marketsById, setMarketsById] = useState<Map<string, PredictionMarket>>(
+    () => new Map(),
+  );
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"positions" | "orders" | "history">(
-    "positions",
-  );
+  const [tab, setTab] = useState<TabKey>("positions");
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     async function load() {
-      try {
-        const [pos, sum, ord] = await Promise.all([
-          api.getPositions(),
-          api.getPortfolioSummary(),
-          api.getOrders({ page: 1, pageSize: 50 }),
-        ]);
-        setPositions(pos);
-        setSummary(sum);
-        setOrders(ord.data);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("Portfolio load failed:", msg);
-      } finally {
-        setLoading(false);
+      const results = await Promise.allSettled([
+        api.getPositions(),
+        api.getPortfolioSummary(),
+        api.getOrders({ page: 1, pageSize: 50 }),
+        api.getSettledPositions(1, 20),
+      ]);
+      if (cancelled) return;
+
+      let sawAuthError = false;
+      const [posRes, sumRes, ordRes, histRes] = results;
+
+      if (posRes.status === "fulfilled") setPositions(posRes.value);
+      else if (is401(posRes.reason)) sawAuthError = true;
+      else logger.warn("Portfolio", "positions fetch failed", posRes.reason);
+
+      if (sumRes.status === "fulfilled") setSummary(sumRes.value);
+      else if (is401(sumRes.reason)) sawAuthError = true;
+      else logger.warn("Portfolio", "summary fetch failed", sumRes.reason);
+
+      if (ordRes.status === "fulfilled") setOrders(ordRes.value.data);
+      else if (is401(ordRes.reason)) sawAuthError = true;
+      else logger.warn("Portfolio", "orders fetch failed", ordRes.reason);
+
+      if (histRes.status === "fulfilled") setHistory(histRes.value.data);
+      else if (is401(histRes.reason)) sawAuthError = true;
+      else logger.warn("Portfolio", "history fetch failed", histRes.reason);
+
+      if (sawAuthError) setAuthError(true);
+
+      // Hydrate distinct market IDs so the tables can render titles.
+      const ids = new Set<string>();
+      if (posRes.status === "fulfilled")
+        posRes.value.forEach((p) => ids.add(p.marketId));
+      if (ordRes.status === "fulfilled")
+        ordRes.value.data.forEach((o) => ids.add(o.marketId));
+      if (histRes.status === "fulfilled")
+        histRes.value.data.forEach((h) => ids.add(h.marketId));
+
+      if (ids.size > 0) {
+        const markets = await Promise.all(
+          [...ids].map((id) =>
+            api.getMarket(id).catch((err: unknown) => {
+              logger.warn("Portfolio", "market hydrate failed", err);
+              return null;
+            }),
+          ),
+        );
+        if (cancelled) return;
+        const map = new Map<string, PredictionMarket>();
+        for (const m of markets) if (m) map.set(m.id, m);
+        setMarketsById(map);
       }
+
+      setLoading(false);
     }
     load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  const counts = useMemo(
+    () => ({
+      positions: positions.length,
+      orders: orders.filter(
+        (o) => o.status === "open" || o.status === "partial",
+      ).length,
+      history: history.length,
+    }),
+    [positions, orders, history],
+  );
+
   if (loading) {
+    return <PageState>Loading portfolio…</PageState>;
+  }
+
+  if (authError && !summary && positions.length === 0 && orders.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-gray-400 text-sm">Loading portfolio...</div>
-      </div>
+      <PageState>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ marginBottom: 12, color: "var(--t2)" }}>
+            Sign in to see your portfolio.
+          </p>
+          <Link href="/auth/login" className="pf-login-cta">
+            Log in
+          </Link>
+        </div>
+        <Styles />
+      </PageState>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Portfolio</h1>
+    <div className="pf-wrap">
+      <Styles />
 
-      {/* Summary cards */}
-      {summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <div className="border border-gray-700 rounded-xl p-4 bg-gray-900/50">
-            <div className="text-lg font-bold text-white">
-              ${(summary.totalValueCents / 100).toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">Invested</div>
-          </div>
-          <div className="border border-gray-700 rounded-xl p-4 bg-gray-900/50">
-            <div
-              className={`text-lg font-bold ${summary.realizedPnlCents >= 0 ? "text-emerald-400" : "text-red-400"}`}
-            >
-              {summary.realizedPnlCents >= 0 ? "+" : ""}$
-              {(summary.realizedPnlCents / 100).toFixed(2)}
-            </div>
-            <div className="text-xs text-gray-500">Realized P&L</div>
-          </div>
-          <div className="border border-gray-700 rounded-xl p-4 bg-gray-900/50">
-            <div className="text-lg font-bold text-white">
-              {summary.openPositions}
-            </div>
-            <div className="text-xs text-gray-500">Open Positions</div>
-          </div>
-          <div className="border border-gray-700 rounded-xl p-4 bg-gray-900/50">
-            <div className="text-lg font-bold text-blue-400">
-              {summary.accuracyPct.toFixed(1)}%
-            </div>
-            <div className="text-xs text-gray-500">
-              Accuracy ({summary.correctPredictions}/{summary.totalPredictions})
-            </div>
-          </div>
-        </div>
-      )}
+      <header className="pf-head">
+        <h1 className="pf-title">Portfolio</h1>
+        <p className="pf-sub">
+          Open positions, active orders, settled payouts.
+        </p>
+      </header>
 
-      {/* Tabs */}
-      <div className="flex gap-4 mb-4 border-b border-gray-800">
-        {(["positions", "orders", "history"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`pb-2 text-sm font-medium capitalize transition-colors ${
-              tab === t
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-500 hover:text-gray-300"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
+      <SummaryStrip summary={summary} />
 
-      {/* Positions tab */}
+      <TabBar tab={tab} setTab={setTab} counts={counts} />
+
       {tab === "positions" && (
-        <div className="space-y-2">
-          {positions.length === 0 ? (
-            <div className="text-center text-gray-500 text-sm py-8">
-              No open positions.{" "}
-              <Link href="/predict" className="text-blue-400 hover:underline">
-                Start predicting
-              </Link>
-            </div>
-          ) : (
-            <div className="border border-gray-700 rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-800/50">
-                  <tr className="text-xs text-gray-400">
-                    <th className="text-left px-4 py-2">Market</th>
-                    <th className="text-center px-2 py-2">Side</th>
-                    <th className="text-right px-2 py-2">Qty</th>
-                    <th className="text-right px-2 py-2">Avg Price</th>
-                    <th className="text-right px-4 py-2">Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {positions.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="border-t border-gray-800 hover:bg-gray-800/30"
-                    >
-                      <td className="px-4 py-3 text-white">
-                        {p.marketId.slice(0, 8)}...
-                      </td>
-                      <td className="text-center px-2 py-3">
-                        <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                            p.side === "yes"
-                              ? "bg-emerald-900 text-emerald-400"
-                              : "bg-red-900 text-red-400"
-                          }`}
-                        >
-                          {p.side.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="text-right px-2 py-3 text-gray-300">
-                        {p.quantity}
-                      </td>
-                      <td className="text-right px-2 py-3 text-gray-300">
-                        {p.avgPriceCents}%
-                      </td>
-                      <td className="text-right px-4 py-3 text-gray-300">
-                        ${(p.totalCostCents / 100).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <PositionsTable positions={positions} marketsById={marketsById} />
       )}
-
-      {/* Orders tab */}
       {tab === "orders" && (
-        <div className="space-y-2">
-          {orders.length === 0 ? (
-            <div className="text-center text-gray-500 text-sm py-8">
-              No orders yet
-            </div>
-          ) : (
-            <div className="border border-gray-700 rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-800/50">
-                  <tr className="text-xs text-gray-400">
-                    <th className="text-left px-4 py-2">Market</th>
-                    <th className="text-center px-2 py-2">Side</th>
-                    <th className="text-right px-2 py-2">Qty</th>
-                    <th className="text-right px-2 py-2">Cost</th>
-                    <th className="text-center px-2 py-2">Status</th>
-                    <th className="text-right px-4 py-2">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((o) => (
-                    <tr
-                      key={o.id}
-                      className="border-t border-gray-800 hover:bg-gray-800/30"
-                    >
-                      <td className="px-4 py-3 text-white">
-                        {o.marketId.slice(0, 8)}...
-                      </td>
-                      <td className="text-center px-2 py-3">
-                        <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                            o.side === "yes"
-                              ? "bg-emerald-900 text-emerald-400"
-                              : "bg-red-900 text-red-400"
-                          }`}
-                        >
-                          {o.side.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="text-right px-2 py-3 text-gray-300">
-                        {o.quantity}
-                      </td>
-                      <td className="text-right px-2 py-3 text-gray-300">
-                        ${(o.totalCostCents / 100).toFixed(2)}
-                      </td>
-                      <td className="text-center px-2 py-3">
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded ${
-                            o.status === "filled"
-                              ? "bg-green-900 text-green-400"
-                              : o.status === "cancelled"
-                                ? "bg-gray-700 text-gray-400"
-                                : "bg-blue-900 text-blue-400"
-                          }`}
-                        >
-                          {o.status}
-                        </span>
-                      </td>
-                      <td className="text-right px-4 py-3 text-gray-500 text-xs">
-                        {new Date(o.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <OrdersTable orders={orders} marketsById={marketsById} />
       )}
-
-      {/* History tab placeholder */}
       {tab === "history" && (
-        <div className="text-center text-gray-500 text-sm py-8">
-          Settled positions will appear here after markets resolve
-        </div>
+        <HistoryTable history={history} marketsById={marketsById} />
       )}
     </div>
+  );
+}
+
+// ── Page-level state ────────────────────────────────────────────────────────
+
+function PageState({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minHeight: "60vh",
+        fontSize: 13,
+        color: "var(--t3)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ── Summary strip ───────────────────────────────────────────────────────────
+
+function SummaryStrip({ summary }: { summary: PortfolioSummary | null }) {
+  const s = summary;
+  const pnl = s?.realizedPnlCents ?? 0;
+  const pnlUp = pnl >= 0;
+  return (
+    <section className="pf-summary">
+      <StatCard
+        label="Invested"
+        value={s ? formatUSD(s.totalValueCents) : "—"}
+      />
+      <StatCard
+        label="Realized P&L"
+        value={s ? `${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}` : "—"}
+        tone={s ? (pnlUp ? "yes" : "no") : undefined}
+      />
+      <StatCard
+        label="Open positions"
+        value={s ? String(s.openPositions) : "—"}
+      />
+      <StatCard
+        label="Accuracy"
+        value={
+          s && s.totalPredictions > 0 ? `${s.accuracyPct.toFixed(1)}%` : "—"
+        }
+        sub={
+          s && s.totalPredictions > 0
+            ? `${s.correctPredictions}/${s.totalPredictions} correct`
+            : "No settled predictions yet"
+        }
+        tone={s && s.accuracyPct >= 50 ? "accent" : undefined}
+      />
+    </section>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+  tone,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: "yes" | "no" | "accent";
+}) {
+  return (
+    <div className={`pf-stat ${tone ? `pf-stat-${tone}` : ""}`}>
+      <span className="pf-stat-label">{label}</span>
+      <span className="pf-stat-value mono">{value}</span>
+      {sub && <span className="pf-stat-sub">{sub}</span>}
+    </div>
+  );
+}
+
+// ── Tab bar ─────────────────────────────────────────────────────────────────
+
+function TabBar({
+  tab,
+  setTab,
+  counts,
+}: {
+  tab: TabKey;
+  setTab: (t: TabKey) => void;
+  counts: { positions: number; orders: number; history: number };
+}) {
+  const tabs: { key: TabKey; label: string; count: number }[] = [
+    { key: "positions", label: "Positions", count: counts.positions },
+    { key: "orders", label: "Open orders", count: counts.orders },
+    { key: "history", label: "History", count: counts.history },
+  ];
+  return (
+    <nav className="pf-tabs" role="tablist" aria-label="Portfolio tabs">
+      {tabs.map((t) => (
+        <button
+          key={t.key}
+          role="tab"
+          aria-selected={tab === t.key}
+          className={`pf-tab ${tab === t.key ? "active" : ""}`}
+          onClick={() => setTab(t.key)}
+        >
+          <span>{t.label}</span>
+          {t.count > 0 && <span className="pf-tab-count mono">{t.count}</span>}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// ── Positions table ────────────────────────────────────────────────────────
+
+function PositionsTable({
+  positions,
+  marketsById,
+}: {
+  positions: Position[];
+  marketsById: Map<string, PredictionMarket>;
+}) {
+  if (positions.length === 0) {
+    return (
+      <EmptyState
+        line="No open positions."
+        action={
+          <Link href="/predict" className="pf-inline-link">
+            Browse markets →
+          </Link>
+        }
+      />
+    );
+  }
+  return (
+    <DataTable
+      columns={[
+        { label: "Market", width: "minmax(200px, 2fr)" },
+        { label: "Side", width: "60px", align: "center" },
+        { label: "Qty", width: "60px", align: "right" },
+        { label: "Avg price", width: "90px", align: "right" },
+        { label: "Cost", width: "90px", align: "right" },
+      ]}
+      rows={positions.map((p) => {
+        const m = marketsById.get(p.marketId);
+        return {
+          key: p.id,
+          href: m ? `/market/${m.ticker}` : undefined,
+          cells: [
+            <MarketCell key="m" market={m} fallback={p.marketId} />,
+            <SideChip key="s" side={p.side} />,
+            <span key="q" className="mono">
+              {p.quantity}
+            </span>,
+            <span key="p" className="mono">
+              {p.avgPriceCents}¢
+            </span>,
+            <span key="c" className="mono">
+              {formatUSD(p.totalCostCents)}
+            </span>,
+          ],
+        };
+      })}
+    />
+  );
+}
+
+// ── Orders table ───────────────────────────────────────────────────────────
+
+function OrdersTable({
+  orders,
+  marketsById,
+}: {
+  orders: PredictionOrder[];
+  marketsById: Map<string, PredictionMarket>;
+}) {
+  if (orders.length === 0) {
+    return <EmptyState line="No orders yet." />;
+  }
+  return (
+    <DataTable
+      columns={[
+        { label: "Market", width: "minmax(200px, 2fr)" },
+        { label: "Side", width: "60px", align: "center" },
+        { label: "Qty", width: "60px", align: "right" },
+        { label: "Cost", width: "90px", align: "right" },
+        { label: "Status", width: "100px", align: "center" },
+        { label: "Placed", width: "100px", align: "right" },
+      ]}
+      rows={orders.map((o) => {
+        const m = marketsById.get(o.marketId);
+        return {
+          key: o.id,
+          href: m ? `/market/${m.ticker}` : undefined,
+          cells: [
+            <MarketCell key="m" market={m} fallback={o.marketId} />,
+            <SideChip key="s" side={o.side} />,
+            <span key="q" className="mono">
+              {o.quantity}
+            </span>,
+            <span key="c" className="mono">
+              {formatUSD(o.totalCostCents)}
+            </span>,
+            <StatusChip key="st" status={o.status} />,
+            <span key="d" className="mono pf-dim">
+              {formatDate(o.createdAt)}
+            </span>,
+          ],
+        };
+      })}
+    />
+  );
+}
+
+// ── History table ──────────────────────────────────────────────────────────
+
+function HistoryTable({
+  history,
+  marketsById,
+}: {
+  history: SettledPayout[];
+  marketsById: Map<string, PredictionMarket>;
+}) {
+  if (history.length === 0) {
+    return (
+      <EmptyState line="Settled positions will appear here after markets resolve." />
+    );
+  }
+  return (
+    <DataTable
+      columns={[
+        { label: "Market", width: "minmax(200px, 2fr)" },
+        { label: "Side", width: "60px", align: "center" },
+        { label: "Qty", width: "60px", align: "right" },
+        { label: "Entry", width: "70px", align: "right" },
+        { label: "Exit", width: "70px", align: "right" },
+        { label: "P&L", width: "90px", align: "right" },
+        { label: "Settled", width: "100px", align: "right" },
+      ]}
+      rows={history.map((h) => {
+        const m = marketsById.get(h.marketId);
+        const up = h.pnlCents >= 0;
+        return {
+          key: h.id,
+          href: m ? `/market/${m.ticker}` : undefined,
+          cells: [
+            <MarketCell key="m" market={m} fallback={h.marketId} />,
+            <SideChip key="s" side={h.side} />,
+            <span key="q" className="mono">
+              {h.quantity}
+            </span>,
+            <span key="e" className="mono">
+              {h.entryPriceCents}¢
+            </span>,
+            <span key="x" className="mono">
+              {h.exitPriceCents}¢
+            </span>,
+            <span key="p" className={`mono ${up ? "pf-gain" : "pf-loss"}`}>
+              {up ? "+" : "−"}
+              {formatUSD(Math.abs(h.pnlCents))}
+            </span>,
+            <span key="d" className="mono pf-dim">
+              {formatDate(h.paidAt)}
+            </span>,
+          ],
+        };
+      })}
+    />
+  );
+}
+
+// ── Shared bits ────────────────────────────────────────────────────────────
+
+function MarketCell({
+  market,
+  fallback,
+}: {
+  market: PredictionMarket | undefined;
+  fallback: string;
+}) {
+  if (!market) {
+    return <span className="pf-dim mono">{fallback.slice(0, 8)}…</span>;
+  }
+  return (
+    <div className="pf-market">
+      <span className="pf-market-title">{market.title}</span>
+      <span className="pf-market-ticker mono">{market.ticker}</span>
+    </div>
+  );
+}
+
+function SideChip({ side }: { side: "yes" | "no" }) {
+  return (
+    <span className={`pf-side pf-side-${side}`}>{side.toUpperCase()}</span>
+  );
+}
+
+function StatusChip({ status }: { status: OrderStatus }) {
+  return <span className={`pf-status pf-status-${status}`}>{status}</span>;
+}
+
+interface Column {
+  label: string;
+  width: string;
+  align?: "left" | "right" | "center";
+}
+
+interface Row {
+  key: string;
+  href?: string;
+  cells: React.ReactNode[];
+}
+
+function DataTable({ columns, rows }: { columns: Column[]; rows: Row[] }) {
+  const template = columns.map((c) => c.width).join(" ");
+  return (
+    <div
+      className="pf-table"
+      role="table"
+      style={{ ["--pf-cols" as string]: template }}
+    >
+      <div className="pf-thead" role="row">
+        {columns.map((c) => (
+          <span
+            key={c.label}
+            role="columnheader"
+            style={{ textAlign: c.align ?? "left" }}
+            className="pf-th"
+          >
+            {c.label}
+          </span>
+        ))}
+      </div>
+      <ul className="pf-tbody">
+        {rows.map((r) => {
+          const body = columns.map((c, i) => (
+            <span
+              key={i}
+              role="cell"
+              className="pf-td"
+              style={{ textAlign: c.align ?? "left" }}
+            >
+              {r.cells[i]}
+            </span>
+          ));
+          return (
+            <li key={r.key} role="row" className="pf-tr">
+              {r.href ? (
+                <Link href={r.href} className="pf-tr-link">
+                  {body}
+                </Link>
+              ) : (
+                <div className="pf-tr-static">{body}</div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function EmptyState({
+  line,
+  action,
+}: {
+  line: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="pf-empty">
+      <span>{line}</span>
+      {action}
+    </div>
+  );
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────
+
+function is401(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const msg = err.message.toLowerCase();
+  return (
+    msg.includes("401") ||
+    msg.includes("unauthorized") ||
+    msg.includes("authentication required")
+  );
+}
+
+function formatUSD(cents: number): string {
+  if (Math.abs(cents) >= 1_000_000_00)
+    return `$${(cents / 1_000_000_00).toFixed(1)}M`;
+  if (Math.abs(cents) >= 10_000_00) return `$${(cents / 1_000_00).toFixed(1)}K`;
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// ── Styles ─────────────────────────────────────────────────────────────────
+
+function Styles() {
+  return (
+    <style>{`
+      .pf-wrap {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px 24px 60px;
+      }
+
+      .pf-head { margin-bottom: 20px; }
+      .pf-title {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--t1);
+        margin: 0 0 4px;
+      }
+      .pf-sub {
+        font-size: 13px;
+        color: var(--t3);
+        margin: 0;
+      }
+
+      .pf-login-cta {
+        display: inline-block;
+        padding: 10px 18px;
+        background: var(--accent);
+        color: #06222b;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 13px;
+        box-shadow: var(--accent-glow);
+        text-decoration: none;
+      }
+      .pf-login-cta:hover { background: var(--accent-hi); }
+
+      /* Summary strip */
+      .pf-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      @media (max-width: 720px) {
+        .pf-summary { grid-template-columns: repeat(2, 1fr); }
+      }
+      .pf-stat {
+        background: var(--s1);
+        border: 1px solid var(--b1);
+        border-radius: var(--r-md);
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .pf-stat-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--t3);
+      }
+      .pf-stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--t1);
+        letter-spacing: -0.01em;
+      }
+      .pf-stat-yes .pf-stat-value { color: var(--yes); }
+      .pf-stat-no .pf-stat-value { color: var(--no); }
+      .pf-stat-accent .pf-stat-value { color: var(--accent); }
+      .pf-stat-sub {
+        font-size: 11px;
+        color: var(--t3);
+      }
+
+      /* Tab bar */
+      .pf-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--b1);
+      }
+      .pf-tab {
+        background: transparent;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        padding: 10px 14px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--t3);
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: -1px;
+      }
+      .pf-tab:hover { color: var(--t1); }
+      .pf-tab.active {
+        color: var(--t1);
+        border-bottom-color: var(--accent);
+      }
+      .pf-tab-count {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: var(--s2);
+        color: var(--t2);
+      }
+      .pf-tab.active .pf-tab-count {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      /* Table */
+      .pf-table {
+        background: var(--s1);
+        border: 1px solid var(--b1);
+        border-radius: var(--r-md);
+        overflow: hidden;
+      }
+      .pf-thead, .pf-tr-link, .pf-tr-static {
+        display: grid;
+        grid-template-columns: var(--pf-cols);
+        gap: 14px;
+        padding: 10px 18px;
+        align-items: center;
+      }
+      .pf-thead {
+        background: var(--s2);
+        border-bottom: 1px solid var(--b1);
+      }
+      .pf-th {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--t3);
+      }
+      .pf-tbody {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .pf-tr {
+        border-top: 1px solid var(--b1);
+      }
+      .pf-tr:first-child { border-top: 0; }
+      .pf-tr-link, .pf-tr-static {
+        padding: 14px 18px;
+        color: inherit;
+        text-decoration: none;
+        transition: background 0.15s;
+      }
+      .pf-tr-link:hover {
+        background: var(--s2);
+      }
+      .pf-td {
+        font-size: 13px;
+        color: var(--t1);
+        min-width: 0;
+      }
+
+      .pf-market {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+      .pf-market-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--t1);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pf-market-ticker {
+        font-size: 10px;
+        color: var(--t3);
+        letter-spacing: 0.04em;
+      }
+
+      .pf-side {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: var(--r-sm);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+      .pf-side-yes {
+        background: rgba(52,211,153,0.14);
+        color: var(--yes);
+      }
+      .pf-side-no {
+        background: rgba(248,113,113,0.14);
+        color: var(--no);
+      }
+
+      .pf-status {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: var(--r-sm);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: capitalize;
+        background: var(--s2);
+        color: var(--t2);
+        border: 1px solid var(--b1);
+      }
+      .pf-status-filled {
+        background: rgba(52,211,153,0.14);
+        color: var(--yes);
+        border-color: rgba(52,211,153,0.3);
+      }
+      .pf-status-open, .pf-status-partial {
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-color: rgba(34,211,238,0.3);
+      }
+      .pf-status-cancelled, .pf-status-expired {
+        background: var(--s2);
+        color: var(--t3);
+      }
+
+      .pf-gain { color: var(--yes); font-weight: 700; }
+      .pf-loss { color: var(--no); font-weight: 700; }
+      .pf-dim { color: var(--t3); }
+
+      .pf-inline-link {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .pf-inline-link:hover { text-decoration: underline; }
+
+      .pf-empty {
+        background: var(--s1);
+        border: 1px dashed var(--b1);
+        border-radius: var(--r-md);
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--t3);
+        font-size: 13px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+    `}</style>
   );
 }
