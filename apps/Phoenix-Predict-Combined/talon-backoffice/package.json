@@ -64,12 +64,10 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.{md,css,scss,json}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ]
   },
   "commitlint": {
