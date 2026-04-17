@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	stdhttp "net/http"
 	"strconv"
+	"strings"
 
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
@@ -138,19 +139,40 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		id := r.URL.Path[len("/api/v1/markets/"):]
-		if id == "" {
+		path := r.URL.Path[len("/api/v1/markets/"):]
+		if path == "" {
 			return httpx.BadRequest("market id or ticker required", nil)
+		}
+		// Sub-path routing: /api/v1/markets/{idOrTicker}/trades
+		parts := strings.SplitN(path, "/", 2)
+		id := parts[0]
+		sub := ""
+		if len(parts) == 2 {
+			sub = parts[1]
 		}
 		market, err := svc.GetMarketByTicker(r.Context(), id)
 		if err != nil {
-			// Try by ID
 			market, err = svc.GetMarket(r.Context(), id)
 			if err != nil {
 				return httpx.NotFound("market not found")
 			}
 		}
-		return httpx.WriteJSON(w, stdhttp.StatusOK, market)
+		switch sub {
+		case "":
+			return httpx.WriteJSON(w, stdhttp.StatusOK, market)
+		case "trades":
+			limit := intQueryParam(r, "limit", 50)
+			trades, err := svc.ListTrades(r.Context(), market.ID, limit)
+			if err != nil {
+				return httpx.Internal("failed to fetch trades", err)
+			}
+			if trades == nil {
+				trades = []prediction.Trade{}
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, trades)
+		default:
+			return httpx.NotFound("market subresource not found")
+		}
 	}))
 
 	slog.Info("prediction routes registered")
