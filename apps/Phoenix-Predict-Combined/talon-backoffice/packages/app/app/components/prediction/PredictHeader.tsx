@@ -12,11 +12,21 @@
  */
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Search, Wallet, LogOut, User as UserIcon, Settings } from "lucide-react";
-import type { Category } from "@phoenix-ui/api-client/src/prediction-types";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Search,
+  Wallet,
+  LogOut,
+  User as UserIcon,
+  Settings,
+} from "lucide-react";
+import type {
+  Category,
+  PredictionMarket,
+} from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { logger } from "../../lib/logger";
 import { useAuth } from "../../hooks/useAuth";
 import { useAppSelector } from "../../lib/store/hooks";
 import { selectCurrentBalance } from "../../lib/store/cashierSlice";
@@ -25,11 +35,20 @@ const api = createPredictionClient();
 
 export function PredictHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const balance = useAppSelector(selectCurrentBalance);
   const [categories, setCategories] = useState<Category[]>([]);
+
+  // Search state — client-side fuzzy filter over all open markets.
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
+  const [cursor, setCursor] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +62,85 @@ export function PredictHeader() {
       cancelled = true;
     };
   }, []);
+
+  // Lazy-load the full market list on first search focus. Caching in
+  // component state means subsequent focuses are instant; it refreshes
+  // on full page reload which is acceptable for this size (~15–20 rows).
+  const loadMarketsIfNeeded = useCallback(async () => {
+    if (allMarkets.length > 0) return;
+    try {
+      const res = await api.getMarkets({ status: "open", pageSize: 100 });
+      setAllMarkets(res.data);
+    } catch (err: unknown) {
+      logger.warn("PredictHeader", "market index fetch failed", err);
+    }
+  }, [allMarkets.length]);
+
+  const searchResults = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [] as PredictionMarket[];
+    return allMarkets
+      .filter((m) => {
+        const haystack = `${m.ticker} ${m.title}`.toLowerCase();
+        return haystack.includes(q);
+      })
+      .slice(0, 8);
+  }, [query, allMarkets]);
+
+  // Close search dropdown on outside click or Escape.
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSearchOpen(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [searchOpen]);
+
+  // Reset cursor when result set changes.
+  useEffect(() => {
+    setCursor(0);
+  }, [query]);
+
+  const navigateToMarket = useCallback(
+    (ticker: string) => {
+      setSearchOpen(false);
+      setQuery("");
+      searchInputRef.current?.blur();
+      router.push(`/market/${ticker}`);
+    },
+    [router],
+  );
+
+  const handleSearchKey = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (searchResults.length === 0) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setCursor((c) => Math.min(c + 1, searchResults.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setCursor((c) => Math.max(c - 1, 0));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        const hit = searchResults[cursor] ?? searchResults[0];
+        if (hit) navigateToMarket(hit.ticker);
+      }
+    },
+    [searchResults, cursor, navigateToMarket],
+  );
 
   useEffect(() => {
     if (!userMenuOpen) return;
@@ -67,7 +165,9 @@ export function PredictHeader() {
     await logout();
   }, [logout]);
 
-  const initial = (user?.username || user?.email || "?").charAt(0).toUpperCase();
+  const initial = (user?.username || user?.email || "?")
+    .charAt(0)
+    .toUpperCase();
   const isActiveCategory = (slug: string) =>
     pathname?.startsWith(`/category/${slug}`) ?? false;
   const isDiscovery = pathname === "/predict" || pathname === "/predict/";
@@ -100,9 +200,12 @@ export function PredictHeader() {
           text-decoration: none;
         }
         .ph-logo span { color: var(--accent); }
-        .ph-search {
+        .ph-search-wrap {
+          position: relative;
           flex: 1;
           max-width: 480px;
+        }
+        .ph-search {
           display: flex;
           align-items: center;
           gap: 8px;
@@ -114,6 +217,49 @@ export function PredictHeader() {
           font-size: 13px;
           transition: all 0.15s;
           cursor: text;
+        }
+        .ph-search-results {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          list-style: none;
+          margin: 0;
+          padding: 4px;
+          background: var(--s1);
+          border: 1px solid var(--b1);
+          border-radius: var(--r-md);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+          z-index: 60;
+          max-height: 360px;
+          overflow-y: auto;
+        }
+        .ph-search-hit {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          padding: 8px 12px;
+          border-radius: var(--r-sm);
+          cursor: pointer;
+          transition: background 0.1s;
+        }
+        .ph-search-hit.active, .ph-search-hit:hover {
+          background: var(--accent-soft);
+        }
+        .ph-search-hit-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--t1);
+        }
+        .ph-search-hit-meta {
+          font-size: 11px;
+          color: var(--t3);
+        }
+        .ph-search-empty {
+          padding: 14px 12px;
+          font-size: 12px;
+          color: var(--t3);
+          text-align: center;
         }
         .ph-search:hover, .ph-search:focus-within {
           border-color: var(--accent);
@@ -254,14 +400,70 @@ export function PredictHeader() {
             TAYA <span>Predict</span>
           </Link>
 
-          <label className="ph-search">
-            <Search size={14} />
-            <input
-              type="search"
-              placeholder="Search markets, candidates, teams…"
-              aria-label="Search markets"
-            />
-          </label>
+          <div
+            className="ph-search-wrap"
+            ref={searchRef}
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={searchOpen && searchResults.length > 0}
+            aria-owns="ph-search-listbox"
+          >
+            <label className="ph-search">
+              <Search size={14} />
+              <input
+                ref={searchInputRef}
+                type="search"
+                placeholder="Search markets, candidates, teams…"
+                aria-label="Search markets"
+                aria-autocomplete="list"
+                aria-controls="ph-search-listbox"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => {
+                  setSearchOpen(true);
+                  void loadMarketsIfNeeded();
+                }}
+                onKeyDown={handleSearchKey}
+              />
+            </label>
+            {searchOpen && query.trim() !== "" && (
+              <ul
+                id="ph-search-listbox"
+                role="listbox"
+                className="ph-search-results"
+              >
+                {searchResults.length === 0 ? (
+                  <li className="ph-search-empty" aria-live="polite">
+                    No markets match “{query.trim()}”
+                  </li>
+                ) : (
+                  searchResults.map((m, i) => (
+                    <li
+                      key={m.id}
+                      role="option"
+                      aria-selected={i === cursor}
+                      className={`ph-search-hit ${i === cursor ? "active" : ""}`}
+                      onMouseDown={(e) => {
+                        // onMouseDown so we navigate before the blur from
+                        // clicking closes the dropdown.
+                        e.preventDefault();
+                        navigateToMarket(m.ticker);
+                      }}
+                      onMouseEnter={() => setCursor(i)}
+                    >
+                      <span className="ph-search-hit-title">{m.title}</span>
+                      <span className="ph-search-hit-meta mono">
+                        {m.ticker} · {m.yesPriceCents}¢ YES
+                      </span>
+                    </li>
+                  ))
+                )}
+              </ul>
+            )}
+          </div>
 
           <div className="ph-right">
             {isAuthenticated && (
@@ -286,7 +488,10 @@ export function PredictHeader() {
                 </button>
                 {userMenuOpen && (
                   <div className="ph-menu" role="menu">
-                    <Link href="/account" onClick={() => setUserMenuOpen(false)}>
+                    <Link
+                      href="/account"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
                       <UserIcon size={14} /> Account
                     </Link>
                     <Link
