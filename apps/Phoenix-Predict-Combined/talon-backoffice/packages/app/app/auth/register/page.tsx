@@ -1,886 +1,661 @@
 "use client";
 
-import { useState } from "react";
+/**
+ * RegisterPage — 4-step wizard on Predict design tokens.
+ *
+ * Keeps the original KYC shape (account, personal, address, terms) but
+ * renders on the Predict auth shell. Step progress bar uses --accent.
+ */
+
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import { register as registerUser } from "../../lib/api";
 
 interface FormData {
-  // Step 1: Account
   username: string;
   email: string;
   password: string;
   confirmPassword: string;
-  // Step 2: Personal
   firstName: string;
   lastName: string;
   dateOfBirth: string;
   phone: string;
-  // Step 3: Address
   street: string;
   city: string;
   state: string;
   zip: string;
   country: string;
-  // Step 4: Terms
   acceptTerms: boolean;
 }
 
-interface Errors {
-  [key: string]: string;
-}
+type Errors = Partial<Record<keyof FormData, string>>;
+
+const EMPTY_FORM: FormData = {
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  firstName: "",
+  lastName: "",
+  dateOfBirth: "",
+  phone: "",
+  street: "",
+  city: "",
+  state: "",
+  zip: "",
+  country: "",
+  acceptTerms: false,
+};
+
+const TOTAL_STEPS = 4;
+const STEP_TITLES = ["Account", "Personal", "Address", "Terms"];
 
 export default function RegisterPage() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    zip: "",
-    country: "",
-    acceptTerms: false,
-  });
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const validateEmail = (email: string): boolean => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
+  const update = useCallback(
+    <K extends keyof FormData>(key: K, value: FormData[K]) => {
+      setForm((f) => ({ ...f, [key]: value }));
+      setErrors((e) => ({ ...e, [key]: undefined }));
+    },
+    [],
+  );
 
-  const validateStep1 = (): boolean => {
-    const newErrors: Errors = {};
-
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep2 = (): boolean => {
-    const newErrors: Errors = {};
-
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    }
-
-    if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "Date of birth is required";
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep3 = (): boolean => {
-    const newErrors: Errors = {};
-
-    if (!formData.street.trim()) {
-      newErrors.street = "Street address is required";
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required";
-    }
-
-    if (!formData.state.trim()) {
-      newErrors.state = "State is required";
-    }
-
-    if (!formData.zip.trim()) {
-      newErrors.zip = "ZIP code is required";
-    }
-
-    if (!formData.country.trim()) {
-      newErrors.country = "Country is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep4 = (): boolean => {
-    const newErrors: Errors = {};
-
-    if (!formData.acceptTerms) {
-      newErrors.acceptTerms = "You must accept the terms and conditions";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = () => {
-    let isValid = false;
-
-    if (currentStep === 1) {
-      isValid = validateStep1();
-    } else if (currentStep === 2) {
-      isValid = validateStep2();
-    } else if (currentStep === 3) {
-      isValid = validateStep3();
-    } else if (currentStep === 4) {
-      isValid = validateStep4();
-    }
-
-    if (isValid) {
-      if (currentStep < 4) {
-        setCurrentStep(currentStep + 1);
+  const validate = useCallback(
+    (currentStep: number): Errors => {
+      const next: Errors = {};
+      if (currentStep === 1) {
+        if (!form.username.trim()) next.username = "Required";
+        else if (form.username.length < 3)
+          next.username = "At least 3 characters";
+        if (!form.email.trim()) next.email = "Required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+          next.email = "Invalid email";
+        if (!form.password) next.password = "Required";
+        else if (form.password.length < 8)
+          next.password = "At least 8 characters";
+        if (!form.confirmPassword) next.confirmPassword = "Required";
+        else if (form.password !== form.confirmPassword)
+          next.confirmPassword = "Passwords don't match";
       }
-    }
-  };
+      if (currentStep === 2) {
+        if (!form.firstName.trim()) next.firstName = "Required";
+        if (!form.lastName.trim()) next.lastName = "Required";
+        if (!form.dateOfBirth) next.dateOfBirth = "Required";
+        if (!form.phone.trim()) next.phone = "Required";
+      }
+      if (currentStep === 3) {
+        if (!form.street.trim()) next.street = "Required";
+        if (!form.city.trim()) next.city = "Required";
+        if (!form.state.trim()) next.state = "Required";
+        if (!form.zip.trim()) next.zip = "Required";
+        if (!form.country.trim()) next.country = "Required";
+      }
+      if (currentStep === 4) {
+        if (!form.acceptTerms) next.acceptTerms = "You must accept the terms";
+      }
+      return next;
+    },
+    [form],
+  );
 
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+  const onNext = useCallback(() => {
+    const v = validate(step);
+    setErrors(v);
+    if (Object.keys(v).length === 0 && step < TOTAL_STEPS) {
+      setStep(step + 1);
+    }
+  }, [step, validate]);
+
+  const onPrev = useCallback(() => {
+    if (step > 1) {
+      setStep(step - 1);
       setErrors({});
     }
-  };
+  }, [step]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    const checked = (e.target as HTMLInputElement).checked;
+  const onSubmit = useCallback(async () => {
+    const v = validate(4);
+    setErrors(v);
+    if (Object.keys(v).length > 0) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-
-    // Clear error for this field when user starts typing
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep4()) {
-      return;
-    }
-
-    setIsLoading(true);
+    setSubmitting(true);
     setErrorMessage("");
     setSuccessMessage("");
-
     try {
-      const response = await registerUser({
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
-        date_of_birth: formData.dateOfBirth,
+      await registerUser({
+        username: form.username,
+        email: form.email,
+        password: form.password,
+        first_name: form.firstName,
+        last_name: form.lastName,
+        phone: form.phone,
+        date_of_birth: form.dateOfBirth,
         address: {
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip,
-          country: formData.country,
+          street: form.street,
+          city: form.city,
+          state: form.state,
+          zip: form.zip,
+          country: form.country,
         },
       });
-
-      setSuccessMessage(
-        "Account created successfully! Redirecting to login...",
-      );
+      setSuccessMessage("Account created. Redirecting to sign-in…");
       setTimeout(() => {
         window.location.href = "/auth/login";
-      }, 2000);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setErrorMessage(message || "Registration failed. Please try again.");
+      }, 1500);
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Registration failed",
+      );
     } finally {
-      setIsLoading(false);
+      setSubmitting(false);
     }
-  };
+  }, [form, validate]);
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    marginBottom: "16px",
-    backgroundColor: "#0a0f1d",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    color: "#e2e8f0",
-    fontSize: "14px",
-    boxSizing: "border-box",
-    fontFamily: "inherit",
-  };
-
-  const errorStyle: React.CSSProperties = {
-    color: "#ef4444",
-    fontSize: "12px",
-    marginTop: "-12px",
-    marginBottom: "12px",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    padding: "10px 16px",
-    backgroundColor: "#39ff14",
-    border: "none",
-    color: "#ffffff",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "14px",
-    transition: "all 0.2s ease",
-  };
-
-  const secondaryButtonStyle: React.CSSProperties = {
-    padding: "10px 16px",
-    backgroundColor: "#0f3460",
-    border: "1px solid #1a1f3a",
-    color: "#a0a0a0",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "14px",
-    transition: "all 0.2s ease",
-  };
+  const progress = useMemo(() => (step / TOTAL_STEPS) * 100, [step]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "500px",
-          padding: "40px",
-          backgroundColor: "#0f1225",
-          border: "1px solid #1a1f3a",
-          borderRadius: "8px",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: "32px",
-          }}
-        >
-          <h1
-            style={{
-              margin: "0 0 8px 0",
-              fontSize: "28px",
-              fontWeight: 700,
-              color: "#ffffff",
-            }}
-          >
-            Create Account
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "14px",
-              color: "#a0a0a0",
-            }}
-          >
-            Step {currentStep} of 4
-          </p>
+    <div className="ra-shell">
+      <Styles />
+      <div className="ra-card">
+        <header className="ra-head">
+          <span className="ra-eyebrow">
+            Step {step} of {TOTAL_STEPS}
+          </span>
+          <h1 className="ra-title">Create your account</h1>
+          <p className="ra-sub">{STEP_TITLES[step - 1]}</p>
+        </header>
+
+        <div className="ra-progress" aria-hidden="true">
+          <div className="ra-progress-fill" style={{ width: `${progress}%` }} />
         </div>
 
-        {/* Progress bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            marginBottom: "32px",
-          }}
-        >
-          {[1, 2, 3, 4].map((step) => (
-            <div
-              key={step}
-              style={{
-                flex: 1,
-                height: "4px",
-                backgroundColor: step <= currentStep ? "#39ff14" : "#1a1f3a",
-                borderRadius: "2px",
-                transition: "all 0.3s ease",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Error and Success Messages */}
-        {errorMessage && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#7f1d1d",
-              border: "1px solid #991b1b",
-              borderRadius: "4px",
-              color: "#fca5a5",
-              fontSize: "13px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
-
+        {errorMessage && <div className="ra-banner error">{errorMessage}</div>}
         {successMessage && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#064e3b",
-              border: "1px solid #047857",
-              borderRadius: "4px",
-              color: "#86efac",
-              fontSize: "13px",
-            }}
-          >
-            {successMessage}
-          </div>
+          <div className="ra-banner success">{successMessage}</div>
         )}
 
-        {/* Step 1: Account */}
-        {currentStep === 1 && (
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Username
-            </label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              placeholder="Choose a username"
-              style={inputStyle}
+        {step === 1 && (
+          <div className="ra-form">
+            <Field
+              label="Username"
+              value={form.username}
+              onChange={(v) => update("username", v)}
+              placeholder="your-handle"
+              error={errors.username}
+              autoComplete="username"
             />
-            {errors.username && <div style={errorStyle}>{errors.username}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Email
-            </label>
-            <input
+            <Field
+              label="Email"
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="your@email.com"
-              style={inputStyle}
+              value={form.email}
+              onChange={(v) => update("email", v)}
+              placeholder="you@example.com"
+              error={errors.email}
+              autoComplete="email"
             />
-            {errors.email && <div style={errorStyle}>{errors.email}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Password
-            </label>
-            <input
+            <Field
+              label="Password"
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
+              value={form.password}
+              onChange={(v) => update("password", v)}
               placeholder="At least 8 characters"
-              style={inputStyle}
+              error={errors.password}
+              autoComplete="new-password"
             />
-            {errors.password && <div style={errorStyle}>{errors.password}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Confirm Password
-            </label>
-            <input
+            <Field
+              label="Confirm password"
               type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
+              value={form.confirmPassword}
+              onChange={(v) => update("confirmPassword", v)}
               placeholder="Confirm your password"
-              style={inputStyle}
+              error={errors.confirmPassword}
+              autoComplete="new-password"
             />
-            {errors.confirmPassword && (
-              <div style={errorStyle}>{errors.confirmPassword}</div>
-            )}
           </div>
         )}
 
-        {/* Step 2: Personal */}
-        {currentStep === 2 && (
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              First Name
-            </label>
-            <input
-              type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleInputChange}
-              placeholder="First name"
-              style={inputStyle}
+        {step === 2 && (
+          <div className="ra-form">
+            <Field
+              label="First name"
+              value={form.firstName}
+              onChange={(v) => update("firstName", v)}
+              error={errors.firstName}
+              autoComplete="given-name"
             />
-            {errors.firstName && (
-              <div style={errorStyle}>{errors.firstName}</div>
-            )}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Last Name
-            </label>
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleInputChange}
-              placeholder="Last name"
-              style={inputStyle}
+            <Field
+              label="Last name"
+              value={form.lastName}
+              onChange={(v) => update("lastName", v)}
+              error={errors.lastName}
+              autoComplete="family-name"
             />
-            {errors.lastName && <div style={errorStyle}>{errors.lastName}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Date of Birth
-            </label>
-            <input
+            <Field
+              label="Date of birth"
               type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleInputChange}
-              style={inputStyle}
+              value={form.dateOfBirth}
+              onChange={(v) => update("dateOfBirth", v)}
+              error={errors.dateOfBirth}
+              autoComplete="bday"
             />
-            {errors.dateOfBirth && (
-              <div style={errorStyle}>{errors.dateOfBirth}</div>
-            )}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Phone Number
-            </label>
-            <input
+            <Field
+              label="Phone"
               type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              placeholder="Your phone number"
-              style={inputStyle}
+              value={form.phone}
+              onChange={(v) => update("phone", v)}
+              placeholder="+1 555 000 1234"
+              error={errors.phone}
+              autoComplete="tel"
             />
-            {errors.phone && <div style={errorStyle}>{errors.phone}</div>}
           </div>
         )}
 
-        {/* Step 3: Address */}
-        {currentStep === 3 && (
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Street Address
-            </label>
-            <input
-              type="text"
-              name="street"
-              value={formData.street}
-              onChange={handleInputChange}
-              placeholder="123 Main Street"
-              style={inputStyle}
+        {step === 3 && (
+          <div className="ra-form">
+            <Field
+              label="Street"
+              value={form.street}
+              onChange={(v) => update("street", v)}
+              placeholder="123 Main St"
+              error={errors.street}
+              autoComplete="address-line1"
             />
-            {errors.street && <div style={errorStyle}>{errors.street}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              City
-            </label>
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              placeholder="City"
-              style={inputStyle}
-            />
-            {errors.city && <div style={errorStyle}>{errors.city}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              State
-            </label>
-            <input
-              type="text"
-              name="state"
-              value={formData.state}
-              onChange={handleInputChange}
-              placeholder="State"
-              style={inputStyle}
-            />
-            {errors.state && <div style={errorStyle}>{errors.state}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              ZIP Code
-            </label>
-            <input
-              type="text"
-              name="zip"
-              value={formData.zip}
-              onChange={handleInputChange}
-              placeholder="ZIP code"
-              style={inputStyle}
-            />
-            {errors.zip && <div style={errorStyle}>{errors.zip}</div>}
-
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Country
-            </label>
-            <input
-              type="text"
-              name="country"
-              value={formData.country}
-              onChange={handleInputChange}
-              placeholder="Country"
-              style={inputStyle}
-            />
-            {errors.country && <div style={errorStyle}>{errors.country}</div>}
+            <div className="ra-row">
+              <Field
+                label="City"
+                value={form.city}
+                onChange={(v) => update("city", v)}
+                error={errors.city}
+                autoComplete="address-level2"
+              />
+              <Field
+                label="State"
+                value={form.state}
+                onChange={(v) => update("state", v)}
+                error={errors.state}
+                autoComplete="address-level1"
+              />
+            </div>
+            <div className="ra-row">
+              <Field
+                label="ZIP"
+                value={form.zip}
+                onChange={(v) => update("zip", v)}
+                error={errors.zip}
+                autoComplete="postal-code"
+              />
+              <Field
+                label="Country"
+                value={form.country}
+                onChange={(v) => update("country", v)}
+                error={errors.country}
+                autoComplete="country"
+              />
+            </div>
           </div>
         )}
 
-        {/* Step 4: Review & Terms */}
-        {currentStep === 4 && (
-          <div>
-            <div
-              style={{
-                backgroundColor: "#0a0f1d",
-                border: "1px solid #1a1f3a",
-                borderRadius: "4px",
-                padding: "16px",
-                marginBottom: "20px",
-                maxHeight: "300px",
-                overflowY: "auto",
-              }}
-            >
-              <h3
-                style={{
-                  margin: "0 0 12px 0",
-                  color: "#e2e8f0",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                }}
-              >
-                Terms and Conditions
-              </h3>
-              <p
-                style={{
-                  margin: "0 0 12px 0",
-                  color: "#a0a0a0",
-                  fontSize: "13px",
-                }}
-              >
-                By creating an account, you agree to our Terms and Conditions
-                and Privacy Policy. You must be at least 18 years old to use
-                this platform.
+        {step === 4 && (
+          <div className="ra-form">
+            <div className="ra-terms">
+              <h3>Terms and conditions</h3>
+              <p>
+                By creating a Predict account you agree to our Terms of Service
+                and Privacy Policy. You must be 18 or older to trade binary
+                contracts on this platform.
               </p>
-              <p
-                style={{
-                  margin: "0 0 12px 0",
-                  color: "#a0a0a0",
-                  fontSize: "13px",
-                }}
-              >
-                You agree to provide accurate and complete information during
-                registration and to keep your account information up to date.
-              </p>
-              <p
-                style={{
-                  margin: "0 0 12px 0",
-                  color: "#a0a0a0",
-                  fontSize: "13px",
-                }}
-              >
-                TAYA NA! is committed to responsible gambling. If you
-                experience gambling-related problems, please contact our
-                support team.
-              </p>
-              <p style={{ margin: 0, color: "#a0a0a0", fontSize: "13px" }}>
-                For full terms, please visit our website.
+              <p>
+                You agree to keep your account information accurate and to trade
+                responsibly. Predict is committed to providing tools and
+                resources for responsible participation.
               </p>
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginBottom: "20px",
-              }}
-            >
+            <label className="ra-check">
               <input
                 type="checkbox"
-                name="acceptTerms"
-                id="acceptTerms"
-                checked={formData.acceptTerms}
-                onChange={handleInputChange}
-                style={{
-                  width: "18px",
-                  height: "18px",
-                  marginRight: "12px",
-                  cursor: "pointer",
-                }}
+                checked={form.acceptTerms}
+                onChange={(e) => update("acceptTerms", e.target.checked)}
               />
-              <label
-                htmlFor="acceptTerms"
-                style={{
-                  color: "#e2e8f0",
-                  fontSize: "14px",
-                  cursor: "pointer",
-                }}
-              >
-                I agree to the Terms and Conditions
-              </label>
-            </div>
+              <span>I agree to the Terms of Service and Privacy Policy</span>
+            </label>
             {errors.acceptTerms && (
-              <div style={errorStyle}>{errors.acceptTerms}</div>
+              <div className="ra-field-error">{errors.acceptTerms}</div>
             )}
 
-            <div
-              style={{
-                backgroundColor: "#0a0f1d",
-                border: "1px solid #1a1f3a",
-                borderRadius: "4px",
-                padding: "12px",
-                marginBottom: "20px",
-              }}
-            >
-              <p style={{ margin: 0, color: "#a0a0a0", fontSize: "12px" }}>
-                <strong style={{ color: "#e2e8f0" }}>Account Summary:</strong>
-              </p>
-              <p
-                style={{ margin: "4px 0", color: "#a0a0a0", fontSize: "12px" }}
-              >
-                Username: {formData.username}
-              </p>
-              <p
-                style={{ margin: "4px 0", color: "#a0a0a0", fontSize: "12px" }}
-              >
-                Email: {formData.email}
-              </p>
-              <p
-                style={{ margin: "4px 0", color: "#a0a0a0", fontSize: "12px" }}
-              >
-                Name: {formData.firstName} {formData.lastName}
-              </p>
+            <div className="ra-summary">
+              <span className="ra-summary-eyebrow">Account summary</span>
+              <dl>
+                <div>
+                  <dt>Username</dt>
+                  <dd className="mono">{form.username}</dd>
+                </div>
+                <div>
+                  <dt>Email</dt>
+                  <dd>{form.email}</dd>
+                </div>
+                <div>
+                  <dt>Name</dt>
+                  <dd>
+                    {form.firstName} {form.lastName}
+                  </dd>
+                </div>
+              </dl>
             </div>
           </div>
         )}
 
-        {/* Navigation Buttons */}
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            marginTop: "32px",
-          }}
-        >
+        <div className="ra-actions">
           <button
-            onClick={handlePrevious}
-            disabled={currentStep === 1}
-            style={{
-              ...secondaryButtonStyle,
-              opacity: currentStep === 1 ? 0.5 : 1,
-              cursor: currentStep === 1 ? "not-allowed" : "pointer",
-              flex: 1,
-            }}
-            onMouseEnter={(e) => {
-              if (currentStep > 1) {
-                e.currentTarget.style.backgroundColor = "#1a2a4a";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#0f3460";
-            }}
+            type="button"
+            onClick={onPrev}
+            disabled={step === 1 || submitting}
+            className="ra-btn ghost"
           >
-            Previous
+            Back
           </button>
           <button
-            onClick={currentStep === 4 ? handleSubmit : handleNext}
-            disabled={isLoading}
-            style={{
-              ...buttonStyle,
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? "not-allowed" : "pointer",
-              flex: 1,
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading) {
-                e.currentTarget.style.backgroundColor = "#ea580c";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#39ff14";
-            }}
+            type="button"
+            onClick={step === TOTAL_STEPS ? onSubmit : onNext}
+            disabled={submitting}
+            className="ra-btn primary"
           >
-            {isLoading
-              ? "Processing..."
-              : currentStep === 4
-                ? "Create Account"
-                : "Next"}
+            {submitting
+              ? "Processing…"
+              : step === TOTAL_STEPS
+                ? "Create account"
+                : "Continue"}
           </button>
         </div>
 
-        {/* Login Link */}
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            color: "#a0a0a0",
-            fontSize: "14px",
-          }}
-        >
-          Already have an account?
-          <Link
-            href="/auth/login"
-            style={{
-              color: "#39ff14",
-              textDecoration: "none",
-              fontWeight: 600,
-              marginLeft: "4px",
-            }}
-          >
-            Sign in here
+        <footer className="ra-foot">
+          Already have an account?{" "}
+          <Link href="/auth/login" className="ra-link-accent">
+            Sign in
           </Link>
-        </div>
+        </footer>
       </div>
     </div>
+  );
+}
+
+function Field({
+  label,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  error,
+  autoComplete,
+}: {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  error?: string;
+  autoComplete?: string;
+}) {
+  return (
+    <label className="ra-field">
+      <span className="ra-field-label">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        className={`ra-input ${error ? "ra-input-error" : ""}`}
+      />
+      {error && <span className="ra-field-error">{error}</span>}
+    </label>
+  );
+}
+
+function Styles() {
+  return (
+    <style>{`
+      .ra-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+      }
+      .ra-card {
+        width: 100%;
+        max-width: 500px;
+        background: var(--s1);
+        border: 1px solid var(--b1);
+        border-radius: var(--r-lg);
+        padding: 32px 32px 26px;
+        box-shadow: 0 28px 60px rgba(0,0,0,0.45);
+      }
+      .ra-head { text-align: center; margin-bottom: 16px; }
+      .ra-eyebrow {
+        display: inline-block;
+        padding: 3px 10px;
+        margin-bottom: 10px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(34,211,238,0.3);
+        color: var(--accent);
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .ra-title {
+        margin: 0 0 4px;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--t1);
+      }
+      .ra-sub {
+        margin: 0;
+        font-size: 13px;
+        color: var(--t3);
+      }
+
+      .ra-progress {
+        position: relative;
+        height: 4px;
+        background: var(--s2);
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 22px;
+      }
+      .ra-progress-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+        border-radius: inherit;
+        box-shadow: 0 0 14px rgba(34,211,238,0.5);
+        transition: width 0.3s ease;
+      }
+
+      .ra-banner {
+        padding: 10px 12px;
+        border-radius: var(--r-sm);
+        font-size: 13px;
+        margin-bottom: 14px;
+      }
+      .ra-banner.error {
+        background: rgba(248,113,113,0.1);
+        border: 1px solid rgba(248,113,113,0.3);
+        color: var(--no);
+      }
+      .ra-banner.success {
+        background: rgba(52,211,153,0.1);
+        border: 1px solid rgba(52,211,153,0.3);
+        color: var(--yes);
+      }
+
+      .ra-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .ra-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .ra-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .ra-field-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--t3);
+      }
+      .ra-input {
+        background: var(--s2);
+        border: 1px solid var(--b1);
+        border-radius: var(--r-sm);
+        padding: 10px 12px;
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--t1);
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .ra-input::placeholder { color: var(--t4); }
+      .ra-input:focus {
+        border-color: var(--accent);
+        box-shadow: var(--accent-glow);
+      }
+      .ra-input-error { border-color: var(--no); }
+      .ra-field-error {
+        font-size: 11px;
+        color: var(--no);
+      }
+
+      .ra-terms {
+        background: var(--s2);
+        border: 1px solid var(--b1);
+        border-radius: var(--r-sm);
+        padding: 14px 16px;
+        max-height: 220px;
+        overflow-y: auto;
+      }
+      .ra-terms h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--t1);
+      }
+      .ra-terms p {
+        margin: 0 0 10px;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--t2);
+      }
+      .ra-terms p:last-child { margin-bottom: 0; }
+
+      .ra-check {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: var(--t1);
+        cursor: pointer;
+      }
+      .ra-check input {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent);
+      }
+
+      .ra-summary {
+        background: var(--s2);
+        border: 1px solid var(--b1);
+        border-radius: var(--r-sm);
+        padding: 12px 14px;
+      }
+      .ra-summary-eyebrow {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--t3);
+        margin-bottom: 8px;
+      }
+      .ra-summary dl {
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .ra-summary dl > div {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+      }
+      .ra-summary dt { color: var(--t3); }
+      .ra-summary dd { margin: 0; color: var(--t1); }
+
+      .ra-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .ra-btn {
+        flex: 1;
+        padding: 11px 14px;
+        border: 1px solid transparent;
+        border-radius: var(--r-sm);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+      .ra-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .ra-btn.ghost {
+        background: transparent;
+        color: var(--t2);
+        border-color: var(--b2);
+      }
+      .ra-btn.ghost:hover:not(:disabled) {
+        background: var(--s2);
+        color: var(--t1);
+      }
+      .ra-btn.primary {
+        background: var(--accent);
+        color: #06222b;
+        box-shadow: var(--accent-glow);
+      }
+      .ra-btn.primary:hover:not(:disabled) { background: var(--accent-hi); }
+
+      .ra-foot {
+        padding-top: 14px;
+        margin-top: 18px;
+        border-top: 1px solid var(--b1);
+        text-align: center;
+        font-size: 13px;
+        color: var(--t2);
+      }
+      .ra-link-accent {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .ra-link-accent:hover { color: var(--accent-hi); }
+    `}</style>
   );
 }

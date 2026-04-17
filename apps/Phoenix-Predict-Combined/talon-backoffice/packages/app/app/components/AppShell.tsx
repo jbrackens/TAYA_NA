@@ -35,7 +35,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <ToastProvider>
             <AuthProvider>
               {isAuthRoute ? (
-                <div className="ps-auth-layout">{children}</div>
+                <div className="predict-auth-layout">{children}</div>
               ) : (
                 <div style={{ minHeight: "100vh", background: "var(--s0)" }}>
                   <WhaleTicker />
