@@ -471,10 +471,11 @@ export default function CashierPage() {
           <div className="cashier-card cashier-summary">
             <h3
               style={{
-                color: "#f1f5f9",
-                fontSize: 15,
+                color: "var(--t1)",
+                fontSize: 14,
                 fontWeight: 700,
-                marginBottom: 16,
+                marginBottom: 14,
+                letterSpacing: "-0.01em",
               }}
             >
               Summary
@@ -497,16 +498,16 @@ export default function CashierPage() {
               <>
                 <h4
                   style={{
-                    color: "#D3D3D3",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    marginTop: 24,
+                    color: "var(--t3)",
+                    fontSize: 10,
+                    fontWeight: 700,
+                    marginTop: 22,
                     marginBottom: 10,
                     textTransform: "uppercase",
-                    letterSpacing: "0.05em",
+                    letterSpacing: "0.08em",
                   }}
                 >
-                  Recent Transactions
+                  Recent transactions
                 </h4>
                 {transactions.slice(0, 5).map((tx) => (
                   <div
@@ -516,12 +517,14 @@ export default function CashierPage() {
                   >
                     <span
                       style={{
-                        color: tx.type === "deposit" ? "#22c55e" : "#f87171",
+                        color:
+                          tx.type === "deposit" ? "var(--yes)" : "var(--no)",
+                        fontWeight: 600,
                       }}
                     >
-                      {tx.type === "deposit" ? "+" : "-"}${tx.amount.toFixed(2)}
+                      {tx.type === "deposit" ? "+" : "−"}${tx.amount.toFixed(2)}
                     </span>
-                    <span style={{ color: "#4a5580" }}>
+                    <span style={{ color: "var(--t3)" }}>
                       {new Date(tx.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -547,75 +550,110 @@ export default function CashierPage() {
 }
 
 const cashierStyles = `
-  .cashier-page { max-width: 960px; margin: 0 auto; padding: 24px 16px; }
-  .cashier-title { font-size: 24px; font-weight: 800; color: #f8fafc; margin-bottom: 20px; }
+  .cashier-page { max-width: 1100px; margin: 0 auto; padding: 24px 24px 60px; }
+  .cashier-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: var(--t1); margin: 0 0 16px; }
   .cashier-balance-banner {
     display: flex; justify-content: space-between; align-items: center;
-    background: linear-gradient(135deg, #1a1040 0%, #111328 100%);
-    border: 1px solid #1e2243; border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;
+    background: var(--s1);
+    border: 1px solid var(--b1); border-radius: var(--r-md); padding: 20px 22px; margin-bottom: 16px;
   }
-  .cashier-balance-label { display: block; font-size: 12px; color: #4a5580; font-weight: 600; margin-bottom: 4px; }
-  .cashier-balance-value { font-size: 28px; font-weight: 800; color: #39ff14; }
-  .cashier-balance-sub { display: block; font-size: 16px; font-weight: 600; color: #64748b; }
-  .cashier-grid { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
+  .cashier-balance-label {
+    display: block; font-size: 10px; color: var(--t3); font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;
+  }
+  .cashier-balance-value {
+    font-size: 28px; font-weight: 700; color: var(--accent); letter-spacing: -0.01em;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  }
+  .cashier-balance-sub {
+    display: block; font-size: 16px; font-weight: 600; color: var(--t2);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  }
+  .cashier-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
   @media (max-width: 768px) { .cashier-grid { grid-template-columns: 1fr; } }
-  .cashier-card { background: #111328; border: 1px solid #1a1f3a; border-radius: 14px; padding: 24px; }
-  .cashier-tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #1a1f3a; }
+  .cashier-card {
+    background: var(--s1); border: 1px solid var(--b1); border-radius: var(--r-md); padding: 22px;
+  }
+  .cashier-tabs {
+    display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--b1);
+  }
   .cashier-tab {
-    flex: 1; padding: 12px; text-align: center; font-size: 14px; font-weight: 600;
-    color: #4a5580; background: none; border: none; cursor: pointer;
-    border-bottom: 2px solid transparent; transition: all 0.15s;
+    flex: 1; padding: 10px 14px; text-align: center; font-family: inherit; font-size: 13px; font-weight: 600;
+    color: var(--t3); background: transparent; border: 0; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; cursor: pointer; transition: color 0.15s, border-color 0.15s;
   }
-  .cashier-tab.active { color: #39ff14; border-bottom-color: #39ff14; }
-  .cashier-section { margin-bottom: 24px; }
-  .cashier-label { display: block; font-size: 13px; font-weight: 600; color: #D3D3D3; margin-bottom: 10px; }
-  .cashier-quick-amounts { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .cashier-tab:hover { color: var(--t1); }
+  .cashier-tab.active { color: var(--t1); border-bottom-color: var(--accent); }
+  .cashier-section { margin-bottom: 20px; }
+  .cashier-label {
+    display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--t3); margin-bottom: 10px;
+  }
+  .cashier-quick-amounts { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
   .cashier-quick-btn {
-    flex: 1; min-width: 60px; padding: 10px 8px; border-radius: 8px; font-size: 13px;
-    font-weight: 700; background: #161a35; border: 1px solid #1e2243; color: #64748b;
-    cursor: pointer; transition: all 0.12s;
+    flex: 1; min-width: 60px; padding: 10px 8px; border-radius: var(--r-sm); font-size: 13px;
+    font-weight: 600; background: var(--s2); border: 1px solid var(--b1); color: var(--t2);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
+    cursor: pointer; transition: all 0.15s;
   }
-  .cashier-quick-btn.active, .cashier-quick-btn:hover {
-    background: rgba(57,255,20,0.1); border-color: #39ff14; color: #39ff14;
+  .cashier-quick-btn:hover { border-color: var(--b2); color: var(--t1); }
+  .cashier-quick-btn.active {
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
   }
   .cashier-input {
-    width: 100%; padding: 12px 14px; border-radius: 8px; font-size: 14px;
-    background: #0b0e1c; border: 1px solid #1e2243; color: #f1f5f9;
-    outline: none; transition: border-color 0.15s;
+    width: 100%; padding: 11px 14px; border-radius: var(--r-sm); font-size: 14px;
+    background: var(--s2); border: 1px solid var(--b1); color: var(--t1);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
+    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .cashier-input:focus { border-color: #39ff14; }
+  .cashier-input::placeholder { color: var(--t4); font-family: inherit; }
+  .cashier-input:focus { border-color: var(--accent); box-shadow: var(--accent-glow); }
   .cashier-payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
   .cashier-payment-btn {
-    padding: 12px 8px; border-radius: 8px; font-size: 12px; font-weight: 600;
-    background: #161a35; border: 1px solid #1e2243; color: #64748b; cursor: pointer;
-    transition: all 0.12s;
+    padding: 11px 8px; border-radius: var(--r-sm); font-family: inherit; font-size: 12px; font-weight: 600;
+    background: var(--s2); border: 1px solid var(--b1); color: var(--t2); cursor: pointer;
+    transition: all 0.15s;
   }
-  .cashier-payment-btn.active, .cashier-payment-btn:hover {
-    background: rgba(57,255,20,0.1); border-color: #39ff14; color: #39ff14;
+  .cashier-payment-btn:hover { border-color: var(--b2); color: var(--t1); }
+  .cashier-payment-btn.active {
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
   }
-  .cashier-msg { padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; margin-bottom: 16px; }
-  .cashier-msg.error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
-  .cashier-msg.success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #22c55e; }
-  .cashier-msg.pending { background: rgba(57,255,20,0.08); border: 1px solid rgba(57,255,20,0.2); color: #39ff14; display: flex; align-items: center; gap: 10px; }
+  .cashier-msg {
+    padding: 10px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; margin-bottom: 14px;
+  }
+  .cashier-msg.error {
+    background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--no);
+  }
+  .cashier-msg.success {
+    background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--yes);
+  }
+  .cashier-msg.pending {
+    background: var(--accent-soft); border: 1px solid rgba(34,211,238,0.3); color: var(--accent);
+    display: flex; align-items: center; gap: 10px;
+  }
   @keyframes cashier-spin { to { transform: rotate(360deg); } }
   .cashier-spinner {
-    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(57,255,20,0.3);
-    border-top-color: #39ff14; border-radius: 50%; animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
+    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(34,211,238,0.3);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
   }
   .cashier-submit {
-    width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 700;
-    background: #39ff14; border: none; color: #101114; cursor: pointer; transition: opacity 0.15s;
+    width: 100%; padding: 12px 16px; border-radius: var(--r-sm); font-family: inherit;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
+    background: var(--accent); border: 0; color: #06222b; cursor: pointer;
+    box-shadow: var(--accent-glow); transition: background 0.15s;
   }
-  .cashier-submit:hover { opacity: 0.9; }
-  .cashier-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cashier-submit:hover:not(:disabled) { background: var(--accent-hi); }
+  .cashier-submit:disabled { opacity: 0.5; cursor: not-allowed; }
   .cashier-summary { height: fit-content; }
   .cashier-summary-row {
-    display: flex; justify-content: space-between; padding: 10px 0;
-    border-bottom: 1px solid #1a1f3a; font-size: 13px; color: #D3D3D3;
+    display: flex; justify-content: space-between; padding: 9px 0;
+    border-bottom: 1px solid var(--b1); font-size: 13px; color: var(--t2);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;
   }
-  .cashier-summary-row:last-child { border-bottom: none; }
+  .cashier-summary-row:last-child { border-bottom: 0; }
   .cashier-summary-row.total {
-    margin-top: 8px; padding-top: 12px; border-top: 2px solid #1e2243;
-    font-size: 16px; font-weight: 700; color: #39ff14;
+    margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--b2); border-bottom: 0;
+    font-size: 15px; font-weight: 700; color: var(--accent);
   }
 `;
