@@ -89,26 +89,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const restoreSession = async () => {
       try {
-        // Check if we have a stored user hint (lightweight check before API call)
+        // Hint the server has a session even if localStorage was cleared:
+        // csrf_token is set alongside access_token on every successful login
+        // and is readable from JS (access_token itself is HttpOnly). If either
+        // signal is present we check the session; otherwise skip the round-trip
+        // so anonymous page loads stay fast.
         const storedUser = readStoredUser();
-        if (!storedUser) {
+        const hasCsrfCookie =
+          typeof document !== "undefined" &&
+          /(^|;\s*)csrf_token=/.test(document.cookie);
+        if (!storedUser && !hasCsrfCookie) {
           return;
         }
 
         try {
           // Session validation uses HttpOnly cookie automatically
           const session = await getSession();
-          if (!mounted || !session.authenticated) return;
-          const restoredUser = { id: session.userId, username: session.username };
+          if (!mounted) return;
+          if (!session.authenticated) {
+            // Cookie exists but session is invalid (expired, revoked) —
+            // clear any stale stored user and drop out of auth state.
+            clearStoredUser();
+            setUser(null);
+            return;
+          }
+          const restoredUser = {
+            id: session.userId,
+            username: session.username,
+          };
           setUser(restoredUser);
           setSessionStartTime(new Date());
           persistStoredUser(restoredUser);
         } catch (sessionErr) {
           // Issue #4: Distinguish network errors from auth failures
-          const isNetworkError = !(sessionErr instanceof Error && 'status' in sessionErr);
+          const isNetworkError = !(
+            sessionErr instanceof Error && "status" in sessionErr
+          );
           if (isNetworkError && storedUser) {
             // Network issue, keep user logged in with stale data
-            logger.warn("Auth", "Session check failed, possible network issue", sessionErr);
+            logger.warn(
+              "Auth",
+              "Session check failed, possible network issue",
+              sessionErr,
+            );
             if (mounted) {
               setUser(storedUser);
               setSessionStartTime(new Date());
@@ -121,7 +144,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await authRefresh();
             const session = await getSession();
             if (!mounted || !session.authenticated) return;
-            const restoredUser = { id: session.userId, username: session.username };
+            const restoredUser = {
+              id: session.userId,
+              username: session.username,
+            };
             setUser(restoredUser);
             setSessionStartTime(new Date());
             persistStoredUser(restoredUser);
@@ -173,7 +199,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               coolOffUntil: coolOff.coolOffUntil,
             });
             // Clear server-side cookies via logout endpoint
-            await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include", headers: getCSRFHeaders() }).catch(() => {});
+            await fetch("/api/v1/auth/logout/", {
+              method: "POST",
+              credentials: "include",
+              headers: getCSRFHeaders(),
+            }).catch(() => {});
             clearStoredUser();
             throw new Error(
               `Your account is under a cool-off period until ${coolOffEnd.toLocaleDateString()}. Please try again later.`,
@@ -191,7 +221,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         toast.success("Welcome back!", session.username);
       } catch (err) {
         // Issue #5 fix: clear cookies on any login failure to prevent half-auth
-        await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include", headers: getCSRFHeaders() }).catch(() => {});
+        await fetch("/api/v1/auth/logout/", {
+          method: "POST",
+          credentials: "include",
+          headers: getCSRFHeaders(),
+        }).catch(() => {});
         clearStoredUser();
         setUser(null);
         const loginError = err instanceof Error ? err : new Error(String(err));
@@ -206,7 +240,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = useCallback(async () => {
     // Clear server-side HttpOnly cookies
-    await fetch("/api/v1/auth/logout/", { method: "POST", credentials: "include", headers: getCSRFHeaders() }).catch(() => {});
+    await fetch("/api/v1/auth/logout/", {
+      method: "POST",
+      credentials: "include",
+      headers: getCSRFHeaders(),
+    }).catch(() => {});
     clearStoredUser();
     setUser(null);
     setError(null);
