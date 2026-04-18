@@ -57,26 +57,6 @@ interface WithdrawResponseRaw {
   updated_at: string;
 }
 
-interface TransactionRaw {
-  transaction_id: string;
-  user_id: string;
-  type: string;
-  amount: number;
-  balance_before: number;
-  balance_after: number;
-  currency: string;
-  description?: string;
-  created_at: string;
-}
-
-interface GetTransactionsPaginatedResponseRaw {
-  transactions: TransactionRaw[];
-  total: number;
-  page: number;
-  limit: number;
-  total_pages: number;
-}
-
 interface WalletBalanceRaw {
   userId: string;
   balanceCents: number;
@@ -195,7 +175,7 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
   obj: T,
 ): Record<string, unknown> {
   if (Array.isArray(obj)) {
-    return (obj.map(normalizeSnakeCase) as unknown) as Record<string, unknown>;
+    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
   if (obj !== null && typeof obj === "object") {
     return Object.entries(obj).reduce<Record<string, unknown>>(
@@ -229,7 +209,9 @@ export async function getBalance(userId: string): Promise<Balance> {
 
   const promise = (async () => {
     try {
-      const raw = await apiClient.get<WalletBalanceRaw>(`/api/v1/wallet/${userId}`);
+      const raw = await apiClient.get<WalletBalanceRaw>(
+        `/api/v1/wallet/${userId}`,
+      );
       const availableBalance = centsToDollars(raw.balanceCents);
       const result: Balance = {
         userId: raw.userId,
@@ -300,7 +282,7 @@ export async function getTransactionStatus(
     "/api/v1/payments/status",
     { transactionId },
   );
-  return (normalizeSnakeCase(raw) as unknown) as TransactionStatus;
+  return normalizeSnakeCase(raw) as unknown as TransactionStatus;
 }
 
 /**
@@ -310,52 +292,41 @@ export async function getTransactions(
   userId: string,
   params?: GetTransactionsParams,
 ): Promise<GetTransactionsPaginatedResponse> {
-  try {
-    const ledgerParams: Record<string, string> = {};
-    if (params?.limit) ledgerParams.limit = String(params.limit);
-    const raw = await apiClient.get<WalletLedgerResponseRaw>(
-      `/api/v1/wallet/${userId}/ledger`,
-      ledgerParams,
-    );
+  // Predict gateway exposes the wallet ledger at /api/v1/wallet/{id}/ledger.
+  // The sportsbook fallback at /api/v1/wallets/{id}/transactions (plural)
+  // doesn't exist here — removing it so we don't generate 404 noise.
+  const ledgerParams: Record<string, string> = {};
+  if (params?.limit) ledgerParams.limit = String(params.limit);
+  const raw = await apiClient.get<WalletLedgerResponseRaw>(
+    `/api/v1/wallet/${userId}/ledger`,
+    ledgerParams,
+  );
 
-    const page = params?.page || 1;
-    const limit = params?.limit || raw.items.length || 10;
-    const filtered = raw.items.filter((item) =>
-      params?.transaction_type
-        ? mapLedgerType(item.type) === params.transaction_type
-        : true,
-    );
-    const start = (page - 1) * limit;
-    const transactions = filtered.slice(start, start + limit).map((item) => ({
-      transactionId: item.entryId,
-      userId: item.userId,
-      type: mapLedgerType(item.type),
-      amount: centsToDollars(item.amountCents),
-      balanceBefore: centsToDollars(item.balanceCents - item.amountCents),
-      balanceAfter: centsToDollars(item.balanceCents),
-      currency: "USD",
-      description: item.reason,
-      createdAt: item.transactionTime,
-    }));
+  const page = params?.page || 1;
+  const limit = params?.limit || raw.items.length || 10;
+  const filtered = raw.items.filter((item) =>
+    params?.transaction_type
+      ? mapLedgerType(item.type) === params.transaction_type
+      : true,
+  );
+  const start = (page - 1) * limit;
+  const transactions = filtered.slice(start, start + limit).map((item) => ({
+    transactionId: item.entryId,
+    userId: item.userId,
+    type: mapLedgerType(item.type),
+    amount: centsToDollars(item.amountCents),
+    balanceBefore: centsToDollars(item.balanceCents - item.amountCents),
+    balanceAfter: centsToDollars(item.balanceCents),
+    currency: "USD",
+    description: item.reason,
+    createdAt: item.transactionTime,
+  }));
 
-    return {
-      transactions,
-      total: filtered.length,
-      page,
-      limit,
-      totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
-    };
-  } catch {
-    const queryParams: Record<string, string> = {};
-    if (params?.page) queryParams.page = String(params.page);
-    if (params?.limit) queryParams.limit = String(params.limit);
-    if (params?.transaction_type)
-      queryParams.transaction_type = params.transaction_type;
-
-    const raw = await apiClient.get<GetTransactionsPaginatedResponseRaw>(
-      `/api/v1/wallets/${userId}/transactions`,
-      queryParams,
-    );
-    return normalizeSnakeCase(raw) as unknown as GetTransactionsPaginatedResponse;
-  }
+  return {
+    transactions,
+    total: filtered.length,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
+  };
 }

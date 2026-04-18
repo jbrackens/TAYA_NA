@@ -48,27 +48,32 @@ export default function CashierPage() {
   const toast = useToast();
   const { user } = useAuth();
 
-  // Load balance on mount
+  // Load balance on mount — guard against empty userId (before auth resolves).
+  // Without the guard, `${userId}` expands to "" and produces malformed URLs
+  // like /api/v1/wallet//ledger (double slash → 308 → 403) or
+  // /api/v1/wallets//transactions (404). Wait for user to load.
   useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
     const load = async () => {
       try {
-        const bal = await getBalance(user?.id || "");
+        const bal = await getBalance(userId);
         setBalance(bal);
         dispatch(setCurrentBalance(bal.availableBalance));
       } catch {
         /* API not available yet */
       }
       try {
-        const txns = await getTransactions(user?.id || "", { limit: 10 });
+        const txns = await getTransactions(userId, { limit: 10 });
         setTransactions(txns.transactions || []);
       } catch {}
       try {
-        const total = await getMonthlyDepositTotal(user?.id || "");
+        const total = await getMonthlyDepositTotal(userId);
         setMonthlyTotal(total);
       } catch {}
     };
     load();
-  }, [dispatch]);
+  }, [dispatch, user?.id]);
 
   // Cleanup polling interval on unmount
   useEffect(() => {

@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import { logger } from "../logger";
 
 // Request types
 export interface SetDepositLimitsRequest {
@@ -62,18 +61,6 @@ interface CoolOffResponseRaw {
   status: string;
   cool_off_until: string;
   created_at: string;
-}
-
-interface CoolOffStatusRaw {
-  status: string;
-  cool_off_until: string | null;
-}
-
-interface RestrictionsResponseRaw {
-  restrictions?: {
-    isOnCoolOff?: boolean;
-    coolOffUntil?: string | null;
-  };
 }
 
 interface SelfExcludeResponseRaw {
@@ -161,7 +148,7 @@ function normalizeSnakeCase<T extends Record<string, unknown>>(
   obj: T,
 ): Record<string, unknown> {
   if (Array.isArray(obj)) {
-    return (obj.map(normalizeSnakeCase) as unknown) as Record<string, unknown>;
+    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
   if (obj !== null && typeof obj === "object") {
     return Object.entries(obj).reduce<Record<string, unknown>>(
@@ -309,31 +296,49 @@ export async function getLimitsHistory(
 ): Promise<GetLimitsHistoryResponse> {
   try {
     const [depositLimits, betLimits] = await Promise.all([
-      apiClient.get<Record<string, unknown>>(
-        "/api/v1/compliance/rg/deposit-limits",
-        { userId },
-      ).catch(() => null),
-      apiClient.get<Record<string, unknown>>(
-        "/api/v1/compliance/rg/bet-limits",
-        { userId },
-      ).catch(() => null),
+      apiClient
+        .get<
+          Record<string, unknown>
+        >("/api/v1/compliance/rg/deposit-limits", { userId })
+        .catch(() => null),
+      apiClient
+        .get<
+          Record<string, unknown>
+        >("/api/v1/compliance/rg/bet-limits", { userId })
+        .catch(() => null),
     ]);
 
     const history: LimitHistoryItem[] = [];
     if (depositLimits && typeof depositLimits === "object") {
       history.push({
         limitType: "deposit",
-        newValue: (depositLimits as Record<string, unknown>).daily_limit as number | undefined,
-        effectiveDate: String((depositLimits as Record<string, unknown>).effective_date || new Date().toISOString()),
-        createdAt: String((depositLimits as Record<string, unknown>).created_at || new Date().toISOString()),
+        newValue: (depositLimits as Record<string, unknown>).daily_limit as
+          | number
+          | undefined,
+        effectiveDate: String(
+          (depositLimits as Record<string, unknown>).effective_date ||
+            new Date().toISOString(),
+        ),
+        createdAt: String(
+          (depositLimits as Record<string, unknown>).created_at ||
+            new Date().toISOString(),
+        ),
       });
     }
     if (betLimits && typeof betLimits === "object") {
       history.push({
         limitType: "stake",
-        newValue: (betLimits as Record<string, unknown>).max_stake as number | undefined,
-        effectiveDate: String((betLimits as Record<string, unknown>).effective_date || new Date().toISOString()),
-        createdAt: String((betLimits as Record<string, unknown>).created_at || new Date().toISOString()),
+        newValue: (betLimits as Record<string, unknown>).max_stake as
+          | number
+          | undefined,
+        effectiveDate: String(
+          (betLimits as Record<string, unknown>).effective_date ||
+            new Date().toISOString(),
+        ),
+        createdAt: String(
+          (betLimits as Record<string, unknown>).created_at ||
+            new Date().toISOString(),
+        ),
       });
     }
 
@@ -345,26 +350,18 @@ export async function getLimitsHistory(
 
 /**
  * Get cool-off status for a user.
- * Fails open (returns inactive) if the backend is unreachable so login
- * still works during local development.
+ *
+ * Predict has not yet built out player-protection features (cool-off,
+ * self-exclusion, deposit limits) — those landed in the sportsbook fork
+ * and the gateway doesn't expose `/api/v1/compliance/rg/restrictions`
+ * yet. Until we ship predict-native protections, this returns
+ * "inactive" without a network call so we don't spam 404s on every
+ * login. Re-enable the API call once the gateway endpoint exists.
+ *
+ * The unused `_userId` keeps the signature stable for callers.
  */
-export async function getCoolOffStatus(userId: string): Promise<CoolOffStatus> {
-  try {
-    const raw = await apiClient.get<RestrictionsResponseRaw>(
-      "/api/v1/compliance/rg/restrictions",
-      { userId },
-    );
-    const restrictions = raw.restrictions;
-    return {
-      status: restrictions?.isOnCoolOff ? "active" : "inactive",
-      coolOffUntil: restrictions?.coolOffUntil ?? null,
-    };
-  } catch (err) {
-    logger.warn(
-      "Compliance",
-      "Failed to fetch cool-off status, failing open",
-      err instanceof Error ? err.message : String(err),
-    );
-    return { status: "inactive", coolOffUntil: null };
-  }
+export async function getCoolOffStatus(
+  _userId: string,
+): Promise<CoolOffStatus> {
+  return { status: "inactive", coolOffUntil: null };
 }
