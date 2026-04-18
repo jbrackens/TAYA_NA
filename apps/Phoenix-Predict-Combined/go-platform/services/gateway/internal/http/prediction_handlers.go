@@ -183,7 +183,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	mux.Handle("/api/v1/orders", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		switch r.Method {
 		case stdhttp.MethodGet:
-			userID := r.Header.Get("X-User-ID")
+			userID := userIDFromRequest(r)
 			if userID == "" {
 				return httpx.Unauthorized("authentication required")
 			}
@@ -203,6 +203,9 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			if err != nil {
 				return httpx.Internal("failed to fetch data", err)
 			}
+			if orders == nil {
+				orders = []prediction.Order{}
+			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
 				"data": orders,
 				"meta": prediction.PageMeta{
@@ -214,7 +217,7 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			})
 
 		case stdhttp.MethodPost:
-			userID := r.Header.Get("X-User-ID")
+			userID := userIDFromRequest(r)
 			if userID == "" {
 				return httpx.Unauthorized("authentication required")
 			}
@@ -259,13 +262,16 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		userID := r.Header.Get("X-User-ID")
+		userID := userIDFromRequest(r)
 		if userID == "" {
 			return httpx.Unauthorized("authentication required")
 		}
 		positions, err := svc.ListPositions(r.Context(), userID)
 		if err != nil {
 			return httpx.Internal("failed to fetch data", err)
+		}
+		if positions == nil {
+			positions = []prediction.Position{}
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, positions)
 	}))
@@ -274,7 +280,7 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
-		userID := r.Header.Get("X-User-ID")
+		userID := userIDFromRequest(r)
 		if userID == "" {
 			return httpx.Unauthorized("authentication required")
 		}
@@ -283,6 +289,35 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.Internal("failed to fetch data", err)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, summary)
+	}))
+
+	// Portfolio history — paginated settled payouts (winning + losing positions).
+	mux.Handle("/api/v1/portfolio/history", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		userID := userIDFromRequest(r)
+		if userID == "" {
+			return httpx.Unauthorized("authentication required")
+		}
+		page := intQueryParam(r, "page", 1)
+		pageSize := intQueryParam(r, "pageSize", 20)
+		payouts, total, err := svc.ListSettledPositions(r.Context(), userID, page, pageSize)
+		if err != nil {
+			return httpx.Internal("failed to fetch data", err)
+		}
+		if payouts == nil {
+			payouts = []prediction.Payout{}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
+			"data": payouts,
+			"meta": prediction.PageMeta{
+				Page:     page,
+				PageSize: pageSize,
+				Total:    total,
+				HasNext:  page*pageSize < total,
+			},
+		})
 	}))
 
 	slog.Info("portfolio routes registered")
@@ -299,7 +334,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		path := r.URL.Path[len("/api/v1/admin/markets/"):]
 		// Simple create market
 		if path == "" && r.Method == stdhttp.MethodPost {
-			adminID := r.Header.Get("X-User-ID")
+			adminID := userIDFromRequest(r)
 			var req prediction.CreateMarketRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
@@ -323,7 +358,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if marketID == "" {
 			return httpx.BadRequest("market id required", nil)
 		}
-		adminID := r.Header.Get("X-User-ID")
+		adminID := userIDFromRequest(r)
 		var req prediction.ResolveMarketRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid request body", nil)
@@ -351,4 +386,17 @@ func intQueryParam(r *stdhttp.Request, key string, defaultVal int) int {
 		return defaultVal
 	}
 	return n
+}
+
+// userIDFromRequest returns the authenticated user ID for the request.
+//
+// Cookie auth (httpx.Auth middleware) puts the user ID in the request context.
+// Bot auth (prediction.BotAuthMiddleware) puts it in the X-User-ID header.
+// We check context first, then fall back to the header so the same handler
+// works for both auth styles.
+func userIDFromRequest(r *stdhttp.Request) string {
+	if uid := httpx.UserIDFromContext(r.Context()); uid != "" {
+		return uid
+	}
+	return r.Header.Get("X-User-ID")
 }

@@ -12,9 +12,9 @@ import (
 func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo prediction.Repository) {
 	botAuth := prediction.NewBotAuthMiddleware(repo)
 
-	// Bot: Issue API key
+	// Bot: Issue API key — cookie-auth route (player creates their own bot key)
 	mux.Handle("/api/v1/bot/keys", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		userID := r.Header.Get("X-User-ID")
+		userID := userIDFromRequest(r)
 		if userID == "" {
 			return httpx.Unauthorized("authentication required")
 		}

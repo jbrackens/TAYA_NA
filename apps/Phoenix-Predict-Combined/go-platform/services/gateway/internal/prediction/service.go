@@ -265,6 +265,12 @@ func (s *Service) GetPortfolioSummary(ctx context.Context, userID string) (*Port
 	return s.repo.GetPortfolioSummary(ctx, userID)
 }
 
+// ListSettledPositions returns paginated payout history for a user.
+// Used by the player app's portfolio "history" tab.
+func (s *Service) ListSettledPositions(ctx context.Context, userID string, page, pageSize int) ([]Payout, int, error) {
+	return s.repo.ListSettledPositions(ctx, userID, page, pageSize)
+}
+
 func (s *Service) ListOrders(ctx context.Context, filter OrderFilter) ([]Order, int, error) {
 	return s.repo.ListOrders(ctx, filter)
 }
