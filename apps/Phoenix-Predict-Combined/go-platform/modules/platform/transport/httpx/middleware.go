@@ -87,6 +87,18 @@ func RoleFromContext(ctx context.Context) string {
 	return v
 }
 
+// WithTestUser returns a context populated with the three auth keys that
+// the Auth middleware normally sets after validating a session. Intended
+// for tests that need to exercise handler code reading
+// UserIDFromContext/UsernameFromContext/RoleFromContext without standing
+// up the full auth service. Do NOT call this from production code paths.
+func WithTestUser(ctx context.Context, userID, username, role string) context.Context {
+	ctx = context.WithValue(ctx, userIDContextKey, userID)
+	ctx = context.WithValue(ctx, usernameContextKey, username)
+	ctx = context.WithValue(ctx, roleContextKey, role)
+	return ctx
+}
+
 // ── Auth Circuit Breaker ──────────────────────────────────────────
 
 // authCircuitBreaker prevents cascading failures when the auth service is down.
