@@ -319,6 +319,10 @@ WHERE txn_id = $1 FOR UPDATE`, payload.TransactionID).Scan(
 	// Process based on event type
 	switch strings.ToLower(payload.Status) {
 	case "approved", "completed", "processed":
+		if !canApplyWebhookTransition(currentStatus) {
+			slog.Info("ignoring duplicate or stale successful webhook", "txn_id", payload.TransactionID, "current_status", currentStatus, "incoming_status", payload.Status)
+			return nil
+		}
 		if txnType == "deposit" && currentStatus == "pending" {
 			_, err := s.processDepositApproval(ctx, payload.TransactionID, userID, amountCents, paymentMethod)
 			if err != nil {
@@ -337,6 +341,10 @@ WHERE txn_id = $1`, payload.TransactionID)
 		}
 
 	case "failed", "declined":
+		if !canApplyWebhookTransition(currentStatus) {
+			slog.Info("ignoring duplicate or stale failed webhook", "txn_id", payload.TransactionID, "current_status", currentStatus, "incoming_status", payload.Status)
+			return nil
+		}
 		if txnType == "withdrawal" && currentStatus == "pending" {
 			// Release the hold
 			_ = s.walletService.Release("withdrawal", payload.TransactionID)
@@ -348,4 +356,8 @@ WHERE txn_id = $1`, payload.TransactionID, payload.Status, payload.Data["error"]
 
 	slog.Info("webhook processed", "txn_id", payload.TransactionID, "event", payload.EventType, "status", payload.Status)
 	return nil
+}
+
+func canApplyWebhookTransition(currentStatus string) bool {
+	return strings.EqualFold(strings.TrimSpace(currentStatus), "pending")
 }

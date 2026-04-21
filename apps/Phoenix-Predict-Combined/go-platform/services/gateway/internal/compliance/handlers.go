@@ -100,7 +100,7 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 		}
 
 		var req struct {
-			UserID    string                  `json:"userId"`
+			UserID    string                 `json:"userId"`
 			Documents []VerificationDocument `json:"documents"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -213,8 +213,8 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		var req struct {
-			UserID    string `json:"userId"`
-			Period    string `json:"period"`
+			UserID      string `json:"userId"`
+			Period      string `json:"period"`
 			AmountCents int64  `json:"amountCents"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -231,9 +231,9 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":       req.UserID,
-			"period":       req.Period,
-			"amountCents":  req.AmountCents,
+			"userId":      req.UserID,
+			"period":      req.Period,
+			"amountCents": req.AmountCents,
 		})
 	}))
 
@@ -265,8 +265,8 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		var req struct {
-			UserID    string `json:"userId"`
-			Period    string `json:"period"`
+			UserID      string `json:"userId"`
+			Period      string `json:"period"`
 			AmountCents int64  `json:"amountCents"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -283,9 +283,9 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":       req.UserID,
-			"period":       req.Period,
-			"amountCents":  req.AmountCents,
+			"userId":      req.UserID,
+			"period":      req.Period,
+			"amountCents": req.AmountCents,
 		})
 	}))
 
@@ -400,13 +400,17 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		var req struct {
-			UserID  string `json:"userId"`
-			DurationHours int `json:"durationHours"`
+			UserID        string `json:"userId"`
+			UserIDSnake   string `json:"user_id"`
+			DurationHours int    `json:"durationHours"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 
+		if req.UserID == "" {
+			req.UserID = req.UserIDSnake
+		}
 		if req.UserID == "" || req.DurationHours <= 0 {
 			return httpx.BadRequest("userId and durationHours are required", map[string]any{"field": "body"})
 		}
@@ -416,9 +420,12 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
+		now := time.Now().UTC()
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":        req.UserID,
-			"durationHours": req.DurationHours,
+			"userId":       req.UserID,
+			"status":       "active",
+			"coolOffUntil": now.Add(time.Duration(req.DurationHours) * time.Hour).Format(time.RFC3339),
+			"createdAt":    now.Format(time.RFC3339),
 		})
 	}))
 
@@ -428,13 +435,17 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		var req struct {
-			UserID    string `json:"userId"`
-			Permanent bool   `json:"permanent"`
+			UserID      string `json:"userId"`
+			UserIDSnake string `json:"user_id"`
+			Permanent   bool   `json:"permanent"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
 
+		if req.UserID == "" {
+			req.UserID = req.UserIDSnake
+		}
 		if req.UserID == "" {
 			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
 		}
@@ -444,9 +455,19 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
+		now := time.Now().UTC()
+		excludedUntil := now.AddDate(0, 0, 30).Format(time.RFC3339)
+		status := "temporary"
+		if req.Permanent {
+			status = "permanent"
+			excludedUntil = time.Date(9999, time.December, 31, 0, 0, 0, 0, time.UTC).Format(time.RFC3339)
+		}
+
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":    req.UserID,
-			"permanent": req.Permanent,
+			"userId":        req.UserID,
+			"status":        status,
+			"excludedUntil": excludedUntil,
+			"createdAt":     now.Format(time.RFC3339),
 		})
 	}))
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	stdhttp "net/http"
 	"os"
@@ -46,6 +47,9 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			defer cancel()
 			allowed, reason, err := DepositComplianceChecker.CheckDepositAllowed(ctx, req.UserID, req.Amount)
 			if err != nil {
+				if errors.Is(err, compliance.ErrDepositLimitExceeded) || errors.Is(err, compliance.ErrUserExcluded) || errors.Is(err, compliance.ErrUserBlocked) {
+					return httpx.Forbidden("deposit not allowed: " + reason)
+				}
 				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 				if env == "production" || env == "staging" {
 					slog.Error("deposit compliance check failed", "user_id", req.UserID, "env", env, "error", err)
@@ -153,10 +157,28 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
 
+		verifier, err := newWebhookVerifierFromEnv()
+		if err != nil {
+			slog.Error("payments webhook rejected: verifier unavailable", "error", err)
+			return mapWebhookVerificationError(err)
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			return httpx.BadRequest("invalid request body", map[string]any{"field": "body"})
+		}
+
 		var payload WebhookPayload
-		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		if err := json.Unmarshal(body, &payload); err != nil {
 			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
 		}
+
+		signature := r.Header.Get(webhookSignatureHeader)
+		if err := verifier.Verify(body, signature, payload.Timestamp); err != nil {
+			slog.Warn("payments webhook rejected", "txn_id", payload.TransactionID, "event", payload.EventType, "error", err)
+			return mapWebhookVerificationError(err)
+		}
+		payload.Signature = signature
 
 		if err := service.HandleWebhook(r.Context(), payload); err != nil {
 			return mapPaymentError(err)
@@ -192,4 +214,19 @@ func mapPaymentError(err error) error {
 		return httpx.Internal("deposit failed", err)
 	}
 	return httpx.Internal("payment operation failed", err)
+}
+
+func mapWebhookVerificationError(err error) error {
+	switch {
+	case errors.Is(err, ErrWebhookSecretMissing):
+		return httpx.NewError(stdhttp.StatusServiceUnavailable, "service_unavailable", "payments webhook is not configured", nil, nil)
+	case errors.Is(err, ErrWebhookSignatureMissing),
+		errors.Is(err, ErrWebhookSignatureInvalid),
+		errors.Is(err, ErrWebhookTimestampMissing),
+		errors.Is(err, ErrWebhookTimestampInvalid),
+		errors.Is(err, ErrWebhookTimestampExpired):
+		return httpx.Unauthorized("invalid webhook signature")
+	default:
+		return httpx.Internal("webhook verification failed", err)
+	}
 }

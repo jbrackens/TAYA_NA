@@ -84,28 +84,27 @@ describe("wallet-client: no sportsbook fallbacks", () => {
   });
 });
 
-// ── Bug E: compliance cool-off check is a no-op stub ──────────────
+// ── Bug E: compliance cool-off check must stay live ───────────────
 
 describe("compliance-client: cool-off stub", () => {
   const source = read("lib/api/compliance-client.ts");
 
-  it("getCoolOffStatus does not fetch /compliance/rg/restrictions", () => {
-    // The endpoint does not exist in the Predict gateway. We stubbed
-    // the function to return "inactive" without a network call until
-    // we ship predict-native player protections.
+  it("getCoolOffStatus fetches /compliance/rg/restrictions", () => {
     const m = /export async function getCoolOffStatus[\s\S]*?^\}/m.exec(source);
     assert.ok(m, "getCoolOffStatus should be defined");
     assert.ok(
-      !m![0].includes("/api/v1/compliance/rg/restrictions"),
-      "getCoolOffStatus body should not call /compliance/rg/restrictions",
+      m![0].includes("/api/v1/compliance/rg/restrictions"),
+      "getCoolOffStatus body should call /compliance/rg/restrictions",
     );
   });
 
-  it("getCoolOffStatus returns inactive status", () => {
+  it("getCoolOffStatus is no longer an unconditional inactive stub", () => {
     const m = /export async function getCoolOffStatus[\s\S]*?^\}/m.exec(source);
     assert.ok(
-      /status:\s*"inactive"/.test(m![0]),
-      'stub should return status: "inactive"',
+      !/return\s+\{\s*status:\s*"inactive",\s*coolOffUntil:\s*null\s*\};\s*$/.test(
+        m![0].trim(),
+      ),
+      "function should not end as an unconditional inactive stub",
     );
   });
 });
@@ -136,6 +135,56 @@ describe("MarketCard: style hoisted outside Link", () => {
     assert.ok(
       /<MarketCardStyles\s*\/>/.test(source),
       "MarketCard should render <MarketCardStyles /> as a sibling of <Link>",
+    );
+  });
+});
+
+// ── Bug F: prediction homepage must not fake analytics ────────────
+
+describe("prediction homepage widgets: live data only", () => {
+  const tickerSource = read("components/prediction/WhaleTicker.tsx");
+  const activitySource = read("components/prediction/WhaleActivityCard.tsx");
+  const moversSource = read("components/prediction/TopMoversCard.tsx");
+  const marketCardSource = read("components/prediction/MarketCard.tsx");
+
+  it("ticker and activity card no longer hardcode sample whale trades", () => {
+    assert.ok(
+      !tickerSource.includes("BTC new ATH @ 64¢"),
+      "WhaleTicker should not ship hardcoded sample trade headlines",
+    );
+    assert.ok(
+      !activitySource.includes("F1 champion @ 72¢"),
+      "WhaleActivityCard should not ship hardcoded sample activity rows",
+    );
+    assert.ok(
+      tickerSource.includes("getDiscovery()"),
+      "WhaleTicker should load real discovery data",
+    );
+  });
+
+  it("top movers no longer derives fake delta from yesPriceCents - 50", () => {
+    assert.ok(
+      !/yesPriceCents\s*-\s*50/.test(moversSource),
+      "TopMoversCard should not fabricate movement from price minus 50",
+    );
+    assert.ok(
+      !moversSource.includes("aria-label={`Delta"),
+      "TopMoversCard should not render fake delta labels",
+    );
+  });
+
+  it("market card replaces synthetic sparkline and cent delta with live pricing bar", () => {
+    assert.ok(
+      !marketCardSource.includes("seededSparklinePoints"),
+      "MarketCard should not render seeded placeholder sparklines",
+    );
+    assert.ok(
+      !marketCardSource.includes("mkt-delta"),
+      "MarketCard should not render placeholder cent deltas",
+    );
+    assert.ok(
+      marketCardSource.includes("mkt-depth-bar"),
+      "MarketCard should render a live pricing bar instead",
     );
   });
 });

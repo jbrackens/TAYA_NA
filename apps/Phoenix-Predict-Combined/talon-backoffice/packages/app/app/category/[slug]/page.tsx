@@ -126,6 +126,8 @@ export default function CategoryPage() {
                 yesPriceCents={m.yesPriceCents}
                 noPriceCents={m.noPriceCents}
                 volumeCents={m.volumeCents}
+                openInterestCents={m.openInterestCents}
+                liquidityCents={m.liquidityCents}
                 closeAt={m.closeAt}
                 status={m.status}
               />

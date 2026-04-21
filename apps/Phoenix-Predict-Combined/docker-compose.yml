@@ -51,8 +51,12 @@ services:
     environment:
       GATEWAY_PORT: "18080"
       GATEWAY_DB_DSN: "postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
+      WALLET_DB_DSN: "postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
+      WALLET_STORE_MODE: "db"
+      GATEWAY_READ_REPO_MODE: "db"
       REDIS_URL: "redis://redis:6379/0"
       AUTH_SERVICE_URL: "http://auth:18081"
+      PAYMENTS_WEBHOOK_SECRET: "whsec_local"
       LOG_LEVEL: "debug"
     networks:
       - predict_network
@@ -71,6 +75,7 @@ services:
       - "18081:18081"
     environment:
       AUTH_PORT: "18081"
+      AUTH_STORE_MODE: "db"
       AUTH_DB_DSN: "postgres://predict:localdev@postgres:5432/predict?sslmode=disable"
       REDIS_URL: "redis://redis:6379/0"
       LOG_LEVEL: "debug"

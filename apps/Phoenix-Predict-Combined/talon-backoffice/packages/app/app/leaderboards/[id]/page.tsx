@@ -1,23 +1,30 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   getLeaderboardForUser,
   getLeaderboardEntries,
   type LeaderboardDefinition,
   type LeaderboardStanding,
-} from '../../lib/api/leaderboards-client';
-import { useAuth } from '../../hooks/useAuth';
+} from "../../lib/api/leaderboards-client";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function LeaderboardDetailPage() {
   const params = useParams();
   const { user } = useAuth();
-  const leaderboardId = params?.id as string;
-  const [leaderboard, setLeaderboard] = useState<LeaderboardDefinition | null>(null);
+  const rawParam = params?.id;
+  const leaderboardId = Array.isArray(rawParam)
+    ? decodeURIComponent(rawParam[0] || "")
+    : decodeURIComponent((rawParam as string) || "");
+  const [leaderboard, setLeaderboard] = useState<LeaderboardDefinition | null>(
+    null,
+  );
   const [items, setItems] = useState<LeaderboardStanding[]>([]);
-  const [viewerEntry, setViewerEntry] = useState<LeaderboardStanding | null>(null);
+  const [viewerEntry, setViewerEntry] = useState<LeaderboardStanding | null>(
+    null,
+  );
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +44,9 @@ export default function LeaderboardDetailPage() {
         setTotalCount(entries.totalCount || 0);
         setViewerEntry(entries.viewerEntry || detail.viewerEntry || null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
+        setError(
+          err instanceof Error ? err.message : "Failed to load leaderboard",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -72,31 +81,48 @@ export default function LeaderboardDetailPage() {
               <Link href="/leaderboards" className="leaderboard-detail-back">
                 Back to leaderboards
               </Link>
-              <h1>{leaderboard?.name || 'Leaderboard'}</h1>
+              <h1>{leaderboard?.name || "Leaderboard"}</h1>
               <p>
                 {leaderboard?.description ||
-                  'Track the runners setting the pace on this TAYA NA! competition board.'}
+                  "Track the runners setting the pace on this TAYA Predict competition board."}
               </p>
             </div>
             {leaderboard ? (
               <div className="leaderboard-detail-badges">
-                <span>{leaderboard.status.charAt(0).toUpperCase() + leaderboard.status.slice(1)}</span>
-                <span>{leaderboard.rankingMode === 'SUM' ? 'Sum' : leaderboard.rankingMode === 'COUNT' ? 'Count' : leaderboard.rankingMode === 'MAX' ? 'Best' : leaderboard.rankingMode}</span>
-                <span>{leaderboard.order === 'DESC' ? 'Highest First' : leaderboard.order === 'ASC' ? 'Lowest First' : leaderboard.order}</span>
+                <span>
+                  {leaderboard.status.charAt(0).toUpperCase() +
+                    leaderboard.status.slice(1)}
+                </span>
+                <span>
+                  {leaderboard.rankingMode === "sum"
+                    ? "Sum"
+                    : leaderboard.rankingMode === "max"
+                      ? "Best"
+                      : "Minimum"}
+                </span>
+                <span>
+                  {leaderboard.order === "desc"
+                    ? "Highest First"
+                    : "Lowest First"}
+                </span>
               </div>
             ) : null}
           </div>
 
           {leaderboard?.windowStartsAt && leaderboard?.windowEndsAt ? (
             <div className="leaderboard-window-line">
-              Competition Window: {new Date(leaderboard.windowStartsAt).toLocaleDateString()} &ndash; {new Date(leaderboard.windowEndsAt).toLocaleDateString()}
+              Competition Window:{" "}
+              {new Date(leaderboard.windowStartsAt).toLocaleDateString()}{" "}
+              &ndash; {new Date(leaderboard.windowEndsAt).toLocaleDateString()}
             </div>
           ) : null}
 
           {leaderboard?.prizeSummary ? (
             <div className="leaderboard-prize-callout">
               <div className="leaderboard-prize-kicker">Prize Pool</div>
-              <div className="leaderboard-prize-text">{leaderboard.prizeSummary}</div>
+              <div className="leaderboard-prize-text">
+                {leaderboard.prizeSummary}
+              </div>
             </div>
           ) : null}
 
@@ -108,7 +134,9 @@ export default function LeaderboardDetailPage() {
                   className={`leaderboard-podium-card leaderboard-podium-card--rank${Math.min(entry.rank, 3)}`}
                 >
                   <div className="leaderboard-podium-rank">#{entry.rank}</div>
-                  <div className="leaderboard-podium-player">{entry.playerId}</div>
+                  <div className="leaderboard-podium-player">
+                    {entry.playerId}
+                  </div>
                   <div className="leaderboard-podium-score">
                     {entry.score.toLocaleString()}
                   </div>
@@ -121,54 +149,68 @@ export default function LeaderboardDetailPage() {
           ) : null}
 
           {viewerEntry ? (
-            <div className={`leaderboard-viewer-card${viewerEntry.rank <= 3 ? ` leaderboard-viewer-card--rank${viewerEntry.rank}` : ''}`}>
+            <div
+              className={`leaderboard-viewer-card${viewerEntry.rank <= 3 ? ` leaderboard-viewer-card--rank${viewerEntry.rank}` : ""}`}
+            >
               <div className="leaderboard-viewer-main">
                 <div>
-                  <div className="leaderboard-viewer-kicker">Your Position &middot; {leaderboard?.name || 'Leaderboard'}</div>
-                  <div className="leaderboard-viewer-title">#{viewerEntry.rank} on this board</div>
+                  <div className="leaderboard-viewer-kicker">
+                    Your Position &middot; {leaderboard?.name || "Leaderboard"}
+                  </div>
+                  <div className="leaderboard-viewer-title">
+                    #{viewerEntry.rank} on this board
+                  </div>
                   <div className="leaderboard-viewer-copy">
-                    {viewerEntry.eventCount} scoring events with a total of {viewerEntry.score.toLocaleString()}
+                    {viewerEntry.eventCount} scoring events with a total of{" "}
+                    {viewerEntry.score.toLocaleString()}
                     {viewerEntry.lastEventAt
                       ? ` · Last activity: ${new Date(viewerEntry.lastEventAt).toLocaleDateString()}`
-                      : ''}
+                      : ""}
                   </div>
                   <div className="leaderboard-viewer-next">
                     {viewerEntry.rank === 1
-                      ? 'You are setting the pace for everyone behind you.'
+                      ? "You are setting the pace for everyone behind you."
                       : viewerGap !== null
                         ? `${viewerGap.toLocaleString()} points to catch #${viewerEntry.rank - 1}.`
-                        : 'Keep stacking qualifying action to climb the next rung.'}
+                        : "Keep stacking qualifying action to climb the next rung."}
                   </div>
                 </div>
                 <div className="leaderboard-viewer-score-wrap">
-                  <div className="leaderboard-viewer-score">{viewerEntry.score.toLocaleString()}</div>
+                  <div className="leaderboard-viewer-score">
+                    {viewerEntry.score.toLocaleString()}
+                  </div>
                   <div className="leaderboard-viewer-score-meta">
-                    {viewerTopBand ? `Top ${viewerTopBand}%` : 'Live on board'}
+                    {viewerTopBand ? `Top ${viewerTopBand}%` : "Live on board"}
                   </div>
                 </div>
               </div>
               <div className="leaderboard-viewer-stats">
                 <div className="leaderboard-viewer-stat">
                   <span>Field</span>
-                  <strong>{totalCount || '—'} players</strong>
+                  <strong>{totalCount || "—"} players</strong>
                 </div>
                 <div className="leaderboard-viewer-stat">
                   <span>Pressure</span>
-                  <strong>{viewerEntry.rank <= 3 ? 'Podium Heat' : `Chasing #${Math.max(1, viewerEntry.rank - 1)}`}</strong>
+                  <strong>
+                    {viewerEntry.rank <= 3
+                      ? "Podium Heat"
+                      : `Chasing #${Math.max(1, viewerEntry.rank - 1)}`}
+                  </strong>
                 </div>
                 <div className="leaderboard-viewer-stat">
                   <span>Last Push</span>
                   <strong>
                     {viewerEntry.lastEventAt
                       ? new Date(viewerEntry.lastEventAt).toLocaleDateString()
-                      : 'Waiting'}
+                      : "Waiting"}
                   </strong>
                 </div>
               </div>
             </div>
           ) : user ? (
             <div className="leaderboard-detail-state">
-              You are not on this ladder yet. One qualifying push gets you into the race.
+              You are not on this ladder yet. One qualifying push gets you into
+              the race.
             </div>
           ) : null}
 
@@ -184,12 +226,14 @@ export default function LeaderboardDetailPage() {
                 <div key={entry.playerId} className="leaderboard-standing-row">
                   <div className="leaderboard-standing-rank">#{entry.rank}</div>
                   <div className="leaderboard-standing-main">
-                    <div className="leaderboard-standing-player">{entry.playerId}</div>
+                    <div className="leaderboard-standing-player">
+                      {entry.playerId}
+                    </div>
                     <div className="leaderboard-standing-meta">
                       {entry.eventCount} score events
                       {entry.lastEventAt
                         ? ` · last update ${new Date(entry.lastEventAt).toLocaleString()}`
-                        : ''}
+                        : ""}
                     </div>
                   </div>
                   <div className="leaderboard-standing-score">

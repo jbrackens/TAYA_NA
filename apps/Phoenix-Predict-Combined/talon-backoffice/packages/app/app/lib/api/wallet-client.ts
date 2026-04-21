@@ -34,27 +34,57 @@ interface BalanceRaw {
 }
 
 interface DepositResponseRaw {
-  transaction_id: string;
-  user_id: string;
-  amount: number;
-  status: string;
-  payment_method: string;
-  currency: string;
-  created_at: string;
-  updated_at: string;
+  transaction?: {
+    transactionId?: string;
+    userId?: string;
+    amountCents?: number;
+    status?: string;
+    paymentMethod?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    processedAt?: string;
+    redirectUrl?: string;
+    requiresRedirect?: boolean;
+  };
+  transaction_id?: string;
+  user_id?: string;
+  amount?: number;
+  amountCents?: number;
+  status?: string;
+  payment_method?: string;
+  paymentMethod?: string;
+  currency?: string;
+  created_at?: string;
+  createdAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
   redirect_url?: string;
   requires_redirect?: boolean;
 }
 
 interface WithdrawResponseRaw {
-  transaction_id: string;
-  user_id: string;
-  amount: number;
-  status: string;
-  payment_method: string;
-  currency: string;
-  created_at: string;
-  updated_at: string;
+  transaction?: {
+    transactionId?: string;
+    userId?: string;
+    amountCents?: number;
+    status?: string;
+    paymentMethod?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    processedAt?: string;
+  };
+  transaction_id?: string;
+  user_id?: string;
+  amount?: number;
+  amountCents?: number;
+  status?: string;
+  payment_method?: string;
+  paymentMethod?: string;
+  currency?: string;
+  created_at?: string;
+  createdAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
 }
 
 interface WalletBalanceRaw {
@@ -136,6 +166,27 @@ function centsToDollars(value?: number): number {
   return typeof value === "number" ? value / 100 : 0;
 }
 
+function dollarsToCents(value?: number): number {
+  return typeof value === "number" ? Math.round(value * 100) : 0;
+}
+
+function normalizePaymentStatus(status?: string): string {
+  switch ((status || "").toLowerCase()) {
+    case "approved":
+    case "processed":
+    case "completed":
+      return "COMPLETED";
+    case "pending":
+    case "processing":
+      return "PENDING";
+    case "failed":
+    case "declined":
+      return "FAILED";
+    default:
+      return status?.toUpperCase() || "";
+  }
+}
+
 function mapLedgerType(type: string): string {
   if (type === "credit") return "deposit";
   if (type === "debit") return "withdrawal";
@@ -144,10 +195,18 @@ function mapLedgerType(type: string): string {
 
 // Transaction status types (for polling pending deposits)
 interface TransactionStatusRaw {
-  transaction_id: string;
-  status: string;
-  amount: number;
-  updated_at: string;
+  transaction?: {
+    transactionId?: string;
+    status?: string;
+    amountCents?: number;
+    updatedAt?: string;
+  };
+  transaction_id?: string;
+  status?: string;
+  amount?: number;
+  amountCents?: number;
+  updated_at?: string;
+  updatedAt?: string;
 }
 
 export interface TransactionStatus {
@@ -253,9 +312,37 @@ export async function deposit(
 ): Promise<DepositResponse> {
   const raw = await apiClient.post<DepositResponseRaw>(
     "/api/v1/payments/deposit",
-    { ...request, user_id: userId },
+    {
+      userId,
+      amountCents: dollarsToCents(request.amount),
+      paymentMethod: request.payment_method,
+      currency: request.currency,
+    },
   );
-  return normalizeSnakeCase(raw);
+  const transaction = raw.transaction || raw;
+  return {
+    transactionId: transaction.transactionId || raw.transaction_id || "",
+    userId: transaction.userId || raw.user_id || userId,
+    amount: centsToDollars(
+      transaction.amountCents ?? raw.amountCents ?? raw.amount,
+    ),
+    status: normalizePaymentStatus(transaction.status || raw.status),
+    paymentMethod:
+      transaction.paymentMethod ||
+      raw.paymentMethod ||
+      raw.payment_method ||
+      request.payment_method,
+    currency: raw.currency || request.currency || "USD",
+    createdAt: transaction.createdAt || raw.createdAt || raw.created_at || "",
+    updatedAt:
+      transaction.updatedAt ||
+      raw.updatedAt ||
+      raw.updated_at ||
+      transaction.processedAt ||
+      "",
+    redirectUrl: transaction.redirectUrl || raw.redirect_url,
+    requiresRedirect: transaction.requiresRedirect || raw.requires_redirect,
+  };
 }
 
 /**
@@ -267,9 +354,35 @@ export async function withdraw(
 ): Promise<WithdrawResponse> {
   const raw = await apiClient.post<WithdrawResponseRaw>(
     "/api/v1/payments/withdraw",
-    { ...request, user_id: userId },
+    {
+      userId,
+      amountCents: dollarsToCents(request.amount),
+      paymentMethod: request.payment_method,
+      currency: request.currency,
+    },
   );
-  return normalizeSnakeCase(raw);
+  const transaction = raw.transaction || raw;
+  return {
+    transactionId: transaction.transactionId || raw.transaction_id || "",
+    userId: transaction.userId || raw.user_id || userId,
+    amount: centsToDollars(
+      transaction.amountCents ?? raw.amountCents ?? raw.amount,
+    ),
+    status: normalizePaymentStatus(transaction.status || raw.status),
+    paymentMethod:
+      transaction.paymentMethod ||
+      raw.paymentMethod ||
+      raw.payment_method ||
+      request.payment_method,
+    currency: raw.currency || request.currency || "USD",
+    createdAt: transaction.createdAt || raw.createdAt || raw.created_at || "",
+    updatedAt:
+      transaction.updatedAt ||
+      raw.updatedAt ||
+      raw.updated_at ||
+      transaction.processedAt ||
+      "",
+  };
 }
 
 /**
@@ -282,7 +395,16 @@ export async function getTransactionStatus(
     "/api/v1/payments/status",
     { transactionId },
   );
-  return normalizeSnakeCase(raw) as unknown as TransactionStatus;
+  const transaction = raw.transaction || raw;
+  return {
+    transactionId:
+      transaction.transactionId || raw.transaction_id || transactionId,
+    status: normalizePaymentStatus(transaction.status || raw.status),
+    amount: centsToDollars(
+      transaction.amountCents ?? raw.amountCents ?? raw.amount,
+    ),
+    updatedAt: transaction.updatedAt || raw.updatedAt || raw.updated_at || "",
+  };
 }
 
 /**

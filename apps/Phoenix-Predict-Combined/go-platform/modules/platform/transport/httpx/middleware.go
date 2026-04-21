@@ -33,7 +33,7 @@ const (
 	authCacheMaxSize     = 10000
 
 	// Circuit breaker thresholds for auth service
-	cbFailureThreshold = 5               // open circuit after 5 consecutive failures
+	cbFailureThreshold = 5                // open circuit after 5 consecutive failures
 	cbResetTimeout     = 15 * time.Second // try again after 15s
 )
 
@@ -68,6 +68,50 @@ func RequestIDFromContext(ctx context.Context) string {
 
 	requestID, _ := value.(string)
 	return requestID
+}
+
+func NormalizeTrailingSlash(prefixes ...string) Middleware {
+	normalizedPrefixes := append([]string(nil), prefixes...)
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			normalizedPath, changed := normalizeTrailingSlashPath(r.URL.Path, normalizedPrefixes)
+			if !changed {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			clone := r.Clone(r.Context())
+			urlCopy := *r.URL
+			urlCopy.Path = normalizedPath
+			if r.URL.RawPath != "" {
+				if normalizedRawPath, rawChanged := normalizeTrailingSlashPath(r.URL.RawPath, normalizedPrefixes); rawChanged {
+					urlCopy.RawPath = normalizedRawPath
+				}
+			}
+			clone.URL = &urlCopy
+			next.ServeHTTP(w, clone)
+		})
+	}
+}
+
+func normalizeTrailingSlashPath(path string, prefixes []string) (string, bool) {
+	if path == "/" || !strings.HasSuffix(path, "/") {
+		return path, false
+	}
+
+	for _, prefix := range prefixes {
+		if !strings.HasPrefix(path, prefix) || len(path) <= len(prefix) {
+			continue
+		}
+		normalized := strings.TrimSuffix(path, "/")
+		if normalized == "" {
+			return path, false
+		}
+		return normalized, normalized != path
+	}
+
+	return path, false
 }
 
 // ── Auth Context Helpers ───────────────────────────────────────────

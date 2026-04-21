@@ -34,11 +34,12 @@ const (
 type AuthService struct {
 	mu sync.RWMutex
 
-	usersByUsername map[string]user
-	db             *sql.DB // nil = in-memory mode
-	store          SessionStore
-	audit          AuditLogger
-	metrics        authMetrics
+	usersByUsername  map[string]user
+	twoFactorEnabled map[string]bool
+	db               *sql.DB // nil = in-memory mode
+	store            SessionStore
+	audit            AuditLogger
+	metrics          authMetrics
 
 	accessTTL  time.Duration
 	refreshTTL time.Duration
@@ -87,6 +88,19 @@ type loginRequest struct {
 
 type refreshRequest struct {
 	RefreshToken string `json:"refreshToken"`
+}
+
+type changePasswordRequest struct {
+	UserID          string `json:"user_id"`
+	UserIDCamel     string `json:"userId"`
+	CurrentPassword string `json:"current_password"`
+	CurrentCamel    string `json:"currentPassword"`
+	NewPassword     string `json:"new_password"`
+	NewCamel        string `json:"newPassword"`
+}
+
+type toggleTwoFactorRequest struct {
+	Enabled *bool `json:"enabled"`
 }
 
 type tokenResponse struct {
@@ -212,13 +226,14 @@ func NewAuthService() *AuthService {
 
 	svc := &AuthService{
 		usersByUsername:  users,
-		store:           NewFileBackedSessionStore(sessionStorePath),
-		audit:           &structuredAuditLogger{logger: log.Default()},
-		accessTTL:       durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
-		refreshTTL:      durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
-		loginLimiter:    loginLimiter,
-		registerLimiter: registerLimiter,
-		lockout:         lockoutBackend,
+		twoFactorEnabled: map[string]bool{},
+		store:            NewFileBackedSessionStore(sessionStorePath),
+		audit:            &structuredAuditLogger{logger: log.Default()},
+		accessTTL:        durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
+		refreshTTL:       durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
+		loginLimiter:     loginLimiter,
+		registerLimiter:  registerLimiter,
+		lockout:          lockoutBackend,
 	}
 
 	// Optionally initialize DB-backed user store
@@ -603,6 +618,72 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 		return httpx.WriteJSON(w, stdhttp.StatusOK, result)
 	}))
 
+	mux.Handle("/api/v1/auth/change-password", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		currentSession, err := auth.currentSessionFromRequest(r)
+		if err != nil {
+			return err
+		}
+
+		var body changePasswordRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+
+		requestedUserID := firstNonEmpty(body.UserID, body.UserIDCamel)
+		if requestedUserID != "" && requestedUserID != currentSession.UserID {
+			return httpx.Forbidden("not authorized to change this password")
+		}
+
+		currentPassword := firstNonEmpty(body.CurrentPassword, body.CurrentCamel)
+		newPassword := firstNonEmpty(body.NewPassword, body.NewCamel)
+		if currentPassword == "" || newPassword == "" {
+			return httpx.BadRequest("current and new password are required", nil)
+		}
+
+		if err := auth.ChangePassword(currentSession.Username, currentPassword, newPassword); err != nil {
+			return err
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"message": "password updated"})
+	}))
+
+	mux.Handle("/api/v1/auth/2fa/toggle", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		currentSession, err := auth.currentSessionFromRequest(r)
+		if err != nil {
+			return err
+		}
+
+		var body toggleTwoFactorRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid JSON payload", map[string]any{"field": "body"})
+		}
+
+		enabled := !auth.IsTwoFactorEnabled(currentSession.UserID)
+		if body.Enabled != nil {
+			enabled = *body.Enabled
+		}
+		auth.SetTwoFactorEnabled(currentSession.UserID, enabled)
+
+		status := "disabled"
+		if enabled {
+			status = "enabled"
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"userId":  currentSession.UserID,
+			"enabled": enabled,
+			"status":  status,
+		})
+	}))
+
 	mux.Handle("/api/v1/auth/metrics", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
@@ -880,6 +961,46 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 	return response, nil
 }
 
+func (a *AuthService) ChangePassword(username string, currentPassword string, newPassword string) error {
+	account, exists := a.lookupUser(username)
+	if !exists || !a.verifyPassword(account, currentPassword) {
+		a.audit.Event("auth.password_change.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
+		return httpx.Unauthorized("current password is incorrect")
+	}
+	if currentPassword == newPassword {
+		return httpx.BadRequest("new password must be different from current password", nil)
+	}
+	if err := validatePasswordStrength(newPassword); err != nil {
+		return err
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcryptCost)
+	if err != nil {
+		return httpx.Internal("failed to hash password", err)
+	}
+
+	if a.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+		defer cancel()
+		if _, err := a.db.ExecContext(ctx, `
+UPDATE auth_users
+SET password_hash = $1, updated_at = NOW()
+WHERE username = $2`, string(hash), username); err != nil {
+			return httpx.Internal("failed to update password", err)
+		}
+	}
+
+	a.mu.Lock()
+	updated := account
+	updated.Password = ""
+	updated.PasswordHash = string(hash)
+	a.usersByUsername[username] = updated
+	a.mu.Unlock()
+
+	a.audit.Event("auth.password_change.success", map[string]any{"username": username, "userId": account.ID})
+	return nil
+}
+
 func (a *AuthService) verifyPassword(account user, password string) bool {
 	// Prefer bcrypt hash if available
 	if account.PasswordHash != "" {
@@ -1018,6 +1139,20 @@ func (a *AuthService) PruneExpiredSessions() {
 	}
 }
 
+func (a *AuthService) currentSessionFromRequest(r *stdhttp.Request) (session, error) {
+	a.PruneExpiredSessions()
+
+	if cookie, err := r.Cookie("access_token"); err == nil && cookie.Value != "" {
+		return a.ValidateAccessToken(cookie.Value)
+	}
+
+	token, err := parseBearerToken(r.Header.Get("Authorization"))
+	if err != nil {
+		return session{}, err
+	}
+	return a.ValidateAccessToken(token)
+}
+
 func (a *AuthService) MetricsSnapshot() metricsResponse {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
@@ -1077,6 +1212,18 @@ WHERE username = $1`, username).Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Rol
 	return account, exists
 }
 
+func (a *AuthService) IsTwoFactorEnabled(userID string) bool {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.twoFactorEnabled[userID]
+}
+
+func (a *AuthService) SetTwoFactorEnabled(userID string, enabled bool) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.twoFactorEnabled[userID] = enabled
+}
+
 func newSession(account user, accessTTL, refreshTTL time.Duration) (session, tokenResponse, error) {
 	accessToken, err := makeToken("atk")
 	if err != nil {
@@ -1124,6 +1271,15 @@ func parseBearerToken(header string) (string, error) {
 		return "", httpx.Unauthorized("missing or invalid Authorization bearer token")
 	}
 	return parts[1], nil
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+	return ""
 }
 
 func digestToken(token string) string {
@@ -1389,8 +1545,8 @@ func (rl *rateLimiter) sweep() {
 // ─── Account Lockout ────────────────────────────────────────────
 
 const (
-	maxFailedAttempts  = 5
-	lockoutDuration    = 15 * time.Minute
+	maxFailedAttempts   = 5
+	lockoutDuration     = 15 * time.Minute
 	failedAttemptWindow = time.Minute
 )
 

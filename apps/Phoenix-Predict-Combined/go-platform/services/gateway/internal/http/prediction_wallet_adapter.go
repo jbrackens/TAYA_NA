@@ -1,6 +1,10 @@
 package http
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/wallet"
 )
@@ -43,4 +47,31 @@ func (a *predictionWalletAdapter) Credit(userID string, amountCents int64, idemp
 
 func (a *predictionWalletAdapter) Balance(userID string) int64 {
 	return a.svc.Balance(userID)
+}
+
+func (a *predictionWalletAdapter) BeginTx(ctx context.Context) (*sql.Tx, error) {
+	if a.svc == nil || a.svc.DB() == nil {
+		return nil, fmt.Errorf("wallet database unavailable")
+	}
+	return a.svc.DB().BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+}
+
+func (a *predictionWalletAdapter) DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+	_, err := a.svc.DebitWithTx(ctx, tx, wallet.MutationRequest{
+		UserID:         userID,
+		AmountCents:    amountCents,
+		IdempotencyKey: idempotencyKey,
+		Reason:         reason,
+	})
+	return err
+}
+
+func (a *predictionWalletAdapter) CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error {
+	_, err := a.svc.CreditWithTx(ctx, tx, wallet.MutationRequest{
+		UserID:         userID,
+		AmountCents:    amountCents,
+		IdempotencyKey: idempotencyKey,
+		Reason:         reason,
+	})
+	return err
 }

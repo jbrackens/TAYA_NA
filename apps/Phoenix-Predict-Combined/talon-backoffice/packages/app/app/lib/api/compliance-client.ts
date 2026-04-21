@@ -176,7 +176,20 @@ export async function setDepositLimits(
 ): Promise<DepositLimits> {
   const raw = await apiClient.post<DepositLimitsRaw>(
     "/api/v1/compliance/rg/deposit-limit",
-    request,
+    {
+      userId: request.user_id,
+      period: request.monthly_limit
+        ? "monthly"
+        : request.weekly_limit
+          ? "weekly"
+          : "daily",
+      amountCents: Math.round(
+        ((request.monthly_limit ||
+          request.weekly_limit ||
+          request.daily_limit ||
+          0) as number) * 100,
+      ),
+    },
   );
   return normalizeSnakeCase(raw);
 }
@@ -189,7 +202,11 @@ export async function setStakeLimits(
 ): Promise<StakeLimits> {
   const raw = await apiClient.post<StakeLimitsRaw>(
     "/api/v1/compliance/rg/bet-limit",
-    request,
+    {
+      userId: request.user_id,
+      period: "daily",
+      amountCents: Math.round((request.max_stake || 0) * 100),
+    },
   );
   return normalizeSnakeCase(raw);
 }
@@ -202,7 +219,10 @@ export async function setSessionLimits(
 ): Promise<SessionLimits> {
   const raw = await apiClient.post<SessionLimitsRaw>(
     "/api/v1/compliance/rg/session-limit",
-    request,
+    {
+      user_id: request.user_id,
+      session_duration_minutes: request.session_duration_minutes,
+    },
   );
   return normalizeSnakeCase(raw);
 }
@@ -215,7 +235,10 @@ export async function coolOff(
 ): Promise<CoolOffResponse> {
   const raw = await apiClient.post<CoolOffResponseRaw>(
     "/api/v1/compliance/rg/cool-off",
-    request,
+    {
+      userId: request.user_id,
+      durationHours: Math.max(24, request.duration_days * 24),
+    },
   );
   return normalizeSnakeCase(raw);
 }
@@ -228,9 +251,12 @@ export async function selfExclude(
 ): Promise<SelfExcludeResponse> {
   const raw = await apiClient.post<SelfExcludeResponseRaw>(
     "/api/v1/compliance/rg/self-exclude",
-    request,
+    {
+      userId: request.user_id,
+      permanent: request.duration_years === undefined,
+    },
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as unknown as SelfExcludeResponse;
 }
 
 /**
@@ -295,7 +321,7 @@ export async function getLimitsHistory(
   userId: string,
 ): Promise<GetLimitsHistoryResponse> {
   try {
-    const [depositLimits, betLimits] = await Promise.all([
+    const [depositLimits, betLimits, restrictionsResponse] = await Promise.all([
       apiClient
         .get<
           Record<string, unknown>
@@ -306,39 +332,78 @@ export async function getLimitsHistory(
           Record<string, unknown>
         >("/api/v1/compliance/rg/bet-limits", { userId })
         .catch(() => null),
+      apiClient
+        .get<
+          Record<string, unknown>
+        >("/api/v1/compliance/rg/restrictions", { userId })
+        .catch(() => null),
     ]);
 
     const history: LimitHistoryItem[] = [];
-    if (depositLimits && typeof depositLimits === "object") {
+    const depositItems = Array.isArray(depositLimits?.limits)
+      ? (depositLimits.limits as Array<Record<string, unknown>>)
+      : [];
+    for (const limit of depositItems) {
       history.push({
-        limitType: "deposit",
-        newValue: (depositLimits as Record<string, unknown>).daily_limit as
-          | number
-          | undefined,
+        limitType: "deposit_limit",
+        newValue:
+          typeof limit.limitCents === "number"
+            ? limit.limitCents / 100
+            : undefined,
         effectiveDate: String(
-          (depositLimits as Record<string, unknown>).effective_date ||
-            new Date().toISOString(),
+          limit.resetsAt || limit.createdAt || new Date().toISOString(),
         ),
-        createdAt: String(
-          (depositLimits as Record<string, unknown>).created_at ||
-            new Date().toISOString(),
-        ),
+        createdAt: String(limit.createdAt || new Date().toISOString()),
       });
     }
-    if (betLimits && typeof betLimits === "object") {
+    const betItems = Array.isArray(betLimits?.limits)
+      ? (betLimits.limits as Array<Record<string, unknown>>)
+      : [];
+    for (const limit of betItems) {
       history.push({
-        limitType: "stake",
-        newValue: (betLimits as Record<string, unknown>).max_stake as
-          | number
-          | undefined,
+        limitType: "stake_limit",
+        newValue:
+          typeof limit.limitCents === "number"
+            ? limit.limitCents / 100
+            : undefined,
         effectiveDate: String(
-          (betLimits as Record<string, unknown>).effective_date ||
+          limit.resetsAt || limit.createdAt || new Date().toISOString(),
+        ),
+        createdAt: String(limit.createdAt || new Date().toISOString()),
+      });
+    }
+
+    const restrictions =
+      restrictionsResponse &&
+      typeof restrictionsResponse === "object" &&
+      restrictionsResponse.restrictions &&
+      typeof restrictionsResponse.restrictions === "object"
+        ? (restrictionsResponse.restrictions as Record<string, unknown>)
+        : null;
+
+    if (restrictions?.isOnCoolOff) {
+      history.push({
+        limitType: "cool_off",
+        newValue: true,
+        effectiveDate: String(
+          restrictions.coolOffUntil ||
+            restrictions.lastUpdated ||
             new Date().toISOString(),
         ),
-        createdAt: String(
-          (betLimits as Record<string, unknown>).created_at ||
+        createdAt: String(restrictions.lastUpdated || new Date().toISOString()),
+      });
+    }
+
+    if (restrictions?.isExcluded) {
+      history.push({
+        limitType: "self_exclusion",
+        newValue: restrictions.exclusionType === "permanent",
+        effectiveDate: String(
+          restrictions.excludedUntil ||
+            restrictions.lastUpdated ||
             new Date().toISOString(),
         ),
+        createdAt: String(restrictions.lastUpdated || new Date().toISOString()),
       });
     }
 
@@ -349,19 +414,27 @@ export async function getLimitsHistory(
 }
 
 /**
- * Get cool-off status for a user.
- *
- * Predict has not yet built out player-protection features (cool-off,
- * self-exclusion, deposit limits) — those landed in the sportsbook fork
- * and the gateway doesn't expose `/api/v1/compliance/rg/restrictions`
- * yet. Until we ship predict-native protections, this returns
- * "inactive" without a network call so we don't spam 404s on every
- * login. Re-enable the API call once the gateway endpoint exists.
- *
- * The unused `_userId` keeps the signature stable for callers.
+ * Get cool-off status for a user from the live restrictions endpoint.
  */
-export async function getCoolOffStatus(
-  _userId: string,
-): Promise<CoolOffStatus> {
+export async function getCoolOffStatus(userId: string): Promise<CoolOffStatus> {
+  const raw = await apiClient.get<Record<string, unknown>>(
+    "/api/v1/compliance/rg/restrictions",
+    { userId },
+  );
+  const restrictions =
+    raw &&
+    typeof raw === "object" &&
+    raw.restrictions &&
+    typeof raw.restrictions === "object"
+      ? normalizeSnakeCase(raw.restrictions as Record<string, unknown>)
+      : null;
+
+  if (
+    restrictions?.isOnCoolOff &&
+    typeof restrictions.coolOffUntil === "string"
+  ) {
+    return { status: "active", coolOffUntil: restrictions.coolOffUntil };
+  }
+
   return { status: "inactive", coolOffUntil: null };
 }

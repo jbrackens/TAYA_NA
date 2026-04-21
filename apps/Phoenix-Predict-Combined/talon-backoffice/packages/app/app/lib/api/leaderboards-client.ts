@@ -1,8 +1,8 @@
-import { apiClient } from './client';
+import { apiClient } from "./client";
 
-export type LeaderboardRankingMode = 'sum' | 'min' | 'max';
-export type LeaderboardOrder = 'asc' | 'desc';
-export type LeaderboardStatus = 'draft' | 'active' | 'closed';
+export type LeaderboardRankingMode = "sum" | "min" | "max";
+export type LeaderboardOrder = "asc" | "desc";
+export type LeaderboardStatus = "draft" | "active" | "closed";
 
 export interface LeaderboardDefinition {
   leaderboardId: string;
@@ -32,12 +32,14 @@ export interface LeaderboardStanding {
   lastEventAt?: string;
 }
 
-export async function getLeaderboards(search?: string): Promise<LeaderboardDefinition[]> {
+export async function getLeaderboards(
+  search?: string,
+): Promise<LeaderboardDefinition[]> {
   const params = new URLSearchParams();
-  if (search?.trim()) params.set('search', search.trim());
+  if (search?.trim()) params.set("search", search.trim());
   const query = params.toString();
   const response = await apiClient.get<{ items?: LeaderboardDefinition[] }>(
-    `/api/v1/leaderboards/${query ? `?${query}` : ''}`,
+    `/api/v1/leaderboards${query ? `?${query}` : ""}`,
   );
   return Array.isArray(response?.items) ? response.items : [];
 }
@@ -59,9 +61,9 @@ export async function getLeaderboardForUser(
   viewerEntry?: LeaderboardStanding | null;
 }> {
   const params = new URLSearchParams();
-  if (userId?.trim()) params.set('userId', userId.trim());
+  if (userId?.trim()) params.set("userId", userId.trim());
   const query = params.toString();
-  return apiClient.get(`/api/v1/leaderboards/${encodeURIComponent(id)}/${query ? `?${query}` : ''}`);
+  return apiClient.get(`/api/v1/leaderboards/${id}${query ? `?${query}` : ""}`);
 }
 
 export async function getLeaderboardEntries(
@@ -82,7 +84,9 @@ export async function getLeaderboardEntries(
     offset: String(offset),
   });
   if (userId?.trim()) {
-    params.set('userId', userId.trim());
+    params.set("userId", userId.trim());
   }
-  return apiClient.get(`/api/v1/leaderboards/${encodeURIComponent(id)}/entries/?${params.toString()}`);
+  return apiClient.get(
+    `/api/v1/leaderboards/${id}/entries?${params.toString()}`,
+  );
 }

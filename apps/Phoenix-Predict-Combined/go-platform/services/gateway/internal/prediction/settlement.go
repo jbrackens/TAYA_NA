@@ -24,10 +24,8 @@ func NewSettlementEngine(repo Repository, wallet WalletAdapter) *SettlementEngin
 }
 
 // ResolveMarket settles a market with the given result and attestation.
-// It transitions the market to settled, creates a settlement record,
-// calculates payouts for all positions, and returns the total payout.
-//
-// The caller is responsible for crediting wallets with payout amounts.
+// In DB mode, settlement records, payout records, wallet credits, market
+// status, and lifecycle logging can commit as one shared transaction.
 func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketRequest, marketID string, settledBy *string) (*Settlement, []Payout, error) {
 	market, err := s.repo.GetMarket(ctx, marketID)
 	if err != nil {
@@ -46,7 +44,6 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		digest = fmt.Sprintf("%x", h)
 	}
 
-	// Create settlement record
 	result := req.Result
 	settlement := &Settlement{
 		MarketID:          marketID,
@@ -54,13 +51,9 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		AttestationSource: req.AttestationSource,
 		AttestationID:     req.AttestationID,
 		AttestationDigest: &digest,
-		AttestationData:   req.AttestationData,
+		AttestationData:   defaultJSONObject(req.AttestationData),
 		SettledBy:         settledBy,
 		SettledAt:         time.Now().UTC(),
-	}
-
-	if err := s.repo.CreateSettlement(ctx, settlement); err != nil {
-		return nil, nil, fmt.Errorf("create settlement: %w", err)
 	}
 
 	// Get all positions for this market
@@ -69,8 +62,9 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		return nil, nil, fmt.Errorf("list positions: %w", err)
 	}
 
-	// Calculate and create payouts
+	// Calculate payouts and the wallet credits they imply.
 	var payouts []Payout
+	var credits []WalletCreditRequest
 	var totalPayout int64
 	var positionsSettled int
 
@@ -80,20 +74,14 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		}
 
 		payout := s.calculatePayout(pos, result, settlement.ID)
-		if err := s.repo.CreatePayout(ctx, &payout); err != nil {
-			return nil, nil, fmt.Errorf("create payout for position %s: %w", pos.ID, err)
-		}
-
-		// Credit the winner's wallet. Losers get 0 — no credit needed.
-		// Idempotency key scopes the credit to this settlement + position so
-		// re-runs of a settle operation don't double-credit.
 		if payout.PayoutCents > 0 {
-			idempKey := fmt.Sprintf("prediction_payout:%s:%s", settlement.ID, pos.ID)
-			reason := fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
-				marketID, result, pos.Side)
-			if err := s.wallet.Credit(pos.UserID, payout.PayoutCents, idempKey, reason); err != nil {
-				return nil, nil, fmt.Errorf("wallet credit failed for user %s: %w", pos.UserID, err)
-			}
+			credits = append(credits, WalletCreditRequest{
+				UserID:         pos.UserID,
+				AmountCents:    payout.PayoutCents,
+				IdempotencyKey: fmt.Sprintf("prediction_payout:%s:%s", marketID, pos.ID),
+				Reason: fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
+					marketID, result, pos.Side),
+			})
 		}
 
 		payouts = append(payouts, payout)
@@ -111,9 +99,6 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 	if err := TransitionMarket(market, MarketStatusSettled); err != nil {
 		return nil, nil, fmt.Errorf("transition market: %w", err)
 	}
-	if err := s.repo.UpdateMarket(ctx, market); err != nil {
-		return nil, nil, fmt.Errorf("update market: %w", err)
-	}
 
 	// Log lifecycle event
 	reason := "market settled"
@@ -126,7 +111,7 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		"total_payout_cents": totalPayout,
 		"positions_settled":  positionsSettled,
 	})
-	s.repo.CreateLifecycleEvent(ctx, &LifecycleEvent{
+	lifecycle := &LifecycleEvent{
 		MarketID:   marketID,
 		EventType:  "settled",
 		ActorID:    settledBy,
@@ -134,7 +119,35 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		Reason:     &reason,
 		Metadata:   metadata,
 		OccurredAt: time.Now().UTC(),
-	})
+	}
+
+	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
+		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
+			if err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, settlement, payouts, credits, lifecycle); err != nil {
+				return nil, nil, fmt.Errorf("persist resolved market atomically: %w", err)
+			}
+			return settlement, payouts, nil
+		}
+	}
+
+	if err := s.repo.CreateSettlement(ctx, settlement); err != nil {
+		return nil, nil, fmt.Errorf("create settlement: %w", err)
+	}
+	for i := range payouts {
+		payouts[i].SettlementID = settlement.ID
+		if err := s.repo.CreatePayout(ctx, &payouts[i]); err != nil {
+			return nil, nil, fmt.Errorf("create payout for position %s: %w", payouts[i].PositionID, err)
+		}
+	}
+	for _, credit := range credits {
+		if err := s.wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+			return nil, nil, fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
+		}
+	}
+	if err := s.repo.UpdateMarket(ctx, market); err != nil {
+		return nil, nil, fmt.Errorf("update market: %w", err)
+	}
+	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
 	return settlement, payouts, nil
 }
@@ -187,17 +200,14 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 	if err := TransitionMarket(market, MarketStatusVoided); err != nil {
 		return nil, fmt.Errorf("transition market: %w", err)
 	}
-	if err := s.repo.UpdateMarket(ctx, market); err != nil {
-		return nil, fmt.Errorf("update market: %w", err)
-	}
-
-	// Refund all positions at entry cost
+	// Refund all positions at entry cost.
 	positions, err := s.repo.ListPositionsByMarket(ctx, marketID)
 	if err != nil {
 		return nil, fmt.Errorf("list positions: %w", err)
 	}
 
 	var payouts []Payout
+	var credits []WalletCreditRequest
 	for _, pos := range positions {
 		if pos.Quantity <= 0 {
 			continue
@@ -214,22 +224,21 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 			PayoutCents:     pos.TotalCostCents,
 			PaidAt:          time.Now().UTC(),
 		}
-		// Refund the stake to the user's wallet. Idempotency scopes to this
-		// void operation + position so re-runs don't double-refund.
-		idempKey := fmt.Sprintf("prediction_void:%s:%s", marketID, pos.ID)
-		refundReason := fmt.Sprintf("prediction refund: market %s voided, returning stake", market.Ticker)
-		if err := s.wallet.Credit(pos.UserID, pos.TotalCostCents, idempKey, refundReason); err != nil {
-			return nil, fmt.Errorf("wallet refund failed for user %s: %w", pos.UserID, err)
-		}
+		credits = append(credits, WalletCreditRequest{
+			UserID:         pos.UserID,
+			AmountCents:    pos.TotalCostCents,
+			IdempotencyKey: fmt.Sprintf("prediction_void:%s:%s", marketID, pos.ID),
+			Reason:         fmt.Sprintf("prediction refund: market %s voided, returning stake", market.Ticker),
+		})
 		payouts = append(payouts, payout)
 	}
 
 	// Log lifecycle event
 	metadata, _ := json.Marshal(map[string]interface{}{
-		"reason":            reason,
+		"reason":             reason,
 		"positions_refunded": len(payouts),
 	})
-	s.repo.CreateLifecycleEvent(ctx, &LifecycleEvent{
+	lifecycle := &LifecycleEvent{
 		MarketID:   marketID,
 		EventType:  "voided",
 		ActorID:    actorID,
@@ -237,7 +246,26 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 		Reason:     &reason,
 		Metadata:   metadata,
 		OccurredAt: time.Now().UTC(),
-	})
+	}
+
+	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
+		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
+			if err := atomicRepo.PersistVoidedMarketAtomic(ctx, s.wallet, market, payouts, credits, lifecycle); err != nil {
+				return nil, fmt.Errorf("persist voided market atomically: %w", err)
+			}
+			return payouts, nil
+		}
+	}
+
+	if err := s.repo.UpdateMarket(ctx, market); err != nil {
+		return nil, fmt.Errorf("update market: %w", err)
+	}
+	for _, credit := range credits {
+		if err := s.wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+			return nil, fmt.Errorf("wallet refund failed for user %s: %w", credit.UserID, err)
+		}
+	}
+	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
 	return payouts, nil
 }

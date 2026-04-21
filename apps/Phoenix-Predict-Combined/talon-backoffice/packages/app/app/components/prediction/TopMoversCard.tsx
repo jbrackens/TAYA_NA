@@ -1,24 +1,19 @@
 "use client";
 
-/**
- * TopMoversCard — side card listing markets with the biggest price swings.
- *
- * Input comes from /discovery's trending list. First pass just renders the
- * current price; a follow-up will track 1h/24h delta by storing historical
- * snapshots server-side (prediction_price_snapshots table) and surfacing
- * them through the API. For now the delta is derived from yesPriceCents
- * minus 50¢ as a placeholder so the UI has motion.
- */
-
 import Link from "next/link";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import {
+  dedupeMarkets,
+  formatCompactUsd,
+  formatTimeLeft,
+} from "./market-display";
 
 interface TopMoversCardProps {
   markets: PredictionMarket[];
 }
 
 export function TopMoversCard({ markets }: TopMoversCardProps) {
-  const rows = markets.slice(0, 4);
+  const rows = dedupeMarkets(markets).slice(0, 4);
 
   return (
     <>
@@ -68,20 +63,18 @@ export function TopMoversCard({ markets }: TopMoversCardProps) {
           white-space: nowrap;
           color: var(--t2);
         }
-        .tmc-delta {
-          font-family: 'IBM Plex Mono', monospace;
-          font-variant-numeric: tabular-nums;
-          font-weight: 600;
+        .tmc-meta {
+          display: block;
           font-size: 11px;
+          color: var(--t3);
+          margin-top: 4px;
         }
-        .tmc-delta.up { color: var(--yes); }
-        .tmc-delta.dn { color: var(--no); }
         .tmc-pct {
           font-family: 'IBM Plex Mono', monospace;
           font-variant-numeric: tabular-nums;
           font-weight: 700;
           color: var(--accent);
-          min-width: 36px;
+          min-width: 70px;
           text-align: right;
         }
         .tmc-empty {
@@ -90,34 +83,32 @@ export function TopMoversCard({ markets }: TopMoversCardProps) {
           padding: 8px 0;
         }
       `}</style>
-      <div className="tmc" aria-label="Top movers">
+      <div className="tmc" aria-label="Trending markets">
         <div className="tmc-head">
-          <span className="tmc-head-icon" aria-hidden>↗</span>
-          <span className="tmc-head-title">Top movers</span>
+          <span className="tmc-head-icon" aria-hidden>
+            ↗
+          </span>
+          <span className="tmc-head-title">Trending now</span>
         </div>
         {rows.length === 0 ? (
           <div className="tmc-empty">No market activity yet.</div>
         ) : (
-          rows.map((m) => {
-            const delta = m.yesPriceCents - 50;
-            const deltaLabel = `${delta > 0 ? "+" : ""}${delta}%`;
-            return (
-              <Link
-                key={m.id}
-                href={`/market/${m.ticker}`}
-                className="tmc-row"
-              >
-                <span className="tmc-q">{m.title}</span>
-                <span
-                  className={`tmc-delta ${delta >= 0 ? "up" : "dn"}`}
-                  aria-label={`Delta ${deltaLabel}`}
-                >
-                  {deltaLabel}
+          rows.map((market) => (
+            <Link
+              key={market.id}
+              href={`/market/${market.ticker}`}
+              className="tmc-row"
+            >
+              <span className="tmc-q">
+                {market.title}
+                <span className="tmc-meta">
+                  {formatCompactUsd(market.openInterestCents)} open interest ·{" "}
+                  {formatTimeLeft(market.closeAt)}
                 </span>
-                <span className="tmc-pct">{m.yesPriceCents}¢</span>
-              </Link>
-            );
-          })
+              </span>
+              <span className="tmc-pct">{market.yesPriceCents}¢ YES</span>
+            </Link>
+          ))
         )}
       </div>
     </>

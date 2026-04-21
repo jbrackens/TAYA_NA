@@ -40,6 +40,25 @@ func TestCreateAndListDefinitions(t *testing.T) {
 	}
 }
 
+func TestSeededActiveLeaderboardsUseCurrentWindow(t *testing.T) {
+	svc := NewService()
+	now := svc.now().UTC()
+
+	items := svc.ListDefinitions(DefinitionFilter{}, false)
+	if len(items) == 0 {
+		t.Fatal("expected seeded active leaderboards")
+	}
+
+	for _, item := range items {
+		if item.WindowStartsAt == nil || item.WindowEndsAt == nil {
+			t.Fatalf("expected active leaderboard %s to have a time window", item.LeaderboardID)
+		}
+		if now.Before(*item.WindowStartsAt) || now.After(*item.WindowEndsAt) {
+			t.Fatalf("expected active leaderboard %s window %s - %s to include now %s", item.LeaderboardID, item.WindowStartsAt.Format(time.RFC3339), item.WindowEndsAt.Format(time.RFC3339), now.Format(time.RFC3339))
+		}
+	}
+}
+
 func TestStandingsRespectRankingModes(t *testing.T) {
 	svc := &Service{
 		definitions:         map[string]canonicalv1.LeaderboardDefinition{},

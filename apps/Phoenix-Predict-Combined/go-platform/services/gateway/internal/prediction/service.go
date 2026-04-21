@@ -3,6 +3,7 @@ package prediction
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -92,9 +93,11 @@ func (s *Service) PreviewOrder(ctx context.Context, req PlaceOrderRequest) (*Ord
 // the created order and trade fill. Broadcasts the trade via WebSocket is the
 // caller's responsibility.
 func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID string) (*Order, *Trade, error) {
+	idempotencyKey := ensureOrderIdempotencyKey(req, userID)
+
 	// Idempotency check
-	if req.IdempotencyKey != nil {
-		existing, err := s.repo.GetOrderByIdempotencyKey(ctx, *req.IdempotencyKey)
+	if idempotencyKey != nil {
+		existing, err := s.repo.GetOrderByIdempotencyKey(ctx, *idempotencyKey)
 		if err == nil && existing != nil {
 			return existing, nil, nil
 		}
@@ -127,27 +130,16 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("insufficient balance: have %d cents, need %d cents", balance, totalCost)
 	}
 
-	// Debit the wallet. Idempotent via the order's idempotency key when provided.
-	debitKey := ""
-	if req.IdempotencyKey != nil {
-		debitKey = "prediction_order:" + *req.IdempotencyKey
-	}
-	debitReason := fmt.Sprintf("prediction order: %s %s x%d", req.Side, market.Ticker, req.Quantity)
-	if err := s.wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
-		return nil, nil, fmt.Errorf("wallet debit failed: %w", err)
-	}
-
 	// Execute against AMM (mutates market.AMMYesShares / AMMNoShares / prices)
 	costCents, feeCents, err := s.amm.ExecuteTrade(market, req.Side, req.Quantity)
 	if err != nil {
-		// Refund the wallet — AMM rejected after we debited.
-		_ = s.wallet.Credit(userID, totalCost, debitKey+":refund",
-			fmt.Sprintf("refund: AMM rejected order for %s", market.Ticker))
 		return nil, nil, fmt.Errorf("AMM execution failed: %w", err)
 	}
 
 	// Use the actual executed cost (should match preview, but trust the engine).
 	totalCost = costCents + feeCents
+	debitKey := "prediction_order:" + *idempotencyKey
+	debitReason := fmt.Sprintf("prediction order: %s %s x%d", req.Side, market.Ticker, req.Quantity)
 	now := time.Now().UTC()
 	priceCents := market.YesPriceCents
 	if req.Side == OrderSideNo {
@@ -167,17 +159,12 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		RemainingQuantity: 0,
 		TotalCostCents:    totalCost,
 		Status:            OrderStatusFilled,
-		IdempotencyKey:    req.IdempotencyKey,
+		IdempotencyKey:    idempotencyKey,
 		FilledAt:          &now,
 		CreatedAt:         now,
 		UpdatedAt:         now,
 	}
 
-	if err := s.repo.CreateOrder(ctx, order); err != nil {
-		return nil, nil, fmt.Errorf("create order: %w", err)
-	}
-
-	// Create trade record
 	trade := &Trade{
 		MarketID:   req.MarketID,
 		BuyOrderID: &order.ID,
@@ -190,26 +177,20 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		TradedAt:   now,
 	}
 
-	if err := s.repo.CreateTrade(ctx, trade); err != nil {
-		return nil, nil, fmt.Errorf("create trade: %w", err)
-	}
-
-	// Upsert position
+	// Build the final position snapshot before persisting so the repository can
+	// commit the fill as one prediction-side unit.
+	var position *Position
 	existing, _ := s.repo.GetPosition(ctx, userID, req.MarketID, req.Side)
 	if existing != nil {
-		// Update existing position
 		totalQty := existing.Quantity + req.Quantity
 		totalCostAll := existing.TotalCostCents + totalCost
 		existing.AvgPriceCents = int(totalCostAll / int64(totalQty))
 		existing.Quantity = totalQty
 		existing.TotalCostCents = totalCostAll
 		existing.UpdatedAt = now
-		if err := s.repo.UpsertPosition(ctx, existing); err != nil {
-			return nil, nil, fmt.Errorf("update position: %w", err)
-		}
+		position = existing
 	} else {
-		// Create new position
-		pos := &Position{
+		position = &Position{
 			UserID:         userID,
 			MarketID:       req.MarketID,
 			Side:           req.Side,
@@ -219,17 +200,61 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 			CreatedAt:      now,
 			UpdatedAt:      now,
 		}
-		if err := s.repo.UpsertPosition(ctx, pos); err != nil {
-			return nil, nil, fmt.Errorf("create position: %w", err)
+	}
+
+	if atomicRepo, ok := s.repo.(AtomicFilledOrderPersister); ok {
+		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
+			if err := atomicRepo.PersistFilledOrderAtomic(
+				ctx,
+				s.wallet,
+				userID,
+				totalCost,
+				debitKey,
+				debitReason,
+				order,
+				trade,
+				position,
+				market,
+			); err != nil {
+				return nil, nil, fmt.Errorf("persist filled order atomically: %w", err)
+			}
+			return order, trade, nil
 		}
 	}
 
-	// Update market in DB
-	if err := s.repo.UpdateMarket(ctx, market); err != nil {
-		return nil, nil, fmt.Errorf("update market: %w", err)
+	// Fallback path for memory-mode/local tests where wallet and prediction
+	// state cannot share one SQL transaction.
+	if err := s.wallet.Debit(userID, totalCost, debitKey, debitReason); err != nil {
+		return nil, nil, fmt.Errorf("wallet debit failed: %w", err)
+	}
+
+	if err := s.repo.PersistFilledOrder(ctx, order, trade, position, market); err != nil {
+		_ = s.wallet.Credit(userID, totalCost, debitKey+":refund",
+			fmt.Sprintf("refund: filled order persistence failed for %s", market.Ticker))
+		return nil, nil, fmt.Errorf("persist filled order: %w", err)
 	}
 
 	return order, trade, nil
+}
+
+func ensureOrderIdempotencyKey(req PlaceOrderRequest, userID string) *string {
+	if req.IdempotencyKey != nil {
+		trimmed := strings.TrimSpace(*req.IdempotencyKey)
+		if trimmed != "" {
+			return &trimmed
+		}
+	}
+
+	key := fmt.Sprintf(
+		"auto:%s:%s:%s:%s:%d:%d",
+		userID,
+		req.MarketID,
+		req.Side,
+		req.Action,
+		req.Quantity,
+		time.Now().UTC().UnixNano(),
+	)
+	return &key
 }
 
 // CancelOrder cancels an open order and releases the wallet reservation.
@@ -347,7 +372,7 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 		AMMSubsidyCents:     req.AMMSubsidyCents,
 		SettlementSourceKey: req.SettlementSourceKey,
 		SettlementRule:      req.SettlementRule,
-		SettlementParams:    req.SettlementParams,
+		SettlementParams:    defaultJSONObject(req.SettlementParams),
 		SettlementCutoffAt:  req.SettlementCutoffAt,
 		FeeRateBps:          req.FeeRateBps,
 		CloseAt:             req.CloseAt,

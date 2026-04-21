@@ -31,6 +31,7 @@ func main() {
 	handler := httpx.Chain(
 		mux,
 		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/auth/"),
 		httpx.AccessLog(log.Default()),
 		httpx.Metrics(metricsRegistry),
 		httpx.Recovery(log.Default()),

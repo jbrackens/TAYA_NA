@@ -2,6 +2,7 @@ package prediction
 
 import (
 	"context"
+	"crypto/sha1"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -13,6 +14,11 @@ import (
 // SQLRepository implements Repository backed by PostgreSQL.
 type SQLRepository struct {
 	db *sql.DB
+}
+
+type sqlRowExecer interface {
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
 // NewSQLRepository creates a new PostgreSQL-backed repository.
@@ -278,7 +284,11 @@ func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
 }
 
 func (r *SQLRepository) UpdateMarket(ctx context.Context, m *Market) error {
-	_, err := r.db.ExecContext(ctx,
+	return r.updateMarketWithExec(ctx, r.db, m)
+}
+
+func (r *SQLRepository) updateMarketWithExec(ctx context.Context, execer sqlRowExecer, m *Market) error {
+	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_markets SET
 		  status=$1, result=$2, yes_price_cents=$3, no_price_cents=$4,
 		  last_trade_price_cents=$5, volume_cents=$6, open_interest_cents=$7,
@@ -388,7 +398,14 @@ func (r *SQLRepository) GetOrderByIdempotencyKey(ctx context.Context, key string
 }
 
 func (r *SQLRepository) CreateOrder(ctx context.Context, o *Order) error {
-	return r.db.QueryRowContext(ctx,
+	return r.createOrderWithExec(ctx, r.db, o)
+}
+
+func (r *SQLRepository) createOrderWithExec(ctx context.Context, execer sqlRowExecer, o *Order) error {
+	if err := r.ensurePunterExistsWithExec(ctx, execer, o.UserID); err != nil {
+		return err
+	}
+	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_orders
 		 (user_id, market_id, side, action, order_type, price_cents,
 		  quantity, filled_quantity, remaining_quantity, total_cost_cents,
@@ -453,7 +470,14 @@ func (r *SQLRepository) GetPosition(ctx context.Context, userID, marketID string
 }
 
 func (r *SQLRepository) UpsertPosition(ctx context.Context, p *Position) error {
-	return r.db.QueryRowContext(ctx,
+	return r.upsertPositionWithExec(ctx, r.db, p)
+}
+
+func (r *SQLRepository) upsertPositionWithExec(ctx context.Context, execer sqlRowExecer, p *Position) error {
+	if err := r.ensurePunterExistsWithExec(ctx, execer, p.UserID); err != nil {
+		return err
+	}
+	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents, realized_pnl_cents)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7)
 		 ON CONFLICT (user_id, market_id, side) DO UPDATE SET
@@ -525,7 +549,19 @@ func (r *SQLRepository) ListTrades(ctx context.Context, marketID string, limit i
 }
 
 func (r *SQLRepository) CreateTrade(ctx context.Context, t *Trade) error {
-	return r.db.QueryRowContext(ctx,
+	return r.createTradeWithExec(ctx, r.db, t)
+}
+
+func (r *SQLRepository) createTradeWithExec(ctx context.Context, execer sqlRowExecer, t *Trade) error {
+	if err := r.ensurePunterExistsWithExec(ctx, execer, t.BuyerID); err != nil {
+		return err
+	}
+	if t.SellerID != nil {
+		if err := r.ensurePunterExistsWithExec(ctx, execer, *t.SellerID); err != nil {
+			return err
+		}
+	}
+	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_trades
 		 (market_id, buy_order_id, sell_order_id, buyer_id, seller_id,
 		  side, price_cents, quantity, fee_cents, is_amm_trade)
@@ -534,6 +570,152 @@ func (r *SQLRepository) CreateTrade(ctx context.Context, t *Trade) error {
 		t.MarketID, t.BuyOrderID, t.SellOrderID, t.BuyerID, t.SellerID,
 		t.Side, t.PriceCents, t.Quantity, t.FeeCents, t.IsAMMTrade,
 	).Scan(&t.ID, &t.TradedAt)
+}
+
+func (r *SQLRepository) PersistFilledOrder(ctx context.Context, order *Order, trade *Trade, position *Position, market *Market) error {
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if err := r.persistFilledOrderWithTx(ctx, tx, order, trade, position, market); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *SQLRepository) PersistFilledOrderAtomic(
+	ctx context.Context,
+	wallet WalletAdapter,
+	userID string,
+	totalCost int64,
+	debitKey string,
+	debitReason string,
+	order *Order,
+	trade *Trade,
+	position *Position,
+	market *Market,
+) error {
+	txWallet, ok := wallet.(TxWalletAdapter)
+	if !ok {
+		return fmt.Errorf("wallet does not support shared transactions")
+	}
+
+	tx, err := txWallet.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if err := txWallet.DebitWithTx(ctx, tx, userID, totalCost, debitKey, debitReason); err != nil {
+		return fmt.Errorf("wallet debit failed: %w", err)
+	}
+
+	if err := r.persistFilledOrderWithTx(ctx, tx, order, trade, position, market); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (r *SQLRepository) persistFilledOrderWithTx(ctx context.Context, tx *sql.Tx, order *Order, trade *Trade, position *Position, market *Market) error {
+	if err := r.createOrderWithExec(ctx, tx, order); err != nil {
+		return err
+	}
+	if err := r.createTradeWithExec(ctx, tx, trade); err != nil {
+		return err
+	}
+	if err := r.upsertPositionWithExec(ctx, tx, position); err != nil {
+		return err
+	}
+	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *SQLRepository) PersistResolvedMarketAtomic(
+	ctx context.Context,
+	wallet WalletAdapter,
+	market *Market,
+	settlement *Settlement,
+	payouts []Payout,
+	credits []WalletCreditRequest,
+	lifecycle *LifecycleEvent,
+) error {
+	txWallet, ok := wallet.(TxWalletAdapter)
+	if !ok {
+		return fmt.Errorf("wallet does not support shared transactions")
+	}
+
+	tx, err := txWallet.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if err := r.createSettlementWithExec(ctx, tx, settlement); err != nil {
+		return err
+	}
+	for i := range payouts {
+		payouts[i].SettlementID = settlement.ID
+		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
+			return err
+		}
+	}
+	for _, credit := range credits {
+		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+			return fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
+		}
+	}
+	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
+		return err
+	}
+	if lifecycle != nil {
+		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func (r *SQLRepository) PersistVoidedMarketAtomic(
+	ctx context.Context,
+	wallet WalletAdapter,
+	market *Market,
+	payouts []Payout,
+	credits []WalletCreditRequest,
+	lifecycle *LifecycleEvent,
+) error {
+	txWallet, ok := wallet.(TxWalletAdapter)
+	if !ok {
+		return fmt.Errorf("wallet does not support shared transactions")
+	}
+
+	tx, err := txWallet.BeginTx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
+		return err
+	}
+	for _, credit := range credits {
+		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
+			return fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
+		}
+	}
+	if lifecycle != nil {
+		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
 }
 
 // --- Settlements ---
@@ -565,7 +747,11 @@ func (r *SQLRepository) GetSettlement(ctx context.Context, marketID string) (*Se
 }
 
 func (r *SQLRepository) CreateSettlement(ctx context.Context, s *Settlement) error {
-	return r.db.QueryRowContext(ctx,
+	return r.createSettlementWithExec(ctx, r.db, s)
+}
+
+func (r *SQLRepository) createSettlementWithExec(ctx context.Context, execer sqlRowExecer, s *Settlement) error {
+	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_settlements
 		 (market_id, result, attestation_source, attestation_id,
 		  attestation_digest, attestation_data, settled_by, total_payout_cents, positions_settled)
@@ -578,7 +764,14 @@ func (r *SQLRepository) CreateSettlement(ctx context.Context, s *Settlement) err
 }
 
 func (r *SQLRepository) CreatePayout(ctx context.Context, p *Payout) error {
-	return r.db.QueryRowContext(ctx,
+	return r.createPayoutWithExec(ctx, r.db, p)
+}
+
+func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowExecer, p *Payout) error {
+	if err := r.ensurePunterExistsWithExec(ctx, execer, p.UserID); err != nil {
+		return err
+	}
+	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_payouts
 		 (settlement_id, position_id, user_id, market_id, side,
 		  quantity, entry_price_cents, exit_price_cents, pnl_cents, payout_cents)
@@ -619,7 +812,11 @@ func (r *SQLRepository) ListLifecycleEvents(ctx context.Context, marketID string
 }
 
 func (r *SQLRepository) CreateLifecycleEvent(ctx context.Context, e *LifecycleEvent) error {
-	return r.db.QueryRowContext(ctx,
+	return r.createLifecycleEventWithExec(ctx, r.db, e)
+}
+
+func (r *SQLRepository) createLifecycleEventWithExec(ctx context.Context, execer sqlRowExecer, e *LifecycleEvent) error {
+	return execer.QueryRowContext(ctx,
 		`INSERT INTO prediction_lifecycle_events
 		 (market_id, event_type, actor_id, actor_type, reason, metadata)
 		 VALUES ($1,$2,$3,$4,$5,$6)
@@ -1037,4 +1234,25 @@ func nullStr(s string) sql.NullString {
 		return sql.NullString{}
 	}
 	return sql.NullString{String: s, Valid: true}
+}
+
+func (r *SQLRepository) ensurePunterExists(ctx context.Context, userID string) error {
+	return r.ensurePunterExistsWithExec(ctx, r.db, userID)
+}
+
+func (r *SQLRepository) ensurePunterExistsWithExec(ctx context.Context, execer sqlRowExecer, userID string) error {
+	if strings.TrimSpace(userID) == "" {
+		return fmt.Errorf("empty user id")
+	}
+
+	emailDigest := fmt.Sprintf("%x", sha1.Sum([]byte(userID)))
+	email := fmt.Sprintf("%s@predict.local", emailDigest)
+
+	_, err := execer.ExecContext(ctx,
+		`INSERT INTO punters (id, email, username, status)
+		 VALUES ($1, $2, $3, 'active')
+		 ON CONFLICT (id) DO NOTHING`,
+		userID, email, userID,
+	)
+	return err
 }

@@ -78,6 +78,42 @@ type reconciliationExpectation struct {
 	DistinctUserCount int64 `json:"distinctUserCount"`
 }
 
+func TestAccountSupportRoutesAreRegistered(t *testing.T) {
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	paymentReq := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit", strings.NewReader(`{}`))
+	paymentReq.Header.Set("Content-Type", "application/json")
+	paymentRes := httptest.NewRecorder()
+	handler.ServeHTTP(paymentRes, paymentReq)
+	if paymentRes.Code == http.StatusNotFound {
+		t.Fatalf("expected payments route to be registered, got 404")
+	}
+
+	prefsReq := httptest.NewRequest(http.MethodPut, "/api/v1/users/u-1/profile/preferences", strings.NewReader(`{"notification_email":true}`))
+	prefsReq.Header.Set("Content-Type", "application/json")
+	prefsRes := httptest.NewRecorder()
+	handler.ServeHTTP(prefsRes, prefsReq)
+	if prefsRes.Code != http.StatusOK {
+		t.Fatalf("expected profile preferences update status 200, got %d body=%s", prefsRes.Code, prefsRes.Body.String())
+	}
+
+	rgReq := httptest.NewRequest(http.MethodGet, "/api/v1/compliance/rg/restrictions?userId=u-1", nil)
+	rgRes := httptest.NewRecorder()
+	handler.ServeHTTP(rgRes, rgReq)
+	if rgRes.Code != http.StatusOK {
+		t.Fatalf("expected RG restrictions status 200, got %d body=%s", rgRes.Code, rgRes.Body.String())
+	}
+
+	loyaltyReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty?userId=u-1", nil)
+	loyaltyRes := httptest.NewRecorder()
+	handler.ServeHTTP(loyaltyRes, loyaltyReq)
+	if loyaltyRes.Code != http.StatusOK {
+		t.Fatalf("expected loyalty account status 200, got %d body=%s", loyaltyRes.Code, loyaltyRes.Body.String())
+	}
+}
+
 func TestMarketsListSupportsFiltersPaginationAndSorting(t *testing.T) {
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")

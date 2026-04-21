@@ -83,8 +83,8 @@ export default function SecurityPage() {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setPasswordError("Password must be at least 8 characters");
+    if (newPassword.length < 12) {
+      setPasswordError("Password must be at least 12 characters");
       return;
     }
 
@@ -115,20 +115,21 @@ export default function SecurityPage() {
   const handleToggle2FA = async () => {
     setTwoFaLoading(true);
     try {
-      const response = await fetch('/api/v1/auth/2fa/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/v1/auth/2fa/toggle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ enabled: !twoFaEnabled }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data?.error?.message || 'Failed to update 2FA setting');
+        throw new Error(data?.error?.message || "Failed to update 2FA setting");
       }
       setTwoFaEnabled(!twoFaEnabled);
       toast.success("2FA " + (!twoFaEnabled ? "enabled" : "disabled"));
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to update 2FA';
+      const message =
+        err instanceof Error ? err.message : "Failed to update 2FA";
       toast.error(message);
     } finally {
       setTwoFaLoading(false);
@@ -198,7 +199,7 @@ export default function SecurityPage() {
                   className="sec-input"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password (min 8 chars)"
+                  placeholder="Enter new password (min 12 chars)"
                 />
               </div>
 

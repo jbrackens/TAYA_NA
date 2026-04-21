@@ -1,6 +1,10 @@
 package prediction
 
-import "math"
+import (
+	"context"
+	"database/sql"
+	"math"
+)
 
 // WalletAdapter is the prediction platform's view of the wallet service.
 // Kept as an interface to avoid coupling prediction to the wallet package.
@@ -17,6 +21,15 @@ type WalletAdapter interface {
 	// balances (see NoopWallet), so service-layer balance checks short-circuit
 	// instead of incorrectly rejecting valid orders.
 	Balance(userID string) int64
+}
+
+// TxWalletAdapter is an optional wallet capability for callers that need to
+// participate in an externally managed SQL transaction.
+type TxWalletAdapter interface {
+	WalletAdapter
+	BeginTx(ctx context.Context) (*sql.Tx, error)
+	DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error
+	CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error
 }
 
 // NoopWallet is a WalletAdapter that does nothing — used when the wallet

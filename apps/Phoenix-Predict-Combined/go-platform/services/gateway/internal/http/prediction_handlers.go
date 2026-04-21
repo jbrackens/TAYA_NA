@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"io"
 	"log/slog"
 	stdhttp "net/http"
 	"strconv"
@@ -10,6 +11,10 @@ import (
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+type marketLifecycleRequest struct {
+	Reason string `json:"reason"`
+}
 
 func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	// --- Public: Discovery ---
@@ -324,33 +329,109 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 }
 
 func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
-	// Admin: Market lifecycle transitions
-	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+	// Admin: Create market
+	mux.Handle("/api/v1/admin/markets", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
-		// Parse: /api/v1/admin/markets/{id}/lifecycle/{action}
-		// or:    /api/v1/admin/markets/{id}
-		path := r.URL.Path[len("/api/v1/admin/markets/"):]
-		// Simple create market
-		if path == "" && r.Method == stdhttp.MethodPost {
-			adminID := userIDFromRequest(r)
-			var req prediction.CreateMarketRequest
-			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-				return httpx.BadRequest("invalid request body", nil)
+
+		var req prediction.CreateMarketRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		market, err := svc.CreateMarket(r.Context(), req)
+		if err != nil {
+			return httpx.BadRequest(err.Error(), nil)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, market)
+	}))
+
+	// Admin: Market lifecycle transitions
+	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/markets/")
+		parts := strings.Split(path, "/")
+		if len(parts) != 3 || parts[0] == "" || parts[1] != "lifecycle" || parts[2] == "" {
+			return httpx.NotFound("route not found")
+		}
+
+		adminID := userIDFromRequest(r)
+		actorID := actorIDPointer(adminID)
+		reason, err := decodeLifecycleReason(r)
+		if err != nil {
+			return err
+		}
+
+		switch strings.ToLower(strings.TrimSpace(parts[2])) {
+		case "open":
+			if reason == "" {
+				reason = "market opened by admin"
 			}
-			market, err := svc.CreateMarket(r.Context(), req)
+			if err := svc.TransitionMarketStatus(r.Context(), parts[0], prediction.MarketStatusOpen, reason, actorID); err != nil {
+				return httpx.BadRequest(err.Error(), nil)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"marketId": parts[0],
+				"status":   prediction.MarketStatusOpen,
+				"reason":   reason,
+			})
+		case "halt", "halted":
+			if reason == "" {
+				reason = "market halted by admin"
+			}
+			if err := svc.TransitionMarketStatus(r.Context(), parts[0], prediction.MarketStatusHalted, reason, actorID); err != nil {
+				return httpx.BadRequest(err.Error(), nil)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"marketId": parts[0],
+				"status":   prediction.MarketStatusHalted,
+				"reason":   reason,
+			})
+		case "close", "closed":
+			if reason == "" {
+				reason = "market closed by admin"
+			}
+			if err := svc.TransitionMarketStatus(r.Context(), parts[0], prediction.MarketStatusClosed, reason, actorID); err != nil {
+				return httpx.BadRequest(err.Error(), nil)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"marketId": parts[0],
+				"status":   prediction.MarketStatusClosed,
+				"reason":   reason,
+			})
+		case "void", "voided":
+			if reason == "" {
+				reason = "market voided by admin"
+			}
+			payouts, err := svc.VoidMarket(r.Context(), parts[0], reason, actorID)
 			if err != nil {
 				return httpx.BadRequest(err.Error(), nil)
 			}
-			_ = adminID
-			return httpx.WriteJSON(w, stdhttp.StatusCreated, market)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"marketId": parts[0],
+				"status":   prediction.MarketStatusVoided,
+				"reason":   reason,
+				"payouts":  payouts,
+			})
+		default:
+			return httpx.BadRequest("unsupported lifecycle action", map[string]any{"action": parts[2]})
 		}
-		return httpx.NotFound("route not found")
 	}))
 
 	// Admin: Settle market
 	mux.Handle("/api/v1/admin/settlements/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
 		if r.Method != stdhttp.MethodPost {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
 		}
@@ -363,7 +444,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid request body", nil)
 		}
-		settlement, payouts, err := svc.ResolveMarket(r.Context(), marketID, req, &adminID)
+		settlement, payouts, err := svc.ResolveMarket(r.Context(), marketID, req, actorIDPointer(adminID))
 		if err != nil {
 			return httpx.BadRequest(err.Error(), nil)
 		}
@@ -374,6 +455,29 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	}))
 
 	slog.Info("settlement routes registered")
+}
+
+func decodeLifecycleReason(r *stdhttp.Request) (string, error) {
+	if r.Body == nil {
+		return "", nil
+	}
+	defer r.Body.Close()
+
+	var req marketLifecycleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		if err == io.EOF {
+			return "", nil
+		}
+		return "", httpx.BadRequest("invalid request body", nil)
+	}
+	return strings.TrimSpace(req.Reason), nil
+}
+
+func actorIDPointer(actorID string) *string {
+	if actorID == "" {
+		return nil
+	}
+	return &actorID
 }
 
 func intQueryParam(r *stdhttp.Request, key string, defaultVal int) int {

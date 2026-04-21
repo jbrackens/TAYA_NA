@@ -10,6 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
+	"phoenix-revival/gateway/internal/leaderboards"
+	"phoenix-revival/gateway/internal/loyalty"
+	"phoenix-revival/gateway/internal/payments"
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/prediction/feed"
 	"phoenix-revival/gateway/internal/prediction/workers"
@@ -150,12 +154,43 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// --- Wallet Routes (kept from sportsbook — adapt for prediction stakes) ---
 	registerWalletRoutes(mux, walletService)
 
+	// --- Account/User Routes ---
+	registerUserRoutes(mux)
+
+	// --- Compliance Routes ---
+	geoComplianceService := compliance.NewMockGeoComplianceServiceFromEnv()
+	kycService := compliance.NewMockKYCService()
+	rgService := compliance.NewMockResponsibleGamblingService()
+	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
+
+	// --- Payments Routes ---
+	var paymentService payments.PaymentService
+	if walletDB := walletService.DB(); walletDB != nil {
+		dbPaymentService, err := payments.NewDBPaymentService(walletDB, walletService)
+		if err != nil {
+			slog.Warn("payments: failed to initialize DB payment service, falling back to mock", "error", err)
+			paymentService = payments.NewMockPaymentService(walletService)
+		} else {
+			paymentService = dbPaymentService
+		}
+	} else {
+		paymentService = payments.NewMockPaymentService(walletService)
+	}
+	payments.DepositComplianceChecker = rgService
+	payments.RegisterPaymentRoutes(mux, paymentService)
+
+	// --- Loyalty / Rewards ---
+	registerLoyaltyRoutes(mux, loyalty.NewServiceFromEnv())
+
+	// --- Leaderboards ---
+	registerLeaderboardRoutes(mux, leaderboards.NewServiceFromEnv())
+
 	// --- Auth Proxy (kept from sportsbook) ---
 	registerAuthProxy(mux)
 
 	slog.Info("Taya NA Predict gateway initialized",
 		"service", service,
-		"routes", "prediction, orders, portfolio, settlement, wallet, auth",
+		"routes", "prediction, orders, portfolio, settlement, wallet, users, compliance, payments, loyalty, leaderboards, auth",
 	)
 }
 

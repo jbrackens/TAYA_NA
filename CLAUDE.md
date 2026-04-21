@@ -183,10 +183,12 @@ WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disabl
 WALLET_STORE_MODE=db \
 GATEWAY_PORT=18080 \
 GATEWAY_READ_REPO_MODE=db \
+PAYMENTS_WEBHOOK_SECRET=whsec_local \
 go run ./cmd/gateway
 
 # Auth service (port 18081) — needed for authenticated endpoints
 cd ../auth
+AUTH_STORE_MODE=db \
 AUTH_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
 AUTH_COOKIE_SECURE=false \
 go run ./cmd/auth
@@ -253,6 +255,7 @@ GATEWAY_DB_DSN=postgres://...
 WALLET_DB_DSN=postgres://...    # same DB, separate env (wallet service reads its own)
 WALLET_STORE_MODE=db            # 'db' | 'memory' (default: memory)
 GATEWAY_READ_REPO_MODE=db       # 'db' | 'memory'
+PAYMENTS_WEBHOOK_SECRET=whsec_local
 GATEWAY_DB_DRIVER=postgres
 REDIS_URL=redis://localhost:6380/0
 AUTH_SERVICE_URL=http://localhost:18081

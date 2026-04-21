@@ -1,21 +1,21 @@
 "use client";
 
-/**
- * WhaleActivityCard — amber-tinted side card listing recent large trades.
- *
- * First pass uses stub data to land the UI. A follow-up wires this to a
- * backend endpoint (same source as WhaleTicker — likely a single endpoint
- * that both subscribe to).
- */
+import Link from "next/link";
+import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import {
+  dedupeMarkets,
+  formatCompactUsd,
+  formatTimeLeft,
+  sortMarketsByVolume,
+} from "./market-display";
 
-const WHALES = [
-  { addr: "0x4f…a2", size: "$88K", detail: "BTC new ATH @ 64¢" },
-  { addr: "0xc1…9e", size: "$42K", detail: "Fed cuts June @ 57¢" },
-  { addr: "0x82…b3", size: "$31K", detail: "GOP margin @ 49¢" },
-  { addr: "0x00…7c", size: "$26K", detail: "F1 champion @ 72¢" },
-];
+interface WhaleActivityCardProps {
+  markets: PredictionMarket[];
+}
 
-export function WhaleActivityCard() {
+export function WhaleActivityCard({ markets }: WhaleActivityCardProps) {
+  const rows = sortMarketsByVolume(dedupeMarkets(markets)).slice(0, 4);
+
   return (
     <>
       <style>{`
@@ -56,43 +56,76 @@ export function WhaleActivityCard() {
         }
         .wac-row {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 6px 0;
-          font-size: 12px;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 10px 0;
           border-top: 1px dashed var(--b1);
+          text-decoration: none;
+          color: inherit;
         }
         .wac-row:first-of-type { border-top: 0; }
-        .wac-addr {
-          color: var(--whale);
-          font-weight: 600;
+        .wac-row:hover .wac-market {
+          color: var(--t1);
         }
-        .wac-size {
+        .wac-main {
+          flex: 1;
+          min-width: 0;
+        }
+        .wac-market {
+          display: block;
+          color: var(--t2);
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+        .wac-price {
           color: var(--t1);
           font-weight: 700;
+          white-space: nowrap;
+          font-family: 'IBM Plex Mono', monospace;
+          font-variant-numeric: tabular-nums;
+          font-size: 12px;
         }
         .wac-detail {
           color: var(--t3);
-          flex: 1;
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          display: block;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        .wac-empty {
+          color: var(--t3);
+          font-size: 12px;
+          padding-top: 4px;
         }
       `}</style>
-      <div className="wac" aria-label="Recent whale activity">
+      <div className="wac" aria-label="Most active markets">
         <div className="wac-head">
-          <span className="wac-head-icon" aria-hidden>🐋</span>
-          <span className="wac-head-title">Whale activity</span>
-          <span className="wac-chip">24H</span>
+          <span className="wac-head-icon" aria-hidden>
+            ●
+          </span>
+          <span className="wac-head-title">Most active</span>
+          <span className="wac-chip">Live</span>
         </div>
-        {WHALES.map((w, i) => (
-          <div key={i} className="wac-row">
-            <span className="wac-addr mono">{w.addr}</span>
-            <span className="wac-size mono">{w.size}</span>
-            <span className="wac-detail">{w.detail}</span>
-          </div>
-        ))}
+        {rows.length === 0 ? (
+          <div className="wac-empty">No live market activity yet.</div>
+        ) : (
+          rows.map((market) => (
+            <Link
+              key={market.id}
+              href={`/market/${market.ticker}`}
+              className="wac-row"
+            >
+              <div className="wac-main">
+                <span className="wac-market">{market.title}</span>
+                <span className="wac-detail">
+                  {formatCompactUsd(market.volumeCents)} volume ·{" "}
+                  {formatTimeLeft(market.closeAt)}
+                </span>
+              </div>
+              <span className="wac-price">{market.yesPriceCents}¢ YES</span>
+            </Link>
+          ))
+        )}
       </div>
     </>
   );

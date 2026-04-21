@@ -12,15 +12,15 @@ import (
 
 // MockPaymentService is an in-memory mock implementation for dev/demo
 type MockPaymentService struct {
-	mu                 sync.RWMutex
-	deposits           map[string]*DepositResult
-	withdrawals        map[string]*WithdrawalResult
-	transactions       map[string]*TransactionStatus
-	paymentMethods     map[string][]PaymentMethod
-	walletService      *wallet.Service
-	depositSeq         int64
-	withdrawalSeq      int64
-	transactionSeq     int64
+	mu             sync.RWMutex
+	deposits       map[string]*DepositResult
+	withdrawals    map[string]*WithdrawalResult
+	transactions   map[string]*TransactionStatus
+	paymentMethods map[string][]PaymentMethod
+	walletService  *wallet.Service
+	depositSeq     int64
+	withdrawalSeq  int64
+	transactionSeq int64
 }
 
 // NewMockPaymentService creates a new in-memory payment service
@@ -253,6 +253,10 @@ func (m *MockPaymentService) HandleWebhook(ctx context.Context, payload WebhookP
 	}
 
 	// Update transaction status
+	if !canApplyWebhookTransition(txn.Status) {
+		slog.Info("ignoring duplicate or stale mock webhook", "txn_id", payload.TransactionID, "current_status", txn.Status, "incoming_status", payload.Status)
+		return nil
+	}
 	txn.Status = payload.Status
 	txn.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
 

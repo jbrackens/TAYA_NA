@@ -18,6 +18,10 @@
 import { useEffect, useState } from "react";
 import { MarketCard } from "../components/prediction/MarketCard";
 import { FeaturedHero } from "../components/prediction/FeaturedHero";
+import {
+  dedupeMarkets,
+  sortMarketsByVolume,
+} from "../components/prediction/market-display";
 import type {
   DiscoveryResponse,
   PredictionMarket,
@@ -46,6 +50,8 @@ function MarketGrid({ markets }: { markets: PredictionMarket[] }) {
             yesPriceCents={m.yesPriceCents}
             noPriceCents={m.noPriceCents}
             volumeCents={m.volumeCents}
+            openInterestCents={m.openInterestCents}
+            liquidityCents={m.liquidityCents}
             closeAt={m.closeAt}
             status={m.status}
           />
@@ -129,7 +135,19 @@ export default function PredictDiscoveryPage() {
 
   // Marquee is the #1 featured market by volume.
   const marquee = featured[0] ?? trending[0] ?? null;
-  const featuredRest = marquee ? featured.filter((m) => m.id !== marquee.id) : featured;
+  const featuredRest = marquee
+    ? featured.filter((m) => m.id !== marquee.id)
+    : featured;
+  const activityMarkets = sortMarketsByVolume(
+    dedupeMarkets(
+      [marquee, ...featuredRest, ...trending, ...closingSoon, ...recent].filter(
+        (market): market is PredictionMarket => Boolean(market),
+      ),
+    ),
+  );
+  const trendingMarkets = dedupeMarkets(
+    trending.length > 0 ? trending : featured,
+  );
 
   if (loading) {
     return (
@@ -148,7 +166,11 @@ export default function PredictDiscoveryPage() {
 
   return (
     <div>
-      <FeaturedHero market={marquee} topMovers={trending.slice(0, 4)} />
+      <FeaturedHero
+        market={marquee}
+        activityMarkets={activityMarkets}
+        topMovers={trendingMarkets}
+      />
 
       {featuredRest.length > 0 && (
         <>

@@ -43,6 +43,52 @@ func TestRequestIDGeneratesWhenMissing(t *testing.T) {
 	}
 }
 
+func TestNormalizeTrailingSlashTrimsConfiguredPrefixes(t *testing.T) {
+	handler := NormalizeTrailingSlash("/api/", "/admin/")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = WriteJSON(w, http.StatusOK, map[string]string{
+			"path":  r.URL.Path,
+			"query": r.URL.RawQuery,
+		})
+	}))
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/deposit/?foo=bar", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rec.Code)
+	}
+
+	var payload map[string]string
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode payload: %v", err)
+	}
+	if payload["path"] != "/api/v1/payments/deposit" {
+		t.Fatalf("expected normalized path, got %q", payload["path"])
+	}
+	if payload["query"] != "foo=bar" {
+		t.Fatalf("expected query string to be preserved, got %q", payload["query"])
+	}
+}
+
+func TestNormalizeTrailingSlashLeavesNonMatchingPathsUntouched(t *testing.T) {
+	handler := NormalizeTrailingSlash("/api/")(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = WriteJSON(w, http.StatusOK, map[string]string{"path": r.URL.Path})
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/docs/", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	var payload map[string]string
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode payload: %v", err)
+	}
+	if payload["path"] != "/docs/" {
+		t.Fatalf("expected non-matching path to stay unchanged, got %q", payload["path"])
+	}
+}
+
 func TestRecoveryReturnsStructuredInternalError(t *testing.T) {
 	handler := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		panic("kaboom")

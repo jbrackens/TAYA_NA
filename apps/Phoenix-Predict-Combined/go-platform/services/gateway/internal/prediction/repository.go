@@ -37,6 +37,7 @@ type Repository interface {
 	GetOrderByIdempotencyKey(ctx context.Context, key string) (*Order, error)
 	CreateOrder(ctx context.Context, o *Order) error
 	UpdateOrder(ctx context.Context, o *Order) error
+	PersistFilledOrder(ctx context.Context, order *Order, trade *Trade, position *Position, market *Market) error
 
 	// Positions
 	ListPositions(ctx context.Context, userID string) ([]Position, error)
@@ -70,6 +71,56 @@ type Repository interface {
 
 	// Discovery
 	GetDiscovery(ctx context.Context) (*DiscoveryResponse, error)
+}
+
+// AtomicFilledOrderPersister is an optional repository capability for commits
+// that can join the wallet debit and prediction fill in one shared SQL
+// transaction. SQLRepository implements this in DB mode.
+type AtomicFilledOrderPersister interface {
+	PersistFilledOrderAtomic(
+		ctx context.Context,
+		wallet WalletAdapter,
+		userID string,
+		totalCost int64,
+		debitKey string,
+		debitReason string,
+		order *Order,
+		trade *Trade,
+		position *Position,
+		market *Market,
+	) error
+}
+
+// WalletCreditRequest describes a single wallet credit to apply while
+// persisting a settlement or void transition.
+type WalletCreditRequest struct {
+	UserID         string
+	AmountCents    int64
+	IdempotencyKey string
+	Reason         string
+}
+
+// AtomicMarketSettlementPersister is an optional repository capability for
+// market settlement/void flows that need wallet credits and prediction writes
+// to commit together.
+type AtomicMarketSettlementPersister interface {
+	PersistResolvedMarketAtomic(
+		ctx context.Context,
+		wallet WalletAdapter,
+		market *Market,
+		settlement *Settlement,
+		payouts []Payout,
+		credits []WalletCreditRequest,
+		lifecycle *LifecycleEvent,
+	) error
+	PersistVoidedMarketAtomic(
+		ctx context.Context,
+		wallet WalletAdapter,
+		market *Market,
+		payouts []Payout,
+		credits []WalletCreditRequest,
+		lifecycle *LifecycleEvent,
+	) error
 }
 
 // EventFilter provides filtering options for listing events.

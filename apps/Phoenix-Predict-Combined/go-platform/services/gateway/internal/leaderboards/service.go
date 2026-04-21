@@ -112,7 +112,7 @@ func NewService() *Service {
 		now:                 func() time.Time { return time.Now().UTC() },
 	}
 
-	now := time.Date(2026, time.April, 8, 12, 0, 0, 0, time.UTC)
+	now := svc.now().UTC().Truncate(time.Second)
 	weeklyStart := now.Add(-72 * time.Hour)
 	weeklyEnd := now.Add(96 * time.Hour)
 	profit, _ := svc.CreateDefinition(CreateDefinitionRequest{

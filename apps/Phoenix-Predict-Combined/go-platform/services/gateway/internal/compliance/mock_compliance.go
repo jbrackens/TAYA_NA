@@ -107,8 +107,8 @@ func (m *MockGeoComplianceService) VerifyLocation(ctx context.Context, userID st
 }
 
 func (m *MockGeoComplianceService) GetApprovedCountries(ctx context.Context) ([]string, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	countries := make([]string, 0, len(m.approvedCountries))
 	for country := range m.approvedCountries {
@@ -225,14 +225,14 @@ func (m *MockKYCService) VerifyIdentity(ctx context.Context, userID string, docs
 	expiresAt := now.AddDate(2, 0, 0) // 2 years from now
 
 	result := &KYCResult{
-		UserID:          userID,
-		Status:          "approved",
+		UserID:           userID,
+		Status:           "approved",
 		VerificationType: "document",
-		RiskLevel:       "low",
-		Message:         "Identity verified",
-		VerifiedAt:      now.Format(time.RFC3339),
-		ExpiresAt:       expiresAt.Format(time.RFC3339),
-		DocumentType:    docs[0].Type,
+		RiskLevel:        "low",
+		Message:          "Identity verified",
+		VerifiedAt:       now.Format(time.RFC3339),
+		ExpiresAt:        expiresAt.Format(time.RFC3339),
+		DocumentType:     docs[0].Type,
 	}
 
 	// Update status
@@ -267,8 +267,8 @@ func (m *MockKYCService) GetVerificationStatus(ctx context.Context, userID strin
 	status, found := m.statuses[userID]
 	if !found {
 		return &KYCStatus{
-			UserID: userID,
-			Status: "unverified",
+			UserID:    userID,
+			Status:    "unverified",
 			RiskLevel: "unknown",
 		}, nil
 	}
@@ -320,13 +320,13 @@ func (m *MockKYCService) ListDocuments(ctx context.Context, userID string) ([]Ve
 
 // MockResponsibleGamblingService is an in-memory mock RG service with actual limit tracking
 type MockResponsibleGamblingService struct {
-	mu                  sync.RWMutex
-	depositLimits       map[string][]DepositLimit
-	betLimits           map[string][]BetLimit
-	coolOffs            map[string]time.Time
-	selfExclusions      map[string]*SelfExclusionRecord
-	depositTracking     map[string]*PeriodTracking
-	betTracking         map[string]*PeriodTracking
+	mu              sync.RWMutex
+	depositLimits   map[string][]DepositLimit
+	betLimits       map[string][]BetLimit
+	coolOffs        map[string]time.Time
+	selfExclusions  map[string]*SelfExclusionRecord
+	depositTracking map[string]*PeriodTracking
+	betTracking     map[string]*PeriodTracking
 }
 
 type SelfExclusionRecord struct {
@@ -337,8 +337,8 @@ type SelfExclusionRecord struct {
 }
 
 type PeriodTracking struct {
-	Period string // daily, weekly, monthly
-	Amount int64
+	Period  string // daily, weekly, monthly
+	Amount  int64
 	ResetAt time.Time
 }
 
@@ -372,16 +372,16 @@ func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, us
 	resetAt := getResetTime(now, period)
 
 	limit := DepositLimit{
-		UserID:    userID,
-		Period:    period,
-		LimitCents: amountCents,
+		UserID:         userID,
+		Period:         period,
+		LimitCents:     amountCents,
 		RemainingCents: amountCents,
-		UsedCents: 0,
-		ResetsAt:  resetAt.Format(time.RFC3339),
-		CreatedAt: now.Format(time.RFC3339),
+		UsedCents:      0,
+		ResetsAt:       resetAt.Format(time.RFC3339),
+		CreatedAt:      now.Format(time.RFC3339),
 	}
 
-	m.depositLimits[userID] = append(m.depositLimits[userID], limit)
+	m.depositLimits[userID] = upsertDepositLimit(m.depositLimits[userID], limit)
 	return nil
 }
 
@@ -390,13 +390,18 @@ func (m *MockResponsibleGamblingService) GetDepositLimits(ctx context.Context, u
 		return nil, ErrInvalidUserID
 	}
 
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	limits, found := m.depositLimits[userID]
 	if !found {
 		return []DepositLimit{}, nil
 	}
+	now := time.Now().UTC()
+	for i := range limits {
+		refreshDepositLimitState(&limits[i], now)
+	}
+	m.depositLimits[userID] = limits
 
 	result := make([]DepositLimit, len(limits))
 	copy(result, limits)
@@ -421,16 +426,16 @@ func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID
 	resetAt := getResetTime(now, period)
 
 	limit := BetLimit{
-		UserID:    userID,
-		Period:    period,
-		LimitCents: amountCents,
+		UserID:         userID,
+		Period:         period,
+		LimitCents:     amountCents,
 		RemainingCents: amountCents,
-		UsedCents: 0,
-		ResetsAt:  resetAt.Format(time.RFC3339),
-		CreatedAt: now.Format(time.RFC3339),
+		UsedCents:      0,
+		ResetsAt:       resetAt.Format(time.RFC3339),
+		CreatedAt:      now.Format(time.RFC3339),
 	}
 
-	m.betLimits[userID] = append(m.betLimits[userID], limit)
+	m.betLimits[userID] = upsertBetLimit(m.betLimits[userID], limit)
 	return nil
 }
 
@@ -439,13 +444,18 @@ func (m *MockResponsibleGamblingService) GetBetLimits(ctx context.Context, userI
 		return nil, ErrInvalidUserID
 	}
 
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	limits, found := m.betLimits[userID]
 	if !found {
 		return []BetLimit{}, nil
 	}
+	now := time.Now().UTC()
+	for i := range limits {
+		refreshBetLimitState(&limits[i], now)
+	}
+	m.betLimits[userID] = limits
 
 	result := make([]BetLimit, len(limits))
 	copy(result, limits)
@@ -478,11 +488,15 @@ func (m *MockResponsibleGamblingService) CheckDepositAllowed(ctx context.Context
 	// Check deposit limits
 	limits, found := m.depositLimits[userID]
 	if found {
-		for _, limit := range limits {
-			if limit.RemainingCents < amountCents {
-				return false, fmt.Sprintf("Deposit limit exceeded for %s period", limit.Period), ErrDepositLimitExceeded
+		now := time.Now().UTC()
+		for i := range limits {
+			refreshDepositLimitState(&limits[i], now)
+			if limits[i].RemainingCents < amountCents {
+				m.depositLimits[userID] = limits
+				return false, fmt.Sprintf("Deposit limit exceeded for %s period", limits[i].Period), ErrDepositLimitExceeded
 			}
 		}
+		m.depositLimits[userID] = limits
 	}
 
 	return true, "", nil
@@ -493,8 +507,8 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 		return false, "Invalid user", ErrInvalidUserID
 	}
 
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	// Check if user is blocked
 	if _, found := m.selfExclusions[userID]; found {
@@ -514,11 +528,15 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 	// Check bet limits
 	limits, found := m.betLimits[userID]
 	if found {
-		for _, limit := range limits {
-			if limit.RemainingCents < stakeCents {
-				return false, fmt.Sprintf("Bet limit exceeded for %s period", limit.Period), ErrBetLimitExceeded
+		now := time.Now().UTC()
+		for i := range limits {
+			refreshBetLimitState(&limits[i], now)
+			if limits[i].RemainingCents < stakeCents {
+				m.betLimits[userID] = limits
+				return false, fmt.Sprintf("Bet limit exceeded for %s period", limits[i].Period), ErrBetLimitExceeded
 			}
 		}
+		m.betLimits[userID] = limits
 	}
 
 	return true, "", nil
@@ -621,13 +639,15 @@ func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, user
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	now := time.Now().UTC()
+
 	// Update tracking
 	tracking, found := m.depositTracking[userID]
-	if !found || time.Now().After(tracking.ResetAt) {
+	if !found || !tracking.ResetAt.After(now) {
 		tracking = &PeriodTracking{
 			Period:  "daily",
 			Amount:  0,
-			ResetAt: getResetTime(time.Now(), "daily"),
+			ResetAt: getResetTime(now, "daily"),
 		}
 	}
 	tracking.Amount += amountCents
@@ -637,9 +657,11 @@ func (m *MockResponsibleGamblingService) RecordDeposit(ctx context.Context, user
 	limits, found := m.depositLimits[userID]
 	if found {
 		for i := range limits {
-			if time.Now().Before(getResetTime(time.Now().Add(-24*time.Hour), limits[i].Period)) {
-				limits[i].UsedCents += amountCents
-				limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
+			refreshDepositLimitState(&limits[i], now)
+			limits[i].UsedCents += amountCents
+			limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
+			if limits[i].RemainingCents < 0 {
+				limits[i].RemainingCents = 0
 			}
 		}
 		m.depositLimits[userID] = limits
@@ -656,13 +678,15 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	now := time.Now().UTC()
+
 	// Update tracking
 	tracking, found := m.betTracking[userID]
-	if !found || time.Now().After(tracking.ResetAt) {
+	if !found || !tracking.ResetAt.After(now) {
 		tracking = &PeriodTracking{
 			Period:  "daily",
 			Amount:  0,
-			ResetAt: getResetTime(time.Now(), "daily"),
+			ResetAt: getResetTime(now, "daily"),
 		}
 	}
 	tracking.Amount += stakeCents
@@ -672,15 +696,61 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 	limits, found := m.betLimits[userID]
 	if found {
 		for i := range limits {
-			if time.Now().Before(getResetTime(time.Now().Add(-24*time.Hour), limits[i].Period)) {
-				limits[i].UsedCents += stakeCents
-				limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
+			refreshBetLimitState(&limits[i], now)
+			limits[i].UsedCents += stakeCents
+			limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
+			if limits[i].RemainingCents < 0 {
+				limits[i].RemainingCents = 0
 			}
 		}
 		m.betLimits[userID] = limits
 	}
 
 	return nil
+}
+
+func upsertDepositLimit(existing []DepositLimit, next DepositLimit) []DepositLimit {
+	for i := range existing {
+		if existing[i].Period == next.Period {
+			existing[i] = next
+			return existing
+		}
+	}
+	return append(existing, next)
+}
+
+func upsertBetLimit(existing []BetLimit, next BetLimit) []BetLimit {
+	for i := range existing {
+		if existing[i].Period == next.Period {
+			existing[i] = next
+			return existing
+		}
+	}
+	return append(existing, next)
+}
+
+func refreshDepositLimitState(limit *DepositLimit, now time.Time) {
+	resetAt, err := time.Parse(time.RFC3339, limit.ResetsAt)
+	if err != nil || !now.Before(resetAt) {
+		limit.UsedCents = 0
+		limit.RemainingCents = limit.LimitCents
+		limit.ResetsAt = getResetTime(now, limit.Period).Format(time.RFC3339)
+	}
+	if limit.RemainingCents < 0 {
+		limit.RemainingCents = 0
+	}
+}
+
+func refreshBetLimitState(limit *BetLimit, now time.Time) {
+	resetAt, err := time.Parse(time.RFC3339, limit.ResetsAt)
+	if err != nil || !now.Before(resetAt) {
+		limit.UsedCents = 0
+		limit.RemainingCents = limit.LimitCents
+		limit.ResetsAt = getResetTime(now, limit.Period).Format(time.RFC3339)
+	}
+	if limit.RemainingCents < 0 {
+		limit.RemainingCents = 0
+	}
 }
 
 func isValidPeriod(period string) bool {

@@ -182,13 +182,14 @@ func TestIdempotentWebhookNoDoubleCredit(t *testing.T) {
 
 // --- Deposit status transitions ---
 
-func TestDepositStatusTransitionPendingToFailed(t *testing.T) {
-	svc, _ := newTestService(t)
+func TestWithdrawalStatusTransitionPendingToFailed(t *testing.T) {
+	svc, ws := newTestService(t)
 	ctx := context.Background()
+	seedWallet(t, ws, "u-status-1", 1500)
 
-	result, err := svc.InitiateDeposit(ctx, "u-status-1", 1500, "credit_card")
+	result, err := svc.InitiateWithdrawal(ctx, "u-status-1", 1500, "bank_transfer")
 	if err != nil {
-		t.Fatalf("initiate deposit: %v", err)
+		t.Fatalf("initiate withdrawal: %v", err)
 	}
 
 	// Transition to failed via webhook
@@ -196,7 +197,7 @@ func TestDepositStatusTransitionPendingToFailed(t *testing.T) {
 		TransactionID: result.TransactionID,
 		UserID:        "u-status-1",
 		Status:        "failed",
-		EventType:     "deposit.failed",
+		EventType:     "withdrawal.failed",
 	})
 	if err != nil {
 		t.Fatalf("failed webhook: %v", err)
@@ -237,6 +238,34 @@ func TestDepositStatusTransitionApprovedViaWebhook(t *testing.T) {
 	}
 	if txn.Status != "approved" {
 		t.Fatalf("expected status approved, got %s", txn.Status)
+	}
+}
+
+func TestApprovedDepositWebhookIgnoresLaterFailure(t *testing.T) {
+	svc, _ := newTestService(t)
+	ctx := context.Background()
+
+	result, err := svc.InitiateDeposit(ctx, "u-status-3", 2000, "wallet")
+	if err != nil {
+		t.Fatalf("initiate deposit: %v", err)
+	}
+
+	err = svc.HandleWebhook(ctx, WebhookPayload{
+		TransactionID: result.TransactionID,
+		UserID:        "u-status-3",
+		Status:        "failed",
+		EventType:     "deposit.failed",
+	})
+	if err != nil {
+		t.Fatalf("failed webhook after approval: %v", err)
+	}
+
+	txn, err := svc.GetTransactionStatus(ctx, result.TransactionID)
+	if err != nil {
+		t.Fatalf("get status after stale failure: %v", err)
+	}
+	if txn.Status != "approved" {
+		t.Fatalf("expected approved status to remain terminal, got %s", txn.Status)
 	}
 }
 

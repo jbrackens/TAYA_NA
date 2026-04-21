@@ -1,21 +1,11 @@
 "use client";
 
-/**
- * MarketCard — the prediction-grid card.
- *
- * Matches the approved preview:
- *   [category eyebrow · dot]            [time-left chip]
- *   <title / 15px / 600>
- *   [sparkline — 32px tall]
- *   [YES 41¢ +2¢] [NO 59¢ -2¢]          ← Yes/No split (clickable tiles)
- *   [N traders]                          [$vol]
- *
- * The sparkline is deterministic — derived from the ticker so the same
- * market always shows the same line. When the backend starts exposing
- * historical prices we'll swap this stub for real data.
- */
-
 import Link from "next/link";
+import {
+  formatCompactUsd,
+  formatTimeLeft,
+  normalizePriceShares,
+} from "./market-display";
 
 interface MarketCardProps {
   ticker: string;
@@ -23,32 +13,12 @@ interface MarketCardProps {
   yesPriceCents: number;
   noPriceCents: number;
   volumeCents: number;
+  openInterestCents?: number;
+  liquidityCents?: number;
   closeAt: string;
   status: string;
   /** Optional category label shown as the eyebrow. Defaults to ticker prefix. */
   categoryLabel?: string;
-  /** Optional trader count — rendered in the footer. Backend doesn't ship this
-   * yet so callers can omit it. */
-  traders?: number;
-}
-
-/** Deterministic placeholder sparkline derived from the ticker string.
- * Replace with real historical data from the prediction_trades table once
- * the API exposes it. Stable seed = stable shape = no jitter across renders. */
-function seededSparklinePoints(seed: string, trendingUp: boolean): string {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++)
-    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
-  const pts: string[] = [];
-  for (let i = 0; i <= 20; i++) {
-    const x = (i / 20) * 200;
-    hash = (hash * 1103515245 + 12345) >>> 0;
-    const noise = ((hash >>> 16) % 12) - 6;
-    const trend = trendingUp ? 30 - i * 1.2 : 10 + i * 1.2;
-    const y = Math.max(4, Math.min(36, trend + noise));
-    pts.push(`${x},${y.toFixed(1)}`);
-  }
-  return pts.join(" ");
 }
 
 export function MarketCard({
@@ -57,17 +27,19 @@ export function MarketCard({
   yesPriceCents,
   noPriceCents,
   volumeCents,
+  openInterestCents,
+  liquidityCents,
   closeAt,
   status,
   categoryLabel,
-  traders,
 }: MarketCardProps) {
-  const timeLeft = getTimeLeft(closeAt);
+  const timeLeft = formatTimeLeft(closeAt);
   const isSettled = status === "settled";
   const soon = !isSettled && hoursUntil(closeAt) < 48;
-  const trendingUp = yesPriceCents >= 50;
-  const sparkColor = trendingUp ? "var(--yes)" : "var(--no)";
-  const points = seededSparklinePoints(ticker, trendingUp);
+  const { yesShare, noShare } = normalizePriceShares(
+    yesPriceCents,
+    noPriceCents,
+  );
 
   const cat = (categoryLabel || ticker.split("-")[0]).toUpperCase();
   // Cycle the dot color by category so cards don't all look the same.
@@ -80,9 +52,12 @@ export function MarketCard({
           ? "var(--whale)"
           : "var(--no)";
 
-  // Placeholder deltas — +2¢ / -2¢ style. Real deltas come once the
-  // backend serves 1h/24h price snapshots.
-  const delta = yesPriceCents % 7 === 0 ? 3 : (yesPriceCents % 5) - 2;
+  const depthLabel =
+    openInterestCents != null
+      ? `${formatCompactUsd(openInterestCents)} open interest`
+      : liquidityCents != null
+        ? `${formatCompactUsd(liquidityCents)} liquidity`
+        : statusLabel(status);
 
   return (
     <>
@@ -108,49 +83,39 @@ export function MarketCard({
 
         <h3 className="mkt-title">{title}</h3>
 
-        <svg className="spark" viewBox="0 0 200 40" preserveAspectRatio="none">
-          <polyline
-            fill="none"
-            stroke={sparkColor}
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            points={points}
-          />
-        </svg>
+        <div className="mkt-depth">
+          <div className="mkt-depth-head">
+            <span>Current pricing</span>
+            <span className="mono">
+              {yesPriceCents} / {noPriceCents}
+            </span>
+          </div>
+          <div className="mkt-depth-bar" aria-hidden>
+            <span className="mkt-depth-yes" style={{ width: `${yesShare}%` }} />
+            <span className="mkt-depth-no" style={{ width: `${noShare}%` }} />
+          </div>
+        </div>
 
         <div className="mkt-mid">
           <div className="mkt-side yes">
             <span className="mkt-side-label">Yes</span>
             <div className="mkt-side-price">
               <strong>{yesPriceCents}¢</strong>
-              <span
-                className={`mkt-delta ${delta > 0 ? "up" : delta < 0 ? "dn" : "flat"}`}
-              >
-                {delta > 0 ? "+" : ""}
-                {delta}¢
-              </span>
+              <span className="mkt-side-hint">Current</span>
             </div>
           </div>
           <div className="mkt-side no">
             <span className="mkt-side-label">No</span>
             <div className="mkt-side-price">
               <strong>{noPriceCents}¢</strong>
-              <span
-                className={`mkt-delta ${delta > 0 ? "dn" : delta < 0 ? "up" : "flat"}`}
-              >
-                {delta > 0 ? "−" : delta < 0 ? "+" : ""}
-                {Math.abs(delta)}¢
-              </span>
+              <span className="mkt-side-hint">Current</span>
             </div>
           </div>
         </div>
 
         <div className="mkt-foot">
-          <span>
-            {traders != null ? `${traders.toLocaleString()} traders` : "—"}
-          </span>
-          <span className="vol">${formatCompact(volumeCents)} vol</span>
+          <span>{depthLabel}</span>
+          <span className="vol">{formatCompactUsd(volumeCents)} vol</span>
         </div>
       </Link>
     </>
@@ -234,7 +199,35 @@ function MarketCardStyles() {
         color: var(--t1);
         margin: 0;
       }
-      .spark { height: 32px; width: 100%; opacity: 0.9; }
+      .mkt-depth {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .mkt-depth-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--t3);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .mkt-depth-bar {
+        display: flex;
+        width: 100%;
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--s2);
+        border: 1px solid var(--b1);
+      }
+      .mkt-depth-yes {
+        background: linear-gradient(90deg, rgba(52,211,153,0.72), rgba(52,211,153,0.92));
+      }
+      .mkt-depth-no {
+        background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(248,113,113,0.72));
+      }
       .mkt-mid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -270,6 +263,10 @@ function MarketCardStyles() {
         justify-content: space-between;
         gap: 6px;
       }
+      .mkt-side-hint {
+        font-size: 11px;
+        color: var(--t3);
+      }
       .mkt-side-price strong {
         font-family: 'IBM Plex Mono', monospace;
         font-variant-numeric: tabular-nums;
@@ -279,15 +276,6 @@ function MarketCardStyles() {
       }
       .mkt-side.yes strong { color: var(--yes); }
       .mkt-side.no strong { color: var(--no); }
-      .mkt-delta {
-        font-size: 11px;
-        font-family: 'IBM Plex Mono', monospace;
-        font-variant-numeric: tabular-nums;
-        font-weight: 600;
-      }
-      .mkt-delta.up { color: var(--yes); }
-      .mkt-delta.dn { color: var(--no); }
-      .mkt-delta.flat { color: var(--t3); }
       .mkt-foot {
         display: flex;
         justify-content: space-between;
@@ -307,25 +295,13 @@ function MarketCardStyles() {
   );
 }
 
-function getTimeLeft(closeAt: string): string {
-  const diff = new Date(closeAt).getTime() - Date.now();
-  if (diff <= 0) return "Closed";
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  if (hours < 1) {
-    const mins = Math.floor(diff / (1000 * 60));
-    return `${mins}m left`;
-  }
-  if (hours < 24) return `${hours}h left`;
-  const days = Math.floor(hours / 24);
-  return `${days}d left`;
-}
-
 function hoursUntil(closeAt: string): number {
   return (new Date(closeAt).getTime() - Date.now()) / (1000 * 60 * 60);
 }
 
-function formatCompact(cents: number): string {
-  if (cents >= 1_000_000) return `${(cents / 100_000).toFixed(1)}K`;
-  if (cents >= 10_000) return `${(cents / 100).toFixed(0)}`;
-  return `${(cents / 100).toFixed(2)}`;
+function statusLabel(status: string): string {
+  if (status === "open") return "Live market";
+  if (status === "closed") return "Trading closed";
+  if (status === "settled") return "Market settled";
+  return status.replace(/_/g, " ");
 }

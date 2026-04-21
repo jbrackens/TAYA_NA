@@ -1,27 +1,46 @@
 "use client";
 
-/**
- * WhaleTicker — auto-scrolling band of recent large trades.
- *
- * The original preview hard-codes sample data; this first pass does the same
- * so the UI lands correctly. A follow-up will hook this to a backend endpoint
- * (e.g. `/api/v1/trades/whales?minStake=25000`) via SWR or WebSocket push.
- *
- * The items list is rendered twice back-to-back and translated -50% so the
- * loop appears seamless. Keyframes live in globals.css:not — they're defined
- * inline in the style tag here to keep the component self-contained.
- */
+import { useEffect, useState } from "react";
+import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import {
+  dedupeMarkets,
+  formatCompactUsd,
+  formatTimeLeft,
+} from "./market-display";
 
-const WHALES = [
-  { addr: "0x4f…a2", size: "$88K", detail: "BTC new ATH @ 64¢" },
-  { addr: "0xc1…9e", size: "$42K", detail: "Fed cuts June @ 57¢" },
-  { addr: "0x82…b3", size: "$31K", detail: "GOP margin @ 49¢" },
-  { addr: "0x00…7c", size: "$26K", detail: "F1 champion @ 72¢" },
-  { addr: "0x9d…14", size: "$120K", detail: "GPT-5 by July @ 38¢" },
-  { addr: "0xa8…42", size: "$65K", detail: "Real Madrid UCL @ 22¢" },
-];
+const api = createPredictionClient();
 
 export function WhaleTicker() {
+  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    api
+      .getDiscovery()
+      .then((discovery) => {
+        if (cancelled) return;
+
+        setMarkets(
+          dedupeMarkets([
+            ...discovery.featured,
+            ...discovery.trending,
+            ...discovery.closingSoon,
+            ...discovery.recent,
+          ]).slice(0, 8),
+        );
+      })
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error("WhaleTicker discovery load failed:", message);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
       <style>{`
@@ -52,41 +71,55 @@ export function WhaleTicker() {
           gap: 8px;
           color: var(--t2);
         }
+        .predict-ticker-empty {
+          padding: 8px 16px;
+          color: var(--t3);
+          font-size: 12px;
+        }
         .predict-ticker-item strong {
-          color: var(--whale);
+          color: var(--accent);
           font-family: 'IBM Plex Mono', ui-monospace, monospace;
           font-variant-numeric: tabular-nums;
           font-weight: 700;
         }
         .predict-ticker-sep { color: var(--t4); }
       `}</style>
-      <div className="predict-ticker" aria-label="Recent large trades">
-        <div className="predict-ticker-inner">
-          {[...WHALES, ...WHALES].map((w, i) => (
-            <span key={i}>
-              <span className="predict-ticker-item">
-                <span className="live-dot" />
-                <span
-                  style={{
-                    fontWeight: 700,
-                    letterSpacing: "0.06em",
-                    color: "var(--t3)",
-                    fontSize: 11,
-                  }}
-                >
-                  WHALE
+      <div className="predict-ticker" aria-label="Live market feed">
+        {markets.length === 0 ? (
+          <div className="predict-ticker-empty">Live markets updating…</div>
+        ) : (
+          <div className="predict-ticker-inner">
+            {[...markets, ...markets].map((market, index) => (
+              <span key={`${market.id}-${index}`}>
+                <span className="predict-ticker-item">
+                  <span className="live-dot" />
+                  <span
+                    style={{
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      color: "var(--t3)",
+                      fontSize: 11,
+                    }}
+                  >
+                    LIVE
+                  </span>
+                  <strong>{market.yesPriceCents}¢ YES</strong>
+                  <span>{market.title}</span>
+                  <span>{formatCompactUsd(market.volumeCents)} vol</span>
+                  <span>{formatTimeLeft(market.closeAt)}</span>
                 </span>
-                <strong>{w.size}</strong>
-                <span>{w.detail}</span>
+                {index < markets.length * 2 - 1 && (
+                  <span
+                    className="predict-ticker-sep"
+                    style={{ margin: "0 12px" }}
+                  >
+                    ·
+                  </span>
+                )}
               </span>
-              {i < WHALES.length * 2 - 1 && (
-                <span className="predict-ticker-sep" style={{ margin: "0 12px" }}>
-                  ·
-                </span>
-              )}
-            </span>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

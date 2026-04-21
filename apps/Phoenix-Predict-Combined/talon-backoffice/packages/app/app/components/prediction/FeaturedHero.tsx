@@ -6,7 +6,7 @@
  * 2:1 split:
  *   Left (2fr): marquee market with atmospheric gradient background, LIVE
  *               pill, title, CTA pair, volume line.
- *   Right (1fr): side column with WhaleActivityCard + TopMoversCard.
+ *   Right (1fr): side column with live activity + trending markets.
  *
  * The "market" input is optional — when null, the hero still renders a
  * loading skeleton so the page doesn't jank while /discovery fetches.
@@ -19,10 +19,15 @@ import { TopMoversCard } from "./TopMoversCard";
 
 interface FeaturedHeroProps {
   market: PredictionMarket | null;
+  activityMarkets: PredictionMarket[];
   topMovers: PredictionMarket[];
 }
 
-export function FeaturedHero({ market, topMovers }: FeaturedHeroProps) {
+export function FeaturedHero({
+  market,
+  activityMarkets,
+  topMovers,
+}: FeaturedHeroProps) {
   return (
     <>
       <style>{`
@@ -186,15 +191,27 @@ export function FeaturedHero({ market, topMovers }: FeaturedHeroProps) {
           </Link>
         ) : (
           <div className="hero-skel">
-            <div className="hero-skel-bar" style={{ height: 14, width: "40%", marginBottom: 16 }} />
-            <div className="hero-skel-bar" style={{ height: 28, width: "80%", marginBottom: 12 }} />
-            <div className="hero-skel-bar" style={{ height: 28, width: "60%", marginBottom: 24 }} />
-            <div className="hero-skel-bar" style={{ height: 40, width: "30%" }} />
+            <div
+              className="hero-skel-bar"
+              style={{ height: 14, width: "40%", marginBottom: 16 }}
+            />
+            <div
+              className="hero-skel-bar"
+              style={{ height: 28, width: "80%", marginBottom: 12 }}
+            />
+            <div
+              className="hero-skel-bar"
+              style={{ height: 28, width: "60%", marginBottom: 24 }}
+            />
+            <div
+              className="hero-skel-bar"
+              style={{ height: 40, width: "30%" }}
+            />
           </div>
         )}
 
         <div className="side-col">
-          <WhaleActivityCard />
+          <WhaleActivityCard markets={activityMarkets} />
           <TopMoversCard markets={topMovers} />
         </div>
       </div>

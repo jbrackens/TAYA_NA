@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	stdhttp "net/http"
@@ -24,6 +25,9 @@ func main() {
 
 	// Initialize structured logging (JSON in production, text in dev)
 	env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+	if err := validateGatewayRuntimeConfig(os.Getenv); err != nil {
+		log.Fatalf("gateway configuration error: %v", err)
+	}
 	logging.Init(cfg.Name, env)
 
 	// Initialize OpenTelemetry tracing (configured via OTEL_* env vars)
@@ -49,37 +53,14 @@ func main() {
 		authServiceURL = "http://localhost:18081"
 	}
 
-	// Public paths that do not require authentication
-	publicPrefixes := []string{
-		"/healthz",
-		"/readyz",
-		"/metrics",
-		"/api/v1/status",
-		"/api/v1/auth/",
-		"/auth/",
-		"/ws",              // WebSocket has its own auth
-		"/api/v1/content/", // CMS content delivery (public)
-		"/api/v1/banners",  // CMS banner delivery (public)
+	// Public paths that do not require authentication.
+	// The payments webhook is intentionally public so providers can reach it,
+	// but the handler performs its own HMAC verification before processing.
+	publicPrefixes := gatewayPublicPrefixes()
 
-		// Prediction platform — public read-only endpoints
-		"/api/v1/discovery",
-		"/api/v1/categories",
-		"/api/v1/events",
-		"/api/v1/markets",
-
-		// Bot API uses its own API-key auth middleware, not the session auth
-		"/api/v1/bot/",
-	}
-
-	// CSRF-exempt prefixes (auth endpoints handle their own CSRF)
-	csrfSkipPrefixes := []string{
-		"/api/v1/auth/",
-		"/auth/",
-		"/healthz",
-		"/readyz",
-		"/metrics",
-		"/api/v1/status",
-	}
+	// CSRF-exempt prefixes (auth endpoints and provider-to-provider webhooks
+	// handle their own verification).
+	csrfSkipPrefixes := gatewayCSRFSkipPrefixes()
 
 	// CORS origins. Comma-separated list; credentials require exact origin match
 	// (no "*"). Defaults cover the local dev ports for the player app and the
@@ -100,6 +81,7 @@ func main() {
 
 	middlewares := []httpx.Middleware{
 		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
 		tracing.Middleware(),
 		httpx.SecurityHeaders(),
 		corsMW,
@@ -112,6 +94,7 @@ func main() {
 	if authEnabled {
 		middlewares = []httpx.Middleware{
 			httpx.RequestID(),
+			httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
 			tracing.Middleware(),
 			httpx.SecurityHeaders(),
 			corsMW,
@@ -139,6 +122,53 @@ func main() {
 		log.Fatalf("%s service failed: %v", cfg.Name, err)
 	}
 	slog.Info("service stopped gracefully", "service", cfg.Name)
+}
+
+func gatewayPublicPrefixes() []string {
+	return []string{
+		"/healthz",
+		"/readyz",
+		"/metrics",
+		"/api/v1/status",
+		"/api/v1/auth/",
+		"/auth/",
+		"/ws",              // WebSocket has its own auth
+		"/api/v1/content/", // CMS content delivery (public)
+		"/api/v1/banners",  // CMS banner delivery (public)
+
+		// Prediction platform — public read-only endpoints
+		"/api/v1/discovery",
+		"/api/v1/categories",
+		"/api/v1/events",
+		"/api/v1/markets",
+		"/api/v1/payments/webhook",
+
+		// Bot API uses its own API-key auth middleware, not the session auth
+		"/api/v1/bot/",
+	}
+}
+
+func gatewayCSRFSkipPrefixes() []string {
+	return []string{
+		"/api/v1/auth/",
+		"/auth/",
+		"/healthz",
+		"/readyz",
+		"/metrics",
+		"/api/v1/status",
+		"/api/v1/payments/webhook",
+	}
+}
+
+func validateGatewayRuntimeConfig(getenv func(string) string) error {
+	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
+	if env != "production" {
+		return nil
+	}
+	if strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) == "" {
+		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set in production")
+	}
+	return nil
 }
 
 // cors returns a middleware that attaches CORS headers for allowed origins.
