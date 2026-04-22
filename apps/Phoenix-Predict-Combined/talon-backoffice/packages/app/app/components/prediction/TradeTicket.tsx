@@ -405,7 +405,7 @@ function Styles() {
 
       .tt-btn-primary {
         background: var(--accent);
-        color: #06222b;
+        color: #06170a;
         box-shadow: var(--accent-glow);
       }
       .tt-btn-primary:hover:not(:disabled) { background: var(--accent-hi); }

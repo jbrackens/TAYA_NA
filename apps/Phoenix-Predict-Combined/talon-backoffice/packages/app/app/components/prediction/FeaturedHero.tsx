@@ -57,7 +57,7 @@ export function FeaturedHero({
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(ellipse at top right, rgba(34,211,238,0.18), transparent 45%),
+            radial-gradient(ellipse at top right, rgba(57,255,20,0.18), transparent 45%),
             radial-gradient(ellipse at bottom left, rgba(239,68,68,0.10), transparent 50%);
           pointer-events: none;
         }
@@ -67,7 +67,7 @@ export function FeaturedHero({
           top: -10%;
           width: 65%;
           height: 130%;
-          background: linear-gradient(135deg, var(--accent), #0891b2);
+          background: linear-gradient(135deg, var(--accent), #0b5e0a);
           border-radius: 50%;
           filter: blur(80px);
           opacity: 0.18;
@@ -127,7 +127,7 @@ export function FeaturedHero({
         }
         .hero-cta .accent {
           background: var(--accent);
-          color: #06222b;
+          color: #06170a;
           box-shadow: var(--accent-glow);
         }
         .hero-cta .accent:hover { background: var(--accent-hi); }

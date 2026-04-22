@@ -633,19 +633,19 @@ const cashierStyles = `
     background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--yes);
   }
   .cashier-msg.pending {
-    background: var(--accent-soft); border: 1px solid rgba(34,211,238,0.3); color: var(--accent);
+    background: var(--accent-soft); border: 1px solid rgba(57,255,20,0.3); color: var(--accent);
     display: flex; align-items: center; gap: 10px;
   }
   @keyframes cashier-spin { to { transform: rotate(360deg); } }
   .cashier-spinner {
-    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(34,211,238,0.3);
+    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(57,255,20,0.3);
     border-top-color: var(--accent); border-radius: 50%;
     animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
   }
   .cashier-submit {
     width: 100%; padding: 12px 16px; border-radius: var(--r-sm); font-family: inherit;
     font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
-    background: var(--accent); border: 0; color: #06222b; cursor: pointer;
+    background: var(--accent); border: 0; color: #06170a; cursor: pointer;
     box-shadow: var(--accent-glow); transition: background 0.15s;
   }
   .cashier-submit:hover:not(:disabled) { background: var(--accent-hi); }

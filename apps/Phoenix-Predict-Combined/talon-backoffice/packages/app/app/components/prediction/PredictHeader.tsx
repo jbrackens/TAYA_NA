@@ -11,6 +11,7 @@
  * category navigation lives here and here only.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -193,13 +194,17 @@ export function PredictHeader() {
           gap: 24px;
         }
         .ph-logo {
-          font-weight: 800;
-          font-size: 20px;
-          letter-spacing: -0.02em;
+          display: inline-flex;
+          align-items: center;
+          flex-shrink: 0;
           color: var(--t1);
           text-decoration: none;
+          transition: filter 0.2s ease;
         }
-        .ph-logo span { color: var(--accent); }
+        .ph-logo:hover {
+          filter: drop-shadow(var(--accent-glow));
+        }
+        .ph-logo img { display: block; height: 36px; width: 36px; }
         .ph-search-wrap {
           position: relative;
           flex: 1;
@@ -312,7 +317,7 @@ export function PredictHeader() {
         .ph-btn-ghost:hover { background: var(--s1); }
         .ph-btn-accent {
           background: var(--accent);
-          color: #06222b;
+          color: #06170a;
           box-shadow: var(--accent-glow);
         }
         .ph-btn-accent:hover { background: var(--accent-hi); }
@@ -327,11 +332,11 @@ export function PredictHeader() {
           color: var(--accent);
           font-weight: 700;
           font-size: 13px;
-          border: 1px solid rgba(34,211,238,0.3);
+          border: 1px solid rgba(57,255,20,0.3);
           cursor: pointer;
           transition: all 0.15s;
         }
-        .ph-avatar:hover { background: rgba(34,211,238,0.2); }
+        .ph-avatar:hover { background: rgba(57,255,20,0.2); }
 
         .ph-cat-strip {
           border-top: 1px solid var(--b1);
@@ -396,8 +401,18 @@ export function PredictHeader() {
 
       <header className="ph">
         <div className="ph-row">
-          <Link href="/predict" className="ph-logo">
-            TAYA <span>Predict</span>
+          <Link
+            href="/predict"
+            className="ph-logo"
+            aria-label="TAYA NA Predict — home"
+          >
+            <Image
+              src="/logo-tn.svg"
+              alt="TAYA NA Predict"
+              width={36}
+              height={36}
+              priority
+            />
           </Link>
 
           <div

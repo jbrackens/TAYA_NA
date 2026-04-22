@@ -443,7 +443,7 @@ function Styles() {
         padding: 3px 10px;
         margin-bottom: 10px;
         background: var(--accent-soft);
-        border: 1px solid rgba(34,211,238,0.3);
+        border: 1px solid rgba(57,255,20,0.3);
         color: var(--accent);
         border-radius: 999px;
         font-size: 10px;
@@ -477,7 +477,7 @@ function Styles() {
         inset: 0 auto 0 0;
         background: linear-gradient(90deg, var(--accent), var(--accent-hi));
         border-radius: inherit;
-        box-shadow: 0 0 14px rgba(34,211,238,0.5);
+        box-shadow: 0 0 14px rgba(57,255,20,0.5);
         transition: width 0.3s ease;
       }
 
@@ -637,7 +637,7 @@ function Styles() {
       }
       .ra-btn.primary {
         background: var(--accent);
-        color: #06222b;
+        color: #06170a;
         box-shadow: var(--accent-glow);
       }
       .ra-btn.primary:hover:not(:disabled) { background: var(--accent-hi); }

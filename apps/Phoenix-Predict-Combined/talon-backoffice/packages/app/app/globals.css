@@ -68,13 +68,14 @@ body {
   --t2: rgba(255, 255, 255, 0.72);
   --t3: rgba(255, 255, 255, 0.45);
   --t4: rgba(255, 255, 255, 0.28);
-  /* Accent (cyan / broadcast-live) */
-  --accent: #22d3ee;
-  --accent-hi: #67e8f9;
-  --accent-soft: rgba(34, 211, 238, 0.14);
-  --accent-glow: 0 0 28px rgba(34, 211, 238, 0.35);
+  /* Accent (neon phoenix green — brand channel) */
+  --accent: #39ff14;
+  --accent-hi: #5cff4a;
+  --accent-soft: rgba(57, 255, 20, 0.14);
+  --accent-glow: 0 0 28px rgba(57, 255, 20, 0.45);
   /* Semantic */
   --yes: #34d399;
+  --gain: #10b981;
   --no: #f87171;
   --live: #ef4444;
   --whale: #fbbf24;
@@ -134,13 +135,13 @@ button {
     linear-gradient(180deg, #0a0d18 0%, #0d1120 100%);
 }
 
-/* Predict auth shell — cyan atmosphere, Predict surfaces. Used by
+/* Predict auth shell — phoenix-green atmosphere, Predict surfaces. Used by
    * app/auth/* pages via AppShell's isAuthRoute branch. */
 .predict-auth-layout {
   min-height: 100vh;
   overflow-y: auto;
   background:
-    radial-gradient(ellipse at top, rgba(34, 211, 238, 0.12), transparent 40%),
+    radial-gradient(ellipse at top, rgba(57, 255, 20, 0.12), transparent 40%),
     radial-gradient(
       ellipse at bottom left,
       rgba(239, 68, 68, 0.06),

@@ -612,7 +612,7 @@ function Styles() {
         gap: 8px;
         padding: 10px 20px;
         background: var(--accent);
-        color: #06222b;
+        color: #06170a;
         border-radius: 999px;
         font-size: 13px;
         font-weight: 700;

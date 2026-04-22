@@ -161,7 +161,7 @@ function Styles() {
         padding: 4px 12px;
         margin-bottom: 14px;
         background: var(--accent-soft);
-        border: 1px solid rgba(34,211,238,0.3);
+        border: 1px solid rgba(57,255,20,0.3);
         color: var(--accent);
         border-radius: 999px;
         font-size: 11px;
@@ -231,7 +231,7 @@ function Styles() {
         margin-top: 4px;
         padding: 12px 16px;
         background: var(--accent);
-        color: #06222b;
+        color: #06170a;
         border: 0;
         border-radius: var(--r-sm);
         font-family: inherit;

@@ -165,7 +165,7 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
         <Stat
           label="Realized P&L"
           value={`${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}`}
-          tone={pnlUp ? "yes" : "no"}
+          tone={pnlUp ? "gain" : "no"}
         />
         <Stat label="Open positions" value={String(summary.openPositions)} />
         <Stat
@@ -180,7 +180,7 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
               ? `${summary.correctPredictions}/${summary.totalPredictions}`
               : "No settled markets yet"
           }
-          tone={summary.accuracyPct >= 50 ? "accent" : undefined}
+          tone={summary.accuracyPct >= 50 ? "gain" : undefined}
         />
       </div>
     </section>
@@ -196,7 +196,7 @@ function Stat({
   label: string;
   value: string;
   sub?: string;
-  tone?: "yes" | "no" | "accent";
+  tone?: "yes" | "no" | "gain";
 }) {
   return (
     <div className={`acct-stat ${tone ? `acct-stat-${tone}` : ""}`}>
@@ -279,7 +279,7 @@ function Styles() {
         height: 48px;
         border-radius: 999px;
         background: var(--accent-soft);
-        border: 1px solid rgba(34,211,238,0.3);
+        border: 1px solid rgba(57,255,20,0.3);
         color: var(--accent);
         display: inline-flex;
         align-items: center;
@@ -386,7 +386,7 @@ function Styles() {
       }
       .acct-stat-yes .acct-stat-value { color: var(--yes); }
       .acct-stat-no .acct-stat-value { color: var(--no); }
-      .acct-stat-accent .acct-stat-value { color: var(--accent); }
+      .acct-stat-gain .acct-stat-value { color: var(--gain); }
       .acct-stat-sub {
         font-size: 11px;
         color: var(--t3);

@@ -721,7 +721,7 @@ function Styles() {
         position: absolute;
         inset: 0;
         background:
-          radial-gradient(ellipse at top right, rgba(34,211,238,0.18), transparent 45%),
+          radial-gradient(ellipse at top right, rgba(57,255,20,0.18), transparent 45%),
           radial-gradient(ellipse at bottom left, rgba(239,68,68,0.08), transparent 55%);
         pointer-events: none;
       }
@@ -731,7 +731,7 @@ function Styles() {
         top: -20%;
         width: 55%;
         height: 160%;
-        background: linear-gradient(135deg, var(--accent), #0891b2);
+        background: linear-gradient(135deg, var(--accent), #0b5e0a);
         border-radius: 50%;
         filter: blur(90px);
         opacity: 0.14;

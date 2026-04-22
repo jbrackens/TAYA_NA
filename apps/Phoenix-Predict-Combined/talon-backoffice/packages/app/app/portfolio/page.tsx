@@ -203,7 +203,7 @@ function SummaryStrip({ summary }: { summary: PortfolioSummary | null }) {
       <StatCard
         label="Realized P&L"
         value={s ? `${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}` : "—"}
-        tone={s ? (pnlUp ? "yes" : "no") : undefined}
+        tone={s ? (pnlUp ? "gain" : "no") : undefined}
       />
       <StatCard
         label="Open positions"
@@ -219,7 +219,7 @@ function SummaryStrip({ summary }: { summary: PortfolioSummary | null }) {
             ? `${s.correctPredictions}/${s.totalPredictions} correct`
             : "No settled predictions yet"
         }
-        tone={s && s.accuracyPct >= 50 ? "accent" : undefined}
+        tone={s && s.accuracyPct >= 50 ? "gain" : undefined}
       />
     </section>
   );
@@ -234,7 +234,7 @@ function StatCard({
   label: string;
   value: string;
   sub?: string;
-  tone?: "yes" | "no" | "accent";
+  tone?: "yes" | "no" | "gain";
 }) {
   return (
     <div className={`pf-stat ${tone ? `pf-stat-${tone}` : ""}`}>
@@ -599,7 +599,7 @@ function Styles() {
         display: inline-block;
         padding: 10px 18px;
         background: var(--accent);
-        color: #06222b;
+        color: #06170a;
         border-radius: 999px;
         font-weight: 600;
         font-size: 13px;
@@ -642,7 +642,7 @@ function Styles() {
       }
       .pf-stat-yes .pf-stat-value { color: var(--yes); }
       .pf-stat-no .pf-stat-value { color: var(--no); }
-      .pf-stat-accent .pf-stat-value { color: var(--accent); }
+      .pf-stat-gain .pf-stat-value { color: var(--gain); }
       .pf-stat-sub {
         font-size: 11px;
         color: var(--t3);
@@ -794,14 +794,14 @@ function Styles() {
       .pf-status-open, .pf-status-partial {
         background: var(--accent-soft);
         color: var(--accent);
-        border-color: rgba(34,211,238,0.3);
+        border-color: rgba(57,255,20,0.3);
       }
       .pf-status-cancelled, .pf-status-expired {
         background: var(--s2);
         color: var(--t3);
       }
 
-      .pf-gain { color: var(--yes); font-weight: 700; }
+      .pf-gain { color: var(--gain); font-weight: 700; }
       .pf-loss { color: var(--no); font-weight: 700; }
       .pf-dim { color: var(--t3); }
 
