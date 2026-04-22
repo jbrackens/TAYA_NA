@@ -1,6 +1,6 @@
 # Design System — TAYA NA Predict
 
-> Dark broadcast / fintech-editorial. One accent color, one display font, one mono font. Every pixel earns its place.
+> Dark broadcast / fintech-editorial, pointed at Pariflow. Neon phoenix green as the brand layer, data-green for YES semantics, IBM Plex Mono for prices. Every pixel earns its place.
 
 This document governs the **Predict player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000). The admin backoffice is still on the sportsbook system (see `DESIGN-SPORTSBOOK.md`) until it needs a refresh.
 
@@ -12,37 +12,38 @@ The sportsbook `ps-*` / `discovery-*` / `sport-pill` classes still live in `glob
 
 - **What this is:** binary event-contract exchange — users trade YES/NO on real-world outcomes (politics, crypto, sports, entertainment, tech, economics)
 - **Who it's for:** retail traders and prediction enthusiasts, crypto-adjacent audience
-- **Competitors studied:** Polymarket (light, blue, dense), Kalshi (light, mint, editorial), Pariflow (dark, cyan, broadcast)
+- **Competitors studied:** Polymarket (light, blue, dense), Kalshi (light, mint, editorial), Pariflow (dark, broadcast, whale-ticker energy)
 - **Project type:** real-time trading web app
-- **Positioning:** closer to Pariflow (dark, broadcast energy, whale ticker) than Kalshi/Polymarket (light, fintech-calm). Users should feel a pulse, not a spreadsheet.
+- **Positioning:** heavy on Pariflow — dark broadcast, whale ticker, live data flowing past. Users should feel a pulse, not a spreadsheet. Neon green is the brand color that separates us from Pariflow's cyan and Polymarket's blue while staying in the fintech family.
 
 ---
 
 ## 1. Aesthetic Direction
 
-**Dark broadcast**. Think 24/7 sports betting telecast crossed with a trading terminal. Live data ticker at the top of every page; editorial polish on featured markets; dense but readable grid below. Cyan accent carries broadcast-live energy without leaning gaming.
+**Dark broadcast, amped.** Think 24/7 sports betting telecast crossed with a trading terminal. Live data ticker at the top of every page; editorial polish on featured markets; dense but readable grid below. Neon phoenix green carries brand energy and broadcast-live pulse; data-green carries YES semantics — two different jobs, never mixed.
 
 **Mood descriptors:** alert, confident, monied, current, *information flowing past you*.
 
-**Decoration level:** intentional — atmospheric gradients on the hero, amber-tinted whale card, cyan glow on interactive states. Never decorative; always informational.
+**Decoration level:** intentional — atmospheric gradients on the hero, amber-tinted whale card, neon-green glow on the logo and primary CTAs. Never decorative; always informational.
 
 **Explicit rejection:**
 - **No Orbitron / Exo / sci-fi fonts** — signals gaming/crypto-bro
-- **No neon green as primary accent** — sportsbook DNA, not Predict
+- **No cyan as primary accent** — was the direction through 2026-04-17, superseded by phoenix green on 2026-04-23 (see §8). Cyan now only appears where it was a neutral data treatment (e.g., chart crosshair lines if ever needed).
 - **No left sidebar** for categories — every reference uses horizontal top nav
 - **No bubble-radius** (20px+ on small elements) — reads as AI slop
 - **No purple/violet gradients** — AI slop anti-pattern
 - **No 3-column icon grid with colored circles** — marketing-site cliché
+- **No brand green on price cells.** `--accent` never colors a YES price. `--yes` never colors a CTA. See §3 Rules.
 
 ---
 
 ## 2. Typography
 
-- **Display + body:** `Outfit` (Google Fonts, weights 300–900) — geometric sans, broadcast-friendly, modern without being trendy
-- **Prices, volumes, tabular numbers:** `IBM Plex Mono` with `font-variant-numeric: tabular-nums`
+- **Display + body:** `Outfit` (Google Fonts, weights 300–900) — geometric sans, broadcast-friendly, modern without being trendy. Pariflow uses Outfit throughout; we keep parity.
+- **Prices, volumes, tabular numbers:** `IBM Plex Mono` with `font-variant-numeric: tabular-nums` — intentional departure from Pariflow (which runs Outfit everywhere). Adds trader-desk precision feel on numeric data.
 - **Fallback stack:** `-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`
 
-Loaded in `app/layout.tsx` via Google Fonts `<link>`. Don't add more weights on ad-hoc.
+Loaded in `app/layout.tsx` via Google Fonts `<link>`. Don't add more weights ad-hoc.
 
 ### Scale
 
@@ -90,30 +91,36 @@ Every color is a CSS custom property defined in `app/globals.css` under `:root`.
 | `--t3` | `rgba(255,255,255,0.45)` | Muted labels, timestamps, meta |
 | `--t4` | `rgba(255,255,255,0.28)` | Disabled, divider dots |
 
-### Accent (cyan — broadcast-live)
+### Brand accent (neon phoenix green)
+
+The TN speech-bubble logo at `public/logo-tn.svg` is painted in this exact green. Every brand-level color token is derived from it.
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--accent` | `#22d3ee` | Primary CTA background, active nav, brand accent in logo |
-| `--accent-hi` | `#67e8f9` | Hover state for accent surfaces |
-| `--accent-soft` | `rgba(34,211,238,0.14)` | Active-state tinted backgrounds (cat chips, avatar) |
-| `--accent-glow` | `0 0 28px rgba(34,211,238,0.35)` | Box-shadow on accent buttons + focused search |
+| `--accent` | `#39ff14` | Logo, primary CTA background, active nav, LIVE pulse ring, focused-state borders |
+| `--accent-hi` | `#5cff4a` | Hover state for accent surfaces |
+| `--accent-soft` | `rgba(57,255,20,0.14)` | Active-state tinted backgrounds (cat chips, avatar) |
+| `--accent-glow` | `0 0 28px rgba(57,255,20,0.45)` | Box-shadow on accent buttons, focused search, logo hover |
 
-### Semantic
+### Semantic (data layer)
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--yes` | `#34d399` | YES prices, upward price movement |
-| `--no` | `#f87171` | NO prices, downward price movement |
+| `--yes` | `#34d399` | YES prices, YES side chips, upward price deltas, outcome-ladder bar fill |
+| `--gain` | `#10b981` | Realized P&L positive, accuracy ≥50% tint, sustained-positive surfaces. Darker / less saturated than `--yes` so P&L totals don't out-shout live price moves. |
+| `--no` | `#f87171` | NO prices, downward price movement, loss totals |
 | `--live` | `#ef4444` | LIVE indicator dots (ticker, hero pill) |
 | `--whale` | `#fbbf24` | Whale activity, amber — reserved for large-trade signals |
 | `--whale-soft` | `rgba(251,191,36,0.14)` | Whale card background tint |
 
-### Rules
+### Rules (the two-greens discipline)
 
-- Cyan `--accent` appears **once per view** at high saturation (usually the hero CTA). Everything else uses soft tints.
-- Amber `--whale` is **reserved** for whale/large-trade meaning. Don't use it for anything else — users should be able to spot whale activity in peripheral vision.
-- Red `--no` and `--live` are different: `--no` is for price direction, `--live` is for real-time indicators. They're visually similar — context and the pulse animation disambiguate.
+- **`--accent` is the brand channel.** It pulses, glows, and calls for action: logo, primary CTA, LIVE dot, active nav item, focused search ring. Appears **once per view** at high saturation plus soft tints on active states.
+- **`--yes` is the data channel.** It informs: YES price tiles, YES chips, upward deltas, outcome-ladder bars. Never glows. Never carries a CTA shadow.
+- **`--gain` is the P&L channel.** Darker still. Used for realized gains, accuracy highlights, and any long-lived "you are up" surface — so P&L totals don't compete with live price moves in the eye.
+- **Never use `--accent` on a price cell.** Never use `--yes` on a CTA. If a surface needs both channels (e.g. a "LIVE YES" pill on a card), `--accent` owns the pulse dot, `--yes` owns the price text.
+- **Amber `--whale` is reserved** for whale/large-trade meaning. Don't use it for anything else — users should spot whale activity in peripheral vision.
+- **Red `--no` and `--live` are different:** `--no` is for price direction, `--live` is for real-time indicators. They're visually similar — context and the pulse animation disambiguate.
 
 ---
 
@@ -122,12 +129,14 @@ Every color is a CSS custom property defined in `app/globals.css` under `:root`.
 ### Shell structure
 
 ```
-[WhaleTicker]      ← slim (~36px), auto-scroll, s3 background
-[PredictHeader]    ← sticky (~110px — top row + cat strip), s0 w/ backdrop-blur
+[WhaleTicker]      ← slim (~36px), auto-scroll, s3 background, green bloom at bottom edge
+[PredictHeader]    ← sticky (~110px — top row + cat strip), s0 w/ backdrop-blur, TN logo on left
 [main content]     ← max-width 1440px, 24px horizontal padding
 ```
 
 **No left sidebar.** All three references (Kalshi, Polymarket, Pariflow) use horizontal top-nav. Categories live in the header's cat strip.
+
+**Logo.** The header's left slot renders the TN speech-bubble mark from `public/logo-tn.svg` at ~36px height, not a text wordmark. The green of the logo is the same `--accent` token — so the brand color *starts at the logo* and cascades through the rest of the chrome.
 
 ### Grid
 
@@ -157,6 +166,7 @@ No element exceeds 20px radius. Bubble-radius reads as AI slop.
 | Live dots | Opacity pulse 0.35→1→0.35 over 1.6s ease-in-out infinite. |
 | Card hover | `translateY(-2px)` + border → `--accent`, 150ms ease. |
 | Search focus | Border → `--accent` + `box-shadow: --accent-glow`, 150ms. |
+| Logo hover | Subtle green glow bloom via `--accent-glow`, 200ms. |
 | Price change (future) | Number-roll 250ms ease-out when WebSocket delivers new price. Not yet implemented. |
 | Category chip | Active-state background fade 150ms. |
 
@@ -175,7 +185,7 @@ Components live under `app/components/prediction/`. Each is self-contained (uses
 | Component | Purpose | Key classes |
 |-----------|---------|-------------|
 | `WhaleTicker` | Top auto-scrolling band of large trades | `.predict-ticker`, `.predict-ticker-inner` |
-| `PredictHeader` | Sticky chrome: logo, search, auth, cat strip | `.ph`, `.ph-row`, `.ph-cat`, `.ph-wallet`, `.ph-btn-accent` |
+| `PredictHeader` | Sticky chrome: TN logo, search, auth, cat strip | `.ph`, `.ph-row`, `.ph-cat`, `.ph-wallet`, `.ph-btn-accent`, `.ph-logo` |
 | `FeaturedHero` | Hero market + side column wrapper | `.hero-grid`, `.hero`, `.hero-title` |
 | `WhaleActivityCard` | Amber-tinted recent large trades list | `.wac`, `.wac-row`, `.wac-addr` |
 | `TopMoversCard` | Biggest price movers list | `.tmc`, `.tmc-row`, `.tmc-delta` |
@@ -195,9 +205,10 @@ Components live under `app/components/prediction/`. Each is self-contained (uses
 
 Tracked as follow-ups, not part of this design system:
 
-- **Market detail page** redesign (hero imagery, chart library selection, order book UI) — needs its own design round once we pick a chart lib
-- **Portfolio page** — currently functional but uses old structure
-- **Auth pages** — still use sportsbook shell (`.ps-auth-layout` gradient)
+- **Second data strip below WhaleTicker** (Pariflow-style stacked marquees — e.g., "top movers scrolling") — design round pending
+- **Cinematic hero imagery** on the featured market (Pariflow uses F1-style taller banners) — asset direction + aspect-ratio decision pending
+- **Portfolio page** visual polish — currently functional but could push broadcast energy harder
+- **Auth pages** — redesigned on the Predict shell as of 2026-04-17 but could use another round if the TN-logo-forward brand push calls for hero imagery
 - **Backoffice redesign** — backoffice keeps sportsbook look until it gets its own refresh
 - **Light mode** — all three Pariflow-style references skip this; we can add later if needed
 - **Mobile layout** (<768px) — hero-grid collapses to 1fr, but cat strip overflow + header density need a pass
@@ -211,8 +222,12 @@ Tracked as follow-ups, not part of this design system:
 | 2026-04-17 | Dropped left sidebar | None of Kalshi / Polymarket / Pariflow use one; horizontal top nav is the category convention. |
 | 2026-04-17 | Outfit over IBM Plex Sans | Outfit is what Pariflow uses; Plex Sans is sportsbook DNA. Outfit scales cleaner at display sizes. |
 | 2026-04-17 | Orbitron removed | Sci-fi/gaming signal. Fintech/broadcast doesn't use decorative display fonts. |
-| 2026-04-17 | Cyan #22d3ee accent (not mint, not blue, not green) | Distinguishable from Kalshi's mint and Polymarket's blue while staying in the fintech family. Broadcast-live energy. |
+| 2026-04-17 | ~~Cyan #22d3ee accent~~ | Superseded on 2026-04-23. Kept in log for context. |
 | 2026-04-17 | Amber #fbbf24 reserved for whale meaning | Second semantic layer — users spot whale activity in peripheral vision. |
 | 2026-04-17 | Added WhaleTicker + WhaleActivityCard | Broadcast-energy feature. Pariflow has a whale feed; we lead with it to signal "this is where the money is moving." |
 | 2026-04-17 | IBM Plex Mono for prices/volumes | Departure from Pariflow (uses Outfit everywhere). Adds precision/trader-desk feel for numeric data. |
 | 2026-04-17 | Sparklines per market card | Deterministic placeholder sparkline until backend exposes historical prices — cards feel alive even in v1. |
+| 2026-04-23 | **Reversed cyan → neon phoenix green `#39ff14`** | User preference confirmed neon green over cyan. Matches the TN speech-bubble logo (same hex). Keeps Taya NA brand continuity from the pre-cutover era. |
+| 2026-04-23 | **Restored TN speech-bubble logo** (`public/logo-tn.svg`) | Replaces the text-only "TAYA Predict" wordmark that shipped during the Predict fork. Speech-bubble shape reads as *opinion / call*, on-brand for a prediction market. Brand color now starts at the logo itself. |
+| 2026-04-23 | **Two-greens discipline (D1)** — `--accent` = `#39ff14` for brand, `--yes` = `#34d399` for data, `--gain` = `#10b981` for P&L | Neon green conflicts with the prediction-market convention of green=YES. D1 resolves by giving brand green a distinct saturation/role: brand pulses and glows, data informs, P&L tallies. `--accent` never colors a price cell; `--yes` never colors a CTA. |
+| 2026-04-23 | Customer surfaces push Pariflow harder | Taller hero, potential second marquee strip below whale ticker, green bloom under the ticker tying brand to live pulse. Scope tracked in §7. |
