@@ -120,13 +120,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	var predRepo prediction.Repository
 	var predictLoyaltyService *loyalty.PredictService
 	var predictLBRepo *leaderboards.PredictSQLRepo
+	var predictLBService *leaderboards.PredictService
 	if walletDB := walletService.DB(); walletDB != nil {
 		predRepo = prediction.NewSQLRepository(walletDB)
 		slog.Info("prediction: SQL repository initialized")
 		predictLoyaltyService = loyalty.NewPredictService(loyalty.NewPredictSQLRepo(walletDB))
 		slog.Info("loyalty: Predict-native service initialized")
 		predictLBRepo = leaderboards.NewPredictSQLRepo(walletDB)
-		slog.Info("leaderboards: Predict-native repo initialized")
+		predictLBService = leaderboards.NewPredictService(predictLBRepo, predictionCategoryLister(predRepo))
+		slog.Info("leaderboards: Predict-native service initialized")
 	} else {
 		slog.Warn("prediction: no DB available, prediction service will not function")
 	}
@@ -211,7 +213,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	}
 
 	// --- Leaderboards ---
-	registerLeaderboardRoutes(mux, leaderboards.NewServiceFromEnv())
+	// Same swap pattern as loyalty: Predict-native handlers when a DB is
+	// wired, sportsbook in-memory handlers otherwise.
+	if predictLBService != nil {
+		registerPredictLeaderboardRoutes(mux, predictLBService)
+	} else {
+		registerLeaderboardRoutes(mux, leaderboards.NewServiceFromEnv())
+	}
 
 	// --- Auth Proxy (kept from sportsbook) ---
 	registerAuthProxy(mux)
