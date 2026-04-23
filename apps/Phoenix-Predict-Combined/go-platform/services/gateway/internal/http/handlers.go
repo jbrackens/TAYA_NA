@@ -186,7 +186,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	payments.RegisterPaymentRoutes(mux, paymentService)
 
 	// --- Loyalty / Rewards ---
-	registerLoyaltyRoutes(mux, loyalty.NewServiceFromEnv())
+	// Prefer the Predict-native Postgres-backed service when a DB is wired.
+	// Fall back to the legacy sportsbook in-memory service otherwise (tests +
+	// local dev without a DB). The two can't coexist on the same paths.
+	if predictLoyaltyService != nil {
+		registerPredictLoyaltyRoutes(mux, predictLoyaltyService)
+	} else {
+		registerLoyaltyRoutes(mux, loyalty.NewServiceFromEnv())
+	}
 
 	// --- Leaderboards ---
 	registerLeaderboardRoutes(mux, leaderboards.NewServiceFromEnv())
