@@ -106,6 +106,8 @@ type WalletCreditRequest struct {
 //
 // loyalty + accruals are optional — passing nil/empty disables loyalty
 // accrual in the settlement flow (test fakes + legacy callers stay unchanged).
+// The persister returns per-accrual results so the caller can fire
+// post-commit WebSocket events (e.g. TierPromoted) after a successful tx.
 type AtomicMarketSettlementPersister interface {
 	PersistResolvedMarketAtomic(
 		ctx context.Context,
@@ -117,7 +119,7 @@ type AtomicMarketSettlementPersister interface {
 		loyalty LoyaltyAdapter,
 		accruals []LoyaltyAccrualRequest,
 		lifecycle *LifecycleEvent,
-	) error
+	) ([]LoyaltyAccrualResult, error)
 	PersistVoidedMarketAtomic(
 		ctx context.Context,
 		wallet WalletAdapter,

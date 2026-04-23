@@ -279,3 +279,9 @@ func (h *Hub) NotifyCategoryUpdate(categorySlug string, data interface{}) {
 func (h *Hub) NotifyLeaderboardUpdate(data interface{}) {
 	h.BroadcastEvent("leaderboard:accuracy", "leaderboard_update", "ranking_change", data)
 }
+
+// NotifyLoyaltyTierPromoted broadcasts a tier-up to the user's loyalty
+// channel so the frontend tier pill can bloom immediately. See plan §8.
+func (h *Hub) NotifyLoyaltyTierPromoted(userID string, data interface{}) {
+	h.BroadcastEvent("loyalty:"+userID, "tier_promoted", "tier_promoted", data)
+}

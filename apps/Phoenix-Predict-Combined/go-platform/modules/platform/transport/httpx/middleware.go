@@ -1,13 +1,16 @@
 package httpx
 
 import (
+	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -528,6 +531,24 @@ func (r *statusRecorder) Write(data []byte) (int, error) {
 	written, err := r.ResponseWriter.Write(data)
 	r.bytes += written
 	return written, err
+}
+
+// Hijack forwards the call to the wrapped writer when it supports hijacking.
+// Required so WebSocket upgrades keep working when statusRecorder wraps the
+// response writer (AccessLog + Metrics middleware both wrap).
+func (r *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if h, ok := r.ResponseWriter.(http.Hijacker); ok {
+		return h.Hijack()
+	}
+	return nil, nil, errors.New("httpx: underlying response writer does not implement http.Hijacker")
+}
+
+// Flush forwards to the wrapped writer if it supports flushing, so SSE or
+// chunked streaming handlers keep working behind the middleware chain.
+func (r *statusRecorder) Flush() {
+	if f, ok := r.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }
 
 // MaxBodySize limits request body to maxBytes. Returns 413 if exceeded.

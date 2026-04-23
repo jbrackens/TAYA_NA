@@ -36,6 +36,13 @@ func (s *Service) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
 	s.settlement.SetLoyaltyAdapter(adapter)
 }
 
+// SetTierPromotedHandler wires the post-commit callback fired whenever an
+// accrual advances a user's tier. Callers typically hook this up to a
+// WebSocket publish.
+func (s *Service) SetTierPromotedHandler(fn TierPromotedHandler) {
+	s.settlement.SetTierPromotedHandler(fn)
+}
+
 // --- Categories ---
 
 func (s *Service) ListCategories(ctx context.Context, activeOnly bool) ([]Category, error) {

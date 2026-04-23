@@ -25,9 +25,11 @@ func newPredictionLoyaltyAdapter(svc *loyalty.PredictService) prediction.Loyalty
 }
 
 // AccrueSettledWithTx forwards the settlement-time accrual to the loyalty
-// service, participating in the caller-owned tx (see plan §8).
-func (a *predictionLoyaltyAdapter) AccrueSettledWithTx(ctx context.Context, tx *sql.Tx, req prediction.LoyaltyAccrualRequest) error {
-	_, err := a.svc.AccrueSettledWithTx(ctx, tx, loyalty.PredictSettlementAccrual{
+// service, participating in the caller-owned tx (see plan §8). The returned
+// result carries the pre/post tier so the settlement engine can publish
+// TierPromoted over WebSocket after the tx commits.
+func (a *predictionLoyaltyAdapter) AccrueSettledWithTx(ctx context.Context, tx *sql.Tx, req prediction.LoyaltyAccrualRequest) (*prediction.LoyaltyAccrualResult, error) {
+	res, err := a.svc.AccrueSettledWithTx(ctx, tx, loyalty.PredictSettlementAccrual{
 		UserID:         req.UserID,
 		VolumeCents:    req.VolumeCents,
 		IsCorrect:      req.IsCorrect,
@@ -35,5 +37,14 @@ func (a *predictionLoyaltyAdapter) AccrueSettledWithTx(ctx context.Context, tx *
 		TradeID:        req.TradeID,
 		IdempotencyKey: req.IdempotencyKey,
 	})
-	return err
+	if err != nil || res == nil {
+		return nil, err
+	}
+	return &prediction.LoyaltyAccrualResult{
+		UserID:     req.UserID,
+		Promoted:   res.Promoted,
+		FromTier:   int(res.FromTier),
+		ToTier:     int(res.ToTier),
+		NewBalance: res.Account.PointsBalance,
+	}, nil
 }

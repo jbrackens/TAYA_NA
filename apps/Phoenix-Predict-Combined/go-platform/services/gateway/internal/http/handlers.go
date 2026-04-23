@@ -136,6 +136,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	predictionService := prediction.NewService(predRepo, predWallet)
 	if predictLoyaltyService != nil {
 		predictionService.SetLoyaltyAdapter(newPredictionLoyaltyAdapter(predictLoyaltyService))
+		// Post-commit tier-up → WebSocket. Fire-and-forget per plan §8;
+		// the TierPill poll is the fallback if the push is lost.
+		predictionService.SetTierPromotedHandler(func(userID string, fromTier, toTier int) {
+			wsHub.NotifyLoyaltyTierPromoted(userID, map[string]any{
+				"userId":   userID,
+				"fromTier": fromTier,
+				"toTier":   toTier,
+			})
+		})
 	}
 	registerPredictionRoutes(mux, predictionService)
 	registerOrderRoutes(mux, predictionService)

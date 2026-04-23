@@ -22,4 +22,9 @@ type Notifier interface {
 
 	// NotifyLeaderboardUpdate broadcasts an accuracy leaderboard change
 	NotifyLeaderboardUpdate(data interface{})
+
+	// NotifyLoyaltyTierPromoted broadcasts a tier-up event for a user so the
+	// frontend tier pill can bloom immediately. Plan §8 fire-and-forget —
+	// loss is acceptable (the 60s pill poll is the safety net).
+	NotifyLoyaltyTierPromoted(userID string, data interface{})
 }

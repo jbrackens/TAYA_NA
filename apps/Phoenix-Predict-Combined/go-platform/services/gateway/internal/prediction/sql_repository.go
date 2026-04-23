@@ -646,49 +646,57 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	loyalty LoyaltyAdapter,
 	accruals []LoyaltyAccrualRequest,
 	lifecycle *LifecycleEvent,
-) error {
+) ([]LoyaltyAccrualResult, error) {
 	txWallet, ok := wallet.(TxWalletAdapter)
 	if !ok {
-		return fmt.Errorf("wallet does not support shared transactions")
+		return nil, fmt.Errorf("wallet does not support shared transactions")
 	}
 
 	tx, err := txWallet.BeginTx(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() { _ = tx.Rollback() }()
 
 	if err := r.createSettlementWithExec(ctx, tx, settlement); err != nil {
-		return err
+		return nil, err
 	}
 	for i := range payouts {
 		payouts[i].SettlementID = settlement.ID
 		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	for _, credit := range credits {
 		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
-			return fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
+			return nil, fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
 		}
 	}
+	var loyaltyResults []LoyaltyAccrualResult
 	if loyalty != nil {
 		for _, accrual := range accruals {
-			if err := loyalty.AccrueSettledWithTx(ctx, tx, accrual); err != nil {
-				return fmt.Errorf("loyalty accrual failed for user %s: %w", accrual.UserID, err)
+			res, err := loyalty.AccrueSettledWithTx(ctx, tx, accrual)
+			if err != nil {
+				return nil, fmt.Errorf("loyalty accrual failed for user %s: %w", accrual.UserID, err)
+			}
+			if res != nil {
+				loyaltyResults = append(loyaltyResults, *res)
 			}
 		}
 	}
 	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {
-		return err
+		return nil, err
 	}
 	if lifecycle != nil {
 		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return loyaltyResults, nil
 }
 
 func (r *SQLRepository) PersistVoidedMarketAtomic(

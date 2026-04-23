@@ -10,10 +10,16 @@ import (
 
 // SettlementEngine handles resolving markets and distributing payouts.
 type SettlementEngine struct {
-	repo    Repository
-	wallet  WalletAdapter
-	loyalty LoyaltyAdapter // optional; nil means no loyalty accrual on settlement
+	repo             Repository
+	wallet           WalletAdapter
+	loyalty          LoyaltyAdapter      // optional; nil means no loyalty accrual on settlement
+	onTierPromoted   TierPromotedHandler // optional; fired post-commit per plan §8
 }
+
+// TierPromotedHandler is a post-commit callback invoked once per user whose
+// tier changed during the settlement. Handlers are called in a goroutine,
+// fire-and-forget — a failed WebSocket push is expected OK per plan §8.
+type TierPromotedHandler func(userID string, fromTier, toTier int)
 
 // NewSettlementEngine creates a new settlement engine.
 // If wallet is nil, payouts are logged but not credited (useful for tests).
@@ -29,6 +35,12 @@ func NewSettlementEngine(repo Repository, wallet WalletAdapter) *SettlementEngin
 // started handling requests (callers typically wire it at startup).
 func (s *SettlementEngine) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
 	s.loyalty = adapter
+}
+
+// SetTierPromotedHandler wires the post-commit callback fired whenever an
+// accrual advances the user's tier. Pass nil to disable. See plan §8.
+func (s *SettlementEngine) SetTierPromotedHandler(fn TierPromotedHandler) {
+	s.onTierPromoted = fn
 }
 
 // ResolveMarket settles a market with the given result and attestation.
@@ -144,8 +156,19 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 
 	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
 		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
-			if err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, settlement, payouts, credits, s.loyalty, accruals, lifecycle); err != nil {
+			loyaltyResults, err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, settlement, payouts, credits, s.loyalty, accruals, lifecycle)
+			if err != nil {
 				return nil, nil, fmt.Errorf("persist resolved market atomically: %w", err)
+			}
+			// Post-commit: fire tier-promoted callbacks. Fire-and-forget per
+			// plan §8 — WS loss is expected to happen occasionally and the
+			// TierPill's 60s poll is the safety net.
+			if s.onTierPromoted != nil {
+				for _, res := range loyaltyResults {
+					if res.Promoted {
+						go s.onTierPromoted(res.UserID, res.FromTier, res.ToTier)
+					}
+				}
 			}
 			return settlement, payouts, nil
 		}

@@ -226,23 +226,23 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	loyalty LoyaltyAdapter,
 	accruals []LoyaltyAccrualRequest,
 	lifecycle *LifecycleEvent,
-) error {
+) ([]LoyaltyAccrualResult, error) {
 	r.atomicSettlementCalls++
 	if r.atomicErr != nil {
-		return r.atomicErr
+		return nil, r.atomicErr
 	}
 	if err := r.memRepo.CreateSettlement(ctx, settlement); err != nil {
-		return err
+		return nil, err
 	}
 	for i := range payouts {
 		payouts[i].SettlementID = settlement.ID
 		if err := r.memRepo.CreatePayout(ctx, &payouts[i]); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	for _, credit := range credits {
 		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	// In-memory fake doesn't share a tx; the real loyalty path is exercised by
@@ -252,14 +252,14 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 		r.atomicAccrualCalls += len(accruals)
 	}
 	if err := r.memRepo.UpdateMarket(ctx, market); err != nil {
-		return err
+		return nil, err
 	}
 	if lifecycle != nil {
 		if err := r.memRepo.CreateLifecycleEvent(ctx, lifecycle); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 func (r *atomicMemRepo) PersistVoidedMarketAtomic(

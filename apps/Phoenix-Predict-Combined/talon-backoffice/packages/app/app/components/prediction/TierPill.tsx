@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
   getLoyaltyStanding,
+  resetLoyaltyCaches,
   type LoyaltyStanding,
 } from "../../lib/api/loyalty-client";
+import { subscribePredictWs } from "../../lib/websocket/predict-ws";
+import { useAuth } from "../../hooks/useAuth";
 import { logger } from "../../lib/logger";
 
 // TierPill — ambient loyalty surface in PredictHeader.
@@ -25,6 +28,7 @@ interface TierPillProps {
 }
 
 export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
+  const { user } = useAuth();
   const [standing, setStanding] = useState<LoyaltyStanding | null>(null);
   const [bloom, setBloom] = useState(false);
   const previousTierRef = useRef<number | null>(null);
@@ -58,6 +62,34 @@ export function TierPill({ refreshMs = 60_000 }: TierPillProps) {
       window.clearInterval(interval);
     };
   }, [refreshMs]);
+
+  // WebSocket tier-up: plan §8 says post-commit we get a tier_promoted event.
+  // Invalidate the standing cache + re-fetch so the pill updates instantly
+  // instead of waiting for the next 60s poll. The 60s poll is the fallback
+  // when the WS is disconnected (plan's explicit design).
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
+    const unsubscribe = subscribePredictWs(`loyalty:${userId}`, (eventId) => {
+      if (eventId !== "tier_promoted") return;
+      resetLoyaltyCaches();
+      void (async () => {
+        try {
+          const result = await getLoyaltyStanding();
+          const prevTier = previousTierRef.current;
+          if (prevTier !== null && result.tier > prevTier) {
+            setBloom(true);
+            window.setTimeout(() => setBloom(false), 400);
+          }
+          previousTierRef.current = result.tier;
+          setStanding(result);
+        } catch (err) {
+          logger.warn("TierPill", "WS-triggered refetch failed", err);
+        }
+      })();
+    });
+    return unsubscribe;
+  }, [user?.id]);
 
   if (!standing || standing.tier < 1) return null;
 

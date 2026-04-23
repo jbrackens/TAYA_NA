@@ -191,8 +191,10 @@ func (c *Client) handleSubscribe(channels []string) {
 }
 
 // authorizeChannelAccess checks if a user is allowed to subscribe to a channel.
-// Public channels (markets:*, fixtures:*) are open to all authenticated users.
-// Private channels (bets:{userID}, wallet:{userID}) require matching userID.
+//
+// Public channels (market/fixture/event/category/trades/leaderboard) are open
+// to any authenticated user. Private channels (bets/wallet/portfolio/loyalty)
+// must match the authenticated user's id.
 func authorizeChannelAccess(userID string, channel string) bool {
 	parts := strings.SplitN(channel, ":", 2)
 	if len(parts) != 2 {
@@ -202,10 +204,10 @@ func authorizeChannelAccess(userID string, channel string) bool {
 	channelOwner := parts[1]
 
 	switch prefix {
-	case "bets", "wallet":
+	case "bets", "wallet", "portfolio", "loyalty":
 		// Private channels: must match the authenticated user
 		return strings.EqualFold(userID, channelOwner)
-	case "markets", "fixtures":
+	case "market", "markets", "fixture", "fixtures", "event", "category", "trades", "leaderboard":
 		// Public channels: any authenticated user can subscribe
 		return true
 	default:
