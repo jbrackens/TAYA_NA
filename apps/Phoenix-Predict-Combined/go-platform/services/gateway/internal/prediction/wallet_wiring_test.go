@@ -190,6 +190,7 @@ type atomicMemRepo struct {
 	atomicOrderCalls      int
 	atomicSettlementCalls int
 	atomicVoidCalls       int
+	atomicAccrualCalls    int
 	atomicErr             error
 }
 
@@ -222,6 +223,8 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
+	loyalty LoyaltyAdapter,
+	accruals []LoyaltyAccrualRequest,
 	lifecycle *LifecycleEvent,
 ) error {
 	r.atomicSettlementCalls++
@@ -241,6 +244,12 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return err
 		}
+	}
+	// In-memory fake doesn't share a tx; the real loyalty path is exercised by
+	// SQLRepository integration tests. Record the accruals count so callers can
+	// assert they were forwarded.
+	if loyalty != nil {
+		r.atomicAccrualCalls += len(accruals)
 	}
 	if err := r.memRepo.UpdateMarket(ctx, market); err != nil {
 		return err

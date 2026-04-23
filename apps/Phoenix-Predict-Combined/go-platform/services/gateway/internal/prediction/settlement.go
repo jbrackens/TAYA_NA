@@ -10,8 +10,9 @@ import (
 
 // SettlementEngine handles resolving markets and distributing payouts.
 type SettlementEngine struct {
-	repo   Repository
-	wallet WalletAdapter
+	repo    Repository
+	wallet  WalletAdapter
+	loyalty LoyaltyAdapter // optional; nil means no loyalty accrual on settlement
 }
 
 // NewSettlementEngine creates a new settlement engine.
@@ -21,6 +22,13 @@ func NewSettlementEngine(repo Repository, wallet WalletAdapter) *SettlementEngin
 		wallet = NoopWallet{}
 	}
 	return &SettlementEngine{repo: repo, wallet: wallet}
+}
+
+// SetLoyaltyAdapter enables loyalty accrual on the atomic settlement path.
+// Pass nil to disable again. Safe to call before or after the engine has
+// started handling requests (callers typically wire it at startup).
+func (s *SettlementEngine) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
+	s.loyalty = adapter
 }
 
 // ResolveMarket settles a market with the given result and attestation.
@@ -65,6 +73,7 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 	// Calculate payouts and the wallet credits they imply.
 	var payouts []Payout
 	var credits []WalletCreditRequest
+	var accruals []LoyaltyAccrualRequest
 	var totalPayout int64
 	var positionsSettled int
 
@@ -81,6 +90,18 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 				IdempotencyKey: fmt.Sprintf("prediction_payout:%s:%s", marketID, pos.ID),
 				Reason: fmt.Sprintf("prediction settlement: market %s resolved %s, %s position won",
 					marketID, result, pos.Side),
+			})
+		}
+
+		if s.loyalty != nil && pos.TotalCostCents > 0 {
+			won := (pos.Side == OrderSideYes && result == MarketResultYes) ||
+				(pos.Side == OrderSideNo && result == MarketResultNo)
+			accruals = append(accruals, LoyaltyAccrualRequest{
+				UserID:         pos.UserID,
+				VolumeCents:    pos.TotalCostCents,
+				IsCorrect:      won,
+				MarketID:       marketID,
+				IdempotencyKey: fmt.Sprintf("accrual:%s:%s", marketID, pos.ID),
 			})
 		}
 
@@ -123,7 +144,7 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 
 	if atomicRepo, ok := s.repo.(AtomicMarketSettlementPersister); ok {
 		if _, walletIsTxCapable := s.wallet.(TxWalletAdapter); walletIsTxCapable {
-			if err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, settlement, payouts, credits, lifecycle); err != nil {
+			if err := atomicRepo.PersistResolvedMarketAtomic(ctx, s.wallet, market, settlement, payouts, credits, s.loyalty, accruals, lifecycle); err != nil {
 				return nil, nil, fmt.Errorf("persist resolved market atomically: %w", err)
 			}
 			return settlement, payouts, nil
@@ -144,6 +165,10 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 			return nil, nil, fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
 		}
 	}
+	// Loyalty accrual requires the atomic (shared-tx) settlement path — the
+	// non-atomic path is only reachable from tests with in-memory repos.
+	// Silently skip accrual here; production always uses the atomic path.
+	_ = accruals
 	if err := s.repo.UpdateMarket(ctx, market); err != nil {
 		return nil, nil, fmt.Errorf("update market: %w", err)
 	}

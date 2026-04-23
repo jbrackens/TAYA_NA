@@ -643,6 +643,8 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	settlement *Settlement,
 	payouts []Payout,
 	credits []WalletCreditRequest,
+	loyalty LoyaltyAdapter,
+	accruals []LoyaltyAccrualRequest,
 	lifecycle *LifecycleEvent,
 ) error {
 	txWallet, ok := wallet.(TxWalletAdapter)
@@ -668,6 +670,13 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	for _, credit := range credits {
 		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
 			return fmt.Errorf("wallet credit failed for user %s: %w", credit.UserID, err)
+		}
+	}
+	if loyalty != nil {
+		for _, accrual := range accruals {
+			if err := loyalty.AccrueSettledWithTx(ctx, tx, accrual); err != nil {
+				return fmt.Errorf("loyalty accrual failed for user %s: %w", accrual.UserID, err)
+			}
 		}
 	}
 	if err := r.updateMarketWithExec(ctx, tx, market); err != nil {

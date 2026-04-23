@@ -103,6 +103,9 @@ type WalletCreditRequest struct {
 // AtomicMarketSettlementPersister is an optional repository capability for
 // market settlement/void flows that need wallet credits and prediction writes
 // to commit together.
+//
+// loyalty + accruals are optional — passing nil/empty disables loyalty
+// accrual in the settlement flow (test fakes + legacy callers stay unchanged).
 type AtomicMarketSettlementPersister interface {
 	PersistResolvedMarketAtomic(
 		ctx context.Context,
@@ -111,6 +114,8 @@ type AtomicMarketSettlementPersister interface {
 		settlement *Settlement,
 		payouts []Payout,
 		credits []WalletCreditRequest,
+		loyalty LoyaltyAdapter,
+		accruals []LoyaltyAccrualRequest,
 		lifecycle *LifecycleEvent,
 	) error
 	PersistVoidedMarketAtomic(

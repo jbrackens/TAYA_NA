@@ -118,14 +118,20 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	// --- Prediction Platform Routes ---
 	var predRepo prediction.Repository
+	var predictLoyaltyService *loyalty.PredictService
 	if walletDB := walletService.DB(); walletDB != nil {
 		predRepo = prediction.NewSQLRepository(walletDB)
 		slog.Info("prediction: SQL repository initialized")
+		predictLoyaltyService = loyalty.NewPredictService(loyalty.NewPredictSQLRepo(walletDB))
+		slog.Info("loyalty: Predict-native service initialized")
 	} else {
 		slog.Warn("prediction: no DB available, prediction service will not function")
 	}
 	predWallet := newPredictionWalletAdapter(walletService)
 	predictionService := prediction.NewService(predRepo, predWallet)
+	if predictLoyaltyService != nil {
+		predictionService.SetLoyaltyAdapter(newPredictionLoyaltyAdapter(predictLoyaltyService))
+	}
 	registerPredictionRoutes(mux, predictionService)
 	registerOrderRoutes(mux, predictionService)
 	registerPortfolioRoutes(mux, predictionService)

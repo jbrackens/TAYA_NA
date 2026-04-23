@@ -29,6 +29,13 @@ func NewService(repo Repository, wallet WalletAdapter) *Service {
 	}
 }
 
+// SetLoyaltyAdapter enables loyalty accrual on the settlement path. Optional —
+// passing nil leaves the service as a no-op for loyalty. See PLAN-loyalty-
+// leaderboards.md §8 for the atomic (shared-tx) accrual contract.
+func (s *Service) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
+	s.settlement.SetLoyaltyAdapter(adapter)
+}
+
 // --- Categories ---
 
 func (s *Service) ListCategories(ctx context.Context, activeOnly bool) ([]Category, error) {
