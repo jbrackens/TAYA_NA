@@ -109,9 +109,9 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 
 ### Prediction Redux slices
 
-- `lib/slices/predictionMarketSlice.ts` — markets + price movement indicators
-- `lib/slices/orderSlice.ts` — orders, positions, portfolio summary
-- `lib/slices/categorySlice.ts` — categories and active filter
+- `lib/store/predictionMarketSlice.ts` — markets + price movement indicators
+- `lib/store/orderSlice.ts` — orders, positions, portfolio summary
+- `lib/store/categorySlice.ts` — categories and active filter
 
 ## Tech Stack — Backoffice
 
