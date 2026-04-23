@@ -29,6 +29,11 @@ import type {
   OrderStatus,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { getLoyaltyLedger } from "../lib/api/loyalty-client";
+import {
+  getUserStanding,
+  type LeaderboardEntry,
+} from "../lib/api/leaderboards-client";
 
 const api = createPredictionClient();
 
@@ -45,6 +50,14 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabKey>("positions");
   const [authError, setAuthError] = useState(false);
+  // Loyalty surfaces: bestRank drives the rank chip; pointsByMarketId maps
+  // settled-trade rows to their ledger accrual for the +X pts suffix.
+  // Plan §1 + §8 — the two APIs are fetched in parallel with the portfolio
+  // calls and joined client-side by marketId.
+  const [bestRank, setBestRank] = useState<LeaderboardEntry | null>(null);
+  const [pointsByMarketId, setPointsByMarketId] = useState<Map<string, number>>(
+    () => new Map(),
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -54,11 +67,14 @@ export default function PortfolioPage() {
         api.getPortfolioSummary(),
         api.getOrders({ page: 1, pageSize: 50 }),
         api.getSettledPositions(1, 20),
+        // Loyalty surfaces are ambient: failures never block the portfolio.
+        getUserStanding().catch(() => [] as LeaderboardEntry[]),
+        getLoyaltyLedger(50).catch(() => []),
       ]);
       if (cancelled) return;
 
       let sawAuthError = false;
-      const [posRes, sumRes, ordRes, histRes] = results;
+      const [posRes, sumRes, ordRes, histRes, standingRes, ledgerRes] = results;
 
       if (posRes.status === "fulfilled") setPositions(posRes.value);
       else if (is401(posRes.reason)) sawAuthError = true;
@@ -75,6 +91,24 @@ export default function PortfolioPage() {
       if (histRes.status === "fulfilled") setHistory(histRes.value.data);
       else if (is401(histRes.reason)) sawAuthError = true;
       else logger.warn("Portfolio", "history fetch failed", histRes.reason);
+
+      // Rank chip: plan §1 says "user's best board rank". Entries are
+      // already sorted rank-ascending by the server.
+      if (standingRes.status === "fulfilled" && standingRes.value.length > 0) {
+        setBestRank(standingRes.value[0]);
+      }
+
+      // Points suffix: ledger entries are keyed by marketId (settlement is
+      // per-position, one position per market per user). Join on marketId.
+      if (ledgerRes.status === "fulfilled") {
+        const map = new Map<string, number>();
+        for (const entry of ledgerRes.value) {
+          if (entry.eventType === "accrual" && entry.marketId) {
+            map.set(entry.marketId, entry.deltaPoints);
+          }
+        }
+        setPointsByMarketId(map);
+      }
 
       if (sawAuthError) setAuthError(true);
 
@@ -152,7 +186,7 @@ export default function PortfolioPage() {
         </p>
       </header>
 
-      <SummaryStrip summary={summary} />
+      <SummaryStrip summary={summary} bestRank={bestRank} />
 
       <TabBar tab={tab} setTab={setTab} counts={counts} />
 
@@ -163,7 +197,11 @@ export default function PortfolioPage() {
         <OrdersTable orders={orders} marketsById={marketsById} />
       )}
       {tab === "history" && (
-        <HistoryTable history={history} marketsById={marketsById} />
+        <HistoryTable
+          history={history}
+          marketsById={marketsById}
+          pointsByMarketId={pointsByMarketId}
+        />
       )}
     </div>
   );
@@ -190,12 +228,18 @@ function PageState({ children }: { children: React.ReactNode }) {
 
 // ── Summary strip ───────────────────────────────────────────────────────────
 
-function SummaryStrip({ summary }: { summary: PortfolioSummary | null }) {
+function SummaryStrip({
+  summary,
+  bestRank,
+}: {
+  summary: PortfolioSummary | null;
+  bestRank: LeaderboardEntry | null;
+}) {
   const s = summary;
   const pnl = s?.realizedPnlCents ?? 0;
   const pnlUp = pnl >= 0;
   return (
-    <section className="pf-summary">
+    <section className="pf-summary pf-summary-5">
       <StatCard
         label="Invested"
         value={s ? formatUSD(s.totalValueCents) : "—"}
@@ -221,8 +265,72 @@ function SummaryStrip({ summary }: { summary: PortfolioSummary | null }) {
         }
         tone={s && s.accuracyPct >= 50 ? "gain" : undefined}
       />
+      <RankChip entry={bestRank} />
     </section>
   );
+}
+
+// RankChip — 5th stat slot in the portfolio summary strip. Plan §1: user's
+// best-board rank, linking to /leaderboards pre-opened on that board. Plan §3
+// "pre-qualified" state shows a muted "Not ranked yet" card rather than
+// omitting the slot (keeps the grid stable across users).
+function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
+  const href = entry
+    ? `/leaderboards?board=${encodeURIComponent(entry.boardId)}`
+    : "/leaderboards";
+  return (
+    <Link
+      href={href}
+      className="pf-rank-chip"
+      aria-label={rankAriaLabel(entry)}
+    >
+      <span className="pf-stat-label">
+        {entry ? formatBoardLabel(entry.boardId) : "Rank"}
+      </span>
+      <span className="pf-stat-value mono">
+        {entry ? `#${entry.rank}` : "Not ranked yet"}
+      </span>
+      <span className="pf-stat-sub">
+        {entry ? formatBoardMetric(entry) : "Settle more markets to qualify"}
+      </span>
+    </Link>
+  );
+}
+
+function rankAriaLabel(entry: LeaderboardEntry | null): string {
+  if (!entry) return "Not ranked yet. Settle more markets to qualify.";
+  return `Rank ${entry.rank} on ${formatBoardLabel(entry.boardId)}.`;
+}
+
+function formatBoardLabel(boardId: string): string {
+  if (boardId.startsWith("category:")) {
+    const slug = boardId.slice("category:".length);
+    return slug.charAt(0).toUpperCase() + slug.slice(1);
+  }
+  switch (boardId) {
+    case "accuracy":
+      return "Accuracy";
+    case "pnl_weekly":
+      return "Weekly P&L";
+    case "sharpness":
+      return "Sharpness";
+    default:
+      return boardId;
+  }
+}
+
+function formatBoardMetric(entry: LeaderboardEntry): string {
+  switch (entry.boardId) {
+    case "accuracy":
+      return `${entry.metricValue.toFixed(1)}% correct`;
+    case "sharpness":
+      return `${(entry.metricValue * 100).toFixed(2)}% ROI`;
+    case "pnl_weekly":
+    default: {
+      const sign = entry.metricValue < 0 ? "−" : "+";
+      return `${sign}${formatUSD(Math.abs(entry.metricValue))} P&L`;
+    }
+  }
 }
 
 function StatCard({
@@ -385,9 +493,11 @@ function OrdersTable({
 function HistoryTable({
   history,
   marketsById,
+  pointsByMarketId,
 }: {
   history: SettledPayout[];
   marketsById: Map<string, PredictionMarket>;
+  pointsByMarketId: Map<string, number>;
 }) {
   if (history.length === 0) {
     return (
@@ -403,11 +513,18 @@ function HistoryTable({
         { label: "Entry", width: "70px", align: "right" },
         { label: "Exit", width: "70px", align: "right" },
         { label: "P&L", width: "90px", align: "right" },
+        { label: "Points", width: "70px", align: "right" },
         { label: "Settled", width: "100px", align: "right" },
       ]}
       rows={history.map((h) => {
         const m = marketsById.get(h.marketId);
         const up = h.pnlCents >= 0;
+        // Plan §1: trailing "+X pts" column. Hidden when earned == 0; never
+        // shown as "+0 pts". Ledger stores cents-equivalent so we divide by
+        // 100 for display, matching the /rewards page convention.
+        const rawPoints = pointsByMarketId.get(h.marketId);
+        const pointsDisplay =
+          rawPoints && rawPoints > 0 ? Math.round(rawPoints / 100) : null;
         return {
           key: h.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -426,6 +543,17 @@ function HistoryTable({
             <span key="p" className={`mono ${up ? "pf-gain" : "pf-loss"}`}>
               {up ? "+" : "−"}
               {formatUSD(Math.abs(h.pnlCents))}
+            </span>,
+            <span
+              key="pts"
+              className="mono pf-pts"
+              aria-label={
+                pointsDisplay !== null
+                  ? `Earned ${pointsDisplay} points`
+                  : undefined
+              }
+            >
+              {pointsDisplay !== null ? `+${pointsDisplay} pts` : ""}
             </span>,
             <span key="d" className="mono pf-dim">
               {formatDate(h.paidAt)}
@@ -615,8 +743,44 @@ function Styles() {
         gap: 12px;
         margin-bottom: 24px;
       }
+      .pf-summary-5 {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      @media (max-width: 1024px) {
+        .pf-summary-5 { grid-template-columns: repeat(3, 1fr); }
+      }
       @media (max-width: 720px) {
-        .pf-summary { grid-template-columns: repeat(2, 1fr); }
+        .pf-summary,
+        .pf-summary-5 { grid-template-columns: repeat(2, 1fr); }
+      }
+
+      /* Rank chip — 5th slot in summary strip. Active-state accent-soft bg
+       * per plan §6 token usage, marking it as an interactive surface. */
+      .pf-rank-chip {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 16px 18px;
+        background: var(--accent-soft);
+        border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--b1));
+        border-radius: var(--r-md);
+        color: var(--t1);
+        text-decoration: none;
+        transition: border-color 120ms ease, background 120ms ease;
+      }
+      .pf-rank-chip:hover {
+        border-color: color-mix(in srgb, var(--accent) 48%, var(--b1));
+      }
+      .pf-rank-chip:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      /* +X pts suffix on settled-trade rows. Muted --t3 per plan §1. */
+      .pf-pts {
+        color: var(--t3);
+        font-size: 12px;
+        white-space: nowrap;
       }
       .pf-stat {
         background: var(--s1);
