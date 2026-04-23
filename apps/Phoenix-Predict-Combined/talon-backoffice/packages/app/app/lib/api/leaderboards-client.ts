@@ -63,10 +63,10 @@ export async function getLeaderboardEntries(
 
 // getUserStanding returns every board the session user currently qualifies
 // for, best rank first. Drives the portfolio rank chip + the
-// /leaderboards sidebar "my standings" summary.
+// /leaderboards sidebar "my standings" summary. Path sits under /api/v1/me/
+// (not /leaderboards/) so the leaderboard list + entries can be public while
+// this endpoint stays auth-gated.
 export async function getUserStanding(): Promise<LeaderboardEntry[]> {
-  const raw = await apiClient.get<StandingResponse>(
-    "/api/v1/leaderboards/me/standing",
-  );
+  const raw = await apiClient.get<StandingResponse>("/api/v1/me/leaderboards");
   return raw.items ?? [];
 }

@@ -143,6 +143,11 @@ func gatewayPublicPrefixes() []string {
 		"/api/v1/markets",
 		"/api/v1/payments/webhook",
 
+		// Leaderboards — board list + per-board entries are public; the
+		// per-user /api/v1/me/leaderboards endpoint sits outside this prefix
+		// and still requires a session.
+		"/api/v1/leaderboards",
+
 		// Bot API uses its own API-key auth middleware, not the session auth
 		"/api/v1/bot/",
 	}

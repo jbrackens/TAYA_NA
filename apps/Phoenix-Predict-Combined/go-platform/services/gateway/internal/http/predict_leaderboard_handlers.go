@@ -14,8 +14,14 @@ import (
 //
 // Routes:
 //   GET /api/v1/leaderboards              — list boards (public)
-//   GET /api/v1/leaderboards/:id/entries  — top entries + optional viewer rank
-//   GET /api/v1/leaderboards/me/standing  — session user's rank across boards
+//   GET /api/v1/leaderboards/:id/entries  — top entries + optional viewer rank (public)
+//   GET /api/v1/me/leaderboards           — session user's rank across boards (auth)
+//
+// Note: the per-user endpoint lives under /api/v1/me/ rather than nested
+// inside /api/v1/leaderboards/ because httpx.Auth matches public prefixes by
+// HasPrefix. Keeping the list + entries public requires the whole
+// /api/v1/leaderboards subtree to be public, which would also bypass auth
+// on a nested /me/standing route.
 func registerPredictLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboards.PredictService) {
 	if service == nil {
 		return
@@ -39,6 +45,30 @@ func registerPredictLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboar
 		})
 	}))
 
+	// /api/v1/me/leaderboards — session user's rank on every qualified board
+	mux.Handle("/api/v1/me/leaderboards", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		userID := strings.TrimSpace(userIDFromRequest(r))
+		if userID == "" {
+			return httpx.Unauthorized("authentication required")
+		}
+		entries, err := service.UserStanding(r.Context(), userID)
+		if err != nil {
+			return httpx.Internal("leaderboard standing failed", err)
+		}
+		items := make([]map[string]any, 0, len(entries))
+		for _, e := range entries {
+			items = append(items, predictEntryPayload(e))
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"userId":     userID,
+			"items":      items,
+			"totalCount": len(items),
+		})
+	}))
+
 	const prefix = "/api/v1/leaderboards/"
 	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
@@ -47,27 +77,6 @@ func registerPredictLeaderboardRoutes(mux *stdhttp.ServeMux, service *leaderboar
 		tail := strings.TrimSpace(strings.TrimPrefix(r.URL.Path, prefix))
 		if tail == "" {
 			return httpx.NotFound("leaderboard not found")
-		}
-
-		// /leaderboards/me/standing — session user's rank on every qualified board
-		if tail == "me/standing" {
-			userID := strings.TrimSpace(userIDFromRequest(r))
-			if userID == "" {
-				return httpx.Unauthorized("authentication required")
-			}
-			entries, err := service.UserStanding(r.Context(), userID)
-			if err != nil {
-				return httpx.Internal("leaderboard standing failed", err)
-			}
-			items := make([]map[string]any, 0, len(entries))
-			for _, e := range entries {
-				items = append(items, predictEntryPayload(e))
-			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"userId":     userID,
-				"items":      items,
-				"totalCount": len(items),
-			})
 		}
 
 		// /leaderboards/:id/entries — top rows + optional self viewer rank
