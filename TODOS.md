@@ -14,12 +14,16 @@ Design and product debt tracked across planning cycles. Items here are intention
 - **Depends on / blocked by:** Product owner decision on whether Predict charges fees at all in v1.
 - **Revisit when:** Before any fee-based loyalty benefit is designed, OR when the revenue model gets a dedicated product review.
 
-### Privacy opt-out UI for leaderboards
+## Shipped
 
-- **What:** Add an "Appear anonymously on leaderboards" toggle in `/account/settings`. Toggle flips a boolean on the user record; leaderboard queries respect it by displaying `Trader #<rank>` instead of `user.username`.
-- **Why:** Loyalty + Leaderboards v1 ships with `user.username` visible by default. Users who want off the board have to change their handle — no "hide me entirely" path. First privacy-sensitive user will hit this gap.
-- **Pros:** Unblocks any user who doesn't want their trading visible publicly. Removes a potential compliance friction in jurisdictions with data-subject-rights regimes (UK/EU).
-- **Cons:** Each anonymous user degrades the leaderboard's social engagement value. Mitigation: preserve rank number + stats, hide only the handle.
-- **Context:** Introduced in [PLAN-loyalty-leaderboards.md](PLAN-loyalty-leaderboards.md) §2.Leaderboard identity and §NOT in scope. Feature ships with defaults-visible; this tracks the opt-out UI.
-- **Depends on:** Loyalty + Leaderboards implementation merged. Adds one column to `auth_users` (`display_anonymous BOOLEAN DEFAULT false`) + one predicate in the leaderboard rank query.
-- **Revisit when:** First user requests it in support, OR compliance review flags it, OR we launch in a GDPR jurisdiction.
+### Privacy opt-out UI for leaderboards — shipped 2026-04-23
+
+- Migration 016 adds `punters.display_anonymous BOOLEAN NOT NULL DEFAULT false`.
+- `GET/PUT /api/v1/me/privacy` reads/writes the flag with session auth.
+- Leaderboard display-name query renders `Trader #<rank>` when the flag is on,
+  `COALESCE(username, substring(id, 1, 10))` otherwise.
+- Toggle lives on the `/account` page under "Appearance on public boards",
+  server-confirmed update (no optimistic flip) so React 19 Strict Mode's
+  double-effect doesn't race the mount fetch.
+- Shipped in commits through 2026-04-23 after the loyalty + leaderboards
+  backend + frontend lands in this same series.

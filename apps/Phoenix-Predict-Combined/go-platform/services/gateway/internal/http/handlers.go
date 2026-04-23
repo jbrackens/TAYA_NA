@@ -217,6 +217,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// local dev without a DB). The two can't coexist on the same paths.
 	if predictLoyaltyService != nil {
 		registerPredictLoyaltyRoutes(mux, predictLoyaltyService)
+		registerPredictPrivacyRoutes(mux, walletService.DB())
 	} else {
 		registerLoyaltyRoutes(mux, loyalty.NewServiceFromEnv())
 	}

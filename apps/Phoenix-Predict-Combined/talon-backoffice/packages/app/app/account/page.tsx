@@ -15,7 +15,7 @@
  * when Predict-specific versions are designed.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -32,6 +32,7 @@ import { getBalance } from "../lib/api/wallet-client";
 import type { Balance } from "../lib/api/wallet-client";
 import type { PortfolioSummary } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { getPrivacy, updatePrivacy } from "../lib/api/privacy-client";
 
 const api = createPredictionClient();
 
@@ -98,6 +99,8 @@ export default function AccountPage() {
 
       {summary && <PortfolioStrip summary={summary} />}
 
+      <PrivacyCard />
+
       <section className="acct-grid">
         <ActionCard
           href="/account/security"
@@ -143,6 +146,84 @@ export default function AccountPage() {
         />
       </section>
     </div>
+  );
+}
+
+function PrivacyCard() {
+  const [displayAnonymous, setDisplayAnonymous] = useState<boolean | null>(
+    null,
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  // userIntent guards the mount-effect from overwriting a user-initiated
+  // change under React 19 Strict Mode's double-effect in dev. Any fetch that
+  // completes after a user click is stale and must not trample state.
+  const userIntentRef = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const prefs = await getPrivacy();
+        if (cancelled || userIntentRef.current) return;
+        setDisplayAnonymous(prefs.displayAnonymous);
+      } catch (err: unknown) {
+        if (!cancelled) logger.warn("Account", "privacy fetch failed", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function onToggle(next: boolean) {
+    if (saving) return;
+    userIntentRef.current = true;
+    setSaving(true);
+    setError(null);
+    try {
+      const updated = await updatePrivacy({ displayAnonymous: next });
+      setDisplayAnonymous(updated.displayAnonymous);
+    } catch (err: unknown) {
+      logger.warn("Account", "privacy update failed", err);
+      setError(
+        err instanceof Error ? err.message : "Couldn’t save that change",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="acct-privacy" aria-labelledby="acct-privacy-title">
+      <div className="acct-privacy-head">
+        <div>
+          <span className="acct-kicker">Privacy</span>
+          <h2 id="acct-privacy-title" className="acct-privacy-title">
+            Appearance on public boards
+          </h2>
+        </div>
+      </div>
+      <label className="acct-privacy-row">
+        <input
+          type="checkbox"
+          checked={displayAnonymous ?? false}
+          disabled={displayAnonymous === null || saving}
+          onChange={(e) => onToggle(e.target.checked)}
+        />
+        <div>
+          <div className="acct-privacy-label">
+            Appear anonymously on leaderboards
+          </div>
+          <div className="acct-privacy-sub">
+            When on, your username is hidden on public boards and replaced with
+            your rank (e.g. <span className="mono">Trader #14</span>). Your rank
+            and stats still show; only your handle is hidden.
+          </div>
+        </div>
+      </label>
+      {error && <div className="acct-privacy-error">{error}</div>}
+    </section>
   );
 }
 
@@ -317,12 +398,58 @@ function Styles() {
         letter-spacing: -0.01em;
       }
 
-      .acct-portfolio {
+      .acct-portfolio,
+      .acct-privacy {
         background: var(--s1);
         border: 1px solid var(--b1);
         border-radius: var(--r-md);
         padding: 20px 22px;
         margin-bottom: 20px;
+      }
+      .acct-privacy-head { margin-bottom: 14px; }
+      .acct-privacy-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--t1);
+        margin: 0;
+      }
+      .acct-privacy-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: flex-start;
+        cursor: pointer;
+      }
+      .acct-privacy-row input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        margin-top: 2px;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .acct-privacy-row input[type="checkbox"]:disabled {
+        cursor: wait;
+        opacity: 0.6;
+      }
+      .acct-privacy-label {
+        color: var(--t1);
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .acct-privacy-sub {
+        color: var(--t2);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .acct-privacy-error {
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: color-mix(in srgb, var(--no) 15%, transparent);
+        border: 1px solid color-mix(in srgb, var(--no) 35%, transparent);
+        border-radius: var(--r-sm);
+        color: var(--no);
+        font-size: 12px;
       }
       .acct-portfolio-head {
         display: flex;

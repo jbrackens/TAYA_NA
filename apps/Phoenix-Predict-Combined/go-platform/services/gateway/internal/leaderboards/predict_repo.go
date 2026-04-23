@@ -74,7 +74,10 @@ func (r *PredictSQLRepo) ListEntries(ctx context.Context, boardID string, limit 
 			WHERE board_id = $1
 		)
 		SELECT ls.rank, ls.user_id,
-		       COALESCE(NULLIF(p.username, ''), substring(ls.user_id, 1, 10)) AS display_name,
+		       CASE WHEN COALESCE(p.display_anonymous, false)
+            THEN 'Trader #' || ls.rank::text
+            ELSE COALESCE(NULLIF(p.username, ''), substring(ls.user_id, 1, 10))
+       END AS display_name,
 		       ls.metric_value, ls.window_start, ls.window_end
 		FROM leaderboard_snapshots ls
 		JOIN latest USING (window_start)
@@ -113,7 +116,10 @@ func (r *PredictSQLRepo) GetEntry(ctx context.Context, boardID, userID string) (
 			WHERE board_id = $1
 		)
 		SELECT ls.rank,
-		       COALESCE(NULLIF(p.username, ''), substring(ls.user_id, 1, 10)) AS display_name,
+		       CASE WHEN COALESCE(p.display_anonymous, false)
+            THEN 'Trader #' || ls.rank::text
+            ELSE COALESCE(NULLIF(p.username, ''), substring(ls.user_id, 1, 10))
+       END AS display_name,
 		       ls.metric_value, ls.window_start, ls.window_end
 		FROM leaderboard_snapshots ls
 		JOIN latest USING (window_start)
@@ -144,7 +150,10 @@ func (r *PredictSQLRepo) ListUserRanks(ctx context.Context, userID string) ([]Pr
 			GROUP BY board_id
 		)
 		SELECT ls.board_id, ls.rank,
-		       COALESCE(NULLIF(p.username, ''), substring(ls.user_id, 1, 10)) AS display_name,
+		       CASE WHEN COALESCE(p.display_anonymous, false)
+            THEN 'Trader #' || ls.rank::text
+            ELSE COALESCE(NULLIF(p.username, ''), substring(ls.user_id, 1, 10))
+       END AS display_name,
 		       ls.metric_value, ls.window_start, ls.window_end
 		FROM leaderboard_snapshots ls
 		JOIN latest_per_board lpb USING (board_id, window_start)
