@@ -119,11 +119,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// --- Prediction Platform Routes ---
 	var predRepo prediction.Repository
 	var predictLoyaltyService *loyalty.PredictService
+	var predictLBRepo *leaderboards.PredictSQLRepo
 	if walletDB := walletService.DB(); walletDB != nil {
 		predRepo = prediction.NewSQLRepository(walletDB)
 		slog.Info("prediction: SQL repository initialized")
 		predictLoyaltyService = loyalty.NewPredictService(loyalty.NewPredictSQLRepo(walletDB))
 		slog.Info("loyalty: Predict-native service initialized")
+		predictLBRepo = leaderboards.NewPredictSQLRepo(walletDB)
+		slog.Info("leaderboards: Predict-native repo initialized")
 	} else {
 		slog.Warn("prediction: no DB available, prediction service will not function")
 	}
@@ -152,6 +155,18 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		go settler.Run(context.Background())
 
 		slog.Info("prediction: background workers started (closer, settler)")
+
+		// Leaderboards recomputer: 5-minute tick per PLAN §8. First tick runs
+		// immediately so the boards populate at startup.
+		if predictLBRepo != nil {
+			recomputer := leaderboards.NewPredictRecomputer(
+				predictLBRepo,
+				predictionCategoryLister(predRepo),
+				5*time.Minute,
+			)
+			go recomputer.Run(context.Background())
+			slog.Info("leaderboards: recomputer started")
+		}
 
 		// --- Bot API Routes ---
 		registerBotRoutes(mux, predictionService, predRepo)
