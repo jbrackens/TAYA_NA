@@ -31,6 +31,7 @@ import { logger } from "../../lib/logger";
 import { useAuth } from "../../hooks/useAuth";
 import { useAppSelector } from "../../lib/store/hooks";
 import { selectCurrentBalance } from "../../lib/store/cashierSlice";
+import { TierPill } from "./TierPill";
 
 const api = createPredictionClient();
 
@@ -481,6 +482,7 @@ export function PredictHeader() {
           </div>
 
           <div className="ph-right">
+            {isAuthenticated && <TierPill />}
             {isAuthenticated && (
               <div className="ph-wallet">
                 <Wallet size={14} />
