@@ -21,6 +21,17 @@ import (
 )
 
 func main() {
+	// Subcommand dispatch runs before any server bootstrap. Keep this list
+	// small — the gateway is primarily a server; subcommands are narrow
+	// admin tools that happen to ship in the same binary so they inherit
+	// the same build + deps. See PLAN-loyalty-leaderboards.md §8.
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "migrate-legacy-loyalty":
+			os.Exit(runMigrateLegacyLoyalty(os.Args[2:]))
+		}
+	}
+
 	cfg := runtime.LoadServiceConfig("gateway", "18080")
 
 	// Initialize structured logging (JSON in production, text in dev)
