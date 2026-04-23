@@ -437,8 +437,12 @@ function formatMetric(board: LeaderboardDefinition, value: number): string {
 function formatCents(cents: number): string {
   const sign = cents < 0 ? "-" : "";
   const dollars = Math.abs(cents) / 100;
+  // Two decimals under $100 so sub-dollar P&L doesn't collapse to "$0";
+  // whole-dollar display above that where fractional cents add visual noise.
+  const fractionDigits = dollars < 100 ? 2 : 0;
   return `${sign}$${new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
   }).format(dollars)}`;
 }
 
