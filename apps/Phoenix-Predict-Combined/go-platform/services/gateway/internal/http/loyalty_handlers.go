@@ -70,6 +70,9 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 		if playerID == "" {
 			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
 		}
+		if err := requireSelfOrAdmin(r, playerID); err != nil {
+			return err
+		}
 
 		account, ok := service.GetAccount(playerID)
 		if !ok {
@@ -90,6 +93,9 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 		}
 		if playerID == "" {
 			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		if err := requireSelfOrAdmin(r, playerID); err != nil {
+			return err
 		}
 
 		limit := 50
@@ -136,6 +142,9 @@ func registerLoyaltyRoutes(mux *stdhttp.ServeMux, service *loyalty.Service) {
 		}
 		if playerID == "" {
 			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
+		}
+		if err := requireSelfOrAdmin(r, playerID); err != nil {
+			return err
 		}
 
 		items := service.ListReferralsByReferrer(playerID)

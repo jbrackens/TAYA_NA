@@ -154,6 +154,8 @@ func TestLeaderboardRoutesExposeViewerStanding(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/leaderboards/lb:local:000001/entries?limit=5&offset=0&userId=u-1", nil)
+	// Viewer-standing lookup now requires session user == queried userId.
+	req.Header.Set("X-User-ID", "u-1")
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusOK {

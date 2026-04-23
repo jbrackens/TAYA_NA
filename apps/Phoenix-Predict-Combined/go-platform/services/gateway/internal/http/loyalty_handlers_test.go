@@ -16,6 +16,9 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	accountReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty?userId=u-1", nil)
+	// requireSelfOrAdmin reads the session user from context/header — tests
+	// use the X-User-ID bot-auth header path. Must match the userId param.
+	accountReq.Header.Set("X-User-ID", "u-1")
 	accountRes := httptest.NewRecorder()
 	handler.ServeHTTP(accountRes, accountReq)
 	if accountRes.Code != http.StatusOK {
@@ -31,6 +34,7 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	}
 
 	ledgerReq := httptest.NewRequest(http.MethodGet, "/api/v1/loyalty/ledger?userId=u-1&limit=5", nil)
+	ledgerReq.Header.Set("X-User-ID", "u-1")
 	ledgerRes := httptest.NewRecorder()
 	handler.ServeHTTP(ledgerRes, ledgerReq)
 	if ledgerRes.Code != http.StatusOK {
@@ -68,6 +72,60 @@ func TestLoyaltyRoutesExposeAccountLedgerAndTiers(t *testing.T) {
 	}
 	if tiersPayload.TotalCount < 4 {
 		t.Fatalf("expected at least four loyalty tiers, got %d", tiersPayload.TotalCount)
+	}
+}
+
+// TestLoyaltyHandlersEnforceSelfOrAdmin verifies the auth-hardening added per
+// PLAN-loyalty-leaderboards.md §8 "Auth hardening". Before this, any
+// authenticated user could enumerate any other user's loyalty data via
+// ?userId= — now it's 401 without a session user and 403 if the session
+// user differs from the claim.
+//
+// Note: main_test.go sets GATEWAY_ALLOW_ADMIN_ANON=true globally, which
+// bypasses requireAdminRole. Disable it here so mismatch cases exercise
+// the real denial path instead of the dev bypass.
+func TestLoyaltyHandlersEnforceSelfOrAdmin(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "")
+
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "gateway")
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	cases := []struct {
+		name          string
+		url           string
+		sessionUserID string
+		wantStatus    int
+	}{
+		{"no session → 401", "/api/v1/loyalty?userId=u-1", "", http.StatusUnauthorized},
+		{"self → 200", "/api/v1/loyalty?userId=u-1", "u-1", http.StatusOK},
+		{"other user → 403", "/api/v1/loyalty?userId=u-1", "u-2", http.StatusForbidden},
+		{"ledger no session → 401", "/api/v1/loyalty/ledger?userId=u-1", "", http.StatusUnauthorized},
+		{"ledger self → 200", "/api/v1/loyalty/ledger?userId=u-1", "u-1", http.StatusOK},
+		{"ledger other user → 403", "/api/v1/loyalty/ledger?userId=u-1", "u-2", http.StatusForbidden},
+		{"referrals self → 200", "/api/v1/referrals?userId=u-1", "u-1", http.StatusOK},
+		{"referrals other → 403", "/api/v1/referrals?userId=u-1", "u-2", http.StatusForbidden},
+		// Note: admin-delegated access works in production via httpx.Auth
+		// middleware, which populates both context.UserID + context.Role.
+		// In this unit test we use the bot-auth X-User-ID header path,
+		// which doesn't populate context, so requireAdminRole fails even
+		// with X-Admin-Role set. The admin bypass is covered by the
+		// existing TestAdminLoyaltyAdjustmentAndDetailFlow test (which
+		// runs with GATEWAY_ALLOW_ADMIN_ANON=true, the usual test env).
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, tc.url, nil)
+			if tc.sessionUserID != "" {
+				req.Header.Set("X-User-ID", tc.sessionUserID)
+			}
+			res := httptest.NewRecorder()
+			handler.ServeHTTP(res, req)
+			if res.Code != tc.wantStatus {
+				t.Errorf("%s: want %d got %d (body=%s)", tc.name, tc.wantStatus, res.Code, res.Body.String())
+			}
+		})
 	}
 }
 

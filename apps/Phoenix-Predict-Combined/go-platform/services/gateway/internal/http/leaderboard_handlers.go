@@ -224,6 +224,12 @@ func leaderboardViewerEntry(service *leaderboards.Service, id string, r *stdhttp
 	if userID == "" {
 		return nil, nil
 	}
+	// ?userId= on a public leaderboard endpoint is a "show me my rank"
+	// lookup. It must be the session user's own id (or admin) — otherwise
+	// it lets any caller enumerate any user's rank.
+	if err := requireSelfOrAdmin(r, userID); err != nil {
+		return nil, err
+	}
 	entry, _, err := service.StandingForPlayer(id, userID)
 	if err != nil {
 		return nil, mapLeaderboardError(err)
