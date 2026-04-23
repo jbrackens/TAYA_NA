@@ -118,16 +118,14 @@ export {
   type LoyaltyTier,
 } from "./loyalty-client";
 
-// Leaderboards client
+// Leaderboards client (Predict-native; see PLAN-loyalty-leaderboards.md)
 export {
   getLeaderboards,
-  getLeaderboard,
   getLeaderboardEntries,
+  getUserStanding,
   type LeaderboardDefinition,
-  type LeaderboardStanding,
-  type LeaderboardRankingMode,
-  type LeaderboardOrder,
-  type LeaderboardStatus,
+  type LeaderboardEntry,
+  type PredictBoardWindow,
 } from "./leaderboards-client";
 
 // Compliance client

@@ -1,92 +1,72 @@
 import { apiClient } from "./client";
 
-export type LeaderboardRankingMode = "sum" | "min" | "max";
-export type LeaderboardOrder = "asc" | "desc";
-export type LeaderboardStatus = "draft" | "active" | "closed";
+// Predict-native leaderboard API shapes. Matches
+// go-platform/.../internal/http/predict_leaderboard_handlers.go. See
+// PLAN-loyalty-leaderboards.md §2.Leaderboards for the semantic model.
+
+export type PredictBoardWindow = "rolling_30d" | "weekly";
 
 export interface LeaderboardDefinition {
-  leaderboardId: string;
-  slug?: string;
+  id: string;
   name: string;
-  description?: string;
-  metricKey: string;
-  eventType?: string;
-  rankingMode: LeaderboardRankingMode;
-  order: LeaderboardOrder;
-  status: LeaderboardStatus;
-  currency?: string;
-  prizeSummary?: string;
-  windowStartsAt?: string;
-  windowEndsAt?: string;
-  lastComputedAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  description: string;
+  metricLabel: string;
+  window: PredictBoardWindow;
+  minSettled: number;
+  minVolumeCents?: number;
+  categorySlug?: string;
+  qualificationMsg: string;
 }
 
-export interface LeaderboardStanding {
-  leaderboardId: string;
-  playerId: string;
+export interface LeaderboardEntry {
+  boardId: string;
   rank: number;
-  score: number;
-  eventCount: number;
-  lastEventAt?: string;
+  userId: string;
+  displayName: string;
+  metricValue: number;
+  windowStart: string;
+  windowEnd: string;
 }
 
-export async function getLeaderboards(
-  search?: string,
-): Promise<LeaderboardDefinition[]> {
-  const params = new URLSearchParams();
-  if (search?.trim()) params.set("search", search.trim());
-  const query = params.toString();
-  const response = await apiClient.get<{ items?: LeaderboardDefinition[] }>(
-    `/api/v1/leaderboards${query ? `?${query}` : ""}`,
-  );
-  return Array.isArray(response?.items) ? response.items : [];
+interface BoardsResponse {
+  items: LeaderboardDefinition[];
+  totalCount: number;
 }
 
-export async function getLeaderboard(id: string): Promise<{
-  leaderboard: LeaderboardDefinition;
-  topEntries: LeaderboardStanding[];
-  viewerEntry?: LeaderboardStanding | null;
-}> {
-  return getLeaderboardForUser(id);
+interface EntriesResponse {
+  boardId: string;
+  items: LeaderboardEntry[];
+  totalCount: number;
+  limit: number;
+  viewerEntry?: LeaderboardEntry | null;
 }
 
-export async function getLeaderboardForUser(
-  id: string,
-  userId?: string,
-): Promise<{
-  leaderboard: LeaderboardDefinition;
-  topEntries: LeaderboardStanding[];
-  viewerEntry?: LeaderboardStanding | null;
-}> {
-  const params = new URLSearchParams();
-  if (userId?.trim()) params.set("userId", userId.trim());
-  const query = params.toString();
-  return apiClient.get(`/api/v1/leaderboards/${id}${query ? `?${query}` : ""}`);
+interface StandingResponse {
+  userId: string;
+  items: LeaderboardEntry[];
+  totalCount: number;
+}
+
+export async function getLeaderboards(): Promise<LeaderboardDefinition[]> {
+  const raw = await apiClient.get<BoardsResponse>("/api/v1/leaderboards");
+  return raw.items ?? [];
 }
 
 export async function getLeaderboardEntries(
-  id: string,
-  limit = 50,
-  offset = 0,
-  userId?: string,
-): Promise<{
-  leaderboard: LeaderboardDefinition;
-  items: LeaderboardStanding[];
-  totalCount: number;
-  limit: number;
-  offset: number;
-  viewerEntry?: LeaderboardStanding | null;
-}> {
-  const params = new URLSearchParams({
-    limit: String(limit),
-    offset: String(offset),
-  });
-  if (userId?.trim()) {
-    params.set("userId", userId.trim());
-  }
-  return apiClient.get(
-    `/api/v1/leaderboards/${id}/entries?${params.toString()}`,
+  boardId: string,
+  limit = 25,
+): Promise<EntriesResponse> {
+  return apiClient.get<EntriesResponse>(
+    `/api/v1/leaderboards/${encodeURIComponent(boardId)}/entries?limit=${limit}`,
   );
+}
+
+// getUserStanding returns every board the session user currently qualifies
+// for, best rank first. Drives the portfolio rank chip + the
+// /leaderboards sidebar "my standings" summary.
+export async function getUserStanding(): Promise<LeaderboardEntry[]> {
+  const raw = await apiClient.get<StandingResponse>(
+    "/api/v1/leaderboards/me/standing",
+  );
+  return raw.items ?? [];
 }
