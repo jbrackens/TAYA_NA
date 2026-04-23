@@ -257,6 +257,16 @@ func NewAuthService() *AuthService {
 					svc.db = db
 					svc.seedDBUsers(demoUsername, demoPassword, demoUserID, rolePlayer)
 					svc.seedDBUsers(adminUsername, adminPassword, adminUserID, roleAdmin)
+					// Seed the four Predict punters from seed_prediction.sql into
+					// auth_users so they can log in with matching IDs. Skipped in
+					// production/staging — those envs should manage users via the
+					// normal registration flow or an external identity provider.
+					if env != "production" && env != "staging" {
+						svc.seedDBUsers("alice@predict.dev", "predict123", "user-001", rolePlayer)
+						svc.seedDBUsers("bob@predict.dev", "predict123", "user-002", rolePlayer)
+						svc.seedDBUsers("charlie@predict.dev", "predict123", "user-003", rolePlayer)
+						svc.seedDBUsers("bot@predict.dev", "predict123", "user-bot", rolePlayer)
+					}
 					log.Printf("auth service initialized in DB mode")
 				}
 			}

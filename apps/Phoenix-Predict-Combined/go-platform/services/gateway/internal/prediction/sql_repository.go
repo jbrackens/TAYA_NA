@@ -1257,11 +1257,15 @@ func (r *SQLRepository) ensurePunterExistsWithExec(ctx context.Context, execer s
 	emailDigest := fmt.Sprintf("%x", sha1.Sum([]byte(userID)))
 	email := fmt.Sprintf("%s@predict.local", emailDigest)
 
+	// Leave username NULL on auto-provision. The leaderboards display
+	// query falls back to a short id-derived label when there's no set
+	// username; setting username=userID here would show raw ids like
+	// "u-71612d736d6f" on public boards.
 	_, err := execer.ExecContext(ctx,
-		`INSERT INTO punters (id, email, username, status)
-		 VALUES ($1, $2, $3, 'active')
+		`INSERT INTO punters (id, email, status)
+		 VALUES ($1, $2, 'active')
 		 ON CONFLICT (id) DO NOTHING`,
-		userID, email, userID,
+		userID, email,
 	)
 	return err
 }
