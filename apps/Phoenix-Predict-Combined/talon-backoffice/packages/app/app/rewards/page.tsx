@@ -2,21 +2,28 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import {
-  getLoyaltyAccount,
+  getLoyaltyStanding,
   getLoyaltyLedger,
   getLoyaltyTiers,
-  type LoyaltyAccount,
+  type LoyaltyStanding,
   type LoyaltyLedgerEntry,
   type LoyaltyTier,
 } from "../lib/api/loyalty-client";
 import { logger } from "../lib/logger";
 
+// /rewards — Predict-native loyalty center. Layout follows PLAN-loyalty-
+// leaderboards.md §5: horizontal tier ladder strip at top, 2fr/1fr grid of
+// tier card + ledger table below. No illustrations, no centered hero, no
+// tier-circle icons, no "Congrats!" copy. All points displayed divided by
+// 100 (storage is cents-equivalent).
+
+const LEDGER_LIMIT = 20;
+
 export default function RewardsPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const [account, setAccount] = useState<LoyaltyAccount | null>(null);
+  const [standing, setStanding] = useState<LoyaltyStanding | null>(null);
   const [ledger, setLedger] = useState<LoyaltyLedgerEntry[]>([]);
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,24 +32,23 @@ export default function RewardsPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadRewards() {
+    async function load() {
       if (!user?.id) {
-        setAccount(null);
+        setStanding(null);
         setLedger([]);
         setTiers([]);
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
-        const [accountResult, ledgerResult, tiersResult] = await Promise.all([
-          getLoyaltyAccount(user.id),
-          getLoyaltyLedger(user.id, 8),
+        const [standingResult, ledgerResult, tiersResult] = await Promise.all([
+          getLoyaltyStanding(),
+          getLoyaltyLedger(LEDGER_LIMIT),
           getLoyaltyTiers(),
         ]);
         if (cancelled) return;
-        setAccount(accountResult);
+        setStanding(standingResult);
         setLedger(ledgerResult);
         setTiers(tiersResult);
         setError(null);
@@ -53,70 +59,55 @@ export default function RewardsPage() {
         logger.error("Rewards", "loyalty fetch failed", message);
         setError(message);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
-    void loadRewards();
+    void load();
     return () => {
       cancelled = true;
     };
   }, [user?.id]);
 
-  const progress = useMemo(() => {
-    if (!account || tiers.length === 0) return null;
-    const activeTiers = [...tiers].sort((a, b) => a.rank - b.rank);
-    const currentIndex = activeTiers.findIndex(
-      (tier) => tier.tierCode === account.currentTier,
-    );
-    const currentTier = activeTiers[currentIndex];
-    const nextTier = activeTiers.find(
-      (tier) => tier.tierCode === account.nextTier,
-    );
-    if (!currentTier || !nextTier) {
-      return {
-        currentTier,
-        nextTier,
-        progressPct: 100,
-      };
-    }
-    const span = Math.max(
-      1,
-      nextTier.minLifetimePoints - currentTier.minLifetimePoints,
-    );
-    const advanced = Math.max(
-      0,
-      account.pointsEarnedLifetime - currentTier.minLifetimePoints,
-    );
-    return {
-      currentTier,
-      nextTier,
-      progressPct: Math.min(100, Math.max(0, (advanced / span) * 100)),
-    };
-  }, [account, tiers]);
+  // Visible tier list excludes tier 0 (the "hidden" state before any activity).
+  const visibleTiers = useMemo(
+    () => tiers.filter((t) => t.tier >= 1).sort((a, b) => a.tier - b.tier),
+    [tiers],
+  );
+
+  const progressPct = useMemo(() => {
+    if (!standing || visibleTiers.length === 0) return 0;
+    const curr = visibleTiers.find((t) => t.tier === standing.tier);
+    const next = visibleTiers.find((t) => t.tier === standing.nextTier);
+    if (!curr || !next) return 100;
+    const span = Math.max(1, next.pointsThreshold - curr.pointsThreshold);
+    const advanced = Math.max(0, standing.pointsBalance - curr.pointsThreshold);
+    return Math.min(100, Math.max(0, (advanced / span) * 100));
+  }, [standing, visibleTiers]);
 
   if (authLoading || loading) {
-    return <PageState message="Loading rewards..." />;
+    return <PageState message="Loading rewards…" />;
   }
-
   if (!user?.id) {
     return (
       <PageState
-        message="Sign in to view your rewards balance, tier progress, and recent activity."
+        message="Sign in to view your tier, points balance, and recent activity."
         cta={{ href: "/auth/login", label: "Log in" }}
       />
     );
   }
-
   if (error) {
     return (
       <PageState
         message={error}
-        cta={{ href: "/account", label: "Back to account" }}
+        cta={{ href: "/portfolio", label: "Back to portfolio" }}
       />
     );
+  }
+
+  // Pre-first-settle: full-page empty state with a CTA. Plan §3.
+  if (!standing || standing.tier === 0) {
+    return <PreFirstSettleState />;
   }
 
   return (
@@ -125,145 +116,201 @@ export default function RewardsPage() {
       <header className="rw-head">
         <div>
           <span className="rw-kicker">Rewards</span>
-          <h1 className="rw-title">Loyalty center</h1>
-          <p className="rw-body">
-            This page now reads from the local loyalty service instead of the
-            old placeholder. Your tier, points balance, and ledger activity are
-            all backed by the gateway.
-          </p>
+          <h1 className="rw-title">Loyalty</h1>
         </div>
-        <Link href="/portfolio" className="rw-cta">
-          Open portfolio
-          <ArrowRight size={14} />
+        <Link href="/leaderboards" className="rw-xlink">
+          View leaderboards →
         </Link>
       </header>
 
-      <section className="rw-hero">
-        <div className="rw-hero-main">
-          <div className="rw-icon">
-            <Sparkles size={28} strokeWidth={1.8} />
-          </div>
-          <div>
-            <span className="rw-tier-chip">
-              {displayTier(account?.currentTier || "")}
-            </span>
-            <h2 className="rw-hero-title">
-              {account ? formatPoints(account.pointsBalance) : "—"} points
-            </h2>
-            <p className="rw-body">
-              {account?.pointsToNextTier
-                ? `${formatPoints(account.pointsToNextTier)} points to ${displayTier(account.nextTier)}`
-                : "You’re at the top active tier in this local environment."}
-            </p>
-          </div>
-        </div>
-        <div className="rw-hero-stats">
-          <Stat
-            label="Lifetime"
-            value={formatPoints(account?.pointsEarnedLifetime || 0)}
-          />
-          <Stat
-            label="Last 7 days"
-            value={formatPoints(account?.pointsEarned7D || 0)}
-          />
-          <Stat
-            label="This month"
-            value={formatPoints(account?.pointsEarnedCurrentMonth || 0)}
-          />
-        </div>
-      </section>
-
-      {progress && (
-        <section className="rw-progress-card">
-          <div className="rw-progress-head">
-            <div>
-              <span className="rw-progress-label">Tier progress</span>
-              <h3 className="rw-progress-title">
-                {displayTier(progress.currentTier?.tierCode || "")}
-                {progress.nextTier
-                  ? ` → ${displayTier(progress.nextTier.tierCode)}`
-                  : ""}
-              </h3>
-            </div>
-            <span className="rw-progress-value mono">
-              {Math.round(progress.progressPct)}%
-            </span>
-          </div>
-          <div className="rw-progress-track">
-            <div
-              className="rw-progress-fill"
-              style={{ width: `${progress.progressPct}%` }}
-            />
-          </div>
-        </section>
-      )}
+      <TierLadder tiers={visibleTiers} current={standing.tier} />
 
       <div className="rw-grid">
-        <section className="rw-panel">
-          <header className="rw-panel-head">
-            <div>
-              <span className="rw-panel-kicker">Tiers</span>
-              <h3 className="rw-panel-title">Active ladder</h3>
-            </div>
+        <section className="rw-tier-card" aria-labelledby="rw-tier-title">
+          <header className="rw-tier-card-head">
+            <span className={`rw-tier-pill tier-${standing.tier}`}>
+              {standing.tierName}
+            </span>
+            <h2 id="rw-tier-title" className="rw-balance mono">
+              {formatPoints(standing.pointsBalance)}
+              <span className="rw-balance-unit"> pts</span>
+            </h2>
           </header>
-          <div className="rw-tiers">
-            {tiers.map((tier) => {
-              const active = tier.tierCode === account?.currentTier;
-              return (
+
+          {standing.nextTierName ? (
+            <div className="rw-progress">
+              <div className="rw-progress-head">
+                <span>
+                  {formatPoints(standing.pointsToNextTier)} pts to{" "}
+                  <strong>{standing.nextTierName}</strong>
+                </span>
+                <span className="mono rw-progress-pct">
+                  {Math.round(progressPct)}%
+                </span>
+              </div>
+              <div className="rw-progress-track">
                 <div
-                  key={tier.tierCode}
-                  className={`rw-tier-card ${active ? "rw-tier-card-active" : ""}`}
-                >
-                  <div className="rw-tier-card-head">
-                    <Star size={16} />
-                    <strong>{tier.displayName}</strong>
-                  </div>
-                  <span className="rw-tier-threshold mono">
-                    {formatPoints(tier.minLifetimePoints)} lifetime
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                  className="rw-progress-fill"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <p className="rw-topped-out">
+              Top tier reached — thanks for trading with us.
+            </p>
+          )}
+
+          <BenefitsList tiers={visibleTiers} current={standing.tier} />
         </section>
 
-        <section className="rw-panel">
-          <header className="rw-panel-head">
-            <div>
-              <span className="rw-panel-kicker">Activity</span>
-              <h3 className="rw-panel-title">Recent ledger</h3>
-            </div>
+        <section className="rw-ledger" aria-labelledby="rw-ledger-title">
+          <header className="rw-ledger-head">
+            <h3 id="rw-ledger-title" className="rw-ledger-title">
+              Recent activity
+            </h3>
+            <span className="rw-ledger-meta">{ledger.length} entries</span>
           </header>
           {ledger.length === 0 ? (
-            <div className="rw-empty">No rewards activity yet.</div>
-          ) : (
-            <div className="rw-ledger">
-              {ledger.map((entry) => (
-                <div key={entry.entryId} className="rw-ledger-row">
-                  <div>
-                    <strong>{entryLabel(entry)}</strong>
-                    <span className="rw-ledger-meta">
-                      {new Date(entry.createdAt).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="rw-ledger-values">
-                    <span
-                      className={`mono ${
-                        entry.pointsDelta >= 0 ? "rw-positive" : "rw-negative"
-                      }`}
-                    >
-                      {entry.pointsDelta >= 0 ? "+" : ""}
-                      {formatPoints(entry.pointsDelta)}
-                    </span>
-                    <span className="rw-ledger-meta mono">
-                      Bal {formatPoints(entry.balanceAfter)}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="rw-ledger-empty">
+              No activity yet — settle a market to start earning.
             </div>
+          ) : (
+            <table className="rw-ledger-table">
+              <caption className="sr-only">
+                Recent loyalty ledger entries for {user.username || user.id}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Event</th>
+                  <th scope="col" className="rw-num">
+                    Change
+                  </th>
+                  <th scope="col" className="rw-num">
+                    Balance
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {ledger.map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="mono rw-date">
+                      {formatDate(entry.createdAt)}
+                    </td>
+                    <td>
+                      <div className="rw-event">{labelForEntry(entry)}</div>
+                      <div className="rw-reason">{entry.reason}</div>
+                    </td>
+                    <td
+                      className={`mono rw-num ${entry.deltaPoints >= 0 ? "rw-pos" : "rw-neg"}`}
+                    >
+                      {entry.deltaPoints >= 0 ? "+" : ""}
+                      {formatPoints(entry.deltaPoints)}
+                    </td>
+                    <td className="mono rw-num rw-subtle">
+                      {formatPoints(entry.balanceAfter)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </section>
+      </div>
+    </div>
+  );
+}
+
+function TierLadder({
+  tiers,
+  current,
+}: {
+  tiers: LoyaltyTier[];
+  current: number;
+}) {
+  return (
+    <div className="rw-ladder" role="list" aria-label="Tier ladder">
+      {tiers.map((t) => {
+        const isCurrent = t.tier === current;
+        const isPast = t.tier < current;
+        return (
+          <div
+            key={t.tier}
+            role="listitem"
+            className={`rw-ladder-step tier-${t.tier} ${
+              isCurrent ? "is-current" : isPast ? "is-past" : "is-future"
+            }`}
+            aria-current={isCurrent ? "step" : undefined}
+          >
+            <span className="rw-ladder-name">{t.name}</span>
+            <span className="rw-ladder-threshold mono">
+              {formatPoints(t.pointsThreshold)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BenefitsList({
+  tiers,
+  current,
+}: {
+  tiers: LoyaltyTier[];
+  current: number;
+}) {
+  // Benefits are cumulative — show every benefit from tier 1 up through the
+  // user's current tier. Matches plan §2.Tiers.
+  const rows: Array<{ key: string; tier: number; name: string; copy: string }> =
+    [];
+  for (const t of tiers) {
+    if (t.tier > current) continue;
+    const benefits = t.benefits ?? [];
+    for (let i = 0; i < benefits.length; i++) {
+      rows.push({
+        key: `${t.tier}-${i}`,
+        tier: t.tier,
+        name: t.name,
+        copy: benefits[i],
+      });
+    }
+  }
+  if (rows.length === 0) return null;
+  return (
+    <div className="rw-benefits">
+      <h3 className="rw-benefits-title">Unlocked</h3>
+      <ul className="rw-benefits-list">
+        {rows.map((row) => (
+          <li key={row.key} className="rw-benefit">
+            <span
+              className={`rw-benefit-dot tier-${row.tier}`}
+              aria-hidden="true"
+            />
+            <span className="rw-benefit-copy">{row.copy}</span>
+            <span className="rw-benefit-source">{row.name}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function PreFirstSettleState() {
+  return (
+    <div className="rw-prefirst">
+      <Styles />
+      <div className="rw-prefirst-card">
+        <span className="rw-kicker">Rewards</span>
+        <h1 className="rw-prefirst-title">No activity yet</h1>
+        <p className="rw-prefirst-body">
+          Settle your first trade to start earning points and climb the tier
+          ladder.
+        </p>
+        <Link href="/predict" className="rw-prefirst-cta">
+          Browse markets →
+        </Link>
       </div>
     </div>
   );
@@ -282,7 +329,7 @@ function PageState({
       <div className="rw-state-card">
         <p>{message}</p>
         {cta && (
-          <Link href={cta.href} className="rw-cta">
+          <Link href={cta.href} className="rw-prefirst-cta">
             {cta.label}
           </Link>
         )}
@@ -291,37 +338,35 @@ function PageState({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rw-stat">
-      <span className="rw-stat-label">{label}</span>
-      <strong className="rw-stat-value mono">{value}</strong>
-    </div>
-  );
-}
-
-function displayTier(tierCode: string) {
-  if (!tierCode) return "No tier";
-  return tierCode.charAt(0).toUpperCase() + tierCode.slice(1);
-}
-
-function formatPoints(points: number) {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
-  }).format(points);
-}
-
-function entryLabel(entry: LoyaltyLedgerEntry) {
-  switch (entry.entryType) {
+function labelForEntry(e: LoyaltyLedgerEntry): string {
+  switch (e.eventType) {
     case "accrual":
-      return "Settled bet accrual";
-    case "referral_bonus":
-      return "Referral bonus";
+      return "Settled trade";
     case "adjustment":
-      return "Manual adjustment";
+      return "Adjustment";
+    case "promotion":
+      return "Tier promotion";
+    case "migration":
+      return "Imported from legacy";
     default:
-      return entry.entryType.replace(/_/g, " ");
+      return e.eventType;
   }
+}
+
+function formatPoints(raw: number): string {
+  // Storage is cents-equivalent; display divides by 100.
+  const display = Math.round(raw / 100);
+  return new Intl.NumberFormat("en-US").format(display);
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function Styles() {
@@ -332,17 +377,16 @@ function Styles() {
         margin: 0 auto;
         padding: 32px 24px 60px;
       }
-
       .rw-head {
         display: flex;
-        justify-content: space-between;
         align-items: flex-end;
-        gap: 20px;
+        justify-content: space-between;
+        gap: 16px;
         margin-bottom: 22px;
       }
       .rw-kicker {
         display: inline-block;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         color: var(--accent);
         text-transform: uppercase;
         letter-spacing: 0.12em;
@@ -350,126 +394,129 @@ function Styles() {
         font-weight: 700;
       }
       .rw-title {
-        margin: 0 0 10px;
-        font-size: 32px;
+        margin: 0;
+        font-size: 34px;
         font-weight: 800;
-        letter-spacing: -0.03em;
+        letter-spacing: -0.02em;
         color: var(--t1);
       }
-      .rw-body {
-        margin: 0;
-        max-width: 620px;
-        font-size: 14px;
-        line-height: 1.65;
+      .rw-xlink {
+        font-size: 13px;
         color: var(--t2);
+        border-bottom: 1px solid var(--b1);
+        padding-bottom: 2px;
+      }
+      .rw-xlink:hover { color: var(--t1); border-color: var(--accent); }
+
+      /* ── Horizontal tier ladder strip — no centered hero, no big circle ── */
+      .rw-ladder {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+      .rw-ladder-step {
+        padding: 14px 14px;
+        background: var(--s1);
+        border: 1px solid var(--b1);
+        border-top: 3px solid var(--tier-step-color, var(--b2));
+        border-radius: 0 0 var(--r-md) var(--r-md);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .rw-ladder-step.tier-1 { --tier-step-color: var(--tier-1); }
+      .rw-ladder-step.tier-2 { --tier-step-color: var(--tier-2); }
+      .rw-ladder-step.tier-3 { --tier-step-color: var(--tier-3); }
+      .rw-ladder-step.tier-4 { --tier-step-color: var(--tier-4); }
+      .rw-ladder-step.tier-5 { --tier-step-color: var(--tier-5); }
+      .rw-ladder-step.is-future { opacity: 0.45; }
+      .rw-ladder-step.is-current {
+        background: color-mix(in srgb, var(--tier-step-color) 10%, var(--s1));
+        border-left: 1px solid var(--tier-step-color);
+        border-right: 1px solid var(--tier-step-color);
+        border-bottom: 1px solid var(--tier-step-color);
+      }
+      .rw-ladder-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--t1);
+      }
+      .rw-ladder-threshold {
+        font-size: 12px;
+        color: var(--t3);
       }
 
-      .rw-hero,
-      .rw-progress-card,
-      .rw-panel,
+      /* ── 2fr / 1fr grid: tier card + ledger ──
+       * Plan §5 swapped left/right from the original: tier card is meaningful
+       * detail, ledger is the wider glanceable table. */
+      .rw-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        gap: 18px;
+      }
+      .rw-tier-card,
+      .rw-ledger,
       .rw-state-card {
         background: var(--s1);
         border: 1px solid var(--b1);
         border-radius: var(--r-lg);
-      }
-      .rw-hero {
         padding: 22px;
-        margin-bottom: 18px;
-        display: grid;
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-        gap: 18px;
-        align-items: center;
       }
-      .rw-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 999px;
-        background: var(--accent-soft);
-        color: var(--accent);
+      .rw-tier-card-head {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .rw-hero-main {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-      }
-      .rw-tier-chip {
-        display: inline-block;
-        padding: 5px 10px;
-        background: var(--s2);
-        border: 1px solid var(--b1);
-        color: var(--t3);
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 700;
-        margin-bottom: 10px;
-      }
-      .rw-hero-title {
-        margin: 0 0 8px;
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: -0.03em;
-        color: var(--t1);
-      }
-      .rw-hero-stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: baseline;
+        justify-content: space-between;
         gap: 12px;
+        margin-bottom: 18px;
       }
-      .rw-stat {
-        padding: 14px;
-        border-radius: 16px;
-        border: 1px solid var(--b1);
-        background: var(--s2);
-      }
-      .rw-stat-label {
-        display: block;
-        margin-bottom: 8px;
-        color: var(--t3);
-        font-size: 12px;
-      }
-      .rw-stat-value {
+      .rw-balance {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
         color: var(--t1);
-        font-size: 20px;
+      }
+      .rw-balance-unit {
+        font-size: 14px;
+        color: var(--t3);
+        font-weight: 500;
+        margin-left: 4px;
       }
 
-      .rw-progress-card {
-        padding: 18px 20px;
-        margin-bottom: 18px;
+      /* ── Tier pill in the card header, and the shared tier-N colorway ── */
+      .rw-tier-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        border-radius: 999px;
+        color: var(--t1);
+        background: color-mix(in srgb, var(--tier-pill-color) 14%, transparent);
+        border: 1px solid color-mix(in srgb, var(--tier-pill-color) 30%, transparent);
+      }
+      .rw-tier-pill.tier-1 { --tier-pill-color: var(--tier-1); }
+      .rw-tier-pill.tier-2 { --tier-pill-color: var(--tier-2); }
+      .rw-tier-pill.tier-3 { --tier-pill-color: var(--tier-3); }
+      .rw-tier-pill.tier-4 { --tier-pill-color: var(--tier-4); }
+      .rw-tier-pill.tier-5 { --tier-pill-color: var(--tier-5); }
+
+      /* ── Progress bar to next tier ── */
+      .rw-progress {
+        margin-bottom: 20px;
       }
       .rw-progress-head {
         display: flex;
         justify-content: space-between;
-        gap: 16px;
-        align-items: center;
-        margin-bottom: 14px;
+        font-size: 13px;
+        color: var(--t2);
+        margin-bottom: 8px;
       }
-      .rw-progress-label,
-      .rw-panel-kicker {
-        display: inline-block;
-        margin-bottom: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--accent);
-      }
-      .rw-progress-title,
-      .rw-panel-title {
-        margin: 0;
-        font-size: 20px;
-        font-weight: 800;
-        color: var(--t1);
-      }
-      .rw-progress-value {
-        color: var(--t1);
-        font-size: 18px;
-      }
+      .rw-progress-pct { color: var(--t1); font-weight: 700; }
       .rw-progress-track {
-        height: 10px;
+        height: 8px;
         border-radius: 999px;
         background: var(--s2);
         overflow: hidden;
@@ -478,142 +525,174 @@ function Styles() {
         height: 100%;
         border-radius: 999px;
         background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+        transition: width 240ms ease-out;
+      }
+      .rw-topped-out {
+        margin: 0 0 20px;
+        color: var(--t2);
+        font-size: 14px;
       }
 
-      .rw-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-        gap: 18px;
+      /* ── Benefits list ── */
+      .rw-benefits-title {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--t3);
       }
-      .rw-panel {
-        padding: 20px;
-      }
-      .rw-panel-head {
-        margin-bottom: 16px;
-      }
-      .rw-tiers {
-        display: grid;
-        gap: 12px;
-      }
-      .rw-tier-card {
-        padding: 14px 16px;
-        border-radius: 16px;
-        border: 1px solid var(--b1);
-        background: var(--s2);
-      }
-      .rw-tier-card-active {
-        border-color: color-mix(in srgb, var(--accent) 50%, var(--b1));
-        background: color-mix(in srgb, var(--accent) 8%, var(--s2));
-      }
-      .rw-tier-card-head {
+      .rw-benefits-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
         display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .rw-benefit {
+        display: grid;
+        grid-template-columns: 10px 1fr auto;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 6px;
+        gap: 10px;
+        font-size: 14px;
         color: var(--t1);
       }
-      .rw-tier-threshold {
-        font-size: 12px;
+      .rw-benefit-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .rw-benefit-dot.tier-1 { background: var(--tier-1); }
+      .rw-benefit-dot.tier-2 { background: var(--tier-2); }
+      .rw-benefit-dot.tier-3 { background: var(--tier-3); }
+      .rw-benefit-dot.tier-4 { background: var(--tier-4); }
+      .rw-benefit-dot.tier-5 { background: var(--tier-5); }
+      .rw-benefit-source {
+        font-size: 11px;
         color: var(--t3);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
       }
 
-      .rw-ledger {
+      /* ── Ledger table — plain <table>, not cards ── */
+      .rw-ledger-head {
         display: flex;
-        flex-direction: column;
-      }
-      .rw-ledger-row {
-        display: flex;
-        align-items: center;
+        align-items: baseline;
         justify-content: space-between;
-        gap: 16px;
-        padding: 14px 0;
-        border-top: 1px solid var(--b1);
+        margin-bottom: 14px;
       }
-      .rw-ledger-row:first-child {
-        border-top: 0;
-        padding-top: 0;
-      }
-      .rw-ledger-values {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 4px;
+      .rw-ledger-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--t1);
       }
       .rw-ledger-meta {
-        display: block;
-        margin-top: 4px;
         font-size: 12px;
         color: var(--t3);
       }
-      .rw-positive { color: var(--success, #2fb171); }
-      .rw-negative { color: var(--danger, #d95c5c); }
-      .rw-empty,
-      .rw-state {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 40vh;
+      .rw-ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
       }
-      .rw-empty {
+      .rw-ledger-table th,
+      .rw-ledger-table td {
+        padding: 10px 6px;
+        text-align: left;
+        border-bottom: 1px solid var(--b1);
+        vertical-align: top;
+      }
+      .rw-ledger-table th {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--t3);
+      }
+      .rw-num { text-align: right; }
+      .rw-pos { color: var(--gain); }
+      .rw-neg { color: var(--no); }
+      .rw-subtle { color: var(--t3); }
+      .rw-date { color: var(--t2); white-space: nowrap; }
+      .rw-event { color: var(--t1); }
+      .rw-reason {
+        margin-top: 2px;
+        color: var(--t3);
+        font-size: 12px;
+      }
+      .rw-ledger-empty {
+        padding: 40px 0;
+        text-align: center;
         color: var(--t3);
         font-size: 13px;
       }
+
+      /* ── Pre-first-settle empty state + generic state card ── */
+      .rw-state,
+      .rw-prefirst {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        padding: 0 24px;
+      }
+      .rw-prefirst-card,
       .rw-state-card {
         max-width: 440px;
-        padding: 28px;
+        width: 100%;
         text-align: center;
       }
-      .rw-state-card p {
-        margin: 0 0 16px;
-        line-height: 1.6;
-        color: var(--t2);
+      .rw-prefirst-title {
+        margin: 0 0 10px;
+        font-size: 26px;
+        font-weight: 800;
+        color: var(--t1);
       }
-      .rw-cta {
+      .rw-prefirst-body {
+        margin: 0 0 20px;
+        color: var(--t2);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .rw-prefirst-cta,
+      .rw-state-card a {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
+        gap: 6px;
+        padding: 10px 18px;
         background: var(--accent);
         color: #06170a;
         border-radius: 999px;
         font-size: 13px;
         font-weight: 700;
-        text-decoration: none;
         box-shadow: var(--accent-glow);
       }
-      .rw-cta:hover { background: var(--accent-hi); }
-
-      @media (max-width: 960px) {
-        .rw-head,
-        .rw-progress-head,
-        .rw-hero {
-          grid-template-columns: 1fr;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-        .rw-grid {
-          grid-template-columns: 1fr;
-        }
-        .rw-hero-stats {
-          grid-template-columns: 1fr;
-        }
+      .rw-prefirst-cta:hover,
+      .rw-state-card a:hover { background: var(--accent-hi); }
+      .rw-state-card p {
+        margin: 0 0 14px;
+        color: var(--t2);
+        line-height: 1.6;
       }
 
-      @media (max-width: 720px) {
-        .rw-wrap {
-          padding-inline: 16px;
+      /* ── Responsive ── */
+      @media (max-width: 1024px) {
+        .rw-grid { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 768px) {
+        .rw-wrap { padding-inline: 16px; }
+        .rw-ladder {
+          grid-auto-flow: column;
+          grid-auto-columns: 140px;
+          grid-template-columns: none;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
         }
-        .rw-title {
-          font-size: 28px;
-        }
-        .rw-hero-main,
-        .rw-ledger-row {
-          flex-direction: column;
-          align-items: flex-start;
-        }
-        .rw-ledger-values {
-          align-items: flex-start;
-        }
+        .rw-ladder-step { scroll-snap-align: start; }
+        .rw-title { font-size: 26px; }
+        .rw-balance { font-size: 28px; }
       }
     `}</style>
   );

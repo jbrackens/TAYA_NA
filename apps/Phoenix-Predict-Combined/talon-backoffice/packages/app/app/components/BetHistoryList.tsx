@@ -76,7 +76,7 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
             pageSize,
             status: filterStatus,
           }),
-          getLoyaltyLedger(userId, 50).catch(() => []),
+          getLoyaltyLedger(50).catch(() => []),
         ]);
         if (signal.cancelled) return;
 
@@ -97,10 +97,14 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
         setFilteredBets(normalized);
         setTotalPages(Math.max(1, Math.ceil(result.totalCount / pageSize)));
         setError(null);
+        // Predict-native loyalty ledger rows map to market IDs (settlement is
+        // per-position, one position per market per user). BetHistoryList is
+        // an orphaned sportsbook component — map by marketId for parity until
+        // it's either rewired to prediction data or removed.
         const loyaltyMap = (loyaltyLedger || []).reduce<Record<string, number>>(
           (acc, entry) => {
-            if (entry.sourceType === "bet_settlement" && entry.sourceId) {
-              acc[entry.sourceId] = entry.pointsDelta;
+            if (entry.eventType === "accrual" && entry.marketId) {
+              acc[entry.marketId] = entry.deltaPoints;
             }
             return acc;
           },

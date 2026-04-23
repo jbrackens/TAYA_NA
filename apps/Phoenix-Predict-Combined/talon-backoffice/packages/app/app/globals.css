@@ -80,6 +80,14 @@ body {
   --live: #ef4444;
   --whale: #fbbf24;
   --whale-soft: rgba(251, 191, 36, 0.14);
+  /* Loyalty tier channels — muted neutrals + one violet accent.
+   * Top tier uses violet (not green) per the three-greens rule; see
+   * PLAN-loyalty-leaderboards.md §6 + DESIGN.md §8 Decisions Log. */
+  --tier-1: #94a3b8; /* Newcomer — slate */
+  --tier-2: #cbd5e1; /* Trader — slate-light */
+  --tier-3: #d4a857; /* Sharp — warm-gold-muted */
+  --tier-4: #9ca7bf; /* Whale — platinum-muted */
+  --tier-5: #8b5cf6; /* Legend — violet */
   /* Radius */
   --r-sm: 6px;
   --r-md: 12px;

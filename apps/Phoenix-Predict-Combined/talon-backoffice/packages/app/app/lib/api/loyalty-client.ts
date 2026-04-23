@@ -1,192 +1,137 @@
 import { apiClient } from "./client";
 
-interface TimedCacheEntry<T> {
-  data: T;
-  ts: number;
-}
+// Predict-native loyalty API shapes. Matches
+// go-platform/.../internal/http/predict_loyalty_handlers.go. See
+// PLAN-loyalty-leaderboards.md §2 for the semantic model.
 
-export type LoyaltyTierCode = "bronze" | "silver" | "gold" | "vip" | "";
-
-export interface LoyaltyAccount {
-  accountId: string;
-  playerId: string;
-  currentTier: LoyaltyTierCode;
-  nextTier: LoyaltyTierCode;
+export interface LoyaltyStanding {
+  userId: string;
   pointsBalance: number;
-  pointsEarnedLifetime: number;
-  pointsEarned7D: number;
-  pointsEarned30D: number;
-  pointsEarnedCurrentMonth: number;
+  tier: number; // 0..5; 0 is "hidden" (no pill)
+  tierName: string;
+  nextTier: number;
+  nextTierName: string;
   pointsToNextTier: number;
-  currentTierAssignedAt?: string;
-  lastAccrualAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  lastActivity?: string;
 }
 
 export interface LoyaltyLedgerEntry {
-  entryId: string;
-  accountId: string;
-  playerId: string;
-  entryType: string;
-  entrySubtype?: string;
-  sourceType: string;
-  sourceId: string;
-  pointsDelta: number;
+  id: number;
+  userId: string;
+  eventType: "accrual" | "promotion" | "adjustment" | "migration";
+  deltaPoints: number;
   balanceAfter: number;
-  metadata?: Record<string, string>;
-  createdBy?: string;
+  reason: string;
+  marketId?: string;
+  tradeId?: string;
+  idempotencyKey: string;
   createdAt: string;
 }
 
 export interface LoyaltyTier {
-  tierCode: LoyaltyTierCode;
-  displayName: string;
-  rank: number;
-  minLifetimePoints: number;
-  active: boolean;
+  tier: number;
+  name: string;
+  pointsThreshold: number;
+  benefits: string[] | null;
 }
 
-interface LoyaltyLedgerResponseRaw {
-  playerId: string;
+interface LedgerResponse {
+  userId: string;
   items: LoyaltyLedgerEntry[];
   total: number;
 }
 
-interface LoyaltyTiersResponseRaw {
+interface TiersResponse {
   items: LoyaltyTier[];
   totalCount: number;
 }
 
-const ACCOUNT_CACHE_TTL_MS = 30_000;
-const LEDGER_CACHE_TTL_MS = 15_000;
-const TIERS_CACHE_TTL_MS = 60_000;
+// Small in-memory TTL cache. The header tier pill + portfolio rank chip +
+// /rewards all want the same standing — cache dedupes their fetches.
+interface CacheEntry<T> {
+  data: T;
+  ts: number;
+  promise: Promise<T> | null;
+}
 
-const accountCache = new Map<
-  string,
-  { entry: TimedCacheEntry<LoyaltyAccount> | null; promise: Promise<LoyaltyAccount> | null }
->();
-const ledgerCache = new Map<
-  string,
-  { entry: TimedCacheEntry<LoyaltyLedgerEntry[]> | null; promise: Promise<LoyaltyLedgerEntry[]> | null }
->();
-let tiersCache:
-  | { entry: TimedCacheEntry<LoyaltyTier[]> | null; promise: Promise<LoyaltyTier[]> | null }
-  | null = null;
+const STANDING_TTL_MS = 30_000;
+const LEDGER_TTL_MS = 15_000;
+const TIERS_TTL_MS = 300_000; // static data — long TTL is fine
 
-function isFresh<T>(
-  entry: TimedCacheEntry<T> | null,
-  ttlMs: number,
-): entry is TimedCacheEntry<T> {
+let standingCache: CacheEntry<LoyaltyStanding> | null = null;
+let tiersCache: CacheEntry<LoyaltyTier[]> | null = null;
+const ledgerCache = new Map<string, CacheEntry<LoyaltyLedgerEntry[]>>();
+
+function isFresh<T>(entry: CacheEntry<T> | null, ttlMs: number): boolean {
   return !!entry && Date.now() - entry.ts < ttlMs;
 }
 
-export async function getLoyaltyAccount(userId: string): Promise<LoyaltyAccount> {
-  const cached = accountCache.get(userId);
-  if (cached && isFresh(cached.entry, ACCOUNT_CACHE_TTL_MS)) {
-    return cached.entry.data;
+export async function getLoyaltyStanding(): Promise<LoyaltyStanding> {
+  if (isFresh(standingCache, STANDING_TTL_MS)) {
+    return standingCache!.data;
   }
-  if (cached?.promise) {
-    return cached.promise;
-  }
+  if (standingCache?.promise) return standingCache.promise;
 
-  const promise = (async () => {
-    const result = await apiClient.get<LoyaltyAccount>(`/api/v1/loyalty/?userId=${encodeURIComponent(userId)}`);
-    accountCache.set(userId, {
-      entry: { data: result, ts: Date.now() },
-      promise: null,
+  const promise = apiClient
+    .get<LoyaltyStanding>("/api/v1/loyalty")
+    .then((data) => {
+      standingCache = { data, ts: Date.now(), promise: null };
+      return data;
     });
-    return result;
-  })();
-
-  accountCache.set(userId, {
-    entry: cached?.entry || null,
+  standingCache = {
+    data: standingCache?.data as LoyaltyStanding,
+    ts: standingCache?.ts ?? 0,
     promise,
-  });
-
+  };
   return promise;
 }
 
 export async function getLoyaltyLedger(
-  userId: string,
-  limit = 5,
+  limit = 20,
 ): Promise<LoyaltyLedgerEntry[]> {
-  const key = `${userId}:${limit}`;
+  const key = String(limit);
   const cached = ledgerCache.get(key);
-  if (cached && isFresh(cached.entry, LEDGER_CACHE_TTL_MS)) {
-    return cached.entry.data;
-  }
-  if (cached?.promise) {
-    return cached.promise;
-  }
+  if (cached && isFresh(cached, LEDGER_TTL_MS)) return cached.data;
+  if (cached?.promise) return cached.promise;
 
-  const promise = (async () => {
-    const raw = await apiClient.get<LoyaltyLedgerResponseRaw>(
-      `/api/v1/loyalty/ledger/?userId=${encodeURIComponent(userId)}&limit=${limit}`,
-    );
-    ledgerCache.set(key, {
-      entry: { data: raw.items || [], ts: Date.now() },
-      promise: null,
+  const promise = apiClient
+    .get<LedgerResponse>(`/api/v1/loyalty/ledger?limit=${limit}`)
+    .then((raw) => {
+      const items = raw.items ?? [];
+      ledgerCache.set(key, { data: items, ts: Date.now(), promise: null });
+      return items;
     });
-    return raw.items || [];
-  })();
-
   ledgerCache.set(key, {
-    entry: cached?.entry || null,
+    data: cached?.data ?? [],
+    ts: cached?.ts ?? 0,
     promise,
   });
-
   return promise;
 }
 
 export async function getLoyaltyTiers(): Promise<LoyaltyTier[]> {
-  if (tiersCache && isFresh(tiersCache.entry, TIERS_CACHE_TTL_MS)) {
-    return tiersCache.entry.data;
-  }
-  if (tiersCache?.promise) {
-    return tiersCache.promise;
-  }
+  if (isFresh(tiersCache, TIERS_TTL_MS)) return tiersCache!.data;
+  if (tiersCache?.promise) return tiersCache.promise;
 
-  const promise = (async () => {
-    const raw = await apiClient.get<LoyaltyTiersResponseRaw>("/api/v1/loyalty/tiers/");
-    const items = raw.items || [];
-    tiersCache = {
-      entry: { data: items, ts: Date.now() },
-      promise: null,
-    };
-    return items;
-  })();
-
+  const promise = apiClient
+    .get<TiersResponse>("/api/v1/loyalty/tiers")
+    .then((raw) => {
+      const items = raw.items ?? [];
+      tiersCache = { data: items, ts: Date.now(), promise: null };
+      return items;
+    });
   tiersCache = {
-    entry: tiersCache?.entry || null,
+    data: tiersCache?.data ?? [],
+    ts: tiersCache?.ts ?? 0,
     promise,
   };
-
   return promise;
 }
 
-// ── Referrals ──────────────────────────────────────────────
-
-export interface ReferralReward {
-  referralId: string;
-  referrerPlayerId: string;
-  referredPlayerId: string;
-  qualificationState: string;
-  qualifiedAt?: string;
-  ledgerEntryId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ReferralListResponse {
-  playerId: string;
-  items: ReferralReward[];
-  total: number;
-}
-
-export async function getReferrals(userId: string): Promise<ReferralReward[]> {
-  const raw = await apiClient.get<ReferralListResponse>(
-    `/api/v1/referrals?userId=${encodeURIComponent(userId)}`,
-  );
-  return Array.isArray(raw?.items) ? raw.items : [];
+// Clears all caches. Call after actions that invalidate state (future:
+// TierPromoted WebSocket event, user logout).
+export function resetLoyaltyCaches(): void {
+  standingCache = null;
+  tiersCache = null;
+  ledgerCache.clear();
 }

@@ -1,5 +1,5 @@
 // Base API client
-export { apiClient, ApiError } from './client';
+export { apiClient, ApiError } from "./client";
 
 // Auth client
 export {
@@ -31,8 +31,8 @@ export {
   type ChangePasswordRequest,
   type ChangePasswordResponse,
   type AcceptTermsRequest,
-  type AcceptTermsResponse
-} from './auth-client';
+  type AcceptTermsResponse,
+} from "./auth-client";
 
 // Betting client
 export {
@@ -52,8 +52,8 @@ export {
   type BetSelection,
   type CashoutOffer,
   type CashoutResponse,
-  type PrecheckBetsResponse
-} from './betting-client';
+  type PrecheckBetsResponse,
+} from "./betting-client";
 
 // Events client
 export {
@@ -66,8 +66,8 @@ export {
   type League,
   type Event,
   type EventDetail,
-  type GetEventsPaginatedResponse
-} from './events-client';
+  type GetEventsPaginatedResponse,
+} from "./events-client";
 
 // Markets client
 export {
@@ -75,8 +75,8 @@ export {
   getMarket,
   type GetMarketsParams,
   type Market,
-  type MarketSelection
-} from './markets-client';
+  type MarketSelection,
+} from "./markets-client";
 
 // Wallet client
 export {
@@ -91,8 +91,8 @@ export {
   type DepositResponse,
   type WithdrawResponse,
   type Transaction,
-  type GetTransactionsPaginatedResponse
-} from './wallet-client';
+  type GetTransactionsPaginatedResponse,
+} from "./wallet-client";
 
 // User client
 export {
@@ -104,19 +104,19 @@ export {
   type UpdatePreferencesRequest,
   type UserProfile,
   type Preferences,
-  type DeleteAccountResponse
-} from './user-client';
+  type DeleteAccountResponse,
+} from "./user-client";
 
-// Loyalty client
+// Loyalty client (Predict-native; see PLAN-loyalty-leaderboards.md)
 export {
-  getLoyaltyAccount,
+  getLoyaltyStanding,
   getLoyaltyLedger,
   getLoyaltyTiers,
-  type LoyaltyAccount,
+  resetLoyaltyCaches,
+  type LoyaltyStanding,
   type LoyaltyLedgerEntry,
   type LoyaltyTier,
-  type LoyaltyTierCode,
-} from './loyalty-client';
+} from "./loyalty-client";
 
 // Leaderboards client
 export {
@@ -128,7 +128,7 @@ export {
   type LeaderboardRankingMode,
   type LeaderboardOrder,
   type LeaderboardStatus,
-} from './leaderboards-client';
+} from "./leaderboards-client";
 
 // Compliance client
 export {
@@ -149,5 +149,5 @@ export {
   type CoolOffResponse,
   type SelfExcludeResponse,
   type GetLimitsHistoryResponse,
-  type LimitHistoryItem
-} from './compliance-client';
+  type LimitHistoryItem,
+} from "./compliance-client";
