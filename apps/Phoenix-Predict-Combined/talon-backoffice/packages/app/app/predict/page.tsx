@@ -3,18 +3,22 @@
 /**
  * PredictDiscoveryPage — the prediction homepage.
  *
- * Structure (matches the approved design preview):
- *   [FeaturedHero]           ← one marquee market + whale card + top movers
+ * Structure:
+ *   [CategoryChips]          ← horizontal .glass.glass-thin chip strip
+ *   [FeaturedHero]           ← marquee market + activity card + movers
  *   [Featured markets grid]  ← full grid of MarketCards
- *   [Trending markets grid]  ← same card, trending slice
- *   [Closing soon]           ← narrow when empty — safe
+ *   [Trending markets grid]
+ *   [Closing soon]
  *   [Recently added]
  *
- * The horizontal category chips live in PredictHeader (the app chrome), not
- * here. This page is responsible only for data fetch + layout; chrome is
- * always present.
+ * CategoryChips moved out of TopBar and into the page body as of
+ * Phase 3 (DESIGN.md §6). Phase 4 will redesign the hero + grid to
+ * match the full Liquid Glass vocabulary; the chip strip is the
+ * Phase-3 down-payment so /predict has category discoverability on
+ * day one of the rollout.
  */
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MarketCard } from "../components/prediction/MarketCard";
 import { FeaturedHero } from "../components/prediction/FeaturedHero";
@@ -23,12 +27,65 @@ import {
   sortMarketsByVolume,
 } from "../components/prediction/market-display";
 import type {
+  Category,
   DiscoveryResponse,
   PredictionMarket,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 
 const api = createPredictionClient();
+
+function CategoryChips({ categories }: { categories: Category[] }) {
+  if (categories.length === 0) return null;
+  return (
+    <>
+      <style>{`
+        .pred-cats {
+          display: flex;
+          gap: 6px;
+          padding: 8px;
+          margin: 0 0 20px;
+          border-radius: var(--r-pill);
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .pred-cats::-webkit-scrollbar { display: none; }
+        .pred-cat {
+          padding: 8px 14px;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--t2);
+          border-radius: var(--r-pill);
+          white-space: nowrap;
+          text-decoration: none;
+          transition: color 150ms ease, background 150ms ease;
+        }
+        .pred-cat:hover {
+          color: var(--t1);
+          background: rgba(255, 255, 255, 0.06);
+        }
+        .pred-cat.is-all {
+          color: var(--t1);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        }
+      `}</style>
+      <nav
+        className="glass glass-thin pred-cats"
+        aria-label="Market categories"
+      >
+        <Link href="/predict" className="pred-cat is-all">
+          All
+        </Link>
+        {categories.map((c) => (
+          <Link key={c.slug} href={`/category/${c.slug}`} className="pred-cat">
+            {c.name}
+          </Link>
+        ))}
+      </nav>
+    </>
+  );
+}
 
 function MarketGrid({ markets }: { markets: PredictionMarket[] }) {
   if (!markets || markets.length === 0) return null;
@@ -107,6 +164,7 @@ function SectionHead({
 
 export default function PredictDiscoveryPage() {
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -123,6 +181,12 @@ export default function PredictDiscoveryPage() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+    api
+      .getCategories()
+      .then((cats) => {
+        if (!cancelled) setCategories(cats);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -166,6 +230,7 @@ export default function PredictDiscoveryPage() {
 
   return (
     <div>
+      <CategoryChips categories={categories} />
       <FeaturedHero
         market={marquee}
         activityMarkets={activityMarkets}

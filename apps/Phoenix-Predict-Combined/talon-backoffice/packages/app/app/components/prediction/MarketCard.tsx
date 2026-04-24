@@ -1,5 +1,20 @@
 "use client";
 
+/**
+ * MarketCard — Liquid Glass market tile used on /predict, /category,
+ * and the market-detail "related markets" rail.
+ *
+ * Renders a glass panel with: category pill + close-in pill, the market
+ * question, a current-pricing depth bar (YES-blue / NO-peach), and
+ * YES/NO side-price stats. Keeps the prop interface from the prior
+ * dark-broadcast version so /predict + /category keep compiling until
+ * Phase 4 upgrades those pages.
+ *
+ * MarketCardStyles is hoisted as a sibling of the <Link> so the CSS
+ * text doesn't bleed into the link's accessible name (regression fix,
+ * see Bug D in app/__tests__/qa-regressions-2026-04-18.test.ts).
+ */
+
 import Link from "next/link";
 import {
   formatCompactUsd,
@@ -17,8 +32,28 @@ interface MarketCardProps {
   liquidityCents?: number;
   closeAt: string;
   status: string;
-  /** Optional category label shown as the eyebrow. Defaults to ticker prefix. */
   categoryLabel?: string;
+}
+
+function hoursUntil(iso: string): number {
+  return (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60);
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case "open":
+      return "Live";
+    case "halted":
+      return "Halted";
+    case "closed":
+      return "Closed";
+    case "settled":
+      return "Settled";
+    case "voided":
+      return "Voided";
+    default:
+      return status;
+  }
 }
 
 export function MarketCard({
@@ -42,21 +77,11 @@ export function MarketCard({
   );
 
   const cat = (categoryLabel || ticker.split("-")[0]).toUpperCase();
-  // Cycle the dot color by category so cards don't all look the same.
-  const catColor =
-    cat.length % 4 === 0
-      ? "var(--accent)"
-      : cat.length % 4 === 1
-        ? "var(--yes)"
-        : cat.length % 4 === 2
-          ? "var(--whale)"
-          : "var(--no)";
-
   const depthLabel =
     openInterestCents != null
-      ? `${formatCompactUsd(openInterestCents)} open interest`
+      ? `${formatCompactUsd(openInterestCents)} OI`
       : liquidityCents != null
-        ? `${formatCompactUsd(liquidityCents)} liquidity`
+        ? `${formatCompactUsd(liquidityCents)} liq`
         : statusLabel(status);
 
   return (
@@ -64,244 +89,187 @@ export function MarketCard({
       <MarketCardStyles />
       <Link
         href={`/market/${ticker}`}
-        className="mkt"
+        className="mkt glass"
         aria-label={`${title}, ${yesPriceCents}¢ yes, ${noPriceCents}¢ no`}
       >
         <div className="mkt-head">
-          <span className="mkt-cat">
-            <span className="mkt-cat-dot" style={{ background: catColor }} />
-            {cat}
-          </span>
+          <span className="mkt-cat">{cat}</span>
           {isSettled ? (
             <span className="mkt-chip settled">Settled</span>
-          ) : soon ? (
-            <span className="mkt-chip soon">{timeLeft}</span>
           ) : (
-            <span className="mkt-chip">{timeLeft}</span>
+            <span className={`mkt-chip ${soon ? "soon" : ""}`}>{timeLeft}</span>
           )}
         </div>
 
         <h3 className="mkt-title">{title}</h3>
 
-        <div className="mkt-depth">
-          <div className="mkt-depth-head">
-            <span>Current pricing</span>
-            <span className="mono">
-              {yesPriceCents} / {noPriceCents}
-            </span>
-          </div>
-          <div className="mkt-depth-bar" aria-hidden>
-            <span className="mkt-depth-yes" style={{ width: `${yesShare}%` }} />
-            <span className="mkt-depth-no" style={{ width: `${noShare}%` }} />
-          </div>
+        <div className="mkt-bar" aria-hidden>
+          <span className="mkt-bar-yes" style={{ width: `${yesShare}%` }} />
+          <span className="mkt-bar-no" style={{ width: `${noShare}%` }} />
         </div>
 
-        <div className="mkt-mid">
+        <div className="mkt-sides">
           <div className="mkt-side yes">
-            <span className="mkt-side-label">Yes</span>
-            <div className="mkt-side-price">
-              <strong>{yesPriceCents}¢</strong>
-              <span className="mkt-side-hint">Current</span>
-            </div>
+            <span className="mkt-side-label">YES</span>
+            <span className="mkt-side-price">{yesPriceCents}¢</span>
           </div>
           <div className="mkt-side no">
-            <span className="mkt-side-label">No</span>
-            <div className="mkt-side-price">
-              <strong>{noPriceCents}¢</strong>
-              <span className="mkt-side-hint">Current</span>
-            </div>
+            <span className="mkt-side-label">NO</span>
+            <span className="mkt-side-price">{noPriceCents}¢</span>
           </div>
         </div>
 
         <div className="mkt-foot">
           <span>{depthLabel}</span>
-          <span className="vol">{formatCompactUsd(volumeCents)} vol</span>
+          <span className="mkt-vol">{formatCompactUsd(volumeCents)} vol</span>
         </div>
       </Link>
     </>
   );
 }
 
-/**
- * Styles for MarketCard — rendered as a sibling of the <Link>, not inside it.
- *
- * If we put the <style> tag inside the <Link>, the CSS text becomes part of
- * the link's accessible name (links readers and screen readers see ".mkt {
- * background: var(--s1)..." as link text). Hoisting it as a sibling keeps
- * the link's accessible name clean.
- *
- * The tag duplicates per card render, but browsers de-duplicate identical
- * style content at the parser level, so the cost is negligible. If we ever
- * want a true singleton, lift this into the layout or a CSS module.
- */
 function MarketCardStyles() {
   return (
     <style>{`
       .mkt {
-        background: var(--s1);
-        border: 1px solid var(--b1);
-        border-radius: var(--r-md);
-        padding: 16px;
-        transition: border-color 0.15s, transform 0.15s;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
+        padding: 18px 18px 16px;
+        border-radius: var(--r-md);
         text-decoration: none;
-        color: inherit;
+        color: var(--t1);
+        transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
       }
-      .mkt:hover { border-color: var(--accent); transform: translateY(-2px); }
+      .mkt:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+      .mkt:focus-visible {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          0 0 0 2px var(--accent-soft),
+          0 10px 28px rgba(0, 0, 0, 0.22);
+      }
+
       .mkt-head {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        gap: 8px;
       }
       .mkt-cat {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
+        color: var(--accent);
         text-transform: uppercase;
-        color: var(--t3);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
-      .mkt-cat-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        flex-shrink: 0;
+        letter-spacing: 0.08em;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 600;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: var(--r-pill);
+        background: rgba(43, 228, 128, 0.08);
+        border: 1px solid rgba(43, 228, 128, 0.22);
+        box-shadow:
+          inset 0 1px 0 rgba(43, 228, 128, 0.22),
+          0 0 16px rgba(43, 228, 128, 0.08);
       }
       .mkt-chip {
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 999px;
-        background: var(--s2);
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
         color: var(--t2);
-        white-space: nowrap;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: var(--r-pill);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-variant-numeric: tabular-nums;
       }
       .mkt-chip.soon {
-        background: rgba(251,191,36,0.14);
-        color: var(--whale);
-        border: 1px solid rgba(251,191,36,0.3);
+        color: var(--live);
+        background: rgba(255, 107, 107, 0.1);
+        border-color: rgba(255, 107, 107, 0.22);
       }
       .mkt-chip.settled {
-        background: rgba(148,163,184,0.14);
-        color: var(--t2);
+        color: var(--t3);
+        background: rgba(255, 255, 255, 0.04);
       }
+
       .mkt-title {
         font-size: 15px;
         font-weight: 600;
-        line-height: 1.35;
+        line-height: 1.32;
+        letter-spacing: -0.01em;
         color: var(--t1);
         margin: 0;
-      }
-      .mkt-depth {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .mkt-depth-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: var(--t3);
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-      }
-      .mkt-depth-bar {
-        display: flex;
-        width: 100%;
-        height: 10px;
+        min-height: 40px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
+      }
+
+      .mkt-bar {
+        position: relative;
+        display: flex;
+        height: 4px;
         border-radius: 999px;
-        background: var(--s2);
-        border: 1px solid var(--b1);
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.35);
       }
-      .mkt-depth-yes {
-        background: linear-gradient(90deg, rgba(127, 200, 255,0.72), rgba(127, 200, 255,0.92));
+      .mkt-bar-yes {
+        background: linear-gradient(90deg, var(--yes-lo), var(--yes));
+        box-shadow: 0 0 8px var(--yes-glow);
       }
-      .mkt-depth-no {
-        background: linear-gradient(90deg, rgba(255, 155, 107,0.92), rgba(255, 155, 107,0.72));
+      .mkt-bar-no {
+        background: linear-gradient(90deg, var(--no), var(--no-lo));
       }
-      .mkt-mid {
+
+      .mkt-sides {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 10px;
       }
       .mkt-side {
-        padding: 10px 12px;
-        border-radius: var(--r-sm);
-        background: var(--s2);
-        border: 1px solid transparent;
-        transition: all 0.15s;
-      }
-      .mkt-side.yes:hover {
-        background: rgba(127, 200, 255,0.1);
-        border-color: var(--yes);
-      }
-      .mkt-side.no:hover {
-        background: rgba(255, 155, 107,0.1);
-        border-color: var(--no);
-      }
-      .mkt-side-label {
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        color: var(--t3);
-        margin-bottom: 2px;
-        text-transform: uppercase;
-      }
-      .mkt-side-price {
         display: flex;
         align-items: baseline;
         justify-content: space-between;
-        gap: 6px;
+        padding: 8px 10px;
+        border-radius: var(--r-sm);
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.06);
       }
-      .mkt-side-hint {
-        font-size: 11px;
+      .mkt-side-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
         color: var(--t3);
       }
-      .mkt-side-price strong {
+      .mkt-side.yes .mkt-side-label { color: var(--yes); }
+      .mkt-side.no  .mkt-side-label { color: var(--no); }
+      .mkt-side-price {
         font-family: 'IBM Plex Mono', monospace;
-        font-variant-numeric: tabular-nums;
         font-size: 18px;
-        font-weight: 700;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
         letter-spacing: -0.01em;
       }
-      .mkt-side.yes strong { color: var(--yes); }
-      .mkt-side.no strong { color: var(--no); }
+      .mkt-side.yes .mkt-side-price { color: var(--yes); }
+      .mkt-side.no  .mkt-side-price { color: var(--no); }
+
       .mkt-foot {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: baseline;
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 11px;
         color: var(--t3);
-        padding-top: 10px;
-        border-top: 1px solid var(--b1);
-      }
-      .mkt-foot .vol {
-        font-family: 'IBM Plex Mono', monospace;
         font-variant-numeric: tabular-nums;
-        color: var(--t2);
-        font-weight: 600;
+        padding-top: 2px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
       }
+      .mkt-vol { color: var(--t2); }
     `}</style>
   );
-}
-
-function hoursUntil(closeAt: string): number {
-  return (new Date(closeAt).getTime() - Date.now()) / (1000 * 60 * 60);
-}
-
-function statusLabel(status: string): string {
-  if (status === "open") return "Live market";
-  if (status === "closed") return "Trading closed";
-  if (status === "settled") return "Market settled";
-  return status.replace(/_/g, " ");
 }

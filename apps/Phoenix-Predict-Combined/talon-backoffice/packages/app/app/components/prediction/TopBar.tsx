@@ -55,6 +55,21 @@ export function TopBar() {
   const [allMarkets, setAllMarkets] = useState<PredictionMarket[]>([]);
   const [cursor, setCursor] = useState(0);
 
+  // Mobile-vs-desktop gate. Matches the CSS breakpoint in .tb below so
+  // the nav links + search are removed from the DOM on mobile (not just
+  // display:none), which keeps text-based tests deterministic — the
+  // same "Rewards" label shouldn't appear twice in DOM order (once in
+  // the nav, once in a page kicker). Phase-3 smoke spec relies on this.
+  const [isDesktop, setIsDesktop] = useState(true);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 900px)");
+    const sync = () => setIsDesktop(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
   const loadMarketsIfNeeded = useCallback(async () => {
     if (allMarkets.length > 0) return;
     try {
@@ -431,17 +446,19 @@ export function TopBar() {
           </span>
         </Link>
 
-        <nav className="tb-nav" aria-label="Primary">
-          {NAV_LINKS.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
+        {isDesktop && (
+          <nav className="tb-nav" aria-label="Primary">
+            {NAV_LINKS.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         <div className="tb-right">
           <div
