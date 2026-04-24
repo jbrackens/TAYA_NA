@@ -239,6 +239,13 @@ func (r *atomicMemRepo) PersistResolvedMarketAtomic(
 		if err := r.memRepo.CreatePayout(ctx, &payouts[i]); err != nil {
 			return nil, err
 		}
+		for _, pos := range r.memRepo.positions {
+			if pos.ID == payouts[i].PositionID {
+				pos.Quantity = 0
+				pos.RealizedPnlCents += payouts[i].PnlCents
+				break
+			}
+		}
 	}
 	for _, credit := range credits {
 		if err := wallet.Credit(credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
@@ -779,6 +786,52 @@ func TestResolveMarket_UsesAtomicSettlementWhenAvailable(t *testing.T) {
 	}
 	if len(wallet.creditCalls) != 1 || wallet.creditCalls[0].userID != "alice" {
 		t.Fatalf("expected one winner credit for alice, got %+v", wallet.creditCalls)
+	}
+}
+
+// Regression: atomic settlement must zero out position quantity and credit
+// the realized pnl onto the position row. Without this the portfolio summary
+// keeps alice's already-settled holdings in "open positions" / "invested".
+func TestResolveMarket_AtomicSettlement_ZerosPositions(t *testing.T) {
+	repo := &atomicMemRepo{memRepo: newMemRepo()}
+	m := seedMarket(t, repo.memRepo)
+	m.Status = MarketStatusClosed
+
+	repo.positions["alice:mkt-1:yes"] = &Position{
+		ID: "pos-alice", UserID: "alice", MarketID: "mkt-1", Side: OrderSideYes,
+		Quantity: 20, AvgPriceCents: 50, TotalCostCents: 1000,
+	}
+	repo.positions["bob:mkt-1:no"] = &Position{
+		ID: "pos-bob", UserID: "bob", MarketID: "mkt-1", Side: OrderSideNo,
+		Quantity: 15, AvgPriceCents: 50, TotalCostCents: 750,
+	}
+
+	wallet := &fakeTxWallet{fakeWallet: &fakeWallet{balances: map[string]int64{"alice": 0, "bob": 0}}}
+	svc := NewService(repo, wallet)
+
+	if _, _, err := svc.ResolveMarket(context.Background(), "mkt-1", ResolveMarketRequest{
+		Result:            MarketResultYes,
+		AttestationSource: "admin",
+	}, nil); err != nil {
+		t.Fatalf("ResolveMarket failed: %v", err)
+	}
+
+	alice := repo.positions["alice:mkt-1:yes"]
+	if alice.Quantity != 0 {
+		t.Errorf("winner alice: expected quantity=0 after settle, got %d", alice.Quantity)
+	}
+	// alice bought 20 @ 50¢ = 1000¢ cost, YES won → payout 2000¢, pnl 1000¢.
+	if alice.RealizedPnlCents != 1000 {
+		t.Errorf("winner alice: expected realized_pnl=1000, got %d", alice.RealizedPnlCents)
+	}
+
+	bob := repo.positions["bob:mkt-1:no"]
+	if bob.Quantity != 0 {
+		t.Errorf("loser bob: expected quantity=0 after settle, got %d", bob.Quantity)
+	}
+	// bob bought 15 @ 50¢ = 750¢ cost, NO lost → payout 0, pnl -750¢.
+	if bob.RealizedPnlCents != -750 {
+		t.Errorf("loser bob: expected realized_pnl=-750, got %d", bob.RealizedPnlCents)
 	}
 }
 

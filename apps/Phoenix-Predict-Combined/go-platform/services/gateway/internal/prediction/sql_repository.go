@@ -666,6 +666,9 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 		if err := r.createPayoutWithExec(ctx, tx, &payouts[i]); err != nil {
 			return nil, err
 		}
+		if err := r.closeSettledPositionWithExec(ctx, tx, payouts[i].PositionID, payouts[i].PnlCents); err != nil {
+			return nil, fmt.Errorf("close settled position %s: %w", payouts[i].PositionID, err)
+		}
 	}
 	for _, credit := range credits {
 		if err := txWallet.CreditWithTx(ctx, tx, credit.UserID, credit.AmountCents, credit.IdempotencyKey, credit.Reason); err != nil {
@@ -797,6 +800,22 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 		p.SettlementID, p.PositionID, p.UserID, p.MarketID, p.Side,
 		p.Quantity, p.EntryPriceCents, p.ExitPriceCents, p.PnlCents, p.PayoutCents,
 	).Scan(&p.ID, &p.PaidAt)
+}
+
+// closeSettledPositionWithExec zeroes a position's quantity and writes the
+// realized pnl from its payout. Required because the portfolio summary query
+// filters open positions on `quantity > 0`; without this the INVESTED and
+// OPEN POSITIONS stats keep counting already-settled holdings.
+func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer sqlRowExecer, positionID string, pnlCents int64) error {
+	_, err := execer.ExecContext(ctx,
+		`UPDATE prediction_positions
+		   SET quantity = 0,
+		       realized_pnl_cents = realized_pnl_cents + $2,
+		       updated_at = NOW()
+		 WHERE id = $1`,
+		positionID, pnlCents,
+	)
+	return err
 }
 
 // --- Lifecycle Events ---
