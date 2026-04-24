@@ -439,18 +439,98 @@ function PageState({
   children: React.ReactNode;
   tone?: "muted" | "error";
 }) {
+  const isError = tone === "error";
+
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "60vh",
-        fontSize: 13,
-        color: tone === "error" ? "var(--no)" : "var(--t3)",
-      }}
-    >
-      {children}
-    </div>
+    <>
+      <style>{`
+        .md-state {
+          min-height: 60vh;
+          display: grid;
+          place-items: center;
+          padding: 32px 16px;
+        }
+        .md-state-card {
+          width: min(100%, 440px);
+          padding: 28px;
+          border-radius: var(--r-lg);
+          text-align: center;
+          color: var(--t1);
+        }
+        .md-state-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 28px;
+          padding: 0 12px;
+          margin-bottom: 14px;
+          border-radius: var(--r-pill);
+          border: 1px solid ${isError ? "rgba(255, 155, 107, 0.28)" : "rgba(43, 228, 128, 0.28)"};
+          color: ${isError ? "var(--no)" : "var(--accent)"};
+          background: ${isError ? "rgba(255, 155, 107, 0.08)" : "rgba(43, 228, 128, 0.08)"};
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+        .md-state-title {
+          margin: 0;
+          font-size: 22px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+        }
+        .md-state-copy {
+          margin: 10px 0 0;
+          color: var(--t2);
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .md-state-action {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 44px;
+          margin-top: 22px;
+          padding: 0 20px;
+          border-radius: var(--r-md);
+          color: #04140a;
+          font-size: 14px;
+          font-weight: 700;
+          text-decoration: none;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%),
+            linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
+          border: 1px solid rgba(43, 228, 128, 0.6);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.5),
+            0 10px 28px rgba(43, 228, 128, 0.18);
+          transition:
+            transform 180ms ease,
+            filter 180ms ease;
+        }
+        .md-state-action:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.05);
+        }
+      `}</style>
+      <div className="md-state">
+        <section className="glass md-state-card" aria-live="polite">
+          <div className="md-state-eyebrow">
+            {isError ? "Market unavailable" : "Loading"}
+          </div>
+          <h1 className="md-state-title">
+            {isError ? "We couldn't open that market" : children}
+          </h1>
+          {isError && (
+            <>
+              <p className="md-state-copy">{children}</p>
+              <Link href="/predict" className="md-state-action">
+                Back to Markets
+              </Link>
+            </>
+          )}
+        </section>
+      </div>
+    </>
   );
 }
