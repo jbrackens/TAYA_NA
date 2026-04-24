@@ -452,7 +452,7 @@ function Styles() {
       .lb-wrap {
         max-width: 1180px;
         margin: 0 auto;
-        padding: 32px 24px 60px;
+        padding: 0 0 60px;
       }
       .lb-head {
         display: flex;
@@ -492,13 +492,24 @@ function Styles() {
         align-items: start;
       }
 
-      /* ── Sidebar ── */
+      /* ── Sidebar / Detail / State cards — all Liquid Glass ── */
       .lb-sidebar,
       .lb-detail,
       .lb-state-card {
-        background: var(--s1);
-        border: 1px solid var(--b1);
+        position: relative;
         border-radius: var(--r-lg);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
+          var(--glass-regular);
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          inset 1px 0 2px var(--chroma-1),
+          inset -1px 0 2px var(--chroma-2),
+          0 10px 28px rgba(0,0,0,0.22);
       }
       .lb-sidebar {
         padding: 10px;
@@ -522,10 +533,11 @@ function Styles() {
         font-family: inherit;
         transition: background 120ms ease, border-color 120ms ease;
       }
-      .lb-tab:hover { background: var(--s2); }
+      .lb-tab:hover { background: rgba(255, 255, 255, 0.05); }
       .lb-tab.is-active {
-        background: var(--accent-soft);
-        border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+        background: rgba(43, 228, 128, 0.1);
+        border-color: rgba(43, 228, 128, 0.3);
+        box-shadow: inset 0 1px 0 rgba(43, 228, 128, 0.18);
       }
       .lb-tab-name {
         grid-column: 1;
@@ -560,11 +572,11 @@ function Styles() {
         grid-row: 2;
         margin-top: 4px;
         appearance: none;
-        background: var(--s2);
-        border: 1px solid var(--b1);
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         color: var(--t1);
         padding: 4px 8px;
-        border-radius: 6px;
+        border-radius: var(--r-sm);
         font-size: 12px;
         font-family: inherit;
         cursor: pointer;
@@ -615,7 +627,7 @@ function Styles() {
       .lb-table th,
       .lb-table td {
         padding: 10px 6px;
-        border-bottom: 1px solid var(--b1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         vertical-align: middle;
       }
       .lb-table th {
@@ -630,7 +642,8 @@ function Styles() {
       .lb-trader { color: var(--t1); font-weight: 500; }
       .lb-subtle { color: var(--t3); }
       .lb-table tbody tr.is-viewer {
-        background: var(--accent-soft);
+        background: rgba(43, 228, 128, 0.1);
+        box-shadow: inset 0 1px 0 rgba(43, 228, 128, 0.18);
       }
       .lb-table tbody tr.is-viewer td {
         color: var(--t1);
@@ -672,15 +685,21 @@ function Styles() {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 10px 18px;
-        background: var(--accent);
-        color: #06170a;
-        border-radius: 999px;
+        padding: 12px 22px;
+        color: #04140a;
+        border-radius: var(--r-md);
         font-size: 13px;
         font-weight: 700;
-        box-shadow: var(--accent-glow);
+        text-decoration: none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
+          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
+        border: 1px solid rgba(43, 228, 128, 0.6);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.5),
+          0 10px 24px rgba(43, 228, 128, 0.18);
       }
-      .lb-state-cta:hover { background: var(--accent-hi); }
+      .lb-state-cta:hover { filter: brightness(1.05); }
 
       /* ── Responsive ── */
       @media (max-width: 1024px) {
