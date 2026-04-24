@@ -704,9 +704,9 @@ function Styles() {
   return (
     <style>{`
       .pf-wrap {
-        max-width: 1440px;
+        max-width: 1280px;
         margin: 0 auto;
-        padding: 24px 24px 60px;
+        padding: 0 0 60px;
       }
 
       .pf-head { margin-bottom: 20px; }
@@ -725,27 +725,30 @@ function Styles() {
 
       .pf-login-cta {
         display: inline-block;
-        padding: 10px 18px;
-        background: var(--accent);
-        color: #06170a;
-        border-radius: 999px;
-        font-weight: 600;
+        padding: 12px 22px;
+        color: #04140a;
+        border-radius: var(--r-md);
+        font-weight: 700;
         font-size: 13px;
-        box-shadow: var(--accent-glow);
         text-decoration: none;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
+          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
+        border: 1px solid rgba(43, 228, 128, 0.6);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.5),
+          0 10px 24px rgba(43, 228, 128, 0.18);
       }
-      .pf-login-cta:hover { background: var(--accent-hi); }
+      .pf-login-cta:hover { filter: brightness(1.05); }
 
       /* Summary strip */
       .pf-summary {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
+        gap: 14px;
         margin-bottom: 24px;
       }
-      .pf-summary-5 {
-        grid-template-columns: repeat(5, 1fr);
-      }
+      .pf-summary-5 { grid-template-columns: repeat(5, 1fr); }
       @media (max-width: 1024px) {
         .pf-summary-5 { grid-template-columns: repeat(3, 1fr); }
       }
@@ -754,126 +757,151 @@ function Styles() {
         .pf-summary-5 { grid-template-columns: repeat(2, 1fr); }
       }
 
-      /* Rank chip — 5th slot in summary strip. Active-state accent-soft bg
-       * per plan §6 token usage, marking it as an interactive surface. */
-      .pf-rank-chip {
+      /* Stat card — .glass recipe inline so we don't need to append the
+       * class to every JSX node. Same geometry on all 5 cards, including
+       * the RankChip to keep the strip optically even. */
+      .pf-stat, .pf-rank-chip {
+        position: relative;
+        padding: 16px 18px;
+        border-radius: var(--r-md);
+        color: var(--t1);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.02) 100%),
+          var(--glass-regular);
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        border: 1px solid rgba(255,255,255,0.13);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          inset 1px 0 2px var(--chroma-1),
+          inset -1px 0 2px var(--chroma-2),
+          0 2px 6px rgba(0,0,0,0.18),
+          0 8px 24px rgba(0,0,0,0.22);
         display: flex;
         flex-direction: column;
         gap: 4px;
-        padding: 16px 18px;
-        background: var(--accent-soft);
-        border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--b1));
-        border-radius: var(--r-md);
-        color: var(--t1);
         text-decoration: none;
-        transition: border-color 120ms ease, background 120ms ease;
+      }
+      .pf-rank-chip {
+        background:
+          linear-gradient(180deg, rgba(43, 228, 128, 0.16) 0%, rgba(43, 228, 128, 0.04) 100%),
+          var(--glass-regular);
+        border-color: rgba(43, 228, 128, 0.3);
       }
       .pf-rank-chip:hover {
-        border-color: color-mix(in srgb, var(--accent) 48%, var(--b1));
+        border-color: rgba(43, 228, 128, 0.55);
+        transform: translateY(-1px);
+        transition: transform 150ms ease, border-color 150ms ease;
       }
       .pf-rank-chip:focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
+        outline: none;
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          0 0 0 2px var(--accent-soft),
+          0 0 16px var(--accent-glow-color);
       }
 
-      /* +X pts suffix on settled-trade rows. Muted --t3 per plan §1. */
       .pf-pts {
         color: var(--t3);
         font-size: 12px;
         white-space: nowrap;
       }
-      .pf-stat {
-        background: var(--s1);
-        border: 1px solid var(--b1);
-        border-radius: var(--r-md);
-        padding: 16px 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
       .pf-stat-label {
         font-size: 10px;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: var(--t3);
       }
       .pf-stat-value {
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 22px;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--t1);
         letter-spacing: -0.01em;
+        font-variant-numeric: tabular-nums;
       }
-      .pf-stat-yes .pf-stat-value { color: var(--yes); }
-      .pf-stat-no .pf-stat-value { color: var(--no); }
-      .pf-stat-gain .pf-stat-value { color: var(--gain); }
-      .pf-stat-sub {
-        font-size: 11px;
-        color: var(--t3);
-      }
+      .pf-stat-yes .pf-stat-value { color: var(--yes); text-shadow: 0 0 8px var(--yes-glow); }
+      .pf-stat-no .pf-stat-value { color: var(--no); text-shadow: 0 0 8px var(--no-glow); }
+      .pf-stat-gain .pf-stat-value { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow-color); }
+      .pf-stat-sub { font-size: 11px; color: var(--t3); }
 
-      /* Tab bar */
+      /* Tab bar — glass-thin pill segmented control */
       .pf-tabs {
-        display: flex;
-        gap: 4px;
-        margin-bottom: 16px;
-        border-bottom: 1px solid var(--b1);
+        display: inline-flex;
+        gap: 2px;
+        padding: 4px;
+        margin-bottom: 18px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--r-pill);
       }
       .pf-tab {
         background: transparent;
         border: 0;
-        border-bottom: 2px solid transparent;
-        padding: 10px 14px;
+        padding: 8px 16px;
+        border-radius: var(--r-pill);
         font-family: inherit;
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
         color: var(--t3);
         cursor: pointer;
-        transition: color 0.15s, border-color 0.15s;
+        transition: color 150ms ease, background 150ms ease;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: -1px;
       }
       .pf-tab:hover { color: var(--t1); }
       .pf-tab.active {
         color: var(--t1);
-        border-bottom-color: var(--accent);
+        background: rgba(255, 255, 255, 0.1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
       }
       .pf-tab-count {
-        font-size: 11px;
-        padding: 2px 6px;
-        border-radius: 999px;
-        background: var(--s2);
+        font-size: 10px;
+        padding: 1px 7px;
+        border-radius: var(--r-pill);
+        background: rgba(0, 0, 0, 0.35);
         color: var(--t2);
+        font-variant-numeric: tabular-nums;
       }
       .pf-tab.active .pf-tab-count {
-        background: var(--accent-soft);
+        background: rgba(43, 228, 128, 0.16);
         color: var(--accent);
       }
 
-      /* Table */
+      /* Table container — glass card, solid-fill rows inside */
       .pf-table {
-        background: var(--s1);
-        border: 1px solid var(--b1);
+        position: relative;
         border-radius: var(--r-md);
         overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
+          var(--glass-regular);
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          0 10px 28px rgba(0,0,0,0.22);
       }
       .pf-thead, .pf-tr-link, .pf-tr-static {
         display: grid;
         grid-template-columns: var(--pf-cols);
         gap: 14px;
-        padding: 10px 18px;
+        padding: 12px 18px;
         align-items: center;
       }
       .pf-thead {
-        background: var(--s2);
-        border-bottom: 1px solid var(--b1);
+        background: rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       }
       .pf-th {
         font-size: 10px;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
         color: var(--t3);
       }
@@ -883,22 +911,22 @@ function Styles() {
         padding: 0;
       }
       .pf-tr {
-        border-top: 1px solid var(--b1);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
       }
       .pf-tr:first-child { border-top: 0; }
       .pf-tr-link, .pf-tr-static {
         padding: 14px 18px;
         color: inherit;
         text-decoration: none;
-        transition: background 0.15s;
+        transition: background 150ms ease;
       }
-      .pf-tr-link:hover {
-        background: var(--s2);
-      }
+      .pf-tr-link:hover { background: rgba(255, 255, 255, 0.04); }
       .pf-td {
+        font-family: 'IBM Plex Mono', monospace;
         font-size: 13px;
         color: var(--t1);
         min-width: 0;
+        font-variant-numeric: tabular-nums;
       }
 
       .pf-market {
@@ -908,6 +936,7 @@ function Styles() {
         min-width: 0;
       }
       .pf-market-title {
+        font-family: 'Outfit', sans-serif;
         font-size: 13px;
         font-weight: 600;
         color: var(--t1);
@@ -918,7 +947,8 @@ function Styles() {
       .pf-market-ticker {
         font-size: 10px;
         color: var(--t3);
-        letter-spacing: 0.04em;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
       .pf-side {
@@ -927,47 +957,47 @@ function Styles() {
         border-radius: var(--r-sm);
         font-size: 10px;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.12em;
       }
       .pf-side-yes {
-        background: rgba(127, 200, 255,0.14);
+        background: rgba(127, 200, 255, 0.14);
         color: var(--yes);
       }
       .pf-side-no {
-        background: rgba(255, 155, 107,0.14);
+        background: rgba(255, 155, 107, 0.14);
         color: var(--no);
       }
 
       .pf-status {
         display: inline-block;
-        padding: 3px 8px;
-        border-radius: var(--r-sm);
+        padding: 3px 10px;
+        border-radius: var(--r-pill);
         font-size: 10px;
         font-weight: 600;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
         text-transform: capitalize;
-        background: var(--s2);
+        background: rgba(255, 255, 255, 0.06);
         color: var(--t2);
-        border: 1px solid var(--b1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
       .pf-status-filled {
-        background: rgba(127, 200, 255,0.14);
+        background: rgba(127, 200, 255, 0.14);
         color: var(--yes);
-        border-color: rgba(127, 200, 255,0.3);
+        border-color: rgba(127, 200, 255, 0.3);
       }
       .pf-status-open, .pf-status-partial {
-        background: var(--accent-soft);
+        background: rgba(43, 228, 128, 0.14);
         color: var(--accent);
-        border-color: rgba(43, 228, 128,0.3);
+        border-color: rgba(43, 228, 128, 0.3);
       }
       .pf-status-cancelled, .pf-status-expired {
-        background: var(--s2);
+        background: rgba(255, 255, 255, 0.04);
         color: var(--t3);
       }
 
-      .pf-gain { color: var(--gain); font-weight: 700; }
+      .pf-gain { color: var(--accent); font-weight: 700; text-shadow: 0 0 6px var(--accent-glow-color); }
       .pf-loss { color: var(--no); font-weight: 700; }
-      .pf-dim { color: var(--t3); }
+      .pf-dim  { color: var(--t3); }
 
       .pf-inline-link {
         color: var(--accent);
@@ -977,8 +1007,6 @@ function Styles() {
       .pf-inline-link:hover { text-decoration: underline; }
 
       .pf-empty {
-        background: var(--s1);
-        border: 1px dashed var(--b1);
         border-radius: var(--r-md);
         padding: 40px 20px;
         text-align: center;
@@ -988,6 +1016,8 @@ function Styles() {
         flex-direction: column;
         gap: 10px;
         align-items: center;
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px dashed rgba(255, 255, 255, 0.1);
       }
     `}</style>
   );
