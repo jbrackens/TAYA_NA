@@ -52,6 +52,7 @@ function CategoryChips({ categories }: { categories: Category[] }) {
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          flex: 0 0 auto;
           min-width: 44px;
           min-height: 44px;
           padding: 0 14px;
