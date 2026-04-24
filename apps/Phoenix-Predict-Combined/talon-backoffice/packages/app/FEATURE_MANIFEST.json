@@ -407,33 +407,33 @@
     },
     {
       "legacy_path": "app/components/LiveNow.tsx",
-      "app_equivalent": "app/components/LiveNow.tsx",
-      "status": "REAL",
-      "notes": "Wired to getSports/getEvents from events-client + wsService for real-time fixture updates"
+      "app_equivalent": null,
+      "status": "REMOVED",
+      "notes": "Sportsbook component, orphaned after the Predict cutover. No app/ page imported it. Deleted along with its broken sportsbook WS subscription (2026-04-24)."
     },
     {
       "legacy_path": "app/components/FeaturedMatches.tsx",
-      "app_equivalent": "app/components/FeaturedMatches.tsx",
-      "status": "REAL",
-      "notes": "Uses events-client getEvents and wsService for live updates with betslip integration"
+      "app_equivalent": null,
+      "status": "REMOVED",
+      "notes": "Sportsbook component, orphaned. Deleted 2026-04-24."
     },
     {
       "legacy_path": "app/components/UpcomingMatches.tsx",
-      "app_equivalent": "app/components/UpcomingMatches.tsx",
-      "status": "REAL",
-      "notes": "Uses events-client getSports/getEvents for upcoming match display"
+      "app_equivalent": null,
+      "status": "REMOVED",
+      "notes": "Sportsbook component, orphaned. Deleted 2026-04-24."
     },
     {
       "legacy_path": "app/components/MatchHeader.tsx",
-      "app_equivalent": "app/components/MatchHeader.tsx",
-      "status": "REAL",
-      "notes": "Wired to real wsService for live score/period/clock updates"
+      "app_equivalent": null,
+      "status": "REMOVED",
+      "notes": "Sportsbook component, orphaned. Deleted 2026-04-24."
     },
     {
       "legacy_path": "app/components/MatchTimeline.tsx",
-      "app_equivalent": "app/components/MatchTimeline.tsx",
-      "status": "REAL",
-      "notes": "Wired to real wsService for live incident updates with deduplication"
+      "app_equivalent": null,
+      "status": "REMOVED",
+      "notes": "Sportsbook component, orphaned. Deleted 2026-04-24."
     },
     {
       "legacy_path": "app/components/BetCard.tsx",
