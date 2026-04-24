@@ -22,6 +22,10 @@
     "export": "yarn build && next export",
     "test": "jest --passWithNoTests --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
     "test:coverage": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
+    "test:smoke": "playwright test --config=./playwright.config.ts",
+    "test:smoke:ui": "playwright test --config=./playwright.config.ts --ui",
+    "typecheck": "./scripts/typecheck-scoped.sh",
+    "typecheck:full": "tsc --noEmit",
     "watch": "node ./scripts/translations/watch.js"
   },
   "dependencies": {
@@ -47,6 +51,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@reduxjs/toolkit": "^1.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/jest": "24.0.23",

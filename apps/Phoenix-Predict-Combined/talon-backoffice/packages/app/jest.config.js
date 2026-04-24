@@ -18,6 +18,8 @@ module.exports = {
     "services/",
     // app/__tests__/ tests use node:test / node:assert — run via `node --test`
     "app/__tests__/",
+    // tests/smoke/ uses Playwright (@playwright/test). Run via `yarn test:smoke`.
+    "tests/",
   ],
   // jest 25 can't resolve node: protocol imports used by next-i18next's
   // i18next-fs-backend. Mock next-i18next to avoid loading the real backend.

@@ -68,3 +68,8 @@ next-swc.*.node
 
 # Scratch output from gstack / frontend-slides / design-consultation skills
 outputs/
+
+# Playwright smoke-test artifacts (Phase 0.5 of Liquid Glass redesign)
+apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/tests/.auth/
+apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/test-results/
+apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/playwright-report/
