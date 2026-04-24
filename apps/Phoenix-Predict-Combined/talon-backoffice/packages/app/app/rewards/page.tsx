@@ -200,7 +200,9 @@ export default function RewardsPage() {
                     </td>
                     <td>
                       <div className="rw-event">{labelForEntry(entry)}</div>
-                      <div className="rw-reason">{entry.reason}</div>
+                      {shouldShowReason(entry) && (
+                        <div className="rw-reason">{entry.reason}</div>
+                      )}
                     </td>
                     <td
                       className={`mono rw-num ${entry.deltaPoints >= 0 ? "rw-pos" : "rw-neg"}`}
@@ -340,8 +342,14 @@ function PageState({
 
 function labelForEntry(e: LoyaltyLedgerEntry): string {
   switch (e.eventType) {
-    case "accrual":
+    case "accrual": {
+      // Backend reason is "settled trade (won)" / "settled trade (lost)".
+      // Fold the outcome into the label so the reason row doesn't duplicate it.
+      const r = e.reason ?? "";
+      if (r.includes("(won)")) return "Settled trade · won";
+      if (r.includes("(lost)")) return "Settled trade · lost";
       return "Settled trade";
+    }
     case "adjustment":
       return "Adjustment";
     case "promotion":
@@ -351,6 +359,16 @@ function labelForEntry(e: LoyaltyLedgerEntry): string {
     default:
       return e.eventType;
   }
+}
+
+// shouldShowReason decides whether to render the reason line under the event
+// label. For accruals we fold the win/loss outcome into the label itself, so
+// rendering the reason ("settled trade (won)") would just duplicate. Other
+// event types carry free-form operator notes worth surfacing.
+function shouldShowReason(e: LoyaltyLedgerEntry): boolean {
+  if (!e.reason) return false;
+  if (e.eventType === "accrual") return false;
+  return true;
 }
 
 function formatPoints(raw: number): string {

@@ -694,6 +694,18 @@ function Styles() {
           flex: 0 0 220px;
           scroll-snap-align: start;
         }
+        /* Category Champions packs a dropdown + title + rank into one tab;
+           give it more horizontal room and a bigger touch target than the
+           regular 220px tab so the select isn't cramped on phones. */
+        .lb-sidebar > .lb-category {
+          flex: 0 0 280px;
+        }
+        .lb-category-select {
+          width: 100%;
+          padding: 8px 10px;
+          min-height: 36px;
+          font-size: 13px;
+        }
       }
       @media (max-width: 720px) {
         .lb-wrap { padding-inline: 16px; }
