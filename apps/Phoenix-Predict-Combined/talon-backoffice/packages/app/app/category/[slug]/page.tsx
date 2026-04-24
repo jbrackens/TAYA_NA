@@ -81,32 +81,44 @@ export default function CategoryPage() {
   return (
     <>
       <style>{`
-        .cat-wrap { max-width: 1440px; margin: 0 auto; padding: 24px 24px 60px; }
-        .cat-head { margin-bottom: 20px; }
+        .cat-head {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
         .cat-title {
           font-size: 28px;
           font-weight: 800;
           letter-spacing: -0.02em;
           color: var(--t1);
-          margin: 0 0 4px;
+          margin: 0;
         }
         .cat-sub {
-          font-size: 13px;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 12px;
           color: var(--t3);
+          font-variant-numeric: tabular-nums;
+          letter-spacing: 0.04em;
         }
         .cat-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 14px;
+          gap: 16px;
         }
         .cat-empty {
           padding: 60px 20px;
           text-align: center;
           color: var(--t3);
           font-size: 13px;
+          border-radius: var(--r-md);
+          background: rgba(0, 0, 0, 0.18);
+          border: 1px dashed rgba(255, 255, 255, 0.1);
         }
       `}</style>
-      <div className="cat-wrap">
+      <div>
         <header className="cat-head">
           <h1 className="cat-title">{category?.name || slug}</h1>
           <p className="cat-sub">
