@@ -352,18 +352,18 @@ const securityStyles = `
     .sec-header { flex-direction: column; gap: 16px; }
   }
 
-  .sec-header h1 { font-size: 28px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px; }
+  .sec-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
   .sec-header p { font-size: 14px; color: #64748b; }
 
   .sec-back {
-    padding: 10px 16px; background: #0f1225; border: 1px solid #1a1f3a;
-    border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
+    padding: 10px 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px; color: var(--t1); text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
   .sec-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .sec-tabs {
-    display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #1a1f3a;
+    display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .sec-tab {
@@ -377,12 +377,12 @@ const securityStyles = `
   }
 
   .sec-card {
-    background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
+    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
     padding: 24px;
   }
 
   .sec-card h2 {
-    font-size: 18px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;
+    font-size: 18px; font-weight: 700; color: var(--t1); margin-bottom: 8px;
   }
 
   .sec-desc {
@@ -400,8 +400,8 @@ const securityStyles = `
   }
 
   .sec-input {
-    padding: 10px 12px; background: #161a32; border: 1px solid #1a1f3a;
-    border-radius: 8px; color: #e2e8f0; font-size: 14px;
+    padding: 10px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px; color: var(--t1); font-size: 14px;
     outline: none; transition: border-color 0.15s;
   }
 
@@ -410,8 +410,8 @@ const securityStyles = `
   }
 
   .sec-error {
-    padding: 10px 12px; background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
+    padding: 10px 12px; background: rgba(255, 155, 107, 0.08);
+    border: 1px solid rgba(255, 155, 107, 0.2); border-radius: 8px;
     color: var(--no); font-size: 13px; font-weight: 500;
   }
 
@@ -426,7 +426,7 @@ const securityStyles = `
 
   .sec-twofa {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: #161a32; border-radius: 8px;
+    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
   }
   @media (max-width: 640px) {
     .sec-twofa { flex-direction: column; gap: 16px; align-items: flex-start; }
@@ -441,7 +441,7 @@ const securityStyles = `
   }
 
   .sec-twofa-title {
-    font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px;
+    font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 4px;
   }
 
   .sec-twofa-desc {
@@ -454,15 +454,15 @@ const securityStyles = `
   }
 
   .sec-twofa-btn.enable {
-    background: var(--accent); color: #101114;
+    background: var(--accent); color: #04140a;
   }
 
   .sec-twofa-btn.enable:hover { opacity: 0.9; }
   .sec-twofa-btn.disable {
-    background: #1a1f3a; color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.08); color: var(--t1);
   }
 
-  .sec-twofa-btn.disable:hover { background: #1e2243; }
+  .sec-twofa-btn.disable:hover { background: rgba(255, 255, 255, 0.07); }
   .sec-twofa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .sec-sessions {
@@ -471,15 +471,15 @@ const securityStyles = `
 
   .sec-session-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: #161a32; border-radius: 8px;
-    border: 1px solid #1a1f3a;
+    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
   @media (max-width: 640px) {
     .sec-session-item { flex-direction: column; gap: 12px; align-items: flex-start; }
   }
 
   .sec-session-info { flex: 1; }
-  .sec-session-device { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+  .sec-session-device { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
   .sec-session-location { font-size: 12px; color: #64748b; margin-bottom: 4px; }
   .sec-session-time { font-size: 12px; color: #4a5580; }
 
@@ -493,7 +493,7 @@ const securityStyles = `
   }
 
   .sec-session-logout {
-    padding: 6px 12px; background: #ef4444; border: none;
+    padding: 6px 12px; background: var(--no); border: none;
     border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600;
     cursor: pointer; transition: opacity 0.15s;
   }
@@ -501,7 +501,7 @@ const securityStyles = `
   .sec-session-logout:hover { opacity: 0.9; }
 
   .sec-session-note {
-    padding: 12px 16px; background: #161a32; border-radius: 8px;
+    padding: 12px 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
     color: #64748b; font-size: 12px; margin-top: 12px;
   }
 `;

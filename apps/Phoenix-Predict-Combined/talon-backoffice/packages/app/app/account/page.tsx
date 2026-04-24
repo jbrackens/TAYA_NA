@@ -339,9 +339,17 @@ function Styles() {
       }
 
       .acct-banner {
-        background: var(--s1);
-        border: 1px solid var(--b1);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
+          var(--glass-regular);
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: var(--r-md);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          0 8px 24px rgba(0, 0, 0, 0.22);
         padding: 20px 22px;
         margin-bottom: 16px;
         display: flex;
@@ -400,9 +408,17 @@ function Styles() {
 
       .acct-portfolio,
       .acct-privacy {
-        background: var(--s1);
-        border: 1px solid var(--b1);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
+          var(--glass-regular);
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: var(--r-md);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          0 8px 24px rgba(0, 0, 0, 0.22);
         padding: 20px 22px;
         margin-bottom: 20px;
       }
@@ -491,8 +507,8 @@ function Styles() {
         .acct-portfolio-stats { grid-template-columns: repeat(2, 1fr); }
       }
       .acct-stat {
-        background: var(--s2);
-        border: 1px solid var(--b1);
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: var(--r-sm);
         padding: 12px 14px;
         display: flex;
@@ -513,7 +529,7 @@ function Styles() {
       }
       .acct-stat-yes .acct-stat-value { color: var(--yes); }
       .acct-stat-no .acct-stat-value { color: var(--no); }
-      .acct-stat-gain .acct-stat-value { color: var(--gain); }
+      .acct-stat-gain .acct-stat-value { color: var(--accent); }
       .acct-stat-sub {
         font-size: 11px;
         color: var(--t3);
@@ -525,9 +541,17 @@ function Styles() {
         gap: 12px;
       }
       .acct-card {
-        background: var(--s1);
-        border: 1px solid var(--b1);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
+          var(--glass-regular);
+        backdrop-filter: blur(24px) saturate(170%);
+        -webkit-backdrop-filter: blur(24px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: var(--r-md);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          0 8px 24px rgba(0, 0, 0, 0.22);
         padding: 18px 20px;
         text-decoration: none;
         transition: border-color 0.15s, background 0.15s, transform 0.15s;

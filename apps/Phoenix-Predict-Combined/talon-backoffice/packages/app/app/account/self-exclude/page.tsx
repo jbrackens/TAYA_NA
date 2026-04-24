@@ -105,7 +105,7 @@ export default function SelfExcludePage() {
         {step === "warning" && (
           <div className="se-card se-warning-card">
             <div className="se-warning-icon">
-              <AlertTriangle size={48} strokeWidth={1.5} color="#ef4444" />
+              <AlertTriangle size={48} strokeWidth={1.5} color="var(--no)" />
             </div>
             <h2>Important Notice</h2>
             <div className="se-warning-content">
@@ -343,7 +343,7 @@ export default function SelfExcludePage() {
         {step === "success" && result && (
           <div className="se-card se-success-card">
             <div className="se-success-icon">
-              <CheckCircle2 size={56} strokeWidth={1.5} color="#22c55e" />
+              <CheckCircle2 size={56} strokeWidth={1.5} color="var(--accent)" />
             </div>
             <h2>Self-Exclusion Confirmed</h2>
             <p className="se-desc">
@@ -391,7 +391,7 @@ const selfExcludeStyles = `
   }
 
   .se-header h1 {
-    font-size: 28px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px;
+    font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px;
   }
 
   .se-header p {
@@ -399,12 +399,12 @@ const selfExcludeStyles = `
   }
 
   .se-card {
-    background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
+    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
     padding: 32px; margin-bottom: 24px;
   }
 
   .se-card h2 {
-    font-size: 20px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;
+    font-size: 20px; font-weight: 700; color: var(--t1); margin-bottom: 8px;
   }
 
   .se-desc {
@@ -412,7 +412,7 @@ const selfExcludeStyles = `
   }
 
   .se-warning-card {
-    border-color: #ef4444;
+    border-color: var(--no);
   }
 
   .se-warning-icon {
@@ -424,7 +424,7 @@ const selfExcludeStyles = `
   }
 
   .se-warning-content p {
-    font-size: 14px; color: #e2e8f0; line-height: 1.6;
+    font-size: 14px; color: var(--t1); line-height: 1.6;
   }
 
   .se-consequence-list {
@@ -432,8 +432,8 @@ const selfExcludeStyles = `
   }
 
   .se-consequence-item {
-    display: flex; gap: 12px; padding: 12px; background: #161a32;
-    border-radius: 8px; border-left: 3px solid #ef4444;
+    display: flex; gap: 12px; padding: 12px; background: rgba(255, 255, 255, 0.04);
+    border-radius: 8px; border-left: 3px solid var(--no);
   }
 
   .se-consequence-icon {
@@ -441,7 +441,7 @@ const selfExcludeStyles = `
   }
 
   .se-consequence-item strong {
-    display: block; color: #e2e8f0; font-size: 13px; margin-bottom: 2px;
+    display: block; color: var(--t1); font-size: 13px; margin-bottom: 2px;
   }
 
   .se-consequence-item p {
@@ -454,7 +454,7 @@ const selfExcludeStyles = `
   }
 
   .se-help-section strong {
-    display: block; color: #e2e8f0; margin-bottom: 8px; font-size: 13px;
+    display: block; color: var(--t1); margin-bottom: 8px; font-size: 13px;
   }
 
   .se-help-section p {
@@ -474,7 +474,7 @@ const selfExcludeStyles = `
   }
 
   .se-duration-btn {
-    flex: 1; padding: 12px 16px; background: #161a32; border: 1px solid #1a1f3a;
+    flex: 1; padding: 12px 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px; color: #D3D3D3; font-size: 13px; font-weight: 600;
     cursor: pointer; transition: all 0.15s; text-align: center;
   }
@@ -500,8 +500,8 @@ const selfExcludeStyles = `
   }
 
   .se-textarea {
-    padding: 12px 14px; background: #161a32; border: 1px solid #1a1f3a;
-    border-radius: 8px; color: #e2e8f0; font-size: 13px; font-family: inherit;
+    padding: 12px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px; color: var(--t1); font-size: 13px; font-family: inherit;
     outline: none; resize: vertical; transition: border-color 0.15s;
   }
 
@@ -514,7 +514,7 @@ const selfExcludeStyles = `
   }
 
   .se-confirmation {
-    padding: 12px 16px; background: #161a32; border-radius: 8px;
+    padding: 12px 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
   }
 
   .se-checkbox {
@@ -542,7 +542,7 @@ const selfExcludeStyles = `
   }
 
   .se-review-item {
-    padding: 16px; background: #161a32; border-radius: 8px; text-align: left;
+    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px; text-align: left;
   }
 
   .se-review-label {
@@ -550,17 +550,17 @@ const selfExcludeStyles = `
   }
 
   .se-review-value {
-    font-size: 14px; color: #e2e8f0; word-break: break-word;
+    font-size: 14px; color: var(--t1); word-break: break-word;
   }
 
   .se-review-warning {
-    padding: 12px 16px; background: rgba(239,68,68,0.08);
-    border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
+    padding: 12px 16px; background: rgba(255, 155, 107, 0.08);
+    border: 1px solid rgba(255, 155, 107, 0.2); border-radius: 8px;
     color: var(--no); font-size: 13px; font-weight: 600;
   }
 
   .se-success-card {
-    text-align: center; border-color: #22c55e;
+    text-align: center; border-color: var(--accent);
   }
 
   .se-success-icon {
@@ -568,13 +568,13 @@ const selfExcludeStyles = `
   }
 
   .se-success-details {
-    padding: 20px; background: #161a32; border-radius: 8px;
+    padding: 20px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
     margin: 24px 0;
   }
 
   .se-detail-item {
     display: flex; justify-content: space-between; padding: 8px 0;
-    font-size: 13px; border-bottom: 1px solid #1a1f3a;
+    font-size: 13px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .se-detail-item:last-child {
@@ -586,7 +586,7 @@ const selfExcludeStyles = `
   }
 
   .se-detail-value {
-    color: #e2e8f0; font-weight: 700;
+    color: var(--t1); font-weight: 700;
   }
 
   .se-success-message {
@@ -596,7 +596,7 @@ const selfExcludeStyles = `
   }
 
   .se-success-message strong {
-    display: block; color: #22c55e; margin-bottom: 8px; font-size: 14px;
+    display: block; color: var(--accent); margin-bottom: 8px; font-size: 14px;
   }
 
   .se-success-message p {
@@ -616,7 +616,7 @@ const selfExcludeStyles = `
   }
 
   .se-btn-primary {
-    background: var(--accent); color: #101114;
+    background: var(--accent); color: #04140a;
   }
 
   .se-btn-primary:hover:not(:disabled) {
@@ -624,7 +624,7 @@ const selfExcludeStyles = `
   }
 
   .se-btn-secondary {
-    background: #161a32; border: 1px solid #1a1f3a; color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: var(--t1);
   }
 
   .se-btn-secondary:hover {
@@ -632,7 +632,7 @@ const selfExcludeStyles = `
   }
 
   .se-btn-danger {
-    background: #ef4444; color: #fff;
+    background: var(--no); color: #fff;
   }
 
   .se-btn-danger:hover:not(:disabled) {

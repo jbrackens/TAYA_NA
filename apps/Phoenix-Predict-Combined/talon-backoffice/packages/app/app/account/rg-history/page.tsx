@@ -177,12 +177,12 @@ const rgHistoryStyles = `
     .rg-header { flex-direction: column; gap: 16px; }
   }
 
-  .rg-header h1 { font-size: 28px; font-weight: 800; color: #e2e8f0; margin-bottom: 4px; }
+  .rg-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
   .rg-header p { font-size: 14px; color: #64748b; }
 
   .rg-back {
-    padding: 10px 16px; background: #0f1225; border: 1px solid #1a1f3a;
-    border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
+    padding: 10px 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px; color: var(--t1); text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
   .rg-back:hover { border-color: var(--accent); color: var(--accent); }
@@ -192,17 +192,17 @@ const rgHistoryStyles = `
   }
 
   .rg-section {
-    background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
+    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
     padding: 24px; margin-bottom: 24px;
   }
 
   .rg-section h2 {
-    font-size: 16px; font-weight: 700; color: #e2e8f0; margin-bottom: 16px;
+    font-size: 16px; font-weight: 700; color: var(--t1); margin-bottom: 16px;
   }
 
   .rg-empty {
     padding: 32px; text-align: center; color: #64748b; font-size: 14px;
-    background: #161a32; border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04); border-radius: 8px;
   }
 
   .rg-table-container {
@@ -214,7 +214,7 @@ const rgHistoryStyles = `
   }
 
   .rg-table thead {
-    background: #161a32; border-bottom: 1px solid #1a1f3a;
+    background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .rg-table th {
@@ -224,12 +224,12 @@ const rgHistoryStyles = `
   }
 
   .rg-table td {
-    padding: 12px 16px; border-bottom: 1px solid #1a1f3a;
-    font-size: 13px; color: #e2e8f0;
+    padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 13px; color: var(--t1);
   }
 
   .rg-table tbody tr:hover {
-    background: #161a32;
+    background: rgba(255, 255, 255, 0.04);
   }
 
   .rg-type {
@@ -240,13 +240,13 @@ const rgHistoryStyles = `
   .rg-no-history {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 60px 24px; text-align: center;
-    background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
+    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
   }
 
   .rg-no-history-icon { font-size: 48px; margin-bottom: 16px; }
 
   .rg-no-history-title {
-    font-size: 18px; font-weight: 700; color: #e2e8f0; margin-bottom: 8px;
+    font-size: 18px; font-weight: 700; color: var(--t1); margin-bottom: 8px;
   }
 
   .rg-no-history-desc {

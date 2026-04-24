@@ -66,7 +66,7 @@ export default function AccountError({
             border: "none",
             background:
               "linear-gradient(135deg, var(--accent), var(--accent-lo))",
-            color: "#101114",
+            color: "#04140a",
             fontSize: 14,
             fontWeight: 600,
             cursor: "pointer",
@@ -79,7 +79,7 @@ export default function AccountError({
           style={{
             padding: "10px 24px",
             borderRadius: 8,
-            border: "1px solid #1a1f3a",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
             background: "transparent",
             color: "#D3D3D3",
             fontSize: 14,
