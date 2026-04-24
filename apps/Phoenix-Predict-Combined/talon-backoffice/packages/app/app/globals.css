@@ -1731,7 +1731,7 @@ button {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #0b0e1c;
+  background: transparent;
   padding: 20px;
 }
 .loading-content,
@@ -1760,12 +1760,12 @@ button {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #39ff14 0%, #ea580c 100%);
+  background: var(--accent-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
   animation: pulseLogo 2s ease-in-out infinite;
-  box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+  box-shadow: 0 0 30px var(--accent-glow-color);
 }
 .taya-letter {
   font-size: 46px;
@@ -1816,41 +1816,56 @@ button {
 .not-found-code {
   font-size: 120px;
   font-weight: 800;
-  color: #39ff14;
+  color: var(--accent);
   line-height: 1;
   letter-spacing: -0.02em;
   margin-bottom: 12px;
+  text-shadow: 0 0 28px var(--accent-glow-color);
 }
 .not-found-title {
   font-size: 28px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--t1);
   margin-bottom: 8px;
 }
 .not-found-message {
   font-size: 16px;
-  color: #d3d3d3;
+  color: var(--t2);
   line-height: 1.5;
   margin-bottom: 8px;
 }
 .home-button {
   margin-top: 16px;
-  padding: 12px 32px;
-  background: linear-gradient(135deg, #39ff14 0%, #ea580c 100%);
-  color: #ffffff;
+  min-height: 44px;
+  padding: 0 32px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0) 50%
+    ),
+    linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
+  color: #04140a;
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   font-size: 16px;
-  font-weight: 600;
-  border: none;
+  font-weight: 700;
+  border: 1px solid rgba(43, 228, 128, 0.6);
   cursor: pointer;
-  transition: all 0.2s;
-  display: inline-block;
-  box-shadow: 0 4px 12px rgba(57, 255, 20, 0.25);
+  transition:
+    transform 180ms ease,
+    filter 180ms ease,
+    box-shadow 180ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 10px 28px rgba(43, 228, 128, 0.18);
 }
 .home-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(57, 255, 20, 0.35);
+  filter: brightness(1.05);
 }
 .home-button:active {
   transform: translateY(0);
