@@ -377,12 +377,12 @@ function MarketChart({
       >
         <defs>
           <linearGradient id="chart-fill-yes" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#34d399" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--yes)" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="var(--yes)" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="chart-fill-no" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#f87171" stopOpacity="0.26" />
-            <stop offset="100%" stopColor="#f87171" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--no)" stopOpacity="0.26" />
+            <stop offset="100%" stopColor="var(--no)" stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -721,7 +721,7 @@ function Styles() {
         position: absolute;
         inset: 0;
         background:
-          radial-gradient(ellipse at top right, rgba(57,255,20,0.18), transparent 45%),
+          radial-gradient(ellipse at top right, rgba(43, 228, 128,0.18), transparent 45%),
           radial-gradient(ellipse at bottom left, rgba(239,68,68,0.08), transparent 55%);
         pointer-events: none;
       }
@@ -829,8 +829,8 @@ function Styles() {
         border: 1px solid var(--b1);
         transition: border-color 0.15s, background 0.15s;
       }
-      .md-price.yes:hover { border-color: var(--yes); background: rgba(52,211,153,0.06); }
-      .md-price.no:hover { border-color: var(--no); background: rgba(248,113,113,0.06); }
+      .md-price.yes:hover { border-color: var(--yes); background: rgba(127, 200, 255,0.06); }
+      .md-price.no:hover { border-color: var(--no); background: rgba(255, 155, 107,0.06); }
       .md-price-label {
         display: block;
         font-size: 11px;
@@ -986,7 +986,7 @@ function Styles() {
         align-items: center;
         justify-content: flex-start;
         padding: 0 14px;
-        background: linear-gradient(90deg, rgba(52,211,153,0.25), rgba(52,211,153,0.4));
+        background: linear-gradient(90deg, rgba(127, 200, 255,0.25), rgba(127, 200, 255,0.4));
         border-right: 1px solid var(--s1);
         min-width: 56px;
         transition: width 0.4s ease-out;
@@ -997,7 +997,7 @@ function Styles() {
         align-items: center;
         justify-content: flex-end;
         padding: 0 14px;
-        background: linear-gradient(90deg, rgba(248,113,113,0.25), rgba(248,113,113,0.4));
+        background: linear-gradient(90deg, rgba(255, 155, 107,0.25), rgba(255, 155, 107,0.4));
       }
       .md-splitbar-label {
         font-size: 12px;

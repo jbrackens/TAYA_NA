@@ -221,7 +221,7 @@ export default function NotificationsPage() {
                     style={{
                       width: "18px",
                       height: "18px",
-                      accentColor: "#39ff14",
+                      accentColor: "var(--accent)",
                     }}
                   />
                 </label>
@@ -287,7 +287,7 @@ export default function NotificationsPage() {
                     style={{
                       width: "18px",
                       height: "18px",
-                      accentColor: "#39ff14",
+                      accentColor: "var(--accent)",
                     }}
                   />
                 </label>
@@ -368,7 +368,7 @@ const notificationsStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .notif-back:hover { border-color: #39ff14; color: #39ff14; }
+  .notif-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .notif-card {
     background: #0f1225; border: 1px solid #1a1f3a; border-radius: 12px;
@@ -422,7 +422,7 @@ const notificationsStyles = `
   }
 
   .notif-toggle input:checked + .notif-toggle-slider {
-    background-color: #39ff14;
+    background-color: var(--accent);
   }
 
   .notif-toggle input:checked + .notif-toggle-slider:before {
@@ -434,7 +434,7 @@ const notificationsStyles = `
   }
 
   .notif-save-btn {
-    padding: 12px 24px; background: #39ff14; border: none;
+    padding: 12px 24px; background: var(--accent); border: none;
     border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; transition: opacity 0.15s;
   }

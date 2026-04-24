@@ -117,8 +117,8 @@ export default function Modal({
             style={closeButtonStyle}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "#39ff14";
-              el.style.backgroundColor = "rgba(57, 255, 20, 0.1)";
+              el.style.color = "var(--accent)";
+              el.style.backgroundColor = "rgba(43, 228, 128, 0.1)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLButtonElement;

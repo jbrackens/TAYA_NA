@@ -14,8 +14,8 @@ export default function StatusBadge({ status, label }: StatusBadgeProps) {
       color: "#22c55e",
     },
     pending: {
-      bg: "rgba(57, 255, 20, 0.15)",
-      color: "#39ff14",
+      bg: "rgba(43, 228, 128, 0.15)",
+      color: "var(--accent)",
     },
     error: {
       bg: "rgba(239, 68, 68, 0.15)",

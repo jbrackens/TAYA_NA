@@ -185,7 +185,7 @@ const rgHistoryStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .rg-back:hover { border-color: #39ff14; color: #39ff14; }
+  .rg-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .rg-loading {
     padding: 40px; text-align: center; color: #64748b; font-size: 14px;
@@ -233,8 +233,8 @@ const rgHistoryStyles = `
   }
 
   .rg-type {
-    display: inline-block; padding: 4px 8px; background: rgba(57,255,20,0.1);
-    border-radius: 4px; color: #39ff14; font-weight: 600; font-size: 12px;
+    display: inline-block; padding: 4px 8px; background: rgba(43, 228, 128,0.1);
+    border-radius: 4px; color: var(--accent); font-weight: 600; font-size: 12px;
   }
 
   .rg-no-history {
@@ -255,7 +255,7 @@ const rgHistoryStyles = `
   }
 
   .rg-link-btn {
-    display: inline-block; padding: 10px 20px; background: #39ff14;
+    display: inline-block; padding: 10px 20px; background: var(--accent);
     border: none; border-radius: 8px; color: #fff; text-decoration: none;
     font-size: 13px; font-weight: 700; cursor: pointer; transition: opacity 0.15s;
   }

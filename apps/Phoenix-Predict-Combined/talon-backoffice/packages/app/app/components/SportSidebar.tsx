@@ -70,11 +70,11 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
     justifyContent: "space-between",
     padding: "16px",
     border: "none",
-    backgroundColor: isActive ? "rgba(57, 255, 20, 0.125)" : "transparent",
+    backgroundColor: isActive ? "rgba(43, 228, 128, 0.125)" : "transparent",
     color: "#e2e8f0",
     cursor: "pointer",
     transition: "all 0.2s",
-    borderLeft: `3px solid ${isActive ? "#39ff14" : "transparent"}`,
+    borderLeft: `3px solid ${isActive ? "var(--accent)" : "transparent"}`,
     textAlign: "left",
     fontSize: "14px",
     fontWeight: 500,
@@ -85,7 +85,7 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
       .sport-item {
         flex: 0 0 auto;
         border-left: none;
-        border-bottom: 2px solid ${activeSport ? "#39ff14" : "transparent"};
+        border-bottom: 2px solid ${activeSport ? "var(--accent)" : "transparent"};
         padding: 8px 12px;
         white-space: nowrap;
       }
@@ -120,7 +120,11 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
   if (error) {
     return (
       <div
-        style={{ ...sidebarContainerStyle, padding: "16px", color: "#f87171" }}
+        style={{
+          ...sidebarContainerStyle,
+          padding: "16px",
+          color: "var(--no)",
+        }}
       >
         Error: {error}
       </div>
@@ -144,11 +148,11 @@ export const SportSidebar: React.FC<SportSidebarProps> = ({
               onClick={() => onSportSelect?.(sport.sportKey)}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "rgba(57, 255, 20, 0.0625)";
+                  "rgba(43, 228, 128, 0.0625)";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  isActive ? "rgba(57, 255, 20, 0.125)" : "transparent";
+                  isActive ? "rgba(43, 228, 128, 0.125)" : "transparent";
               }}
             >
               <span style={sportNameStyle}>{sport.sportName}</span>

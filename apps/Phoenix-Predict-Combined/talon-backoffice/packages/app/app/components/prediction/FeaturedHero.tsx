@@ -57,7 +57,7 @@ export function FeaturedHero({
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(ellipse at top right, rgba(57,255,20,0.18), transparent 45%),
+            radial-gradient(ellipse at top right, rgba(43, 228, 128,0.18), transparent 45%),
             radial-gradient(ellipse at bottom left, rgba(239,68,68,0.10), transparent 50%);
           pointer-events: none;
         }

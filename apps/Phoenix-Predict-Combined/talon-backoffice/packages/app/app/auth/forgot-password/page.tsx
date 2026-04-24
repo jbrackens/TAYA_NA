@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
   const buttonStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 16px",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     border: "none",
     color: "#ffffff",
     borderRadius: "4px",
@@ -195,7 +195,7 @@ export default function ForgotPasswordPage() {
               }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#39ff14";
+              e.currentTarget.style.backgroundColor = "var(--accent)";
             }}
           >
             {isLoading
@@ -252,7 +252,7 @@ export default function ForgotPasswordPage() {
             <Link
               href="/auth/login"
               style={{
-                color: "#39ff14",
+                color: "var(--accent)",
                 textDecoration: "none",
                 fontWeight: 600,
                 marginLeft: "4px",
@@ -266,7 +266,7 @@ export default function ForgotPasswordPage() {
             <Link
               href="/auth/register"
               style={{
-                color: "#39ff14",
+                color: "var(--accent)",
                 textDecoration: "none",
                 fontWeight: 600,
                 marginLeft: "4px",

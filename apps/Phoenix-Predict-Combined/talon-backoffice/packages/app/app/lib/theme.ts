@@ -11,18 +11,18 @@
 
 // ── Brand ──
 export const brand = {
-  primary: "#39ff14", // Neon Green — primary actions, active states
-  primaryHover: "rgba(57,255,20,0.1)",
-  primaryGlow: "rgba(57,255,20,0.25)",
-  gradient: "linear-gradient(135deg, #39ff14, #2ed600)",
+  primary: "var(--accent)", // Neon Green — primary actions, active states
+  primaryHover: "rgba(43, 228, 128,0.1)",
+  primaryGlow: "rgba(43, 228, 128,0.25)",
+  gradient: "linear-gradient(135deg, var(--accent), var(--accent-lo))",
   danger: "#ef4444", // Red — live badges, destructive
   dangerBg: "#7f1d1d",
-  dangerText: "#f87171",
+  dangerText: "var(--no)",
   success: "#22c55e", // Green — balance, profit, wins
   successBg: "rgba(34,197,94,0.1)",
   successBorder: "#22c55e30",
   info: "#4a7eff", // Blue — odds, links
-  warning: "#fbbf24", // Amber — warnings
+  warning: "var(--whale)", // Amber — warnings
 } as const;
 
 // ── Surfaces & Backgrounds ──
@@ -108,8 +108,8 @@ export const shadow = {
   sm: "0 2px 4px rgba(0, 0, 0, 0.2)",
   md: "0 4px 12px rgba(0, 0, 0, 0.3)",
   lg: "0 8px 16px rgba(0, 0, 0, 0.3)",
-  glow: "0 4px 12px rgba(57, 255, 20, 0.3)",
-  glowLg: "0 4px 16px rgba(57, 255, 20, 0.3)",
+  glow: "0 4px 12px rgba(43, 228, 128, 0.3)",
+  glowLg: "0 4px 16px rgba(43, 228, 128, 0.3)",
   panel: "0 20px 40px rgba(0, 0, 0, 0.16)",
   panelLg: "0 24px 48px rgba(0, 0, 0, 0.2)",
 } as const;
@@ -172,14 +172,15 @@ export const surface = {
     transition: transition.normal,
   },
   heroPanel: {
-    background: "linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%)",
+    background:
+      "linear-gradient(135deg, #1a1040 0%, #0f1225 50%, #0c1a2e 100%)",
     border: `1px solid ${colors.borderHover}`,
     borderRadius: "18px",
     boxShadow: shadow.panelLg,
   },
   chip: {
-    background: "rgba(57,255,20,0.08)",
-    border: "1px solid rgba(57,255,20,0.14)",
+    background: "rgba(43, 228, 128,0.08)",
+    border: "1px solid rgba(43, 228, 128,0.14)",
     borderRadius: "12px",
   },
 } as const;

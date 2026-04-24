@@ -90,7 +90,7 @@ export const BannerCarousel: React.FC<BannerCarouselProps> = ({
               key={idx}
               onClick={() => setCurrentIndex(idx)}
               className={`w-2 h-2 rounded-full transition-colors ${
-                idx === currentIndex ? "bg-[#39ff14]" : "bg-white/30"
+                idx === currentIndex ? "bg-[var(--accent)]" : "bg-white/30"
               }`}
               aria-label={`Go to banner ${idx + 1}`}
             />

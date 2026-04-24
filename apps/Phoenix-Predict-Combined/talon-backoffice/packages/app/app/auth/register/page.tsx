@@ -443,7 +443,7 @@ function Styles() {
         padding: 3px 10px;
         margin-bottom: 10px;
         background: var(--accent-soft);
-        border: 1px solid rgba(57,255,20,0.3);
+        border: 1px solid rgba(43, 228, 128,0.3);
         color: var(--accent);
         border-radius: 999px;
         font-size: 10px;
@@ -477,7 +477,7 @@ function Styles() {
         inset: 0 auto 0 0;
         background: linear-gradient(90deg, var(--accent), var(--accent-hi));
         border-radius: inherit;
-        box-shadow: 0 0 14px rgba(57,255,20,0.5);
+        box-shadow: 0 0 14px rgba(43, 228, 128,0.5);
         transition: width 0.3s ease;
       }
 
@@ -488,13 +488,13 @@ function Styles() {
         margin-bottom: 14px;
       }
       .ra-banner.error {
-        background: rgba(248,113,113,0.1);
-        border: 1px solid rgba(248,113,113,0.3);
+        background: rgba(255, 155, 107,0.1);
+        border: 1px solid rgba(255, 155, 107,0.3);
         color: var(--no);
       }
       .ra-banner.success {
-        background: rgba(52,211,153,0.1);
-        border: 1px solid rgba(52,211,153,0.3);
+        background: rgba(127, 200, 255,0.1);
+        border: 1px solid rgba(127, 200, 255,0.3);
         color: var(--yes);
       }
 

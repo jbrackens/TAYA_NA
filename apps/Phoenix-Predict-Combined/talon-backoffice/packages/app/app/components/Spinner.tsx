@@ -14,7 +14,7 @@ interface SpinnerProps {
  */
 export const Spinner: React.FC<SpinnerProps> = ({
   size = 24,
-  color = "#39ff14",
+  color = "var(--accent)",
   className,
 }) => (
   <span
@@ -41,7 +41,7 @@ export const LoadingState: React.FC<{
   size?: number;
   color?: string;
   label?: string;
-}> = ({ size = 28, color = "#39ff14", label }) => (
+}> = ({ size = 28, color = "var(--accent)", label }) => (
   <div
     style={{
       display: "flex",
@@ -52,9 +52,7 @@ export const LoadingState: React.FC<{
     }}
   >
     <Spinner size={size} color={color} />
-    {label && (
-      <span className="sr-only">{label}</span>
-    )}
+    {label && <span className="sr-only">{label}</span>}
   </div>
 );
 

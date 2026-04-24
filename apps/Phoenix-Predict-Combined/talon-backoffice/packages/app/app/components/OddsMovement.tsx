@@ -53,8 +53,8 @@ export const OddsMovement: React.FC<OddsMovementProps> = ({
     ) : (
       <TrendingDown size={12} strokeWidth={2} />
     );
-  const arrowColor = movement === "up" ? "#22c55e" : "#f87171";
-  const percentageColor = movement === "up" ? "#22c55e" : "#f87171";
+  const arrowColor = movement === "up" ? "#22c55e" : "var(--no)";
+  const percentageColor = movement === "up" ? "#22c55e" : "var(--no)";
 
   return (
     <>

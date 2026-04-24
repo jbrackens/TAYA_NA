@@ -110,7 +110,7 @@ const legalStyles = `
     font-size: 14px; line-height: 1.7; color: #D3D3D3;
   }
   .legal-page a {
-    color: #39ff14; text-decoration: none;
+    color: var(--accent); text-decoration: none;
   }
   .legal-page a:hover { text-decoration: underline; }
 `;

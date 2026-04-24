@@ -11,7 +11,7 @@ interface AvatarProps {
 export default function Avatar({ name = "", size = 40, src }: AvatarProps) {
   // Generate color from name hash
   const getColorFromHash = (str: string): string => {
-    if (!str) return "#39ff14";
+    if (!str) return "var(--accent)";
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = (hash << 5) - hash + str.charCodeAt(i);
@@ -19,7 +19,7 @@ export default function Avatar({ name = "", size = 40, src }: AvatarProps) {
     }
 
     const colors = [
-      "#39ff14", // orange
+      "var(--accent)", // orange
       "#3b82f6", // blue
       "#ec4899", // pink
       "#8b5cf6", // purple

@@ -114,7 +114,7 @@ export default function CodeInput({
 
   const errorStyle: React.CSSProperties = {
     fontSize: "13px",
-    color: "#f87171",
+    color: "var(--no)",
   };
 
   return (
@@ -137,8 +137,8 @@ export default function CodeInput({
               onFocus={(e) => {
                 if (!disabled) {
                   const el = e.currentTarget as HTMLInputElement;
-                  el.style.borderColor = "#39ff14";
-                  el.style.boxShadow = "0 0 0 3px rgba(57, 255, 20, 0.1)";
+                  el.style.borderColor = "var(--accent)";
+                  el.style.boxShadow = "0 0 0 3px rgba(43, 228, 128, 0.1)";
                 }
               }}
               onBlur={(e) => {

@@ -24,7 +24,7 @@ const Button: React.FC<
     lg: { padding: "14px 24px", fontSize: 16 },
   };
   const variants = {
-    primary: { background: "#39ff14", color: "#101114", border: "none" },
+    primary: { background: "var(--accent)", color: "#101114", border: "none" },
     secondary: {
       background: "#1a1f3a",
       color: "#e2e8f0",
@@ -132,7 +132,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       router.push("/");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : tx("LOGIN_FAILED", "Login failed.");
+        err instanceof Error
+          ? err.message
+          : tx("LOGIN_FAILED", "Login failed.");
       setError(message);
     } finally {
       setIsLoading(false);
@@ -164,9 +166,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <div
           style={{
             padding: "12px",
-            backgroundColor: "rgba(248, 113, 113, 0.13)",
-            border: "1px solid #f87171",
-            color: "#f87171",
+            backgroundColor: "rgba(255, 155, 107, 0.13)",
+            border: "1px solid var(--no)",
+            color: "var(--no)",
             borderRadius: "4px",
             fontSize: "13px",
           }}

@@ -9,8 +9,8 @@ const Badge: React.FC<{
   const colors: Record<string, { bg: string; color: string }> = {
     live: { bg: "rgba(34,197,94,0.15)", color: "#22c55e" },
     finished: { bg: "rgba(100,116,139,0.15)", color: "#D3D3D3" },
-    upcoming: { bg: "rgba(57,255,20,0.15)", color: "#39ff14" },
-    cancelled: { bg: "rgba(239,68,68,0.15)", color: "#f87171" },
+    upcoming: { bg: "rgba(43, 228, 128,0.15)", color: "var(--accent)" },
+    cancelled: { bg: "rgba(239,68,68,0.15)", color: "var(--no)" },
   };
   const c = colors[variant] || colors.upcoming;
   return (
@@ -231,7 +231,7 @@ export const BetCard: React.FC<BetCardProps> = ({ bet }) => {
             </span>
           ) : bet.status === "lost" ? (
             <span
-              style={{ fontSize: "16px", fontWeight: 700, color: "#f87171" }}
+              style={{ fontSize: "16px", fontWeight: 700, color: "var(--no)" }}
             >
               -{stake}
             </span>

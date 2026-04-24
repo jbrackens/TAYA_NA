@@ -67,8 +67,8 @@ export default function CountrySelect({
         onChange={(e) => onChange(e.target.value)}
         style={selectStyle}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#39ff14";
-          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(57, 255, 20, 0.1)";
+          e.currentTarget.style.borderColor = "var(--accent)";
+          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(43, 228, 128, 0.1)";
         }}
         onBlur={(e) => {
           e.currentTarget.style.borderColor = "#1a1f3a";

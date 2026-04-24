@@ -64,7 +64,8 @@ export default function AccountError({
             padding: "10px 24px",
             borderRadius: 8,
             border: "none",
-            background: "linear-gradient(135deg, #39ff14, #2ed600)",
+            background:
+              "linear-gradient(135deg, var(--accent), var(--accent-lo))",
             color: "#101114",
             fontSize: 14,
             fontWeight: 600,

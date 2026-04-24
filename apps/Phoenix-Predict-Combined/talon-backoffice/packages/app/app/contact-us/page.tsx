@@ -98,7 +98,7 @@ export default function ContactUsPage() {
     fontSize: "15px",
     fontWeight: "600",
     color: "#0f1225",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
@@ -245,7 +245,7 @@ export default function ContactUsPage() {
           }}
           onMouseLeave={(e) => {
             (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-              "#39ff14";
+              "var(--accent)";
           }}
         >
           {loading ? "Sending..." : "Send Message"}
@@ -273,7 +273,7 @@ export default function ContactUsPage() {
 const inputFocusStyles = `
   .form-input:focus {
     outline: none;
-    border-color: #39ff14;
-    box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(43, 228, 128, 0.1);
   }
 `;

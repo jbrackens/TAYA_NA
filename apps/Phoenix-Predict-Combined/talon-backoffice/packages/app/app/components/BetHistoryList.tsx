@@ -270,15 +270,15 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
               flexWrap: "wrap",
               padding: "14px 16px",
               borderRadius: "14px",
-              border: "1px solid rgba(57,255,20,0.18)",
+              border: "1px solid rgba(43, 228, 128,0.18)",
               background:
-                "linear-gradient(135deg, rgba(57,255,20,0.1), rgba(9,18,12,0.94))",
+                "linear-gradient(135deg, rgba(43, 228, 128,0.1), rgba(9,18,12,0.94))",
             }}
           >
             <div>
               <div
                 style={{
-                  color: "#39ff14",
+                  color: "var(--accent)",
                   fontSize: "11px",
                   fontWeight: 800,
                   letterSpacing: "0.14em",
@@ -316,10 +316,10 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
               style={{
                 padding: "8px 16px",
                 backgroundColor:
-                  filterStatus === status ? "#39ff14" : "#0f1225",
+                  filterStatus === status ? "var(--accent)" : "#0f1225",
                 color: filterStatus === status ? "#000" : "#ffffff",
                 border: `1px solid ${
-                  filterStatus === status ? "#39ff14" : "#1a1f3a"
+                  filterStatus === status ? "var(--accent)" : "#1a1f3a"
                 }`,
                 borderRadius: "4px",
                 cursor: "pointer",
@@ -329,12 +329,12 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
               }}
               onClick={() => setFilterStatus(status)}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#39ff14";
+                e.currentTarget.style.backgroundColor = "var(--accent)";
                 e.currentTarget.style.color = "#000";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor =
-                  filterStatus === status ? "#39ff14" : "#0f1225";
+                  filterStatus === status ? "var(--accent)" : "#0f1225";
                 e.currentTarget.style.color =
                   filterStatus === status ? "#000" : "#ffffff";
               }}
@@ -370,19 +370,19 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                         gap: "12px",
                         padding: "10px 14px",
                         background:
-                          "linear-gradient(135deg, rgba(57,255,20,0.12), rgba(8,18,11,0.92))",
-                        borderLeft: "1px solid rgba(57,255,20,0.24)",
-                        borderRight: "1px solid rgba(57,255,20,0.24)",
+                          "linear-gradient(135deg, rgba(43, 228, 128,0.12), rgba(8,18,11,0.92))",
+                        borderLeft: "1px solid rgba(43, 228, 128,0.24)",
+                        borderRight: "1px solid rgba(43, 228, 128,0.24)",
                         borderBottom: offer
                           ? "none"
-                          : "1px solid rgba(57,255,20,0.24)",
+                          : "1px solid rgba(43, 228, 128,0.24)",
                         marginTop: "-8px",
                       }}
                     >
                       <div>
                         <div
                           style={{
-                            color: "#39ff14",
+                            color: "var(--accent)",
                             fontSize: "11px",
                             fontWeight: 800,
                             letterSpacing: "0.14em",
@@ -412,7 +412,7 @@ export const BetHistoryList: React.FC<BetHistoryListProps> = ({
                       >
                         <div
                           style={{
-                            color: "#39ff14",
+                            color: "var(--accent)",
                             fontSize: "18px",
                             fontWeight: 800,
                           }}

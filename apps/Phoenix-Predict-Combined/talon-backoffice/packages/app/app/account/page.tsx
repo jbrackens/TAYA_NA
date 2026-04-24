@@ -360,7 +360,7 @@ function Styles() {
         height: 48px;
         border-radius: 999px;
         background: var(--accent-soft);
-        border: 1px solid rgba(57,255,20,0.3);
+        border: 1px solid rgba(43, 228, 128,0.3);
         color: var(--accent);
         display: inline-flex;
         align-items: center;

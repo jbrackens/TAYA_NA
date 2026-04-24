@@ -37,7 +37,8 @@ export default function AcceptTermsModal({
       const response = await apiClient.get("/api/v1/content/terms");
       if (typeof response === "object" && response !== null) {
         const rawContent = (response as Record<string, unknown>).content;
-        const content = typeof rawContent === "string" ? rawContent : String(response);
+        const content =
+          typeof rawContent === "string" ? rawContent : String(response);
         setTermsContent(content);
       } else {
         setTermsContent(String(response));
@@ -116,7 +117,7 @@ export default function AcceptTermsModal({
   const acceptButtonStyle: React.CSSProperties = {
     flex: 1,
     padding: "10px 16px",
-    backgroundColor: isScrolledToBottom ? "#39ff14" : "#4b5563",
+    backgroundColor: isScrolledToBottom ? "var(--accent)" : "#4b5563",
     color: isScrolledToBottom ? "#0f1225" : "#cbd5e1",
     border: "none",
     borderRadius: "4px",
@@ -142,7 +143,7 @@ export default function AcceptTermsModal({
 
   const errorStyle: React.CSSProperties = {
     fontSize: "13px",
-    color: "#f87171",
+    color: "var(--no)",
     padding: "8px 12px",
     backgroundColor: "rgba(244, 63, 94, 0.1)",
     borderRadius: "4px",
@@ -179,7 +180,7 @@ export default function AcceptTermsModal({
           )}
 
           {!contentLoading && !isScrolledToBottom && (
-            <div style={{ fontSize: "12px", color: "#39ff14" }}>
+            <div style={{ fontSize: "12px", color: "var(--accent)" }}>
               Please scroll down to read the complete terms
             </div>
           )}
@@ -199,7 +200,7 @@ export default function AcceptTermsModal({
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = isScrolledToBottom
-                ? "#39ff14"
+                ? "var(--accent)"
                 : "#4b5563";
             }}
           >

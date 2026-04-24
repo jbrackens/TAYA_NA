@@ -120,8 +120,8 @@ export default function WinLossStatistics({ userId }: WinLossStatisticsProps) {
 
   const buttonStyle = (isActive: boolean): React.CSSProperties => ({
     padding: "6px 12px",
-    backgroundColor: isActive ? "#39ff14" : "transparent",
-    border: `1px solid ${isActive ? "#39ff14" : "#1a1f3a"}`,
+    backgroundColor: isActive ? "var(--accent)" : "transparent",
+    border: `1px solid ${isActive ? "var(--accent)" : "#1a1f3a"}`,
     color: isActive ? "#0f1225" : "#cbd5e1",
     borderRadius: "4px",
     cursor: "pointer",
@@ -169,7 +169,7 @@ export default function WinLossStatistics({ userId }: WinLossStatisticsProps) {
   if (error) {
     return (
       <div style={containerStyle}>
-        <div style={{ color: "#f87171", fontSize: "13px" }}>{error}</div>
+        <div style={{ color: "var(--no)", fontSize: "13px" }}>{error}</div>
       </div>
     );
   }
@@ -186,8 +186,8 @@ export default function WinLossStatistics({ userId }: WinLossStatisticsProps) {
               style={buttonStyle(timePeriod === period)}
               onMouseEnter={(e) => {
                 if (timePeriod !== period) {
-                  e.currentTarget.style.borderColor = "#39ff14";
-                  e.currentTarget.style.color = "#39ff14";
+                  e.currentTarget.style.borderColor = "var(--accent)";
+                  e.currentTarget.style.color = "var(--accent)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -218,14 +218,14 @@ export default function WinLossStatistics({ userId }: WinLossStatisticsProps) {
 
         <div style={cardStyle}>
           <div style={cardLabelStyle}>Losses</div>
-          <div style={{ ...cardValueStyle, color: "#f87171" }}>
+          <div style={{ ...cardValueStyle, color: "var(--no)" }}>
             {stats.losses}
           </div>
         </div>
 
         <div style={cardStyle}>
           <div style={cardLabelStyle}>Pending</div>
-          <div style={{ ...cardValueStyle, color: "#fbbf24" }}>
+          <div style={{ ...cardValueStyle, color: "var(--whale)" }}>
             {stats.pending}
           </div>
         </div>
@@ -252,7 +252,7 @@ export default function WinLossStatistics({ userId }: WinLossStatisticsProps) {
           <div
             style={{
               ...cardValueStyle,
-              color: stats.netProfitLoss >= 0 ? "#86efac" : "#f87171",
+              color: stats.netProfitLoss >= 0 ? "#86efac" : "var(--no)",
             }}
           >
             {stats.netProfitLoss >= 0 ? "+" : ""}

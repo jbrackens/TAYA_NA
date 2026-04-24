@@ -107,7 +107,7 @@ export default function ResetPasswordPage() {
   const buttonStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 16px",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     border: "none",
     color: "#ffffff",
     borderRadius: "4px",
@@ -278,7 +278,7 @@ export default function ResetPasswordPage() {
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#39ff14";
+                e.currentTarget.style.backgroundColor = "var(--accent)";
               }}
             >
               {isLoading ? "Resetting..." : "Reset Password"}
@@ -331,7 +331,7 @@ export default function ResetPasswordPage() {
             <Link
               href="/auth/login"
               style={{
-                color: "#39ff14",
+                color: "var(--accent)",
                 textDecoration: "none",
                 fontWeight: 600,
               }}
@@ -344,7 +344,7 @@ export default function ResetPasswordPage() {
             <Link
               href="/auth/forgot-password"
               style={{
-                color: "#39ff14",
+                color: "var(--accent)",
                 textDecoration: "none",
                 fontWeight: 600,
                 marginLeft: "4px",

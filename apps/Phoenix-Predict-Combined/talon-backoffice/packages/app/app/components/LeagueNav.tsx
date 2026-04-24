@@ -27,7 +27,8 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
       try {
         setLoading(true);
         const data = await getLeagues(sportKey);
-        const SPECIAL_PATTERNS = /outright|transfer\s*specials?|matchday\s*statistics?|player\s*specials?/i;
+        const SPECIAL_PATTERNS =
+          /outright|transfer\s*specials?|matchday\s*statistics?|player\s*specials?/i;
         if (!cancelled) {
           setLeagues(data.filter((l) => !SPECIAL_PATTERNS.test(l.leagueName)));
           setError(null);
@@ -75,7 +76,14 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (loading) {
     return (
-      <div style={{ ...navContainerStyle, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div
+        style={{
+          ...navContainerStyle,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <Spinner size={20} />
       </div>
     );
@@ -83,7 +91,7 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
 
   if (error) {
     return (
-      <div style={{ ...navContainerStyle, color: "#f87171" }}>
+      <div style={{ ...navContainerStyle, color: "var(--no)" }}>
         Error: {error}
       </div>
     );
@@ -106,11 +114,15 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
             style={{
               padding: "8px 16px",
               backgroundColor:
-                !activeLeague || activeLeague === "all" ? "#39ff14" : "#0f1225",
+                !activeLeague || activeLeague === "all"
+                  ? "var(--accent)"
+                  : "#0f1225",
               color:
                 !activeLeague || activeLeague === "all" ? "#000" : "#e2e8f0",
               border: `1px solid ${
-                !activeLeague || activeLeague === "all" ? "#39ff14" : "#1a1f3a"
+                !activeLeague || activeLeague === "all"
+                  ? "var(--accent)"
+                  : "#1a1f3a"
               }`,
               borderRadius: "20px",
               cursor: "pointer",
@@ -123,13 +135,13 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
             onClick={() => onLeagueSelect?.("all")}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#39ff14";
+                "var(--accent)";
               (e.currentTarget as HTMLButtonElement).style.color = "#000";
             }}
             onMouseLeave={(e) => {
               const isActive = !activeLeague || activeLeague === "all";
               (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                isActive ? "#39ff14" : "#0f1225";
+                isActive ? "var(--accent)" : "#0f1225";
               (e.currentTarget as HTMLButtonElement).style.color = isActive
                 ? "#000"
                 : "#e2e8f0";
@@ -142,9 +154,9 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
           const isActive = activeLeague === league.leagueKey;
           const pillStyle: React.CSSProperties = {
             padding: "8px 16px",
-            backgroundColor: isActive ? "#39ff14" : "#0f1225",
+            backgroundColor: isActive ? "var(--accent)" : "#0f1225",
             color: isActive ? "#000" : "#e2e8f0",
-            border: `1px solid ${isActive ? "#39ff14" : "#1a1f3a"}`,
+            border: `1px solid ${isActive ? "var(--accent)" : "#1a1f3a"}`,
             borderRadius: "20px",
             cursor: "pointer",
             transition: "all 0.2s",
@@ -161,12 +173,12 @@ export const LeagueNav: React.FC<LeagueNavProps> = ({
               onClick={() => onLeagueSelect?.(league.leagueKey)}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  "#39ff14";
+                  "var(--accent)";
                 (e.currentTarget as HTMLButtonElement).style.color = "#000";
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                  isActive ? "#39ff14" : "#0f1225";
+                  isActive ? "var(--accent)" : "#0f1225";
                 (e.currentTarget as HTMLButtonElement).style.color = isActive
                   ? "#000"
                   : "#e2e8f0";

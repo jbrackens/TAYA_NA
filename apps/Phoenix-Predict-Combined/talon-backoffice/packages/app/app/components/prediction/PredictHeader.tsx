@@ -333,11 +333,11 @@ export function PredictHeader() {
           color: var(--accent);
           font-weight: 700;
           font-size: 13px;
-          border: 1px solid rgba(57,255,20,0.3);
+          border: 1px solid rgba(43, 228, 128,0.3);
           cursor: pointer;
           transition: all 0.15s;
         }
-        .ph-avatar:hover { background: rgba(57,255,20,0.2); }
+        .ph-avatar:hover { background: rgba(43, 228, 128,0.2); }
 
         .ph-cat-strip {
           border-top: 1px solid var(--b1);

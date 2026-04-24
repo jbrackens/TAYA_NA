@@ -360,7 +360,7 @@ const securityStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .sec-back:hover { border-color: #39ff14; color: #39ff14; }
+  .sec-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .sec-tabs {
     display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid #1a1f3a;
@@ -373,7 +373,7 @@ const securityStyles = `
   }
 
   .sec-tab.active {
-    color: #39ff14; border-bottom-color: #39ff14;
+    color: var(--accent); border-bottom-color: var(--accent);
   }
 
   .sec-card {
@@ -406,17 +406,17 @@ const securityStyles = `
   }
 
   .sec-input:focus {
-    border-color: #39ff14;
+    border-color: var(--accent);
   }
 
   .sec-error {
     padding: 10px 12px; background: rgba(239,68,68,0.08);
     border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
-    color: #f87171; font-size: 13px; font-weight: 500;
+    color: var(--no); font-size: 13px; font-weight: 500;
   }
 
   .sec-submit {
-    padding: 12px 16px; background: #39ff14; border: none;
+    padding: 12px 16px; background: var(--accent); border: none;
     border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; transition: opacity 0.15s;
   }
@@ -454,7 +454,7 @@ const securityStyles = `
   }
 
   .sec-twofa-btn.enable {
-    background: #39ff14; color: #101114;
+    background: var(--accent); color: #101114;
   }
 
   .sec-twofa-btn.enable:hover { opacity: 0.9; }
@@ -488,8 +488,8 @@ const securityStyles = `
   }
 
   .sec-session-badge {
-    display: inline-block; padding: 4px 8px; background: rgba(57,255,20,0.1);
-    border-radius: 4px; color: #39ff14; font-size: 12px; font-weight: 600;
+    display: inline-block; padding: 4px 8px; background: rgba(43, 228, 128,0.1);
+    border-radius: 4px; color: var(--accent); font-size: 12px; font-weight: 600;
   }
 
   .sec-session-logout {

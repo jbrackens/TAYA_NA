@@ -27,13 +27,13 @@ export default function OpenChatButton() {
     width: "56px",
     height: "56px",
     borderRadius: "50%",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     border: "none",
     cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 4px 12px rgba(57, 255, 20, 0.3)",
+    boxShadow: "0 4px 12px rgba(43, 228, 128, 0.3)",
     transition: "all 0.3s",
     opacity: isVisible ? 1 : 0,
     pointerEvents: isVisible ? "auto" : "none",
@@ -83,13 +83,15 @@ export default function OpenChatButton() {
         onMouseEnter={(e) => {
           setShowTooltip(true);
           e.currentTarget.style.backgroundColor = "#ea580c";
-          e.currentTarget.style.boxShadow = "0 6px 16px rgba(57, 255, 20, 0.4)";
+          e.currentTarget.style.boxShadow =
+            "0 6px 16px rgba(43, 228, 128, 0.4)";
           e.currentTarget.style.transform = "scale(1.1)";
         }}
         onMouseLeave={(e) => {
           setShowTooltip(false);
-          e.currentTarget.style.backgroundColor = "#39ff14";
-          e.currentTarget.style.boxShadow = "0 4px 12px rgba(57, 255, 20, 0.3)";
+          e.currentTarget.style.backgroundColor = "var(--accent)";
+          e.currentTarget.style.boxShadow =
+            "0 4px 12px rgba(43, 228, 128, 0.3)";
           e.currentTarget.style.transform = "scale(1)";
         }}
       >

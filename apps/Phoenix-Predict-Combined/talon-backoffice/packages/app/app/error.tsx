@@ -63,7 +63,15 @@ export default function Error({
       >
         Something went wrong. Please try again or contact support.
         {process.env.NODE_ENV === "development" && error.message && (
-          <span style={{ display: "block", marginTop: 8, fontSize: 12, color: "#94a3b8", fontFamily: "monospace" }}>
+          <span
+            style={{
+              display: "block",
+              marginTop: 8,
+              fontSize: 12,
+              color: "#94a3b8",
+              fontFamily: "monospace",
+            }}
+          >
             {error.message}
           </span>
         )}
@@ -74,12 +82,13 @@ export default function Error({
           padding: "10px 24px",
           borderRadius: 8,
           border: "none",
-          background: "linear-gradient(135deg, #39ff14, #2ed600)",
+          background:
+            "linear-gradient(135deg, var(--accent), var(--accent-lo))",
           color: "#101114",
           fontSize: 14,
           fontWeight: 600,
           cursor: "pointer",
-          boxShadow: "0 4px 12px rgba(57,255,20,0.25)",
+          boxShadow: "0 4px 12px rgba(43, 228, 128,0.25)",
         }}
       >
         Try Again

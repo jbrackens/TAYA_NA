@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { geoComplianceService, GeoComplianceResult } from '../lib/services/geocomply';
-import { useAuth } from '../hooks/useAuth';
+import React, { useEffect, useState } from "react";
+import {
+  geoComplianceService,
+  GeoComplianceResult,
+} from "../lib/services/geocomply";
+import { useAuth } from "../hooks/useAuth";
 
 interface GeoComplyCheckProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }
 
-export default function GeoComplyCheck({ children, fallback }: GeoComplyCheckProps) {
+export default function GeoComplyCheck({
+  children,
+  fallback,
+}: GeoComplyCheckProps) {
   const [result, setResult] = useState<GeoComplianceResult | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -18,13 +24,15 @@ export default function GeoComplyCheck({ children, fallback }: GeoComplyCheckPro
     const checkCompliance = async () => {
       setLoading(true);
       try {
-        const complianceResult = await geoComplianceService.checkLocation(user?.id);
+        const complianceResult = await geoComplianceService.checkLocation(
+          user?.id,
+        );
         setResult(complianceResult);
       } catch (err) {
         setResult({
           allowed: false,
-          errorCode: 'UNKNOWN_ERROR',
-          errorMessage: 'Unable to verify geolocation',
+          errorCode: "UNKNOWN_ERROR",
+          errorMessage: "Unable to verify geolocation",
         });
       } finally {
         setLoading(false);
@@ -35,28 +43,28 @@ export default function GeoComplyCheck({ children, fallback }: GeoComplyCheckPro
   }, [user?.id]);
 
   const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
+    display: "flex",
+    flexDirection: "column",
+    gap: "12px",
   };
 
   const loadingStyle: React.CSSProperties = {
-    padding: '16px',
-    backgroundColor: '#0a0e18',
-    border: '1px solid #1a1f3a',
-    borderRadius: '4px',
-    color: '#64748b',
-    fontSize: '13px',
-    textAlign: 'center',
+    padding: "16px",
+    backgroundColor: "#0a0e18",
+    border: "1px solid #1a1f3a",
+    borderRadius: "4px",
+    color: "#64748b",
+    fontSize: "13px",
+    textAlign: "center",
   };
 
   const errorStyle: React.CSSProperties = {
-    padding: '16px',
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-    border: '1px solid #f87171',
-    borderRadius: '4px',
-    color: '#f87171',
-    fontSize: '13px',
+    padding: "16px",
+    backgroundColor: "rgba(244, 63, 94, 0.1)",
+    border: "1px solid var(--no)",
+    borderRadius: "4px",
+    color: "var(--no)",
+    fontSize: "13px",
   };
 
   if (loading) {
@@ -70,7 +78,8 @@ export default function GeoComplyCheck({ children, fallback }: GeoComplyCheckPro
 
     return (
       <div style={errorStyle}>
-        {result?.errorMessage || 'Your location is not allowed to access this content.'}
+        {result?.errorMessage ||
+          "Your location is not allowed to access this content."}
       </div>
     );
   }

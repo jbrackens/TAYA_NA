@@ -88,8 +88,8 @@ const MarketGroupComponent: React.FC<MarketGroupProps> = ({
             style={{
               padding: "3px 8px",
               borderRadius: "999px",
-              background: "rgba(57,255,20,0.08)",
-              border: "1px solid rgba(57,255,20,0.14)",
+              background: "rgba(43, 228, 128,0.08)",
+              border: "1px solid rgba(43, 228, 128,0.14)",
               color: "#D3D3D3",
               fontSize: "10px",
               fontWeight: 700,
@@ -105,7 +105,7 @@ const MarketGroupComponent: React.FC<MarketGroupProps> = ({
             display: "inline-block",
             transition: "transform 0.2s",
             transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-            color: "#39ff14",
+            color: "var(--accent)",
             fontSize: "12px",
           }}
         >

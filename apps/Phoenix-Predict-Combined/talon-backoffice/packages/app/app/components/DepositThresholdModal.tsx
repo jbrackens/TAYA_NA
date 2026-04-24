@@ -37,8 +37,8 @@ export default function DepositThresholdModal({
     padding: "12px",
     backgroundColor: isExceeding
       ? "rgba(239, 68, 68, 0.1)"
-      : "rgba(57, 255, 20, 0.1)",
-    border: `1px solid ${isExceeding ? "#ef4444" : "#39ff14"}`,
+      : "rgba(43, 228, 128, 0.1)",
+    border: `1px solid ${isExceeding ? "#ef4444" : "var(--accent)"}`,
     borderRadius: "4px",
     color: isExceeding ? "#fecaca" : "#fed7aa",
     fontSize: "13px",
@@ -77,7 +77,7 @@ export default function DepositThresholdModal({
   const continueButtonStyle: React.CSSProperties = {
     flex: 1,
     padding: "10px 16px",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     color: "#0f1225",
     border: "none",
     borderRadius: "4px",
@@ -136,7 +136,7 @@ export default function DepositThresholdModal({
             <span
               style={{
                 ...valueStyle,
-                color: isExceeding ? "#f87171" : "#cbd5e1",
+                color: isExceeding ? "var(--no)" : "#cbd5e1",
               }}
             >
               {isExceeding ? "+" : "-"}
@@ -153,7 +153,7 @@ export default function DepositThresholdModal({
               e.currentTarget.style.backgroundColor = "#ea580c";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#39ff14";
+              e.currentTarget.style.backgroundColor = "var(--accent)";
             }}
           >
             Continue

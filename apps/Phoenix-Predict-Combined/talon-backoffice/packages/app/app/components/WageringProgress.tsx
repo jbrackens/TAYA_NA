@@ -44,7 +44,7 @@ export const WageringProgress: React.FC<WageringProgressProps> = ({
           className="h-full rounded-full transition-all duration-500"
           style={{
             width: `${clampedPct}%`,
-            backgroundColor: clampedPct >= 100 ? "#22c55e" : "#39ff14",
+            backgroundColor: clampedPct >= 100 ? "#22c55e" : "var(--accent)",
           }}
         />
       </div>

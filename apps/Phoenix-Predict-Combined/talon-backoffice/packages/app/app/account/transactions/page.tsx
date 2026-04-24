@@ -316,7 +316,7 @@ const transactionsStyles = `
     border-radius: 8px; color: #e2e8f0; text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
-  .tx-back:hover { border-color: #39ff14; color: #39ff14; }
+  .tx-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .tx-filters { margin-bottom: 24px; }
   .tx-filter-group { margin-bottom: 16px; }
@@ -334,7 +334,7 @@ const transactionsStyles = `
   }
 
   .tx-filter-btn.active, .tx-filter-btn:hover {
-    border-color: #39ff14; color: #39ff14;
+    border-color: var(--accent); color: var(--accent);
   }
 
   .tx-card {
@@ -374,8 +374,8 @@ const transactionsStyles = `
   }
 
   .tx-type {
-    display: inline-block; padding: 4px 8px; background: rgba(57,255,20,0.1);
-    border-radius: 4px; color: #39ff14; font-weight: 600; font-size: 12px;
+    display: inline-block; padding: 4px 8px; background: rgba(43, 228, 128,0.1);
+    border-radius: 4px; color: var(--accent); font-weight: 600; font-size: 12px;
   }
 
   .tx-credit { color: #22c55e; font-weight: 700; }
@@ -398,7 +398,7 @@ const transactionsStyles = `
   }
 
   .tx-page-btn:hover:not(:disabled) {
-    border-color: #39ff14; color: #39ff14;
+    border-color: var(--accent); color: var(--accent);
   }
 
   .tx-page-btn:disabled {

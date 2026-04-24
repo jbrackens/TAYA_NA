@@ -260,7 +260,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                   borderRadius: "8px",
                   background: "rgba(239,68,68,0.08)",
                   border: "1px solid rgba(239,68,68,0.2)",
-                  color: "#f87171",
+                  color: "var(--no)",
                   fontSize: "13px",
                   marginBottom: "16px",
                 }}
@@ -419,16 +419,16 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                         fontSize: "13px",
                         background:
                           kbaAnswers[q.questionId] === opt
-                            ? "rgba(57,255,20,0.1)"
+                            ? "rgba(43, 228, 128,0.1)"
                             : "#161a35",
                         border: `1px solid ${
                           kbaAnswers[q.questionId] === opt
-                            ? "#39ff14"
+                            ? "var(--accent)"
                             : "#1e2243"
                         }`,
                         color:
                           kbaAnswers[q.questionId] === opt
-                            ? "#39ff14"
+                            ? "var(--accent)"
                             : "#D3D3D3",
                         cursor: "pointer",
                         textAlign: "left",
@@ -446,7 +446,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                   padding: "10px",
                   borderRadius: "8px",
                   background: "rgba(239,68,68,0.08)",
-                  color: "#f87171",
+                  color: "var(--no)",
                   fontSize: "13px",
                   marginBottom: "12px",
                 }}
@@ -463,7 +463,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                 width: "100%",
                 padding: "14px",
                 borderRadius: "10px",
-                background: "#39ff14",
+                background: "var(--accent)",
                 border: "none",
                 color: "#fff",
                 fontWeight: 700,
@@ -563,7 +563,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                   padding: "10px",
                   borderRadius: "8px",
                   background: "rgba(239,68,68,0.08)",
-                  color: "#f87171",
+                  color: "var(--no)",
                   fontSize: "13px",
                   marginBottom: "12px",
                 }}
@@ -578,7 +578,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
                 width: "100%",
                 padding: "14px",
                 borderRadius: "10px",
-                background: "#39ff14",
+                background: "var(--accent)",
                 border: "none",
                 color: "#fff",
                 fontWeight: 700,
@@ -660,7 +660,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
             </div>
             <h2
               style={{
-                color: "#f87171",
+                color: "var(--no)",
                 fontSize: "20px",
                 fontWeight: 700,
                 marginBottom: "8px",
@@ -686,7 +686,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
               style={{
                 padding: "12px 24px",
                 borderRadius: "10px",
-                background: "#39ff14",
+                background: "var(--accent)",
                 border: "none",
                 color: "#fff",
                 fontWeight: 700,

@@ -35,10 +35,14 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
   // that depend on context values (toast, etc.) and can recreate every
   // render. Storing them in refs keeps our effects stable.
   const onLogoutRef = useRef(onLogout);
-  useEffect(() => { onLogoutRef.current = onLogout; });
+  useEffect(() => {
+    onLogoutRef.current = onLogout;
+  });
 
   const onRefreshTokenRef = useRef(onRefreshToken);
-  useEffect(() => { onRefreshTokenRef.current = onRefreshToken; });
+  useEffect(() => {
+    onRefreshTokenRef.current = onRefreshToken;
+  });
 
   const clearSessionTimers = useCallback(() => {
     if (warningTimeoutRef.current) {
@@ -259,7 +263,8 @@ export const IdleActivityMonitor: React.FC<IdleActivityMonitorProps> = ({
               fontSize: 14,
               fontWeight: 600,
               cursor: "pointer",
-              background: "linear-gradient(135deg, #39ff14 0%, #ea580c 100%)",
+              background:
+                "linear-gradient(135deg, var(--accent) 0%, #ea580c 100%)",
               color: "#ffffff",
               transition: "all 0.2s ease",
             }}

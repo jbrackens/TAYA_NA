@@ -91,8 +91,8 @@ const MarketRowComponent: React.FC<MarketRowProps> = ({
             borderRadius: "999px",
             background: isSuspended
               ? "rgba(239,68,68,0.12)"
-              : "rgba(57,255,20,0.08)",
-            border: `1px solid ${isSuspended ? "rgba(239,68,68,0.22)" : "rgba(57,255,20,0.14)"}`,
+              : "rgba(43, 228, 128,0.08)",
+            border: `1px solid ${isSuspended ? "rgba(239,68,68,0.22)" : "rgba(43, 228, 128,0.14)"}`,
             fontSize: "10px",
             fontWeight: 700,
             letterSpacing: "0.06em",
@@ -122,7 +122,11 @@ const MarketRowComponent: React.FC<MarketRowProps> = ({
             marketName={market.name}
             selectionName={selection.name}
             suspended={isSuspended}
-            label={showLineLabel ? String(selection.base ?? "") || undefined : undefined}
+            label={
+              showLineLabel
+                ? String(selection.base ?? "") || undefined
+                : undefined
+            }
             subtitle={showLineLabel ? selection.name : undefined}
           />
         ))}

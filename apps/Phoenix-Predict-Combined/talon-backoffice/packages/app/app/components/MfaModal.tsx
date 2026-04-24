@@ -83,8 +83,8 @@ export default function MfaModal({
   const buttonStyle: React.CSSProperties = {
     padding: "8px 12px",
     backgroundColor: "transparent",
-    border: "1px solid #39ff14",
-    color: "#39ff14",
+    border: "1px solid var(--accent)",
+    color: "var(--accent)",
     borderRadius: "4px",
     cursor: "pointer",
     fontSize: "13px",
@@ -115,7 +115,9 @@ export default function MfaModal({
         />
 
         {error && (
-          <div style={{ fontSize: "13px", color: "#f87171", marginTop: "8px" }}>
+          <div
+            style={{ fontSize: "13px", color: "var(--no)", marginTop: "8px" }}
+          >
             {error}
           </div>
         )}

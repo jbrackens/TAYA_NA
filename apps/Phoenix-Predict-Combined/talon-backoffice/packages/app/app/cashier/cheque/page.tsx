@@ -117,7 +117,7 @@ export default function ChequeWithdrawalPage() {
 
   const submitButtonStyle: React.CSSProperties = {
     padding: "12px 16px",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     color: "#0f1225",
     border: "none",
     borderRadius: "4px",
@@ -131,9 +131,9 @@ export default function ChequeWithdrawalPage() {
   const errorStyle: React.CSSProperties = {
     padding: "12px 16px",
     backgroundColor: "rgba(244, 63, 94, 0.1)",
-    border: "1px solid #f87171",
+    border: "1px solid var(--no)",
     borderRadius: "4px",
-    color: "#f87171",
+    color: "var(--no)",
     fontSize: "13px",
   };
 
@@ -175,9 +175,9 @@ export default function ChequeWithdrawalPage() {
                 placeholder="Enter amount"
                 style={inputStyle}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#39ff14";
+                  e.currentTarget.style.borderColor = "var(--accent)";
                   e.currentTarget.style.boxShadow =
-                    "0 0 0 3px rgba(57, 255, 20, 0.1)";
+                    "0 0 0 3px rgba(43, 228, 128, 0.1)";
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = "#1a1f3a";
@@ -196,9 +196,9 @@ export default function ChequeWithdrawalPage() {
                 placeholder="Name on cheque"
                 style={inputStyle}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#39ff14";
+                  e.currentTarget.style.borderColor = "var(--accent)";
                   e.currentTarget.style.boxShadow =
-                    "0 0 0 3px rgba(57, 255, 20, 0.1)";
+                    "0 0 0 3px rgba(43, 228, 128, 0.1)";
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = "#1a1f3a";
@@ -216,9 +216,9 @@ export default function ChequeWithdrawalPage() {
                 placeholder="Full mailing address"
                 style={textareaStyle}
                 onFocus={(e) => {
-                  e.currentTarget.style.borderColor = "#39ff14";
+                  e.currentTarget.style.borderColor = "var(--accent)";
                   e.currentTarget.style.boxShadow =
-                    "0 0 0 3px rgba(57, 255, 20, 0.1)";
+                    "0 0 0 3px rgba(43, 228, 128, 0.1)";
                 }}
                 onBlur={(e) => {
                   e.currentTarget.style.borderColor = "#1a1f3a";
@@ -238,7 +238,7 @@ export default function ChequeWithdrawalPage() {
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#39ff14";
+                e.currentTarget.style.backgroundColor = "var(--accent)";
               }}
             >
               {loading ? "Processing..." : "Request Cheque"}

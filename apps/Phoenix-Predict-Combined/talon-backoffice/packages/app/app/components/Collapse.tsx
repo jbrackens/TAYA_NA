@@ -34,7 +34,7 @@ export default function Collapse({
     justifyContent: "center",
     width: "20px",
     height: "20px",
-    color: "#39ff14",
+    color: "var(--accent)",
     fontSize: "12px",
     fontWeight: "bold",
     transition: "transform 0.3s ease",
@@ -73,14 +73,23 @@ export default function Collapse({
         }}
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={(e) => {
-          e.currentTarget.style.color = "#39ff14";
+          e.currentTarget.style.color = "var(--accent)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.color = "#e2e8f0";
         }}
       >
         <span style={chevronStyle} aria-hidden="true">
-          <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width={12}
+            height={12}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <polyline points="9 18 15 12 9 6" />
           </svg>
         </span>

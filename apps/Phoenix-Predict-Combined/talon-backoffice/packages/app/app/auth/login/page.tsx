@@ -161,7 +161,7 @@ function Styles() {
         padding: 4px 12px;
         margin-bottom: 14px;
         background: var(--accent-soft);
-        border: 1px solid rgba(57,255,20,0.3);
+        border: 1px solid rgba(43, 228, 128,0.3);
         color: var(--accent);
         border-radius: 999px;
         font-size: 11px;
@@ -219,8 +219,8 @@ function Styles() {
       }
 
       .la-error {
-        background: rgba(248,113,113,0.1);
-        border: 1px solid rgba(248,113,113,0.3);
+        background: rgba(255, 155, 107,0.1);
+        border: 1px solid rgba(255, 155, 107,0.3);
         border-radius: var(--r-sm);
         padding: 10px 12px;
         font-size: 12px;

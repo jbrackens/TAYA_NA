@@ -76,8 +76,8 @@ export default function Pagination({
 
   const activeButtonStyle: React.CSSProperties = {
     ...buttonStyle,
-    backgroundColor: "#39ff14",
-    borderColor: "#39ff14",
+    backgroundColor: "var(--accent)",
+    borderColor: "var(--accent)",
     color: "#0f1225",
   };
 
@@ -106,8 +106,8 @@ export default function Pagination({
         onMouseEnter={(e) => {
           if (canGoPrev) {
             const btn = e.currentTarget as HTMLButtonElement;
-            btn.style.borderColor = "#39ff14";
-            btn.style.color = "#39ff14";
+            btn.style.borderColor = "var(--accent)";
+            btn.style.color = "var(--accent)";
           }
         }}
         onMouseLeave={(e) => {
@@ -137,8 +137,8 @@ export default function Pagination({
             onMouseEnter={(e) => {
               if (!isActive) {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.borderColor = "#39ff14";
-                btn.style.color = "#39ff14";
+                btn.style.borderColor = "var(--accent)";
+                btn.style.color = "var(--accent)";
               }
             }}
             onMouseLeave={(e) => {
@@ -159,8 +159,8 @@ export default function Pagination({
         onMouseEnter={(e) => {
           if (canGoNext) {
             const btn = e.currentTarget as HTMLButtonElement;
-            btn.style.borderColor = "#39ff14";
-            btn.style.color = "#39ff14";
+            btn.style.borderColor = "var(--accent)";
+            btn.style.color = "var(--accent)";
           }
         }}
         onMouseLeave={(e) => {

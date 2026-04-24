@@ -144,7 +144,7 @@ export default function DataTable<T extends { id?: string | number }>({
             style={getTrStyle(rowIdx)}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLTableRowElement;
-              el.style.backgroundColor = "rgba(57, 255, 20, 0.08)";
+              el.style.backgroundColor = "rgba(43, 228, 128, 0.08)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLTableRowElement;

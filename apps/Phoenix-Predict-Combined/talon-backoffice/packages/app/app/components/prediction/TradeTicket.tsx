@@ -275,13 +275,13 @@ function Styles() {
         color: var(--t1);
       }
       .tt-side.yes.active {
-        background: rgba(52,211,153,0.1);
+        background: rgba(127, 200, 255,0.1);
         border-color: var(--yes);
       }
       .tt-side.yes.active .tt-side-label { color: var(--yes); }
       .tt-side.yes.active .tt-side-price { color: var(--yes); }
       .tt-side.no.active {
-        background: rgba(248,113,113,0.1);
+        background: rgba(255, 155, 107,0.1);
         border-color: var(--no);
       }
       .tt-side.no.active .tt-side-label { color: var(--no); }
@@ -377,8 +377,8 @@ function Styles() {
       .tt-summary-profit { color: var(--yes) !important; }
 
       .tt-error {
-        background: rgba(248,113,113,0.1);
-        border: 1px solid rgba(248,113,113,0.3);
+        background: rgba(255, 155, 107,0.1);
+        border: 1px solid rgba(255, 155, 107,0.3);
         color: var(--no);
         border-radius: var(--r-sm);
         padding: 10px 12px;
@@ -422,13 +422,13 @@ function Styles() {
       .tt-btn-confirm.yes {
         background: var(--yes);
         color: #052e21;
-        box-shadow: 0 0 24px rgba(52,211,153,0.35);
+        box-shadow: 0 0 24px rgba(127, 200, 255,0.35);
       }
       .tt-btn-confirm.yes:hover:not(:disabled) { background: #4ade80; }
       .tt-btn-confirm.no {
         background: var(--no);
         color: #3a0c0c;
-        box-shadow: 0 0 24px rgba(248,113,113,0.35);
+        box-shadow: 0 0 24px rgba(255, 155, 107,0.35);
       }
       .tt-btn-confirm.no:hover:not(:disabled) { background: #fb8484; }
 

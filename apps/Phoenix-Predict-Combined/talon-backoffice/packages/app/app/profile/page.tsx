@@ -29,8 +29,8 @@ function StatusBadge({
 }) {
   const statusColors: Record<string, { bg: string; color: string }> = {
     verified: { bg: "#1e7e34", color: "#22c55e" },
-    pending: { bg: "#665700", color: "#fbbf24" },
-    failed: { bg: "#7f1d1d", color: "#f87171" },
+    pending: { bg: "#665700", color: "var(--whale)" },
+    failed: { bg: "#7f1d1d", color: "var(--no)" },
     default: { bg: "#0f3460", color: "#4a7eff" },
   };
 
@@ -80,9 +80,9 @@ function TabNavigation({
             padding: "12px 16px",
             border: "none",
             backgroundColor: "transparent",
-            color: activeTabIndex === index ? "#39ff14" : "#D3D3D3",
+            color: activeTabIndex === index ? "var(--accent)" : "#D3D3D3",
             borderBottom:
-              activeTabIndex === index ? "2px solid #39ff14" : "none",
+              activeTabIndex === index ? "2px solid var(--accent)" : "none",
             cursor: "pointer",
             fontSize: "14px",
             fontWeight: "500",
@@ -116,7 +116,7 @@ const labelStyle = {
 
 const btnStyle = {
   padding: "10px 20px",
-  backgroundColor: "#39ff14",
+  backgroundColor: "var(--accent)",
   color: "#ffffff",
   border: "none",
   borderRadius: "4px",
@@ -329,10 +329,10 @@ export default function ProfilePage() {
       return;
     }
     try {
-      const response = await fetch('/api/v1/auth/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/v1/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           currentPassword,
           newPassword,
@@ -340,11 +340,15 @@ export default function ProfilePage() {
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(data?.error?.message || 'Failed to change password');
+        throw new Error(data?.error?.message || "Failed to change password");
       }
-      toast.success("Password Changed", "Your password has been updated successfully.");
+      toast.success(
+        "Password Changed",
+        "Your password has been updated successfully.",
+      );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to change password';
+      const message =
+        err instanceof Error ? err.message : "Failed to change password";
       toast.error("Error", message);
     }
     setCurrentPassword("");

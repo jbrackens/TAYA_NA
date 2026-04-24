@@ -71,7 +71,7 @@ export default function VerifyEmailPage() {
     display: "inline-block",
     marginTop: "16px",
     padding: "10px 20px",
-    backgroundColor: "#39ff14",
+    backgroundColor: "var(--accent)",
     color: "#0f1225",
     border: "none",
     borderRadius: "4px",
@@ -84,7 +84,7 @@ export default function VerifyEmailPage() {
 
   const errorStyle: React.CSSProperties = {
     fontSize: "13px",
-    color: "#f87171",
+    color: "var(--no)",
     margin: "0 0 16px 0",
   };
 
@@ -93,7 +93,7 @@ export default function VerifyEmailPage() {
     width: "24px",
     height: "24px",
     border: "2px solid #1a1f3a",
-    borderTop: "2px solid #39ff14",
+    borderTop: "2px solid var(--accent)",
     borderRadius: "50%",
     animation: "spin 1s linear infinite",
   };

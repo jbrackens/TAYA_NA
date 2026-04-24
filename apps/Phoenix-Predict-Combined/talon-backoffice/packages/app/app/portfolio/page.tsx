@@ -930,11 +930,11 @@ function Styles() {
         letter-spacing: 0.08em;
       }
       .pf-side-yes {
-        background: rgba(52,211,153,0.14);
+        background: rgba(127, 200, 255,0.14);
         color: var(--yes);
       }
       .pf-side-no {
-        background: rgba(248,113,113,0.14);
+        background: rgba(255, 155, 107,0.14);
         color: var(--no);
       }
 
@@ -951,14 +951,14 @@ function Styles() {
         border: 1px solid var(--b1);
       }
       .pf-status-filled {
-        background: rgba(52,211,153,0.14);
+        background: rgba(127, 200, 255,0.14);
         color: var(--yes);
-        border-color: rgba(52,211,153,0.3);
+        border-color: rgba(127, 200, 255,0.3);
       }
       .pf-status-open, .pf-status-partial {
         background: var(--accent-soft);
         color: var(--accent);
-        border-color: rgba(57,255,20,0.3);
+        border-color: rgba(43, 228, 128,0.3);
       }
       .pf-status-cancelled, .pf-status-expired {
         background: var(--s2);

@@ -627,18 +627,18 @@ const cashierStyles = `
     padding: 10px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; margin-bottom: 14px;
   }
   .cashier-msg.error {
-    background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--no);
+    background: rgba(255, 155, 107,0.1); border: 1px solid rgba(255, 155, 107,0.3); color: var(--no);
   }
   .cashier-msg.success {
-    background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--yes);
+    background: rgba(127, 200, 255,0.1); border: 1px solid rgba(127, 200, 255,0.3); color: var(--yes);
   }
   .cashier-msg.pending {
-    background: var(--accent-soft); border: 1px solid rgba(57,255,20,0.3); color: var(--accent);
+    background: var(--accent-soft); border: 1px solid rgba(43, 228, 128,0.3); color: var(--accent);
     display: flex; align-items: center; gap: 10px;
   }
   @keyframes cashier-spin { to { transform: rotate(360deg); } }
   .cashier-spinner {
-    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(57,255,20,0.3);
+    display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(43, 228, 128,0.3);
     border-top-color: var(--accent); border-radius: 50%;
     animation: cashier-spin 0.8s linear infinite; flex-shrink: 0;
   }

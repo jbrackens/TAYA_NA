@@ -46,7 +46,7 @@ export function PredictFooter() {
       </div>
       <div style={{ opacity: 0.7 }}>
         <span style={{ color: "#f8fafc", fontWeight: 700 }}>
-          TAYA <span style={{ color: "#39ff14" }}>Predict</span>
+          TAYA <span style={{ color: "var(--accent)" }}>Predict</span>
         </span>
         {" · "}© {YEAR}
         {" · "}Trade event contracts, not sports bets

@@ -223,10 +223,10 @@ function MarketCardStyles() {
         border: 1px solid var(--b1);
       }
       .mkt-depth-yes {
-        background: linear-gradient(90deg, rgba(52,211,153,0.72), rgba(52,211,153,0.92));
+        background: linear-gradient(90deg, rgba(127, 200, 255,0.72), rgba(127, 200, 255,0.92));
       }
       .mkt-depth-no {
-        background: linear-gradient(90deg, rgba(248,113,113,0.92), rgba(248,113,113,0.72));
+        background: linear-gradient(90deg, rgba(255, 155, 107,0.92), rgba(255, 155, 107,0.72));
       }
       .mkt-mid {
         display: grid;
@@ -241,11 +241,11 @@ function MarketCardStyles() {
         transition: all 0.15s;
       }
       .mkt-side.yes:hover {
-        background: rgba(52,211,153,0.1);
+        background: rgba(127, 200, 255,0.1);
         border-color: var(--yes);
       }
       .mkt-side.no:hover {
-        background: rgba(248,113,113,0.1);
+        background: rgba(255, 155, 107,0.1);
         border-color: var(--no);
       }
       .mkt-side-label {
