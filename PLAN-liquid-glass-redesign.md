@@ -13,6 +13,306 @@
 
 ---
 
+## Information hierarchy per page (added per /plan-design-review 2026-04-24)
+
+What the user sees FIRST / SECOND / THIRD on each core page. Implementers must respect this order — the first element is the largest, highest-contrast, most prominent. Everything else supports.
+
+| Page | First (what hits you) | Second (orients you) | Third (invites action) |
+|---|---|---|---|
+| `/predict` | **Featured market card** — biggest glass card, larger than the grid, pre-settled opinion or currently-trending market. Title + prices + sparkline. | **Category pill strip** — horizontal row above the grid. Mint "All" selected by default. | **Discovery grid** — `MarketCard` tiles, `repeat(auto-fill, minmax(300px, 1fr))`. |
+| `/market/[ticker]` | **Current price + market question** — hero moment at top of left column. 48px mono price in `--yes` blue + market question below in 28px bold. | **Chart** — 320px tall, glow treatment, current-price marker, time-switcher above. Users are here to decide, chart informs the decision. | **Trade ticket** — sticky right rail. YES/NO selector → amount → Review CTA. Mobile: becomes last section. |
+| `/portfolio` | **Summary strip** — 5 stat cards in a row (Invested, Realized P&L, Open positions, Accuracy, Rank chip). Money moved + performance is the reason a user is here. | **Position tabs** — Open / Orders / History tab switcher. | **Position / history table** — solid-fill rows inside glass card. |
+| `/rewards` | **Tier ladder** — 6 glass cards (Hidden + 5 visible tiers), current tier highlighted with accent border + mint glow. Users come to /rewards to see progress, not to read a ledger. | **Current-standing block** — points balance + progress bar to next tier + TierPill. | **Ledger table** — solid-fill history. |
+| `/leaderboards` | **Board selector** (left rail on desktop, horizontal scroll on mobile) with the currently-selected board visually active. | **Leaderboard title + description** for the selected board. | **Ranked user table** — solid-fill rows, current user highlighted with mint left-border if ranked. |
+| `/auth/login` | **BrandMark + product name** — mint gradient mark on the full-bleed cool backdrop. Prestige moment. | **Login card** — centered `.glass.glass-thick`, email + password. | **Submit CTA** — mint→teal gradient button. |
+
+Page hierarchy reviewed, none of the phase specs changed.
+
+## Interaction states per surface (added per /plan-design-review 2026-04-24)
+
+Every UI surface specifies what the user SEES in each state. Loading, empty, error, partial are features — not afterthoughts engineers invent on the fly.
+
+### Global state recipes (reuse everywhere)
+
+- **Loading card skeleton:** `.glass` with a `skeleton-shimmer` pseudo-element that animates a 35-degree highlight across solid `rgba(255,255,255,0.04)` blocks shaped like the real content (title bar, price area, body rows). 1.4s linear infinite. Respects `prefers-reduced-motion` (solid grey blocks, no shimmer).
+- **Error toast:** `.glass.glass-thick` card top-center of viewport, `--no` peach left-border accent, title ("Something went wrong"), message, retry button with `.glass-thin` treatment. Auto-dismiss after 6s or on click. Stacks vertically if multiple.
+- **Inline error (form validation):** red `--no` text below the offending input, 11px, with a `--no` 1px bottom-border on the input. No icon.
+- **Optimistic success micro-state:** brief green check icon pulse at the action site (e.g., inside a button that was just clicked) before the real success state renders. 400ms duration.
+
+### Per-page state matrix
+
+| Page | Loading | Empty | Error | Partial |
+|---|---|---|---|---|
+| `/predict` | Market grid: 12 skeleton cards in the grid layout. Hero: full-size skeleton card. Category pills: static, no skeleton (they come from cache). | No markets in category: glass card "No markets in [Category] right now. Try [all markets] or come back later." + CTA link. | API 500 on discovery: full-viewport error toast, grid shows "Discovery is offline. [Retry]" with a retry button. Existing cached markets stay rendered. | Some categories have markets, others empty: category pill shows gray instead of its color, count = 0 beside pill. Tapping it shows the empty-state card. |
+| `/market/[ticker]` | Chart: skeleton line chart with pulsing current-price marker. Order book: 5 skeleton rows per side. Trade ticket: disabled (greyed) with "Loading market data..." label over the YES/NO selector. | Market that was unseeded or resolved already: full-page glass card "This market has settled" or "Market not found" with back-link to `/predict`. | API 500: chart shows "Chart unavailable. [Retry]" inside the chart card; order book shows "Order book offline"; trade ticket shows "Trading paused" and disables CTA. | Market is open but order book is thin (< 3 levels): render what's there + "Thin order book" warning pill inside the book card. |
+| `/portfolio` | Summary strip: 5 skeleton stat cards. Positions table: 3 skeleton rows. | Zero positions: glass card "Your first trade will show up here. [Browse markets →]". Summary strip still renders with $0.00 values (not hidden). | API 500 on portfolio endpoint: summary strip shows "—" placeholders, positions table shows "Positions offline. [Retry]". | Positions load, leaderboard standing (for rank chip) fails: 4 stats render, rank chip shows "—" with a tiny retry icon. |
+| `/rewards` | Tier ladder: 6 skeleton cards. Ledger: 10 skeleton rows. | Zero ledger entries (never traded): tier ladder renders, ledger shows "Earn your first points by settling a trade. [Browse markets →]". | Ledger 500: tier ladder still renders, ledger shows "Ledger offline. [Retry]". | Ledger loads but tier query fails: tier ladder shows "Tier unknown" placeholder card, ledger renders normally. |
+| `/leaderboards` | Board sidebar: static (boards are in static config). Entries table: 10 skeleton rows. User-standing chip: skeleton pill. | Board with zero qualifying users: glass card inside the detail pane "No one has qualified this week. Be the first." | API 500 on entries: "Leaderboard offline. [Retry]" inside the detail pane. Sidebar still navigable. | User queries Weekly P&L standing (they haven't traded this week): their row shows "Not qualified this week" instead of a rank. |
+| `/account` | All cards render as skeletons. | N/A — `/account` always has content (username, email, settings). | Profile save returns 500: inline error below the form + original values preserved. | Some sub-cards load (profile), others fail (privacy toggle): failing card shows "Setting unavailable" placeholder. |
+| `/auth/login` | Submit button shows spinner, form disabled. | N/A. | Invalid creds: inline error under password field "Wrong email or password". Rate limited: glass error card top of form "Too many attempts. Try again in N minutes." Network failure: "Can't reach our servers. Check your connection." | 2FA required: login card transitions to a 6-digit code input, same card, no route change. |
+
+### Empty-state variants specific to Liquid Glass
+
+Liquid Glass makes empty states feel lighter by default. Use this — empty states get a `.glass` card with a single small mint-accent icon (25px), a one-line warm message, and a single primary CTA. Do NOT fill empty states with decorative imagery (kills the material).
+
+### Motion during state transitions
+
+- Loading → loaded: skeleton fades out (150ms), real content fades in (200ms). Not a hard swap.
+- Loaded → error: error toast slides in from top, existing stale content stays behind glass (it's not NEW content, just stale).
+- Empty → populated (new data arrives): new glass card fades + scales in from 0.96 to 1, 280ms spring.
+- Route transition: outgoing glass card exits with opacity 1→0 (150ms), incoming enters 0→1 (200ms). No slide or slide-up — too much motion on a data-dense app.
+
+## User journey storyboards (added per /plan-design-review 2026-04-24)
+
+Three journeys matter most for a pre-PMF prediction market. Each specifies what the user does, what they feel, and which design decision carries the emotional weight.
+
+### Journey A: First-time visitor hits `/predict`
+
+Goal: in 5 seconds, user understands "this is a prediction market where I can trade YES/NO on real-world outcomes" AND feels this is a real financial product, not a crypto casino.
+
+| Step | User action | User feels | Design decision carrying it |
+|---|---|---|---|
+| 0 | Lands on `/predict` (unauthenticated redirect or direct link) | "What am I looking at?" (≤1s) | BrandMark top-left + cool-teal scene backdrop. The scene + mint gradient mark says "serious fintech" inside 200ms of first paint. |
+| 1 | Scans the page, reads featured market title | "Oh — bets on real events" (2-3s) | Featured market hero card. Glass treatment makes it feel substantial. Question is 28px bold, answers a market question they can have an opinion on. |
+| 2 | Sees YES + NO prices in different colors | "This is like a market, not a sportsbook" (3-4s) | Blue YES + peach NO semantics are new (prior was green/red). Blue reads as "financial"; peach reads as "choice, not threat". Together they differentiate from the red-green sportsbook pattern they'd pattern-match to. |
+| 3 | Hovers or taps a card | "I can see what happens" (4-5s) | Hover: card lifts (translateY -2px), border tints mint. On a touch device: pressing reveals the liquid-fill on the side button. Either way, the interaction reads as "it's alive." |
+| 4 | (If unauthenticated) sees a "Sign in to trade" prompt on the trade ticket | "OK, I need an account" (no friction, no wall) | The CTA uses the mint→teal gradient + glow. It's the only element at full brightness — eye goes there. Not aggressive, just inevitable. |
+
+Failure modes the design must prevent:
+- The scene is too purple or too generic → reads as crypto-casino or SaaS. Current cool-teal + mint combo is deliberate, NOT Apple-default-purple.
+- The material feels decorative → reads as "designed for Dribbble." Mint-green CTA + mono prices + density in the order book signal "someone traded on this."
+- Skeleton loading is stiff → reads as broken. Skeleton-shimmer animation (Pass 2) keeps perceived liveness even during cold loads.
+
+### Journey B: First trade placement on `/market/[ticker]`
+
+Goal: user picks a side, sets amount, reviews, confirms. The entire flow is below the fold on desktop and in one scroll on mobile. No friction that kills conviction.
+
+| Step | User action | User feels | Design decision |
+|---|---|---|---|
+| 0 | Lands on market page from a card click or deep link | "Tell me the situation" (0-2s) | MarketHead: LIVE pill pulses, countdown shows urgency, question is the biggest text, resolution blurb below explains rules. Price visible in chart immediately. |
+| 1 | Reads chart + current price | "Where is the market today?" | 48px mono price + delta pill in mint. Chart line glows. Current-price marker is a triple-circle stack so the eye snaps to it. |
+| 2 | Makes up their mind, taps YES or NO | "I'm going with YES" | Liquid-fill tint rises into the chosen button. Blue for YES, peach for NO. The button doesn't JUST change color — it fills from the bottom. This micro-animation is 280ms, slow enough to register as a physical act. |
+| 3 | Enters amount or taps a chip | "This is the stake" | Amount display is recessed glass-inset, monospace-numerics. $25 chip highlights mint. Payout-if-YES updates in real-time in mint — the reward is visible BEFORE commit. |
+| 4 | Taps Review Trade | "Let me double-check" | CTA has the shimmer + spring press. Modal opens with glass-thick treatment. Summary: side, amount, avg fill price, shares, payout. Confirm + Cancel. |
+| 5 | Confirms | "Done." | Brief success micro-state (green checkmark pulse inside the button for 400ms), modal fades, trade ticket shows a "Trade placed" success card that itself fades to a fresh ticket state after 1.5s. |
+| 6 | Scrolls or navigates back | "I have a position now" | The modal-exit transition is FAST (150ms fade) — doesn't feel bureaucratic. The success acknowledgment is CLEAR but doesn't linger. Users who just confirmed know it went through. |
+
+Critical emotional beat: **the moment they press Review Trade.** This is the highest-stakes UX moment in the whole app. Real money (or play money gated on D2 fee-model blocker) moved. The design must feel intentional here — the shimmer + spring press + distinct glass-thick modal treatment exist specifically to say "we know this matters to you."
+
+Failure modes:
+- Modal is too similar to the rest of the page → feels casual, undermines trust. Glass-thick vs glass-regular is the differentiation.
+- Success state lingers too long → users scroll past it. 1.5s auto-dismiss.
+- Amount display doesn't react to chip taps → confusion. It must update immediately.
+
+### Journey C: Returning user checks `/portfolio` on day N
+
+Goal: in 3 seconds, user answers "how am I doing?" and either celebrates or adjusts strategy.
+
+| Step | User action | User feels | Design decision |
+|---|---|---|---|
+| 0 | Navigates to `/portfolio` | "Where did I land today?" | TopBar balance pill already tells them their balance. Portfolio page elaborates. |
+| 1 | Scans summary strip | "Up / down / flat?" (single glance) | Realized P&L stat card is the visual anchor. Mint text-shadow glow on positive, peach on negative. No ambiguity. Accuracy stat reinforces. |
+| 2 | (If up) Looks at rank chip | "Did I move up a board?" | Rank chip has the mint gradient on the medal icon + the board name + `#N`. Satisfying in 0.5s. Links to `/leaderboards` for deeper dive. |
+| 3 | (If down) Looks at history tab | "What hurt?" | History tab shows recent settlements with ± deltas in mint/peach. No judgment, just data. |
+| 4 | Clicks a market in the history | "Would I have traded it differently?" | Deep-link to the settled market. Page shows "SETTLED YES" or "SETTLED NO" state (per Pass 2 — a new state to add). |
+
+Critical emotional beat: **the first-glance of the summary strip.** Either they get the dopamine hit (mint glow on positive P&L) or the sober nod (peach on negative). The visual treatment has to match the emotional stakes — not suppress them, not over-celebrate them.
+
+Settlement celebration / loss acknowledgment:
+- ADD to Pass 2 state matrix: when a user visits `/portfolio` within 24 hours of their first settled trade, the top of the page renders a one-time "Your first settled trade!" ribbon glass card with the outcome. Dismissable, won't show again.
+- For losses: no celebration. The peach stat card + history row is enough. Predict is a trading tool, not a game — losing isn't a failure state, it's data.
+
+### Time-horizon design
+
+- **5 seconds (visceral):** the cool backdrop + mint CTA on any page says "financial, serious, current, not-a-casino." This is the brand impression.
+- **5 minutes (behavioral):** the trade ticket flow is tight and tactile. Liquid-fill tint + spring press + shimmer CTA feel like operating a good trading instrument.
+- **5 years (reflective):** the Decisions Log in DESIGN.md exists because long-term users will encounter edge cases, quirks, and product decisions we made years ago. The log is their map.
+
+## AI-slop prevention for unmocked surfaces (added per /plan-design-review 2026-04-24)
+
+The market-detail page is mocked. Other pages risk drifting into slop patterns. Anti-slop specifications for the unmocked surfaces:
+
+### `/rewards` tier ladder (Phase 4 step 3)
+
+**DO NOT** render as 6 centered cards in a grid with colored circle icons (classic SaaS-starter-template AI slop).
+
+**Instead:** a horizontal ladder. Tiers 1-5 stacked left-to-right at roughly equal widths, current tier taller + mint-accent-bordered + mint-glow-shadow. Hidden tier (tier 0) is NOT rendered (users never see "Hidden" as an achievement to chase). Ladder sits above the ledger, takes ~180px vertical on desktop, ~140px on mobile. Each tier card has:
+- Tier name (Outfit 700, 14px, uppercase, letter-spacing 0.1em)
+- Point threshold (IBM Plex Mono 500, 16px, tabular-nums)
+- Two-line benefits blurb (Outfit 400, 12px, `--t-2`)
+- Tier-color border (`--tier-1..--tier-5`) as a 1px bottom-border, NOT a left-border (avoids the "colored left-border card" slop pattern from DESIGN.md §1).
+
+The user's current tier card gets:
+- Mint accent top-border (not the tier color — accent = "you are here")
+- `--accent-glow` box-shadow
+- Slight `translateY(-4px)` so it sits above the ladder line visually
+- Small mint pulse dot in the corner (like the LIVE pill, lower intensity)
+
+Non-current tiers are flat glass. No icons, no emojis, no colored circles.
+
+### `/predict` featured hero (Phase 4 step 1)
+
+**DO NOT** render as a generic hero section with large centered title, stock-photo-style background image, generic copy ("The future of prediction markets"), and a pair of centered CTAs. That's pattern 9 + 10 from DESIGN.md §1.
+
+**Instead:** the featured market IS the hero. A single larger `.glass.glass-thick` `MarketCard` at full content width, ~200px tall, asymmetric. Left 70% is the question + volume + closes-in countdown + sparkline. Right 30% is YES/NO stacked with current prices, each side acting as a big tap target. No generic copy. No background image. No "Welcome to Predict". The market IS the welcome.
+
+### `/account` settings (Phase 4 step 6)
+
+**DO NOT** render as a vertical stack of identical glass cards each containing a label + toggle (classic settings-page slop). Too uniform reads as generated.
+
+**Instead:** group settings by logical section (Profile, Notifications, Privacy, Security, Responsible Gaming) with a subtle glass-thin section header card between groups. Each settings card inside a group uses the density and spacing appropriate to its control — a name input is tall, a toggle is short, a destructive action ("Close Account") is its own card with a peach `--no` top-border. Not uniform.
+
+### Auth flow pages (Phase 4 step 7-8)
+
+**DO NOT** render as centered card on gradient background (Tailwind-default auth page). Pattern 4 from DESIGN.md §1.
+
+**Instead:** centered `.glass.glass-thick` card on the full-bleed cool backdrop (same backdrop as authenticated app). BrandMark + product name above the card (NOT inside it). Card content is flush-left — inputs, submit button, "forgot password" link. Social-auth buttons (if we add them later) sit OUTSIDE the card, below, with a "or" divider between. The card has a discrete purpose, not a decorative one.
+
+## Responsive spec (added per /plan-design-review 2026-04-24)
+
+Three breakpoints matter. Each gets an intentional layout, not just "stacked."
+
+### Desktop (>= 1100px)
+
+- TopBar: horizontal, 64px, full nav links + search + balance + avatar.
+- Page content: 1280px max-width, 32px horizontal padding.
+- Market detail: 2-col grid (chart+data left, sticky trade ticket 360px right).
+- Discovery grid: `repeat(auto-fill, minmax(300px, 1fr))`.
+- Leaderboards: left rail (280px) + right detail pane.
+- Glass surfaces render at full `backdrop-filter: blur(30px) saturate(180%)`.
+
+### Tablet (768-1099px)
+
+- TopBar: horizontal, 64px, same shape as desktop. Search may collapse to icon (opens popover).
+- Page content: `min(100%, 1100px)`, 24px horizontal padding.
+- Market detail: SWITCHES to 1-col stack at 1100px (not 1280px). Chart + trade ticket stack, ticket loses sticky. OrderBook + RecentTrades stay 2-col on tablet landscape, go 1-col on portrait.
+- Discovery grid: same `minmax(300px, 1fr)` — 2-3 cols depending on viewport.
+- Leaderboards: left rail collapses to horizontal scroll (same as mobile pattern from C.3 fix).
+
+### Mobile (< 768px)
+
+- **TopBar: 56px, only BrandMark + balance pill + avatar** (no nav links, no search icon in TopBar).
+- **Bottom tab bar: 56px + safe-area-inset-bottom**, `.glass.glass-med` treatment, 5 icon-only tabs with labels: Markets, Portfolio, Leaderboards, Rewards, Account. Tab bar sticks to bottom of viewport, backdrop-filter over whatever content scrolls under it. Active tab: mint icon + label. Inactive: `--t-3` muted.
+- **Search: magnifying-glass icon in TopBar** (replaces the desktop search field). Tapping opens a full-screen glass overlay with a text input + recent-searches + typeahead results.
+- Page content: 16px horizontal padding.
+- Market detail: 1-col stack. Chart → Stats row → OrderBook → RecentTrades → TradeTicket (last, not sticky).
+- Discovery grid: 1-col at very narrow, 2-col at ~500px+.
+- Safe area insets (iPhone notch + home indicator): respected via `env(safe-area-inset-*)` padding.
+
+### New component: `<MobileTabBar />` (added to Phase 3 scope per /plan-design-review 2026-04-24)
+
+- File: `app/components/prediction/MobileTabBar.tsx`
+- Lives in `AppShell`, renders only when viewport <768px.
+- 5 tabs: Markets (home icon, links to `/predict`), Portfolio (folder icon, `/portfolio`), Leaderboards (chart-bars icon, `/leaderboards`), Rewards (star icon, `/rewards`), Account (user-circle icon, `/account`).
+- Active tab derived from `usePathname()` match (first segment).
+- `.glass.glass-med` treatment, sticky bottom, full-width. Height: `56px + env(safe-area-inset-bottom)`.
+- Respects `prefers-reduced-transparency` (falls back to solid `--bg-teal`).
+- Keyboard users: Tab focuses through bar, arrow keys navigate between tabs.
+
+Added to Phase 3 file list. Phase 3 effort estimate bumped +30 min → ~3.5-4.5 hrs CC.
+
+## Accessibility spec (expanded per /plan-design-review 2026-04-24)
+
+Real WCAG AA compliance. Not "text-shadow boosts perceived contrast" — axe-core-passing.
+
+### Contrast — actual tested pairs
+
+| Foreground | Background | Ratio | AA (4.5:1) | AAA (7:1) | Verdict |
+|---|---|---|---|---|---|
+| `#ffffff` (--t1) | `--bg-deep` (#06101c) | 19.4:1 | ✓ | ✓ | Pass |
+| `#ffffff` (--t1) | `--bg-teal` (#0c2638) | 14.8:1 | ✓ | ✓ | Pass |
+| `#ffffff` (--t1) | `--bg-navy` (#0c2a4a) | 12.6:1 | ✓ | ✓ | Pass |
+| `rgba(255,255,255,0.72)` (--t2) | `--bg-deep` | 13.7:1 | ✓ | ✓ | Pass |
+| `rgba(255,255,255,0.72)` (--t2) | `--bg-teal` | 10.4:1 | ✓ | ✓ | Pass |
+| `rgba(255,255,255,0.72)` (--t2) | `--bg-navy` | 8.8:1 | ✓ | ✓ | Pass |
+| `rgba(255,255,255,0.44)` (--t3) | `--bg-deep` | 7.7:1 | ✓ | ✓ | Non-actionable text only |
+| `rgba(255,255,255,0.44)` (--t3) | `--bg-teal` | 5.9:1 | ✓ | ✗ | Non-actionable text only |
+| `rgba(255,255,255,0.44)` (--t3) | `--bg-navy` | 5.0:1 | ✓ | ✗ | Non-actionable text only |
+| `--accent` (#2be480) | `--bg-deep` | 11.3:1 | ✓ | ✓ | Pass (mint on dark) |
+| `#04140a` (dark text) | `--accent` (#2be480 CTA bg) | 13.9:1 | ✓ | ✓ | Pass (dark on mint CTA) |
+| `--yes` (#7fc8ff) | `--bg-deep` | 10.7:1 | ✓ | ✓ | Pass |
+| `--no` (#ff9b6b) | `--bg-deep` | 9.4:1 | ✓ | ✓ | Pass |
+
+All actionable text passes AA by a wide margin because we're a dark theme — the issue isn't `--bg-deep`, it's translucent surfaces. When `.glass` backgrounds layer over the backdrop, text sees a MIXED background. Worst case: `--t2` over glass over `--bg-azure` lobe — contrast could drop.
+
+**Axe-core gate:** Phase 5 audit runs axe on every converted page. Zero critical + zero serious issues required. If a specific text+surface combo fails:
+- Option 1: add a solid `rgba(0, 0, 0, 0.35)` under the text layer only (a small pill of background, not the whole glass card losing transparency).
+- Option 2: bump the text color to `--t1` for that instance.
+- Option 3: flag the surface with `.glass-opaque-text` which disables `backdrop-filter` under the text region while keeping it on the card edges.
+
+`text-shadow` is NOT a contrast fix (codex was right). It's a perceptual softener and axe ignores it.
+
+### Keyboard navigation
+
+- Every interactive element has a `:focus-visible` state: 2px outer ring in `--accent`, 12px glow via `box-shadow: var(--accent-glow)`. Skip-link above TopBar for "Skip to main content".
+- Tab order: BrandMark → nav links/bottom tabs → balance pill → avatar → page primary element → page secondary → page footer. Strictly top-to-bottom, left-to-right.
+- Modals trap focus. Esc closes. Opening a modal moves focus to the first focusable element inside; closing returns focus to the trigger.
+- Bottom tab bar: Tab to enter the group, arrow keys to switch tabs, Enter/Space to activate.
+- YES/NO selector: arrow keys switch sides when one is focused. Enter commits.
+- Amount chips: Tab through chips, Space selects.
+- Slider: focusable, arrow keys adjust in 1% increments, Shift+arrow = 10%.
+
+### ARIA + semantics
+
+- BackdropScene is `aria-hidden="true"` + `pointer-events: none`. Never announced.
+- LIVE pulse dot has `aria-label="live"` on the container.
+- Market prices are announced as "YES 42 cents, NO 58 cents" (not "YES 42¢") — screen readers mispronounce the cent symbol.
+- Error toasts use `role="alert"` + `aria-live="assertive"`.
+- Loading skeletons use `aria-busy="true"` on the container.
+- Bottom tab bar is `<nav aria-label="Primary">`, each tab is a link with `aria-current="page"` when active.
+- Chart SVGs have `<title>` + `<desc>` accessible labels describing the trend ("YES price trending up 5% in the last 24 hours, currently 42 cents").
+
+### Touch targets
+
+All interactive elements ≥ 44×44 px on touch viewports. Desktop targets smaller (32px buttons are fine with mouse). Enforced at the `.glass` button variants.
+
+### `prefers-reduced-motion`
+
+Beyond the already-specified CTA shimmer / slider shimmer / LIVE pulse / spring overshoot disable: also disable the skeleton-shimmer loading animation. Replace with a static 50% gray block. No route transition fade-in — instant content swap.
+
+### `prefers-reduced-transparency`
+
+Already specified in DESIGN.md §9. Reaffirmed: every `.glass` variant → solid `--bg-teal`. BackdropScene → solid `--bg-deep`. No SVG chart lines, no grid.
+
+### Lighthouse a11y target
+
+- Desktop: ≥ 95 on every page.
+- Mobile: ≥ 95 on every page.
+- axe-core: 0 critical, 0 serious, acceptable ≤ 3 moderate (each documented with why they're acceptable).
+
+Phase 5 audit enforces this. Phase 1-4 should trend toward it; Phase 5 fixes final gaps.
+
+## Decisions resolved during /plan-design-review 2026-04-24
+
+Pass 7 surfaced four genuine design decisions. All resolved below.
+
+### D12 — Mobile nav = bottom tab bar
+
+Phase 3 adds `MobileTabBar.tsx` component. 5 icon+label tabs: Markets, Portfolio, Leaderboards, Rewards, Account. Sticky bottom, `.glass.glass-med`, active tab in mint. Mobile TopBar shrinks to BrandMark + balance + avatar; search becomes a magnifying-glass icon opening a full-screen overlay. Pattern beats hamburger 3-5x on engagement per tab-bar UX research. Documented in "Responsive spec" above.
+
+### D13 — Chart line stays YES-blue, delta pill colors direction
+
+Chart line uses `--yes` (#7fc8ff) constant. Price direction expressed by the delta pill ("+5.0% 24h" in mint for up, "-3.2% 24h" in peach for down) next to the current price. Preserves the "YES is blue, NO is peach" semantic without introducing a third meaning ("line color tells you direction"). The line is the SUBJECT, the pill is the DIRECTION. Added to DESIGN.md §8 Components → MarketChart.
+
+### D14 — TierPill uses tier color as fill, glass as wrapper
+
+TierPill renders with `rgba(<tier-color>, 0.18)` background, `rgba(<tier-color>, 0.4)` border, and a 25%-opacity tier-color glow. Reduces glass-refraction to make the tier identity dominant. Rationale: users earn tiers as status symbols — the color IS the point. A neutral glass pill with a tiny tier-color border would undersell the achievement. Documented at Phase 4 step 2 (portfolio).
+
+### D15 — Auth pages keep the global cool backdrop
+
+No split between unauthenticated and authenticated visual language. Login / signup / forgot-password / verify-email / reset-password all render on the same cool-palette scene with the BrandMark above the glass-thick login card. Consistent material language beats "front door" differentiation. Users feel the authenticated app is a continuation, not a reveal.
+
+## Approved Mockups
+
+| Screen/Section | Mockup Path | Direction | Notes |
+|---|---|---|---|
+| Market detail, desktop | `~/.gstack/projects/jbrackens-TAYA_NA/designs/liquid-glass-desktop-mint-20260424-200756/market-detail-mockup.html` | Final Liquid Glass + Thndr mint + cool-teal backdrop | Source of truth for Phase 3 pilot |
+| Trade ticket, mobile (375px) | `~/.gstack/projects/jbrackens-TAYA_NA/designs/liquid-glass-20260424-195105/trade-ticket-mockup.html` | Final Liquid Glass + mint (pre-Thndr palette swap, accent is still `#39ff14` in the file — implementer should apply the Thndr mint per DESIGN.md §3) | Mobile layout reference. Palette swap happens during implementation. |
+| Desktop liquid-glass (original phoenix lime) | `~/.gstack/projects/jbrackens-TAYA_NA/designs/liquid-glass-desktop-20260424-195701/market-detail-mockup.html` | Pre-Thndr version — NOT the final. Kept for visual comparison against the mint version. | Reference only, do NOT implement from this file. |
+| Skeuomorphism exploration | `~/.gstack/projects/jbrackens-TAYA_NA/designs/skeuomorphism-20260424-193928/trade-ticket-mockup.html` | Rejected direction. | Reference only, do NOT implement. |
+
+Engineers implementing Phase 3 should open both the desktop market-detail mint mockup and the mobile trade-ticket mockup side-by-side in browser tabs for visual reference. The desktop mockup has the final palette; the mobile mockup has the final layout but old palette — combine them mentally.
+
 ## Review outcomes (2026-04-24)
 
 A `/plan-eng-review` found 6 material issues in the original plan. A codex outside-voice review added 5 more. All have been addressed below. Summary of decisions:
