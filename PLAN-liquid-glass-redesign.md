@@ -1,5 +1,7 @@
 # Plan — Liquid Glass redesign of the Predict player app
 
+> **Status (2026-04-25): SHIPPED.** Phase 1–5 landed on `origin/main` between `5fb8ef4e` (design pivot) and `66cb92c5` (Phase 5 cleanup). Every route in `app/` now uses the Liquid Glass vocabulary. Manual perf + a11y audits are the only remaining gates — see `PRIMER-liquid-glass-shipped.md` for the post-ship handoff. The phase descriptions below are kept as the historical execution plan.
+
 **Scope:** Convert the Predict player app at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` from the current dark-broadcast (phoenix lime) aesthetic to Liquid Glass (mint emerald) per the updated `DESIGN.md` (2026-04-24 revision). Backoffice stays on the sportsbook system and is explicitly out of scope.
 
 **Source artifacts:**

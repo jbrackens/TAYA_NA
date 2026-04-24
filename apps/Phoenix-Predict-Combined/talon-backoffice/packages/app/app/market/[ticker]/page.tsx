@@ -29,7 +29,6 @@ import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
 import { TradeTicket } from "../../components/prediction/TradeTicket";
-import { MarketCard } from "../../components/prediction/MarketCard";
 import { logger } from "../../lib/logger";
 import { useAppSelector } from "../../lib/store/hooks";
 import { selectCurrentBalance } from "../../lib/store/cashierSlice";
@@ -429,20 +428,8 @@ export default function MarketDetailPage() {
           )}
         </aside>
       </div>
-
-      {/* MarketCard is imported for related-markets usage when we enrich
-       * the related list with the full tile. Kept referenced so the build
-       * tree-shakes correctly. */}
-      <MarketCardSuppressUnused />
     </div>
   );
-}
-
-function MarketCardSuppressUnused() {
-  // Referenced so the import isn't flagged as unused — remove when
-  // /predict or /category start using the Phase-3 MarketCard redesign.
-  void MarketCard;
-  return null;
 }
 
 function PageState({

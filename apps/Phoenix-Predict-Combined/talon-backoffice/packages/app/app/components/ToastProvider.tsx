@@ -52,28 +52,28 @@ const colors: Record<
   { bg: string; border: string; icon: string; iconBg: string }
 > = {
   success: {
-    bg: "#0f2318",
-    border: "#22c55e30",
-    icon: "#22c55e",
-    iconBg: "rgba(34,197,94,0.15)",
+    bg: "rgba(43, 228, 128, 0.1)",
+    border: "rgba(43, 228, 128, 0.3)",
+    icon: "var(--accent)",
+    iconBg: "rgba(43, 228, 128, 0.15)",
   },
   error: {
-    bg: "#231313",
-    border: "#ef444430",
-    icon: "#ef4444",
-    iconBg: "rgba(239,68,68,0.15)",
+    bg: "rgba(255, 155, 107, 0.1)",
+    border: "rgba(255, 155, 107, 0.3)",
+    icon: "var(--no)",
+    iconBg: "rgba(255, 155, 107, 0.15)",
   },
   info: {
-    bg: "#0f1525",
-    border: "#3b82f630",
-    icon: "#3b82f6",
-    iconBg: "rgba(59,130,246,0.15)",
+    bg: "rgba(127, 200, 255, 0.1)",
+    border: "rgba(127, 200, 255, 0.3)",
+    icon: "var(--yes)",
+    iconBg: "rgba(127, 200, 255, 0.15)",
   },
   warning: {
-    bg: "#231f0f",
-    border: "#f59e0b30",
-    icon: "#f59e0b",
-    iconBg: "rgba(245,158,11,0.15)",
+    bg: "rgba(251, 191, 36, 0.1)",
+    border: "rgba(251, 191, 36, 0.3)",
+    icon: "#fbbf24",
+    iconBg: "rgba(251, 191, 36, 0.15)",
   },
 };
 

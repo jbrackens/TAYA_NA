@@ -33,14 +33,7 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 
 const api = createPredictionClient();
 
-function CategoryChips({
-  categories,
-  categoryMap,
-}: {
-  categories: Category[];
-  categoryMap?: Record<string, string>;
-}) {
-  void categoryMap;
+function CategoryChips({ categories }: { categories: Category[] }) {
   if (categories.length === 0) return null;
   return (
     <>

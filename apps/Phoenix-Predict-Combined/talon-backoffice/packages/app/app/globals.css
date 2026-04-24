@@ -132,10 +132,10 @@ body {
 
   /* Deprecation aliases retired in Phase 5 (2026-04-25): --gain, --whale,
    * and --whale-soft are gone. Phase 4 retired WhaleTicker / WhaleActivityCard
-   * / TopMoversCard / FeaturedHero, then this Phase-5 sweep cleaned the four
-   * remaining call sites (rewards / account / WinLossStatistics / theme.ts)
-   * to use --accent or the literal #fbbf24 amber where amber was specifically
-   * intended (self-exclude shield, profile pending pill). */
+   * / TopMoversCard / FeaturedHero, then this Phase-5 sweep cleaned the
+   * remaining call sites (rewards / account / theme.ts) to use --accent or
+   * the literal #fbbf24 amber where amber was specifically intended
+   * (self-exclude shield, profile pending pill). */
 
   /* Loyalty tier channels — muted neutrals + one violet accent.
    * Unchanged (loyalty shipped against these). Top tier uses violet
