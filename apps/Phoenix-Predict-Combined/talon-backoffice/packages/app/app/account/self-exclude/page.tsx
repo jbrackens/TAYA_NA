@@ -289,7 +289,7 @@ export default function SelfExcludePage() {
         {step === "confirm" && (
           <div className="se-card se-confirm-card">
             <div className="se-confirm-icon">
-              <ShieldCheck size={48} strokeWidth={1.5} color="var(--whale)" />
+              <ShieldCheck size={48} strokeWidth={1.5} color="#fbbf24" />
             </div>
             <h2>Confirm Self-Exclusion</h2>
             <p className="se-desc">

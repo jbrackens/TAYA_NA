@@ -660,7 +660,7 @@ function Styles() {
         color: var(--t3);
       }
       .rw-num { text-align: right; }
-      .rw-pos { color: var(--gain); }
+      .rw-pos { color: var(--accent); }
       .rw-neg { color: var(--no); }
       .rw-subtle { color: var(--t3); }
       .rw-date { color: var(--t2); white-space: nowrap; }

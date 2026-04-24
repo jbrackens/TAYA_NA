@@ -558,7 +558,7 @@ function Styles() {
       }
       .acct-card:hover {
         border-color: var(--accent);
-        background: var(--s1);
+        background: rgba(43, 228, 128, 0.06);
         transform: translateY(-1px);
       }
       .acct-card-icon {

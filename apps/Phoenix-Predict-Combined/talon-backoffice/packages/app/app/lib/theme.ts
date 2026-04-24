@@ -22,7 +22,7 @@ export const brand = {
   successBg: "rgba(34,197,94,0.1)",
   successBorder: "#22c55e30",
   info: "#4a7eff", // Blue — odds, links
-  warning: "var(--whale)", // Amber — warnings
+  warning: "#fbbf24", // Amber — warnings
 } as const;
 
 // ── Surfaces & Backgrounds ──

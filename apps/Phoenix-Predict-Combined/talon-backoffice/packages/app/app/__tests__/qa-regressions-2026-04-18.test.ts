@@ -140,40 +140,21 @@ describe("MarketCard: style hoisted outside Link", () => {
 });
 
 // ── Bug F: prediction homepage must not fake analytics ────────────
+//
+// Phase 4 of the Liquid Glass redesign retired WhaleTicker,
+// WhaleActivityCard, TopMoversCard, and FeaturedHero — the
+// "fake analytics" surfaces this test suite was originally locking
+// down against regression. The MarketCard surface was rewritten to
+// use a depth bar (still named .mkt-bar in the new file) without
+// synthetic sparklines or placeholder deltas. The rest of this
+// section's assertions referenced files that no longer exist;
+// keeping a single assertion on MarketCard so the regression
+// guarantee survives the rename.
 
-describe("prediction homepage widgets: live data only", () => {
-  const tickerSource = read("components/prediction/WhaleTicker.tsx");
-  const activitySource = read("components/prediction/WhaleActivityCard.tsx");
-  const moversSource = read("components/prediction/TopMoversCard.tsx");
+describe("MarketCard renders a live pricing bar (post-Phase-4)", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
 
-  it("ticker and activity card no longer hardcode sample whale trades", () => {
-    assert.ok(
-      !tickerSource.includes("BTC new ATH @ 64¢"),
-      "WhaleTicker should not ship hardcoded sample trade headlines",
-    );
-    assert.ok(
-      !activitySource.includes("F1 champion @ 72¢"),
-      "WhaleActivityCard should not ship hardcoded sample activity rows",
-    );
-    assert.ok(
-      tickerSource.includes("getDiscovery()"),
-      "WhaleTicker should load real discovery data",
-    );
-  });
-
-  it("top movers no longer derives fake delta from yesPriceCents - 50", () => {
-    assert.ok(
-      !/yesPriceCents\s*-\s*50/.test(moversSource),
-      "TopMoversCard should not fabricate movement from price minus 50",
-    );
-    assert.ok(
-      !moversSource.includes("aria-label={`Delta"),
-      "TopMoversCard should not render fake delta labels",
-    );
-  });
-
-  it("market card replaces synthetic sparkline and cent delta with live pricing bar", () => {
+  it("market card has no seeded sparkline or placeholder deltas", () => {
     assert.ok(
       !marketCardSource.includes("seededSparklinePoints"),
       "MarketCard should not render seeded placeholder sparklines",
@@ -182,9 +163,12 @@ describe("prediction homepage widgets: live data only", () => {
       !marketCardSource.includes("mkt-delta"),
       "MarketCard should not render placeholder cent deltas",
     );
+  });
+
+  it("renders a depth-style pricing bar", () => {
     assert.ok(
-      marketCardSource.includes("mkt-depth-bar"),
-      "MarketCard should render a live pricing bar instead",
+      /mkt-bar/.test(marketCardSource),
+      "MarketCard should render a YES/NO depth bar (.mkt-bar)",
     );
   });
 });

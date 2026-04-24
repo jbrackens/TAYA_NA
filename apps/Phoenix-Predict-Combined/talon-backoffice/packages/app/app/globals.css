@@ -130,12 +130,12 @@ body {
   /* --live is the only warm color outside --no. Distinct, redder, pulses. */
   --live: #ff6b6b;
 
-  /* Deprecation aliases. Kept through Phase 1 so existing callers don't
-   * break; Phase 4 retires WhaleTicker/WhaleActivityCard/TopMoversCard/
-   * FeaturedHero and deletes the three tokens below along with --gain. */
-  --gain: var(--accent);
-  --whale: #fbbf24;
-  --whale-soft: rgba(251, 191, 36, 0.14);
+  /* Deprecation aliases retired in Phase 5 (2026-04-25): --gain, --whale,
+   * and --whale-soft are gone. Phase 4 retired WhaleTicker / WhaleActivityCard
+   * / TopMoversCard / FeaturedHero, then this Phase-5 sweep cleaned the four
+   * remaining call sites (rewards / account / WinLossStatistics / theme.ts)
+   * to use --accent or the literal #fbbf24 amber where amber was specifically
+   * intended (self-exclude shield, profile pending pill). */
 
   /* Loyalty tier channels — muted neutrals + one violet accent.
    * Unchanged (loyalty shipped against these). Top tier uses violet

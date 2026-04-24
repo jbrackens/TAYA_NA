@@ -29,7 +29,7 @@ function StatusBadge({
 }) {
   const statusColors: Record<string, { bg: string; color: string }> = {
     verified: { bg: "#1e7e34", color: "#22c55e" },
-    pending: { bg: "#665700", color: "var(--whale)" },
+    pending: { bg: "#665700", color: "#fbbf24" },
     failed: { bg: "#7f1d1d", color: "var(--no)" },
     default: { bg: "#0f3460", color: "#4a7eff" },
   };

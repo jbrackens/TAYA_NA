@@ -225,7 +225,7 @@ export default function WinLossStatistics({ userId }: WinLossStatisticsProps) {
 
         <div style={cardStyle}>
           <div style={cardLabelStyle}>Pending</div>
-          <div style={{ ...cardValueStyle, color: "var(--whale)" }}>
+          <div style={{ ...cardValueStyle, color: "#fbbf24" }}>
             {stats.pending}
           </div>
         </div>
