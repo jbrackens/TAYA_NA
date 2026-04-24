@@ -47,25 +47,27 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="h-8 w-64 bg-[#1a1f3a] rounded animate-pulse mb-4" />
-        <div className="h-4 w-full bg-[#1a1f3a] rounded animate-pulse mb-2" />
-        <div className="h-4 w-3/4 bg-[#1a1f3a] rounded animate-pulse mb-2" />
-        <div className="h-4 w-1/2 bg-[#1a1f3a] rounded animate-pulse" />
-      </div>
+      <article className="glass max-w-4xl mx-auto p-8">
+        <div className="h-8 w-64 bg-white/5 rounded animate-pulse mb-4" />
+        <div className="h-4 w-full bg-white/5 rounded animate-pulse mb-2" />
+        <div className="h-4 w-3/4 bg-white/5 rounded animate-pulse mb-2" />
+        <div className="h-4 w-1/2 bg-white/5 rounded animate-pulse" />
+      </article>
     );
   }
 
   // CMS page loaded — render it
   if (page) {
     return (
-      <article className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold text-white mb-6">{page.title}</h1>
+      <article className="glass max-w-4xl mx-auto p-8">
+        <h1 className="text-2xl font-bold text-white mb-6 tracking-tight">
+          {page.title}
+        </h1>
 
         {/* Render flat content if no blocks */}
         {(!page.blocks || page.blocks.length === 0) && page.content && (
           <div
-            className="prose prose-invert max-w-none text-gray-300"
+            className="prose prose-invert max-w-none text-white/70"
             dangerouslySetInnerHTML={{ __html: page.content }}
           />
         )}
@@ -79,7 +81,7 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                   return (
                     <div
                       key={block.blockId}
-                      className="prose prose-invert max-w-none text-gray-300"
+                      className="prose prose-invert max-w-none text-white/70"
                       dangerouslySetInnerHTML={{
                         __html:
                           (block.content as Record<string, string>).body || "",
@@ -90,7 +92,7 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                   return (
                     <div
                       key={block.blockId}
-                      className="text-gray-300"
+                      className="text-white/70"
                       dangerouslySetInnerHTML={{
                         __html:
                           (block.content as Record<string, string>).html || "",
@@ -108,12 +110,12 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                       {faqItems.map((item, idx) => (
                         <details
                           key={idx}
-                          className="bg-[#0f1225] rounded-lg p-4 border border-[#1a1f3a]"
+                          className="bg-black/25 rounded-lg p-4 border border-white/10"
                         >
                           <summary className="text-white font-medium cursor-pointer">
                             {item.question}
                           </summary>
-                          <p className="text-gray-400 mt-2">{item.answer}</p>
+                          <p className="text-white/50 mt-2">{item.answer}</p>
                         </details>
                       ))}
                     </div>
@@ -132,9 +134,9 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
   // Fallback — use static content if CMS page not found
   if (error && fallbackContent) {
     return (
-      <article className="max-w-4xl mx-auto p-6">
+      <article className="glass max-w-4xl mx-auto p-8">
         <div
-          className="prose prose-invert max-w-none text-gray-300"
+          className="prose prose-invert max-w-none text-white/70"
           dangerouslySetInnerHTML={{ __html: fallbackContent }}
         />
       </article>
@@ -143,8 +145,8 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
 
   // No CMS page and no fallback
   return (
-    <div className="max-w-4xl mx-auto p-6 text-center">
-      <p className="text-gray-400">{t("contentUnavailable")}</p>
-    </div>
+    <article className="glass max-w-4xl mx-auto p-8 text-center">
+      <p className="text-white/50">{t("contentUnavailable")}</p>
+    </article>
   );
 };

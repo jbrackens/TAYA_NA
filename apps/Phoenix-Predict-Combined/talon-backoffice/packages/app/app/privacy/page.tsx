@@ -93,24 +93,58 @@ export default function PrivacyPage() {
 
 const legalStyles = `
   .legal-page {
-    max-width: 720px; margin: 0 auto; padding: 32px 20px;
+    position: relative;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 36px 36px 32px;
+    border-radius: var(--r-lg);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
+      var(--glass-regular);
+    backdrop-filter: blur(24px) saturate(170%);
+    -webkit-backdrop-filter: blur(24px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+      inset 0 1px 0 var(--rim-top),
+      inset 0 -1px 0 var(--rim-bottom),
+      inset 1px 0 2px var(--chroma-1),
+      inset -1px 0 2px var(--chroma-2),
+      0 12px 28px rgba(0, 0, 0, 0.22);
   }
   .legal-page h1 {
-    font-size: 24px; font-weight: 800; color: #f8fafc; margin-bottom: 6px;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--t1);
+    margin-bottom: 6px;
     letter-spacing: -0.02em;
   }
   .legal-updated {
-    font-size: 12px; color: #4a5580; margin-bottom: 32px;
+    font-size: 12px;
+    color: var(--t3);
+    margin-bottom: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.04em;
   }
-  .legal-page section { margin-bottom: 28px; }
+  .legal-page section { margin-bottom: 24px; }
   .legal-page h2 {
-    font-size: 16px; font-weight: 700; color: #f1f5f9; margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--t1);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
   }
   .legal-page p {
-    font-size: 14px; line-height: 1.7; color: #D3D3D3;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--t2);
   }
   .legal-page a {
-    color: var(--accent); text-decoration: none;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
   }
-  .legal-page a:hover { text-decoration: underline; }
+  .legal-page a:hover {
+    text-decoration: underline;
+    color: var(--accent-hi);
+  }
 `;

@@ -56,7 +56,7 @@ export default function ContactUsPage() {
   const titleStyle: React.CSSProperties = {
     fontSize: "28px",
     fontWeight: "800",
-    color: "#e2e8f0",
+    color: "var(--t1)",
     marginBottom: "24px",
     letterSpacing: "-0.02em",
   };
@@ -69,7 +69,7 @@ export default function ContactUsPage() {
     display: "block",
     fontSize: "14px",
     fontWeight: "600",
-    color: "#cbd5e1",
+    color: "var(--t2)",
     marginBottom: "8px",
   };
 
@@ -77,9 +77,9 @@ export default function ContactUsPage() {
     width: "100%",
     padding: "12px 14px",
     fontSize: "14px",
-    color: "#e2e8f0",
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
+    color: "var(--t1)",
+    backgroundColor: "rgba(0, 0, 0, 0.22)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
     borderRadius: "6px",
     boxSizing: "border-box",
     transition: "all 0.3s",
@@ -97,7 +97,7 @@ export default function ContactUsPage() {
     padding: "12px 20px",
     fontSize: "15px",
     fontWeight: "600",
-    color: "#0f1225",
+    color: "rgba(0, 0, 0, 0.22)",
     backgroundColor: "var(--accent)",
     border: "none",
     borderRadius: "6px",
@@ -109,15 +109,15 @@ export default function ContactUsPage() {
   const infoBoxStyle: React.CSSProperties = {
     marginTop: "40px",
     padding: "20px",
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
+    backgroundColor: "rgba(0, 0, 0, 0.22)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
     borderRadius: "8px",
   };
 
   const infoTitleStyle: React.CSSProperties = {
     fontSize: "16px",
     fontWeight: "700",
-    color: "#e2e8f0",
+    color: "var(--t1)",
     marginBottom: "12px",
   };
 
@@ -153,8 +153,8 @@ export default function ContactUsPage() {
         <div
           style={{
             padding: "16px",
-            backgroundColor: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
+            backgroundColor: "rgba(255, 155, 107, 0.1)",
+            border: "1px solid rgba(255, 155, 107, 0.3)",
             borderRadius: "6px",
             color: "#fca5a5",
             marginBottom: "24px",
@@ -255,15 +255,15 @@ export default function ContactUsPage() {
       <div style={infoBoxStyle}>
         <div style={infoTitleStyle}>Other Ways to Reach Us</div>
         <div style={infoItemStyle}>
-          <strong style={{ color: "#e2e8f0" }}>Email:</strong>{" "}
+          <strong style={{ color: "var(--t1)" }}>Email:</strong>{" "}
           support@tayanasportsbook.com
         </div>
         <div style={infoItemStyle}>
-          <strong style={{ color: "#e2e8f0" }}>Phone:</strong> 1-800-TAYA-NA
+          <strong style={{ color: "var(--t1)" }}>Phone:</strong> 1-800-TAYA-NA
         </div>
         <div style={infoItemStyle}>
-          <strong style={{ color: "#e2e8f0" }}>Support Hours:</strong> Monday -
-          Friday, 9 AM - 10 PM EST
+          <strong style={{ color: "var(--t1)" }}>Support Hours:</strong> Monday
+          - Friday, 9 AM - 10 PM EST
         </div>
       </div>
     </div>

@@ -31,8 +31,8 @@ export default function Error({
           width: 64,
           height: 64,
           borderRadius: 16,
-          background: "rgba(239, 68, 68, 0.1)",
-          border: "1px solid rgba(239, 68, 68, 0.2)",
+          background: "rgba(255, 155, 107, 0.1)",
+          border: "1px solid rgba(255, 155, 107, 0.2)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -68,7 +68,7 @@ export default function Error({
               display: "block",
               marginTop: 8,
               fontSize: 12,
-              color: "#94a3b8",
+              color: "var(--t3)",
               fontFamily: "monospace",
             }}
           >
@@ -84,7 +84,7 @@ export default function Error({
           border: "none",
           background:
             "linear-gradient(135deg, var(--accent), var(--accent-lo))",
-          color: "#101114",
+          color: "#04140a",
           fontSize: 14,
           fontWeight: 600,
           cursor: "pointer",
