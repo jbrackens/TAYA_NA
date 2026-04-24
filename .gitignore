@@ -65,3 +65,6 @@ archive/stale-runtime/
 # SWC native binaries
 next-swc.*.node
 .gstack/
+
+# Scratch output from gstack / frontend-slides / design-consultation skills
+outputs/
