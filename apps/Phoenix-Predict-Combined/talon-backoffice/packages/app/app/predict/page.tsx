@@ -49,7 +49,10 @@ function CategoryChips({ categories }: { categories: Category[] }) {
         }
         .pred-cats::-webkit-scrollbar { display: none; }
         .pred-cat {
-          padding: 8px 14px;
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
+          padding: 0 14px;
           font-size: 13px;
           font-weight: 500;
           color: var(--t2);

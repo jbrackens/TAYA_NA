@@ -203,6 +203,7 @@ export function TopBar() {
           display: inline-flex;
           align-items: center;
           gap: 10px;
+          min-height: 44px;
           font-size: 15px;
           font-weight: 800;
           letter-spacing: -0.01em;
@@ -220,7 +221,10 @@ export function TopBar() {
           min-width: 0;
         }
         .tb-link {
-          padding: 8px 14px;
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
+          padding: 0 14px;
           border-radius: var(--r-pill);
           font-size: 13px;
           font-weight: 500;
@@ -253,7 +257,7 @@ export function TopBar() {
         }
         .tb-search {
           width: 280px;
-          height: 36px;
+          height: 44px;
           padding: 0 14px 0 36px;
           border-radius: var(--r-pill);
           border: 1px solid rgba(255,255,255,0.08);
@@ -370,7 +374,8 @@ export function TopBar() {
         .tb-avatar:hover { filter: brightness(1.08); }
 
         .tb-btn {
-          padding: 8px 16px;
+          min-height: 44px;
+          padding: 0 16px;
           border-radius: var(--r-pill);
           font-weight: 600;
           font-size: 13px;
