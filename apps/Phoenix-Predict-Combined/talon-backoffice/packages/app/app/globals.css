@@ -41,57 +41,151 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: var(--s0, #111827);
+  background: transparent;
   color: var(--t1, #ffffff);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── Predict design system tokens ─────────────────────────────────────
-   * Dark broadcast / fintech-editorial aesthetic. Derived from research of
-   * Pariflow, Polymarket, and Kalshi. Lives alongside the sportsbook
-   * ps-* / discovery-* / sport-pill classes above — those still render the
-   * sportsbook surfaces, these render prediction pages.
-   * See DESIGN.md in the repo root for the full spec and rationale. */
+   * Liquid Glass aesthetic + Thndr-inspired mint emerald accent.
+   * Revised 2026-04-24: superseded the prior dark-broadcast / neon-
+   * phoenix-green direction. See DESIGN.md §3 for the full palette and
+   * DESIGN.md §12 Decisions Log for rationale.
+   *
+   * Sportsbook `ps-*` / `discovery-*` / `sport-pill` classes further down
+   * in this file are preserved — they still render legacy sportsbook
+   * pages-router surfaces.
+   */
 :root {
-  /* Surfaces */
-  --s0: #111827; /* page */
-  --s1: #1f2937; /* cards */
-  --s2: #0f1623; /* inputs, insets */
-  --s3: #0b111c; /* deepest (ticker band) */
-  /* Borders */
+  /* Backdrop palette (DESIGN.md §3). Lives behind ALL glass — never seen
+   * directly. Used by body::before + BackdropScene. */
+  --bg-deep: #06101c;
+  --bg-navy: #0c2a4a;
+  --bg-teal: #0c2638;
+  --bg-mint: #0d2a22;
+  --bg-azure: #0e3858;
+
+  /* Glass surfaces — translucent bodies for the .glass utility */
+  --glass-thick: rgba(255, 255, 255, 0.08);
+  --glass-regular: rgba(255, 255, 255, 0.05);
+  --glass-thin: rgba(255, 255, 255, 0.03);
+  --glass-inset: rgba(0, 0, 0, 0.18);
+
+  /* Rim highlights (glass edges + chromatic fringe) */
+  --rim-top: rgba(255, 255, 255, 0.22);
+  --rim-bottom: rgba(255, 255, 255, 0.06);
+  --rim-side: rgba(255, 255, 255, 0.04);
+  --chroma-1: rgba(255, 120, 200, 0.05);
+  --chroma-2: rgba(100, 180, 255, 0.05);
+
+  /* Surfaces — deprecation aliases to visually-close --bg-* values.
+   * Kept for Phase 1 so the ~50 components still referencing --s0..--s3
+   * continue to render sensible colors. Phase 4 will delete these along
+   * with the last --s0..--s3 call sites. (Plan decision D1.) */
+  --s0: var(--bg-teal);
+  --s1: var(--bg-navy);
+  --s2: var(--bg-deep);
+  --s3: var(--bg-deep);
+
+  /* Borders — unchanged (still consumed by sportsbook surfaces) */
   --b1: #1f2a3d;
   --b2: #374151;
   --b3: #4b5563;
+
   /* Text */
   --t1: #ffffff;
   --t2: rgba(255, 255, 255, 0.72);
-  --t3: rgba(255, 255, 255, 0.45);
+  --t3: rgba(255, 255, 255, 0.44);
   --t4: rgba(255, 255, 255, 0.28);
-  /* Accent (neon phoenix green — brand channel) */
-  --accent: #39ff14;
-  --accent-hi: #5cff4a;
-  --accent-soft: rgba(57, 255, 20, 0.14);
-  --accent-glow: 0 0 28px rgba(57, 255, 20, 0.45);
-  /* Semantic */
-  --yes: #34d399;
-  --gain: #10b981;
-  --no: #f87171;
-  --live: #ef4444;
+
+  /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
+   * --accent-glow is kept as a COMPLETE box-shadow declaration so the
+   * 17 existing `box-shadow: var(--accent-glow)` call sites still work.
+   * Use --accent-glow-color if you need just the color. (D1.) */
+  --accent: #2be480;
+  --accent-hi: #00ffaa;
+  --accent-lo: #1fa65e;
+  --accent-deep: #0094ff;
+  --accent-soft: rgba(43, 228, 128, 0.14);
+  --accent-glow-color: rgba(43, 228, 128, 0.45);
+  --accent-glow: 0 0 28px var(--accent-glow-color);
+  --accent-gradient: linear-gradient(
+    100deg,
+    #2be480 0%,
+    #00ffaa 50%,
+    #0094ff 100%
+  );
+
+  /* Semantic (data layer). YES is blue, NO is peach (DESIGN.md §3). */
+  --yes: #7fc8ff;
+  --yes-hi: #a5dbff;
+  --yes-lo: #4a9ee0;
+  --yes-glow: rgba(127, 200, 255, 0.5);
+  --no: #ff9b6b;
+  --no-hi: #ffb88f;
+  --no-lo: #d9784e;
+  --no-glow: rgba(255, 155, 107, 0.5);
+
+  /* --live is the only warm color outside --no. Distinct, redder, pulses. */
+  --live: #ff6b6b;
+
+  /* Deprecation aliases. Kept through Phase 1 so existing callers don't
+   * break; Phase 4 retires WhaleTicker/WhaleActivityCard/TopMoversCard/
+   * FeaturedHero and deletes the three tokens below along with --gain. */
+  --gain: var(--accent);
   --whale: #fbbf24;
   --whale-soft: rgba(251, 191, 36, 0.14);
+
   /* Loyalty tier channels — muted neutrals + one violet accent.
-   * Top tier uses violet (not green) per the three-greens rule; see
-   * PLAN-loyalty-leaderboards.md §6 + DESIGN.md §8 Decisions Log. */
+   * Unchanged (loyalty shipped against these). Top tier uses violet
+   * (not green) per the three-greens rule; see
+   * PLAN-loyalty-leaderboards.md §6 + DESIGN.md §12 Decisions Log. */
   --tier-1: #94a3b8; /* Newcomer — slate */
   --tier-2: #cbd5e1; /* Trader — slate-light */
   --tier-3: #d4a857; /* Sharp — warm-gold-muted */
   --tier-4: #9ca7bf; /* Whale — platinum-muted */
   --tier-5: #8b5cf6; /* Legend — violet */
-  /* Radius */
-  --r-sm: 6px;
-  --r-md: 12px;
-  --r-lg: 20px;
+
+  /* Radius (glass-friendly; bumped from the prior 6/12/20 flat scale) */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+}
+
+/* Backdrop scene — Layer 1 (DESIGN.md §5). Full-viewport radial
+ * gradient stack. Fixed, non-interactive, sits at z-index -3 below
+ * BackdropScene's SVG chart-lines (-2) and grid (-1). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -5%;
+  z-index: -3;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 35% 40% at 18% 22%,
+      var(--bg-navy) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 28% 28% at 82% 48%,
+      var(--bg-azure) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 45% 30% at 50% 92%,
+      var(--bg-mint) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 80% 60% at 50% 35%,
+      var(--bg-teal) 0%,
+      var(--bg-deep) 80%
+    ),
+    var(--bg-deep);
 }
 
 /* Mono utility for prices/volumes/tabular numbers. Use on any element
@@ -143,19 +237,27 @@ button {
     linear-gradient(180deg, #0a0d18 0%, #0d1120 100%);
 }
 
-/* Predict auth shell — phoenix-green atmosphere, Predict surfaces. Used by
-   * app/auth/* pages via AppShell's isAuthRoute branch. */
+/* Predict auth shell — mint atmosphere, Liquid Glass surfaces. Used by
+   * app/auth/* pages via AppShell's isAuthRoute branch. The body::before
+   * global scene still shows through; this adds a mint lobe up top. */
 .predict-auth-layout {
   min-height: 100vh;
   overflow-y: auto;
+  background: transparent;
+}
+.predict-auth-layout::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse at top, rgba(57, 255, 20, 0.12), transparent 40%),
+    radial-gradient(ellipse at top, rgba(43, 228, 128, 0.1), transparent 45%),
     radial-gradient(
       ellipse at bottom left,
-      rgba(239, 68, 68, 0.06),
-      transparent 50%
-    ),
-    linear-gradient(180deg, var(--s0) 0%, #0b111c 100%);
+      rgba(127, 200, 255, 0.05),
+      transparent 55%
+    );
 }
 
 /* ── Sidebar (Sport Navigation) ── */
@@ -2426,5 +2528,168 @@ button {
   }
   .ps-betslip-overlay {
     width: 100vw;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Liquid Glass material system — DESIGN.md §4
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Default glass (regular tier). 4 layers: translucent body + luminance
+ * gradient, backdrop blur + saturation, rim highlights + ambient shadow,
+ * specular sheen on top 50%. */
+.glass {
+  position: relative;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.14) 0%,
+      rgba(255, 255, 255, 0.05) 30%,
+      rgba(255, 255, 255, 0.025) 100%
+    ),
+    var(--glass-regular);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow:
+    inset 0 1px 0 var(--rim-top),
+    inset 0 -1px 0 var(--rim-bottom),
+    inset 1px 0 2px var(--chroma-1),
+    inset -1px 0 2px var(--chroma-2),
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 50%;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* Thick — modal surfaces, phone-frame shells, full-screen overlays. */
+.glass.glass-thick {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(255, 255, 255, 0.06) 30%,
+      rgba(255, 255, 255, 0.03) 100%
+    ),
+    var(--glass-thick);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+/* Medium — nav bar, secondary cards. */
+.glass.glass-med {
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+/* Thin — pills, chips, inline badges, meta labels. */
+.glass.glass-thin {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.03) 100%
+    ),
+    var(--glass-thin);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+/* Inset — inputs, amount displays, slider tracks, order-book headers.
+ * Reads as recessed INTO the glass above it, not as a separate surface. */
+.glass-inset {
+  position: relative;
+  background: var(--glass-inset);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Backdrop scene Layer 2 + 3 wrapper. Owned by BackdropScene.tsx.
+ * Reduced-transparency a11y mode hides the SVG layer via the query
+ * block below. */
+.backdrop-scene {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.backdrop-scene__grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Accessibility — DESIGN.md §9
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Reduced transparency: collapse glass to solid fills, drop the
+ * SVG scene layer. Progressive enhancement — no content changes. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass.glass-thick,
+  .glass.glass-med,
+  .glass.glass-thin {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--bg-teal);
+  }
+  .glass::before {
+    display: none;
+  }
+  .glass-inset {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.35);
+  }
+  body::before,
+  .backdrop-scene {
+    background: var(--bg-deep);
+  }
+  .backdrop-scene svg,
+  .backdrop-scene__grid {
+    display: none;
+  }
+}
+
+/* Reduced motion: freeze CTA shimmer, slider shimmer, LIVE pulse, and
+ * spring overshoots. Replace with instant transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .live-dot {
+    animation: none;
   }
 }
