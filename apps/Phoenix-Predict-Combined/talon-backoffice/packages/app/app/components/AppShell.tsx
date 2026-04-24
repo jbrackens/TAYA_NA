@@ -37,7 +37,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               {isAuthRoute ? (
                 <div className="predict-auth-layout">{children}</div>
               ) : (
-                <div style={{ minHeight: "100vh", background: "var(--s0)" }}>
+                <div style={{ minHeight: "100vh", background: "transparent" }}>
                   <WhaleTicker />
                   <PredictHeader />
                   <BackendStatusBanner />
