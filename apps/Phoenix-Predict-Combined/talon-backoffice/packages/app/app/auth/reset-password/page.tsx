@@ -84,272 +84,165 @@ export default function ResetPasswordPage() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    marginBottom: "16px",
-    backgroundColor: "#0a0f1d",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    color: "#e2e8f0",
-    fontSize: "14px",
-    boxSizing: "border-box",
-    fontFamily: "inherit",
-  };
-
-  const errorStyle: React.CSSProperties = {
-    color: "#ef4444",
-    fontSize: "12px",
-    marginTop: "-12px",
-    marginBottom: "12px",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 16px",
-    backgroundColor: "var(--accent)",
-    border: "none",
-    color: "#ffffff",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "14px",
-    transition: "all 0.2s ease",
-  };
-
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          padding: "40px",
-          backgroundColor: "#0f1225",
-          border: "1px solid #1a1f3a",
-          borderRadius: "8px",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: "32px",
-          }}
-        >
-          <h1
-            style={{
-              margin: "0 0 8px 0",
-              fontSize: "28px",
-              fontWeight: 700,
-              color: "#ffffff",
-            }}
-          >
-            Reset Password
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "14px",
-              color: "#a0a0a0",
-            }}
-          >
-            Enter your new password
-          </p>
+    <div className="auth-shell">
+      <style>{`
+        .rp-head { text-align: center; margin-bottom: 24px; }
+        .rp-title {
+          margin: 0 0 8px;
+          font-size: 28px;
+          font-weight: 800;
+          color: var(--t1);
+          letter-spacing: -0.02em;
+        }
+        .rp-sub { margin: 0; font-size: 14px; color: var(--t2); line-height: 1.55; }
+        .rp-alert {
+          padding: 10px 12px;
+          margin-bottom: 16px;
+          border-radius: var(--r-sm);
+          font-size: 12px;
+        }
+        .rp-alert.err {
+          background: rgba(255, 155, 107, 0.12);
+          border: 1px solid rgba(255, 155, 107, 0.3);
+          color: var(--no);
+        }
+        .rp-alert.ok {
+          background: rgba(43, 228, 128, 0.1);
+          border: 1px solid rgba(43, 228, 128, 0.28);
+          color: var(--accent);
+        }
+        .rp-label {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--t3);
+        }
+        .rp-field-err {
+          font-size: 12px;
+          color: var(--no);
+          margin-top: 4px;
+        }
+        .rp-divider {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 22px 0 16px;
+        }
+        .rp-divider::before, .rp-divider::after {
+          content: "";
+          flex: 1;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.08);
+        }
+        .rp-divider span {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--t3);
+        }
+        .rp-links {
+          text-align: center;
+          color: var(--t2);
+          font-size: 13px;
+        }
+        .rp-links > div { margin-bottom: 8px; }
+        .rp-links > div:last-child { margin-bottom: 0; }
+      `}</style>
+      <div className="auth-card">
+        <div className="rp-head">
+          <span className="auth-eyebrow">Set a new password</span>
+          <h1 className="rp-title">Reset password</h1>
+          <p className="rp-sub">Pick something at least 8 characters long.</p>
         </div>
 
-        {/* Error Message */}
-        {errorMessage && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#7f1d1d",
-              border: "1px solid #991b1b",
-              borderRadius: "4px",
-              color: "#fca5a5",
-              fontSize: "13px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div className="rp-alert err">{errorMessage}</div>}
+        {successMessage && <div className="rp-alert ok">{successMessage}</div>}
 
-        {/* Success Message */}
-        {successMessage && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#064e3b",
-              border: "1px solid #047857",
-              borderRadius: "4px",
-              color: "#86efac",
-              fontSize: "13px",
-            }}
-          >
-            {successMessage}
-          </div>
-        )}
-
-        {/* Form */}
         {!submitted && token && (
-          <form onSubmit={handleSubmit}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              New Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (errors.password) {
-                  setErrors((prev) => {
-                    const newErrors = { ...prev };
-                    delete newErrors.password;
-                    return newErrors;
-                  });
-                }
-              }}
-              placeholder="At least 8 characters"
-              style={inputStyle}
-              disabled={isLoading}
-            />
-            {errors.password && <div style={errorStyle}>{errors.password}</div>}
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: 14 }}
+          >
+            <div>
+              <label className="rp-label" htmlFor="rp-pw">
+                New password
+              </label>
+              <input
+                id="rp-pw"
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) {
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.password;
+                      return newErrors;
+                    });
+                  }
+                }}
+                placeholder="At least 8 characters"
+                className="auth-input"
+                style={{ width: "100%", boxSizing: "border-box" }}
+                disabled={isLoading}
+              />
+              {errors.password && (
+                <div className="rp-field-err">{errors.password}</div>
+              )}
+            </div>
 
-            <label
-              style={{
-                display: "block",
-                marginBottom: "8px",
-                color: "#e2e8f0",
-                fontSize: "14px",
-                fontWeight: 600,
-              }}
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-                if (errors.confirmPassword) {
-                  setErrors((prev) => {
-                    const newErrors = { ...prev };
-                    delete newErrors.confirmPassword;
-                    return newErrors;
-                  });
-                }
-              }}
-              placeholder="Confirm your password"
-              style={inputStyle}
-              disabled={isLoading}
-            />
-            {errors.confirmPassword && (
-              <div style={errorStyle}>{errors.confirmPassword}</div>
-            )}
+            <div>
+              <label className="rp-label" htmlFor="rp-pw2">
+                Confirm password
+              </label>
+              <input
+                id="rp-pw2"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (errors.confirmPassword) {
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.confirmPassword;
+                      return newErrors;
+                    });
+                  }
+                }}
+                placeholder="Confirm your password"
+                className="auth-input"
+                style={{ width: "100%", boxSizing: "border-box" }}
+                disabled={isLoading}
+              />
+              {errors.confirmPassword && (
+                <div className="rp-field-err">{errors.confirmPassword}</div>
+              )}
+            </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                ...buttonStyle,
-                opacity: isLoading ? 0.7 : 1,
-                cursor: isLoading ? "not-allowed" : "pointer",
-              }}
-              onMouseEnter={(e) => {
-                if (!isLoading) {
-                  e.currentTarget.style.backgroundColor = "#ea580c";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--accent)";
-              }}
-            >
-              {isLoading ? "Resetting..." : "Reset Password"}
+            <button type="submit" disabled={isLoading} className="auth-submit">
+              {isLoading ? "Resetting…" : "Reset password"}
             </button>
           </form>
         )}
 
-        {/* Divider */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            margin: "24px 0",
-            gap: "12px",
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              height: "1px",
-              backgroundColor: "#0f3460",
-            }}
-          />
-          <span
-            style={{
-              color: "#a0a0a0",
-              fontSize: "12px",
-            }}
-          >
-            or
-          </span>
-          <div
-            style={{
-              flex: 1,
-              height: "1px",
-              backgroundColor: "#0f3460",
-            }}
-          />
+        <div className="rp-divider">
+          <span>or</span>
         </div>
 
-        {/* Links */}
-        <div
-          style={{
-            textAlign: "center",
-            color: "#a0a0a0",
-            fontSize: "14px",
-          }}
-        >
-          <div style={{ marginBottom: "12px" }}>
-            <Link
-              href="/auth/login"
-              style={{
-                color: "var(--accent)",
-                textDecoration: "none",
-                fontWeight: 600,
-              }}
-            >
-              Back to Login
+        <div className="rp-links">
+          <div>
+            <Link href="/auth/login" className="auth-link">
+              Back to login
             </Link>
           </div>
           <div>
-            Need help?
-            <Link
-              href="/auth/forgot-password"
-              style={{
-                color: "var(--accent)",
-                textDecoration: "none",
-                fontWeight: 600,
-                marginLeft: "4px",
-              }}
-            >
+            Need help?{" "}
+            <Link href="/auth/forgot-password" className="auth-link">
               Request another reset
             </Link>
           </div>

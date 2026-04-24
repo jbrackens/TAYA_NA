@@ -429,13 +429,34 @@ function Styles() {
         padding: 40px 20px;
       }
       .ra-card {
+        position: relative;
         width: 100%;
         max-width: 500px;
-        background: var(--s1);
-        border: 1px solid var(--b1);
-        border-radius: var(--r-lg);
         padding: 32px 32px 26px;
-        box-shadow: 0 28px 60px rgba(0,0,0,0.45);
+        border-radius: var(--r-xl);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.025) 100%),
+          var(--glass-thick);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow:
+          inset 0 1px 0 var(--rim-top),
+          inset 0 -1px 0 var(--rim-bottom),
+          inset 1px 0 2px var(--chroma-1),
+          inset -1px 0 2px var(--chroma-2),
+          0 28px 60px rgba(0, 0, 0, 0.5);
+        color: var(--t1);
+      }
+      .ra-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 50%;
+        border-radius: inherit;
+        background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+        pointer-events: none;
+        mix-blend-mode: overlay;
       }
       .ra-head { text-align: center; margin-bottom: 16px; }
       .ra-eyebrow {
@@ -467,7 +488,8 @@ function Styles() {
       .ra-progress {
         position: relative;
         height: 4px;
-        background: var(--s2);
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: 999px;
         overflow: hidden;
         margin-bottom: 22px;
@@ -521,20 +543,26 @@ function Styles() {
         color: var(--t3);
       }
       .ra-input {
-        background: var(--s2);
-        border: 1px solid var(--b1);
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: var(--r-sm);
-        padding: 10px 12px;
+        padding: 11px 13px;
         font-family: inherit;
         font-size: 14px;
         color: var(--t1);
         outline: none;
-        transition: border-color 0.15s, box-shadow 0.15s;
+        box-shadow:
+          inset 0 1px 2px rgba(0, 0, 0, 0.35),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+        transition: border-color 150ms ease, box-shadow 150ms ease;
       }
       .ra-input::placeholder { color: var(--t4); }
-      .ra-input:focus {
+      .ra-input:focus-visible {
         border-color: var(--accent);
-        box-shadow: var(--accent-glow);
+        box-shadow:
+          inset 0 1px 2px rgba(0, 0, 0, 0.35),
+          0 0 0 2px var(--accent-soft),
+          0 0 16px var(--accent-glow-color);
       }
       .ra-input-error { border-color: var(--no); }
       .ra-field-error {
@@ -543,8 +571,8 @@ function Styles() {
       }
 
       .ra-terms {
-        background: var(--s2);
-        border: 1px solid var(--b1);
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: var(--r-sm);
         padding: 14px 16px;
         max-height: 220px;
@@ -579,8 +607,8 @@ function Styles() {
       }
 
       .ra-summary {
-        background: var(--s2);
-        border: 1px solid var(--b1);
+        background: rgba(0, 0, 0, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.06);
         border-radius: var(--r-sm);
         padding: 12px 14px;
       }
@@ -627,25 +655,34 @@ function Styles() {
       }
       .ra-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       .ra-btn.ghost {
-        background: transparent;
+        background: rgba(255, 255, 255, 0.04);
         color: var(--t2);
-        border-color: var(--b2);
+        border-color: rgba(255, 255, 255, 0.12);
       }
       .ra-btn.ghost:hover:not(:disabled) {
-        background: var(--s2);
+        background: rgba(255, 255, 255, 0.08);
         color: var(--t1);
       }
       .ra-btn.primary {
-        background: var(--accent);
-        color: #06170a;
-        box-shadow: var(--accent-glow);
+        color: #04140a;
+        border-color: rgba(43, 228, 128, 0.6);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
+          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.5),
+          0 10px 24px rgba(43, 228, 128, 0.2);
       }
-      .ra-btn.primary:hover:not(:disabled) { background: var(--accent-hi); }
+      .ra-btn.primary:hover:not(:disabled) {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
+      .ra-btn.primary:active:not(:disabled) { transform: scale(0.98); }
 
       .ra-foot {
         padding-top: 14px;
         margin-top: 18px;
-        border-top: 1px solid var(--b1);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
         text-align: center;
         font-size: 13px;
         color: var(--t2);

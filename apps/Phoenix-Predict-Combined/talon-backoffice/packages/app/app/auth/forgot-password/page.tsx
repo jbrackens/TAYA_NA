@@ -48,231 +48,133 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    marginBottom: "16px",
-    backgroundColor: "#0a0f1d",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    color: "#e2e8f0",
-    fontSize: "14px",
-    boxSizing: "border-box",
-    fontFamily: "inherit",
-  };
-
-  const buttonStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 16px",
-    backgroundColor: "var(--accent)",
-    border: "none",
-    color: "#ffffff",
-    borderRadius: "4px",
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: "14px",
-    transition: "all 0.2s ease",
-  };
-
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-          padding: "40px",
-          backgroundColor: "#0f1225",
-          border: "1px solid #1a1f3a",
-          borderRadius: "8px",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            marginBottom: "32px",
-          }}
-        >
-          <h1
-            style={{
-              margin: "0 0 8px 0",
-              fontSize: "28px",
-              fontWeight: 700,
-              color: "#ffffff",
-            }}
-          >
-            Forgot Password
-          </h1>
-          <p
-            style={{
-              margin: 0,
-              fontSize: "14px",
-              color: "#a0a0a0",
-            }}
-          >
-            Enter your email to reset your password
+    <div className="auth-shell">
+      <style>{`
+        .fp-head { text-align: center; margin-bottom: 24px; }
+        .fp-title {
+          margin: 0 0 8px;
+          font-size: 28px;
+          font-weight: 800;
+          color: var(--t1);
+          letter-spacing: -0.02em;
+        }
+        .fp-sub { margin: 0; font-size: 14px; color: var(--t2); line-height: 1.55; }
+        .fp-alert {
+          padding: 10px 12px;
+          margin-bottom: 16px;
+          border-radius: var(--r-sm);
+          font-size: 12px;
+        }
+        .fp-alert.err {
+          background: rgba(255, 155, 107, 0.12);
+          border: 1px solid rgba(255, 155, 107, 0.3);
+          color: var(--no);
+        }
+        .fp-alert.ok {
+          background: rgba(43, 228, 128, 0.1);
+          border: 1px solid rgba(43, 228, 128, 0.28);
+          color: var(--accent);
+        }
+        .fp-label {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--t3);
+        }
+        .fp-divider {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 22px 0 16px;
+        }
+        .fp-divider::before, .fp-divider::after {
+          content: "";
+          flex: 1;
+          height: 1px;
+          background: rgba(255, 255, 255, 0.08);
+        }
+        .fp-divider span {
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--t3);
+        }
+        .fp-links {
+          text-align: center;
+          color: var(--t2);
+          font-size: 13px;
+        }
+        .fp-links > div { margin-bottom: 8px; }
+        .fp-links > div:last-child { margin-bottom: 0; }
+      `}</style>
+      <div className="auth-card">
+        <div className="fp-head">
+          <span className="auth-eyebrow">Reset access</span>
+          <h1 className="fp-title">Forgot password?</h1>
+          <p className="fp-sub">
+            Enter your email and we&apos;ll send a reset link.
           </p>
         </div>
 
-        {/* Error Message */}
-        {errorMessage && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#7f1d1d",
-              border: "1px solid #991b1b",
-              borderRadius: "4px",
-              color: "#fca5a5",
-              fontSize: "13px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div className="fp-alert err">{errorMessage}</div>}
+        {successMessage && <div className="fp-alert ok">{successMessage}</div>}
 
-        {/* Success Message */}
-        {successMessage && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#064e3b",
-              border: "1px solid #047857",
-              borderRadius: "4px",
-              color: "#86efac",
-              fontSize: "13px",
-            }}
-          >
-            {successMessage}
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: 14 }}
+        >
+          <div>
+            <label className="fp-label" htmlFor="fp-email">
+              Email address
+            </label>
+            <input
+              id="fp-email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorMessage) setErrorMessage("");
+              }}
+              placeholder="you@example.com"
+              className="auth-input"
+              style={{ width: "100%", boxSizing: "border-box" }}
+              disabled={submitted}
+            />
           </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "#e2e8f0",
-              fontSize: "14px",
-              fontWeight: 600,
-            }}
-          >
-            Email Address
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (errorMessage) setErrorMessage("");
-            }}
-            placeholder="your@email.com"
-            style={inputStyle}
-            disabled={submitted}
-          />
 
           <button
             type="submit"
             disabled={isLoading || submitted}
-            style={{
-              ...buttonStyle,
-              opacity: isLoading || submitted ? 0.7 : 1,
-              cursor: isLoading || submitted ? "not-allowed" : "pointer",
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading && !submitted) {
-                e.currentTarget.style.backgroundColor = "#ea580c";
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--accent)";
-            }}
+            className="auth-submit"
           >
             {isLoading
-              ? "Sending..."
+              ? "Sending…"
               : submitted
-                ? "Email Sent"
-                : "Send Reset Link"}
+                ? "Email sent"
+                : "Send reset link"}
           </button>
         </form>
 
-        {/* Divider */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            margin: "24px 0",
-            gap: "12px",
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              height: "1px",
-              backgroundColor: "#0f3460",
-            }}
-          />
-          <span
-            style={{
-              color: "#a0a0a0",
-              fontSize: "12px",
-            }}
-          >
-            or
-          </span>
-          <div
-            style={{
-              flex: 1,
-              height: "1px",
-              backgroundColor: "#0f3460",
-            }}
-          />
+        <div className="fp-divider">
+          <span>or</span>
         </div>
 
-        {/* Links */}
-        <div
-          style={{
-            textAlign: "center",
-            color: "#a0a0a0",
-            fontSize: "14px",
-          }}
-        >
-          <div style={{ marginBottom: "12px" }}>
-            Remember your password?
-            <Link
-              href="/auth/login"
-              style={{
-                color: "var(--accent)",
-                textDecoration: "none",
-                fontWeight: 600,
-                marginLeft: "4px",
-              }}
-            >
+        <div className="fp-links">
+          <div>
+            Remembered it?{" "}
+            <Link href="/auth/login" className="auth-link">
               Sign in
             </Link>
           </div>
           <div>
-            Don't have an account?
-            <Link
-              href="/auth/register"
-              style={{
-                color: "var(--accent)",
-                textDecoration: "none",
-                fontWeight: 600,
-                marginLeft: "4px",
-              }}
-            >
-              Create one
+            New here?{" "}
+            <Link href="/auth/register" className="auth-link">
+              Create an account
             </Link>
           </div>
         </div>

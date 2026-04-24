@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { verifyEmail } from "../../lib/api/auth-client";
@@ -35,118 +35,94 @@ export default function VerifyEmailPage() {
     verify();
   }, [token]);
 
-  const containerStyle: React.CSSProperties = {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
-  };
-
-  const cardStyle: React.CSSProperties = {
-    width: "100%",
-    maxWidth: "400px",
-    padding: "40px",
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
-    borderRadius: "8px",
-    textAlign: "center",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#e2e8f0",
-    margin: "0 0 16px 0",
-  };
-
-  const messageStyle: React.CSSProperties = {
-    fontSize: "14px",
-    color: "#cbd5e1",
-    margin: "0 0 24px 0",
-    lineHeight: "1.6",
-  };
-
-  const linkStyle: React.CSSProperties = {
-    display: "inline-block",
-    marginTop: "16px",
-    padding: "10px 20px",
-    backgroundColor: "var(--accent)",
-    color: "#0f1225",
-    border: "none",
-    borderRadius: "4px",
-    textDecoration: "none",
-    fontWeight: "600",
-    fontSize: "14px",
-    cursor: "pointer",
-    transition: "all 0.2s",
-  };
-
-  const errorStyle: React.CSSProperties = {
-    fontSize: "13px",
-    color: "var(--no)",
-    margin: "0 0 16px 0",
-  };
-
-  const spinnerStyle: React.CSSProperties = {
-    display: "inline-block",
-    width: "24px",
-    height: "24px",
-    border: "2px solid #1a1f3a",
-    borderTop: "2px solid var(--accent)",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
-  };
-
   return (
-    <div style={containerStyle}>
+    <div className="auth-shell">
       <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ve-title {
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--t1);
+          margin: 0 0 16px;
+          letter-spacing: -0.01em;
+        }
+        .ve-msg {
+          font-size: 14px;
+          color: var(--t2);
+          margin: 0 0 24px;
+          line-height: 1.6;
+        }
+        .ve-err {
+          font-size: 13px;
+          color: var(--no);
+          margin: 0 0 16px;
+        }
+        .ve-spinner {
+          display: inline-block;
+          width: 28px;
+          height: 28px;
+          border: 2px solid rgba(255,255,255,0.08);
+          border-top-color: var(--accent);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          box-shadow: 0 0 12px var(--accent-glow-color);
         }
       `}</style>
-      <div style={cardStyle}>
+      <div className="auth-card" style={{ textAlign: "center" }}>
         {state === "loading" && (
           <>
-            <h1 style={titleStyle}>Verifying Email</h1>
+            <h1 className="ve-title">Verifying email…</h1>
             <div
               style={{
                 display: "flex",
                 justifyContent: "center",
-                marginBottom: "24px",
+                marginBottom: 24,
               }}
             >
-              <div style={spinnerStyle} />
+              <div className="ve-spinner" aria-hidden="true" />
             </div>
-            <p style={messageStyle}>
-              Please wait while we verify your email address...
-            </p>
+            <p className="ve-msg">Hold tight — confirming the token.</p>
           </>
         )}
 
         {state === "success" && (
           <>
-            <h1 style={titleStyle}>Email Verified!</h1>
-            <p style={messageStyle}>
-              Your email has been successfully verified. You can now log in to
-              your account.
+            <h1 className="ve-title">Email verified</h1>
+            <p className="ve-msg">
+              You&apos;re all set. Log in to pick up where you left off.
             </p>
-            <Link href="/auth/login" style={linkStyle}>
-              Go to Login
+            <Link
+              href="/auth/login"
+              className="auth-submit"
+              style={{
+                display: "inline-flex",
+                textDecoration: "none",
+                justifyContent: "center",
+              }}
+            >
+              Go to login
             </Link>
           </>
         )}
 
         {state === "error" && (
           <>
-            <h1 style={titleStyle}>Verification Failed</h1>
-            <p style={errorStyle}>{errorMessage}</p>
-            <p style={messageStyle}>
-              The verification link may have expired or is invalid. Please try
-              requesting a new verification email.
+            <h1 className="ve-title">Verification failed</h1>
+            <p className="ve-err">{errorMessage}</p>
+            <p className="ve-msg">
+              The link may have expired. Request a fresh verification email from
+              the login page.
             </p>
-            <Link href="/auth/login" style={linkStyle}>
-              Back to Login
+            <Link
+              href="/auth/login"
+              className="auth-submit"
+              style={{
+                display: "inline-flex",
+                textDecoration: "none",
+                justifyContent: "center",
+              }}
+            >
+              Back to login
             </Link>
           </>
         )}
