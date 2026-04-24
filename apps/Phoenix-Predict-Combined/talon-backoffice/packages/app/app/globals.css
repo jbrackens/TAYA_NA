@@ -34,14 +34,18 @@ html,
 body {
   height: 100%;
 }
+html {
+  background: var(--bg-deep);
+}
 body {
+  min-height: 100%;
   font-family:
     "Outfit",
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: transparent;
+  background: var(--bg-deep);
   color: var(--t1, #ffffff);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
