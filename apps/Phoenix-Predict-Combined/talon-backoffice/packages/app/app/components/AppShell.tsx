@@ -20,6 +20,7 @@ import { AuthProvider } from "./AuthProvider";
 import { ToastProvider } from "./ToastProvider";
 import { TopBar } from "./prediction/TopBar";
 import { BackendStatusBanner } from "./BackendStatusBanner";
+import MobileTabBar from "./MobileTabBar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -46,6 +47,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     {children}
                   </main>
+                  <MobileTabBar />
                 </div>
               )}
             </AuthProvider>
