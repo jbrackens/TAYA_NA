@@ -11,7 +11,7 @@ import { subscribePredictWs } from "../../lib/websocket/predict-ws";
 import { useAuth } from "../../hooks/useAuth";
 import { logger } from "../../lib/logger";
 
-// TierPill — ambient loyalty surface in PredictHeader.
+// TierPill — ambient loyalty surface in TopBar.
 //
 // Plan §1 + §6 + §7:
 // - Hidden when tier === 0 (user hasn't earned any points yet).

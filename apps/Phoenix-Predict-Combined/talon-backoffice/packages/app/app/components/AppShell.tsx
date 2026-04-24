@@ -3,14 +3,12 @@
 /**
  * AppShell — root client boundary for the prediction player app.
  *
- * Layout (matches the approved design preview — not the sportsbook shell):
- *   [WhaleTicker]           ← slim auto-scrolling band at the top
- *   [PredictHeader]         ← logo + search + auth, with category strip below
- *   [page content]          ← max-width centered
+ * Layout (Liquid Glass shell, DESIGN.md §6):
+ *   [TopBar]                ← sticky 64px glass-med strip
+ *   [page content]          ← max-width centered, transparent wrapper
  *
- * No left sidebar. All three researched references (Kalshi, Polymarket,
- * Pariflow) use horizontal category navigation at the top; the sportsbook's
- * .ps-sidebar doesn't belong in fintech/broadcast product.
+ * No left sidebar, no top ticker band. BackdropScene is mounted higher
+ * up in layout.tsx so it sits behind every route.
  */
 
 import React from "react";
@@ -20,8 +18,7 @@ import { QueryProvider } from "../lib/query/QueryProvider";
 import { I18nProvider } from "../lib/i18n/I18nProvider";
 import { AuthProvider } from "./AuthProvider";
 import { ToastProvider } from "./ToastProvider";
-import { PredictHeader } from "./prediction/PredictHeader";
-import { WhaleTicker } from "./prediction/WhaleTicker";
+import { TopBar } from "./prediction/TopBar";
 import { BackendStatusBanner } from "./BackendStatusBanner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -38,14 +35,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="predict-auth-layout">{children}</div>
               ) : (
                 <div style={{ minHeight: "100vh", background: "transparent" }}>
-                  <WhaleTicker />
-                  <PredictHeader />
+                  <TopBar />
                   <BackendStatusBanner />
                   <main
                     style={{
-                      maxWidth: 1440,
+                      maxWidth: 1280,
                       margin: "0 auto",
-                      padding: "24px 24px 80px",
+                      padding: "28px 32px 80px",
                     }}
                   >
                     {children}
