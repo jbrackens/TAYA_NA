@@ -51,6 +51,8 @@ function CategoryChips({ categories }: { categories: Category[] }) {
         .pred-cat {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
+          min-width: 44px;
           min-height: 44px;
           padding: 0 14px;
           font-size: 13px;
@@ -234,6 +236,9 @@ function DiscoveryHero({
         .pred-hero-cta:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
         .pred-hero-secondary {
+          display: inline-flex;
+          align-items: center;
+          min-height: 44px;
           color: var(--t2);
           font-size: 14px;
           font-weight: 600;
