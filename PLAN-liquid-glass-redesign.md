@@ -9,7 +9,25 @@
 - Palette reference: Thndr casino theme (https://www.thndr.io/games → Casino tab).
 - Prior design ref: skeuomorphism mockup at `~/.gstack/projects/jbrackens-TAYA_NA/designs/skeuomorphism-20260424-193928/trade-ticket-mockup.html` (rejected direction, kept for contrast).
 
-**Status:** APPROVED in principle by the product owner. Ready to execute.
+**Status:** REVIEWED (2026-04-24, `/plan-eng-review`). Decisions below are locked in.
+
+---
+
+## Review outcomes (2026-04-24)
+
+A `/plan-eng-review` found 6 material issues in the original plan. A codex outside-voice review added 5 more. All have been addressed below. Summary of decisions:
+
+- **D1:** Phase 1 safety pass expanded to preserve semantics of `--accent-glow` (keep as full box-shadow declaration with new mint color), alias `--s0..--s3` to visually-close `--bg-*` values, keep `--gain`/`--whale`/`--whale-soft` as deprecation aliases until Phase 4.
+- **D2:** Fix `AppShell.tsx:40` and `globals.css:44` opaque backgrounds in Phase 1. Without this, `BackdropScene` is occluded and Phase 2 ships broken.
+- **D3:** Full hardcoded-hex sweep of all 50 files with hex literals (208 occurrences of `#39ff14`, `#34d399`, `#f87171`, `#fbbf24`) in Phase 1. Token swap alone leaves neon green visible in component `<style>` blocks.
+- **D4:** New Phase 0.5 — add Playwright smoke-test harness as a new dev dependency. Resolves plan's prior "no new npm deps" contradiction — accept one new dev dep (Playwright) as the price of catching visual regressions.
+- **D5:** Keep 3-layer backdrop split (CSS `body::before` + React `BackdropScene`). Faster first paint, simpler mental model.
+- **D6:** Phase 3 is NOT a single-page pilot. It's a "shell + market detail" change because `PredictHeader` / `WhaleTicker` are mounted in `AppShell`, not just market detail. Renaming the header in Phase 3 affects every non-auth route. Plan relabeled.
+- **D7:** Phase 4 time estimate revised from ~4 hrs → ~8-12 hrs across multiple sessions. Route inventory expanded. Previous estimate was fantasy.
+- **D8:** Mid-Phase-3 perf gate added — Chrome DevTools Performance + Lighthouse mobile on the pilot page before Phase 4 begins. If glass fails on Pixel-6a-class devices, the material system gets downgraded before the problem infects every page.
+- **D9:** DESIGN.md token-naming bug: doc says `--t-1..--t-4`, code uses `--t1..--t4`. DESIGN.md gets fixed (code is the authority).
+- **D10:** Phase 1 verification command changed from fake `npm run type-check` to real `npx tsc --noEmit`. Add a `typecheck` script to `package.json` in Phase 0.5 while we're adding Playwright anyway.
+- **D11:** Whale components (WhaleTicker, WhaleActivityCard, TopMoversCard, FeaturedHero) deletion is product-scope, not pure-visual. Confirmed acceptable pre-PMF because (a) session-scope user owns the product call, (b) those components can be re-added as glass variants later if needed. Flagged in the plan under "NOT in scope."
 
 ---
 
@@ -31,108 +49,157 @@ No code changes in this phase. Everything downstream reads from `DESIGN.md`.
 
 ---
 
-### Phase 1 — Token + material layer
+### Phase 0.5 — Smoke-test harness + verification scripts (NEW, per review D4 + D10)
 
-**Goal:** Update `app/globals.css` with the new color tokens, glass utility classes, new radii scale. Ship the foundation without touching components. After this phase, existing pages still render and function, but with mint in place of phoenix lime wherever `var(--accent)` is referenced.
+**Goal:** Add a Playwright smoke-test harness and a real typecheck script so subsequent phases have a catch-net for regressions and a valid verification command.
 
 **Files touched:**
-- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/globals.css`
-- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/layout.tsx` (add `prefers-reduced-transparency` + `prefers-reduced-motion` inline, if not already present).
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/package.json` — add `"typecheck": "tsc --noEmit"` and `"test:smoke": "playwright test"` scripts, add `@playwright/test` as a devDependency.
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/playwright.config.ts` — new config file pointing at the dev server running on port 3000. Viewport presets: desktop 1440×900, mobile 375×812. Parallelism: 1 (dev server is stateful).
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/tests/smoke/` — new directory.
+  - `_shared.ts` — helper: log in as `demo@phoenix.local` once, persist auth state to `tests/.auth/demo.json`, reuse across tests.
+  - `predict.smoke.spec.ts` — load `/predict`, assert: page title, no React error boundary, no console.error, non-empty content, at least one MarketCard renders.
+  - `market-detail.smoke.spec.ts` — load `/market/[seeded-ticker]`, same assertions + trade ticket + chart visible.
+  - `portfolio.smoke.spec.ts`, `rewards.smoke.spec.ts`, `leaderboards.smoke.spec.ts`, `account.smoke.spec.ts`, `auth-login.smoke.spec.ts` — one file per route, same shape.
+
+**Test fixture strategy** (resolves codex flakiness concern):
+- Tests use a dedicated test user auth state captured once, reused across runs.
+- Tests assume the local dev stack (docker compose + dev server) is up and seeded. CI runs `docker compose up -d` + `go run ./cmd/seed` + `npm run dev` before the smoke suite.
+- Tests do NOT place orders or mutate wallet state. Read-only assertions only. If a future smoke test needs mutations, it seeds its own per-test data and tears down after.
+- The seeded market used in `market-detail.smoke.spec.ts` is looked up by ticker via `/api/v1/markets` first — if not found, the test is skipped with a clear reason, not hard-failed.
+
+**Acceptance:**
+- `npx playwright install chromium` (one-time).
+- `docker compose up -d && npm run dev` in one terminal.
+- `npm run test:smoke` in another — all 7 smoke tests pass.
+- `npm run typecheck` — clean.
+- CI pipeline (future): runs typecheck + smoke in a GitHub Action after every PR push.
+
+**Effort:** ~1.5 hrs CC.
+**Risk:** Low. Playwright is boring-tech (Layer 1 per gstack ethos). Dev dep only, no prod bundle impact.
+
+---
+
+### Phase 1 — Token + material layer (EXPANDED, per review D1 + D2 + D3 + D10)
+
+**Goal:** Update `app/globals.css` with the new color tokens, glass utility classes, new radii scale, unblock the backdrop (AppShell/body transparent), and sweep hardcoded hex literals from component `<style>` blocks so the token swap actually lands visually. After this phase the app looks different everywhere — new mint accent + new backdrop gradient + unified palette — and no components are broken.
+
+**Files touched (broader than original plan — see review D1/D2/D3):**
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/globals.css` — tokens, glass utility, media queries, body transparent.
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/components/AppShell.tsx` — remove `background: var(--s0)` from the 100vh wrapper (D2).
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/layout.tsx` — mount `<BackdropScene />` at body root (brought FORWARD from Phase 2 so Phase 1 doesn't ship with a pure black page).
+- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/components/BackdropScene.tsx` — NEW (also brought forward from Phase 2).
+- **~50 component files** with hardcoded hex literals — hex sweep per D3. Concrete file list captured in `~/.gstack/projects/jbrackens-TAYA_NA/hex-sweep-inventory-YYYYMMDD.md` at the start of Phase 1.
+
+**Note on scope merge (review D5 + D2):** Phase 1 and Phase 2 are merged into a single phase because (a) AppShell/body need to be transparent in Phase 1 anyway, and (b) shipping a transparent AppShell without a backdrop = pure black app. The BackdropScene component and the gradient must go in at the same time. The phase numbering stays (Phase 2 is now an empty "no-op placeholder" for plan continuity) but the work is consolidated.
 
 **Concrete changes to `globals.css`:**
 
-1. **Replace the surface palette** (`--s0..--s3`) with the backdrop tokens (`--bg-deep`, `--bg-navy`, `--bg-teal`, `--bg-mint`, `--bg-azure`). Keep the old names as deprecation aliases pointing at the new values for one phase, so nothing instantly breaks:
+1. **Replace the surface palette** (`--s0..--s3`) with safe aliases to visually-close `--bg-*` tokens (per D1):
    ```css
-   --s0: var(--bg-deep);   /* deprecated — use --bg-deep */
-   --s1: var(--bg-teal);   /* deprecated */
-   /* etc. */
+   --s0: var(--bg-teal);    /* was #111827, --bg-teal #0c2638 is visually nearest */
+   --s1: var(--bg-navy);    /* was #1f2937, --bg-navy #0c2a4a is nearest */
+   --s2: var(--bg-deep);    /* was #0f1623, --bg-deep #06101c is nearest */
+   --s3: var(--bg-deep);    /* was #0b111c, --bg-deep is nearest */
    ```
-2. **Replace the accent tokens** (`--accent`, `--accent-hi`, `--accent-soft`, `--accent-glow`) with the mint palette (see DESIGN.md §3). Add `--accent-lo`, `--accent-deep`, `--accent-gradient` which are new.
-3. **Add the glass token set**: `--glass-thick`, `--glass-regular`, `--glass-thin`, `--glass-inset`, `--rim-top`, `--rim-bottom`, `--rim-side`, `--chroma-1`, `--chroma-2`.
+   (NOT aliased to `--bg-deep` for all — that makes the app too dark. Match visual weight.)
+2. **Replace the accent tokens** with the mint palette. Keep `--accent-glow` as a **complete box-shadow declaration** so `box-shadow: var(--accent-glow)` continues to work on all 17 call sites (D1):
+   ```css
+   --accent:            #2be480;
+   --accent-hi:         #00ffaa;
+   --accent-lo:         #1fa65e;
+   --accent-deep:       #0094ff;
+   --accent-soft:       rgba(43, 228, 128, 0.14);
+   --accent-glow-color: rgba(43, 228, 128, 0.45);                    /* NEW: color only */
+   --accent-glow:       0 0 28px var(--accent-glow-color);           /* PRESERVED: shadow decl */
+   --accent-gradient:   linear-gradient(100deg, #2be480 0%, #00ffaa 50%, #0094ff 100%);
+   ```
+3. **Add the glass token set** (`--glass-thick`, `--glass-regular`, `--glass-thin`, `--glass-inset`, `--rim-top`, `--rim-bottom`, `--rim-side`, `--chroma-1`, `--chroma-2`) per DESIGN.md §3.
 4. **Replace the semantic palette**:
    - `--yes` goes from green `#34d399` → blue `#7fc8ff`. Add `--yes-hi`, `--yes-lo`, `--yes-glow`.
    - `--no` goes from red `#f87171` → peach `#ff9b6b`. Add `--no-hi`, `--no-lo`, `--no-glow`.
-   - Delete `--gain` (merged into `--accent`).
-   - Delete `--whale`, `--whale-soft` (whale palette retired).
-   - `--live` changes from `#ef4444` → `#ff6b6b` (slightly softer, distinguishable from peach `--no`).
+   - Keep `--gain`/`--whale`/`--whale-soft` as deprecation aliases pointing at sensible values (D1 — NOT deleted in Phase 1):
+     ```css
+     --gain:       var(--accent);                        /* deprecated — use --accent */
+     --whale:      #fbbf24;                              /* deprecated — amber retained until Phase 4 deletes callers */
+     --whale-soft: rgba(251, 191, 36, 0.14);             /* deprecated */
+     ```
+   - `--live` changes `#ef4444` → `#ff6b6b` (softer, distinguishable from `--no` peach).
 5. **Update the radii scale** from 6/12/20 → 10/16/22/28 + `--r-pill: 999px`.
 6. **Add the `.glass` utility class + tier variants** (`.glass-thick`, `.glass-med`, `.glass-thin`) per DESIGN.md §4 recipe. Include the `::before` specular sheen.
 7. **Add `.glass-inset`** for recessed inputs.
 8. **Add the `@media (prefers-reduced-transparency: reduce)` block** that falls back glass to solid fills.
 9. **Add the `@media (prefers-reduced-motion: reduce)` block** disabling CTA shimmer, slider shimmer, LIVE-pulse, spring overshoot.
-10. **Preserve** the tier colors (`--tier-1..--tier-5`) — loyalty was shipped against those, don't break it.
-11. **Preserve** existing sportsbook `ps-*` / `discovery-*` / `sport-pill` classes in the file (still used by the legacy pages router, per DESIGN.md note).
+10. **Set `body { background: transparent }`** (D2) so the backdrop shows through.
+11. **Add the `body::before` radial-gradient stack** per DESIGN.md §5 Layer 1.
+12. **Preserve** the tier colors (`--tier-1..--tier-5`) — loyalty was shipped against those.
+13. **Preserve** existing sportsbook `ps-*` / `discovery-*` / `sport-pill` classes.
+
+**AppShell.tsx fix (D2):**
+
+Remove `background: "var(--s0)"` from the 100vh wrapper `<div>`. Replace with `background: "transparent"` or just remove the background property entirely. The wrapper stays (it provides min-height and other semantic structure) but becomes transparent so the fixed `body::before` shows through.
+
+**Hardcoded hex sweep (D3):**
+
+Before touching component files, generate an inventory:
+
+```bash
+cd apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+grep -rn --include='*.tsx' --include='*.ts' --include='*.css' -E '#39ff14|#34d399|#f87171|#fbbf24' app/ components/ lib/ \
+  > ~/.gstack/projects/jbrackens-TAYA_NA/hex-sweep-inventory-$(date +%Y%m%d).md
+```
+
+Then systematically:
+- `#39ff14` → `var(--accent)` (was phoenix lime, now mint)
+- `#34d399` → `var(--yes)` (was yes-green, now yes-blue — visual shift intentional)
+- `#f87171` → `var(--no)` (was red, now peach)
+- `#fbbf24` → `var(--whale)` (unchanged aliased value for now; Phase 4 deletes callers)
+
+For values derived from these (transparent/soft variants like `rgba(57, 255, 20, 0.14)`), replace with `var(--accent-soft)` or similar.
+
+50 files, ~208 occurrences. Expect ~2 hrs CC of methodical find/replace + verification.
 
 **Deprecation hit list (for Phase 4 cleanup):**
 
 After Phase 4 lands, the following are unused and can be deleted:
 
 - `--s0..--s3` deprecation aliases (added in Phase 1, removed in Phase 4).
-- `--gain`, `--whale`, `--whale-soft` — retired.
-- Any component still referencing `var(--gain)` gets migrated to `var(--accent)` at its Phase 4 conversion.
+- `--gain`, `--whale`, `--whale-soft` — retired; Phase 4 deletes the WhaleTicker/WhaleActivityCard/TopMoversCard/FeaturedHero callers.
+- `public/logo-tn.svg` — replaced by `BrandMark` component; delete if no Phase 4 page references it.
 
 **Verification:**
 
-- `npm run type-check` clean.
-- Visit `/predict`, `/market/[any]`, `/portfolio` — pages still render, but primary CTA buttons, active-state tints, LIVE dots, TierPill glow, RankChip accent colors all read as mint instead of lime. Ugly but functional. Nothing in the UI is broken.
-- Legacy pages-router pages (sportsbook `pages/`) unaffected — they use `ps-*` classes which weren't touched.
+- `npm run typecheck` clean (the script added in Phase 0.5).
+- `npm run test:smoke` — all 7 page smoke tests pass.
+- `npx playwright test --grep @visual` (if visual tests added later) — not required in Phase 1.
+- Manual QA: visit `/predict`, `/market/[any]`, `/portfolio`, `/rewards`, `/leaderboards`, `/account`, `/auth/login`. Pages render with new mint accent + cool backdrop. No broken layouts. CTA glows still work (D1 fix). No visible phoenix-lime hex leftover (D3 fix).
+- Legacy sportsbook pages-router pages unaffected (they use `ps-*` classes, which were preserved).
 
-**Effort:** ~2 hrs CC.
-**Risk:** Low. Additive + token swap. No component logic changes.
+**Effort:** ~5-6 hrs CC (revised from ~2 hrs). Breakdown:
+- Token + glass utility + backdrop integration: ~2 hrs
+- AppShell transparency fix: ~15 min
+- BackdropScene component (moved forward from Phase 2): ~45 min
+- Hardcoded hex sweep (50 files, ~208 hits): ~2 hrs
+- Smoke test suite validation: ~30 min
+- Buffer / verification: ~30 min
 
----
-
-### Phase 2 — Always-on backdrop layer
-
-**Goal:** Wire in the cool-palette scene that glass will refract against. Visible change: the entire app background changes from flat dark-charcoal to the cool-teal/navy scene with faint SVG chart lines + grid overlay. Nothing else changes yet.
-
-**Files touched:**
-- New: `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/components/BackdropScene.tsx`
-- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/layout.tsx` — mount `<BackdropScene />` as the first child of `<body>`.
-- `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/globals.css` — add `body::before` radial-gradient stack (Layer 1 of §5).
-
-**Shape of `BackdropScene.tsx`:**
-
-```tsx
-'use client';
-
-// BackdropScene renders the always-on refractive scene behind all glass.
-// Three layers per DESIGN.md §5:
-//   1. body::before — radial gradient stack (lives in globals.css, not this file)
-//   2. This component — faint SVG wavy lines hinting at market data
-//   3. This component — subtle grid overlay at ~7% opacity
-export function BackdropScene() {
-  return (
-    <div className="backdrop-scene" aria-hidden="true">
-      <svg className="backdrop-chart" viewBox="0 0 1440 900" preserveAspectRatio="none">
-        {/* 3 faint wavy paths: YES-blue, NO-peach, accent-mint */}
-      </svg>
-      <div className="backdrop-grid" />
-    </div>
-  );
-}
-```
-
-Position: `position: fixed`, `inset: 0`, `z-index: -2` for the scene, `-1` for the grid. `pointer-events: none`. All three layers stationary (no parallax, no animation).
-
-**Acceptance:**
-
-- Open any page. The backdrop is the cool-palette scene, not flat dark charcoal.
-- Scroll the page. The backdrop does NOT scroll. (Glass panels scroll past a stationary scene.)
-- Devtools Network panel shows no new HTTP requests (the SVG is inline; the gradient is CSS).
-- Lighthouse accessibility score unchanged (`aria-hidden="true"` + `pointer-events: none`).
-- `prefers-reduced-transparency` replaces the scene with `--bg-deep` solid fill.
-
-**Effort:** ~1 hr CC.
-**Risk:** Low. Background-layer only, no interactive surface touched.
-
-**Screenshot checkpoint:** before/after of `/predict` landing. The change is visible but non-functional.
+**Risk:** Medium (was: low). More files touched, but each change is mechanical and the smoke harness from Phase 0.5 catches regressions.
 
 ---
 
-### Phase 3 — Pilot: market detail page
+### Phase 2 — (CONSOLIDATED INTO PHASE 1, per review D2 + D5)
 
-**Goal:** Fully convert `/market/[ticker]` to Liquid Glass per DESIGN.md §4 (Material System) + §8 (Components). This is the most complex page in the app — if the glass system works here, it works everywhere. Phase 4 uses Phase 3 as a pattern template.
+**Status:** Consolidated into Phase 1. Original Phase 2 work (BackdropScene component + `body::before` gradient) has been pulled forward into Phase 1 because (a) Phase 1 must make AppShell/body transparent to unblock the backdrop, and (b) shipping transparent AppShell without a backdrop = pure-black app. The two must ship together.
+
+This numbering preserved so downstream phase references still make sense. Work owned by Phase 1.
+
+---
+
+### Phase 3 — Shell + market-detail pilot (RELABELED, per review D6)
+
+**Goal:** Convert the global shell (TopBar / PredictHeader rename — globally coupled via AppShell) PLUS the market-detail page pilot to Liquid Glass per DESIGN.md §4 + §8. This is the most complex page-level change, and because the shell ships in the same PR, **this phase has a global blast radius** despite being called a "pilot." Naming corrected per review D6.
+
+**Honest scoping note:** The original plan called Phase 3 a "single-page pilot." It isn't. `PredictHeader` and `WhaleTicker` are rendered by `AppShell` on every non-auth route. Renaming `PredictHeader → TopBar` and deleting `WhaleTicker` immediately affects every page. Phase 3 IS the shell redesign + the market-detail pilot happening atomically. Subsequent phases (4+) have a smaller shell impact because the shell is already done.
 
 **Files touched:**
 - `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/app/market/[ticker]/page.tsx`
@@ -211,33 +278,63 @@ All API calls, data fetching, WebSocket subscriptions, price updates, settlement
 - `prefers-reduced-motion` disables CTA shimmer, slider shimmer, LIVE pulse, spring overshoot. Replaces with instant transitions.
 - Lighthouse perf on desktop Chrome ≥90. Mobile Lighthouse ≥80 (glass is expensive — 80 is acceptable on the pilot; Phase 5 tightens).
 
-**Effort:** ~3 hrs CC.
-**Risk:** Medium. Biggest visual change in the entire plan. Also the page where subtle spacing/typography mistakes most hurt (trading UI). Worth QA pass before rolling out to Phase 4.
+**Effort:** ~3-4 hrs CC (revised — shell work adds complexity over the original "pilot" framing).
+**Risk:** Medium-High. Biggest visual change + global shell change in one phase. Trading UI is where typography/spacing mistakes hurt most.
 
 **Screenshot checkpoint:** before/after at 1440px and 375px. Archive both in `~/.gstack/projects/jbrackens-TAYA_NA/designs/rollout/phase-3/`.
+
+**Mid-Phase-3 perf gate (NEW per review D8):** After pilot merges + before Phase 4 starts:
+- Open `/market/[ticker]` in Chrome DevTools with CPU 4× throttle + network Fast 3G (Pixel 6a simulation).
+- Record 5s of scroll.
+- Assert: no single frame >50ms, long-tasks <5% of recorded time.
+- Run Lighthouse mobile on the pilot page — must score ≥80 perf, ≥95 a11y.
+- **If the material system fails this gate**, downgrade glass before Phase 4 rolls it out everywhere. Specific downgrades in order of preference: drop `saturate(180%)` → drop blur radius 30px→18px → drop `::before` specular sheen → fallback to solid fill for worst offenders. Document which surfaces got downgraded in DESIGN.md §10.
+- This gate is BLOCKING. Phase 4 doesn't start until the pilot page is both correct and fast on mid-range hardware.
 
 ---
 
 ### Phase 4 — Roll out to remaining pages
 
-**Goal:** Convert the remaining pages using Phase 3 as the template. Can be done in any order or in parallel (1 page = 1 PR).
+**Goal:** Convert the remaining pages using Phase 3 as the template. Each page is one PR.
 
-**Pages, in suggested priority order:**
+**Pages, in suggested priority order (revised route inventory per review D7):**
 
-1. **`/predict` — discovery landing.** `MarketCard` refreshed per DESIGN.md §8, arranged in `repeat(auto-fill, minmax(300px, 1fr))` grid. Category pills strip as horizontal `.glass.glass-thin` row above the grid. Hero slot for a featured market (bigger card, not a different component). Remove FeaturedHero component usage.
-2. **`/portfolio` — positions + summary strip.** Reuse `SummaryStrip` layout from the existing page but wrap stat cards in `.glass`. `RankChip` becomes a glass pill with the mint gradient on the medal icon. `HistoryTable` uses solid-fill rows inside a glass card. Handle the case where `TierPill` sits next to the summary — TierPill stays in its preserved tier colors.
-3. **`/rewards` — loyalty ledger + tier ladder.** Tier ladder rendered as 6 glass cards (Hidden + 5 visible tiers). Each card has the corresponding `--tier-*` color as a border accent. Ledger table is solid-fill inside a glass card. Drop the "event type concatenated with reason" bug (already fixed in C.2).
-4. **`/leaderboards` — sidebar + detail.** Sidebar becomes a vertical strip of glass tabs, with the Category Champions tab being the one with the `<select>` dropdown inside. On mobile, sidebar collapses to horizontal scroll (already fixed in C.3 — preserve the 280px category-tab width). Detail panel is a glass card with the ranked table as a solid-fill inner.
-5. **`/category/[slug]` — filtered market grid.** Same pattern as `/predict`, scoped to one category.
-6. **`/account` — settings + privacy toggle.** Glass cards for each settings section. Privacy toggle (the `display_anonymous` switch from the loyalty cycle) becomes a glass toggle.
-7. **`/auth/login` — login form.** Centered `.glass.glass-thick` card on the full-bleed backdrop. BrandMark at the top. Email + password inputs use `.glass-inset`. Login CTA uses the mint→teal gradient.
-8. **`/auth/register`, `/reset-password`, `/responsible-gaming`, `/about`, `/contact-us`, `/privacy-policy`, `/terms`** — content pages. Simpler — glass card wrapping prose content.
+1. **`/predict` — discovery landing.** `MarketCard` refreshed per DESIGN.md §8, arranged in `repeat(auto-fill, minmax(300px, 1fr))` grid. Category pills strip as horizontal `.glass.glass-thin` row. Hero slot for a featured market. Remove FeaturedHero component usage. ~45 min.
+2. **`/portfolio` — positions + summary strip.** `SummaryStrip` stat cards wrapped in `.glass`. `RankChip` becomes a glass pill with the mint gradient on the medal icon. `HistoryTable` uses solid-fill rows inside a glass card. TierPill stays in its preserved tier colors. ~45 min.
+3. **`/rewards` — loyalty ledger + tier ladder.** Tier ladder as 6 glass cards. Ledger table solid-fill inside a glass card. ~45 min.
+4. **`/leaderboards` — sidebar + detail.** Sidebar as vertical glass tabs with Category Champions dropdown. On mobile, horizontal scroll preserved from C.3 fix. ~45 min.
+5. **`/category/[slug]`** — same pattern as `/predict`, scoped to one category. ~20 min.
+6. **`/account` + subroutes** — `/account` main page, plus `/account/security`, `/account/transactions`, `/account/notifications`, `/account/rg-history`, `/account/self-exclude`. Each a glass card stack. ~60 min total.
+7. **`/auth/login`** — centered `.glass.glass-thick` card, BrandMark top, inputs `.glass-inset`, mint→teal CTA. ~30 min.
+8. **`/auth/register`, `/auth/forgot-password`, `/auth/verify-email`, `/auth/reset-password`** — auth flow siblings, same shell as login. ~30 min total.
+9. **Content pages** — `/about`, `/contact-us`, `/privacy`, `/privacy-policy`, `/terms`, `/terms-and-conditions`, `/responsible-gaming`. Glass card wrapping prose content. ~45 min total.
+10. **Error surfaces** — `/not-found`, `/error`, and the per-route `error.tsx` files (`/cashier/error.tsx`, `/profile/error.tsx`, `/account/error.tsx`). Minimal glass treatment. ~20 min.
 
-**Pages explicitly out of scope (stay sportsbook-styled):**
+**Pages explicitly out of scope (stay sportsbook-styled until they're retired or get their own refresh):**
 
-- `/cashier` — legacy cashier flow, wallet team owns it.
-- `/profile` — legacy profile editor, to be replaced by `/account`.
-- `/not-found`, `/error` — React error/404 surfaces. Minimal glass pass in a future sweep.
+- `/cashier` and `/cashier/cheque` — legacy cashier flow, wallet team owns it.
+- `/profile` — legacy profile editor, intended to be replaced by `/account`.
+- Sportsbook pages under `pages/` router (not `app/`) — unaffected, use `ps-*` classes.
+
+**Acceptance (per-page):**
+
+- Page renders the new design; no regressions in functional behavior.
+- Mobile layout verified at 375px via Playwright smoke test.
+- Keyboard nav works end-to-end.
+- `prefers-reduced-transparency` + `prefers-reduced-motion` media queries both function.
+- No TypeScript errors (`npm run typecheck`), no new console warnings.
+- Smoke test for that specific page passes.
+
+**Effort:** ~6-10 hrs CC total (revised from ~4 hrs per review D7). Realistic breakdown above sums to ~6 hrs under ideal conditions; plan on ~10 hrs when you factor in mobile QA, auth states, empty states, loading states, and the inevitable "this component needs more work than I thought" discoveries. Spread across 2-4 sessions, not one.
+
+**Risk:** Medium per page, low in aggregate with smoke tests as the catch-net. Each page is independently revertable.
+
+**Cleanup after Phase 4:**
+
+- Delete the `--s0..--s3` deprecation aliases in `globals.css`.
+- Remove retired components: `WhaleTicker`, `WhaleActivityCard`, `TopMoversCard`, `FeaturedHero`. Grep confirms no remaining imports.
+- Remove `--gain`, `--whale`, `--whale-soft` tokens.
+- Remove `public/logo-tn.svg` if no Phase 4 page still references it.
 
 **Acceptance (per-page):**
 
@@ -321,11 +418,11 @@ All API calls, data fetching, WebSocket subscriptions, price updates, settlement
 
 ### Testing
 
-- **TypeScript:** `npm run type-check` clean after every phase.
+- **TypeScript:** `npm run typecheck` (added in Phase 0.5) runs clean after every phase. Aliased to `tsc --noEmit`.
 - **Type manifest:** update `FEATURE_MANIFEST.json` when components are deleted.
 - **Go tests:** unaffected. Backend doesn't know about frontend design.
-- **Frontend Jest:** the app currently has `--passWithNoTests` — no frontend tests exist. Adding them is out of scope of this plan (separate testing plan).
-- **Manual QA:** each phase has a browser-based acceptance checklist above.
+- **Frontend smoke tests:** Playwright suite added in Phase 0.5 (per review D4). Runs against local dev stack. One smoke test per major route, asserts page loads + no console errors + key elements render. NOT pixel-diff visual regression — that's a future TODO.
+- **Manual QA:** each phase has a browser-based acceptance checklist above. Smoke tests catch structural regressions; manual QA catches visual polish issues.
 
 ### Feature manifest
 
@@ -357,7 +454,9 @@ If a mid-phase rollback is needed, the feature-flag option (considered and rejec
 
 ### Dependencies
 
-No new npm dependencies. Liquid Glass is CSS-only. Backdrop scene SVG is inline. Everything ships in the existing bundle.
+One new **dev** dependency added in Phase 0.5: `@playwright/test`. Ships only in `devDependencies` — zero production bundle impact. Liquid Glass itself is CSS-only. Backdrop scene SVG is inline. No runtime bundle changes.
+
+(Original plan claimed "no new deps." That was aspirational and broke the Phase 0.5 test harness. Plan corrected per review D4 + codex finding.)
 
 ### Bundle size impact
 
@@ -374,12 +473,26 @@ The DESIGN.md §10 budget is the authoritative rulebook. Phase 5 audit measures 
 
 ## Open questions
 
-These are flagged to revisit, not blockers for starting Phase 1.
+These are flagged to revisit, not blockers for starting Phase 0.5 / Phase 1.
 
-- **TierPill color treatment.** TierPill renders with `--tier-*` colors (slate/gold/platinum/violet). These colors don't sit in the mint/teal/blue family. Decision: preserve as-is — tier colors are deliberately outside the brand palette to feel like earned status. But the glass treatment on TierPill needs design thought: does the tier color become the glass fill color, or stay as a border accent on a neutral glass pill? Phase 4a should resolve this.
-- **Chart color when YES is blue.** The current chart renders the YES line in blue (`--yes`). Does a "downward YES movement" still read as blue, or does it flip to peach (the NO semantic)? Convention says the line stays blue (YES is the subject); the movement direction is indicated by the delta pill color. Document in DESIGN.md once decided.
-- **Mobile TopBar.** Desktop TopBar has 5 nav links + search + balance + avatar. At 375px, search is hidden (icon-only), nav collapses to a hamburger? Or horizontal scroll? Mobile mockup didn't explicitly show this. Phase 3 decides; Phase 4a might refine.
-- **Login/auth pages on the backdrop.** The backdrop scene is global — even auth pages sit in front of it. Is that the right move, or should auth pages use a solid color to feel "different" from the authenticated app? Current plan: keep the backdrop. Revisit at Phase 4g if it feels off.
+- **Mobile TopBar collapse behavior (elevated to hard requirement per codex D — must decide before Phase 3 starts).** Desktop TopBar has 5 nav links + search + balance + avatar. At 375px what happens? Hamburger menu, icon-only nav, horizontal scroll, or bottom-tab-bar on mobile? This is a design decision, not an implementation detail. **Must resolve via `/office-hours` or design sketch before Phase 3 ships.**
+- **TierPill color treatment.** TierPill renders with `--tier-*` colors (slate/gold/platinum/violet). These sit outside the mint/teal/blue family intentionally. Open: does the tier color become the glass fill color, or stay as a border accent on a neutral glass pill? Phase 4 step 2 (portfolio page) decides.
+- **Chart color when YES is blue.** Current chart renders the YES line in blue. Does a "downward YES movement" flip to peach (NO) or stay blue with a red delta pill? Recommended: line stays blue (YES is the subject); direction indicated by delta pill. Document in DESIGN.md §8 once Phase 3 ships.
+- **Login/auth on the backdrop.** The backdrop is global — auth pages sit in front. Right move or should auth use a solid color to feel "different"? Current plan: keep the backdrop. Revisit at Phase 4 step 7 if it feels off.
+- **Accessibility of text on translucent surfaces (codex: "text-shadow doesn't fix WCAG").** The mockups use text-shadow to boost perceived contrast, but text-shadow does NOT make a failing AA combo pass axe-core. Phase 5 audit must use axe DevTools and fix any real failures — add a solid backing pill under text where needed, not just shadow.
+- **Visual regression (codex: smoke tests miss glass/spacing drift).** Phase 0.5 adds Playwright smoke, not pixel-diff. Visual drift regressions will ship. Post-launch, add a `@visual` test tag + screenshot baselines as a follow-up. Captured as a TODO below.
+- **Strategic risk (codex's high-altitude challenge).** "Apple-style Liquid Glass" might not be ownable differentiation. For a trading app, readability/trust/speed matter more than material novelty. Product owner has committed to the redesign for this cycle; revisit post-Phase-5 with actual user feedback. Not a blocker for execution.
+- **Whale/TopMovers/FeaturedHero deletion = product scope.** Those components are social-proof surfaces for discovery. Deleting them is not a pure visual change — it's a product decision. Confirmed OK for pre-PMF posture (no metrics to protect, can be re-added as glass variants later). Flagged so this deletion isn't silently undone if the plan gets handed off.
+
+## Future TODOs (post-launch)
+
+To be added to `TODOS.md` after Phase 5 lands:
+
+- Visual regression via screenshot diffs (Playwright `toHaveScreenshot()` or Percy/Chromatic) — catches what smoke tests miss.
+- Light mode support (if user demand appears).
+- Performance tiering by device class — detect mid-range Android on first paint, serve a `.glass-fallback` variant with reduced blur.
+- Re-introduce Whale-activity surface as a glass variant if discovery metrics show need.
+- Accessibility audit follow-up — axe automation in CI, not just Phase 5 manual run.
 
 ## Assignment (for the first-phase engineer)
 

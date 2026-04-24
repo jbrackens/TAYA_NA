@@ -60,7 +60,7 @@ Loaded in `app/layout.tsx` via Google Fonts `<link>`. Don't add more weights ad-
 | Page title | 700 | 28 | Market question, portfolio header. Letter-spacing -0.01em. |
 | Section heading | 700 | 18 | Card titles, card strip headers. |
 | Data heading | 700 | 11 | Uppercase data-section labels (`ORDER BOOK`, `RECENT TRADES`). Letter-spacing 0.14em. |
-| Body | 400 | 14 | Prose copy. Color `--t-2`. |
+| Body | 400 | 14 | Prose copy. Color `--t2`. |
 | Eyebrow | 700 | 10 | Uppercase tiny labels (`YES`, `NO`, `AMOUNT`). Letter-spacing 0.16em. |
 | Data (mono) | 600 | 28–32 | Prices on cards + trade ticket side buttons. Tabular-nums. |
 | Small data (mono) | 500 | 11–13 | Volumes, deltas, tape rows. Tabular-nums. |
@@ -121,10 +121,12 @@ Glass is never opaque fill. Surface tokens define the translucent "body" of each
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--t-1` | `#ffffff` | Primary headlines, prices, titles. |
-| `--t-2` | `rgba(255, 255, 255, 0.72)` | Body copy, secondary info. |
-| `--t-3` | `rgba(255, 255, 255, 0.44)` | Muted labels, meta, timestamps. |
-| `--t-4` | `rgba(255, 255, 255, 0.28)` | Disabled, divider dots, faint axis labels. |
+| `--t1` | `#ffffff` | Primary headlines, prices, titles. |
+| `--t2` | `rgba(255, 255, 255, 0.72)` | Body copy, secondary info. |
+| `--t3` | `rgba(255, 255, 255, 0.44)` | Muted labels, meta, timestamps. |
+| `--t4` | `rgba(255, 255, 255, 0.28)` | Disabled, divider dots, faint axis labels. |
+
+*(Text token naming matches the code convention `--t1..--t4`, no hyphen before the digit. Earlier revision of this doc used `--t-1..--t-4` which didn't match the actual `globals.css` — fixed 2026-04-24 after `/plan-eng-review`.)*
 
 ### Brand accent (mint emerald)
 
@@ -398,9 +400,9 @@ These were part of the dark-broadcast / Pariflow-inspired direction and do not p
 
 Text on translucent surfaces has variable background depending on the backdrop position. Minimum targets:
 
-- **Primary text (`--t-1`, `#ffffff`):** always passes WCAG AA against every backdrop lobe.
-- **Secondary text (`--t-2`, 72% white):** passes AA on `--bg-deep`, `--bg-teal`. Marginal on `--bg-navy` — mitigated by text-shadow (`0 1px 3px rgba(0,0,0,0.35)`) which boosts perceived contrast.
-- **Meta text (`--t-3`, 44% white):** passes AA only for non-essential copy (captions, timestamps, axis labels). Never used for actionable text.
+- **Primary text (`--t1`, `#ffffff`):** always passes WCAG AA against every backdrop lobe.
+- **Secondary text (`--t2`, 72% white):** passes AA on `--bg-deep`, `--bg-teal`. Marginal on `--bg-navy` — mitigated by text-shadow (`0 1px 3px rgba(0,0,0,0.35)`) which boosts perceived contrast.
+- **Meta text (`--t3`, 44% white):** passes AA only for non-essential copy (captions, timestamps, axis labels). Never used for actionable text.
 
 ### Reduced transparency
 
