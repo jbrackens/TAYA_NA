@@ -50,4 +50,48 @@ test.describe("/market/[ticker] — market detail", () => {
 
     checkErrors();
   });
+
+  test.describe("unauthenticated trade ticket", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("quick amount chips keep the selected amount when balance is zero", async ({
+      page,
+    }) => {
+      const checkErrors = captureConsoleErrors(page);
+
+      const discoveryResponse = await page.request.get("/api/v1/discovery");
+      expect(
+        discoveryResponse.ok(),
+        `/api/v1/discovery returned ${discoveryResponse.status()}`,
+      ).toBe(true);
+
+      const discovery = (await discoveryResponse.json()) as {
+        featured?: Array<{ ticker?: string }>;
+        trending?: Array<{ ticker?: string }>;
+      };
+      const firstTicker =
+        discovery.featured?.[0]?.ticker ?? discovery.trending?.[0]?.ticker;
+
+      if (!firstTicker) {
+        test.skip(
+          true,
+          "No seeded markets returned from /api/v1/discovery — skipping smoke",
+        );
+        return;
+      }
+
+      await assertPageHealthy(page, `/market/${firstTicker}`);
+
+      // Regression: ISSUE-001 — quick amount chips displayed $0.00 when
+      // balance was zero because they clamped to the user's balance.
+      // Found by /qa on 2026-04-25.
+      // Report: .gstack/qa-reports/qa-report-localhost-3000-2026-04-25.md
+      await page.getByRole("button", { name: "$100" }).click();
+      await expect(
+        page.getByRole("button", { name: "Review trade · $100.00" }),
+      ).toBeVisible();
+
+      checkErrors();
+    });
+  });
 });
