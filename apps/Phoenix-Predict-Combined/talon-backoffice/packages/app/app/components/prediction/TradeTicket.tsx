@@ -525,7 +525,7 @@ export function TradeTicket({
               <button
                 key={a}
                 type="button"
-                onClick={() => setAmount(Math.min(a, maxAmount))}
+                onClick={() => setAmount(a)}
                 className={`tt-chip ${Math.floor(amount) === a ? "is-active" : ""}`}
               >
                 ${a}
