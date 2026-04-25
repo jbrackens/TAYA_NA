@@ -3,10 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "jsx": "react-jsx",
-    "lib": [
-      "dom",
-      "es2017"
-    ],
+    "lib": ["dom", "es2017"],
     "moduleResolution": "bundler",
     "allowJs": true,
     "noEmit": true,
@@ -24,21 +21,13 @@
     "isolatedModules": true,
     "baseUrl": "./",
     "paths": {
-      "i18n": [
-        "i18n.js"
-      ],
-      "@phoenix-ui/design-system": [
-        "../design-system/src"
-      ],
-      "@phoenix-ui/design-system/*": [
-        "../design-system/src/*"
-      ],
-      "@phoenix-api/client": [
-        "../api-client/src"
-      ],
-      "@phoenix-api/client/*": [
-        "../api-client/src/*"
-      ]
+      "i18n": ["i18n.js"],
+      "@phoenix-ui/design-system": ["../design-system/src"],
+      "@phoenix-ui/design-system/*": ["../design-system/src/*"],
+      "@phoenix-api/client": ["../api-client/src"],
+      "@phoenix-api/client/*": ["../api-client/src/*"],
+      "@phoenix-ui/utils": ["../utils/src"],
+      "@phoenix-ui/utils/*": ["../utils/src/*"]
     },
     "incremental": true,
     "plugins": [
@@ -47,9 +36,7 @@
       }
     ]
   },
-  "exclude": [
-    "node_modules"
-  ],
+  "exclude": ["node_modules"],
   "include": [
     "next-env.d.ts",
     "**/*.ts",

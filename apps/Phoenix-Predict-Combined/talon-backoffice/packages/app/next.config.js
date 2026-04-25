@@ -11,10 +11,7 @@ module.exports = {
   allowedDevOrigins: ["127.0.0.1"],
   // Transpile workspace packages that expose raw TypeScript source
   // NOTE: @phoenix-ui/design-system removed — all imports replaced with inline components
-  transpilePackages: [
-    '@phoenix-ui/utils',
-    '@phoenix-ui/api-client',
-  ],
+  transpilePackages: ["@phoenix-ui/utils", "@phoenix-ui/api-client"],
   outputFileTracingRoot: path.join(__dirname, "../.."),
   async headers() {
     return [
@@ -29,13 +26,13 @@ module.exports = {
       beforeFiles: [
         // Proxy API requests to Go backend (for development, avoids CORS issues)
         {
-          source: '/api/v1/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080'}/api/v1/:path*`,
+          source: "/api/v1/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"}/api/v1/:path*`,
         },
         // Proxy admin requests to Go backend
         {
-          source: '/admin/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080'}/admin/:path*`,
+          source: "/admin/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"}/admin/:path*`,
         },
       ],
     };
@@ -63,6 +60,7 @@ module.exports = {
           ...config.resolve.alias,
           i18n: path.resolve(__dirname, "i18n.js"),
           "next/config$": path.resolve(__dirname, "lib/next-runtime-config.js"),
+          "@phoenix-ui/utils$": path.resolve(__dirname, "../utils/src"),
         },
       },
     };
