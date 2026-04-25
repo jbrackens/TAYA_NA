@@ -1,6 +1,6 @@
 # Design System — TAYA NA Predict
 
-> Liquid Glass on a cool-palette scene. Mint emerald accent, blue YES, peach NO. Translucent panes float in front of an always-on refractive backdrop. Every edge catches light.
+> Liquid Glass on a cool-palette scene. Mint emerald accent, neon-green YES, fire-engine-red NO. Translucent panes float in front of an always-on refractive backdrop. Every edge catches light.
 
 This document governs the **Predict player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000). The admin backoffice is still on the sportsbook system (see `DESIGN-SPORTSBOOK.md`) until it needs a refresh.
 
@@ -143,21 +143,25 @@ Thndr-inspired mint. The mint `#2be480` replaces the prior neon-lime `#39ff14` (
 
 ### Semantic (data layer)
 
-YES is **blue** (not green). Moved to blue because mint is the brand accent — green-for-YES would collide with brand green everywhere. Blue-for-YES + peach-for-NO is a stable semantic pairing that holds against any backdrop.
+YES is **neon green** and NO is **fire-engine red**. This restores the instant trading-language read users expect from a binary side selector while keeping the Liquid Glass material refined. Brand mint remains the identity/CTA channel; YES green is louder, sharper, and used only for market data.
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `--yes` | `#7fc8ff` | YES prices, YES side chips, upward price deltas, order-book bid side. |
-| `--yes-hi` | `#a5dbff` | Hover / selected-state highlight for YES. |
-| `--yes-lo` | `#4a9ee0` | Deeper blue for borders + pressed states. |
-| `--yes-glow` | `rgba(127, 200, 255, 0.5)` | YES price text-shadow when selected + liquid-tint color. |
-| `--no` | `#ff9b6b` | NO prices, NO side chips, downward price movement, order-book ask side. |
-| `--no-hi` | `#ffb88f` | Hover / selected-state highlight for NO. |
-| `--no-lo` | `#d9784e` | Deeper peach for borders + pressed states. |
-| `--no-glow` | `rgba(255, 155, 107, 0.5)` | NO price text-shadow when selected + liquid-tint color. |
-| `--live` | `#ff6b6b` | LIVE indicator dot (ticker, hero pill). Distinct from `--no` — redder, brighter, pulses. |
+| `--yes` | `#39ff14` | YES prices, YES side chips, upward price deltas, order-book bid side. |
+| `--yes-hi` | `#a8ff5a` | Hover / selected-state highlight for YES. |
+| `--yes-lo` | `#16a34a` | Deeper green for borders + pressed states. |
+| `--yes-soft` | `rgba(57, 255, 20, 0.12)` | Low-alpha YES fill for glass chips, depth bars, and badges. |
+| `--yes-border` | `rgba(57, 255, 20, 0.32)` | YES border tint on selected/filled states. |
+| `--yes-glow` | `rgba(57, 255, 20, 0.48)` | YES price text-shadow when selected + liquid-tint color. |
+| `--no` | `#ff2d2d` | NO prices, NO side chips, downward price movement, order-book ask side, danger text. |
+| `--no-hi` | `#ff6b5f` | Hover / selected-state highlight for NO. |
+| `--no-lo` | `#b5121b` | Deeper red for borders + pressed states. |
+| `--no-soft` | `rgba(255, 45, 45, 0.12)` | Low-alpha NO fill for glass chips, depth bars, and badges. |
+| `--no-border` | `rgba(255, 45, 45, 0.32)` | NO border tint on selected/error states. |
+| `--no-glow` | `rgba(255, 45, 45, 0.52)` | NO price text-shadow when selected + liquid-tint color. |
+| `--live` | `#ff6b6b` | LIVE indicator dot (ticker, hero pill). Reserved for time/real-time pulse, not side selection. |
 
-**Gain / loss:** Use `--accent` (mint) for positive P&L and upward percent-change pills. Use `--no` (peach) for negative P&L. No separate `--gain` token needed — the accent IS the positive-outcome color here.
+**Gain / loss:** Use `--accent` (mint) for positive P&L and upward percent-change pills unless the value is specifically a YES-side market signal. Use `--no` (red) for negative P&L. No separate `--gain` token needed — the accent remains the portfolio-success color.
 
 ### Loyalty tier colors (preserved from prior system)
 
@@ -174,11 +178,11 @@ Unchanged. Tier colors avoid the accent palette deliberately so tiers feel like 
 ### Rules (mint discipline)
 
 - **`--accent` is the mint channel.** It glows, calls for action, and carries brand identity: CTA, brand mark, active nav, category pill, LIVE dot, payout-if-YES text. **Appears once per viewport** at full saturation plus low-alpha tints on active states.
-- **`--yes` is the YES data channel.** Blue. Informs, never glows (except colored text-shadow on the selected side). Never carries a CTA shadow.
-- **`--no` is the NO data channel.** Peach. Mirror of YES, same rules.
+- **`--yes` is the YES data channel.** Neon green. Informs, never carries the CTA shadow. Its glow is reserved for selected side buttons, charts, and market-data emphasis.
+- **`--no` is the NO data channel.** Fire-engine red. Mirror of YES, same rules.
 - **Never use `--accent` on a price cell.** Never use `--yes`/`--no` on a CTA. If a surface needs brand + data channels together (e.g., a LIVE YES pill), `--accent` owns the pulse dot + pulse color, `--yes` owns the price text.
 - **Gradient is reserved.** The `--accent-gradient` (mint → teal → azure) appears **only on the brand mark**. CTAs use a 2-stop mint → teal variant. Don't apply the gradient to other surfaces — it cheapens the brand moment.
-- **Orphaned warm color:** `--live` (`#ff6b6b`) is the only warm color outside `--no`. Reserved for real-time indicators and nothing else. `--no` is for price; `--live` is for time.
+- **Warm-color discipline:** `--no` owns red side selection and negative market signal. `--live` is reserved for tiny real-time pulse indicators only; don't use it as a price or CTA color.
 - **No whale amber.** The prior `--whale` / `--whale-soft` ambers are retired along with WhaleTicker (see §8 Components retired).
 
 ---
@@ -278,7 +282,7 @@ body::before {
 }
 ```
 
-**Layer 2 (`z-index: -2`):** live-chart SVG. Faint wavy lines across the whole viewport in YES-blue, NO-peach, and mint-accent — visual hint at market data without being literal. Lives in the `BackdropScene` component.
+**Layer 2 (`z-index: -2`):** live-chart SVG. Faint wavy lines across the whole viewport in neon YES, red NO, and mint-accent — visual hint at market data without being literal. Lives in the `BackdropScene` component.
 
 **Layer 3 (`z-index: -1`):** subtle grid pattern at ~7% opacity. Two stacked `linear-gradient` backgrounds in orthogonal directions. Trading-desk grounding without dominating.
 
@@ -471,7 +475,7 @@ Tracked as follow-ups, not part of this design system version:
 - **Light mode** — Liquid Glass works on a colorful light backdrop too, but every token needs rework. Defer until there's user demand.
 - **Second-order motion** — price-change number-roll on WebSocket tick, order-fill celebration, tier-up flourish. Captured in a future motion spec.
 - **Dark-mode-only image assets** — we don't ship imagery yet. If/when we do, assets need backdrop-aware treatment.
-- **Chart themes** — chart is currently single-color (blue for YES). Dual YES/NO chart for comparison views, historical-range chart on detail page, candle chart for high-density data are future work.
+- **Chart themes** — chart is currently single-color (neon green for YES). Dual YES/NO chart for comparison views, historical-range chart on detail page, candle chart for high-density data are future work.
 - **Admin backoffice** — still uses the sportsbook design system. No plan to migrate until backoffice gets its own refresh.
 - **Notifications / toasts** — no system exists yet. When it does, toasts are `.glass.glass-thick` with `--r-md` and a 6s auto-dismiss.
 - **Mobile performance optimization** — Phase 5 of the implementation plan covers baseline audit. Tiered device optimizations are future work.
@@ -493,7 +497,7 @@ Tracked as follow-ups, not part of this design system version:
 | 2026-04-23 | ~~Two-greens discipline~~ | Superseded 2026-04-24. YES semantic color moved to blue. Kept in log. |
 | 2026-04-24 | **Pivoted to Liquid Glass on cool-palette scene** | Dark broadcast was strong but interchangeable with other fintech-dark products. Liquid Glass (Apple iOS 26 / visionOS vocabulary) is a current, unambiguous visual language that Polymarket and Kalshi haven't adopted. Differentiates on material, not just color. See `~/.gstack/projects/jbrackens-TAYA_NA/designs/liquid-glass-desktop-mint-20260424-200756/`. |
 | 2026-04-24 | **Accent: phoenix lime #39ff14 → mint emerald #2be480** | Thndr (thndr.io/games, Casino tab) uses mint as casino-fintech accent. Phoenix lime read as crypto-casino; mint reads as trading-tool. Cleaner signal. Paired with a 3-stop signature gradient mint → teal → azure (`#2be480 → #00ffaa → #0094ff`). |
-| 2026-04-24 | **YES moved to blue `#7fc8ff`, NO stays peach `#ff9b6b`** | With mint as brand accent, the prior two-greens discipline (`--accent` mint vs `--yes` green) would collide. Moving YES to blue keeps brand green pure and uses a semantic pairing (blue/peach) that holds against any backdrop. Matches the Kalshi conceptual palette (mint-ish primary, blue-ish YES). |
+| 2026-04-24 | ~~YES moved to blue `#7fc8ff`, NO stays peach `#ff9b6b`~~ | Superseded 2026-04-25 after design consultation. Kept in log for context. |
 | 2026-04-24 | **Backdrop shifted from purple/violet → teal/navy family** | Initial Liquid Glass mockup used violet backdrop (Apple visionOS wallpaper reference). Fought the mint accent visually. Cool-teal/navy/mint-hint backdrop is cohesive with the accent palette and preserves refraction. |
 | 2026-04-24 | **Retired WhaleTicker / WhaleActivityCard / amber palette** | Pariflow-era broadcast feature. Doesn't port to Liquid Glass — the whole point of the new material is chrome that floats, not chrome that scrolls. Amber `#fbbf24` retired. Large-trade surfacing (if/when needed) becomes a glass pill. |
 | 2026-04-24 | **Radii bumped 6/12/20 → 10/16/22/28 (+ pill)** | Glass reads glassier at slightly rounder corners. Bubble-radius rejection still applies — 28px is the cap. |
@@ -502,3 +506,4 @@ Tracked as follow-ups, not part of this design system version:
 | 2026-04-25 | **Phase 1–5 shipped** | 19 commits between `5fb8ef4e` and `66cb92c5` ported every `app/` route to Liquid Glass. Verification: `yarn typecheck` 399 baseline (was 400 pre-Phase-4), `yarn test:smoke` 17/17, `prefers-reduced-*` rules confirmed in stylesheets. Manual audits remaining: Chrome DevTools perf gate, Lighthouse, axe contrast pass, OS-level reduced-* toggles. See `PRIMER-liquid-glass-shipped.md`. |
 | 2026-04-25 | **Retired tokens `--gain`, `--whale`, `--whale-soft`** | All non-legacy callers removed. The four sportsbook callers (`/profile`, `/account/self-exclude` shield, `WinLossStatistics` dead component, `theme.ts` warning constant) use the literal `#fbbf24` amber instead — amber was the intent at those call sites, not a brand-token reference. `--s0..--s3` aliases kept because `/cashier` and `/profile` are still sportsbook-styled and depend on them. |
 | 2026-04-25 | **TopBar nav links conditionally rendered, not display-none** | Smoke test `getByText(/^rewards$/i).first()` was matching the hidden nav link on mobile and failing visibility. Switched to client-side `matchMedia('(min-width: 900px)')` + conditional render so the nav links don't enter the DOM on mobile. MobileTabBar takes over below 900px. |
+| 2026-04-25 | **YES/NO moved to neon green `#39ff14` / fire-engine red `#ff2d2d`** | Design consultation found the blue/peach pairing too soft for the core binary action. The new pair gives immediate trading semantics while Liquid Glass keeps the surface refined. Brand mint stays on CTA/identity; YES green is confined to market-data surfaces. |

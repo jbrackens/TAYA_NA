@@ -97,10 +97,10 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
           pointer-events: none;
         }
         .ob-table tr.bid::after {
-          background: linear-gradient(90deg, transparent, rgba(127, 200, 255, 0.12));
+          background: linear-gradient(90deg, transparent, var(--yes-soft));
         }
         .ob-table tr.ask::after {
-          background: linear-gradient(90deg, transparent, rgba(255, 155, 107, 0.12));
+          background: linear-gradient(90deg, transparent, var(--no-soft));
         }
         .ob-spread {
           display: flex;

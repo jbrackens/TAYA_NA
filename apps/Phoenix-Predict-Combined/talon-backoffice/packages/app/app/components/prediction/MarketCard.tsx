@@ -5,7 +5,7 @@
  * and the market-detail "related markets" rail.
  *
  * Renders a glass panel with: category pill + close-in pill, the market
- * question, a current-pricing depth bar (YES-blue / NO-peach), and
+ * question, a current-pricing depth bar (neon YES / red NO), and
  * YES/NO side-price stats. Keeps the prop interface from the prior
  * dark-broadcast version so /predict + /category keep compiling until
  * Phase 4 upgrades those pages.

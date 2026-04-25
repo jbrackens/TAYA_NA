@@ -208,8 +208,8 @@ export function TradeTicket({
           outline: none;
           box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            0 0 0 2px var(--accent),
-            0 0 16px var(--accent-glow-color);
+            0 0 0 2px var(--tint),
+            0 0 16px var(--tint);
         }
 
         .tt-side-label {

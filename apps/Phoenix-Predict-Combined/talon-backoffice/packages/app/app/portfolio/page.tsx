@@ -960,11 +960,11 @@ function Styles() {
         letter-spacing: 0.12em;
       }
       .pf-side-yes {
-        background: rgba(127, 200, 255, 0.14);
+        background: var(--yes-soft);
         color: var(--yes);
       }
       .pf-side-no {
-        background: rgba(255, 155, 107, 0.14);
+        background: var(--no-soft);
         color: var(--no);
       }
 
@@ -981,9 +981,9 @@ function Styles() {
         border: 1px solid rgba(255, 255, 255, 0.1);
       }
       .pf-status-filled {
-        background: rgba(127, 200, 255, 0.14);
+        background: var(--yes-soft);
         color: var(--yes);
-        border-color: rgba(127, 200, 255, 0.3);
+        border-color: var(--yes-border);
       }
       .pf-status-open, .pf-status-partial {
         background: rgba(43, 228, 128, 0.14);

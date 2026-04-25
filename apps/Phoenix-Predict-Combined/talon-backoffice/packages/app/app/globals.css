@@ -121,15 +121,21 @@ body {
     #0094ff 100%
   );
 
-  /* Semantic (data layer). YES is blue, NO is peach (DESIGN.md §3). */
-  --yes: #7fc8ff;
-  --yes-hi: #a5dbff;
-  --yes-lo: #4a9ee0;
-  --yes-glow: rgba(127, 200, 255, 0.5);
-  --no: #ff9b6b;
-  --no-hi: #ffb88f;
-  --no-lo: #d9784e;
-  --no-glow: rgba(255, 155, 107, 0.5);
+  /* Semantic (data layer). YES is neon green, NO is fire-engine red
+   * (DESIGN.md §3). Keep brand mint on CTA/identity; these are trading
+   * signal colors for prices, side selectors, and depth. */
+  --yes: #39ff14;
+  --yes-hi: #a8ff5a;
+  --yes-lo: #16a34a;
+  --yes-soft: rgba(57, 255, 20, 0.12);
+  --yes-border: rgba(57, 255, 20, 0.32);
+  --yes-glow: rgba(57, 255, 20, 0.48);
+  --no: #ff2d2d;
+  --no-hi: #ff6b5f;
+  --no-lo: #b5121b;
+  --no-soft: rgba(255, 45, 45, 0.12);
+  --no-border: rgba(255, 45, 45, 0.32);
+  --no-glow: rgba(255, 45, 45, 0.52);
 
   /* --live is the only warm color outside --no. Distinct, redder, pulses. */
   --live: #ff6b6b;
@@ -257,11 +263,7 @@ button {
   pointer-events: none;
   background:
     radial-gradient(ellipse at top, rgba(43, 228, 128, 0.1), transparent 45%),
-    radial-gradient(
-      ellipse at bottom left,
-      rgba(127, 200, 255, 0.05),
-      transparent 55%
-    );
+    radial-gradient(ellipse at bottom left, var(--yes-soft), transparent 55%);
 }
 
 /* ── Sidebar (Sport Navigation) ── */

@@ -153,8 +153,8 @@ export default function MarketChart({
         }
         .mc-delta.down {
           color: var(--no);
-          background: rgba(255, 155, 107, 0.08);
-          border-color: rgba(255, 155, 107, 0.2);
+          background: var(--no-soft);
+          border-color: var(--no-border);
           text-shadow: 0 0 8px var(--no-glow);
         }
         .mc-switcher {
