@@ -3,8 +3,8 @@
  *
  * Layer 1 is the body::before radial gradient stack in globals.css.
  * This component renders Layers 2 + 3:
- *   Layer 2 (z -2): faint SVG "market chart" wavy lines in neon YES,
- *     red NO, and mint-accent. A visual hint at market data without
+ *   Layer 2 (z -2): faint SVG "market chart" wavy lines in seafoam YES,
+ *     coral NO, and mint-accent. A visual hint at market data without
  *     being literal. Never read, always felt.
  *   Layer 3 (z -1): subtle orthogonal grid at ~7% opacity — trading-
  *     desk grounding via stacked linear-gradients (see .backdrop-scene__grid
@@ -48,7 +48,7 @@ export default function BackdropScene() {
           </filter>
         </defs>
 
-        {/* YES (neon green) — upper-middle, gentle drift upward */}
+        {/* YES (seafoam green) — upper-middle, gentle drift upward */}
         <path
           d="M 0 480 C 180 440, 340 520, 520 460 S 860 380, 1060 420 S 1320 360, 1440 400"
           stroke="url(#bd-yes)"
@@ -57,7 +57,7 @@ export default function BackdropScene() {
           filter="url(#bd-blur)"
         />
 
-        {/* NO (fire-engine red) — lower half, crossing below YES */}
+        {/* NO (coral) — lower half, crossing below YES */}
         <path
           d="M 0 560 C 220 600, 380 540, 580 580 S 900 640, 1120 600 S 1340 640, 1440 610"
           stroke="url(#bd-no)"

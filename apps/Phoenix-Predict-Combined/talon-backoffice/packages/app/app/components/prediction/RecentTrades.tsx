@@ -4,7 +4,7 @@
  * RecentTrades — tape of side-badged rows inside a .glass card.
  *
  * Each row is YES/NO side · price · size · time-ago. Styling matches
- * the market-detail mockup: 4-col grid, side chip, neon YES / red NO
+ * the market-detail mockup: 4-col grid, side chip, seafoam YES / coral NO
  * price colors, alternating row tint for legibility at high density.
  */
 
