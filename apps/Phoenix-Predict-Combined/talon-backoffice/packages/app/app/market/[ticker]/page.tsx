@@ -1,23 +1,22 @@
 "use client";
 
 /**
- * MarketDetailPage — Liquid Glass market view (DESIGN.md §6 layout).
+ * MarketDetailPage — Robinhood-treated market view (DESIGN.md §5 layout).
  *
  *   [breadcrumb]
- *   [MarketHead  — question + meta pills + countdown, full-width glass]
  *   ┌──────────────────────────────┐ ┌─────────────┐
- *   │ MarketChart                  │ │ TradeTicket │
- *   │ [OrderBook] [RecentTrades]   │ │ (sticky)    │
- *   └──────────────────────────────┘ └─────────────┘
- *   ┌──────────────────────────────┐ ┌─────────────┐
- *   │ Market details & resolution  │ │ Related     │
+ *   │ Hero (MarketHead + Chart     │ │ TradeTicket │
+ *   │       collapsed in one card) │ │ (sticky)    │
+ *   ├──────────────────────────────┤ ├─────────────┤
+ *   │ [OrderBook] [RecentTrades]   │ │ Related     │
+ *   ├──────────────────────────────┤ │             │
+ *   │ Market details & resolution  │ │             │
  *   └──────────────────────────────┘ └─────────────┘
  *
- * Data wiring is preserved from the prior dark-broadcast version: the
- * gateway's REST endpoints are untouched. Order book levels are
- * synthesized from the current mid + liquidity until the gateway
- * exposes /orderbook (shape-only, so swapping in real levels later is
- * a drop-in).
+ * Data wiring is preserved from the prior versions: the gateway's REST
+ * endpoints are untouched. Order book levels are synthesized from the
+ * current mid + liquidity until the gateway exposes /orderbook
+ * (shape-only, so swapping in real levels later is a drop-in).
  */
 
 import { useEffect, useState, useCallback, useMemo } from "react";
@@ -229,10 +228,28 @@ export default function MarketDetailPage() {
         .md-crumb a:hover { color: var(--t1); }
         .md-crumb .sep { opacity: 0.5; }
 
-        /* Single-column flow: hero (MarketHead+MarketChart collapsed),
-         * TradeTicket full-width, OrderBook+RecentTrades row, bottom row.
-         * Sticky right-rail trade ticket retired with the layout simplification. */
-        .md-stack { display: flex; flex-direction: column; gap: 24px; }
+        /* 2-col primary layout: main flow on the left (hero, orderbook+trades,
+         * details), sticky trade ticket + related on the right. Matches the
+         * file-header diagram and Robinhood's stock detail pattern. Below
+         * 1100px the grid collapses to single column for tablet/mobile. */
+        .md-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 360px;
+          gap: 24px;
+        }
+        .md-main {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          min-width: 0;
+        }
+        .md-side {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          min-width: 0;
+        }
+        .md-ticket-sticky { position: sticky; top: 84px; }
         .md-data-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -241,7 +258,9 @@ export default function MarketDetailPage() {
 
         /* Collapse MarketHead + MarketChart into one card. CSS overrides
          * the children's own card chrome via .md-hero descendant selectors
-         * (higher specificity wins regardless of style-tag order). */
+         * (higher specificity wins regardless of style-tag order). The
+         * narrower 2-col chart column lets the SVG be shorter (280 vs 320)
+         * so the trade ticket sits above the fold. */
         .md-hero {
           background: var(--surface-1);
           border: 1px solid var(--border-1);
@@ -251,34 +270,18 @@ export default function MarketDetailPage() {
         .md-hero .mh {
           background: transparent;
           border: 0;
-          padding: 24px 28px 0;
+          padding: 20px 28px 0;
           margin-bottom: 0;
           border-radius: 0;
         }
         .md-hero .mc-card {
           background: transparent;
           border: 0;
-          padding: 16px 28px 24px;
+          padding: 12px 28px 20px;
           border-radius: 0;
         }
+        .md-hero .mc-svg { height: 280px; }
 
-        /* Full-width TradeTicket below the chart, centered with a comfortable
-         * reading width. Replaces the prior sticky right-rail. */
-        .md-ticket-wrap {
-          display: flex;
-          justify-content: center;
-        }
-        .md-ticket-wrap > * {
-          width: 100%;
-          max-width: 720px;
-        }
-
-        .md-bottom {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 360px;
-          gap: 24px;
-          margin-top: 24px;
-        }
         .md-details {
           background: var(--surface-1);
           border: 1px solid var(--border-1);
@@ -375,12 +378,23 @@ export default function MarketDetailPage() {
         .md-related-yes { color: var(--yes); font-weight: 600; }
 
         @media (max-width: 1100px) {
-          .md-bottom { grid-template-columns: 1fr; }
+          /* Single-column flow: dissolve the column wrappers via
+           * display:contents so we can reorder children at the grid
+           * level. Keeps the trade ticket directly under the hero
+           * (where it lived before the 2-col restructure). */
+          .md-grid { grid-template-columns: 1fr; }
+          .md-main, .md-side { display: contents; }
+          .md-hero { order: 1; }
+          .md-ticket-sticky { order: 2; position: static; top: auto; }
+          .md-data-row { order: 3; }
+          .md-details { order: 4; }
+          .md-related { order: 5; }
         }
         @media (max-width: 720px) {
           .md-data-row { grid-template-columns: 1fr; }
-          .md-hero .mh { padding: 20px 20px 0; }
-          .md-hero .mc-card { padding: 12px 20px 20px; }
+          .md-hero .mh { padding: 18px 20px 0; }
+          .md-hero .mc-card { padding: 10px 20px 16px; }
+          .md-hero .mc-svg { height: 220px; }
         }
       `}</style>
 
@@ -396,77 +410,82 @@ export default function MarketDetailPage() {
         <span>{market.title}</span>
       </nav>
 
-      <div className="md-stack">
-        <section className="md-hero">
-          <MarketHead
-            market={market}
-            categoryName={category?.name}
-            tradersCount={tradersCount}
-          />
-          <MarketChart
-            ticker={market.ticker}
-            yesPriceCents={market.yesPriceCents}
-            previousPriceCents={market.lastTradePriceCents ?? undefined}
-            impliedProbability={market.yesPriceCents}
-            volume24hCents={market.volumeCents}
-            openInterestShares={Math.round(market.openInterestCents / 100)}
-          />
-        </section>
+      <div className="md-grid">
+        <div className="md-main">
+          <section className="md-hero">
+            <MarketHead
+              market={market}
+              categoryName={category?.name}
+              tradersCount={tradersCount}
+            />
+            <MarketChart
+              ticker={market.ticker}
+              yesPriceCents={market.yesPriceCents}
+              previousPriceCents={market.lastTradePriceCents ?? undefined}
+              impliedProbability={market.yesPriceCents}
+              volume24hCents={market.volumeCents}
+              openInterestShares={Math.round(market.openInterestCents / 100)}
+            />
+          </section>
 
-        <div className="md-ticket-wrap">
-          <TradeTicket
-            market={market}
-            balance={typeof balance === "number" ? balance : undefined}
-            onPreview={handlePreview}
-            onSubmit={handleSubmit}
-          />
+          <div className="md-data-row">
+            <OrderBook bids={bids} asks={asks} />
+            <RecentTrades trades={trades} />
+          </div>
+
+          <section className="md-details">
+            <h3>Market details & resolution</h3>
+            {market.description && <p>{market.description}</p>}
+            <ul className="md-rules">
+              <li>Settlement source: {market.settlementSourceKey}.</li>
+              <li>Resolution rule: {market.settlementRule}.</li>
+              <li>
+                Fees: {(market.feeRateBps / 100).toFixed(2)}% on all fills.
+              </li>
+              <li>
+                Closes {new Date(market.closeAt).toUTCString().slice(5, -4)}{" "}
+                UTC.
+              </li>
+            </ul>
+          </section>
         </div>
 
-        <div className="md-data-row">
-          <OrderBook bids={bids} asks={asks} />
-          <RecentTrades trades={trades} />
-        </div>
-      </div>
+        <aside className="md-side">
+          <div className="md-ticket-sticky">
+            <TradeTicket
+              market={market}
+              balance={typeof balance === "number" ? balance : undefined}
+              onPreview={handlePreview}
+              onSubmit={handleSubmit}
+            />
+          </div>
 
-      <div className="md-bottom">
-        <section className="md-details">
-          <h3>Market details & resolution</h3>
-          {market.description && <p>{market.description}</p>}
-          <ul className="md-rules">
-            <li>Settlement source: {market.settlementSourceKey}.</li>
-            <li>Resolution rule: {market.settlementRule}.</li>
-            <li>Fees: {(market.feeRateBps / 100).toFixed(2)}% on all fills.</li>
-            <li>
-              Closes {new Date(market.closeAt).toUTCString().slice(5, -4)} UTC.
-            </li>
-          </ul>
-        </section>
-
-        <aside className="md-related" aria-label="Related markets">
-          <h3>Related markets</h3>
-          {related.length === 0 ? (
-            <p style={{ color: "var(--t3)", fontSize: 12 }}>
-              No related markets open right now.
-            </p>
-          ) : (
-            <div className="md-related-list">
-              {related.map((m) => (
-                <Link
-                  key={m.id}
-                  href={`/market/${m.ticker}`}
-                  className="md-related-row"
-                >
-                  <div className="md-related-q">{m.title}</div>
-                  <div className="md-related-line">
-                    <span className="md-related-yes">
-                      YES {m.yesPriceCents}¢
-                    </span>
-                    <span>${(m.volumeCents / 100).toFixed(0)} vol</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+          <aside className="md-related" aria-label="Related markets">
+            <h3>Related markets</h3>
+            {related.length === 0 ? (
+              <p style={{ color: "var(--t3)", fontSize: 12 }}>
+                No related markets open right now.
+              </p>
+            ) : (
+              <div className="md-related-list">
+                {related.map((m) => (
+                  <Link
+                    key={m.id}
+                    href={`/market/${m.ticker}`}
+                    className="md-related-row"
+                  >
+                    <div className="md-related-q">{m.title}</div>
+                    <div className="md-related-line">
+                      <span className="md-related-yes">
+                        YES {m.yesPriceCents}¢
+                      </span>
+                      <span>${(m.volumeCents / 100).toFixed(0)} vol</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </aside>
         </aside>
       </div>
     </div>
