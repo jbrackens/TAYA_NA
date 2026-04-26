@@ -169,6 +169,25 @@ body {
   --r-lg: 22px;
   --r-xl: 28px;
   --r-pill: 999px;
+
+  /* ────────────────────────────────────────────────────────────────
+   * Robinhood-direction surfaces (added 2026-04-26, see DESIGN.md §4).
+   * Used by post-P2 components (DiscoveryHero, TopMovers, soon
+   * MarketCard, AllMarketsSection). Pre-P2 components keep using the
+   * --glass-* tokens above until their phase migrates them.
+   * ──────────────────────────────────────────────────────────────── */
+  --surface-1: #161d1d;
+  --surface-2: #1a2222;
+  --border-1: #1c2828;
+  --border-2: #243030;
+
+  /* Robinhood radii (less bubbly than glass). Co-existing with the
+   * glass scale above during the P2-P6 migration. New components
+   * reference --r-rh-*; old components keep --r-sm/md/lg/xl. */
+  --r-rh-sm: 8px;
+  --r-rh-md: 12px;
+  --r-rh-lg: 16px;
+  --r-rh-xl: 20px;
 }
 
 /* Backdrop scene — Layer 1 (DESIGN.md §5). Full-viewport radial

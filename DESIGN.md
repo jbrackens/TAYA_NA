@@ -113,7 +113,7 @@ Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgro
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--yes` | `#71eeb8` | Currently seafoam. **Reconsidered for P2:** keep seafoam OR unify with `--accent` (`#2be480`). Robinhood uses one green for both up-moves and brand. Decision flagged for P2 implementation. |
+| `--yes` | `#71eeb8` | Seafoam. **Resolved 2026-04-26:** keep seafoam, do not unify with `--accent`. Two-greens discipline preserved. |
 | `--no` | `#ff8b6b` | Coral, unchanged. |
 | `--yes-soft` | `rgba(113,238,184,0.14)` | Up-delta pill background. |
 | `--no-soft` | `rgba(255,139,107,0.14)` | Down-delta pill background. |
@@ -130,12 +130,20 @@ Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgro
 | 4 Whale | `#9ca7bf` platinum-muted | |
 | 5 Legend | `#8b5cf6` violet | The only violet anywhere; reserved for Legend tier. |
 
-### Rules
+### Rules — strict two-greens discipline
 
-- One mint. `--accent` is the only mint hue. `--yes` is seafoam (or unified with mint if P2 decides) — no other greens.
-- One coral. `--no` is the only coral. No second warm color.
-- `--accent` never appears on a YES price. The accent is for actions and brand; YES is a market signal. They share the green family but live in different layers.
-- `--yes` never appears on a CTA button. Buy buttons use `--accent` for YES, `--no-soft` for NO.
+The system has exactly two greens, and they live in **different layers**:
+
+| Layer | Color | Used for |
+|-------|-------|----------|
+| **Action / brand** | `--accent` mint `#2be480` | Primary CTAs (Buy YES button), active state on category pills, active state on time-period pills, LIVE indicator pulse. **Anything the user clicks or that says "Taya brand."** |
+| **Market signal** | `--yes` seafoam `#71eeb8` | Up-direction indicators: chart strokes when price is up, sparkline strokes when up, delta pill `+X.X%` text and background, the +2¢ change indicator below the hero price, YES price displays. **Anything that says "this number went up."** |
+
+Mint and seafoam are visually distinguishable: mint is brighter/more saturated; seafoam is softer/desaturated. The eye reads them as related but distinct.
+
+- `--accent` never colors a YES price. Buy YES button has a mint background but its label text is `#061a10` ink-dark.
+- `--yes` never colors a CTA button. Up-arrow indicators next to a hero price are seafoam, not mint.
+- One coral. `--no` is the only coral. Used symmetrically with seafoam: NO prices, down-direction sparklines, down delta pills.
 - No purple anywhere except the Legend tier badge.
 - No amber anywhere. Amber was retired with the WhaleTicker (2026-04-24) and stays retired.
 
@@ -255,9 +263,9 @@ Three pill types share the same shape (full radius) but vary in fill:
 
 ### Filter behavior
 
-- **Category pills** at the top are the primary filter. They scope Featured + All Markets (NOT the hero — the hero always shows the marquee market).
+- **Category pills** at the top of `/predict` are the primary (and only) filter on the homepage. They scope Featured + All Markets (NOT the hero — the hero always shows the marquee market).
 - **Time-period pills** (1H/1D/1W/1M/3M/ALL) live INSIDE the hero chart only. They scope the chart's price history, not which markets are shown.
-- **Closing-window filter** (markets closing in 1D/1W/1M): a small dropdown in the All Markets section header, between the heading and the count. Less prominent than category pills.
+- **No closing-window filter on the homepage** (resolved 2026-04-26). Users who want to see markets by close time go to `/discover`, which has a "Closing soon" section. The homepage stays focused on category browsing + the dominant hero market.
 
 ### Grid
 

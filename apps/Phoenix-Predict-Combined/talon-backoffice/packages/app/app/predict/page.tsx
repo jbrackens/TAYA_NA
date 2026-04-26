@@ -41,6 +41,77 @@ const api = createPredictionClient();
 // the new bar filters in-place on this page. /category routes still work
 // for direct links and external navigation.
 
+// Deterministic 24h delta + chart path. Both seeded from the ticker so
+// the same market always renders the same fake history. Replace with
+// real backend price-history when /api/v1/markets/:id/prices?range= ships.
+function tickerSeed(ticker: string): number {
+  let s = 0;
+  for (let i = 0; i < ticker.length; i++) {
+    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
+  }
+  return Math.abs(s);
+}
+
+function deterministicDelta(
+  ticker: string,
+  currentCents: number,
+): { delta: number; pct: number } {
+  const seed = tickerSeed(ticker);
+  // ±5¢, biased slightly positive so most cards read as up
+  const delta = (seed % 11) - 4;
+  const prev = Math.max(1, Math.min(99, currentCents - delta));
+  const pct = ((currentCents - prev) / prev) * 100;
+  return { delta, pct };
+}
+
+function heroChartPath(
+  ticker: string,
+  currentCents: number,
+  width = 800,
+  height = 220,
+): { line: string; fill: string } {
+  const seed0 = tickerSeed(ticker);
+  let s = seed0 || 1;
+  const N = 24;
+  const points: Array<[number, number]> = [];
+  let val = 50;
+  for (let i = 0; i < N; i++) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const noise = ((s % 1000) - 500) / 70; // ±~7
+    val = Math.max(8, Math.min(92, val + noise));
+    const x = (i / (N - 1)) * width;
+    const y = height - (val / 100) * height;
+    points.push([x, y]);
+  }
+  // Pin the last point to the current price for visual consistency.
+  points[N - 1][1] = height - (currentCents / 100) * height;
+  const line = points
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(" ");
+  const fill = line + ` L${width},${height} L0,${height} Z`;
+  return { line, fill };
+}
+
+function formatHeroVolume(cents: number): string {
+  const dollars = cents / 100;
+  if (dollars >= 1_000_000) return `$${(dollars / 1_000_000).toFixed(1)}M`;
+  if (dollars >= 1_000) return `$${(dollars / 1_000).toFixed(1)}K`;
+  return `$${dollars.toFixed(0)}`;
+}
+
+function formatHeroCloseLeft(iso: string): string {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return "closed";
+  const days = ms / 86_400_000;
+  if (days >= 1) return `${Math.floor(days)}d`;
+  const hours = ms / 3_600_000;
+  if (hours >= 1) return `${Math.floor(hours)}h`;
+  const mins = ms / 60_000;
+  return `${Math.max(1, Math.floor(mins))}m`;
+}
+
+const HERO_PERIODS = ["1H", "1D", "1W", "1M", "3M", "ALL"] as const;
+
 function DiscoveryHero({
   market,
   categoryName,
@@ -51,11 +122,12 @@ function DiscoveryHero({
   if (!market) {
     return (
       <section
-        className="glass"
         style={{
-          padding: 32,
-          minHeight: 220,
-          borderRadius: "var(--r-lg)",
+          background: "var(--surface-1)",
+          border: "1px solid var(--border-1)",
+          borderRadius: "var(--r-rh-lg)",
+          padding: 36,
+          minHeight: 480,
           color: "var(--t3)",
         }}
       >
@@ -63,194 +135,257 @@ function DiscoveryHero({
       </section>
     );
   }
-  const isOpen = market.status === "open";
-  const volumeDollars = market.volumeCents / 100;
-  const volumeLabel =
-    volumeDollars >= 1000
-      ? `$${(volumeDollars / 1000).toFixed(1)}K`
-      : `$${volumeDollars.toFixed(0)}`;
+
+  const yes = market.yesPriceCents;
+  const no = market.noPriceCents;
+  const { delta, pct } = deterministicDelta(market.ticker, yes);
+  const isUp = delta >= 0;
+  const chart = heroChartPath(market.ticker, yes);
+  const volumeLabel = formatHeroVolume(market.volumeCents);
+  const oiLabel =
+    market.openInterestCents != null
+      ? formatHeroVolume(market.openInterestCents)
+      : "—";
+  const closesLabel = formatHeroCloseLeft(market.closeAt);
+
   return (
     <>
       <style>{`
-        .pred-hero {
-          padding: 32px;
-          border-radius: var(--r-lg);
+        .rh-hero {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          border-radius: var(--r-rh-lg);
+          padding: 36px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        .pred-hero-pills {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: wrap;
+        .rh-hero-eyebrow {
+          display: flex; align-items: center; gap: 10px;
+          font-size: 12px; font-weight: 500;
+          color: var(--t3);
           margin-bottom: 14px;
         }
-        .pred-hero-live {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(255, 80, 80, 0.15);
-          border: 1px solid rgba(255, 120, 120, 0.25);
-          color: #ffbdbd;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          padding: 5px 10px 5px 8px;
-          border-radius: var(--r-pill);
-        }
-        .pred-hero-live-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, #ff9a9a 0%, #ff4444 100%);
-          box-shadow: 0 0 8px rgba(255, 80, 80, 0.9);
-          animation: pred-hero-pulse 1.6s ease-in-out infinite;
-        }
-        @keyframes pred-hero-pulse { 50% { opacity: 0.4; transform: scale(0.92); } }
-        .pred-hero-eyebrow {
-          color: var(--t3);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
+        .rh-hero-eyebrow .live {
+          display: inline-flex; gap: 6px; align-items: center;
+          color: var(--accent); font-weight: 600;
           letter-spacing: 0.08em;
-          text-transform: uppercase;
         }
-        .pred-hero-eyebrow strong { color: var(--accent); }
-        .pred-hero-q {
-          font-size: 36px;
-          font-weight: 800;
-          line-height: 1.08;
-          letter-spacing: -0.02em;
-          margin: 0 0 20px;
-          max-width: 820px;
-          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        .rh-hero-dot {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: var(--accent);
+          box-shadow: 0 0 0 4px rgba(43, 228, 128, 0.18);
+          animation: rh-pulse 2s ease-in-out infinite;
         }
-        .pred-hero-row {
-          display: flex;
-          align-items: center;
-          gap: 18px;
-          flex-wrap: wrap;
+        @keyframes rh-pulse { 50% { opacity: 0.55; } }
+        .rh-hero-q {
+          font-family: 'Inter', sans-serif;
+          font-size: 28px; font-weight: 600;
+          line-height: 1.2; letter-spacing: -0.02em;
+          margin: 0 0 24px;
+          color: var(--t1);
+          max-width: 720px;
         }
-        .pred-hero-prices {
-          display: flex;
-          gap: 10px;
-        }
-        .pred-hero-price {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          padding: 10px 14px;
-          border-radius: var(--r-sm);
-          background: rgba(0, 0, 0, 0.22);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          min-width: 104px;
-        }
-        .pred-hero-price .lbl {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-        }
-        .pred-hero-price.yes .lbl { color: var(--yes); }
-        .pred-hero-price.no  .lbl { color: var(--no); }
-        .pred-hero-price .v {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 22px;
-          font-weight: 600;
+        .rh-bigprice {
+          font-family: 'Inter Tight', 'Inter', sans-serif;
+          font-size: 88px; font-weight: 600;
+          line-height: 1; letter-spacing: -0.04em;
           font-variant-numeric: tabular-nums;
-          letter-spacing: -0.01em;
-          margin-top: 4px;
+          color: var(--t1);
+          margin: 0 0 12px;
         }
-        .pred-hero-price.yes .v { color: var(--yes); }
-        .pred-hero-price.no  .v { color: var(--no); }
-
-        .pred-hero-cta {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 44px;
-          padding: 0 20px;
-          border-radius: var(--r-md);
-          color: #04140a;
-          font-family: inherit;
-          font-size: 14px;
-          font-weight: 700;
-          text-decoration: none;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%),
-            linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-          border: 1px solid rgba(43, 228, 128, 0.6);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.5),
-            0 10px 28px rgba(43, 228, 128, 0.18);
-          transition: transform 180ms ease, filter 180ms ease;
+        .rh-bigprice .cents {
+          font-size: 56px; color: var(--t3); font-weight: 500;
+          margin-left: 4px;
         }
-        .pred-hero-cta:hover { transform: translateY(-1px); filter: brightness(1.05); }
+        .rh-change {
+          display: inline-flex; align-items: center; gap: 10px;
+          font-size: 17px; font-weight: 600;
+          font-variant-numeric: tabular-nums;
+          margin-bottom: 28px;
+        }
+        .rh-change.up    { color: var(--yes); }
+        .rh-change.down  { color: var(--no); }
+        .rh-change .arrow {
+          display: inline-block;
+          width: 0; height: 0;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+        }
+        .rh-change.up   .arrow { border-bottom: 7px solid var(--yes); }
+        .rh-change.down .arrow { border-top:    7px solid var(--no); }
+        .rh-change .label {
+          color: var(--t3); font-weight: 500; font-size: 14px;
+        }
 
-        .pred-hero-secondary {
-          display: inline-flex;
-          align-items: center;
-          min-height: 44px;
-          color: var(--t2);
-          font-size: 14px;
-          font-weight: 600;
-          text-decoration: none;
-          padding: 10px 14px;
+        .rh-chart { margin-bottom: 16px; }
+        .rh-chart svg { width: 100%; height: 220px; display: block; }
+        .rh-periods {
+          display: flex; gap: 4px;
+          margin-top: 14px;
+        }
+        .rh-period {
+          padding: 6px 14px;
           border-radius: var(--r-pill);
-          transition: color 150ms ease, background 150ms ease;
-        }
-        .pred-hero-secondary:hover { color: var(--t1); background: rgba(255, 255, 255, 0.06); }
-
-        .pred-hero-vol {
-          margin-left: auto;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 12px;
+          background: transparent;
           color: var(--t3);
+          font-size: 12px; font-weight: 600;
+          font-family: inherit;
+          border: 0; cursor: pointer;
+        }
+        .rh-period:hover { color: var(--t1); }
+        .rh-period.is-active {
+          background: var(--accent-soft);
+          color: var(--accent);
+        }
+
+        .rh-actions {
+          display: flex; gap: 12px;
+          margin-top: 28px;
+        }
+        .rh-buy-yes, .rh-buy-no {
+          flex: 1; max-width: 280px;
+          display: inline-flex; align-items: center; justify-content: center;
+          font-family: inherit;
+          font-weight: 600; font-size: 15px;
+          padding: 16px 24px;
+          border: 0; border-radius: var(--r-pill);
+          cursor: pointer; text-decoration: none;
+          font-variant-numeric: tabular-nums;
+          transition: filter 120ms ease, background 120ms ease, transform 120ms ease;
+        }
+        .rh-buy-yes {
+          background: var(--accent);
+          color: #061a10;
+        }
+        .rh-buy-yes:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .rh-buy-no {
+          background: var(--no-soft);
+          color: var(--no);
+        }
+        .rh-buy-no:hover { background: rgba(255, 139, 107, 0.22); }
+
+        .rh-stats {
+          display: grid; grid-template-columns: repeat(4, 1fr);
+          gap: 24px;
+          margin-top: 32px;
+          padding-top: 24px;
+          border-top: 1px solid var(--border-1);
+        }
+        .rh-stat-label {
+          font-size: 12px; color: var(--t3);
+          margin-bottom: 6px;
+        }
+        .rh-stat-value {
+          font-size: 18px; font-weight: 600;
+          color: var(--t1);
           font-variant-numeric: tabular-nums;
         }
-        .pred-hero-vol strong { color: var(--t1); }
 
         @media (max-width: 720px) {
-          .pred-hero { padding: 24px; }
-          .pred-hero-q { font-size: 24px; }
-          .pred-hero-vol { margin-left: 0; width: 100%; }
+          .rh-hero { padding: 24px; }
+          .rh-bigprice { font-size: 64px; }
+          .rh-bigprice .cents { font-size: 40px; }
+          .rh-hero-q { font-size: 22px; }
+          .rh-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
         }
       `}</style>
-      <section className="glass pred-hero" aria-label="Featured market">
-        <div className="pred-hero-pills">
-          {isOpen && (
-            <span className="pred-hero-live">
-              <span className="pred-hero-live-dot" aria-hidden="true" />
-              LIVE
-            </span>
+      <section className="rh-hero" aria-label="Featured market">
+        <header className="rh-hero-eyebrow">
+          {market.status === "open" && (
+            <>
+              <span className="live">
+                <span className="rh-hero-dot" aria-hidden="true" />
+                LIVE
+              </span>
+              <span aria-hidden="true">·</span>
+            </>
           )}
-          <span className="pred-hero-eyebrow">
-            <strong>FEATURED</strong>
-            {categoryName ? ` · ${categoryName.toUpperCase()}` : ""} ·{" "}
+          <span>
+            {categoryName ? `${categoryName.toUpperCase()} · ` : ""}
             {market.ticker}
           </span>
+        </header>
+
+        <h1 className="rh-hero-q">{market.title}</h1>
+
+        <div className="rh-bigprice" aria-label={`Yes price ${yes} cents`}>
+          {yes}
+          <span className="cents">¢</span>
         </div>
-        <h1 className="pred-hero-q">{market.title}</h1>
-        <div className="pred-hero-row">
-          <div className="pred-hero-prices">
-            <div className="pred-hero-price yes">
-              <span className="lbl">YES</span>
-              <span className="v">{market.yesPriceCents}¢</span>
-            </div>
-            <div className="pred-hero-price no">
-              <span className="lbl">NO</span>
-              <span className="v">{market.noPriceCents}¢</span>
-            </div>
+        <div className={`rh-change ${isUp ? "up" : "down"}`}>
+          <span className="arrow" aria-hidden="true" />
+          {isUp ? "+" : ""}
+          {delta}¢ ({isUp ? "+" : ""}
+          {pct.toFixed(1)}%)
+          <span className="label">Today</span>
+        </div>
+
+        <div className="rh-chart">
+          <svg viewBox="0 0 800 220" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
+                <stop
+                  offset="0%"
+                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                  stopOpacity="0.32"
+                />
+                <stop
+                  offset="100%"
+                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                  stopOpacity="0"
+                />
+              </linearGradient>
+            </defs>
+            <path d={chart.fill} fill="url(#rh-chart-fill)" />
+            <path
+              d={chart.line}
+              stroke={isUp ? "var(--yes)" : "var(--no)"}
+              strokeWidth={2.5}
+              fill="none"
+            />
+          </svg>
+          <div className="rh-periods" role="tablist" aria-label="Chart range">
+            {HERO_PERIODS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                role="tab"
+                className={`rh-period ${p === "1D" ? "is-active" : ""}`}
+                aria-selected={p === "1D"}
+                disabled
+                title="Time-period selection coming with backend price history"
+              >
+                {p}
+              </button>
+            ))}
           </div>
-          <Link href={`/market/${market.ticker}`} className="pred-hero-cta">
-            Trade now
+        </div>
+
+        <div className="rh-actions">
+          <Link href={`/market/${market.ticker}`} className="rh-buy-yes">
+            Buy YES · {yes}¢
           </Link>
-          <Link
-            href={`/market/${market.ticker}`}
-            className="pred-hero-secondary"
-          >
-            View details →
+          <Link href={`/market/${market.ticker}`} className="rh-buy-no">
+            Buy NO · {no}¢
           </Link>
-          <span className="pred-hero-vol">
-            Vol <strong>{volumeLabel}</strong> · {market.yesPriceCents}¢ YES
-          </span>
+        </div>
+
+        <div className="rh-stats">
+          <div>
+            <div className="rh-stat-label">24h volume</div>
+            <div className="rh-stat-value">{volumeLabel}</div>
+          </div>
+          <div>
+            <div className="rh-stat-label">Open interest</div>
+            <div className="rh-stat-value">{oiLabel}</div>
+          </div>
+          <div>
+            <div className="rh-stat-label">Traders</div>
+            <div className="rh-stat-value">—</div>
+          </div>
+          <div>
+            <div className="rh-stat-label">Closes</div>
+            <div className="rh-stat-value">{closesLabel}</div>
+          </div>
         </div>
       </section>
     </>
@@ -350,7 +485,7 @@ export default function PredictDiscoveryPage() {
         <div className="pred-hero-cell">
           <DiscoveryHero market={marquee} categoryName={heroCategory} />
         </div>
-        <TrendingSidebar markets={trending} limit={3} />
+        <TrendingSidebar markets={trending} />
       </div>
 
       {featuredRest.length > 0 && (

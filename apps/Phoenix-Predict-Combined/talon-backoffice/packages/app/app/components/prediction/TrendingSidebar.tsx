@@ -1,14 +1,21 @@
 "use client";
 
 /**
- * TrendingSidebar — ranked list of trending markets that sits to the right
- * of the DiscoveryHero on /predict (Polymarket-style "Hot topics").
+ * TrendingSidebar — "Top Movers" rail next to the DiscoveryHero on /predict.
  *
- * Reuses `discovery.trending` data already loaded by the discovery API,
- * so no new endpoint is needed. Each row links to the market detail page.
+ * Visual identity changed 2026-04-26 (Robinhood direction, see DESIGN.md
+ * §7). Borderless flat list, mini sparkline + big price + delta pill per
+ * row. The component file name stays as `TrendingSidebar` for import
+ * stability while the visual identity is now "Top Movers."
  *
- * On viewports ≤960px the parent grid collapses; the sidebar drops below
- * the hero (handled by .hero-row in predict/page.tsx).
+ * Reuses `discovery.trending` data; each row links to /market/[ticker].
+ * Sparklines and 24h delta are deterministic from the ticker (placeholder
+ * until backend exposes price history).
+ *
+ * Color discipline (DESIGN.md §3 strict two-greens):
+ *   - mint --accent: actions/brand only (the live dot in the header)
+ *   - seafoam --yes: up-direction (sparkline up, delta-up pill)
+ *   - coral --no: down-direction
  */
 
 import Link from "next/link";
@@ -16,166 +23,227 @@ import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-typ
 
 interface Props {
   markets: PredictionMarket[];
-  /** Maximum rows to render. Default 7. */
+  /** Maximum rows to render. Default 6 (matches Top Movers height to hero). */
   limit?: number;
 }
 
-function formatVolume(cents: number): string {
-  const dollars = cents / 100;
-  if (dollars >= 1_000_000) return `$${(dollars / 1_000_000).toFixed(1)}M`;
-  if (dollars >= 1_000) return `$${(dollars / 1_000).toFixed(1)}K`;
-  return `$${dollars.toFixed(0)}`;
+function tickerSeed(ticker: string): number {
+  let s = 0;
+  for (let i = 0; i < ticker.length; i++) {
+    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
+  }
+  return Math.abs(s);
 }
 
-export function TrendingSidebar({ markets, limit = 7 }: Props) {
+function deltaFor(
+  ticker: string,
+  currentCents: number,
+): { pct: number; up: boolean } {
+  const seed = tickerSeed(ticker);
+  const delta = (seed % 11) - 4; // matches DiscoveryHero formula
+  const prev = Math.max(1, Math.min(99, currentCents - delta));
+  const pct = ((currentCents - prev) / prev) * 100;
+  return { pct, up: delta >= 0 };
+}
+
+function sparklinePath(
+  ticker: string,
+  currentCents: number,
+  up: boolean,
+): string {
+  let s = tickerSeed(ticker) ^ (up ? 0x55 : 0xaa) || 1;
+  const W = 60;
+  const H = 28;
+  const N = 8;
+  // Generate N points trending toward the current price; up=line trends down on Y
+  const points: Array<[number, number]> = [];
+  let val = up ? 25 : 75;
+  for (let i = 0; i < N; i++) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    const noise = ((s % 1000) - 500) / 100;
+    const trend = up ? -1 : 1;
+    val = Math.max(8, Math.min(92, val + noise + trend));
+    points.push([(i / (N - 1)) * W, H - (val / 100) * H]);
+  }
+  return points
+    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(" ");
+}
+
+const CATEGORY_LABEL: Record<string, string> = {
+  pol: "Politics",
+  pres: "Politics",
+  senate: "Senate",
+  house: "Politics",
+  fed: "Fed",
+  fomc: "Fed",
+  btc: "Crypto",
+  eth: "Crypto",
+  crypto: "Crypto",
+  nba: "Sports",
+  nfl: "Sports",
+  ucl: "Sports",
+  spx: "Tech",
+  aapl: "Tech",
+  gpt: "Tech",
+};
+
+function categoryFromTicker(ticker: string): string {
+  const prefix = ticker.split("-")[0]?.toLowerCase() ?? "";
+  return CATEGORY_LABEL[prefix] ?? prefix.toUpperCase();
+}
+
+export function TrendingSidebar({ markets, limit = 6 }: Props) {
   if (!markets || markets.length === 0) return null;
   const rows = markets.slice(0, limit);
 
   return (
     <>
       <style>{`
-        .ts {
-          padding: 18px 16px 14px;
-          display: flex;
-          flex-direction: column;
-          border-radius: var(--r-lg);
+        .tm {
+          padding: 8px 4px 4px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        .ts-head {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 0 4px 12px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        .tm-h {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-bottom: 18px;
+          padding: 0 8px;
         }
-        .ts-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--accent);
-          box-shadow: 0 0 8px var(--accent-glow-color);
-          animation: ts-pulse 2.2s ease-in-out infinite;
-        }
-        @keyframes ts-pulse { 50% { opacity: 0.45; transform: scale(0.92); } }
-        .ts-eyebrow {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: var(--t3);
-          flex: 1;
-        }
-        .ts-eyebrow strong { color: var(--t1); }
-        .ts-list {
-          list-style: none;
+        .tm-h h3 {
+          font-size: 18px; font-weight: 700;
+          letter-spacing: -0.01em;
+          color: var(--t1);
           margin: 0;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
         }
-        .ts-row {
+        .tm-h .live {
+          display: inline-flex; gap: 6px; align-items: center;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+          color: var(--accent);
+        }
+        .tm-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: var(--accent);
+          box-shadow: 0 0 8px rgba(43, 228, 128, 0.6);
+          animation: tm-pulse 2.2s ease-in-out infinite;
+        }
+        @keyframes tm-pulse { 50% { opacity: 0.45; } }
+
+        .tm-list { list-style: none; margin: 0; padding: 0; }
+        .tm-row {
           display: grid;
-          grid-template-columns: 18px 1fr auto;
-          gap: 10px;
+          grid-template-columns: 1fr 60px auto;
+          gap: 14px;
           align-items: center;
-          padding: 8px 6px;
-          border-radius: var(--r-sm);
+          padding: 14px 8px;
+          border-bottom: 1px solid var(--border-1);
           cursor: pointer;
-          transition: background 120ms ease;
           text-decoration: none;
           color: inherit;
+          transition: background 120ms ease;
+          border-radius: var(--r-rh-sm);
         }
-        .ts-row:hover { background: rgba(255, 255, 255, 0.04); }
-        .ts-row + .ts-row { border-top: 1px solid rgba(255, 255, 255, 0.04); }
-        .ts-rank {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
-          color: var(--t4);
-          font-variant-numeric: tabular-nums;
-          text-align: center;
+        .tm-row:hover { background: var(--surface-2); }
+        .tm-row:last-child { border-bottom: 0; }
+        .tm-info { min-width: 0; }
+        .tm-cat {
+          font-size: 11px; font-weight: 500;
+          color: var(--accent);
+          margin-bottom: 4px;
         }
-        .ts-title {
-          font-size: 13px;
-          font-weight: 600;
-          line-height: 1.3;
+        .tm-q {
+          font-size: 13px; font-weight: 500;
           color: var(--t1);
+          line-height: 1.3;
+          overflow: hidden;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
-          overflow: hidden;
         }
-        .ts-meta {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 2px;
-        }
-        .ts-price {
+        .tm-spark { width: 60px; height: 28px; }
+        .tm-spark svg { width: 100%; height: 100%; display: block; }
+        .tm-meta { text-align: right; min-width: 56px; }
+        .tm-px {
           font-family: 'IBM Plex Mono', monospace;
-          font-size: 13px;
-          font-weight: 600;
+          font-size: 15px; font-weight: 600;
+          color: var(--t1);
           font-variant-numeric: tabular-nums;
-          letter-spacing: -0.01em;
+          line-height: 1;
         }
-        .ts-price.yes { color: var(--yes); }
-        .ts-price.no { color: var(--no); }
-        .ts-vol {
+        .tm-delta {
+          display: inline-block;
+          margin-top: 5px;
+          padding: 2px 7px;
+          border-radius: var(--r-pill);
           font-family: 'IBM Plex Mono', monospace;
-          font-size: 10px;
-          color: var(--t3);
+          font-size: 11px; font-weight: 600;
           font-variant-numeric: tabular-nums;
         }
-        .ts-foot {
-          margin-top: 10px;
-          padding-top: 10px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+        .tm-delta.up { background: var(--yes-soft); color: var(--yes); }
+        .tm-delta.down { background: var(--no-soft); color: var(--no); }
+
+        .tm-foot {
+          margin-top: 14px;
+          padding: 10px 8px 0;
+          border-top: 1px solid var(--border-1);
           text-align: center;
         }
-        .ts-foot a {
+        .tm-foot a {
+          font-size: 13px; font-weight: 600;
           color: var(--accent);
-          font-size: 12px;
           text-decoration: none;
-          text-shadow: 0 0 6px var(--accent-glow-color);
         }
-        .ts-foot a:hover { text-decoration: underline; }
+        .tm-foot a:hover { text-decoration: underline; }
       `}</style>
-      <aside className="glass ts" aria-label="Trending markets">
-        <div className="ts-head">
-          <span className="ts-dot" aria-hidden="true" />
-          <span className="ts-eyebrow">
-            <strong>TRENDING</strong> NOW · 24H
+      <aside className="tm" aria-label="Top movers">
+        <div className="tm-h">
+          <h3>Top movers</h3>
+          <span className="live">
+            <span className="tm-dot" aria-hidden="true" />
+            24H
           </span>
         </div>
-        <ul className="ts-list">
-          {rows.map((m, i) => {
+        <ul className="tm-list">
+          {rows.map((m) => {
             const yesLeads = m.yesPriceCents >= m.noPriceCents;
-            const leadingPriceClass = yesLeads ? "yes" : "no";
             const leadingPrice = yesLeads ? m.yesPriceCents : m.noPriceCents;
-            const leadingLabel = yesLeads ? "YES" : "NO";
+            const { pct, up } = deltaFor(m.ticker, leadingPrice);
+            const sparkColor = up ? "var(--yes)" : "var(--no)";
+            const cat = categoryFromTicker(m.ticker);
             return (
               <li key={m.id}>
                 <Link
                   href={`/market/${m.ticker}`}
-                  className="ts-row"
-                  aria-label={`${m.title}, ${leadingPrice}¢ ${leadingLabel}, volume ${formatVolume(m.volumeCents)}`}
+                  className="tm-row"
+                  aria-label={`${m.title}, ${leadingPrice} cents, ${up ? "+" : ""}${pct.toFixed(1)}%`}
                 >
-                  <span className="ts-rank">
-                    {String(i + 1).padStart(2, "0")}
+                  <div className="tm-info">
+                    <div className="tm-cat">{cat}</div>
+                    <div className="tm-q">{m.title}</div>
+                  </div>
+                  <span className="tm-spark" aria-hidden="true">
+                    <svg viewBox="0 0 60 28" preserveAspectRatio="none">
+                      <path
+                        d={sparklinePath(m.ticker, leadingPrice, up)}
+                        stroke={sparkColor}
+                        strokeWidth="1.5"
+                        fill="none"
+                      />
+                    </svg>
                   </span>
-                  <span className="ts-title">{m.title}</span>
-                  <span className="ts-meta">
-                    <span className={`ts-price ${leadingPriceClass}`}>
-                      {leadingPrice}¢
+                  <div className="tm-meta">
+                    <div className="tm-px">{leadingPrice}¢</div>
+                    <span className={`tm-delta ${up ? "up" : "down"}`}>
+                      {up ? "+" : ""}
+                      {pct.toFixed(1)}%
                     </span>
-                    <span className="ts-vol">
-                      {formatVolume(m.volumeCents)}
-                    </span>
-                  </span>
+                  </div>
                 </Link>
               </li>
             );
           })}
         </ul>
-        <div className="ts-foot">
+        <div className="tm-foot">
           <a href="/discover">View all trending →</a>
         </div>
       </aside>

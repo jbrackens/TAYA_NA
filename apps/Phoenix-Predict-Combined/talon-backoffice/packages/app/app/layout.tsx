@@ -16,14 +16,13 @@ export default function RootLayout({
           name="description"
           content="Trade on the outcome of real-world events — politics, crypto, sports, and more."
         />
-        {/* Predict design system: Outfit for UI/display, IBM Plex Mono for
-         * prices/volumes (tabular-nums). The old sportsbook-era IBM Plex Sans
-         * + Orbitron pair is dropped — prediction markets signal fintech, not
-         * gaming. Keep the font family loaded early to avoid FOUT on the
-         * scrolling whale ticker.
+        {/* Predict design system: Inter (Robinhood-direction primary, added
+         * 2026-04-26 per DESIGN.md §2). Outfit kept loaded for components
+         * that haven't migrated yet (will be removed at the end of the
+         * P2-P6 sweep). IBM Plex Mono for tabular numerics.
          */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         {process.env.NODE_ENV === "production" && (
