@@ -41,21 +41,32 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
   return (
     <>
       <style>{`
-        .ob-card { padding: 18px 20px 16px; border-radius: var(--r-md); }
+        .ob-card {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 20px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .ob-head {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: space-between;
-          margin-bottom: 12px;
+          margin-bottom: 14px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--border-1);
         }
         .ob-title {
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--t2);
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--t1);
+          letter-spacing: -0.01em;
         }
-        .ob-sub { font-size: 11px; color: var(--t3); font-family: 'IBM Plex Mono', monospace; }
+        .ob-sub {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: var(--t3);
+        }
         .ob-table {
           width: 100%;
           border-collapse: collapse;
@@ -67,14 +78,14 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
         }
         .ob-table th {
           text-align: left;
-          font-weight: 600;
+          font-weight: 500;
           font-size: 10px;
-          letter-spacing: 0.1em;
+          letter-spacing: 0.14em;
           text-transform: uppercase;
           color: var(--t3);
-          font-family: 'Outfit', sans-serif;
+          font-family: 'Inter', sans-serif;
           padding: 6px 10px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+          border-bottom: 1px solid var(--border-1);
         }
         .ob-table th.n, .ob-table td.n { text-align: right; }
         .ob-table td {
@@ -82,17 +93,17 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
           color: var(--t1);
           position: relative;
         }
-        .ob-table td.yes-px { color: var(--yes); font-weight: 500; }
-        .ob-table td.no-px { color: var(--no); font-weight: 500; }
+        .ob-table td.yes-px { color: var(--yes); font-weight: 600; }
+        .ob-table td.no-px { color: var(--no); font-weight: 600; }
         .ob-table tr { position: relative; }
         .ob-table tr.bid::after, .ob-table tr.ask::after {
           content: '';
           position: absolute;
-          top: 4px;
-          bottom: 4px;
+          top: 3px;
+          bottom: 3px;
           right: 0;
           width: calc(var(--depth, 0) * 1%);
-          border-radius: 4px;
+          border-radius: 3px;
           z-index: -1;
           pointer-events: none;
         }
@@ -106,23 +117,24 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: 8px 0;
+          padding: 10px 0;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 11px;
           color: var(--t3);
-          letter-spacing: 0.06em;
-          border-top: 1px dashed rgba(255, 255, 255, 0.06);
-          border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
-          margin: 2px 0;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          border-top: 1px solid var(--border-1);
+          border-bottom: 1px solid var(--border-1);
+          margin: 4px 0;
         }
         .ob-empty {
           text-align: center;
           color: var(--t3);
           font-size: 12px;
-          padding: 14px 0;
+          padding: 16px 0;
         }
       `}</style>
-      <section className="glass ob-card" aria-label="Order book">
+      <section className="ob-card" aria-label="Order book">
         <div className="ob-head">
           <span className="ob-title">Order book</span>
           <span className="ob-sub">

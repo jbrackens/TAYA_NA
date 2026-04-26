@@ -32,21 +32,32 @@ export default function RecentTrades({
   return (
     <>
       <style>{`
-        .rt-card { padding: 18px 20px 16px; border-radius: var(--r-md); }
+        .rt-card {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 20px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .rt-head {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: space-between;
-          margin-bottom: 12px;
+          margin-bottom: 14px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--border-1);
         }
         .rt-title {
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--t2);
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--t1);
+          letter-spacing: -0.01em;
         }
-        .rt-sub { font-size: 11px; color: var(--t3); font-family: 'IBM Plex Mono', monospace; }
+        .rt-sub {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: var(--t3);
+        }
         .rt-tape {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 12px;
@@ -61,8 +72,8 @@ export default function RecentTrades({
           display: grid;
           grid-template-columns: 56px 52px 1fr 52px;
           align-items: center;
-          padding: 5px 6px;
-          border-radius: 6px;
+          padding: 6px 8px;
+          border-radius: var(--r-rh-sm);
           color: var(--t1);
           gap: 8px;
         }
@@ -73,11 +84,11 @@ export default function RecentTrades({
           letter-spacing: 0.08em;
           text-align: center;
           padding: 2px 6px;
-          border-radius: 4px;
+          border-radius: var(--r-pill);
         }
         .rt-side.yes { color: var(--yes); background: var(--yes-soft); }
         .rt-side.no  { color: var(--no);  background: var(--no-soft); }
-        .rt-px { font-weight: 500; }
+        .rt-px { font-weight: 600; }
         .rt-px.yes { color: var(--yes); }
         .rt-px.no  { color: var(--no); }
         .rt-sz { color: var(--t2); font-size: 11px; }
@@ -89,7 +100,7 @@ export default function RecentTrades({
           padding: 20px 0;
         }
       `}</style>
-      <section className="glass rt-card" aria-label="Recent trades">
+      <section className="rt-card" aria-label="Recent trades">
         <div className="rt-head">
           <span className="rt-title">Recent trades</span>
           <span className="rt-sub">

@@ -101,31 +101,36 @@ export function TradeTicket({
   return (
     <>
       <style>{`
-        .tt { padding: 20px 18px; border-radius: var(--r-md); }
+        .tt {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 20px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .tt-head {
           display: flex;
-          align-items: baseline;
+          align-items: center;
           justify-content: space-between;
           margin-bottom: 14px;
         }
         .tt-title {
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
+          font-size: 14px;
+          font-weight: 600;
           color: var(--t1);
+          letter-spacing: -0.01em;
         }
         .tt-mode {
-          display: flex;
+          display: inline-flex;
           gap: 2px;
           padding: 3px;
-          background: rgba(0, 0, 0, 0.25);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border-1);
           border-radius: var(--r-pill);
         }
         .tt-mode button {
           background: transparent;
-          border: none;
+          border: 0;
           color: var(--t3);
           padding: 5px 12px;
           border-radius: var(--r-pill);
@@ -133,11 +138,12 @@ export function TradeTicket({
           font-size: 11px;
           font-weight: 600;
           cursor: pointer;
+          transition: color 120ms ease, background 120ms ease;
         }
+        .tt-mode button:hover { color: var(--t1); }
         .tt-mode button.is-active {
-          color: var(--t1);
-          background: rgba(255, 255, 255, 0.1);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          color: #061a10;
+          background: var(--accent);
         }
 
         .tt-sides {
@@ -148,73 +154,34 @@ export function TradeTicket({
         }
         .tt-side {
           position: relative;
-          border: none;
-          border-radius: var(--r-md);
-          padding: 16px 14px;
+          border: 1px solid var(--border-1);
+          border-radius: var(--r-rh-md);
+          padding: 14px;
           cursor: pointer;
           font-family: inherit;
           color: var(--t1);
-          transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease;
+          background: rgba(255, 255, 255, 0.02);
           text-align: left;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 100%),
-            rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(24px) saturate(160%);
-          -webkit-backdrop-filter: blur(24px) saturate(160%);
-          border: 1px solid rgba(255, 255, 255, 0.13);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            inset 1px 0 2px var(--chroma-1),
-            inset -1px 0 2px var(--chroma-2),
-            0 2px 6px rgba(0, 0, 0, 0.15),
-            0 10px 24px rgba(0, 0, 0, 0.2);
-          overflow: hidden;
+          transition: background 120ms ease, border-color 120ms ease;
         }
-        .tt-side::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 55%;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-          pointer-events: none;
-          mix-blend-mode: overlay;
+        .tt-side:hover {
+          background: rgba(255, 255, 255, 0.04);
         }
-        .tt-side::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 280ms ease;
-          background: radial-gradient(ellipse 70% 60% at 50% 100%, var(--tint) 0%, transparent 70%);
-        }
-        .tt-side.yes { --tint: var(--yes-glow); }
-        .tt-side.no  { --tint: var(--no-glow); }
-        .tt-side.is-selected::after { opacity: 1; }
-        .tt-side.is-selected {
-          border-color: rgba(255, 255, 255, 0.26);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-            0 0 0 2px var(--tint),
-            0 4px 16px rgba(0, 0, 0, 0.25),
-            0 0 32px var(--tint);
-        }
-        .tt-side:hover { transform: translateY(-1px); }
-        .tt-side:active { transform: scale(0.97); }
         .tt-side:focus-visible {
           outline: none;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            0 0 0 2px var(--tint),
-            0 0 16px var(--tint);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 2px var(--accent-soft);
+        }
+        .tt-side.yes.is-selected {
+          background: var(--yes-soft);
+          border-color: rgba(113, 238, 184, 0.4);
+        }
+        .tt-side.no.is-selected {
+          background: var(--no-soft);
+          border-color: rgba(255, 139, 107, 0.4);
         }
 
         .tt-side-label {
-          position: relative;
-          z-index: 1;
           font-size: 10px;
           font-weight: 700;
           letter-spacing: 0.16em;
@@ -222,13 +189,10 @@ export function TradeTicket({
           color: var(--t3);
           margin-bottom: 6px;
           display: block;
-          transition: color 200ms ease;
         }
         .tt-side.yes.is-selected .tt-side-label { color: var(--yes); }
         .tt-side.no.is-selected  .tt-side-label { color: var(--no); }
         .tt-side-price {
-          position: relative;
-          z-index: 1;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 28px;
           font-weight: 600;
@@ -238,14 +202,12 @@ export function TradeTicket({
           color: var(--t1);
           display: block;
         }
-        .tt-side.yes.is-selected .tt-side-price { text-shadow: 0 0 16px var(--yes-glow); }
-        .tt-side.no.is-selected  .tt-side-price { text-shadow: 0 0 16px var(--no-glow); }
+        .tt-side.yes.is-selected .tt-side-price { color: var(--yes); }
+        .tt-side.no.is-selected  .tt-side-price { color: var(--no); }
         .tt-side-sub {
-          position: relative;
-          z-index: 1;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 11px;
-          color: var(--t2);
+          color: var(--t3);
           margin-top: 6px;
           font-variant-numeric: tabular-nums;
           display: block;
@@ -259,28 +221,22 @@ export function TradeTicket({
           margin-bottom: 8px;
         }
         .tt-amt-label {
-          font-size: 10px;
-          font-weight: 700;
+          font-size: 12px;
           color: var(--t3);
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
+          font-weight: 500;
         }
         .tt-amt-balance {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 11px;
-          color: var(--t2);
+          color: var(--t3);
           font-variant-numeric: tabular-nums;
         }
 
         .tt-amt-display {
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%),
-            rgba(0, 0, 0, 0.18);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: var(--r-sm);
-          padding: 13px 14px;
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--border-1);
+          border-radius: var(--r-rh-md);
+          padding: 14px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -289,12 +245,12 @@ export function TradeTicket({
         .tt-amt-value {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 28px;
-          font-weight: 500;
+          font-weight: 600;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.02em;
           color: var(--t1);
           line-height: 1;
-          border: none;
+          border: 0;
           background: transparent;
           outline: none;
           width: 120px;
@@ -306,11 +262,11 @@ export function TradeTicket({
           text-align: right;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 10px;
-          color: var(--t2);
+          color: var(--t3);
           font-variant-numeric: tabular-nums;
           line-height: 1.4;
         }
-        .tt-amt-sub .win { color: var(--accent); font-weight: 600; text-shadow: 0 0 6px var(--accent-glow-color); }
+        .tt-amt-sub .win { color: var(--yes); font-weight: 600; }
 
         .tt-chips {
           display: grid;
@@ -318,44 +274,34 @@ export function TradeTicket({
           gap: 6px;
         }
         .tt-chip {
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%),
-            rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(20px) saturate(150%);
-          -webkit-backdrop-filter: blur(20px) saturate(150%);
-          color: var(--t1);
-          border: 1px solid rgba(255, 255, 255, 0.11);
-          border-radius: var(--r-sm);
+          background: rgba(255, 255, 255, 0.04);
+          color: var(--t2);
+          border: 0;
+          border-radius: var(--r-pill);
           padding: 8px 4px;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 12px;
-          font-weight: 500;
+          font-weight: 600;
           font-variant-numeric: tabular-nums;
           cursor: pointer;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 2px 4px rgba(0, 0, 0, 0.15);
-          transition: all 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+          transition: background 120ms ease, color 120ms ease;
         }
-        .tt-chip:hover { transform: translateY(-1px); }
+        .tt-chip:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: var(--t1);
+        }
         .tt-chip.is-active {
-          color: var(--accent);
-          background: rgba(43, 228, 128, 0.13);
-          border-color: rgba(43, 228, 128, 0.38);
-          box-shadow:
-            inset 0 1px 0 rgba(43, 228, 128, 0.26),
-            0 0 0 1px rgba(43, 228, 128, 0.18),
-            0 0 14px rgba(43, 228, 128, 0.22);
-          text-shadow: 0 0 6px var(--accent-glow-color);
+          background: var(--accent);
+          color: #061a10;
         }
 
         .tt-summary {
           margin-top: 14px;
-          padding-top: 12px;
-          border-top: 1px solid rgba(255, 255, 255, 0.07);
+          padding-top: 14px;
+          border-top: 1px solid var(--border-1);
           display: flex;
           flex-direction: column;
-          gap: 7px;
+          gap: 8px;
           font-family: 'IBM Plex Mono', monospace;
           font-size: 12px;
           font-variant-numeric: tabular-nums;
@@ -363,61 +309,29 @@ export function TradeTicket({
         .tt-summary-row { display: flex; justify-content: space-between; }
         .tt-summary-row .k { color: var(--t3); }
         .tt-summary-row .v { color: var(--t1); }
-        .tt-summary-row .v.accent { color: var(--accent); text-shadow: 0 0 6px var(--accent-glow-color); }
+        .tt-summary-row .v.accent { color: var(--yes); }
 
         .tt-cta {
           margin-top: 16px;
           width: 100%;
-          position: relative;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 50%),
-            linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-          color: #04140a;
-          border: 1px solid rgba(43, 228, 128, 0.6);
-          border-radius: var(--r-md);
+          background: var(--accent);
+          color: #061a10;
+          border: 0;
+          border-radius: var(--r-pill);
           padding: 14px 16px;
           font-family: inherit;
           font-size: 15px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.5),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.15),
-            0 3px 10px rgba(43, 228, 128, 0.22),
-            0 10px 28px rgba(43, 228, 128, 0.18),
-            0 0 42px rgba(43, 228, 128, 0.12);
-          transition: all 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
-          overflow: hidden;
+          transition: filter 120ms ease, transform 120ms ease;
         }
-        .tt-cta::before {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0;
-          height: 50%;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
-          pointer-events: none;
-          border-radius: inherit;
-        }
-        .tt-cta::after {
-          content: '';
-          position: absolute; top: -50%; left: -50%;
-          width: 200%; height: 200%;
-          background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.3) 50%, transparent 60%);
-          animation: tt-shimmer 3.2s ease-in-out infinite;
-          pointer-events: none;
-          border-radius: inherit;
-        }
-        @keyframes tt-shimmer {
-          0%, 100% { transform: translateX(-40%); }
-          50% { transform: translateX(20%); }
-        }
-        .tt-cta:hover { transform: translateY(-2px); }
-        .tt-cta:active { transform: scale(0.98); }
+        .tt-cta:hover { filter: brightness(1.05); transform: translateY(-1px); }
         .tt-cta:disabled {
           cursor: not-allowed;
-          opacity: 0.55;
+          opacity: 0.45;
           transform: none;
+          filter: none;
         }
-        .tt-cta:disabled::after { animation: none; }
 
         .tt-error {
           margin-top: 10px;
@@ -430,13 +344,13 @@ export function TradeTicket({
           font-size: 12px;
           color: var(--t3);
           text-align: center;
-          padding: 8px;
-          border: 1px dashed rgba(255, 255, 255, 0.12);
-          border-radius: var(--r-sm);
+          padding: 10px;
+          border: 1px dashed var(--border-1);
+          border-radius: var(--r-rh-sm);
         }
       `}</style>
 
-      <section className="glass tt" aria-label="Trade ticket">
+      <section className="tt" aria-label="Trade ticket">
         <div className="tt-head">
           <span className="tt-title">Trade</span>
           <div className="tt-mode" role="tablist" aria-label="Order type">

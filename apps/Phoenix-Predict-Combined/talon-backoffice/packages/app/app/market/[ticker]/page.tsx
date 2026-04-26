@@ -229,21 +229,48 @@ export default function MarketDetailPage() {
         .md-crumb a:hover { color: var(--t1); }
         .md-crumb .sep { opacity: 0.5; }
 
-        .md-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 360px;
-          gap: 24px;
-        }
-        .md-main { display: flex; flex-direction: column; gap: 24px; }
+        /* Single-column flow: hero (MarketHead+MarketChart collapsed),
+         * TradeTicket full-width, OrderBook+RecentTrades row, bottom row.
+         * Sticky right-rail trade ticket retired with the layout simplification. */
+        .md-stack { display: flex; flex-direction: column; gap: 24px; }
         .md-data-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 24px;
         }
-        .md-rail {
-          position: sticky;
-          top: 88px;
-          align-self: start;
+
+        /* Collapse MarketHead + MarketChart into one card. CSS overrides
+         * the children's own card chrome via .md-hero descendant selectors
+         * (higher specificity wins regardless of style-tag order). */
+        .md-hero {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          border-radius: var(--r-rh-lg);
+          overflow: hidden;
+        }
+        .md-hero .mh {
+          background: transparent;
+          border: 0;
+          padding: 24px 28px 0;
+          margin-bottom: 0;
+          border-radius: 0;
+        }
+        .md-hero .mc-card {
+          background: transparent;
+          border: 0;
+          padding: 16px 28px 24px;
+          border-radius: 0;
+        }
+
+        /* Full-width TradeTicket below the chart, centered with a comfortable
+         * reading width. Replaces the prior sticky right-rail. */
+        .md-ticket-wrap {
+          display: flex;
+          justify-content: center;
+        }
+        .md-ticket-wrap > * {
+          width: 100%;
+          max-width: 720px;
         }
 
         .md-bottom {
@@ -252,16 +279,23 @@ export default function MarketDetailPage() {
           gap: 24px;
           margin-top: 24px;
         }
-        .md-details { padding: 22px 24px; border-radius: var(--r-md); }
+        .md-details {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 24px 28px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .md-details h3 {
-          font-size: 14px;
-          font-weight: 700;
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--t1);
           margin-bottom: 12px;
           letter-spacing: -0.01em;
         }
         .md-details p {
           color: var(--t2);
-          font-size: 13px;
+          font-size: 14px;
           line-height: 1.6;
           margin-bottom: 10px;
         }
@@ -273,10 +307,10 @@ export default function MarketDetailPage() {
           gap: 8px;
           margin-top: 14px;
           padding-top: 14px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          border-top: 1px solid var(--border-1);
         }
         .md-rules li {
-          font-size: 12px;
+          font-size: 13px;
           color: var(--t2);
           padding-left: 18px;
           position: relative;
@@ -291,26 +325,31 @@ export default function MarketDetailPage() {
           height: 6px;
           border-radius: 50%;
           background: var(--accent);
-          box-shadow: 0 0 6px var(--accent-glow-color);
         }
 
-        .md-related { padding: 18px 18px 14px; border-radius: var(--r-md); }
+        .md-related {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 20px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .md-related h3 {
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          color: var(--t2);
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--t1);
           margin-bottom: 14px;
+          letter-spacing: -0.01em;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--border-1);
         }
         .md-related-list {
           display: flex;
           flex-direction: column;
-          gap: 12px;
         }
         .md-related-row {
-          padding: 10px 0;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          padding: 12px 0;
+          border-top: 1px solid var(--border-1);
           text-decoration: none;
           display: block;
         }
@@ -333,14 +372,15 @@ export default function MarketDetailPage() {
           font-variant-numeric: tabular-nums;
           color: var(--t3);
         }
-        .md-related-yes { color: var(--yes); font-weight: 500; }
+        .md-related-yes { color: var(--yes); font-weight: 600; }
 
         @media (max-width: 1100px) {
-          .md-grid, .md-bottom { grid-template-columns: 1fr; }
-          .md-rail { position: static; }
+          .md-bottom { grid-template-columns: 1fr; }
         }
         @media (max-width: 720px) {
           .md-data-row { grid-template-columns: 1fr; }
+          .md-hero .mh { padding: 20px 20px 0; }
+          .md-hero .mc-card { padding: 12px 20px 20px; }
         }
       `}</style>
 
@@ -356,14 +396,13 @@ export default function MarketDetailPage() {
         <span>{market.title}</span>
       </nav>
 
-      <MarketHead
-        market={market}
-        categoryName={category?.name}
-        tradersCount={tradersCount}
-      />
-
-      <div className="md-grid">
-        <div className="md-main">
+      <div className="md-stack">
+        <section className="md-hero">
+          <MarketHead
+            market={market}
+            categoryName={category?.name}
+            tradersCount={tradersCount}
+          />
           <MarketChart
             ticker={market.ticker}
             yesPriceCents={market.yesPriceCents}
@@ -372,23 +411,25 @@ export default function MarketDetailPage() {
             volume24hCents={market.volumeCents}
             openInterestShares={Math.round(market.openInterestCents / 100)}
           />
-          <div className="md-data-row">
-            <OrderBook bids={bids} asks={asks} />
-            <RecentTrades trades={trades} />
-          </div>
-        </div>
-        <aside className="md-rail">
+        </section>
+
+        <div className="md-ticket-wrap">
           <TradeTicket
             market={market}
             balance={typeof balance === "number" ? balance : undefined}
             onPreview={handlePreview}
             onSubmit={handleSubmit}
           />
-        </aside>
+        </div>
+
+        <div className="md-data-row">
+          <OrderBook bids={bids} asks={asks} />
+          <RecentTrades trades={trades} />
+        </div>
       </div>
 
       <div className="md-bottom">
-        <section className="glass md-details">
+        <section className="md-details">
           <h3>Market details & resolution</h3>
           {market.description && <p>{market.description}</p>}
           <ul className="md-rules">
@@ -401,7 +442,7 @@ export default function MarketDetailPage() {
           </ul>
         </section>
 
-        <aside className="glass md-related" aria-label="Related markets">
+        <aside className="md-related" aria-label="Related markets">
           <h3>Related markets</h3>
           {related.length === 0 ? (
             <p style={{ color: "var(--t3)", fontSize: 12 }}>

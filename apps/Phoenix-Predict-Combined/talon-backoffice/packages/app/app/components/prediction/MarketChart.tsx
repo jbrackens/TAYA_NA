@@ -102,6 +102,8 @@ export default function MarketChart({
       ? ((yesPriceCents - previousPriceCents) / previousPriceCents) * 100
       : 0;
   const deltaStr = `${deltaCents >= 0 ? "+" : ""}${deltaCents}¢ · ${deltaCents >= 0 ? "+" : ""}${deltaPct.toFixed(1)}% 24h`;
+  const isUp = deltaCents >= 0;
+  const lineColor = isUp ? "var(--yes)" : "var(--no)";
 
   const prob =
     typeof impliedProbability === "number" ? impliedProbability : yesPriceCents;
@@ -119,7 +121,13 @@ export default function MarketChart({
   return (
     <>
       <style>{`
-        .mc-card { padding: 22px 24px 18px; border-radius: var(--r-md); }
+        .mc-card {
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 24px 28px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
         .mc-head {
           display: flex;
           align-items: flex-end;
@@ -130,101 +138,89 @@ export default function MarketChart({
         }
         .mc-price-row { display: flex; align-items: baseline; gap: 14px; }
         .mc-price {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 48px;
+          font-family: 'Inter Tight', 'Inter', sans-serif;
+          font-size: 56px;
           font-weight: 600;
-          color: var(--yes);
+          color: var(--t1);
           line-height: 1;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.04em;
           font-variant-numeric: tabular-nums;
-          text-shadow: 0 0 24px var(--yes-glow);
         }
         .mc-delta {
           font-family: 'IBM Plex Mono', monospace;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
-          color: var(--accent);
+          color: var(--yes);
           padding: 4px 10px;
           border-radius: var(--r-pill);
-          background: rgba(43, 228, 128, 0.08);
-          border: 1px solid rgba(43, 228, 128, 0.2);
+          background: var(--yes-soft);
           font-variant-numeric: tabular-nums;
-          text-shadow: 0 0 8px var(--accent-glow-color);
         }
         .mc-delta.down {
           color: var(--no);
           background: var(--no-soft);
-          border-color: var(--no-border);
-          text-shadow: 0 0 8px var(--no-glow);
         }
         .mc-switcher {
-          display: flex;
-          gap: 2px;
+          display: inline-flex;
+          gap: 4px;
           padding: 3px;
-          background: rgba(0, 0, 0, 0.25);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border-1);
           border-radius: var(--r-pill);
-          box-shadow:
-            inset 0 1px 2px rgba(0, 0, 0, 0.3),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04);
         }
         .mc-switcher button {
           background: transparent;
           border: none;
           color: var(--t3);
-          padding: 6px 12px;
+          padding: 6px 14px;
+          min-width: 44px;
           border-radius: var(--r-pill);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 11px;
+          font-family: 'Inter', sans-serif;
+          font-size: 12px;
           font-weight: 600;
           cursor: pointer;
-          transition: all 150ms ease;
+          transition: color 120ms ease, background 120ms ease;
         }
         .mc-switcher button:hover { color: var(--t1); }
         .mc-switcher button.is-active {
-          color: var(--t1);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.15),
-            0 1px 3px rgba(0, 0, 0, 0.3);
+          color: #061a10;
+          background: var(--accent);
         }
         .mc-svg {
           width: 100%;
           height: 320px;
           display: block;
-          border-radius: var(--r-sm);
+          border-radius: var(--r-rh-sm);
         }
         .mc-foot {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 14px;
-          margin-top: 18px;
-          padding-top: 18px;
-          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          gap: 24px;
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid var(--border-1);
         }
         .mc-stat .l {
-          font-size: 10px;
+          font-size: 12px;
           color: var(--t3);
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-          margin-bottom: 4px;
-          font-weight: 600;
+          margin-bottom: 6px;
+          font-weight: 500;
         }
         .mc-stat .v {
           font-family: 'IBM Plex Mono', monospace;
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 600;
           color: var(--t1);
           font-variant-numeric: tabular-nums;
         }
-        .mc-stat .v.accent { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow-color); }
-        .mc-stat .v.yes { color: var(--yes); text-shadow: 0 0 8px var(--yes-glow); }
+        .mc-stat .v.yes { color: var(--yes); }
+        .mc-stat .v.no { color: var(--no); }
         @media (max-width: 720px) {
-          .mc-price { font-size: 36px; }
+          .mc-price { font-size: 40px; }
           .mc-foot { grid-template-columns: repeat(2, 1fr); }
         }
       `}</style>
-      <section className="glass mc-card">
+      <section className="mc-card">
         <div className="mc-head">
           <div className="mc-price-row">
             <div className="mc-price">{yesPriceCents}¢</div>
@@ -263,28 +259,9 @@ export default function MarketChart({
               x2="0"
               y2="1"
             >
-              <stop offset="0%" stopColor="var(--yes)" stopOpacity="0.38" />
-              <stop offset="100%" stopColor="var(--yes)" stopOpacity="0" />
+              <stop offset="0%" stopColor={lineColor} stopOpacity="0.32" />
+              <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
             </linearGradient>
-            <linearGradient
-              id={`mc-line-${ticker}`}
-              x1="0"
-              y1="0"
-              x2="1"
-              y2="0"
-            >
-              <stop offset="0%" stopColor="var(--yes)" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="var(--yes)" stopOpacity="1" />
-            </linearGradient>
-            <filter
-              id={`mc-glow-${ticker}`}
-              x="-20%"
-              y="-20%"
-              width="140%"
-              height="140%"
-            >
-              <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
-            </filter>
           </defs>
 
           <g stroke="rgba(255,255,255,0.04)" strokeWidth="1">
@@ -318,17 +295,8 @@ export default function MarketChart({
           <path d={area} fill={`url(#mc-fill-${ticker})`} />
           <path
             d={line}
-            stroke={`url(#mc-line-${ticker})`}
-            strokeWidth="2.4"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            filter={`url(#mc-glow-${ticker})`}
-          />
-          <path
-            d={line}
-            stroke="var(--yes-hi)"
-            strokeWidth="1.4"
+            stroke={lineColor}
+            strokeWidth="2.5"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -339,19 +307,14 @@ export default function MarketChart({
             x2={width}
             y1={markerY}
             y2={markerY}
-            stroke="var(--yes-glow)"
+            stroke={lineColor}
+            strokeOpacity="0.3"
             strokeWidth="1"
             strokeDasharray="4 6"
           />
           <g transform={`translate(${width},${markerY})`}>
-            <circle r="6" fill="var(--yes-hi)" opacity="0.3" />
+            <circle r="5" fill={lineColor} />
             <circle r="3" fill="#ffffff" />
-            <circle
-              r="3"
-              fill="none"
-              stroke="var(--yes-hi)"
-              strokeWidth="1.5"
-            />
           </g>
         </svg>
 
@@ -372,7 +335,7 @@ export default function MarketChart({
           </div>
           <div className="mc-stat">
             <div className="l">Open interest</div>
-            <div className="v accent">{oi.toLocaleString()} shares</div>
+            <div className="v">{oi.toLocaleString()} shares</div>
           </div>
         </div>
       </section>

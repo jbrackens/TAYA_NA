@@ -73,9 +73,12 @@ export default function MarketHead({
     <>
       <style>{`
         .mh {
-          padding: 22px 26px 20px;
-          margin-bottom: 24px;
-          border-radius: var(--r-md);
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          padding: 24px 28px;
+          margin-bottom: 20px;
+          border-radius: var(--r-rh-lg);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .mh-top {
           display: flex;
@@ -95,81 +98,65 @@ export default function MarketHead({
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          background: rgba(255, 80, 80, 0.15);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 120, 120, 0.25);
-          color: #ffbdbd;
+          color: var(--accent);
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 10px;
           font-weight: 700;
-          letter-spacing: 0.12em;
-          padding: 5px 10px 5px 8px;
-          border-radius: var(--r-pill);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.12),
-            0 2px 8px rgba(255, 60, 60, 0.12);
+          letter-spacing: 0.16em;
         }
         .mh-live-dot {
           width: 6px; height: 6px;
           border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, #ff9a9a 0%, #ff4444 100%);
-          box-shadow: 0 0 8px rgba(255, 80, 80, 0.9);
-          animation: mh-pulse 1.6s ease-in-out infinite;
+          background: var(--accent);
+          box-shadow: 0 0 0 4px rgba(43, 228, 128, 0.18);
+          animation: mh-pulse 2s ease-in-out infinite;
         }
-        @keyframes mh-pulse { 50% { opacity: 0.4; transform: scale(0.92); } }
+        @keyframes mh-pulse { 50% { opacity: 0.55; } }
         .mh-pill {
-          background: rgba(255, 255, 255, 0.06);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          color: var(--t2);
+          color: var(--t3);
           font-size: 11px;
           font-weight: 500;
           padding: 4px 10px;
           border-radius: var(--r-pill);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
           font-variant-numeric: tabular-nums;
           font-family: 'IBM Plex Mono', monospace;
         }
         .mh-pill.cat {
           color: var(--accent);
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          font-family: 'Outfit', sans-serif;
+          background: var(--accent-soft);
+          font-family: 'Inter', sans-serif;
           font-weight: 600;
-          background: rgba(43, 228, 128, 0.08);
-          border: 1px solid rgba(43, 228, 128, 0.22);
-          box-shadow:
-            inset 0 1px 0 rgba(43, 228, 128, 0.22),
-            0 0 16px rgba(43, 228, 128, 0.08);
+          letter-spacing: 0.04em;
         }
         .mh-countdown {
           font-family: 'IBM Plex Mono', monospace;
-          font-size: 13px;
-          color: var(--t2);
+          font-size: 12px;
+          color: var(--t3);
           font-variant-numeric: tabular-nums;
         }
         .mh-countdown .sep { margin: 0 8px; color: var(--t4); }
         .mh-q {
           font-size: 28px;
-          font-weight: 700;
+          font-weight: 600;
           line-height: 1.22;
-          letter-spacing: -0.01em;
+          letter-spacing: -0.02em;
+          color: var(--t1);
           margin-bottom: 8px;
-          text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
         .mh-desc {
           color: var(--t2);
           font-size: 14px;
           line-height: 1.5;
           max-width: 680px;
+          margin: 8px 0 0;
         }
         @media (max-width: 720px) {
-          .mh { padding: 18px 20px 16px; }
+          .mh { padding: 20px; }
           .mh-q { font-size: 22px; }
         }
       `}</style>
-      <section className="glass mh">
+      <section className="mh">
         <div className="mh-top">
           <div className="mh-pills">
             {isLive && (
