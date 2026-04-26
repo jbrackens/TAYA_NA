@@ -33,6 +33,10 @@ import type {
   PredictionMarket,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import {
+  deterministicDelta,
+  heroChartPath,
+} from "../components/prediction/utils/spark";
 
 const api = createPredictionClient();
 
@@ -40,57 +44,6 @@ const api = createPredictionClient();
 // prediction/MarketFilterBar.tsx). The chips navigated to /category/[slug];
 // the new bar filters in-place on this page. /category routes still work
 // for direct links and external navigation.
-
-// Deterministic 24h delta + chart path. Both seeded from the ticker so
-// the same market always renders the same fake history. Replace with
-// real backend price-history when /api/v1/markets/:id/prices?range= ships.
-function tickerSeed(ticker: string): number {
-  let s = 0;
-  for (let i = 0; i < ticker.length; i++) {
-    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
-  }
-  return Math.abs(s);
-}
-
-function deterministicDelta(
-  ticker: string,
-  currentCents: number,
-): { delta: number; pct: number } {
-  const seed = tickerSeed(ticker);
-  // ±5¢, biased slightly positive so most cards read as up
-  const delta = (seed % 11) - 4;
-  const prev = Math.max(1, Math.min(99, currentCents - delta));
-  const pct = ((currentCents - prev) / prev) * 100;
-  return { delta, pct };
-}
-
-function heroChartPath(
-  ticker: string,
-  currentCents: number,
-  width = 800,
-  height = 220,
-): { line: string; fill: string } {
-  const seed0 = tickerSeed(ticker);
-  let s = seed0 || 1;
-  const N = 24;
-  const points: Array<[number, number]> = [];
-  let val = 50;
-  for (let i = 0; i < N; i++) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const noise = ((s % 1000) - 500) / 70; // ±~7
-    val = Math.max(8, Math.min(92, val + noise));
-    const x = (i / (N - 1)) * width;
-    const y = height - (val / 100) * height;
-    points.push([x, y]);
-  }
-  // Pin the last point to the current price for visual consistency.
-  points[N - 1][1] = height - (currentCents / 100) * height;
-  const line = points
-    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
-    .join(" ");
-  const fill = line + ` L${width},${height} L0,${height} Z`;
-  return { line, fill };
-}
 
 function formatHeroVolume(cents: number): string {
   const dollars = cents / 100;

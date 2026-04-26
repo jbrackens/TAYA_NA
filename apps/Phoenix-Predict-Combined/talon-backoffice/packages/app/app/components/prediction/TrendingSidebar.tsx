@@ -20,54 +20,12 @@
 
 import Link from "next/link";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import { deterministicDelta, sparklinePath } from "./utils/spark";
 
 interface Props {
   markets: PredictionMarket[];
   /** Maximum rows to render. Default 6 (matches Top Movers height to hero). */
   limit?: number;
-}
-
-function tickerSeed(ticker: string): number {
-  let s = 0;
-  for (let i = 0; i < ticker.length; i++) {
-    s = ((s << 5) - s + ticker.charCodeAt(i)) | 0;
-  }
-  return Math.abs(s);
-}
-
-function deltaFor(
-  ticker: string,
-  currentCents: number,
-): { pct: number; up: boolean } {
-  const seed = tickerSeed(ticker);
-  const delta = (seed % 11) - 4; // matches DiscoveryHero formula
-  const prev = Math.max(1, Math.min(99, currentCents - delta));
-  const pct = ((currentCents - prev) / prev) * 100;
-  return { pct, up: delta >= 0 };
-}
-
-function sparklinePath(
-  ticker: string,
-  currentCents: number,
-  up: boolean,
-): string {
-  let s = tickerSeed(ticker) ^ (up ? 0x55 : 0xaa) || 1;
-  const W = 60;
-  const H = 28;
-  const N = 8;
-  // Generate N points trending toward the current price; up=line trends down on Y
-  const points: Array<[number, number]> = [];
-  let val = up ? 25 : 75;
-  for (let i = 0; i < N; i++) {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    const noise = ((s % 1000) - 500) / 100;
-    const trend = up ? -1 : 1;
-    val = Math.max(8, Math.min(92, val + noise + trend));
-    points.push([(i / (N - 1)) * W, H - (val / 100) * H]);
-  }
-  return points
-    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`)
-    .join(" ");
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -207,7 +165,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
           {rows.map((m) => {
             const yesLeads = m.yesPriceCents >= m.noPriceCents;
             const leadingPrice = yesLeads ? m.yesPriceCents : m.noPriceCents;
-            const { pct, up } = deltaFor(m.ticker, leadingPrice);
+            const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
             const sparkColor = up ? "var(--yes)" : "var(--no)";
             const cat = categoryFromTicker(m.ticker);
             return (
