@@ -17,12 +17,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  MarketFilterBar,
-  EMPTY_FILTER,
-  isFilterActive,
-  type MarketFilterValue,
-} from "../components/prediction/MarketFilterBar";
 import { TrendingSidebar } from "../components/prediction/TrendingSidebar";
 import { AllMarketsSection } from "../components/prediction/AllMarketsSection";
 import { SectionHead } from "../components/prediction/SectionHead";
@@ -39,11 +33,6 @@ import {
 } from "../components/prediction/utils/spark";
 
 const api = createPredictionClient();
-
-// CategoryChips removed in favor of MarketFilterBar (see ../components/
-// prediction/MarketFilterBar.tsx). The chips navigated to /category/[slug];
-// the new bar filters in-place on this page. /category routes still work
-// for direct links and external navigation.
 
 function formatHeroVolume(cents: number): string {
   const dollars = cents / 100;
@@ -349,7 +338,6 @@ export default function PredictDiscoveryPage() {
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<MarketFilterValue>(EMPTY_FILTER);
 
   // Initial load: discovery sections + categories list.
   useEffect(() => {
@@ -410,14 +398,6 @@ export default function PredictDiscoveryPage() {
     );
   }
 
-  // Category pills scope All Markets. When a category is active, Featured
-  // hides (Featured is curated across all categories, not within one).
-  // Hero + Top Movers always show.
-  const filterCategoryId = categories.find(
-    (c) => c.slug === filter.categorySlug,
-  )?.id;
-  const filterActive = isFilterActive(filter);
-
   return (
     <div>
       <style>{`
@@ -426,7 +406,6 @@ export default function PredictDiscoveryPage() {
           grid-template-columns: 1fr 320px;
           gap: 20px;
           align-items: start;
-          margin-bottom: 32px;
         }
         .pred-discovery-grid > .pred-hero-cell {
           min-width: 0;
@@ -436,12 +415,6 @@ export default function PredictDiscoveryPage() {
         }
       `}</style>
 
-      <MarketFilterBar
-        categories={categories}
-        value={filter}
-        onChange={setFilter}
-      />
-
       <div className="pred-discovery-grid">
         <div className="pred-hero-cell">
           <DiscoveryHero market={marquee} categoryName={heroCategory} />
@@ -449,14 +422,14 @@ export default function PredictDiscoveryPage() {
         <TrendingSidebar markets={trending} />
       </div>
 
-      {!filterActive && featuredRest.length > 0 && (
+      {featuredRest.length > 0 && (
         <>
           <SectionHead title="Featured markets" count={featured.length} />
           <MarketGrid markets={featuredRest} />
         </>
       )}
 
-      <AllMarketsSection categoryId={filterCategoryId} />
+      <AllMarketsSection categories={categories} />
     </div>
   );
 }

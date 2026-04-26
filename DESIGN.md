@@ -263,13 +263,16 @@ Three pill types share the same shape (full radius) but vary in fill:
 
 ### Filter behavior
 
-Two filters on `/predict`, layered. They compose: pick **Politics** + **1D** to see political markets closing within 24h.
+Both filters on `/predict` live in the **same row** at the top of the All Markets section. Category pills on the left, closing-window pills on the right. They compose: pick **Politics** + **1D** to see political markets closing within 24h.
 
-- **Category pills** at the top of `/predict` are the primary filter. They scope All Markets (NOT the hero — the hero always shows the marquee market). When a category is active, Featured hides (Featured is curated across all categories).
-- **Closing-window pills** in the All Markets section header are the secondary filter. `All / 1D / 1W / 1M`. They scope only the All Markets list, not the hero or Top Movers. The pills sit on the right side of the section header, opposite the title + count.
+- **Category pills** (`All · Politics · Crypto · Sports · ...`) — primary filter. Scope only the All Markets section.
+- **Closing-window pills** (`All · 1D · 1W · 1M`) — secondary filter. Scope only the All Markets section. Visually distinct from the category pills (segmented control with subtle container).
+- **Both filters scope All Markets only.** Hero, Top Movers, and Featured grid stay visible at all filter states. Featured is curated cross-category by design and doesn't filter — picking "Politics" + "1D" still shows the Featured row above (general featured markets), then the All Markets grid filtered to political markets closing within 24h.
 - **Time-period pills** (1H/1D/1W/1M/3M/ALL) live INSIDE the hero chart only. They scope the chart's price history. Different control, different job from the closing-window pills.
 
-Self-correction note: closing-window pills were removed in P4 with the rationale that "users who want to see markets by close time go to /discover." That was wrong — closing-window scoping is a primary use case on the homepage too. Restored 2026-04-26 alongside the NO-price restoration on cards.
+Self-correction history:
+- P4 (2026-04-26): closing-window pills removed; category pills moved to top-of-page above hero. Both wrong.
+- This commit (2026-04-26): closing-window pills restored. Category pills moved into the All Markets header row alongside the date pills. The filter row is the section header — there's no separate "All markets" title above the grid. This consolidation makes filter scoping self-evident: filters live where the filtering happens.
 
 ### Grid
 
@@ -317,8 +320,8 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 - **DiscoveryHero** — hero card with eyebrow, market question, big price, delta, gradient-filled chart, time-period pills, Buy YES / Buy NO, stat row.
 - **TopMoversRail** (replaces TrendingSidebar) — vertical list of trending markets. Each row: category pill, question (2-line), mini sparkline, big price (right-aligned), delta pill below.
 - **MarketCard** — soft-flat card. Head: category pill + days-left. Title: 16px / 600. Sparkline (36px tall, full-width, stroke matches direction). Price row: BOTH YES + NO prices (22px mono, seafoam YES, coral NO) on the left, delta pill on the right. Footer: volume.
-- **MarketFilterBar** — category pill row at the top of `/predict`. Time-period pills (chart range) live inside the DiscoveryHero. Closing-window pills (filter scope) live inside AllMarketsSection.
-- **AllMarketsSection** — paginated grid. Section header: title + count on the left, closing-window pill segmented control (`All / 1D / 1W / 1M`) on the right. "Load more" pill at bottom.
+- **AllMarketsSection** — paginated grid. Section header is a single row of pills: category pills (`All / Politics / Crypto / ...`) on the left, closing-window pill segmented control (`All / 1D / 1W / 1M`) on the right. No title — the layout is self-evident. Owns its own filter state. "Load more" pill at bottom.
+- **MarketFilterBar** — retired 2026-04-26. The category pill row it used to render now lives inline inside AllMarketsSection.
 - **TopBar** — top navigation, unchanged structurally; warm-dark background instead of glass.
 - **MarketHead, OrderBook, RecentTrades, TradeTicket** — market detail page components, restyled for warm-dark surfaces but functionally unchanged.
 

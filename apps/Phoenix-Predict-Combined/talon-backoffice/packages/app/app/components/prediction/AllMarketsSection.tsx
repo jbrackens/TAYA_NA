@@ -1,25 +1,27 @@
 "use client";
 
 /**
- * AllMarketsSection — paginated grid of open prediction markets, scoped
- * by the category filter from the parent page AND an internal closing-
- * window pill control (All / 1D / 1W / 1M).
+ * AllMarketsSection — paginated grid of open prediction markets, owning
+ * its own filter state. The section header is a single row of pills:
+ * category pills (All / Politics / Crypto / ...) on the left, closing-
+ * window pills (All / 1D / 1W / 1M) on the right. No title — the layout
+ * is self-evident.
  *
- * The section header puts title + count on the left and the closing-
- * window pills on the right (DESIGN.md §7). Pills filter only this
- * section, not the hero or Top Movers — they compose with the category
- * pills above ("Politics + 1D" = political markets closing in 24h).
+ * Both filters scope only this section (NOT the hero, Top Movers, or
+ * Featured). They compose: pick "Politics" + "1D" = political markets
+ * closing within 24h.
  *
  * Pagination is "Load more" rather than infinite scroll: trading users
  * scan price columns, and infinite scroll plays badly with that pattern.
- *
- * When either filter changes, the list resets to page 1 and refetches.
  */
 
 import { useEffect, useState } from "react";
 import { MarketGrid } from "./MarketGrid";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import type {
+  Category,
+  PredictionMarket,
+} from "@phoenix-ui/api-client/src/prediction-types";
 
 const api = createPredictionClient();
 
@@ -41,18 +43,20 @@ function dateWindowToCloseBefore(w: DateWindow): string | undefined {
 }
 
 interface Props {
-  categoryId?: string;
+  categories: Category[];
 }
 
-export function AllMarketsSection({ categoryId }: Props) {
+export function AllMarketsSection({ categories }: Props) {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categorySlug, setCategorySlug] = useState<string>("all");
   const [dateWindow, setDateWindow] = useState<DateWindow>("all");
+
+  const categoryId = categories.find((c) => c.slug === categorySlug)?.id;
 
   // Initial load + refetch when either filter changes.
   // closeBefore is computed inside the effect (NOT outside) because it
@@ -75,7 +79,6 @@ export function AllMarketsSection({ categoryId }: Props) {
         if (cancelled) return;
         setMarkets(res.data || []);
         setPage(res.meta.page);
-        setTotal(res.meta.total);
         setHasNext(res.meta.hasNext);
         setError(null);
       })
@@ -116,7 +119,7 @@ export function AllMarketsSection({ categoryId }: Props) {
       });
   }
 
-  const filtered = !!categoryId || dateWindow !== "all";
+  const filtered = categorySlug !== "all" || dateWindow !== "all";
 
   return (
     <>
@@ -126,27 +129,42 @@ export function AllMarketsSection({ categoryId }: Props) {
           align-items: center;
           justify-content: space-between;
           gap: 16px;
-          margin: 32px 0 14px;
+          margin: 32px 0 18px;
           flex-wrap: wrap;
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-        .ams-head-left {
-          display: inline-flex;
-          align-items: baseline;
-          gap: 12px;
+        .ams-categories {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          flex: 1;
+          min-width: 0;
         }
-        .ams-title {
-          font-size: 22px;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-          color: var(--t1);
-          margin: 0;
-        }
-        .ams-count {
-          font-family: 'IBM Plex Mono', monospace;
+        .ams-cat-pill {
+          appearance: none;
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--t2);
+          border: 0;
+          border-radius: var(--r-pill);
+          padding: 9px 18px;
+          font-family: inherit;
           font-size: 13px;
-          color: var(--t3);
-          font-variant-numeric: tabular-nums;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 120ms ease, color 120ms ease;
+        }
+        .ams-cat-pill:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: var(--t1);
+        }
+        .ams-cat-pill:focus-visible {
+          outline: none;
+          box-shadow: 0 0 0 2px var(--accent-soft);
+        }
+        .ams-cat-pill.is-active {
+          background: var(--accent);
+          color: #061a10;
+          font-weight: 600;
         }
 
         .ams-time-pills {
@@ -156,6 +174,7 @@ export function AllMarketsSection({ categoryId }: Props) {
           border: 1px solid var(--border-1);
           border-radius: var(--r-pill);
           padding: 3px;
+          flex-shrink: 0;
         }
         .ams-time-pill {
           appearance: none;
@@ -226,10 +245,36 @@ export function AllMarketsSection({ categoryId }: Props) {
       `}</style>
 
       <header className="ams-head">
-        <div className="ams-head-left">
-          <h2 className="ams-title">All markets</h2>
-          {total > 0 && <span className="ams-count">{total}</span>}
-        </div>
+        <nav
+          className="ams-categories"
+          role="tablist"
+          aria-label="Filter by category"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={categorySlug === "all"}
+            className={`ams-cat-pill ${categorySlug === "all" ? "is-active" : ""}`}
+            onClick={() => setCategorySlug("all")}
+          >
+            All
+          </button>
+          {categories.map((c) => {
+            const isActive = categorySlug === c.slug;
+            return (
+              <button
+                key={c.slug}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                className={`ams-cat-pill ${isActive ? "is-active" : ""}`}
+                onClick={() => setCategorySlug(c.slug)}
+              >
+                {c.name}
+              </button>
+            );
+          })}
+        </nav>
         <div
           className="ams-time-pills"
           role="tablist"
