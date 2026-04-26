@@ -263,9 +263,13 @@ Three pill types share the same shape (full radius) but vary in fill:
 
 ### Filter behavior
 
-- **Category pills** at the top of `/predict` are the primary (and only) filter on the homepage. They scope Featured + All Markets (NOT the hero — the hero always shows the marquee market).
-- **Time-period pills** (1H/1D/1W/1M/3M/ALL) live INSIDE the hero chart only. They scope the chart's price history, not which markets are shown.
-- **No closing-window filter on the homepage** (resolved 2026-04-26). Users who want to see markets by close time go to `/discover`, which has a "Closing soon" section. The homepage stays focused on category browsing + the dominant hero market.
+Two filters on `/predict`, layered. They compose: pick **Politics** + **1D** to see political markets closing within 24h.
+
+- **Category pills** at the top of `/predict` are the primary filter. They scope All Markets (NOT the hero — the hero always shows the marquee market). When a category is active, Featured hides (Featured is curated across all categories).
+- **Closing-window pills** in the All Markets section header are the secondary filter. `All / 1D / 1W / 1M`. They scope only the All Markets list, not the hero or Top Movers. The pills sit on the right side of the section header, opposite the title + count.
+- **Time-period pills** (1H/1D/1W/1M/3M/ALL) live INSIDE the hero chart only. They scope the chart's price history. Different control, different job from the closing-window pills.
+
+Self-correction note: closing-window pills were removed in P4 with the rationale that "users who want to see markets by close time go to /discover." That was wrong — closing-window scoping is a primary use case on the homepage too. Restored 2026-04-26 alongside the NO-price restoration on cards.
 
 ### Grid
 
@@ -312,9 +316,9 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 
 - **DiscoveryHero** — hero card with eyebrow, market question, big price, delta, gradient-filled chart, time-period pills, Buy YES / Buy NO, stat row.
 - **TopMoversRail** (replaces TrendingSidebar) — vertical list of trending markets. Each row: category pill, question (2-line), mini sparkline, big price (right-aligned), delta pill below.
-- **MarketCard** — soft-flat card. Head: category pill + days-left. Title: 16px / 600. Sparkline (36px tall, full-width, stroke matches direction). Footer row: big price (26px / 600) + delta pill.
-- **MarketFilterBar** — category pill row only on `/predict`. Time-period pills on the hero chart. Closing-window dropdown lives inside AllMarketsSection header.
-- **AllMarketsSection** — paginated grid. Section header has title + closing-window dropdown + count. "Load more" pill at bottom.
+- **MarketCard** — soft-flat card. Head: category pill + days-left. Title: 16px / 600. Sparkline (36px tall, full-width, stroke matches direction). Price row: BOTH YES + NO prices (22px mono, seafoam YES, coral NO) on the left, delta pill on the right. Footer: volume.
+- **MarketFilterBar** — category pill row at the top of `/predict`. Time-period pills (chart range) live inside the DiscoveryHero. Closing-window pills (filter scope) live inside AllMarketsSection.
+- **AllMarketsSection** — paginated grid. Section header: title + count on the left, closing-window pill segmented control (`All / 1D / 1W / 1M`) on the right. "Load more" pill at bottom.
 - **TopBar** — top navigation, unchanged structurally; warm-dark background instead of glass.
 - **MarketHead, OrderBook, RecentTrades, TradeTicket** — market detail page components, restyled for warm-dark surfaces but functionally unchanged.
 
@@ -409,3 +413,4 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 | 2026-04-25 | **YES/NO palette: seafoam green + coral** (third iteration) | Reconsidered 2026-04-26: Robinhood uses ONE green (mint) for both brand and up-direction. P2 will decide whether to unify YES with the brand mint or keep seafoam as a deliberately-softer market signal. Coral NO stays. |
 | 2026-04-26 | **Pivoted from Liquid Glass to Robinhood-inspired** | Compared against Polymarket (corporate-clean), Kalshi (editorial-financial), Pariflow (dark-fintech), and the live Liquid Glass implementation. Liquid Glass execution was strong but visually generic — every dark fintech dashboard from 2023-2025 uses the same recipe. Robinhood-inspired direction (warm-dark, big numbers, dominant chart, soft-flat cards, mint as the action color, category pills as primary filter) claims the "stock-detail-page treatment for prediction markets" lane. Friendly enough for first-time traders, polished enough for Gen Z users who already live in a brokerage app. Decision validated by mock at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/public/taya-direction-mocks.html` direction B. |
 | 2026-04-26 | **Migration phasing** | Six phases land independently, one commit per phase. P1: this DESIGN.md rewrite (specs only). P2: tokens + DiscoveryHero + TopMoversRail. P3: MarketCard + AllMarketsSection cards. P4: MarketFilterBar reskin. P5: market detail page. P6: category + portfolio polish. Each phase ships behind no flags; the team accepts a partial-styled state between phases for a few hours. |
+| 2026-04-26 | **Self-correction: restored NO price on cards + closing-window pills on /predict** | P3 dropped the NO price on MarketCard, showing only the leading side ("Robinhood single-price treatment"). P4 dropped the closing-window filter ("homepage stays focused on category browsing"). Both decisions made the homepage worse, surfaced by user testing the same day they shipped. Why P3 was wrong: prediction markets aren't stocks — both sides are tradeable instruments with prices that move independently. Forcing the user to mentally compute "if YES is 71¢, NO is 29¢" violates "don't make me think" (Krug). Polymarket and Kalshi both show both prices for this reason. Why P4 was wrong: closing-window scoping is a real use case on the homepage, not just a /discover concern. Politics markets in their final 24h have different risk/reward than 6-month-out markets. Fix: cards now show YES seafoam + NO coral side-by-side; AllMarketsSection has its own internal All/1D/1W/1M pill control in the section header. Composes with category pills (e.g., Politics + 1D = political markets closing within 24h). |

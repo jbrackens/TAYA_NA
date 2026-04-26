@@ -3,9 +3,12 @@
 /**
  * MarketCard — Robinhood-direction market tile (P3, see DESIGN.md §7).
  *
- * Shows the market's leading side as a single big price with a sparkline
- * above and a delta pill to the right. The opposing side is implicit
- * (binary contracts: YES + NO = 100¢). Volume sits in a small footer.
+ * Shows BOTH the YES and NO prices side-by-side (seafoam YES, coral NO),
+ * with a sparkline above and a delta pill to the right. Volume sits in a
+ * small footer. Both prices are visible because prediction markets are
+ * binary contracts where each side is an independent tradeable instrument
+ * — forcing the user to compute "100 − leading" violates "don't make me
+ * think" (Krug). See DESIGN.md §11 entry 2026-04-26.
  *
  * The prop interface is kept stable so /predict, /category, /discover,
  * and the market-detail "related markets" rail keep compiling.
@@ -57,7 +60,6 @@ export function MarketCard({
 
   const yesLeads = yesPriceCents >= noPriceCents;
   const leadingPrice = yesLeads ? yesPriceCents : noPriceCents;
-  const leadingSide = yesLeads ? "YES" : "NO";
 
   const { pct, up } = deterministicDelta(ticker, leadingPrice);
   const sparkColor = up ? "var(--yes)" : "var(--no)";
@@ -71,7 +73,7 @@ export function MarketCard({
       <Link
         href={`/market/${ticker}`}
         className="mkt"
-        aria-label={`${title}, ${leadingSide} ${leadingPrice} cents, ${up ? "+" : ""}${pct.toFixed(1)}%`}
+        aria-label={`${title}, YES ${yesPriceCents} cents, NO ${noPriceCents} cents, ${up ? "+" : ""}${pct.toFixed(1)}%`}
       >
         <div className="mkt-head">
           <span className="mkt-cat">{cat}</span>
@@ -96,9 +98,15 @@ export function MarketCard({
         </span>
 
         <div className="mkt-row">
-          <span className={`mkt-px ${yesLeads ? "yes" : "no"}`}>
-            <span className="lbl">{leadingSide}</span>
-            {leadingPrice}¢
+          <span className="mkt-prices">
+            <span className="mkt-px yes">
+              <span className="lbl">YES</span>
+              {yesPriceCents}¢
+            </span>
+            <span className="mkt-px no">
+              <span className="lbl">NO</span>
+              {noPriceCents}¢
+            </span>
           </span>
           <span className={`mkt-delta ${up ? "up" : "down"}`}>
             {up ? "+" : ""}
@@ -186,29 +194,34 @@ function MarketCardStyles() {
 
       .mkt-row {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
-        gap: 8px;
+        gap: 12px;
         padding-top: 4px;
+      }
+      .mkt-prices {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 16px;
       }
       .mkt-px {
         font-family: 'IBM Plex Mono', monospace;
-        font-size: 26px;
+        font-size: 22px;
         font-weight: 600;
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.02em;
-        color: var(--t1);
         line-height: 1;
+        white-space: nowrap;
       }
-      .mkt-px.yes { color: var(--t1); }
-      .mkt-px.no  { color: var(--t1); }
+      .mkt-px.yes { color: var(--yes); }
+      .mkt-px.no  { color: var(--no); }
       .mkt-px .lbl {
         font-family: 'Inter', sans-serif;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 500;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
         color: var(--t3);
-        margin-right: 8px;
+        margin-right: 6px;
         text-transform: uppercase;
       }
       .mkt-delta {
