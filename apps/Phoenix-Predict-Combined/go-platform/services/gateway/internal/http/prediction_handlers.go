@@ -7,6 +7,7 @@ import (
 	stdhttp "net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/platform/transport/httpx"
@@ -118,12 +119,20 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if eid := r.URL.Query().Get("eventId"); eid != "" {
 			filter.EventID = &eid
 		}
+		if cid := r.URL.Query().Get("categoryId"); cid != "" {
+			filter.CategoryID = &cid
+		}
 		if status := r.URL.Query().Get("status"); status != "" {
 			s := prediction.MarketStatus(status)
 			filter.Status = &s
 		}
 		if ticker := r.URL.Query().Get("ticker"); ticker != "" {
 			filter.Ticker = &ticker
+		}
+		if cb := r.URL.Query().Get("closeBefore"); cb != "" {
+			if t, err := time.Parse(time.RFC3339, cb); err == nil {
+				filter.CloseBefore = &t
+			}
 		}
 		markets, total, err := svc.ListMarkets(r.Context(), filter)
 		if err != nil {

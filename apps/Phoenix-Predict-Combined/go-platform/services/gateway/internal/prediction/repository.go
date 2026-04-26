@@ -1,6 +1,9 @@
 package prediction
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // Repository defines the data access interface for the prediction platform.
 // Implementations: sql_repository.go (PostgreSQL), inmemory_repository.go (testing).
@@ -142,12 +145,13 @@ type EventFilter struct {
 
 // MarketFilter provides filtering options for listing markets.
 type MarketFilter struct {
-	EventID    *string
-	CategoryID *string
-	Status     *MarketStatus
-	Ticker     *string
-	Page       int
-	PageSize   int
+	EventID     *string
+	CategoryID  *string
+	Status      *MarketStatus
+	Ticker      *string
+	CloseBefore *time.Time
+	Page        int
+	PageSize    int
 }
 
 // OrderFilter provides filtering options for listing orders.

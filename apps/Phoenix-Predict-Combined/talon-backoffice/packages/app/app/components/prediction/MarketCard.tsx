@@ -33,6 +33,7 @@ interface MarketCardProps {
   closeAt: string;
   status: string;
   categoryLabel?: string;
+  imagePath?: string;
 }
 
 function hoursUntil(iso: string): number {
@@ -67,6 +68,8 @@ export function MarketCard({
   closeAt,
   status,
   categoryLabel,
+  // imagePath: intentionally not destructured. Prop kept on the interface
+  // (parents still pass it) for the future render path documented in JSX.
 }: MarketCardProps) {
   const timeLeft = formatTimeLeft(closeAt);
   const isSettled = status === "settled";
@@ -101,6 +104,13 @@ export function MarketCard({
           )}
         </div>
 
+        {/* Image rendering intentionally disabled. Mixed image / no-image
+            cards produced 2.1x height variance across rows, breaking the
+            grid rhythm. The `imagePath` prop is preserved for the future
+            (detail page hero, share cards, etc.). To re-enable cards with
+            a forced uniform aspect, restore the <img> here AND set every
+            promoted market to have an image (currently only ~30% do). */}
+
         <h3 className="mkt-title">{title}</h3>
 
         <div className="mkt-bar" aria-hidden>
@@ -134,8 +144,8 @@ function MarketCardStyles() {
       .mkt {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        padding: 18px 18px 16px;
+        gap: 10px;
+        padding: 16px 16px 14px;
         border-radius: var(--r-md);
         text-decoration: none;
         color: var(--t1);
@@ -198,11 +208,11 @@ function MarketCardStyles() {
       .mkt-title {
         font-size: 15px;
         font-weight: 600;
-        line-height: 1.32;
+        line-height: 1.3;
         letter-spacing: -0.01em;
         color: var(--t1);
         margin: 0;
-        min-height: 40px;
+        min-height: 36px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;

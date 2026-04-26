@@ -148,6 +148,7 @@ func gatewayPublicPrefixes() []string {
 		"/api/v1/banners",  // CMS banner delivery (public)
 
 		// Prediction platform — public read-only endpoints
+		"/api/v1/discover", // demo product feed (imported_markets); pre-launch behind app auth, but no session needed for the read
 		"/api/v1/discovery",
 		"/api/v1/categories",
 		"/api/v1/events",

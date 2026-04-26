@@ -101,15 +101,19 @@ export class PredictionApiClient {
 
   async getMarkets(params?: {
     eventId?: string;
+    categoryId?: string;
     status?: string;
     ticker?: string;
+    closeBefore?: string;
     page?: number;
     pageSize?: number;
   }): Promise<PaginatedResponse<PredictionMarket>> {
     const query = new URLSearchParams();
     if (params?.eventId) query.set("eventId", params.eventId);
+    if (params?.categoryId) query.set("categoryId", params.categoryId);
     if (params?.status) query.set("status", params.status);
     if (params?.ticker) query.set("ticker", params.ticker);
+    if (params?.closeBefore) query.set("closeBefore", params.closeBefore);
     if (params?.page) query.set("page", String(params.page));
     if (params?.pageSize) query.set("pageSize", String(params.pageSize));
     const qs = query.toString();

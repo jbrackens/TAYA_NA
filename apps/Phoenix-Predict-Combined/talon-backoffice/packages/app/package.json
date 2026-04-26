@@ -5,7 +5,8 @@
   "scripts": {
     "bootstrap:locales": "node ./scripts/translations/generate.js",
     "run-local:dev": "yarn watch & next dev --webpack",
-    "build": "yarn bootstrap:locales && next build",
+    "build": "yarn bootstrap:locales && next build && ./scripts/check-no-upstream-leak.sh",
+    "check:no-upstream-leak": "./scripts/check-no-upstream-leak.sh",
     "build:local": "env-cmd -f .env.local yarn build",
     "build:dev": "env-cmd -f .env.development yarn build",
     "build:stage": "env-cmd -f .env.staging yarn build",

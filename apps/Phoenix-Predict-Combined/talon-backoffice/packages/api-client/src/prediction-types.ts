@@ -38,7 +38,14 @@ export interface PredictionEvent {
   markets?: PredictionMarket[];
 }
 
-export type EventStatus = 'draft' | 'open' | 'trading_halt' | 'closed' | 'settling' | 'settled' | 'voided';
+export type EventStatus =
+  | "draft"
+  | "open"
+  | "trading_halt"
+  | "closed"
+  | "settling"
+  | "settled"
+  | "voided";
 
 export interface PredictionMarket {
   id: string;
@@ -47,7 +54,7 @@ export interface PredictionMarket {
   title: string;
   description?: string;
   status: MarketStatus;
-  result?: 'yes' | 'no';
+  result?: "yes" | "no";
   yesPriceCents: number;
   noPriceCents: number;
   lastTradePriceCents?: number;
@@ -59,14 +66,27 @@ export interface PredictionMarket {
   feeRateBps: number;
   closeAt: string;
   createdAt: string;
+  imagePath?: string;
 }
 
-export type MarketStatus = 'unopened' | 'open' | 'halted' | 'closed' | 'settled' | 'voided';
+export type MarketStatus =
+  | "unopened"
+  | "open"
+  | "halted"
+  | "closed"
+  | "settled"
+  | "voided";
 
-export type OrderSide = 'yes' | 'no';
-export type OrderAction = 'buy' | 'sell';
-export type OrderType = 'market' | 'limit';
-export type OrderStatus = 'pending' | 'open' | 'partial' | 'filled' | 'cancelled' | 'expired';
+export type OrderSide = "yes" | "no";
+export type OrderAction = "buy" | "sell";
+export type OrderType = "market" | "limit";
+export type OrderStatus =
+  | "pending"
+  | "open"
+  | "partial"
+  | "filled"
+  | "cancelled"
+  | "expired";
 
 export interface PredictionOrder {
   id: string;

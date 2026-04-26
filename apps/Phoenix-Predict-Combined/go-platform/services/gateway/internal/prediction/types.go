@@ -116,6 +116,7 @@ type Market struct {
 	CloseAt              time.Time       `json:"closeAt" db:"close_at"`
 	CreatedAt            time.Time       `json:"createdAt" db:"created_at"`
 	UpdatedAt            time.Time       `json:"updatedAt" db:"updated_at"`
+	ImagePath            string          `json:"imagePath,omitempty" db:"image_path"`
 }
 
 // OrderSide is the side of a prediction (YES or NO).

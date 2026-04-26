@@ -222,20 +222,22 @@ func (r *SQLRepository) UpdateEventStatus(ctx context.Context, id string, status
 
 func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([]Market, int, error) {
 	where, args := buildMarketWhere(filter)
-	countQ := `SELECT COUNT(*) FROM prediction_markets` + where
+	// COUNT uses unprefixed `prediction_markets` (no `m.` alias), so the
+	// where clause has to drop the alias prefix when used here. Rewriting
+	// the WHERE in two forms is uglier than aliasing the count query —
+	// alias the table.
+	countQ := `SELECT COUNT(*) FROM prediction_markets m` + where
 	var total int
 	if err := r.db.QueryRowContext(ctx, countQ, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
-	q := `SELECT id, event_id, ticker, title, description, status, result,
-	             yes_price_cents, no_price_cents, last_trade_price_cents,
-	             volume_cents, open_interest_cents, liquidity_cents,
-	             amm_yes_shares, amm_no_shares, amm_liquidity_param, amm_subsidy_cents,
-	             settlement_source_key, settlement_cutoff_at, settlement_rule, settlement_params,
-	             fallback_source_key, fee_rate_bps, maker_rebate_bps,
-	             open_at, close_at, created_at, updated_at
-	      FROM prediction_markets` + where + ` ORDER BY close_at ASC`
+	// Use marketSelectQuery() as the single source of truth for the column
+	// list. Any future column add lands in one place; ListMarkets and
+	// GetMarket etc. all see it. Earlier inline SELECT here drifted apart
+	// from marketSelectQuery() when image_path was added (migration 018),
+	// breaking ListMarkets with a 500. Don't reintroduce that fork.
+	q := marketSelectQuery() + where + ` ORDER BY close_at ASC`
 	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
@@ -244,7 +246,10 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	}
 	defer rows.Close()
 
-	var markets []Market
+	// Initialize as empty slice so JSON encodes [] for zero-row results.
+	// nil-slice encodes as "data": null which is a contract gotcha for
+	// every consumer (frontend, mobile, partner API).
+	markets := []Market{}
 	for rows.Next() {
 		m, err := scanMarket(rows)
 		if err != nil {
@@ -266,20 +271,28 @@ func (r *SQLRepository) GetMarketByTicker(ctx context.Context, ticker string) (*
 }
 
 func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
+	var resultArg interface{}
+	if m.Result != nil {
+		resultArg = string(*m.Result)
+	}
 	return r.db.QueryRowContext(ctx,
 		`INSERT INTO prediction_markets
-		 (event_id, ticker, title, description, status,
-		  yes_price_cents, no_price_cents, amm_yes_shares, amm_no_shares,
+		 (event_id, ticker, title, description, status, result,
+		  yes_price_cents, no_price_cents, last_trade_price_cents,
+		  volume_cents, liquidity_cents,
+		  amm_yes_shares, amm_no_shares,
 		  amm_liquidity_param, amm_subsidy_cents,
 		  settlement_source_key, settlement_cutoff_at, settlement_rule, settlement_params,
-		  fallback_source_key, fee_rate_bps, maker_rebate_bps, open_at, close_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+		  fallback_source_key, fee_rate_bps, maker_rebate_bps, open_at, close_at, image_path)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
 		 RETURNING id, created_at, updated_at`,
-		m.EventID, m.Ticker, m.Title, nullStr(m.Description), m.Status,
-		m.YesPriceCents, m.NoPriceCents, m.AMMYesShares, m.AMMNoShares,
+		m.EventID, m.Ticker, m.Title, nullStr(m.Description), m.Status, resultArg,
+		m.YesPriceCents, m.NoPriceCents, m.LastTradePriceCents,
+		m.VolumeCents, m.LiquidityCents,
+		m.AMMYesShares, m.AMMNoShares,
 		m.AMMLiquidityParam, m.AMMSubsidyCents,
 		m.SettlementSourceKey, m.SettlementCutoffAt, m.SettlementRule, m.SettlementParams,
-		m.FallbackSourceKey, m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt,
+		m.FallbackSourceKey, m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt, nullStr(m.ImagePath),
 	).Scan(&m.ID, &m.CreatedAt, &m.UpdatedAt)
 }
 
@@ -1028,44 +1041,44 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 	rows, err := r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'
 		  AND m.event_id IN (SELECT id FROM prediction_events WHERE featured = true)
-		  ORDER BY m.volume_cents DESC LIMIT 6`)
+		  ORDER BY m.volume_cents DESC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
 		rows.Close()
 		assign(&d.Featured, got)
 	}
 
-	// Trending: highest volume (proxied by lifetime volume until last-hour tracking lands)
+	// Trending: highest volume across the whole AMM (lifetime volume proxy
+	// until last-hour tracking lands). Bumped to 12 in alpha because
+	// imported markets pushed the AMM from 17 markets to ~170 — six rows
+	// duplicated content with Featured for the old size.
 	rows, err = r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'
-		  ORDER BY m.volume_cents DESC LIMIT 6`)
+		  ORDER BY m.volume_cents DESC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
 		rows.Close()
 		assign(&d.Trending, got)
 	}
 
-	// Closing soon: markets closing within 24h
+	// Closing soon: markets closing within 7 days. Was 24h pre-imports;
+	// imported markets are dated 90+ days out by default, so a tight 24h
+	// window left this section empty most of the time.
 	rows, err = r.db.QueryContext(ctx,
 		marketSelectQuery()+` WHERE m.status = 'open'
-		  AND m.close_at BETWEEN NOW() AND NOW() + INTERVAL '24 hours'
-		  ORDER BY m.close_at ASC LIMIT 6`)
+		  AND m.close_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+		  ORDER BY m.close_at ASC LIMIT 12`)
 	if err == nil {
 		got, _ := scanMarkets(rows)
 		rows.Close()
 		assign(&d.ClosingSoon, got)
 	}
 
-	// Recent: newest markets
-	rows, err = r.db.QueryContext(ctx,
-		marketSelectQuery()+` WHERE m.status = 'open'
-		  ORDER BY m.created_at DESC LIMIT 6`)
-	if err == nil {
-		got, _ := scanMarkets(rows)
-		rows.Close()
-		assign(&d.Recent, got)
-	}
-
+	// Recent: dropped from the discovery payload at the SQL layer because
+	// every imported market is "newest" by created_at (they all landed in
+	// the same sync run), so the section duplicated Trending content.
+	// Frontend no longer renders it; we keep the empty slice so the JSON
+	// shape stays stable for any downstream consumer.
 	return d, nil
 }
 
@@ -1078,7 +1091,7 @@ func marketSelectQuery() string {
 	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_cents,
 	               m.settlement_source_key, m.settlement_cutoff_at, m.settlement_rule, m.settlement_params,
 	               m.fallback_source_key, m.fee_rate_bps, m.maker_rebate_bps,
-	               m.open_at, m.close_at, m.created_at, m.updated_at
+	               m.open_at, m.close_at, m.created_at, m.updated_at, m.image_path
 	        FROM prediction_markets m`
 }
 
@@ -1089,7 +1102,7 @@ type scannable interface {
 func scanMarketRow(row scannable) (*Market, error) {
 	var m Market
 	var desc sql.NullString
-	var result, fallback sql.NullString
+	var result, fallback, imagePath sql.NullString
 	var lastTradePrice sql.NullInt64
 	var settleCutoff, openAt sql.NullTime
 
@@ -1099,7 +1112,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyCents,
 		&m.SettlementSourceKey, &settleCutoff, &m.SettlementRule, &m.SettlementParams,
 		&fallback, &m.FeeRateBps, &m.MakerRebateBps,
-		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt)
+		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath)
 	if err != nil {
 		return nil, err
 	}
@@ -1120,6 +1133,9 @@ func scanMarketRow(row scannable) (*Market, error) {
 	}
 	if openAt.Valid {
 		m.OpenAt = &openAt.Time
+	}
+	if imagePath.Valid {
+		m.ImagePath = imagePath.String
 	}
 	return &m, nil
 }
@@ -1232,9 +1248,14 @@ func buildEventWhere(f EventFilter) (string, []interface{}) {
 		idx++
 	}
 
-	if len(conds) == 0 {
-		return "", nil
-	}
+	// Hide synthetic catalog-host events from public listings. They exist in
+	// the schema purely to host imported markets (see migration 018) and
+	// would otherwise show up as oversized "Politics Markets" / "Sports
+	// Markets" / etc. cards on /events and /category/*. The markets they
+	// host still surface via market-level queries (which join through
+	// event_id) — only the *event listing* is filtered.
+	conds = append(conds, "is_synthetic = false")
+
 	return " WHERE " + strings.Join(conds, " AND "), args
 }
 
@@ -1248,6 +1269,17 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 		args = append(args, *f.EventID)
 		idx++
 	}
+	if f.CategoryID != nil {
+		// Subquery joins markets to events to filter by category. Synthetic
+		// catalog-host events are intentionally NOT excluded here — players
+		// browsing /category/* should see imported markets just like real ones.
+		// Only the event-listing endpoint hides synthetic events; the markets
+		// they host still surface flat under each category.
+		conds = append(conds,
+			fmt.Sprintf("event_id IN (SELECT id FROM prediction_events WHERE category_id = $%d)", idx))
+		args = append(args, *f.CategoryID)
+		idx++
+	}
 	if f.Status != nil {
 		conds = append(conds, fmt.Sprintf("status = $%d", idx))
 		args = append(args, *f.Status)
@@ -1256,6 +1288,14 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 	if f.Ticker != nil {
 		conds = append(conds, fmt.Sprintf("ticker = $%d", idx))
 		args = append(args, *f.Ticker)
+		idx++
+	}
+	if f.CloseBefore != nil {
+		// Players use this to ask "what's about to settle?". The bound is
+		// inclusive on the upper edge so a market closing exactly at the
+		// requested instant still appears in the result.
+		conds = append(conds, fmt.Sprintf("close_at <= $%d", idx))
+		args = append(args, *f.CloseBefore)
 		idx++
 	}
 

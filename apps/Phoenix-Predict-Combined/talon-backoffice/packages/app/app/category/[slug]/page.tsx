@@ -27,30 +27,18 @@ export default function CategoryPage() {
         const cat = await api.getCategory(slug);
         if (cancelled) return;
         setCategory(cat);
-        // Category → events (by categoryId) → flatten markets.
-        // The markets endpoint doesn't accept a categoryId filter directly;
-        // events do. Fetching one event per page isn't ideal at scale,
-        // but seed data stays small and dropping the hydrated markets
-        // array per event is fine here.
-        const eventsRes = await api.getEvents({
+        // Markets are queried directly with a categoryId filter (the gateway
+        // joins markets → events → category). This surfaces both real and
+        // synthetic-hosted markets in one flat list — synthetic events are
+        // hidden from event listings but their markets still belong to the
+        // category and should appear here.
+        const marketsRes = await api.getMarkets({
           categoryId: cat.id,
           status: "open",
-          pageSize: 50,
+          pageSize: 200,
         });
         if (cancelled) return;
-        const events = eventsRes.data;
-        const hydrated = await Promise.all(
-          events.map((e) => api.getEvent(e.id).catch(() => null)),
-        );
-        if (cancelled) return;
-        const collected: PredictionMarket[] = [];
-        for (const ev of hydrated) {
-          if (!ev?.markets) continue;
-          for (const m of ev.markets) {
-            if (m.status === "open") collected.push(m);
-          }
-        }
-        setMarkets(collected);
+        setMarkets(marketsRes.data || []);
       } catch (err: unknown) {
         logger.error("CategoryPage", "load failed", err);
       } finally {
@@ -142,6 +130,7 @@ export default function CategoryPage() {
                 liquidityCents={m.liquidityCents}
                 closeAt={m.closeAt}
                 status={m.status}
+                imagePath={m.imagePath}
               />
             ))}
           </div>

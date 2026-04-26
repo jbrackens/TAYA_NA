@@ -150,6 +150,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerOrderRoutes(mux, predictionService)
 	registerPortfolioRoutes(mux, predictionService)
 	registerSettlementRoutes(mux, predictionService)
+	registerDiscoverRoutes(mux, walletService.DB())
 
 	// --- Feed Adapters & Background Workers ---
 	if predRepo != nil {
