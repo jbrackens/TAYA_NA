@@ -757,49 +757,35 @@ function Styles() {
         .pf-summary-5 { grid-template-columns: repeat(2, 1fr); }
       }
 
-      /* Stat card — .glass recipe inline so we don't need to append the
-       * class to every JSX node. Same geometry on all 5 cards, including
-       * the RankChip to keep the strip optically even. */
+      /* Stat card — soft warm-dark surface (Robinhood, P6). Same geometry
+       * on all 5 cards, including the RankChip to keep the strip optically
+       * even. */
       .pf-stat, .pf-rank-chip {
         position: relative;
         padding: 16px 18px;
-        border-radius: var(--r-md);
+        border-radius: var(--r-rh-lg);
         color: var(--t1);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.02) 100%),
-          var(--glass-regular);
-        backdrop-filter: blur(24px) saturate(170%);
-        -webkit-backdrop-filter: blur(24px) saturate(170%);
-        border: 1px solid rgba(255,255,255,0.13);
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          inset 0 -1px 0 var(--rim-bottom),
-          inset 1px 0 2px var(--chroma-1),
-          inset -1px 0 2px var(--chroma-2),
-          0 2px 6px rgba(0,0,0,0.18),
-          0 8px 24px rgba(0,0,0,0.22);
+        background: var(--surface-1);
+        border: 1px solid var(--border-1);
         display: flex;
         flex-direction: column;
         gap: 4px;
         text-decoration: none;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       }
       .pf-rank-chip {
-        background:
-          linear-gradient(180deg, rgba(43, 228, 128, 0.16) 0%, rgba(43, 228, 128, 0.04) 100%),
-          var(--glass-regular);
+        background: var(--accent-soft);
         border-color: rgba(43, 228, 128, 0.3);
       }
       .pf-rank-chip:hover {
         border-color: rgba(43, 228, 128, 0.55);
         transform: translateY(-1px);
-        transition: transform 150ms ease, border-color 150ms ease;
+        transition: transform 120ms ease, border-color 120ms ease;
       }
       .pf-rank-chip:focus-visible {
         outline: none;
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          0 0 0 2px var(--accent-soft),
-          0 0 16px var(--accent-glow-color);
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--accent-soft);
       }
 
       .pf-pts {
@@ -808,10 +794,8 @@ function Styles() {
         white-space: nowrap;
       }
       .pf-stat-label {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 500;
         color: var(--t3);
       }
       .pf-stat-value {
@@ -822,19 +806,19 @@ function Styles() {
         letter-spacing: -0.01em;
         font-variant-numeric: tabular-nums;
       }
-      .pf-stat-yes .pf-stat-value { color: var(--yes); text-shadow: 0 0 8px var(--yes-glow); }
-      .pf-stat-no .pf-stat-value { color: var(--no); text-shadow: 0 0 8px var(--no-glow); }
-      .pf-stat-gain .pf-stat-value { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow-color); }
+      .pf-stat-yes .pf-stat-value { color: var(--yes); }
+      .pf-stat-no .pf-stat-value { color: var(--no); }
+      .pf-stat-gain .pf-stat-value { color: var(--accent); }
       .pf-stat-sub { font-size: 11px; color: var(--t3); }
 
-      /* Tab bar — glass-thin pill segmented control */
+      /* Tab bar — segmented pill control */
       .pf-tabs {
         display: inline-flex;
-        gap: 2px;
-        padding: 4px;
+        gap: 4px;
+        padding: 3px;
         margin-bottom: 18px;
-        background: rgba(0, 0, 0, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border-1);
         border-radius: var(--r-pill);
       }
       .pf-tab {
@@ -847,45 +831,37 @@ function Styles() {
         font-weight: 600;
         color: var(--t3);
         cursor: pointer;
-        transition: color 150ms ease, background 150ms ease;
+        transition: color 120ms ease, background 120ms ease;
         display: inline-flex;
         align-items: center;
         gap: 8px;
       }
       .pf-tab:hover { color: var(--t1); }
       .pf-tab.active {
-        color: var(--t1);
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        color: #061a10;
+        background: var(--accent);
       }
       .pf-tab-count {
         font-size: 10px;
         padding: 1px 7px;
         border-radius: var(--r-pill);
-        background: rgba(0, 0, 0, 0.35);
+        background: rgba(0, 0, 0, 0.18);
         color: var(--t2);
         font-variant-numeric: tabular-nums;
       }
       .pf-tab.active .pf-tab-count {
-        background: rgba(43, 228, 128, 0.16);
-        color: var(--accent);
+        background: rgba(0, 0, 0, 0.18);
+        color: #061a10;
       }
 
-      /* Table container — glass card, solid-fill rows inside */
+      /* Table container — soft warm-dark card */
       .pf-table {
         position: relative;
-        border-radius: var(--r-md);
+        border-radius: var(--r-rh-lg);
         overflow: hidden;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
-          var(--glass-regular);
-        backdrop-filter: blur(24px) saturate(170%);
-        -webkit-backdrop-filter: blur(24px) saturate(170%);
-        border: 1px solid rgba(255,255,255,0.12);
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          inset 0 -1px 0 var(--rim-bottom),
-          0 10px 28px rgba(0,0,0,0.22);
+        background: var(--surface-1);
+        border: 1px solid var(--border-1);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       }
       .pf-thead, .pf-tr-link, .pf-tr-static {
         display: grid;
@@ -895,13 +871,13 @@ function Styles() {
         align-items: center;
       }
       .pf-thead {
-        background: rgba(0, 0, 0, 0.3);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid var(--border-1);
       }
       .pf-th {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
         color: var(--t3);
       }
@@ -911,16 +887,16 @@ function Styles() {
         padding: 0;
       }
       .pf-tr {
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid var(--border-1);
       }
       .pf-tr:first-child { border-top: 0; }
       .pf-tr-link, .pf-tr-static {
         padding: 14px 18px;
         color: inherit;
         text-decoration: none;
-        transition: background 150ms ease;
+        transition: background 120ms ease;
       }
-      .pf-tr-link:hover { background: rgba(255, 255, 255, 0.04); }
+      .pf-tr-link:hover { background: var(--surface-2); }
       .pf-td {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 13px;
@@ -936,7 +912,7 @@ function Styles() {
         min-width: 0;
       }
       .pf-market-title {
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-size: 13px;
         font-weight: 600;
         color: var(--t1);

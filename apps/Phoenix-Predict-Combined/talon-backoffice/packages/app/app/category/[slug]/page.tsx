@@ -74,12 +74,14 @@ export default function CategoryPage() {
           align-items: baseline;
           justify-content: space-between;
           gap: 12px;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
           flex-wrap: wrap;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .cat-title {
+          font-family: 'Inter', sans-serif;
           font-size: 28px;
-          font-weight: 800;
+          font-weight: 700;
           letter-spacing: -0.02em;
           color: var(--t1);
           margin: 0;
@@ -89,7 +91,6 @@ export default function CategoryPage() {
           font-size: 12px;
           color: var(--t3);
           font-variant-numeric: tabular-nums;
-          letter-spacing: 0.04em;
         }
         .cat-grid {
           display: grid;
@@ -97,13 +98,13 @@ export default function CategoryPage() {
           gap: 16px;
         }
         .cat-empty {
-          padding: 60px 20px;
+          padding: 56px 20px;
           text-align: center;
           color: var(--t3);
           font-size: 13px;
-          border-radius: var(--r-md);
-          background: rgba(0, 0, 0, 0.18);
-          border: 1px dashed rgba(255, 255, 255, 0.1);
+          border-radius: var(--r-rh-lg);
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
         }
       `}</style>
       <div>

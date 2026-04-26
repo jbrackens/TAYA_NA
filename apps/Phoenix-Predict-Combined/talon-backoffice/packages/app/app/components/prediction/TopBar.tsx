@@ -189,16 +189,9 @@ export function TopBar() {
           align-items: center;
           gap: 24px;
           padding: 0 32px;
-          background:
-            linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%),
-            rgba(10, 8, 32, 0.55);
-          backdrop-filter: blur(40px) saturate(180%);
-          -webkit-backdrop-filter: blur(40px) saturate(180%);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.12),
-            0 1px 0 rgba(0,0,0,0.4),
-            0 10px 30px rgba(0,0,0,0.15);
+          background: var(--bg-deep);
+          border-bottom: 1px solid var(--border-1);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .tb-brand {
           display: inline-flex;
@@ -236,12 +229,9 @@ export function TopBar() {
         }
         .tb-link:hover { color: var(--t1); background: rgba(255,255,255,0.06); }
         .tb-link.is-active {
-          color: var(--t1);
-          background: rgba(255,255,255,0.09);
-          border: 1px solid rgba(255,255,255,0.1);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.15),
-            0 2px 6px rgba(0,0,0,0.15);
+          color: #061a10;
+          background: var(--accent);
+          font-weight: 600;
         }
 
         .tb-right {
@@ -258,26 +248,21 @@ export function TopBar() {
         }
         .tb-search {
           width: 280px;
-          height: 44px;
+          height: 40px;
           padding: 0 14px 0 36px;
           border-radius: var(--r-pill);
-          border: 1px solid rgba(255,255,255,0.08);
-          background: rgba(0,0,0,0.28);
+          border: 1px solid var(--border-1);
+          background: var(--surface-1);
           color: var(--t1);
           font-family: inherit;
           font-size: 13px;
           outline: none;
-          box-shadow:
-            inset 0 1px 2px rgba(0,0,0,0.3),
-            inset 0 -1px 0 rgba(255,255,255,0.04);
-          transition: border-color 180ms ease, box-shadow 180ms ease;
+          transition: border-color 120ms ease, box-shadow 120ms ease;
         }
         .tb-search::placeholder { color: var(--t3); }
         .tb-search:focus-visible {
           border-color: var(--accent);
-          box-shadow:
-            inset 0 1px 2px rgba(0,0,0,0.3),
-            0 0 0 2px var(--accent-soft);
+          box-shadow: 0 0 0 2px var(--accent-soft);
         }
         .tb-search-icon {
           position: absolute;
@@ -295,12 +280,10 @@ export function TopBar() {
           list-style: none;
           margin: 0;
           padding: 4px;
-          background: rgba(12, 38, 56, 0.9);
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: var(--r-md);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          border-radius: var(--r-rh-md);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
           z-index: 110;
           max-height: 360px;
           overflow-y: auto;
@@ -333,23 +316,18 @@ export function TopBar() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          padding: 7px 12px 7px 10px;
+          padding: 7px 12px;
           border-radius: var(--r-pill);
-          background: rgba(43, 228, 128, 0.1);
-          border: 1px solid rgba(43, 228, 128, 0.22);
+          background: var(--accent-soft);
           font-family: 'IBM Plex Mono', monospace;
           font-size: 13px;
           font-weight: 600;
           font-variant-numeric: tabular-nums;
           color: var(--accent);
-          box-shadow:
-            inset 0 1px 0 rgba(43, 228, 128, 0.25),
-            0 0 16px rgba(43, 228, 128, 0.1);
-          text-shadow: 0 0 6px var(--accent-glow-color);
         }
         .tb-balance .lbl {
           color: var(--t3);
-          font-family: 'Outfit', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 11px;
           font-weight: 500;
         }
@@ -392,11 +370,8 @@ export function TopBar() {
         .tb-btn-ghost { background: transparent; color: var(--t1); }
         .tb-btn-ghost:hover { background: rgba(255,255,255,0.06); }
         .tb-btn-accent {
-          color: #06170a;
-          background: var(--accent-gradient);
-          box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.3),
-            0 0 18px var(--accent-glow-color);
+          color: #061a10;
+          background: var(--accent);
         }
         .tb-btn-accent:hover { filter: brightness(1.05); transform: translateY(-1px); }
 
@@ -405,13 +380,11 @@ export function TopBar() {
           right: 0;
           top: calc(100% + 6px);
           min-width: 200px;
-          background: rgba(12, 38, 56, 0.92);
-          backdrop-filter: blur(24px) saturate(180%);
-          -webkit-backdrop-filter: blur(24px) saturate(180%);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: var(--r-md);
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          border-radius: var(--r-rh-md);
           padding: 4px;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
           z-index: 110;
         }
         .tb-menu a, .tb-menu button {
