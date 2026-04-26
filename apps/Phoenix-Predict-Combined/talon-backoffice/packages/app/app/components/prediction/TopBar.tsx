@@ -35,6 +35,7 @@ const api = createPredictionClient();
 
 const NAV_LINKS: { href: string; label: string }[] = [
   { href: "/predict", label: "Markets" },
+  { href: "/discover", label: "Discover" },
   { href: "/portfolio", label: "Portfolio" },
   { href: "/leaderboards", label: "Leaderboards" },
   { href: "/rewards", label: "Rewards" },

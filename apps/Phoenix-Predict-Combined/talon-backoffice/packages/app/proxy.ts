@@ -14,6 +14,7 @@ const PUBLIC_ROUTES = [
   "/auth",
   // Prediction discovery (read-only)
   "/predict",
+  "/discover",
   "/market",
   "/category",
   // Informational pages

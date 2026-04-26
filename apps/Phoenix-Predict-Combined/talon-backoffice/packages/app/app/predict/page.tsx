@@ -3,27 +3,30 @@
 /**
  * PredictDiscoveryPage — the prediction homepage, Liquid Glass edition.
  *
- * Structure (DESIGN.md §6 + §8):
- *   [CategoryChips]    ← horizontal .glass.glass-thin chip strip
- *   [DiscoveryHero]    ← featured market marquee in a .glass panel
- *   [Featured grid]    ← repeat(auto-fill, minmax(300px, 1fr)) of MarketCards
- *   [Trending grid]
- *   [Closing soon]
- *   [Recently added]
+ * Structure:
+ *   [Hero row]          ← DiscoveryHero (1fr) + TrendingSidebar (320px)
+ *   [Featured grid]     ← curated highlights (always visible)
+ *   [MarketFilterBar]   ← pill segmented time filter + topic dropdown
+ *   [All Markets grid]  ← paginated full market list, scoped by the filter
  *
- * Retired in this rewrite (DESIGN.md §8 components retired list):
- *   - FeaturedHero (2:1 marquee + activity/movers side column)
- *   - WhaleActivityCard (amber whale-trade list)
- *   - TopMoversCard (dark-broadcast mover list)
+ * The pills sit directly above the section they scope. Hero, sidebar,
+ * and Featured stay visible at all filter states.
  *
- * DiscoveryHero is a single-column, mint-palette glass card: LIVE pill,
- * category pill, market question, YES/NO side-stat row, "Trade now" CTA
- * + "View details" link. No amber, no whale pallete, no fake deltas.
+ * Trending and Closing Soon grids moved to /discover.
  */
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MarketCard } from "../components/prediction/MarketCard";
+import {
+  MarketFilterBar,
+  EMPTY_FILTER,
+  dateWindowToCloseBefore,
+  type MarketFilterValue,
+} from "../components/prediction/MarketFilterBar";
+import { TrendingSidebar } from "../components/prediction/TrendingSidebar";
+import { AllMarketsSection } from "../components/prediction/AllMarketsSection";
+import { SectionHead } from "../components/prediction/SectionHead";
+import { MarketGrid } from "../components/prediction/MarketGrid";
 import type {
   Category,
   DiscoveryResponse,
@@ -33,63 +36,10 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 
 const api = createPredictionClient();
 
-function CategoryChips({ categories }: { categories: Category[] }) {
-  if (categories.length === 0) return null;
-  return (
-    <>
-      <style>{`
-        .pred-cats {
-          display: flex;
-          gap: 6px;
-          padding: 8px;
-          margin: 0 0 20px;
-          border-radius: var(--r-pill);
-          overflow-x: auto;
-          scrollbar-width: none;
-        }
-        .pred-cats::-webkit-scrollbar { display: none; }
-        .pred-cat {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          flex: 0 0 auto;
-          min-width: 44px;
-          min-height: 44px;
-          padding: 0 14px;
-          font-size: 13px;
-          font-weight: 500;
-          color: var(--t2);
-          border-radius: var(--r-pill);
-          white-space: nowrap;
-          text-decoration: none;
-          transition: color 150ms ease, background 150ms ease;
-        }
-        .pred-cat:hover {
-          color: var(--t1);
-          background: rgba(255, 255, 255, 0.06);
-        }
-        .pred-cat.is-all {
-          color: var(--t1);
-          background: rgba(255, 255, 255, 0.08);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-        }
-      `}</style>
-      <nav
-        className="glass glass-thin pred-cats"
-        aria-label="Market categories"
-      >
-        <Link href="/predict" className="pred-cat is-all">
-          All
-        </Link>
-        {categories.map((c) => (
-          <Link key={c.slug} href={`/category/${c.slug}`} className="pred-cat">
-            {c.name}
-          </Link>
-        ))}
-      </nav>
-    </>
-  );
-}
+// CategoryChips removed in favor of MarketFilterBar (see ../components/
+// prediction/MarketFilterBar.tsx). The chips navigated to /category/[slug];
+// the new bar filters in-place on this page. /category routes still work
+// for direct links and external navigation.
 
 function DiscoveryHero({
   market,
@@ -103,8 +53,7 @@ function DiscoveryHero({
       <section
         className="glass"
         style={{
-          padding: "28px 32px",
-          marginBottom: 28,
+          padding: 32,
           minHeight: 220,
           borderRadius: "var(--r-lg)",
           color: "var(--t3)",
@@ -124,8 +73,7 @@ function DiscoveryHero({
     <>
       <style>{`
         .pred-hero {
-          padding: 28px 32px;
-          margin-bottom: 28px;
+          padding: 32px;
           border-radius: var(--r-lg);
         }
         .pred-hero-pills {
@@ -260,7 +208,7 @@ function DiscoveryHero({
         .pred-hero-vol strong { color: var(--t1); }
 
         @media (max-width: 720px) {
-          .pred-hero { padding: 22px 20px; }
+          .pred-hero { padding: 24px; }
           .pred-hero-q { font-size: 24px; }
           .pred-hero-vol { margin-left: 0; width: 100%; }
         }
@@ -309,87 +257,13 @@ function DiscoveryHero({
   );
 }
 
-function MarketGrid({ markets }: { markets: PredictionMarket[] }) {
-  if (!markets || markets.length === 0) return null;
-  return (
-    <>
-      <style>{`
-        .pred-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-          gap: 16px;
-        }
-      `}</style>
-      <div className="pred-grid">
-        {markets.map((m) => (
-          <MarketCard
-            key={m.id}
-            ticker={m.ticker}
-            title={m.title}
-            yesPriceCents={m.yesPriceCents}
-            noPriceCents={m.noPriceCents}
-            volumeCents={m.volumeCents}
-            openInterestCents={m.openInterestCents}
-            liquidityCents={m.liquidityCents}
-            closeAt={m.closeAt}
-            status={m.status}
-          />
-        ))}
-      </div>
-    </>
-  );
-}
-
-function SectionHead({
-  title,
-  count,
-  href,
-}: {
-  title: string;
-  count?: number;
-  href?: string;
-}) {
-  return (
-    <>
-      <style>{`
-        .pred-section-head {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          margin: 32px 0 14px;
-        }
-        .pred-section-title {
-          font-size: 22px;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          margin: 0;
-          color: var(--t1);
-        }
-        .pred-section-link {
-          font-size: 13px;
-          color: var(--accent);
-          text-decoration: none;
-          text-shadow: 0 0 6px var(--accent-glow-color);
-        }
-        .pred-section-link:hover { text-decoration: underline; }
-      `}</style>
-      <div className="pred-section-head">
-        <h2 className="pred-section-title">{title}</h2>
-        {href && (
-          <a href={href} className="pred-section-link">
-            {count != null ? `See all ${count} →` : "See all →"}
-          </a>
-        )}
-      </div>
-    </>
-  );
-}
-
 export default function PredictDiscoveryPage() {
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<MarketFilterValue>(EMPTY_FILTER);
 
+  // Initial load: discovery sections + categories list.
   useEffect(() => {
     let cancelled = false;
     api
@@ -417,8 +291,6 @@ export default function PredictDiscoveryPage() {
 
   const featured = discovery?.featured ?? [];
   const trending = discovery?.trending ?? [];
-  const closingSoon = discovery?.closingSoon ?? [];
-  const recent = discovery?.recent ?? [];
 
   const marquee = featured[0] ?? trending[0] ?? null;
   const featuredRest = marquee
@@ -450,10 +322,36 @@ export default function PredictDiscoveryPage() {
     );
   }
 
+  // Pills filter only the All Markets section. Hero, Trending sidebar, and
+  // Featured grid stay visible regardless of filter state.
+  const filterCategoryId = categories.find(
+    (c) => c.slug === filter.categorySlug,
+  )?.id;
+  const filterCloseBefore = dateWindowToCloseBefore(filter.dateWindow);
+
   return (
     <div>
-      <CategoryChips categories={categories} />
-      <DiscoveryHero market={marquee} categoryName={heroCategory} />
+      <style>{`
+        .pred-discovery-grid {
+          display: grid;
+          grid-template-columns: 1fr 320px;
+          gap: 20px;
+          align-items: start;
+        }
+        .pred-discovery-grid > .pred-hero-cell {
+          min-width: 0;
+        }
+        @media (max-width: 960px) {
+          .pred-discovery-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
+
+      <div className="pred-discovery-grid">
+        <div className="pred-hero-cell">
+          <DiscoveryHero market={marquee} categoryName={heroCategory} />
+        </div>
+        <TrendingSidebar markets={trending} limit={3} />
+      </div>
 
       {featuredRest.length > 0 && (
         <>
@@ -462,26 +360,16 @@ export default function PredictDiscoveryPage() {
         </>
       )}
 
-      {trending.length > 0 && (
-        <>
-          <SectionHead title="Trending" count={trending.length} />
-          <MarketGrid markets={trending} />
-        </>
-      )}
+      <MarketFilterBar
+        categories={categories}
+        value={filter}
+        onChange={setFilter}
+      />
 
-      {closingSoon.length > 0 && (
-        <>
-          <SectionHead title="Closing soon" count={closingSoon.length} />
-          <MarketGrid markets={closingSoon} />
-        </>
-      )}
-
-      {recent.length > 0 && (
-        <>
-          <SectionHead title="Recently added" count={recent.length} />
-          <MarketGrid markets={recent} />
-        </>
-      )}
+      <AllMarketsSection
+        categoryId={filterCategoryId}
+        closeBefore={filterCloseBefore}
+      />
     </div>
   );
 }
