@@ -22,10 +22,9 @@ const PAGE_SIZE = 12;
 
 interface Props {
   categoryId?: string;
-  closeBefore?: string;
 }
 
-export function AllMarketsSection({ categoryId, closeBefore }: Props) {
+export function AllMarketsSection({ categoryId }: Props) {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -46,7 +45,6 @@ export function AllMarketsSection({ categoryId, closeBefore }: Props) {
         page: 1,
         pageSize: PAGE_SIZE,
         categoryId,
-        closeBefore,
       })
       .then((res) => {
         if (cancelled) return;
@@ -66,7 +64,7 @@ export function AllMarketsSection({ categoryId, closeBefore }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [categoryId, closeBefore]);
+  }, [categoryId]);
 
   function loadMore() {
     if (loadingMore || !hasNext) return;
@@ -77,7 +75,6 @@ export function AllMarketsSection({ categoryId, closeBefore }: Props) {
         page: page + 1,
         pageSize: PAGE_SIZE,
         categoryId,
-        closeBefore,
       })
       .then((res) => {
         setMarkets((prev) => [...prev, ...(res.data || [])]);
@@ -132,7 +129,7 @@ export function AllMarketsSection({ categoryId, closeBefore }: Props) {
   }
 
   if (!loading && markets.length === 0) {
-    const filtered = !!categoryId || !!closeBefore;
+    const filtered = !!categoryId;
     return (
       <>
         <SectionHead title="All markets" />
@@ -158,7 +155,7 @@ export function AllMarketsSection({ categoryId, closeBefore }: Props) {
           </h3>
           <p style={{ margin: "8px 0 0", color: "var(--t3)", fontSize: 13 }}>
             {filtered
-              ? "Try a wider time window or a different topic."
+              ? "Try a different category, or pick All to see everything."
               : "Check back soon — new markets are posted continuously."}
           </p>
         </div>

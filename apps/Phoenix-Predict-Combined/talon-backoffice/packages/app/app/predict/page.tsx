@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import {
   MarketFilterBar,
   EMPTY_FILTER,
-  dateWindowToCloseBefore,
+  isFilterActive,
   type MarketFilterValue,
 } from "../components/prediction/MarketFilterBar";
 import { TrendingSidebar } from "../components/prediction/TrendingSidebar";
@@ -410,12 +410,13 @@ export default function PredictDiscoveryPage() {
     );
   }
 
-  // Pills filter only the All Markets section. Hero, Trending sidebar, and
-  // Featured grid stay visible regardless of filter state.
+  // Category pills scope All Markets. When a category is active, Featured
+  // hides (Featured is curated across all categories, not within one).
+  // Hero + Top Movers always show.
   const filterCategoryId = categories.find(
     (c) => c.slug === filter.categorySlug,
   )?.id;
-  const filterCloseBefore = dateWindowToCloseBefore(filter.dateWindow);
+  const filterActive = isFilterActive(filter);
 
   return (
     <div>
@@ -425,6 +426,7 @@ export default function PredictDiscoveryPage() {
           grid-template-columns: 1fr 320px;
           gap: 20px;
           align-items: start;
+          margin-bottom: 32px;
         }
         .pred-discovery-grid > .pred-hero-cell {
           min-width: 0;
@@ -434,6 +436,12 @@ export default function PredictDiscoveryPage() {
         }
       `}</style>
 
+      <MarketFilterBar
+        categories={categories}
+        value={filter}
+        onChange={setFilter}
+      />
+
       <div className="pred-discovery-grid">
         <div className="pred-hero-cell">
           <DiscoveryHero market={marquee} categoryName={heroCategory} />
@@ -441,23 +449,14 @@ export default function PredictDiscoveryPage() {
         <TrendingSidebar markets={trending} />
       </div>
 
-      {featuredRest.length > 0 && (
+      {!filterActive && featuredRest.length > 0 && (
         <>
           <SectionHead title="Featured markets" count={featured.length} />
           <MarketGrid markets={featuredRest} />
         </>
       )}
 
-      <MarketFilterBar
-        categories={categories}
-        value={filter}
-        onChange={setFilter}
-      />
-
-      <AllMarketsSection
-        categoryId={filterCategoryId}
-        closeBefore={filterCloseBefore}
-      />
+      <AllMarketsSection categoryId={filterCategoryId} />
     </div>
   );
 }
