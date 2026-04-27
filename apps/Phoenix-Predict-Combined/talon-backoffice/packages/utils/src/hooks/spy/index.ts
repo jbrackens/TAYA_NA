@@ -11,7 +11,7 @@ export const useSpy = <T = any>() => {
     values: T,
     onChange: ({ values, prevValues }: SpyCallbackProps<T>) => void,
   ) => {
-    const prevValuesRef = useRef<T>();
+    const prevValuesRef = useRef<T | undefined>(undefined);
     useEffect(() => {
       prevValuesRef.current = values;
     }, [values]);
