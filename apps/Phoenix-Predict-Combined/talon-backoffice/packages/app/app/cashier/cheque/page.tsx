@@ -61,7 +61,7 @@ export default function ChequeWithdrawalPage() {
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
     padding: "24px",
-    background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+    background: "var(--bg-deep)",
   };
 
   const contentStyle: React.CSSProperties = {
@@ -72,14 +72,14 @@ export default function ChequeWithdrawalPage() {
   const titleStyle: React.CSSProperties = {
     fontSize: "28px",
     fontWeight: "700",
-    color: "#e2e8f0",
+    color: "var(--t1)",
     marginBottom: "32px",
   };
 
   const formStyle: React.CSSProperties = {
-    backgroundColor: "#0f1225",
-    border: "1px solid #1a1f3a",
-    borderRadius: "8px",
+    backgroundColor: "var(--surface-1)",
+    border: "1px solid var(--border-1)",
+    borderRadius: "var(--r-rh-lg)",
     padding: "24px",
     display: "flex",
     flexDirection: "column",
@@ -95,17 +95,18 @@ export default function ChequeWithdrawalPage() {
   const labelStyle: React.CSSProperties = {
     fontSize: "13px",
     fontWeight: "600",
-    color: "#cbd5e1",
+    color: "var(--t2)",
   };
 
   const inputStyle: React.CSSProperties = {
     padding: "10px 12px",
-    backgroundColor: "#0a0e18",
-    border: "1px solid #1a1f3a",
-    borderRadius: "4px",
-    color: "#e2e8f0",
+    backgroundColor: "var(--surface-2)",
+    border: "1px solid var(--border-1)",
+    borderRadius: "var(--r-rh-md)",
+    color: "var(--t1)",
     fontSize: "13px",
     fontFamily: "inherit",
+    outline: "none",
   };
 
   const textareaStyle: React.CSSProperties = {
@@ -118,13 +119,13 @@ export default function ChequeWithdrawalPage() {
   const submitButtonStyle: React.CSSProperties = {
     padding: "12px 16px",
     backgroundColor: "var(--accent)",
-    color: "#0f1225",
+    color: "#04140a",
     border: "none",
-    borderRadius: "4px",
+    borderRadius: "var(--r-rh-md)",
     fontWeight: "600",
     fontSize: "14px",
-    cursor: "pointer",
-    transition: "all 0.2s",
+    cursor: loading ? "not-allowed" : "pointer",
+    transition: "transform 0.15s, filter 0.15s",
     opacity: loading ? 0.6 : 1,
   };
 
@@ -132,17 +133,17 @@ export default function ChequeWithdrawalPage() {
     padding: "12px 16px",
     backgroundColor: "rgba(244, 63, 94, 0.1)",
     border: "1px solid var(--no)",
-    borderRadius: "4px",
+    borderRadius: "var(--r-rh-md)",
     color: "var(--no)",
     fontSize: "13px",
   };
 
   const successStyle: React.CSSProperties = {
     padding: "12px 16px",
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
-    border: "1px solid #86efac",
-    borderRadius: "4px",
-    color: "#86efac",
+    backgroundColor: "var(--accent-soft)",
+    border: "1px solid var(--border-2)",
+    borderRadius: "var(--r-rh-md)",
+    color: "var(--accent)",
     fontSize: "13px",
   };
 
@@ -176,11 +177,10 @@ export default function ChequeWithdrawalPage() {
                 style={inputStyle}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.boxShadow =
-                    "0 0 0 3px rgba(43, 228, 128, 0.1)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--accent-soft)";
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "#1a1f3a";
+                  e.currentTarget.style.borderColor = "var(--border-1)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
                 disabled={loading}
@@ -197,11 +197,10 @@ export default function ChequeWithdrawalPage() {
                 style={inputStyle}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.boxShadow =
-                    "0 0 0 3px rgba(43, 228, 128, 0.1)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--accent-soft)";
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "#1a1f3a";
+                  e.currentTarget.style.borderColor = "var(--border-1)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
                 disabled={loading}
@@ -217,11 +216,10 @@ export default function ChequeWithdrawalPage() {
                 style={textareaStyle}
                 onFocus={(e) => {
                   e.currentTarget.style.borderColor = "var(--accent)";
-                  e.currentTarget.style.boxShadow =
-                    "0 0 0 3px rgba(43, 228, 128, 0.1)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px var(--accent-soft)";
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.borderColor = "#1a1f3a";
+                  e.currentTarget.style.borderColor = "var(--border-1)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
                 disabled={loading}
@@ -233,12 +231,10 @@ export default function ChequeWithdrawalPage() {
               disabled={loading}
               style={submitButtonStyle}
               onMouseEnter={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.backgroundColor = "#ea580c";
-                }
+                if (!loading) e.currentTarget.style.filter = "brightness(1.05)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--accent)";
+                e.currentTarget.style.filter = "none";
               }}
             >
               {loading ? "Processing..." : "Request Cheque"}
@@ -246,7 +242,7 @@ export default function ChequeWithdrawalPage() {
           </form>
 
           <div
-            style={{ fontSize: "12px", color: "#64748b", marginTop: "16px" }}
+            style={{ fontSize: "12px", color: "var(--t3)", marginTop: "16px" }}
           >
             <p style={{ margin: "0 0 8px 0" }}>
               Cheque withdrawals typically take 5-7 business days to arrive.
