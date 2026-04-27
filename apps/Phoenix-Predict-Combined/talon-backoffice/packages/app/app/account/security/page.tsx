@@ -283,7 +283,7 @@ export default function SecurityPage() {
                   style={{
                     padding: "24px",
                     textAlign: "center",
-                    color: "#64748b",
+                    color: "var(--t3)",
                   }}
                 >
                   Loading sessions...
@@ -294,7 +294,7 @@ export default function SecurityPage() {
                   style={{
                     padding: "24px",
                     textAlign: "center",
-                    color: "#64748b",
+                    color: "var(--t3)",
                   }}
                 >
                   No active sessions found.
@@ -353,21 +353,21 @@ const securityStyles = `
   }
 
   .sec-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
-  .sec-header p { font-size: 14px; color: #64748b; }
+  .sec-header p { font-size: 14px; color: var(--t3); }
 
   .sec-back {
-    padding: 10px 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px; color: var(--t1); text-decoration: none; font-size: 13px;
+    padding: 10px 16px; background: var(--surface-1); border: 1px solid var(--border-1);
+    border-radius: var(--r-rh-md); color: var(--t1); text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
   .sec-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .sec-tabs {
-    display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex; gap: 0; margin-bottom: 24px; border-bottom: 1px solid var(--border-1);
   }
 
   .sec-tab {
-    padding: 12px 16px; font-size: 14px; font-weight: 600; color: #D3D3D3;
+    padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--t2);
     background: none; border: none; cursor: pointer;
     border-bottom: 2px solid transparent; transition: all 0.15s;
   }
@@ -377,7 +377,7 @@ const securityStyles = `
   }
 
   .sec-card {
-    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
     padding: 24px;
   }
 
@@ -386,7 +386,7 @@ const securityStyles = `
   }
 
   .sec-desc {
-    font-size: 13px; color: #D3D3D3; margin-bottom: 24px;
+    font-size: 13px; color: var(--t2); margin-bottom: 24px;
   }
 
   .sec-form {
@@ -396,12 +396,12 @@ const securityStyles = `
   .sec-field { display: flex; flex-direction: column; gap: 8px; }
 
   .sec-label {
-    font-size: 13px; font-weight: 600; color: #D3D3D3;
+    font-size: 13px; font-weight: 600; color: var(--t2);
   }
 
   .sec-input {
-    padding: 10px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px; color: var(--t1); font-size: 14px;
+    padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--border-1);
+    border-radius: var(--r-rh-md); color: var(--t1); font-size: 14px;
     outline: none; transition: border-color 0.15s;
   }
 
@@ -426,7 +426,7 @@ const securityStyles = `
 
   .sec-twofa {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
+    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
   }
   @media (max-width: 640px) {
     .sec-twofa { flex-direction: column; gap: 16px; align-items: flex-start; }
@@ -445,7 +445,7 @@ const securityStyles = `
   }
 
   .sec-twofa-desc {
-    font-size: 13px; color: #64748b;
+    font-size: 13px; color: var(--t3);
   }
 
   .sec-twofa-btn {
@@ -459,10 +459,10 @@ const securityStyles = `
 
   .sec-twofa-btn.enable:hover { opacity: 0.9; }
   .sec-twofa-btn.disable {
-    background: rgba(255, 255, 255, 0.08); color: var(--t1);
+    background: var(--surface-2); border: 1px solid var(--border-1); color: var(--t1);
   }
 
-  .sec-twofa-btn.disable:hover { background: rgba(255, 255, 255, 0.07); }
+  .sec-twofa-btn.disable:hover { background: var(--border-1); }
   .sec-twofa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .sec-sessions {
@@ -471,8 +471,8 @@ const securityStyles = `
 
   .sec-session-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
+    border: 1px solid var(--border-1);
   }
   @media (max-width: 640px) {
     .sec-session-item { flex-direction: column; gap: 12px; align-items: flex-start; }
@@ -480,8 +480,8 @@ const securityStyles = `
 
   .sec-session-info { flex: 1; }
   .sec-session-device { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 4px; }
-  .sec-session-location { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-  .sec-session-time { font-size: 12px; color: #4a5580; }
+  .sec-session-location { font-size: 12px; color: var(--t3); margin-bottom: 4px; }
+  .sec-session-time { font-size: 12px; color: var(--t3); }
 
   .sec-session-actions {
     display: flex; gap: 8px; align-items: center;
@@ -501,7 +501,7 @@ const securityStyles = `
   .sec-session-logout:hover { opacity: 0.9; }
 
   .sec-session-note {
-    padding: 12px 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
-    color: #64748b; font-size: 12px; margin-top: 12px;
+    padding: 12px 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
+    color: var(--t3); font-size: 12px; margin-top: 12px;
   }
 `;
