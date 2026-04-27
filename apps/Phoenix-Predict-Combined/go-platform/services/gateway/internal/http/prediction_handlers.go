@@ -192,7 +192,43 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	slog.Info("prediction routes registered")
 }
 
-func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
+// marketUpdateBroadcaster is the small slice of ws.Notifier the order
+// handlers need. Defined here (not imported from internal/ws) so the
+// prediction HTTP layer stays loosely coupled — any test or future
+// transport can plug in a stub.
+type marketUpdateBroadcaster interface {
+	NotifyPredictionMarketUpdate(marketID string, data interface{})
+}
+
+// marketUpdatePayload is the wire shape published on `market:<id>` after
+// a successful order. Keep this in sync with the TS PredictionMarket
+// shape on the frontend (api-client/src/prediction-types.ts) — the
+// frontend merges these fields into local market state on receive.
+type marketUpdatePayload struct {
+	MarketID            string `json:"marketId"`
+	Ticker              string `json:"ticker"`
+	YesPriceCents       int    `json:"yesPriceCents"`
+	NoPriceCents        int    `json:"noPriceCents"`
+	LastTradePriceCents *int   `json:"lastTradePriceCents,omitempty"`
+	VolumeCents         int64  `json:"volumeCents"`
+	OpenInterestCents   int64  `json:"openInterestCents"`
+	Ts                  string `json:"ts"`
+}
+
+func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
+	return marketUpdatePayload{
+		MarketID:            m.ID,
+		Ticker:              m.Ticker,
+		YesPriceCents:       m.YesPriceCents,
+		NoPriceCents:        m.NoPriceCents,
+		LastTradePriceCents: m.LastTradePriceCents,
+		VolumeCents:         m.VolumeCents,
+		OpenInterestCents:   m.OpenInterestCents,
+		Ts:                  time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
+func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifier marketUpdateBroadcaster) {
 	// --- Authenticated: Orders ---
 	mux.Handle("/api/v1/orders", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		switch r.Method {
@@ -243,6 +279,19 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			if err != nil {
 				return httpx.BadRequest(err.Error(), nil)
 			}
+
+			// Broadcast the post-trade market state on `market:<id>`.
+			// Refetch via the service so the published prices reflect the
+			// post-AMM-mutation state (PlaceOrder doesn't return the market
+			// to keep its signature small). Fire-and-forget: a missed
+			// broadcast is acceptable — the client refetches on focus and
+			// the next trade re-publishes.
+			if notifier != nil {
+				if updated, err := svc.GetMarket(r.Context(), req.MarketID); err == nil {
+					notifier.NotifyPredictionMarketUpdate(req.MarketID, buildMarketUpdatePayload(updated))
+				}
+			}
+
 			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]interface{}{
 				"order": order,
 				"trade": trade,

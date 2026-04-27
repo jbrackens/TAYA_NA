@@ -9,7 +9,7 @@ import (
 	"phoenix-revival/platform/transport/httpx"
 )
 
-func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo prediction.Repository) {
+func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo prediction.Repository, notifier marketUpdateBroadcaster) {
 	botAuth := prediction.NewBotAuthMiddleware(repo)
 
 	// Bot: Issue API key — cookie-auth route (player creates their own bot key)
@@ -94,6 +94,15 @@ func registerBotRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, repo pred
 			if err != nil {
 				stdhttp.Error(w, `{"error":{"code":"bad_request","message":"`+err.Error()+`"}}`, stdhttp.StatusBadRequest)
 				return
+			}
+
+			// Broadcast post-trade market state on `market:<id>`. Bots
+			// move prices same as users; subscribers (frontend, other
+			// bots) need the update either way. Fire-and-forget.
+			if notifier != nil {
+				if updated, err := svc.GetMarket(r.Context(), req.MarketID); err == nil {
+					notifier.NotifyPredictionMarketUpdate(req.MarketID, buildMarketUpdatePayload(updated))
+				}
 			}
 
 			w.Header().Set("Content-Type", "application/json")

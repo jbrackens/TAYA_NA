@@ -29,6 +29,7 @@ import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
 import { TradeTicket } from "../../components/prediction/TradeTicket";
 import { logger } from "../../lib/logger";
+import { subscribePredictWs } from "../../lib/websocket/predict-ws";
 import { useAppSelector } from "../../lib/store/hooks";
 import { selectCurrentBalance } from "../../lib/store/cashierSlice";
 import type {
@@ -150,6 +151,23 @@ export default function MarketDetailPage() {
       cancelled = true;
     };
   }, [market]);
+
+  // Live price updates via the gateway's `market:<id>` channel. Gateway
+  // publishes the post-AMM market state after every successful order on
+  // this market. Payload shape is a partial PredictionMarket — we merge
+  // into local state. If the WS drops, predict-ws.ts handles reconnect
+  // and re-subscribe transparently. See go-platform .../ws/notifier.go +
+  // .../http/prediction_handlers.go buildMarketUpdatePayload.
+  useEffect(() => {
+    const id = market?.id;
+    if (!id) return;
+    const unsubscribe = subscribePredictWs(`market:${id}`, (_eventId, data) => {
+      const payload = data as Partial<PredictionMarket> | null;
+      if (!payload || typeof payload !== "object") return;
+      setMarket((prev) => (prev ? { ...prev, ...payload } : prev));
+    });
+    return unsubscribe;
+  }, [market?.id]);
 
   const handlePreview = useCallback(
     async (side: OrderSide, quantity: number): Promise<OrderPreview | null> => {
