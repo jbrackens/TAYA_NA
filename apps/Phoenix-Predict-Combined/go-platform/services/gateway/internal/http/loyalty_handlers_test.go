@@ -234,6 +234,9 @@ func TestReferralRegistrationAndPlayerListFlow(t *testing.T) {
 	}
 
 	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/referrals?userId=u-referrer-office-1", nil)
+	// Match userId param to satisfy requireSelfOrAdmin's session-user check
+	// (other tests in this package use the same X-User-ID bot-auth header path).
+	listReq.Header.Set("X-User-ID", "u-referrer-office-1")
 	listRes := httptest.NewRecorder()
 	handler.ServeHTTP(listRes, listReq)
 	if listRes.Code != http.StatusOK {
