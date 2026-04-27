@@ -113,11 +113,11 @@ Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgro
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--yes` | `#71eeb8` | Seafoam — used for: line-chart strokes when up, "YES" labels in card pills, up-delta indicators, the YES-side probability-bar segment when needing the saturated tone. |
-| `--yes-text` | `#2C9C70` | Darker seafoam for text-on-light contexts (small "YES" pill labels) where `--yes` would lack contrast against `--surface-1` white. |
+| `--yes-text` | `#1A6849` | Dark seafoam for text-on-light contexts (small "YES" pill labels). 6.7:1 on white `--surface-1`, 6.1:1 on cream `--bg-deep`, 6.5:1 on hover-surface `--surface-2` — AA pass on all three. |
 | `--yes-soft` | `rgba(113,238,184,0.18)` | Up-delta pill background. |
 | `--yes-bar` | `#8FE5C4` | Calmer seafoam for the YES segment of the probability bar — desaturated so the bar feels like a calm split, not a brand. |
 | `--no` | `#ff8b6b` | Coral, unchanged. Used for: line-chart strokes when down, "NO" labels in card pills, down indicators. |
-| `--no-text` | `#C75A3D` | Darker coral for text-on-light contexts. |
+| `--no-text` | `#A8472D` | Dark coral for text-on-light contexts. 5.8:1 on white `--surface-1`, 5.3:1 on cream `--bg-deep`, 5.6:1 on hover-surface `--surface-2` — AA pass on all three. |
 | `--no-soft` | `rgba(255,139,107,0.16)` | Down-delta pill background. |
 | `--no-bar` | `#F4A990` | Calmer coral for the NO segment of the probability bar. |
 
@@ -340,7 +340,7 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 - **MarketCard** (rewritten 2026-04-27 for P8) — see "MarketCard composition" below. Replaces the dark-theme P3 card (sparkline + dual mono prices + delta pill).
 - **AllMarketsSection** — paginated grid. Section header is a single row of pills: category pills (`All / Politics / Crypto / ...`) on the left, closing-window pill segmented control (`All / 1D / 1W / 1M`) on the right. No title — the layout is self-evident. Owns its own filter state. "Load more" pill at bottom.
 - **MarketFilterBar** — retired 2026-04-26. The category pill row it used to render now lives inline inside AllMarketsSection.
-- **TopBar** — top navigation, unchanged structurally; cream background with translucent backdrop blur (`rgba(247,243,237,0.88)` + `backdrop-filter: blur(8px)`) for sticky-state distinction.
+- **TopBar** — top navigation, unchanged structurally; opaque cream background `--bg-deep` with a 1px hairline `--border-1` bottom edge for sticky-state distinction. No backdrop-filter — consistent with §9's "no backdrop-filter anywhere" rule and the P6 retirement of TopBar blur (see §11 `2026-04-27 P6 shipped`).
 - **MarketHead, OrderBook, RecentTrades, TradeTicket** — market detail page components, restyled for the new light surfaces.
 
 ### MarketCard composition (P8)
@@ -365,10 +365,21 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 **Rules:**
 - **Card image is required.** Every card carries a circular image in the top-right corner, ~44×44px (≤15% of card area at 300px-wide grid). Imported markets use the `imagePath` populated by the discovery sync. Native (gateway-authored) markets use a deterministic placeholder — colored monogram disc, hue derived from category, label = first ~2 chars of the ticker. Never render a card with an empty corner.
 - **Probability bar replaces the sparkline.** Two solid horizontal segments inside a 28px-tall, 6px-radius track: sage `--yes-bar` for YES (left), coral `--no-bar` for NO (right). Segment widths are proportional to prices (which equal probabilities for binary contracts). The leading-side **percentage** is overlaid right-aligned in dark text on the larger segment; the trailing-side percentage is overlaid left-aligned in dark text on the smaller segment. Smooths to widths on price update with a 200ms transition.
+- **Min segment width on extremes.** When a side's probability is ≤5% (or, equivalently, a price ≤5¢), the corresponding bar segment renders at a min-width of 12px instead of its proportional width — anything narrower disappears visually and can't carry overlaid text. The dominant segment shrinks to absorb the difference (its width = 100% − 12px), keeping the track full-width. The percentage that would have been overlaid on the small segment is moved **outside** the bar — rendered just above the small segment in `--t2`, 12px IBM Plex Mono. Mirrored for the opposite extreme (NO ≤5%).
 - **Clear pills carry the price.** Two side-by-side pills below the bar: light gray fill `--surface-2`, hairline beige border, 999px radius. Left pill: `YES` label in `--yes-text` + price in `¢` mono `--yes-text`. Right pill: `NO` label in `--no-text` + price in `¢` mono `--no-text`. The pill IS the click affordance for fast-trade flows on `/predict`.
 - **Stat rows replace the volume footer.** Three rows max: Volume / Closes / Open interest. Line-icon (14px) on the left, label in `--t3`, value in `--t1` IBM Plex Mono on the right. The "Open interest" row uses the Robin convention of showing the leading side as an inline pill ("37.94 NO" or "84.47 YES") — gives a quick read of which side has more conviction.
 
 **Bar % vs pill ¢ — why both numbers?** In a binary market, YES price (¢) equals YES probability (%) by definition. They are mathematically the same number. The bar shows the **split visually** (the eye reads "this market is mostly NO" from the bar widths alone); the pills show the **execution price** (the user clicks one to trade). Different jobs, same number.
+
+### Legacy token disposition (carries forward from P6)
+
+The dark-theme tokens still living in `globals.css` — `--glass-*`, `--rim-*`, `--chroma-*`, `--bg-{navy,teal,mint,azure}`, `--accent-{hi,lo,deep,gradient}`, `--yes-{glow,border,hi,lo}`, `--no-{glow,border,hi,lo}` — are **not** deleted wholesale in P8. The retirement policy is per-surface, inherited from the P6 entry in §11: a token retires when the last surface consuming it migrates to the light system. The implementation agent for P8 should:
+
+1. Migrate `--bg-deep`, `--surface-*`, `--border-*`, `--t*` tokens to their P8 values (the warm-light values listed in §3 §4 above).
+2. Migrate the MarketCard component to the new composition.
+3. Leave the legacy dark tokens in `globals.css` untouched. PR #2 (`p7-cleanup-tokens`) already retires the 10 already-unreferenced glass-era tokens; remaining tokens get retired on future cleanup PRs as each consuming surface migrates.
+
+This avoids a wave of cascading breakage on secondary surfaces that haven't been restyled yet (cashier was migrated in P7 / PR #1 alongside auth, leaderboards, rewards, account, profile — those have already moved off the dark token system; the office back-office and any non-app legacy CSS still consume them).
 
 ### Components retired in this redesign
 
@@ -390,11 +401,15 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 
 ### Contrast (light theme)
 
-- Body text on `--bg-deep` `#F7F3ED`: `--t1` `#1A1A1A` is 17.3:1, `--t2` `#4A4A4A` is 8.6:1, `--t3` `#8B8378` is 3.9:1 (passes AA Large; use only for >=14px metadata text, not body). All on white `--surface-1`: similar ratios within 0.3.
-- Mint `#2be480` on white card: 1.8:1 — fails. **Never use mint as text on white.** Use `--accent` only for fills (button background, active pill background, eyebrow `LIVE` indicator). Button label text on mint stays `#04140a` ink-dark, 16:1.
-- Seafoam `--yes` `#71eeb8` on white: 2.0:1 — fails. **Use `--yes-text` `#2C9C70`** (5.4:1, AA) for any seafoam-colored TEXT on light surfaces. The hue `--yes` is reserved for fills (chart strokes, bar segments, soft pill backgrounds).
-- Coral `--no` `#ff8b6b` on white: 3.0:1 — fails AA for body but passes for large/non-text. **Use `--no-text` `#C75A3D`** (5.3:1, AA) for coral-colored TEXT on light. `--no` for fills.
-- Bar segment text contrast: `7%` rendered in dark `#1a4830` on `--yes-bar` `#8FE5C4` is 7.4:1; `93%` rendered in dark `#5C2516` on `--no-bar` `#F4A990` is 6.1:1. Both AA.
+Ratios computed with the WCAG 2.x relative-luminance formula. Cream `--bg-deep` = `#F7F3ED` (Y ≈ 0.899); white `--surface-1` = `#FFFFFF` (Y = 1.000); hover surface `--surface-2` = `#FCFAF5` (Y ≈ 0.956). AA = 4.5:1 normal text / 3.0:1 large; AA non-text UI = 3.0:1 (WCAG 2.5.8). Numbers below were recomputed 2026-04-27 after a review pass caught the original spec overstating ratios by ~1.3–2.0× — the token values were darkened until both white and cream cleared AA.
+
+- `--t1` `#1A1A1A` body text: 16.6:1 on cream, 17.5:1 on white. AAA on both.
+- `--t2` `#4A4A4A` secondary text: 8.4:1 on cream, 8.9:1 on white. AAA on both.
+- `--t3` `#8B8378` metadata text: 3.4:1 on cream, 3.6:1 on white. **Passes AA Large only** — use only for ≥18px or ≥14px-bold metadata text, never for body.
+- Mint `--accent` `#2be480` text on cream: 1.6:1 — fails. **Never use mint as text.** Mint is only for fills (button bg, active pill bg, LIVE pulse). Button label text on mint stays `#04140a` ink-dark (≈ 16:1).
+- Seafoam `--yes` `#71eeb8` text on white: 1.9:1 — fails. **Use `--yes-text` `#1A6849`** for all seafoam-colored text on light surfaces — 6.7:1 on white, 6.1:1 on cream, 6.5:1 on `--surface-2`. AA pass on all three. The `--yes` hue is reserved for fills (chart strokes, bar segments, soft pill backgrounds).
+- Coral `--no` `#ff8b6b` text on white: 2.8:1 — fails AA for body. **Use `--no-text` `#A8472D`** for coral-colored text on light — 5.8:1 on white, 5.3:1 on cream, 5.6:1 on `--surface-2`. AA pass on all three. `--no` for fills only.
+- Probability-bar overlay text: `7%` in `#1A4830` on `--yes-bar` `#8FE5C4` ≈ 7.0:1; `93%` in `#5C2516` on `--no-bar` `#F4A990` ≈ 6.3:1. Both AA. These two overlay colors are component-local constants and intentionally not promoted to tokens — they only ever appear inside the probability bar.
 
 ### Reduced transparency
 
@@ -406,7 +421,7 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 
 ### Keyboard navigation
 
-- All interactive elements have visible `:focus-visible` rings (2px mint outline at 2px offset).
+- All interactive elements have visible `:focus-visible` rings: 2px outline `#0E7A53` at 2px offset (a darker mint that clears 4.8:1 on cream and 6.0:1 on white, satisfying WCAG 2.5.8 non-text contrast). The brand mint `--accent` `#2be480` is **not** used for the focus ring on light surfaces because it only reaches 1.6:1 on cream and fails 3:1.
 - Tab order follows visual order: nav → category pills → hero buy buttons → time-period pills → stat row → featured cards → all markets.
 - The chart is non-interactive at keyboard level (visual only). Time-period pills are buttons in tab order.
 
