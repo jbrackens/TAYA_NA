@@ -151,29 +151,9 @@ function Styles() {
         width: 100%;
         max-width: 440px;
         padding: 36px 34px 30px;
-        border-radius: var(--r-xl);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.025) 100%),
-          var(--glass-thick);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          inset 0 -1px 0 var(--rim-bottom),
-          inset 1px 0 2px var(--chroma-1),
-          inset -1px 0 2px var(--chroma-2),
-          0 28px 60px rgba(0, 0, 0, 0.5);
-      }
-      .la-card::before {
-        content: '';
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 50%;
-        border-radius: inherit;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 100%);
-        pointer-events: none;
-        mix-blend-mode: overlay;
+        border-radius: var(--r-rh-lg);
+        background: var(--surface-1);
+        border: 1px solid var(--border-1);
       }
       .la-head { text-align: center; margin-bottom: 24px; }
       .la-eyebrow {
@@ -222,26 +202,20 @@ function Styles() {
         color: var(--t3);
       }
       .la-input {
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
+        border-radius: var(--r-rh-md);
         padding: 12px 14px;
         font-family: inherit;
         font-size: 14px;
         color: var(--t1);
         outline: none;
-        box-shadow:
-          inset 0 1px 2px rgba(0, 0, 0, 0.35),
-          inset 0 -1px 0 rgba(255, 255, 255, 0.04);
-        transition: border-color 150ms ease, box-shadow 150ms ease;
+        transition: border-color 150ms ease;
       }
       .la-input::placeholder { color: var(--t4); }
       .la-input:focus-visible {
         border-color: var(--accent);
-        box-shadow:
-          inset 0 1px 2px rgba(0, 0, 0, 0.35),
-          0 0 0 2px var(--accent-soft),
-          0 0 16px var(--accent-glow-color);
+        box-shadow: 0 0 0 2px var(--accent-soft);
       }
 
       .la-error {
@@ -257,22 +231,15 @@ function Styles() {
         margin-top: 4px;
         padding: 14px 16px;
         color: #04140a;
-        border: 1px solid rgba(43, 228, 128, 0.6);
-        border-radius: var(--r-md);
+        border: none;
+        border-radius: var(--r-rh-md);
         font-family: inherit;
         font-size: 14px;
         font-weight: 700;
         letter-spacing: 0.02em;
         cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
-          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,0.5),
-          0 10px 24px rgba(43, 228, 128, 0.2);
-        transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 180ms ease;
+        background: var(--accent);
+        transition: transform 180ms ease, filter 180ms ease;
       }
       .la-submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
       .la-submit:active:not(:disabled) { transform: scale(0.98); }
@@ -290,14 +257,14 @@ function Styles() {
       }
       .la-link:hover { color: var(--t1); }
       .la-link-accent { color: var(--accent); font-weight: 600; }
-      .la-link-accent:hover { color: var(--accent-hi); }
+      .la-link-accent:hover { color: var(--accent); filter: brightness(1.1); }
 
       .la-dev {
         margin-top: 18px;
         padding: 12px 14px;
-        border-radius: var(--r-sm);
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: var(--r-rh-md);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
       }
       .la-dev-eyebrow {
         display: block;
@@ -320,7 +287,7 @@ function Styles() {
         content: "";
         flex: 1;
         height: 1px;
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--border-1);
       }
       .la-divider span {
         font-size: 11px;
@@ -338,24 +305,23 @@ function Styles() {
       }
       .la-oauth-btn {
         padding: 11px 14px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
+        border-radius: var(--r-rh-md);
         color: var(--t1);
         font-size: 13px;
         font-weight: 600;
         text-align: center;
         text-decoration: none;
-        transition: border-color 150ms ease, background 150ms ease;
+        transition: border-color 150ms ease;
       }
       .la-oauth-btn:hover {
-        border-color: rgba(255, 255, 255, 0.22);
-        background: rgba(255, 255, 255, 0.07);
+        border-color: var(--border-2);
       }
 
       .la-foot {
         padding-top: 14px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid var(--border-1);
         text-align: center;
         font-size: 13px;
         color: var(--t2);
