@@ -361,17 +361,17 @@ const notificationsStyles = `
   }
 
   .notif-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
-  .notif-header p { font-size: 14px; color: #D3D3D3; }
+  .notif-header p { font-size: 14px; color: var(--t3); }
 
   .notif-back {
-    padding: 10px 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px; color: var(--t1); text-decoration: none; font-size: 13px;
+    padding: 10px 16px; background: var(--surface-1); border: 1px solid var(--border-1);
+    border-radius: var(--r-rh-md); color: var(--t1); text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
   .notif-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .notif-card {
-    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
     padding: 24px; margin-bottom: 24px;
   }
 
@@ -380,7 +380,7 @@ const notificationsStyles = `
   }
 
   .notif-desc {
-    font-size: 13px; color: #D3D3D3; margin-bottom: 24px;
+    font-size: 13px; color: var(--t2); margin-bottom: 24px;
   }
 
   .notif-settings {
@@ -389,8 +389,8 @@ const notificationsStyles = `
 
   .notif-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
+    border: 1px solid var(--border-1);
   }
   @media (max-width: 640px) {
     .notif-item { flex-direction: column; gap: 12px; align-items: flex-start; }
@@ -398,7 +398,7 @@ const notificationsStyles = `
 
   .notif-item-info { flex: 1; }
   .notif-item-title { font-size: 14px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
-  .notif-item-desc { font-size: 12px; color: #D3D3D3; }
+  .notif-item-desc { font-size: 12px; color: var(--t3); }
 
   .notif-toggle {
     display: inline-flex; align-items: center; cursor: pointer;
@@ -411,14 +411,14 @@ const notificationsStyles = `
 
   .notif-toggle-slider {
     position: absolute; cursor: pointer; top: 0; left: 0;
-    right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.08);
+    right: 0; bottom: 0; background-color: var(--border-2);
     transition: 0.3s; border-radius: 14px;
   }
 
   .notif-toggle-slider:before {
     position: absolute; content: "";
     height: 22px; width: 22px; left: 3px; bottom: 3px;
-    background-color: #D3D3D3; transition: 0.3s; border-radius: 50%;
+    background-color: var(--t3); transition: 0.3s; border-radius: 50%;
   }
 
   .notif-toggle input:checked + .notif-toggle-slider {
@@ -435,15 +435,15 @@ const notificationsStyles = `
 
   .notif-save-btn {
     padding: 12px 24px; background: var(--accent); border: none;
-    border-radius: 8px; color: #fff; font-size: 14px; font-weight: 700;
-    cursor: pointer; transition: opacity 0.15s;
+    border-radius: var(--r-rh-md); color: #fff; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
   }
 
-  .notif-save-btn:hover { opacity: 0.9; }
+  .notif-save-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
   .notif-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .notif-info-card {
-    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
     padding: 24px;
   }
 
@@ -457,11 +457,11 @@ const notificationsStyles = `
   }
 
   .notif-info-item {
-    padding: 16px; background: rgba(255, 255, 255, 0.04); border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.08); text-align: center;
+    padding: 16px; background: var(--surface-2); border-radius: var(--r-rh-md);
+    border: 1px solid var(--border-1); text-align: center;
   }
 
   .notif-info-icon { font-size: 32px; margin-bottom: 8px; }
   .notif-info-title { font-size: 13px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
-  .notif-info-desc { font-size: 12px; color: #64748b; line-height: 1.4; }
+  .notif-info-desc { font-size: 12px; color: var(--t3); line-height: 1.4; }
 `;
