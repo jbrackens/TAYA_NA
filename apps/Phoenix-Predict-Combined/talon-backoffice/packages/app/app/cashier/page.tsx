@@ -612,7 +612,7 @@ const cashierStyles = `
     outline: none; transition: border-color 0.15s, box-shadow 0.15s;
   }
   .cashier-input::placeholder { color: var(--t4); font-family: inherit; }
-  .cashier-input:focus { border-color: var(--accent); box-shadow: var(--accent-glow); }
+  .cashier-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
   .cashier-payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
   .cashier-payment-btn {
     padding: 11px 8px; border-radius: var(--r-sm); font-family: inherit; font-size: 12px; font-weight: 600;
@@ -646,9 +646,9 @@ const cashierStyles = `
     width: 100%; padding: 12px 16px; border-radius: var(--r-sm); font-family: inherit;
     font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
     background: var(--accent); border: 0; color: #06170a; cursor: pointer;
-    box-shadow: var(--accent-glow); transition: background 0.15s;
+    transition: transform 0.15s, filter 0.15s;
   }
-  .cashier-submit:hover:not(:disabled) { background: var(--accent-hi); }
+  .cashier-submit:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
   .cashier-submit:disabled { opacity: 0.5; cursor: not-allowed; }
   .cashier-summary { height: fit-content; }
   .cashier-summary-row {
