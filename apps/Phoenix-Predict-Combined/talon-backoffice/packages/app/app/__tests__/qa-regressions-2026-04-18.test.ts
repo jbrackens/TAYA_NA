@@ -151,7 +151,13 @@ describe("MarketCard: style hoisted outside Link", () => {
 // keeping a single assertion on MarketCard so the regression
 // guarantee survives the rename.
 
-describe("MarketCard renders a live pricing bar (post-Phase-4)", () => {
+// SKIPPED 2026-04-27: these assertions captured the post-Phase-4 design where
+// MarketCard rendered a depth bar instead of a sparkline. The Robinhood P3
+// redesign (2026-04-26) intentionally re-introduced the sparkline + delta pill,
+// and P8 (in flight) will swap MarketCard composition again to a probability
+// bar with overlaid % segments. The post-Phase-4 invariants below are obsolete;
+// the relevant invariants for the Robinhood/P8 era will be added when P8 lands.
+describe.skip("MarketCard renders a live pricing bar (post-Phase-4) — OBSOLETE post P3 redesign", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
 
   it("market card has no seeded sparkline or placeholder deltas", () => {
