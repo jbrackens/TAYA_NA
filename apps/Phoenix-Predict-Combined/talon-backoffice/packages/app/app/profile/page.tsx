@@ -104,7 +104,6 @@ const inputStyle = {
   color: "var(--t1)",
   fontSize: "14px",
   boxSizing: "border-box" as const,
-  outline: "none" as const,
 };
 
 const labelStyle = {
@@ -442,7 +441,11 @@ export default function ProfilePage() {
                 style={{ ...inputStyle, opacity: "0.6" }}
               />
               <p
-                style={{ fontSize: "12px", color: "var(--t3)", marginTop: "8px" }}
+                style={{
+                  fontSize: "12px",
+                  color: "var(--t3)",
+                  marginTop: "8px",
+                }}
               >
                 Email cannot be changed. Contact support if you need to update
                 it.
@@ -481,7 +484,12 @@ export default function ProfilePage() {
             </div>
 
             {/* Preferences Section */}
-            <div style={{ borderTop: "1px solid var(--border-1)", paddingTop: "24px" }}>
+            <div
+              style={{
+                borderTop: "1px solid var(--border-1)",
+                paddingTop: "24px",
+              }}
+            >
               <h2
                 style={{
                   fontSize: "16px",
