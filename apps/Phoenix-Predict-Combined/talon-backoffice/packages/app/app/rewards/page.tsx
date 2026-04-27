@@ -421,7 +421,7 @@ function Styles() {
       .rw-xlink {
         font-size: 13px;
         color: var(--t2);
-        border-bottom: 1px solid var(--b1);
+        border-bottom: 1px solid var(--border-1);
         padding-bottom: 2px;
       }
       .rw-xlink:hover { color: var(--t1); border-color: var(--accent); }
@@ -436,22 +436,15 @@ function Styles() {
       .rw-ladder-step {
         position: relative;
         padding: 16px 14px 14px;
-        border-radius: var(--r-md);
-        border-top: 3px solid var(--tier-step-color, rgba(255,255,255,0.2));
+        border-radius: var(--r-rh-md);
+        border-top: 3px solid var(--tier-step-color, var(--border-2));
         display: flex;
         flex-direction: column;
         gap: 6px;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
-          var(--glass-regular);
-        backdrop-filter: blur(18px) saturate(160%);
-        -webkit-backdrop-filter: blur(18px) saturate(160%);
-        border-left: 1px solid rgba(255,255,255,0.08);
-        border-right: 1px solid rgba(255,255,255,0.08);
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        box-shadow:
-          inset 0 -1px 0 var(--rim-bottom),
-          0 6px 18px rgba(0,0,0,0.22);
+        background: var(--surface-1);
+        border-left: 1px solid var(--border-1);
+        border-right: 1px solid var(--border-1);
+        border-bottom: 1px solid var(--border-1);
       }
       .rw-ladder-step.tier-1 { --tier-step-color: var(--tier-1); }
       .rw-ladder-step.tier-2 { --tier-step-color: var(--tier-2); }
@@ -460,16 +453,10 @@ function Styles() {
       .rw-ladder-step.tier-5 { --tier-step-color: var(--tier-5); }
       .rw-ladder-step.is-future { opacity: 0.45; }
       .rw-ladder-step.is-current {
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.02) 100%),
-          color-mix(in srgb, var(--tier-step-color) 14%, rgba(255,255,255,0.05));
-        border-left-color: color-mix(in srgb, var(--tier-step-color) 40%, transparent);
-        border-right-color: color-mix(in srgb, var(--tier-step-color) 40%, transparent);
-        border-bottom-color: color-mix(in srgb, var(--tier-step-color) 40%, transparent);
-        box-shadow:
-          inset 0 -1px 0 var(--rim-bottom),
-          0 0 20px color-mix(in srgb, var(--tier-step-color) 30%, transparent),
-          0 8px 24px rgba(0,0,0,0.22);
+        background: var(--surface-2);
+        border-left-color: var(--tier-step-color);
+        border-right-color: var(--tier-step-color);
+        border-bottom-color: var(--tier-step-color);
       }
       .rw-ladder-name {
         font-size: 14px;
@@ -494,19 +481,9 @@ function Styles() {
       .rw-state-card {
         position: relative;
         padding: 22px;
-        border-radius: var(--r-lg);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
-          var(--glass-regular);
-        backdrop-filter: blur(24px) saturate(170%);
-        -webkit-backdrop-filter: blur(24px) saturate(170%);
-        border: 1px solid rgba(255,255,255,0.12);
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          inset 0 -1px 0 var(--rim-bottom),
-          inset 1px 0 2px var(--chroma-1),
-          inset -1px 0 2px var(--chroma-2),
-          0 10px 28px rgba(0,0,0,0.22);
+        border-radius: var(--r-rh-lg);
+        background: var(--surface-1);
+        border: 1px solid var(--border-1);
       }
       .rw-tier-card-head {
         display: flex;
@@ -563,16 +540,14 @@ function Styles() {
       .rw-progress-track {
         height: 8px;
         border-radius: 999px;
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
         overflow: hidden;
       }
       .rw-progress-fill {
         height: 100%;
         border-radius: 999px;
-        background: linear-gradient(90deg, var(--accent), var(--accent-hi));
-        box-shadow: 0 0 12px var(--accent-glow-color);
+        background: var(--accent);
         transition: width 240ms ease-out;
       }
       .rw-topped-out {
@@ -649,7 +624,7 @@ function Styles() {
       .rw-ledger-table td {
         padding: 10px 6px;
         text-align: left;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid var(--border-1);
         vertical-align: top;
       }
       .rw-ledger-table th {
@@ -711,20 +686,16 @@ function Styles() {
         gap: 6px;
         padding: 12px 20px;
         color: #04140a;
-        border-radius: var(--r-md);
+        border-radius: var(--r-rh-md);
         font-size: 13px;
         font-weight: 700;
         text-decoration: none;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
-          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-        border: 1px solid rgba(43, 228, 128, 0.6);
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,0.5),
-          0 10px 24px rgba(43, 228, 128, 0.18);
+        background: var(--accent);
+        border: none;
+        transition: transform 180ms ease, filter 180ms ease;
       }
       .rw-prefirst-cta:hover,
-      .rw-state-card a:hover { filter: brightness(1.05); }
+      .rw-state-card a:hover { transform: translateY(-1px); filter: brightness(1.05); }
       .rw-state-card p {
         margin: 0 0 14px;
         color: var(--t2);
