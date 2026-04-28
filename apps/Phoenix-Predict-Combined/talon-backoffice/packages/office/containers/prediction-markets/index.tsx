@@ -147,7 +147,15 @@ export default function PredictionMarketsContainer() {
       key: "yes",
       width: 70,
       render: (v: number) => (
-        <Text strong style={{ color: "#52c41a" }}>
+        <Text
+          strong
+          style={{
+            color: "var(--yes-text, #1a6849)",
+            fontFamily:
+              "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
           {v}%
         </Text>
       ),
