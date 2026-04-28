@@ -15,30 +15,19 @@ import {
   message,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
-import { adminApi } from "../../services/api/admin-api";
-import { Method } from "@phoenix-ui/utils";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 
 const { Text } = Typography;
 const { TextArea } = Input;
 
-interface ClosedMarket {
-  id: string;
-  ticker: string;
-  title: string;
-  status: string;
-  yesPriceCents: number;
-  volumeCents: number;
-  closeAt: string;
-  settlementSourceKey: string;
-  settlementRule: string;
-}
+const predictionClient = createPredictionClient();
 
 export default function PredictionSettlementsContainer() {
-  const api = adminApi;
-  const [markets, setMarkets] = useState<ClosedMarket[]>([]);
+  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [loading, setLoading] = useState(true);
   const [settleOpen, setSettleOpen] = useState(false);
-  const [selectedMarket, setSelectedMarket] = useState<ClosedMarket | null>(
+  const [selectedMarket, setSelectedMarket] = useState<PredictionMarket | null>(
     null,
   );
   const [form] = Form.useForm();
@@ -50,11 +39,11 @@ export default function PredictionSettlementsContainer() {
   async function loadData() {
     setLoading(true);
     try {
-      const res = await api.request({
-        url: "/api/v1/markets?status=closed&pageSize=100",
-        method: Method.GET,
+      const res = await predictionClient.getMarkets({
+        status: "closed",
+        pageSize: 100,
       });
-      setMarkets(res?.data || []);
+      setMarkets(res.data || []);
     } catch {
       message.error("Failed to load markets");
     } finally {
@@ -62,7 +51,7 @@ export default function PredictionSettlementsContainer() {
     }
   }
 
-  function openSettle(market: ClosedMarket) {
+  function openSettle(market: PredictionMarket) {
     setSelectedMarket(market);
     setSettleOpen(true);
   }
@@ -70,19 +59,19 @@ export default function PredictionSettlementsContainer() {
   async function handleSettle(values: Record<string, unknown>) {
     if (!selectedMarket) return;
     try {
-      const result = await api.request({
-        url: `/api/v1/admin/settlements/${selectedMarket.id}`,
-        method: Method.POST,
-        data: {
-          result: values.result,
-          attestationSource: values.attestationSource || "admin",
-          attestationData: values.attestationData
-            ? JSON.parse(values.attestationData as string)
-            : null,
-          reason: values.reason,
-        },
+      const attestationData = values.attestationData
+        ? (JSON.parse(values.attestationData as string) as Record<
+            string,
+            unknown
+          >)
+        : undefined;
+      const result = await predictionClient.settleMarket(selectedMarket.id, {
+        result: values.result as "yes" | "no",
+        attestationSource: (values.attestationSource as string) || "admin",
+        attestationData,
+        reason: values.reason as string | undefined,
       });
-      const payoutCount = result?.payouts?.length || 0;
+      const payoutCount = result.payouts?.length || 0;
       message.success(
         `Market settled: ${selectedMarket.ticker} → ${values.result} (${payoutCount} payouts)`,
       );
@@ -153,7 +142,7 @@ export default function PredictionSettlementsContainer() {
       title: "Actions",
       key: "actions",
       width: 120,
-      render: (_: unknown, record: ClosedMarket) => (
+      render: (_: unknown, record: PredictionMarket) => (
         <Button size="small" type="primary" onClick={() => openSettle(record)}>
           Settle
         </Button>
