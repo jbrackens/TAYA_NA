@@ -9,6 +9,10 @@ import "antd/dist/antd.css";
 // overrides win without bumping specificity. See styles/p8-tokens.css
 // for the token list and the migration plan.
 import "../styles/p8-tokens.css";
+// Phase O2: AntD component overrides mapped to the P8 tokens. AntD
+// 4.16 has no runtime theme.token API, so this is the place to align
+// buttons / tables / modals / menus with the cream design system.
+import "../styles/p8-antd.css";
 import { defaultMenuItems } from "../providers/menu/defaults";
 
 // Suppress React 18 hydration mismatch warnings AND the Next.js dev error overlay.
