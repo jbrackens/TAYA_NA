@@ -44,7 +44,16 @@ interface MarketCardProps {
   imagePath?: string;
 }
 
-const MIN_SEGMENT_PX = 12;
+// Minimum width for an extreme bar segment. Wide enough to fit the
+// percentage label inside ("5%" or "1%") in IBM Plex Mono 12px with a
+// little padding. Below this width the label gets clipped, so we boost
+// any sub-threshold segment up to MIN_SEGMENT_PX and the dominant
+// segment shrinks correspondingly. The visual misrepresentation
+// (rendering 4% as ~9% of the bar width on a 400px card) is the price
+// for keeping the % readable INSIDE the segment, which is what users
+// expect — pulling it outside creates inconsistency between extreme
+// and non-extreme cards.
+const MIN_SEGMENT_PX = 36;
 const SMALL_THRESHOLD_PCT = 5;
 
 function formatCloseAt(iso: string): string {
@@ -139,30 +148,13 @@ export function MarketCard({
             </div>
           </div>
 
-          {(yesIsExtreme || noIsExtreme) && (
-            <div className="mkt-bar-overlay-out">
-              {yesIsExtreme && (
-                <span className="mkt-bar-out-pct mkt-bar-out-yes">
-                  YES {yesPriceCents}%
-                </span>
-              )}
-              {noIsExtreme && (
-                <span className="mkt-bar-out-pct mkt-bar-out-no">
-                  NO {noPriceCents}%
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Bar labels follow DESIGN.md §6: leading-side label right-aligned
-           * on its segment (toward the boundary), trailing-side label
-           * left-aligned (also toward the boundary). The result: when YES
-           * leads, both labels meet at the boundary (close together). When
-           * NO leads, the leading NO% pushes to the far right of its big
-           * segment and the trailing YES% sits at the far left of its
-           * small segment — opening up space between them. Without this,
-           * NO-leading bars end up with both labels crammed at the segment
-           * boundary, looking like a single combined "27% 73%" label. */}
+          {/* Bar segments always carry their % label inside. When a side is
+           * at an extreme (≤5%) its segment is boosted to MIN_SEGMENT_PX
+           * (36px) so the label stays readable; the dominant segment
+           * shrinks correspondingly. Bar segment alignment follows
+           * DESIGN.md §6: YES-leading → both labels meet at the boundary;
+           * NO-leading → NO% pushes to the far right of its big segment,
+           * trailing YES% to the far left of its small segment. */}
           <div
             className={`mkt-bar mkt-bar-${yesLeads ? "yes-leads" : "no-leads"}`}
             role="img"
@@ -178,9 +170,7 @@ export function MarketCard({
                     : { width: `${yesPriceCents}%` }
               }
             >
-              {!yesIsExtreme && (
-                <span className="mkt-bar-pct">{yesPriceCents}%</span>
-              )}
+              <span className="mkt-bar-pct">{yesPriceCents}%</span>
             </span>
             <span
               className="mkt-bar-no"
@@ -192,9 +182,7 @@ export function MarketCard({
                     : { width: `${noPriceCents}%` }
               }
             >
-              {!noIsExtreme && (
-                <span className="mkt-bar-pct">{noPriceCents}%</span>
-              )}
+              <span className="mkt-bar-pct">{noPriceCents}%</span>
             </span>
           </div>
         </Link>
@@ -278,6 +266,12 @@ function MarketCardStyles() {
         letter-spacing: -0.01em;
         color: var(--t1);
         margin: 0;
+        /* Reserve 2 lines so a card with a single-line title sits at the
+         * same height as one whose title wraps. Without this, every card
+         * with a wrapped title bumps its bar (and pills) down ~20px,
+         * which surfaces as "the bar graph is higher on some cards" once
+         * the eye scans across a row. */
+        min-height: calc(16px * 1.3 * 2);
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -330,16 +324,6 @@ function MarketCardStyles() {
         font-variant-numeric: tabular-nums;
         font-weight: 600;
         font-size: 13px;
-      }
-
-      .mkt-bar-overlay-out {
-        display: flex;
-        justify-content: space-between;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        font-variant-numeric: tabular-nums;
-        color: var(--t2);
-        font-weight: 600;
       }
 
       .mkt-bar {
