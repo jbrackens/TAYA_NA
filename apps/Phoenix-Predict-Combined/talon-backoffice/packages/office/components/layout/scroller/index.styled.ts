@@ -10,5 +10,5 @@ export const ScrollerStyled = styled.div`
   overflow-x: hidden;
   overflow-y: auto;
 
-  background: #ffffff;
+  background: var(--surface-1, #ffffff);
 `;

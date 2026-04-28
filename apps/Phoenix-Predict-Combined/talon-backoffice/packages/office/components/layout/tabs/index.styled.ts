@@ -18,7 +18,7 @@ export const TabsSection = styled(Tabs)`
     width: auto;
     padding: ${PADDING_SIZE}px ${PADDING_SIZE}px;
 
-    background: #ffffff;
+    background: var(--surface-1, #ffffff);
 
     overflow-y: auto;
     overflow-x: hidden;

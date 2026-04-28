@@ -10,7 +10,7 @@ export const SportIconStyled = styled.span`
   border: 1px transparent solid;
   border-radius: 0.33rem;
 
-  background: #ffffff;
+  background: var(--surface-1, #ffffff);
 
   overflow: hidden;
 

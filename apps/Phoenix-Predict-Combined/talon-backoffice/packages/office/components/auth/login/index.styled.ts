@@ -11,7 +11,12 @@ export const LoginWrapper = styled.div`
 
 export const LoginFormComponent = styled.div`
   width: 32rem;
-  background: #ffffff;
+  background: var(--surface-1, #ffffff);
+  border: 1px solid var(--border-1, #e5dfd2);
+  border-radius: 16px;
+  box-shadow:
+    0 12px 48px rgba(26, 26, 26, 0.06),
+    0 1px 2px rgba(26, 26, 26, 0.04);
 `;
 
 export const LoginForm = styled.div`

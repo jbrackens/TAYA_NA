@@ -30,7 +30,7 @@ const RiskScoreBadge = styled.span<{ $score: number }>`
   }};
   color: ${(props) => {
     if (props.$score >= 80) return "var(--no-text, #a8472d)";
-    if (props.$score >= 60) return "#fb923c";
+    if (props.$score >= 60) return "var(--warn, #d97706)";
     if (props.$score >= 40) return "var(--warn, #d97706)";
     return "var(--accent-lo, #1fa65e)";
   }};
