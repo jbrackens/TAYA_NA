@@ -2,7 +2,7 @@
 
 > Robinhood for prediction markets, **light theme**. Warm-light surfaces on a faint chart-paper grid, soft-flat cards, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
-This document governs the **Predict player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000). The admin backoffice is still on the sportsbook system (see `DESIGN-SPORTSBOOK.md`).
+This document governs both the **Predict player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000) and the **back-office** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/` (port 3001) as of 2026-04-28. Both surfaces share the same `:root` token set, the same Inter + IBM Plex Mono fonts, and the same warm-cream + chart-paper-grid backdrop. The legacy sportsbook spec at `DESIGN-SPORTSBOOK.md` is archived.
 
 The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The warm-dark Robinhood spec (active 2026-04-26 → 2026-04-27) is retired. Their decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, multi-stop backdrop scene, and the dark surface system are all out. Implementation lands in phases (see §11 entry 2026-04-27 P8).
 
