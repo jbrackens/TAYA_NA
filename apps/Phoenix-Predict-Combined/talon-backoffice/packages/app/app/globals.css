@@ -79,7 +79,6 @@ body {
   /* Rim highlights (glass edges + chromatic fringe) */
   --rim-top: rgba(255, 255, 255, 0.22);
   --rim-bottom: rgba(255, 255, 255, 0.06);
-  --rim-side: rgba(255, 255, 255, 0.04);
   --chroma-1: rgba(255, 120, 200, 0.05);
   --chroma-2: rgba(100, 180, 255, 0.05);
 
@@ -108,9 +107,7 @@ body {
    * 17 existing `box-shadow: var(--accent-glow)` call sites still work.
    * Use --accent-glow-color if you need just the color. (D1.) */
   --accent: #2be480;
-  --accent-hi: #00ffaa;
   --accent-lo: #1fa65e;
-  --accent-deep: #0094ff;
   --accent-soft: rgba(43, 228, 128, 0.14);
   --accent-glow-color: rgba(43, 228, 128, 0.45);
   --accent-glow: 0 0 28px var(--accent-glow-color);
@@ -131,17 +128,10 @@ body {
    * scale, and (c) calm cool/warm complementary colors sit naturally
    * on the cool teal backdrop without fighting it. */
   --yes: #71eeb8;
-  --yes-hi: #a3f5ce;
-  --yes-lo: #3eb489;
   --yes-soft: rgba(113, 238, 184, 0.14);
   --yes-border: rgba(113, 238, 184, 0.35);
-  --yes-glow: rgba(113, 238, 184, 0.5);
   --no: #ff8b6b;
-  --no-hi: #ffae94;
-  --no-lo: #cc5a3d;
   --no-soft: rgba(255, 139, 107, 0.14);
-  --no-border: rgba(255, 139, 107, 0.35);
-  --no-glow: rgba(255, 139, 107, 0.5);
 
   /* --live is the only warm color outside --no. Distinct, redder, pulses. */
   --live: #ff6b6b;
@@ -2746,7 +2736,9 @@ button {
   letter-spacing: 0.02em;
   cursor: pointer;
   background: var(--accent);
-  transition: transform 180ms ease, filter 180ms ease;
+  transition:
+    transform 180ms ease,
+    filter 180ms ease;
 }
 .auth-submit:hover:not(:disabled) {
   transform: translateY(-1px);
