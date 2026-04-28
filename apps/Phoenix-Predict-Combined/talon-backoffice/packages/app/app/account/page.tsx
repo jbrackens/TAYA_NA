@@ -448,7 +448,7 @@ function Styles() {
         background: color-mix(in srgb, var(--no) 15%, transparent);
         border: 1px solid color-mix(in srgb, var(--no) 35%, transparent);
         border-radius: var(--r-sm);
-        color: var(--no);
+        color: var(--no-text);
         font-size: 12px;
       }
       .acct-portfolio-head {
@@ -511,8 +511,8 @@ function Styles() {
         font-weight: 700;
         color: var(--t1);
       }
-      .acct-stat-yes .acct-stat-value { color: var(--yes); }
-      .acct-stat-no .acct-stat-value { color: var(--no); }
+      .acct-stat-yes .acct-stat-value { color: var(--yes-text); }
+      .acct-stat-no .acct-stat-value { color: var(--no-text); }
       .acct-stat-gain .acct-stat-value { color: var(--accent); }
       .acct-stat-sub {
         font-size: 11px;

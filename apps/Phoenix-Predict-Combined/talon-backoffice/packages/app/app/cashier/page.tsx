@@ -627,10 +627,10 @@ const cashierStyles = `
     padding: 10px 12px; border-radius: var(--r-sm); font-size: 13px; font-weight: 500; margin-bottom: 14px;
   }
   .cashier-msg.error {
-    background: rgba(255, 155, 107,0.1); border: 1px solid rgba(255, 155, 107,0.3); color: var(--no);
+    background: rgba(255, 155, 107,0.1); border: 1px solid rgba(255, 155, 107,0.3); color: var(--no-text);
   }
   .cashier-msg.success {
-    background: rgba(127, 200, 255,0.1); border: 1px solid rgba(127, 200, 255,0.3); color: var(--yes);
+    background: rgba(127, 200, 255,0.1); border: 1px solid rgba(127, 200, 255,0.3); color: var(--yes-text);
   }
   .cashier-msg.pending {
     background: var(--accent-soft); border: 1px solid rgba(43, 228, 128,0.3); color: var(--accent);

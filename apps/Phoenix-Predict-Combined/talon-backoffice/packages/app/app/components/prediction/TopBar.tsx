@@ -253,7 +253,7 @@ export function TopBar() {
           transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
           white-space: nowrap;
         }
-        .tb-link:hover { color: var(--t1); background: rgba(255,255,255,0.06); }
+        .tb-link:hover { color: var(--t1); background: var(--surface-2); }
         .tb-link.is-active {
           color: #061a10;
           background: var(--accent);
@@ -394,7 +394,7 @@ export function TopBar() {
           transition: transform 150ms ease, filter 150ms ease;
         }
         .tb-btn-ghost { background: transparent; color: var(--t1); }
-        .tb-btn-ghost:hover { background: rgba(255,255,255,0.06); }
+        .tb-btn-ghost:hover { background: var(--surface-2); }
         .tb-btn-accent {
           color: #061a10;
           background: var(--accent);
@@ -429,7 +429,7 @@ export function TopBar() {
           cursor: pointer;
           font-family: inherit;
         }
-        .tb-menu a:hover, .tb-menu button:hover { background: rgba(255,255,255,0.08); }
+        .tb-menu a:hover, .tb-menu button:hover { background: var(--surface-2); }
 
         /* Mobile: hide nav links + search, keep brand + balance + avatar */
         @media (max-width: 900px) {
@@ -572,7 +572,7 @@ export function TopBar() {
                   <div
                     style={{
                       height: 1,
-                      background: "rgba(255,255,255,0.08)",
+                      background: "var(--surface-2)",
                       margin: "4px 0",
                     }}
                   />

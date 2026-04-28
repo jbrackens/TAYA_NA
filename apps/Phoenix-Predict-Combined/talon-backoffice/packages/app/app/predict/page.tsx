@@ -144,16 +144,16 @@ function DiscoveryHero({
           font-variant-numeric: tabular-nums;
           margin-bottom: 28px;
         }
-        .rh-change.up    { color: var(--yes); }
-        .rh-change.down  { color: var(--no); }
+        .rh-change.up    { color: var(--yes-text); }
+        .rh-change.down  { color: var(--no-text); }
         .rh-change .arrow {
           display: inline-block;
           width: 0; height: 0;
           border-left: 5px solid transparent;
           border-right: 5px solid transparent;
         }
-        .rh-change.up   .arrow { border-bottom: 7px solid var(--yes); }
-        .rh-change.down .arrow { border-top:    7px solid var(--no); }
+        .rh-change.up   .arrow { border-bottom: 7px solid var(--yes-text); }
+        .rh-change.down .arrow { border-top:    7px solid var(--no-text); }
         .rh-change .label {
           color: var(--t3); font-weight: 500; font-size: 14px;
         }
@@ -201,7 +201,7 @@ function DiscoveryHero({
         .rh-buy-yes:hover { filter: brightness(1.05); transform: translateY(-1px); }
         .rh-buy-no {
           background: var(--no-soft);
-          color: var(--no);
+          color: var(--no-text);
         }
         .rh-buy-no:hover { background: rgba(255, 139, 107, 0.22); }
 
@@ -280,7 +280,7 @@ function DiscoveryHero({
             <path d={chart.fill} fill="url(#rh-chart-fill)" />
             <path
               d={chart.line}
-              stroke={isUp ? "var(--yes)" : "var(--no)"}
+              stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
               strokeWidth={2.5}
               fill="none"
             />

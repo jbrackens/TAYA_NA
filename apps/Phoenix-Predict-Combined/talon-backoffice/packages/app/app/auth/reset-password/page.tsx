@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
         .rp-alert.err {
           background: rgba(255, 155, 107, 0.12);
           border: 1px solid rgba(255, 155, 107, 0.3);
-          color: var(--no);
+          color: var(--no-text);
         }
         .rp-alert.ok {
           background: rgba(43, 228, 128, 0.1);
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
         }
         .rp-field-err {
           font-size: 12px;
-          color: var(--no);
+          color: var(--no-text);
           margin-top: 4px;
         }
         .rp-divider {

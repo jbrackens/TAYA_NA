@@ -412,7 +412,7 @@ const securityStyles = `
   .sec-error {
     padding: 10px 12px; background: rgba(255, 155, 107, 0.08);
     border: 1px solid rgba(255, 155, 107, 0.2); border-radius: 8px;
-    color: var(--no); font-size: 13px; font-weight: 500;
+    color: var(--no-text); font-size: 13px; font-weight: 500;
   }
 
   .sec-submit {

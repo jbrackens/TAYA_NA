@@ -93,8 +93,8 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
           color: var(--t1);
           position: relative;
         }
-        .ob-table td.yes-px { color: var(--yes); font-weight: 600; }
-        .ob-table td.no-px { color: var(--no); font-weight: 600; }
+        .ob-table td.yes-px { color: var(--yes-text); font-weight: 600; }
+        .ob-table td.no-px { color: var(--no-text); font-weight: 600; }
         .ob-table tr { position: relative; }
         .ob-table tr.bid::after, .ob-table tr.ask::after {
           content: '';

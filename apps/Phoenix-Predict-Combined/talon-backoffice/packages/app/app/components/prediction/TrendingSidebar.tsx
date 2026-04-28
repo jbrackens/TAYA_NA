@@ -137,8 +137,8 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
           font-size: 11px; font-weight: 600;
           font-variant-numeric: tabular-nums;
         }
-        .tm-delta.up { background: var(--yes-soft); color: var(--yes); }
-        .tm-delta.down { background: var(--no-soft); color: var(--no); }
+        .tm-delta.up { background: var(--yes-soft); color: var(--yes-text); }
+        .tm-delta.down { background: var(--no-soft); color: var(--no-text); }
 
         .tm-foot {
           margin-top: 14px;
@@ -166,7 +166,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
             const yesLeads = m.yesPriceCents >= m.noPriceCents;
             const leadingPrice = yesLeads ? m.yesPriceCents : m.noPriceCents;
             const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
-            const sparkColor = up ? "var(--yes)" : "var(--no)";
+            const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
             const cat = categoryFromTicker(m.ticker);
             return (
               <li key={m.id}>

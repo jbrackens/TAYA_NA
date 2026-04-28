@@ -806,8 +806,8 @@ function Styles() {
         letter-spacing: -0.01em;
         font-variant-numeric: tabular-nums;
       }
-      .pf-stat-yes .pf-stat-value { color: var(--yes); }
-      .pf-stat-no .pf-stat-value { color: var(--no); }
+      .pf-stat-yes .pf-stat-value { color: var(--yes-text); }
+      .pf-stat-no .pf-stat-value { color: var(--no-text); }
       .pf-stat-gain .pf-stat-value { color: var(--accent); }
       .pf-stat-sub { font-size: 11px; color: var(--t3); }
 
@@ -937,11 +937,11 @@ function Styles() {
       }
       .pf-side-yes {
         background: var(--yes-soft);
-        color: var(--yes);
+        color: var(--yes-text);
       }
       .pf-side-no {
         background: var(--no-soft);
-        color: var(--no);
+        color: var(--no-text);
       }
 
       .pf-status {
@@ -958,7 +958,7 @@ function Styles() {
       }
       .pf-status-filled {
         background: var(--yes-soft);
-        color: var(--yes);
+        color: var(--yes-text);
         border-color: var(--yes-border);
       }
       .pf-status-open, .pf-status-partial {
@@ -972,7 +972,7 @@ function Styles() {
       }
 
       .pf-gain { color: var(--accent); font-weight: 700; text-shadow: 0 0 6px var(--accent-glow-color); }
-      .pf-loss { color: var(--no); font-weight: 700; }
+      .pf-loss { color: var(--no-text); font-weight: 700; }
       .pf-dim  { color: var(--t3); }
 
       .pf-inline-link {

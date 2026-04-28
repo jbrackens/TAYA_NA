@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
         .fp-alert.err {
           background: rgba(255, 155, 107, 0.12);
           border: 1px solid rgba(255, 155, 107, 0.3);
-          color: var(--no);
+          color: var(--no-text);
         }
         .fp-alert.ok {
           background: rgba(43, 228, 128, 0.1);

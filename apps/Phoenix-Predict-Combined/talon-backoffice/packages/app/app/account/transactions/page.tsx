@@ -355,7 +355,7 @@ const transactionsStyles = `
   }
 
   .tx-credit { color: var(--accent); font-weight: 700; }
-  .tx-debit { color: var(--no); font-weight: 700; }
+  .tx-debit { color: var(--no-text); font-weight: 700; }
 
   .tx-status {
     display: inline-block; padding: 4px 8px; background: var(--surface-2);
