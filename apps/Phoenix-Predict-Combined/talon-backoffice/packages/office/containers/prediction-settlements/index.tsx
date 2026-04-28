@@ -1,7 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, Tag, Typography, message } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Typography,
+  message,
+} from "antd";
 import PageHeader from "../../components/layout/page-header";
-import { useApi } from "../../services/api/api-service";
+import { adminApi } from "../../services/api/admin-api";
 import { Method } from "@phoenix-ui/utils";
 
 const { Text } = Typography;
@@ -20,11 +34,13 @@ interface ClosedMarket {
 }
 
 export default function PredictionSettlementsContainer() {
-  const api = useApi();
+  const api = adminApi;
   const [markets, setMarkets] = useState<ClosedMarket[]>([]);
   const [loading, setLoading] = useState(true);
   const [settleOpen, setSettleOpen] = useState(false);
-  const [selectedMarket, setSelectedMarket] = useState<ClosedMarket | null>(null);
+  const [selectedMarket, setSelectedMarket] = useState<ClosedMarket | null>(
+    null,
+  );
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -34,7 +50,10 @@ export default function PredictionSettlementsContainer() {
   async function loadData() {
     setLoading(true);
     try {
-      const res = await api.request({ url: "/api/v1/markets?status=closed&pageSize=100", method: Method.GET });
+      const res = await api.request({
+        url: "/api/v1/markets?status=closed&pageSize=100",
+        method: Method.GET,
+      });
       setMarkets(res?.data || []);
     } catch {
       message.error("Failed to load markets");
@@ -57,12 +76,16 @@ export default function PredictionSettlementsContainer() {
         data: {
           result: values.result,
           attestationSource: values.attestationSource || "admin",
-          attestationData: values.attestationData ? JSON.parse(values.attestationData as string) : null,
+          attestationData: values.attestationData
+            ? JSON.parse(values.attestationData as string)
+            : null,
           reason: values.reason,
         },
       });
       const payoutCount = result?.payouts?.length || 0;
-      message.success(`Market settled: ${selectedMarket.ticker} → ${values.result} (${payoutCount} payouts)`);
+      message.success(
+        `Market settled: ${selectedMarket.ticker} → ${values.result} (${payoutCount} payouts)`,
+      );
       setSettleOpen(false);
       setSelectedMarket(null);
       form.resetFields();
@@ -76,23 +99,37 @@ export default function PredictionSettlementsContainer() {
     { title: "Ticker", dataIndex: "ticker", key: "ticker", width: 160 },
     { title: "Title", dataIndex: "title", key: "title", ellipsis: true },
     {
-      title: "Last YES", dataIndex: "yesPriceCents", key: "yes", width: 80,
+      title: "Last YES",
+      dataIndex: "yesPriceCents",
+      key: "yes",
+      width: 80,
       render: (v: number) => <Text strong>{v}%</Text>,
     },
     {
-      title: "Volume", dataIndex: "volumeCents", key: "vol", width: 100,
+      title: "Volume",
+      dataIndex: "volumeCents",
+      key: "vol",
+      width: 100,
       render: (v: number) => `$${(v / 100).toLocaleString()}`,
     },
     {
-      title: "Closed", dataIndex: "closeAt", key: "close", width: 140,
+      title: "Closed",
+      dataIndex: "closeAt",
+      key: "close",
+      width: 140,
       render: (v: string) => new Date(v).toLocaleDateString(),
     },
     {
-      title: "Source", dataIndex: "settlementSourceKey", key: "source", width: 120,
+      title: "Source",
+      dataIndex: "settlementSourceKey",
+      key: "source",
+      width: 120,
       render: (v: string) => <Tag>{v}</Tag>,
     },
     {
-      title: "Actions", key: "actions", width: 120,
+      title: "Actions",
+      key: "actions",
+      width: 120,
       render: (_: unknown, record: ClosedMarket) => (
         <Button size="small" type="primary" onClick={() => openSettle(record)}>
           Settle
@@ -105,9 +142,16 @@ export default function PredictionSettlementsContainer() {
     <>
       <PageHeader title="Settlement Queue" />
       <Card>
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
           <Col>
-            <Text type="secondary">{markets.length} market{markets.length !== 1 ? "s" : ""} awaiting settlement</Text>
+            <Text type="secondary">
+              {markets.length} market{markets.length !== 1 ? "s" : ""} awaiting
+              settlement
+            </Text>
           </Col>
           <Col>
             <Button onClick={loadData}>Refresh</Button>
@@ -126,7 +170,10 @@ export default function PredictionSettlementsContainer() {
       <Modal
         title={`Settle: ${selectedMarket?.ticker || ""}`}
         open={settleOpen}
-        onCancel={() => { setSettleOpen(false); setSelectedMarket(null); }}
+        onCancel={() => {
+          setSettleOpen(false);
+          setSelectedMarket(null);
+        }}
         onOk={() => form.submit()}
         okText="Settle Market"
         okButtonProps={{ danger: true }}
@@ -135,7 +182,10 @@ export default function PredictionSettlementsContainer() {
           <div style={{ marginBottom: 16 }}>
             <Text strong>{selectedMarket.title}</Text>
             <br />
-            <Text type="secondary">Last YES: {selectedMarket.yesPriceCents}% | Source: {selectedMarket.settlementSourceKey}</Text>
+            <Text type="secondary">
+              Last YES: {selectedMarket.yesPriceCents}% | Source:{" "}
+              {selectedMarket.settlementSourceKey}
+            </Text>
           </div>
         )}
         <Form form={form} layout="vertical" onFinish={handleSettle}>
@@ -149,11 +199,21 @@ export default function PredictionSettlementsContainer() {
               </Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item name="attestationSource" label="Attestation Source" initialValue="admin">
+          <Form.Item
+            name="attestationSource"
+            label="Attestation Source"
+            initialValue="admin"
+          >
             <Input placeholder="admin" />
           </Form.Item>
-          <Form.Item name="attestationData" label="Attestation Data (JSON, optional)">
-            <TextArea rows={3} placeholder='{"source": "reuters", "article_url": "..."}' />
+          <Form.Item
+            name="attestationData"
+            label="Attestation Data (JSON, optional)"
+          >
+            <TextArea
+              rows={3}
+              placeholder='{"source": "reuters", "article_url": "..."}'
+            />
           </Form.Item>
           <Form.Item name="reason" label="Reason">
             <Input placeholder="e.g., Official result confirmed by AP" />
