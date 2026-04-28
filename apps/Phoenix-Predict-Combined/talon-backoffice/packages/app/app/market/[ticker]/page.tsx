@@ -19,7 +19,7 @@
  * (shape-only, so swapping in real levels later is a drop-in).
  */
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import MarketHead from "../../components/prediction/MarketHead";
@@ -154,17 +154,35 @@ export default function MarketDetailPage() {
 
   // Live price updates via the gateway's `market:<id>` channel. Gateway
   // publishes the post-AMM market state after every successful order on
-  // this market. Payload shape is a partial PredictionMarket — we merge
-  // into local state. If the WS drops, predict-ws.ts handles reconnect
-  // and re-subscribe transparently. See go-platform .../ws/notifier.go +
-  // .../http/prediction_handlers.go buildMarketUpdatePayload.
+  // this market. Payload shape mirrors the gateway's marketUpdatePayload
+  // (see go-platform internal/http/prediction_handlers.go) — a few price
+  // and volume fields plus a `ts` RFC3339 timestamp.
+  //
+  // The latestTsRef guards against last-write-wins clobbering: an
+  // out-of-order frame, or a stale frame arriving after a fresh
+  // loadMarket() refetch (e.g. post-submit at line ~210), would otherwise
+  // overwrite newer state. We compare timestamps and skip older payloads.
+  // If the WS drops, predict-ws.ts handles reconnect + re-subscribe.
+  const latestTsRef = useRef<string>("");
   useEffect(() => {
     const id = market?.id;
     if (!id) return;
+    // Reset the ts watermark each time we resubscribe — a new market id
+    // means the timeline restarts.
+    latestTsRef.current = "";
     const unsubscribe = subscribePredictWs(`market:${id}`, (_eventId, data) => {
-      const payload = data as Partial<PredictionMarket> | null;
+      const payload = data as
+        | (Partial<PredictionMarket> & { ts?: string })
+        | null;
       if (!payload || typeof payload !== "object") return;
-      setMarket((prev) => (prev ? { ...prev, ...payload } : prev));
+      // RFC3339 timestamps compare lexicographically in time order, so a
+      // string compare is sufficient — no Date parsing needed.
+      if (payload.ts && payload.ts <= latestTsRef.current) return;
+      if (payload.ts) latestTsRef.current = payload.ts;
+      // Strip ts before merging so it doesn't drift onto state (it's not
+      // part of the canonical PredictionMarket shape).
+      const { ts: _ts, ...marketFields } = payload;
+      setMarket((prev) => (prev ? { ...prev, ...marketFields } : prev));
     });
     return unsubscribe;
   }, [market?.id]);
