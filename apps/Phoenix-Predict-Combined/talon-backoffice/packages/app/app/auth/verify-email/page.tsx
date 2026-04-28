@@ -61,11 +61,10 @@ export default function VerifyEmailPage() {
           display: inline-block;
           width: 28px;
           height: 28px;
-          border: 2px solid rgba(255,255,255,0.08);
+          border: 2px solid var(--border-2);
           border-top-color: var(--accent);
           border-radius: 50%;
           animation: spin 1s linear infinite;
-          box-shadow: 0 0 12px var(--accent-glow-color);
         }
       `}</style>
       <div className="auth-card" style={{ textAlign: "center" }}>

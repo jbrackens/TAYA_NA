@@ -68,7 +68,7 @@ function TabNavigation({
     <div
       style={{
         display: "flex",
-        borderBottom: "1px solid #1a1f3a",
+        borderBottom: "1px solid var(--border-1)",
         marginBottom: "24px",
       }}
     >
@@ -80,7 +80,7 @@ function TabNavigation({
             padding: "12px 16px",
             border: "none",
             backgroundColor: "transparent",
-            color: activeTabIndex === index ? "var(--accent)" : "#D3D3D3",
+            color: activeTabIndex === index ? "var(--accent)" : "var(--t2)",
             borderBottom:
               activeTabIndex === index ? "2px solid var(--accent)" : "none",
             cursor: "pointer",
@@ -98,10 +98,10 @@ function TabNavigation({
 const inputStyle = {
   width: "100%",
   padding: "8px 12px",
-  backgroundColor: "#0b0e1c",
-  border: "1px solid #1a1f3a",
-  borderRadius: "4px",
-  color: "#e2e8f0",
+  backgroundColor: "var(--surface-2)",
+  border: "1px solid var(--border-1)",
+  borderRadius: "var(--r-rh-md)",
+  color: "var(--t1)",
   fontSize: "14px",
   boxSizing: "border-box" as const,
 };
@@ -111,15 +111,15 @@ const labelStyle = {
   fontSize: "14px",
   fontWeight: "600" as const,
   marginBottom: "8px",
-  color: "#ffffff",
+  color: "var(--t1)",
 };
 
 const btnStyle = {
   padding: "10px 20px",
   backgroundColor: "var(--accent)",
-  color: "#ffffff",
+  color: "#04140a",
   border: "none",
-  borderRadius: "4px",
+  borderRadius: "var(--r-rh-md)",
   fontSize: "14px",
   fontWeight: "600" as const,
   cursor: "pointer",
@@ -358,7 +358,7 @@ export default function ProfilePage() {
 
   if (profileLoading) {
     return (
-      <div style={{ maxWidth: "800px", padding: "40px", color: "#64748b" }}>
+      <div style={{ maxWidth: "800px", padding: "40px", color: "var(--t3)" }}>
         Loading profile...
       </div>
     );
@@ -371,7 +371,7 @@ export default function ProfilePage() {
           fontSize: "28px",
           fontWeight: "700",
           marginBottom: "24px",
-          color: "#ffffff",
+          color: "var(--t1)",
         }}
       >
         My Account
@@ -381,9 +381,9 @@ export default function ProfilePage() {
         style={{
           padding: "24px",
           marginBottom: "24px",
-          backgroundColor: "#0f1225",
-          borderRadius: "8px",
-          border: "1px solid #1a1f3a",
+          backgroundColor: "var(--surface-1)",
+          borderRadius: "var(--r-rh-lg)",
+          border: "1px solid var(--border-1)",
         }}
       >
         <TabNavigation
@@ -399,7 +399,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Personal Information
@@ -441,7 +441,11 @@ export default function ProfilePage() {
                 style={{ ...inputStyle, opacity: "0.6" }}
               />
               <p
-                style={{ fontSize: "12px", color: "#a0a0a0", marginTop: "8px" }}
+                style={{
+                  fontSize: "12px",
+                  color: "var(--t3)",
+                  marginTop: "8px",
+                }}
               >
                 Email cannot be changed. Contact support if you need to update
                 it.
@@ -480,13 +484,18 @@ export default function ProfilePage() {
             </div>
 
             {/* Preferences Section */}
-            <div style={{ borderTop: "1px solid #1a1f3a", paddingTop: "24px" }}>
+            <div
+              style={{
+                borderTop: "1px solid var(--border-1)",
+                paddingTop: "24px",
+              }}
+            >
               <h2
                 style={{
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Preferences
@@ -532,7 +541,7 @@ export default function ProfilePage() {
                         display: "flex",
                         alignItems: "center",
                         gap: "6px",
-                        color: "#e2e8f0",
+                        color: "var(--t1)",
                         fontSize: "14px",
                         cursor: "pointer",
                       }}
@@ -565,7 +574,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Deposit Limits
@@ -616,7 +625,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Betting Limits
@@ -661,7 +670,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Verification Status
@@ -672,10 +681,10 @@ export default function ProfilePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     padding: "12px 0",
-                    borderBottom: "1px solid #1a1f3a",
+                    borderBottom: "1px solid var(--border-1)",
                   }}
                 >
-                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
                     Email Verification
                   </span>
                   <StatusBadge status="verified" />
@@ -685,10 +694,10 @@ export default function ProfilePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     padding: "12px 0",
-                    borderBottom: "1px solid #1a1f3a",
+                    borderBottom: "1px solid var(--border-1)",
                   }}
                 >
-                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
                     Phone Verification
                   </span>
                   <StatusBadge
@@ -700,10 +709,10 @@ export default function ProfilePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     padding: "12px 0",
-                    borderBottom: "1px solid #1a1f3a",
+                    borderBottom: "1px solid var(--border-1)",
                   }}
                 >
-                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
                     Identity Verification (KYC)
                   </span>
                   <StatusBadge
@@ -725,14 +734,14 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Complete Verification
               </h2>
               <p
                 style={{
-                  color: "#a0a0a0",
+                  color: "var(--t3)",
                   fontSize: "14px",
                   marginBottom: "16px",
                 }}
@@ -753,7 +762,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Password
@@ -799,7 +808,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Two-Factor Authentication
@@ -810,10 +819,10 @@ export default function ProfilePage() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   padding: "16px 0",
-                  borderBottom: "1px solid #1a1f3a",
+                  borderBottom: "1px solid var(--border-1)",
                 }}
               >
-                <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                <span style={{ color: "var(--t3)", fontSize: "14px" }}>
                   Enable 2FA for added security
                 </span>
                 <input
@@ -829,7 +838,7 @@ export default function ProfilePage() {
                   fontSize: "16px",
                   fontWeight: "600",
                   marginBottom: "16px",
-                  color: "#ffffff",
+                  color: "var(--t1)",
                 }}
               >
                 Account Info
@@ -840,13 +849,13 @@ export default function ProfilePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     padding: "12px 0",
-                    borderBottom: "1px solid #1a1f3a",
+                    borderBottom: "1px solid var(--border-1)",
                   }}
                 >
-                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
                     Username
                   </span>
-                  <span style={{ color: "#ffffff", fontWeight: "600" }}>
+                  <span style={{ color: "var(--t1)", fontWeight: "600" }}>
                     {profile?.username || user?.username}
                   </span>
                 </div>
@@ -855,13 +864,13 @@ export default function ProfilePage() {
                     display: "flex",
                     justifyContent: "space-between",
                     padding: "12px 0",
-                    borderBottom: "1px solid #1a1f3a",
+                    borderBottom: "1px solid var(--border-1)",
                   }}
                 >
-                  <span style={{ color: "#a0a0a0", fontSize: "14px" }}>
+                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
                     Member Since
                   </span>
-                  <span style={{ color: "#ffffff", fontWeight: "600" }}>
+                  <span style={{ color: "var(--t1)", fontWeight: "600" }}>
                     {profile?.createdAt
                       ? new Date(profile.createdAt).toLocaleDateString()
                       : "-"}

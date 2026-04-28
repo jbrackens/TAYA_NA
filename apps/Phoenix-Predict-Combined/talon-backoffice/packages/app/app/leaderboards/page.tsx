@@ -480,7 +480,7 @@ function Styles() {
       .lb-xlink {
         font-size: 13px;
         color: var(--t2);
-        border-bottom: 1px solid var(--b1);
+        border-bottom: 1px solid var(--border-1);
         padding-bottom: 2px;
       }
       .lb-xlink:hover { color: var(--t1); border-color: var(--accent); }
@@ -492,24 +492,14 @@ function Styles() {
         align-items: start;
       }
 
-      /* ── Sidebar / Detail / State cards — all Liquid Glass ── */
+      /* ── Sidebar / Detail / State cards ── */
       .lb-sidebar,
       .lb-detail,
       .lb-state-card {
         position: relative;
-        border-radius: var(--r-lg);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.02) 100%),
-          var(--glass-regular);
-        backdrop-filter: blur(24px) saturate(170%);
-        -webkit-backdrop-filter: blur(24px) saturate(170%);
-        border: 1px solid rgba(255,255,255,0.12);
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          inset 0 -1px 0 var(--rim-bottom),
-          inset 1px 0 2px var(--chroma-1),
-          inset -1px 0 2px var(--chroma-2),
-          0 10px 28px rgba(0,0,0,0.22);
+        border-radius: var(--r-rh-lg);
+        background: var(--surface-1);
+        border: 1px solid var(--border-1);
       }
       .lb-sidebar {
         padding: 10px;
@@ -526,18 +516,17 @@ function Styles() {
         padding: 12px 14px;
         background: transparent;
         border: 1px solid transparent;
-        border-radius: var(--r-md);
+        border-radius: var(--r-rh-md);
         color: var(--t2);
         text-align: left;
         cursor: pointer;
         font-family: inherit;
         transition: background 120ms ease, border-color 120ms ease;
       }
-      .lb-tab:hover { background: rgba(255, 255, 255, 0.05); }
+      .lb-tab:hover { background: var(--surface-2); }
       .lb-tab.is-active {
-        background: rgba(43, 228, 128, 0.1);
-        border-color: rgba(43, 228, 128, 0.3);
-        box-shadow: inset 0 1px 0 rgba(43, 228, 128, 0.18);
+        background: var(--accent-soft);
+        border-color: var(--accent);
       }
       .lb-tab-name {
         grid-column: 1;
@@ -572,11 +561,11 @@ function Styles() {
         grid-row: 2;
         margin-top: 4px;
         appearance: none;
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
         color: var(--t1);
         padding: 4px 8px;
-        border-radius: var(--r-sm);
+        border-radius: var(--r-rh-sm);
         font-size: 12px;
         font-family: inherit;
         cursor: pointer;
@@ -627,7 +616,7 @@ function Styles() {
       .lb-table th,
       .lb-table td {
         padding: 10px 6px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid var(--border-1);
         vertical-align: middle;
       }
       .lb-table th {
@@ -642,8 +631,7 @@ function Styles() {
       .lb-trader { color: var(--t1); font-weight: 500; }
       .lb-subtle { color: var(--t3); }
       .lb-table tbody tr.is-viewer {
-        background: rgba(43, 228, 128, 0.1);
-        box-shadow: inset 0 1px 0 rgba(43, 228, 128, 0.18);
+        background: var(--accent-soft);
       }
       .lb-table tbody tr.is-viewer td {
         color: var(--t1);
@@ -687,19 +675,15 @@ function Styles() {
         gap: 6px;
         padding: 12px 22px;
         color: #04140a;
-        border-radius: var(--r-md);
+        border-radius: var(--r-rh-md);
         font-size: 13px;
         font-weight: 700;
         text-decoration: none;
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
-          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-        border: 1px solid rgba(43, 228, 128, 0.6);
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,0.5),
-          0 10px 24px rgba(43, 228, 128, 0.18);
+        background: var(--accent);
+        border: none;
+        transition: transform 180ms ease, filter 180ms ease;
       }
-      .lb-state-cta:hover { filter: brightness(1.05); }
+      .lb-state-cta:hover { transform: translateY(-1px); filter: brightness(1.05); }
 
       /* ── Responsive ── */
       @media (max-width: 1024px) {

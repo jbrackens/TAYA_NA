@@ -433,30 +433,10 @@ function Styles() {
         width: 100%;
         max-width: 500px;
         padding: 32px 32px 26px;
-        border-radius: var(--r-xl);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 30%, rgba(255,255,255,0.025) 100%),
-          var(--glass-thick);
-        backdrop-filter: blur(40px) saturate(180%);
-        -webkit-backdrop-filter: blur(40px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow:
-          inset 0 1px 0 var(--rim-top),
-          inset 0 -1px 0 var(--rim-bottom),
-          inset 1px 0 2px var(--chroma-1),
-          inset -1px 0 2px var(--chroma-2),
-          0 28px 60px rgba(0, 0, 0, 0.5);
+        border-radius: var(--r-rh-lg);
+        background: var(--surface-1);
+        border: 1px solid var(--border-1);
         color: var(--t1);
-      }
-      .ra-card::before {
-        content: '';
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 50%;
-        border-radius: inherit;
-        background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
-        pointer-events: none;
-        mix-blend-mode: overlay;
       }
       .ra-head { text-align: center; margin-bottom: 16px; }
       .ra-eyebrow {
@@ -488,8 +468,8 @@ function Styles() {
       .ra-progress {
         position: relative;
         height: 4px;
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
         border-radius: 999px;
         overflow: hidden;
         margin-bottom: 22px;
@@ -497,15 +477,14 @@ function Styles() {
       .ra-progress-fill {
         position: absolute;
         inset: 0 auto 0 0;
-        background: linear-gradient(90deg, var(--accent), var(--accent-hi));
+        background: var(--accent);
         border-radius: inherit;
-        box-shadow: 0 0 14px rgba(43, 228, 128,0.5);
         transition: width 0.3s ease;
       }
 
       .ra-banner {
         padding: 10px 12px;
-        border-radius: var(--r-sm);
+        border-radius: var(--r-rh-md);
         font-size: 13px;
         margin-bottom: 14px;
       }
@@ -515,9 +494,9 @@ function Styles() {
         color: var(--no);
       }
       .ra-banner.success {
-        background: rgba(127, 200, 255,0.1);
-        border: 1px solid rgba(127, 200, 255,0.3);
-        color: var(--yes);
+        background: var(--accent-soft);
+        border: 1px solid var(--border-2);
+        color: var(--accent);
       }
 
       .ra-form {
@@ -543,26 +522,20 @@ function Styles() {
         color: var(--t3);
       }
       .ra-input {
-        background: rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
+        border-radius: var(--r-rh-md);
         padding: 11px 13px;
         font-family: inherit;
         font-size: 14px;
         color: var(--t1);
         outline: none;
-        box-shadow:
-          inset 0 1px 2px rgba(0, 0, 0, 0.35),
-          inset 0 -1px 0 rgba(255, 255, 255, 0.04);
-        transition: border-color 150ms ease, box-shadow 150ms ease;
+        transition: border-color 150ms ease;
       }
       .ra-input::placeholder { color: var(--t4); }
       .ra-input:focus-visible {
         border-color: var(--accent);
-        box-shadow:
-          inset 0 1px 2px rgba(0, 0, 0, 0.35),
-          0 0 0 2px var(--accent-soft),
-          0 0 16px var(--accent-glow-color);
+        box-shadow: 0 0 0 2px var(--accent-soft);
       }
       .ra-input-error { border-color: var(--no); }
       .ra-field-error {
@@ -571,9 +544,9 @@ function Styles() {
       }
 
       .ra-terms {
-        background: rgba(0, 0, 0, 0.22);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
+        border-radius: var(--r-rh-md);
         padding: 14px 16px;
         max-height: 220px;
         overflow-y: auto;
@@ -607,9 +580,9 @@ function Styles() {
       }
 
       .ra-summary {
-        background: rgba(0, 0, 0, 0.22);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
+        border-radius: var(--r-rh-md);
         padding: 12px 14px;
       }
       .ra-summary-eyebrow {
@@ -645,7 +618,7 @@ function Styles() {
         flex: 1;
         padding: 11px 14px;
         border: 1px solid transparent;
-        border-radius: var(--r-sm);
+        border-radius: var(--r-rh-md);
         font-family: inherit;
         font-size: 13px;
         font-weight: 700;
@@ -655,23 +628,18 @@ function Styles() {
       }
       .ra-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       .ra-btn.ghost {
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--surface-2);
         color: var(--t2);
-        border-color: rgba(255, 255, 255, 0.12);
+        border-color: var(--border-1);
       }
       .ra-btn.ghost:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--accent);
         color: var(--t1);
       }
       .ra-btn.primary {
         color: #04140a;
-        border-color: rgba(43, 228, 128, 0.6);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%),
-          linear-gradient(115deg, #2be480 0%, #00ffaa 100%);
-        box-shadow:
-          inset 0 1px 0 rgba(255,255,255,0.5),
-          0 10px 24px rgba(43, 228, 128, 0.2);
+        border-color: transparent;
+        background: var(--accent);
       }
       .ra-btn.primary:hover:not(:disabled) {
         filter: brightness(1.05);
@@ -682,7 +650,7 @@ function Styles() {
       .ra-foot {
         padding-top: 14px;
         margin-top: 18px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid var(--border-1);
         text-align: center;
         font-size: 13px;
         color: var(--t2);
@@ -692,7 +660,7 @@ function Styles() {
         text-decoration: none;
         font-weight: 600;
       }
-      .ra-link-accent:hover { color: var(--accent-hi); }
+      .ra-link-accent:hover { filter: brightness(1.1); }
     `}</style>
   );
 }

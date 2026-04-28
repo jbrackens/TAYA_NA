@@ -309,18 +309,18 @@ const transactionsStyles = `
   }
 
   .tx-header h1 { font-size: 28px; font-weight: 800; color: var(--t1); margin-bottom: 4px; }
-  .tx-header p { font-size: 14px; color: #64748b; }
+  .tx-header p { font-size: 14px; color: var(--t3); }
 
   .tx-back {
-    padding: 10px 16px; background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px; color: var(--t1); text-decoration: none; font-size: 13px;
+    padding: 10px 16px; background: var(--surface-1); border: 1px solid var(--border-1);
+    border-radius: var(--r-rh-md); color: var(--t1); text-decoration: none; font-size: 13px;
     font-weight: 600; transition: all 0.15s;
   }
   .tx-back:hover { border-color: var(--accent); color: var(--accent); }
 
   .tx-filters { margin-bottom: 24px; }
   .tx-filter-group { margin-bottom: 16px; }
-  .tx-filter-label { display: block; font-size: 12px; color: #64748b; font-weight: 600;
+  .tx-filter-label { display: block; font-size: 12px; color: var(--t3); font-weight: 600;
     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
 
   .tx-filter-buttons {
@@ -328,8 +328,8 @@ const transactionsStyles = `
   }
 
   .tx-filter-btn {
-    padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
-    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); color: #D3D3D3;
+    padding: 8px 12px; border-radius: var(--r-rh-sm); font-size: 12px; font-weight: 600;
+    background: var(--surface-1); border: 1px solid var(--border-1); color: var(--t2);
     cursor: pointer; transition: all 0.15s;
   }
 
@@ -338,12 +338,12 @@ const transactionsStyles = `
   }
 
   .tx-card {
-    background: rgba(0, 0, 0, 0.22); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+    background: var(--surface-1); border: 1px solid var(--border-1); border-radius: var(--r-rh-lg);
     overflow: hidden;
   }
 
   .tx-loading, .tx-empty {
-    padding: 40px; text-align: center; color: #64748b; font-size: 14px;
+    padding: 40px; text-align: center; color: var(--t3); font-size: 14px;
   }
 
   .tx-table-container {
@@ -355,45 +355,45 @@ const transactionsStyles = `
   }
 
   .tx-table thead {
-    background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--surface-2); border-bottom: 1px solid var(--border-1);
   }
 
   .tx-table th {
     padding: 12px 16px; text-align: left; font-size: 12px;
-    font-weight: 700; color: #D3D3D3; text-transform: uppercase;
+    font-weight: 700; color: var(--t3); text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .tx-table td {
-    padding: 12px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 12px 16px; border-bottom: 1px solid var(--border-1);
     font-size: 13px; color: var(--t1);
   }
 
   .tx-table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-2);
   }
 
   .tx-type {
-    display: inline-block; padding: 4px 8px; background: rgba(43, 228, 128,0.1);
-    border-radius: 4px; color: var(--accent); font-weight: 600; font-size: 12px;
+    display: inline-block; padding: 4px 8px; background: var(--accent-soft);
+    border-radius: var(--r-rh-sm); color: var(--accent); font-weight: 600; font-size: 12px;
   }
 
   .tx-credit { color: var(--accent); font-weight: 700; }
   .tx-debit { color: var(--no); font-weight: 700; }
 
   .tx-status {
-    display: inline-block; padding: 4px 8px; background: rgba(255, 255, 255, 0.08);
-    border-radius: 4px; color: #D3D3D3; font-size: 12px; font-weight: 600;
+    display: inline-block; padding: 4px 8px; background: var(--surface-2);
+    border-radius: var(--r-rh-sm); color: var(--t2); font-size: 12px; font-weight: 600;
   }
 
   .tx-pagination {
     display: flex; justify-content: center; align-items: center;
-    gap: 16px; padding: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 16px; padding: 16px; border-top: 1px solid var(--border-1);
   }
 
   .tx-page-btn {
-    padding: 8px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 6px; color: #D3D3D3; font-size: 12px; font-weight: 600;
+    padding: 8px 12px; background: var(--surface-2); border: 1px solid var(--border-1);
+    border-radius: var(--r-rh-sm); color: var(--t2); font-size: 12px; font-weight: 600;
     cursor: pointer; transition: all 0.15s;
   }
 
@@ -406,6 +406,6 @@ const transactionsStyles = `
   }
 
   .tx-page-info {
-    font-size: 13px; color: #D3D3D3; font-weight: 600;
+    font-size: 13px; color: var(--t2); font-weight: 600;
   }
 `;
