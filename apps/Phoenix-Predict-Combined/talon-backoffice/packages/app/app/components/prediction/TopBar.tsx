@@ -26,8 +26,12 @@ import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-typ
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { logger } from "../../lib/logger";
 import { useAuth } from "../../hooks/useAuth";
-import { useAppSelector } from "../../lib/store/hooks";
-import { selectCurrentBalance } from "../../lib/store/cashierSlice";
+import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
+import {
+  selectCurrentBalance,
+  setCurrentBalance,
+} from "../../lib/store/cashierSlice";
+import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
 import BrandMark from "../BrandMark";
 
@@ -49,7 +53,29 @@ export function TopBar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useAppDispatch();
   const balance = useAppSelector(selectCurrentBalance);
+
+  // Hydrate the cashier slice's currentBalance whenever the user resolves.
+  // Without this, the BAL pill in the top nav reads zero on every page
+  // except /cashier (which is the only page that previously dispatched
+  // setCurrentBalance). Visiting /cashier first would warm the slice, but
+  // a fresh navigation to /predict or /portfolio would show $0.00.
+  // TopBar mounts on every page, so we fetch once when auth is ready.
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    let cancelled = false;
+    getBalance(user.id)
+      .then((bal) => {
+        if (!cancelled) dispatch(setCurrentBalance(bal.availableBalance));
+      })
+      .catch((err: unknown) => {
+        logger.warn("TopBar", "balance fetch failed", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, user?.id, dispatch]);
 
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
