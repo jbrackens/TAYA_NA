@@ -184,7 +184,10 @@ function ContentPageContent() {
                 row.status === "published"
                   ? "rgba(34,197,94,0.15)"
                   : "rgba(251,191,36,0.15)",
-              color: row.status === "published" ? "#4ade80" : "#fbbf24",
+              color:
+                row.status === "published"
+                  ? "var(--accent, #2be480)"
+                  : "var(--warn, #d97706)",
             }}
           >
             {row.status}
@@ -227,7 +230,7 @@ function ContentPageContent() {
     fontSize: "14px",
     fontWeight: 600,
     borderBottom: isActive ? "2px solid #39ff14" : "2px solid transparent",
-    color: isActive ? "#e2e8f0" : "#64748b",
+    color: isActive ? "var(--t1, #1a1a1a)" : "var(--t3, #8b8378)",
     background: "none",
     border: "none",
   });
@@ -242,7 +245,13 @@ function ContentPageContent() {
           marginBottom: "24px",
         }}
       >
-        <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#e2e8f0" }}>
+        <h1
+          style={{
+            fontSize: "24px",
+            fontWeight: 800,
+            color: "var(--t1, #1a1a1a)",
+          }}
+        >
           Content Management
         </h1>
         <button
@@ -261,7 +270,7 @@ function ContentPageContent() {
         style={{
           display: "flex",
           gap: "4px",
-          borderBottom: "1px solid #1a1f3a",
+          borderBottom: "1px solid var(--border-1, #e5dfd2)",
           marginBottom: "20px",
         }}
       >
@@ -283,7 +292,9 @@ function ContentPageContent() {
 
       {showPageForm && (
         <div style={formStyle}>
-          <h3 style={{ color: "#e2e8f0", marginBottom: "12px" }}>New Page</h3>
+          <h3 style={{ color: "var(--t1, #1a1a1a)", marginBottom: "12px" }}>
+            New Page
+          </h3>
           <input
             placeholder="Slug (e.g. about-us)"
             value={pageSlug}
@@ -322,7 +333,9 @@ function ContentPageContent() {
 
       {showBannerForm && (
         <div style={formStyle}>
-          <h3 style={{ color: "#e2e8f0", marginBottom: "12px" }}>New Banner</h3>
+          <h3 style={{ color: "var(--t1, #1a1a1a)", marginBottom: "12px" }}>
+            New Banner
+          </h3>
           <input
             placeholder="Title"
             value={bannerTitle}
@@ -400,9 +413,9 @@ const createBtnStyle: CSSProperties = {
 const cancelBtnStyle: CSSProperties = {
   padding: "8px 16px",
   borderRadius: "6px",
-  border: "1px solid #1a1f3a",
+  border: "1px solid var(--border-1, #e5dfd2)",
   backgroundColor: "transparent",
-  color: "#64748b",
+  color: "var(--t3, #8b8378)",
   fontSize: "13px",
   cursor: "pointer",
 };
@@ -421,16 +434,16 @@ const inputStyle: CSSProperties = {
   padding: "8px 12px",
   marginBottom: "8px",
   borderRadius: "6px",
-  border: "1px solid #1a1f3a",
-  backgroundColor: "#0b0e1c",
-  color: "#e2e8f0",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  backgroundColor: "var(--bg-deep, #f7f3ed)",
+  color: "var(--t1, #1a1a1a)",
   fontSize: "13px",
   outline: "none",
 };
 const formStyle: CSSProperties = {
   padding: "20px",
-  backgroundColor: "#0f1225",
-  border: "1px solid #1a1f3a",
+  backgroundColor: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: "8px",
   marginBottom: "20px",
 };

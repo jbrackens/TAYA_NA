@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { useState } from 'react';
+import styled from "styled-components";
+import { useState } from "react";
 
 const TreeContainer = styled.div`
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
+  border: 1px solid var(--border-1, #e5dfd2);
   border-radius: 6px;
   padding: 20px;
   max-height: 500px;
@@ -16,12 +16,12 @@ const Title = styled.h3`
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const TreeNode = styled.div`
   margin-left: 16px;
-  border-left: 1px solid #1a1f3a;
+  border-left: 1px solid var(--border-1, #e5dfd2);
   padding-left: 16px;
 `;
 
@@ -38,7 +38,8 @@ const NodeLabel = styled.div<{ $level?: number; $highlighted?: boolean }>`
   padding: 8px;
   cursor: pointer;
   margin-bottom: 4px;
-  background-color: ${(props) => (props.$highlighted ? 'rgba(248, 113, 113, 0.1)' : 'transparent')};
+  background-color: ${(props) =>
+    props.$highlighted ? "rgba(248, 113, 113, 0.1)" : "transparent"};
   border-radius: 3px;
   transition: background-color 0.2s ease;
 
@@ -50,7 +51,7 @@ const NodeLabel = styled.div<{ $level?: number; $highlighted?: boolean }>`
 const ExpandButton = styled.button`
   background: none;
   border: none;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   cursor: pointer;
   padding: 0;
   font-size: 12px;
@@ -69,13 +70,14 @@ const NodeContent = styled.div`
 `;
 
 const NodeName = styled.span`
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 500;
   font-size: 13px;
 `;
 
 const NodeLiability = styled.span<{ $high?: boolean }>`
-  color: ${(props) => (props.$high ? '#f87171' : '#4a7eff')};
+  color: ${(props) =>
+    props.$high ? "var(--no-text, #a8472d)" : "var(--focus-ring, #0e7a53)"};
   font-weight: 600;
   font-size: 12px;
   margin-left: auto;
@@ -109,10 +111,10 @@ function LiabilityNode({ node, level }: NodeComponentProps) {
       <NodeLabel $level={level} $highlighted={node.isHighExposure}>
         {hasChildren && (
           <ExpandButton onClick={() => setIsExpanded(!isExpanded)}>
-            {isExpanded ? '▼' : '▶'}
+            {isExpanded ? "▼" : "▶"}
           </ExpandButton>
         )}
-        {!hasChildren && <div style={{ width: '16px' }} />}
+        {!hasChildren && <div style={{ width: "16px" }} />}
         <NodeContent>
           <NodeName>{node.name}</NodeName>
         </NodeContent>
@@ -139,7 +141,14 @@ export function LiabilityView({ fixtures = [] }: LiabilityViewProps) {
           <LiabilityNode key={fixture.id} node={fixture} level={0} />
         ))
       ) : (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#a0a0a0', fontSize: '12px' }}>
+        <div
+          style={{
+            textAlign: "center",
+            padding: "20px",
+            color: "var(--t2, #4a4a4a)",
+            fontSize: "12px",
+          }}
+        >
           No liability data available
         </div>
       )}

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Badge } from '../shared';
-import { useState, useEffect } from 'react';
-import { useTradingWebSocket } from '../../hooks/useTradingWebSocket';
+import styled from "styled-components";
+import { Badge } from "../shared";
+import { useState, useEffect } from "react";
+import { useTradingWebSocket } from "../../hooks/useTradingWebSocket";
 
 const BoardContainer = styled.div`
   display: flex;
@@ -13,14 +13,16 @@ const BoardContainer = styled.div`
 
 const FixtureCard = styled.div<{ $selected?: boolean }>`
   padding: 12px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
-  border: 2px solid ${(props) => (props.$selected ? '#4a7eff' : 'transparent')};
+  border: 2px solid
+    ${(props) =>
+      props.$selected ? "var(--focus-ring, #0e7a53)" : "transparent"};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: #4a7eff;
+    border-color: var(--focus-ring, #0e7a53);
     background-color: rgba(74, 126, 255, 0.1);
   }
 `;
@@ -34,7 +36,7 @@ const FixtureHeader = styled.div`
 
 const FixtureStatus = styled.span`
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const FixtureTeams = styled.div`
@@ -47,7 +49,7 @@ const FixtureTeams = styled.div`
 
 const TeamName = styled.span`
   font-size: 13px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 500;
   flex: 1;
 `;
@@ -55,7 +57,7 @@ const TeamName = styled.span`
 const Score = styled.span`
   font-size: 14px;
   font-weight: 700;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   min-width: 40px;
   text-align: center;
 `;
@@ -65,11 +67,11 @@ const FixtureStats = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const StatBadge = styled.div`
-  background-color: #111631;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
   padding: 4px 8px;
   border-radius: 3px;
   display: flex;
@@ -77,11 +79,11 @@ const StatBadge = styled.div`
 `;
 
 const StatLabel = styled.span`
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const StatValue = styled.span`
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   font-weight: 600;
   margin-left: 4px;
 `;
@@ -89,7 +91,7 @@ const StatValue = styled.span`
 const EmptyState = styled.div`
   text-align: center;
   padding: 40px 20px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 export interface FixtureData {
@@ -99,7 +101,7 @@ export interface FixtureData {
   homeScore?: number;
   awayScore?: number;
   sport: string;
-  status: 'live' | 'upcoming' | 'ended';
+  status: "live" | "upcoming" | "ended";
   marketCount: number;
   suspendedCount?: number;
   liability: number;
@@ -129,7 +131,7 @@ export function TradingBoard({
   }, [fixtures]);
 
   useEffect(() => {
-    const unsubscribe = subscribe('fixtureUpdates', (data) => {
+    const unsubscribe = subscribe("fixtureUpdates", (data) => {
       if (Array.isArray(data)) {
         setLocalFixtures(data);
       }
@@ -149,14 +151,16 @@ export function TradingBoard({
           >
             <FixtureHeader>
               <FixtureStatus>{fixture.sport}</FixtureStatus>
-              <Badge variant={fixture.status === 'live' ? 'danger' : 'secondary'}>
+              <Badge
+                variant={fixture.status === "live" ? "danger" : "secondary"}
+              >
                 {fixture.status.toUpperCase()}
               </Badge>
             </FixtureHeader>
 
             <FixtureTeams>
               <TeamName>{fixture.homeTeam}</TeamName>
-              {fixture.status === 'live' && (
+              {fixture.status === "live" && (
                 <>
                   <Score>{fixture.homeScore || 0}</Score>
                   <Score>-</Score>
@@ -173,7 +177,14 @@ export function TradingBoard({
               </StatBadge>
               <StatBadge>
                 <StatLabel>Exposure:</StatLabel>
-                <StatValue style={{ color: fixture.exposure > 50000 ? '#f87171' : '#4a7eff' }}>
+                <StatValue
+                  style={{
+                    color:
+                      fixture.exposure > 50000
+                        ? "var(--no-text, #a8472d)"
+                        : "var(--focus-ring, #0e7a53)",
+                  }}
+                >
                   ${(fixture.exposure / 1000).toFixed(0)}K
                 </StatValue>
               </StatBadge>

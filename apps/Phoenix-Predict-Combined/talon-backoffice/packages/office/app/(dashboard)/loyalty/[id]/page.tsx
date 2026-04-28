@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import { ChangeEvent, CSSProperties, FormEvent, useEffect, useMemo, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ErrorBoundary, ErrorState, LoadingSpinner } from '../../../components/shared';
+import {
+  ChangeEvent,
+  CSSProperties,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useParams, useRouter } from "next/navigation";
+import {
+  ErrorBoundary,
+  ErrorState,
+  LoadingSpinner,
+} from "../../../components/shared";
 
 interface LoyaltyAccount {
   accountId: string;
@@ -60,9 +71,9 @@ function LoyaltyDetailPageContent() {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [referrals, setReferrals] = useState<ReferralReward[]>([]);
   const [referralsLoading, setReferralsLoading] = useState(false);
-  const [pointsDelta, setPointsDelta] = useState('100');
-  const [reason, setReason] = useState('');
-  const [entrySubtype, setEntrySubtype] = useState('goodwill');
+  const [pointsDelta, setPointsDelta] = useState("100");
+  const [reason, setReason] = useState("");
+  const [entrySubtype, setEntrySubtype] = useState("goodwill");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,18 +83,23 @@ function LoyaltyDetailPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/v1/admin/loyalty/accounts/${encodeURIComponent(playerId)}?limit=20`, {
-        headers: { 'X-Admin-Role': 'admin' },
-      });
+      const response = await fetch(
+        `/api/v1/admin/loyalty/accounts/${encodeURIComponent(playerId)}?limit=20`,
+        {
+          headers: { "X-Admin-Role": "admin" },
+        },
+      );
       if (!response.ok) {
-        throw new Error('Failed to load loyalty account');
+        throw new Error("Failed to load loyalty account");
       }
       const data = await response.json();
       setAccount(data.account || null);
       setLedger(Array.isArray(data.ledger) ? data.ledger : []);
       setTiers(Array.isArray(data.tiers) ? data.tiers : []);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load loyalty account');
+      setError(
+        err instanceof Error ? err.message : "Failed to load loyalty account",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -92,7 +108,9 @@ function LoyaltyDetailPageContent() {
   const loadReferrals = async () => {
     setReferralsLoading(true);
     try {
-      const response = await fetch(`/api/v1/referrals?userId=${encodeURIComponent(playerId)}`);
+      const response = await fetch(
+        `/api/v1/referrals?userId=${encodeURIComponent(playerId)}`,
+      );
       if (!response.ok) {
         // Referral endpoint may 404 if no referrals exist — treat as empty
         setReferrals([]);
@@ -114,18 +132,27 @@ function LoyaltyDetailPageContent() {
   }, [playerId]);
 
   const currentTierName = useMemo(
-    () => tiers.find((tier) => tier.tierCode === account?.currentTier)?.displayName || account?.currentTier || 'Bronze',
+    () =>
+      tiers.find((tier) => tier.tierCode === account?.currentTier)
+        ?.displayName ||
+      account?.currentTier ||
+      "Bronze",
     [tiers, account?.currentTier],
   );
   const nextTierName = useMemo(
-    () => tiers.find((tier) => tier.tierCode === account?.nextTier)?.displayName || account?.nextTier || '',
+    () =>
+      tiers.find((tier) => tier.tierCode === account?.nextTier)?.displayName ||
+      account?.nextTier ||
+      "",
     [tiers, account?.nextTier],
   );
 
   // Compute tier progress for the progress bar
   const tierProgress = useMemo(() => {
     if (!account) return null;
-    const currentTierObj = tiers.find((t) => t.tierCode === account.currentTier);
+    const currentTierObj = tiers.find(
+      (t) => t.tierCode === account.currentTier,
+    );
     const nextTierObj = tiers.find((t) => t.tierCode === account.nextTier);
     if (!nextTierObj?.minLifetimePoints) return null;
     const currentMin = currentTierObj?.minLifetimePoints ?? 0;
@@ -149,41 +176,45 @@ function LoyaltyDetailPageContent() {
 
     const parsedDelta = Number(pointsDelta);
     if (!Number.isFinite(parsedDelta) || parsedDelta === 0) {
-      setError('Points delta must be a non-zero number.');
+      setError("Points delta must be a non-zero number.");
       return;
     }
     if (!reason.trim()) {
-      setError('Reason is required for auditability.');
+      setError("Reason is required for auditability.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/v1/admin/loyalty/adjustments', {
-        method: 'POST',
+      const response = await fetch("/api/v1/admin/loyalty/adjustments", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Role': 'admin',
+          "Content-Type": "application/json",
+          "X-Admin-Role": "admin",
         },
         body: JSON.stringify({
           playerId,
           pointsDelta: parsedDelta,
           idempotencyKey: `office-adjust:${playerId}:${Date.now()}`,
           reason: reason.trim(),
-          createdBy: 'office-admin',
+          createdBy: "office-admin",
           entrySubtype,
         }),
       });
       if (!response.ok) {
-        throw new Error('Failed to save loyalty adjustment');
+        throw new Error("Failed to save loyalty adjustment");
       }
       const data = await response.json();
       setAccount(data.account || null);
       setLedger((current) => [data.entry, ...current].slice(0, 20));
-      setReason('');
-      setFeedback('Loyalty adjustment applied successfully.');
+      setReason("");
+      setFeedback("Loyalty adjustment applied successfully.");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save loyalty adjustment');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save loyalty adjustment",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -214,7 +245,7 @@ function LoyaltyDetailPageContent() {
       <ErrorState
         title="Loyalty account not found"
         message="The requested loyalty account could not be located."
-        onRetry={() => router.push('/loyalty')}
+        onRetry={() => router.push("/loyalty")}
         showRetryButton={true}
       />
     );
@@ -234,11 +265,17 @@ function LoyaltyDetailPageContent() {
           </h1>
           <p style={subtitleStyle}>
             Current tier {currentTierName}
-            {account.nextTier ? `, ${account.pointsToNextTier} points to ${nextTierName}` : ', top tier unlocked'}.
+            {account.nextTier
+              ? `, ${account.pointsToNextTier} points to ${nextTierName}`
+              : ", top tier unlocked"}
+            .
           </p>
         </div>
         <div style={inlineActionsStyle}>
-          <button style={buttonStyle(true)} onClick={() => router.push('/loyalty')}>
+          <button
+            style={buttonStyle(true)}
+            onClick={() => router.push("/loyalty")}
+          >
             Back to Loyalty
           </button>
           <span style={badgeStyle(tierVariant(account.currentTier))}>
@@ -248,19 +285,40 @@ function LoyaltyDetailPageContent() {
       </div>
 
       <div style={metricsGridStyle}>
-        <MetricCard label="Points Balance" value={account.pointsBalance.toLocaleString()} />
-        <MetricCard label="Lifetime Earned" value={account.pointsEarnedLifetime.toLocaleString()} />
-        <MetricCard label="7 Day Earned" value={account.pointsEarned7D.toLocaleString()} />
-        <MetricCard label="30 Day Earned" value={account.pointsEarned30D.toLocaleString()} />
+        <MetricCard
+          label="Points Balance"
+          value={account.pointsBalance.toLocaleString()}
+        />
+        <MetricCard
+          label="Lifetime Earned"
+          value={account.pointsEarnedLifetime.toLocaleString()}
+        />
+        <MetricCard
+          label="7 Day Earned"
+          value={account.pointsEarned7D.toLocaleString()}
+        />
+        <MetricCard
+          label="30 Day Earned"
+          value={account.pointsEarned30D.toLocaleString()}
+        />
       </div>
 
       {/* Tier Progress Bar */}
       {tierProgress ? (
         <div style={progressContainerStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ color: '#39ff14', fontSize: 13, fontWeight: 700 }}>{tierProgress.currentName}</span>
-            <span style={{ color: '#94a3b8', fontSize: 12 }}>
-              {tierProgress.pointsToNext.toLocaleString()} pts to {tierProgress.nextName}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 6,
+            }}
+          >
+            <span style={{ color: "#39ff14", fontSize: 13, fontWeight: 700 }}>
+              {tierProgress.currentName}
+            </span>
+            <span style={{ color: "var(--t3, #8b8378)", fontSize: 12 }}>
+              {tierProgress.pointsToNext.toLocaleString()} pts to{" "}
+              {tierProgress.nextName}
             </span>
           </div>
           <div style={progressTrackStyle}>
@@ -269,9 +327,19 @@ function LoyaltyDetailPageContent() {
         </div>
       ) : !account.nextTier ? (
         <div style={progressContainerStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-            <span style={{ color: '#39ff14', fontSize: 13, fontWeight: 700 }}>{currentTierName}</span>
-            <span style={{ color: '#4ade80', fontSize: 12 }}>Top tier reached</span>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 6,
+            }}
+          >
+            <span style={{ color: "#39ff14", fontSize: 13, fontWeight: 700 }}>
+              {currentTierName}
+            </span>
+            <span style={{ color: "var(--accent, #2be480)", fontSize: 12 }}>
+              Top tier reached
+            </span>
           </div>
           <div style={progressTrackStyle}>
             <div style={progressBarStyle(100)} />
@@ -285,22 +353,38 @@ function LoyaltyDetailPageContent() {
         {referralsLoading ? (
           <div style={helperTextStyle}>Loading referrals...</div>
         ) : referrals.length === 0 ? (
-          <div style={helperTextStyle}>No referral activity found for this player.</div>
+          <div style={helperTextStyle}>
+            No referral activity found for this player.
+          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {referrals.map((ref) => (
               <div key={ref.referralId} style={referralRowStyle}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#ffffff' }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "var(--t1, #1a1a1a)",
+                    }}
+                  >
                     {ref.referrerPlayerId === playerId ? (
                       <>Referred {ref.referredPlayerId}</>
                     ) : (
                       <>Referred by {ref.referrerPlayerId}</>
                     )}
                   </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--t3, #8b8378)",
+                      marginTop: 2,
+                    }}
+                  >
                     {new Date(ref.createdAt).toLocaleString()}
-                    {ref.qualifiedAt ? ` — qualified ${new Date(ref.qualifiedAt).toLocaleString()}` : ''}
+                    {ref.qualifiedAt
+                      ? ` — qualified ${new Date(ref.qualifiedAt).toLocaleString()}`
+                      : ""}
                   </div>
                 </div>
                 <span style={qualificationBadgeStyle(ref.qualificationState)}>
@@ -322,25 +406,32 @@ function LoyaltyDetailPageContent() {
                   <div key={entry.entryId} style={ledgerItemStyle}>
                     <div style={ledgerHeadStyle}>
                       <div>
-                        <div style={ledgerTitleStyle}>{formatLedgerLabel(entry)}</div>
+                        <div style={ledgerTitleStyle}>
+                          {formatLedgerLabel(entry)}
+                        </div>
                         <div style={ledgerMetaStyle}>
-                          {new Date(entry.createdAt).toLocaleString()} • source {entry.sourceId}
+                          {new Date(entry.createdAt).toLocaleString()} • source{" "}
+                          {entry.sourceId}
                         </div>
                       </div>
                       <div style={ledgerDeltaStyle(entry.pointsDelta < 0)}>
-                        {entry.pointsDelta > 0 ? '+' : ''}
+                        {entry.pointsDelta > 0 ? "+" : ""}
                         {entry.pointsDelta}
                       </div>
                     </div>
                     <div style={ledgerMetaStyle}>
                       Balance after entry: {entry.balanceAfter.toLocaleString()}
-                      {entry.createdBy ? ` • created by ${entry.createdBy}` : ''}
+                      {entry.createdBy
+                        ? ` • created by ${entry.createdBy}`
+                        : ""}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={helperTextStyle}>No loyalty ledger activity recorded yet.</div>
+              <div style={helperTextStyle}>
+                No loyalty ledger activity recorded yet.
+              </div>
             )}
           </div>
         </div>
@@ -354,7 +445,9 @@ function LoyaltyDetailPageContent() {
                 <input
                   style={inputStyle}
                   value={pointsDelta}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => setPointsDelta(event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setPointsDelta(event.target.value)
+                  }
                   placeholder="e.g. 100 or -50"
                 />
               </label>
@@ -364,7 +457,9 @@ function LoyaltyDetailPageContent() {
                 <input
                   style={inputStyle}
                   value={entrySubtype}
-                  onChange={(event: ChangeEvent<HTMLInputElement>) => setEntrySubtype(event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setEntrySubtype(event.target.value)
+                  }
                   placeholder="goodwill"
                 />
               </label>
@@ -374,20 +469,25 @@ function LoyaltyDetailPageContent() {
                 <textarea
                   style={textAreaStyle}
                   value={reason}
-                  onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setReason(event.target.value)}
+                  onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                    setReason(event.target.value)
+                  }
                   placeholder="Explain why this adjustment is being applied"
                 />
               </label>
 
               <div style={helperTextStyle}>
-                Positive values award points. Negative values claw points back. Every adjustment is written to the loyalty ledger.
+                Positive values award points. Negative values claw points back.
+                Every adjustment is written to the loyalty ledger.
               </div>
 
-              {feedback ? <div style={feedbackStyle(false)}>{feedback}</div> : null}
+              {feedback ? (
+                <div style={feedbackStyle(false)}>{feedback}</div>
+              ) : null}
               {error ? <div style={feedbackStyle(true)}>{error}</div> : null}
 
               <button style={buttonStyle(false)} disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Apply Adjustment'}
+                {isSubmitting ? "Saving..." : "Apply Adjustment"}
               </button>
             </form>
           </div>
@@ -407,44 +507,48 @@ function MetricCard({ label, value }: { label: string; value: string }) {
 }
 
 function formatLedgerLabel(entry: LoyaltyLedgerEntry): string {
-  if (entry.sourceType === 'bet_settlement') {
-    return 'Settled bet reward';
+  if (entry.sourceType === "bet_settlement") {
+    return "Settled bet reward";
   }
-  if (entry.sourceType === 'admin_manual') {
-    return 'Manual loyalty adjustment';
+  if (entry.sourceType === "admin_manual") {
+    return "Manual loyalty adjustment";
   }
   return entry.entrySubtype || entry.entryType;
 }
 
-function tierVariant(tier: string): 'default' | 'success' | 'warning' | 'danger' {
+function tierVariant(
+  tier: string,
+): "default" | "success" | "warning" | "danger" {
   switch (tier) {
-    case 'vip':
-      return 'danger';
-    case 'gold':
-      return 'warning';
-    case 'silver':
-      return 'success';
+    case "vip":
+      return "danger";
+    case "gold":
+      return "warning";
+    case "silver":
+      return "success";
     default:
-      return 'default';
+      return "default";
   }
 }
 
-function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSProperties {
+function badgeStyle(
+  variant: "default" | "success" | "warning" | "danger",
+): CSSProperties {
   const backgrounds: Record<string, string> = {
-    default: '#1a1f3a',
-    success: '#065f46',
-    warning: '#92400e',
-    danger: '#7f1d1d',
+    default: "var(--border-1, #e5dfd2)",
+    success: "#065f46",
+    warning: "#92400e",
+    danger: "#7f1d1d",
   };
   const colors: Record<string, string> = {
-    default: '#93c5fd',
-    success: '#dcfce7',
-    warning: '#fef3c7',
-    danger: '#fee2e2',
+    default: "#93c5fd",
+    success: "#dcfce7",
+    warning: "#fef3c7",
+    danger: "#fee2e2",
   };
   return {
-    display: 'inline-block',
-    padding: '4px 8px',
+    display: "inline-block",
+    padding: "4px 8px",
     borderRadius: 4,
     fontSize: 12,
     fontWeight: 600,
@@ -454,29 +558,33 @@ function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSP
 }
 
 function qualificationBadgeStyle(state: string): CSSProperties {
-  const isQualified = state === 'qualified' || state === 'completed';
+  const isQualified = state === "qualified" || state === "completed";
   return {
-    display: 'inline-block',
-    padding: '3px 8px',
+    display: "inline-block",
+    padding: "3px 8px",
     borderRadius: 4,
     fontSize: 11,
     fontWeight: 600,
-    backgroundColor: isQualified ? 'rgba(57, 255, 20, 0.12)' : 'rgba(148, 163, 184, 0.12)',
-    color: isQualified ? '#39ff14' : '#94a3b8',
-    border: `1px solid ${isQualified ? 'rgba(57, 255, 20, 0.25)' : 'rgba(148, 163, 184, 0.25)'}`,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
+    backgroundColor: isQualified
+      ? "rgba(57, 255, 20, 0.12)"
+      : "rgba(148, 163, 184, 0.12)",
+    color: isQualified ? "#39ff14" : "var(--t3, #8b8378)",
+    border: `1px solid ${isQualified ? "rgba(57, 255, 20, 0.25)" : "rgba(148, 163, 184, 0.25)"}`,
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
   };
 }
 
 function buttonStyle(secondary: boolean): CSSProperties {
   return {
-    padding: '8px 16px',
-    backgroundColor: secondary ? '#1a1f3a' : '#4a7eff',
-    color: secondary ? '#4a7eff' : '#0b0e1c',
-    border: secondary ? '1px solid #1a1f3a' : 'none',
+    padding: "8px 16px",
+    backgroundColor: secondary
+      ? "var(--border-1, #e5dfd2)"
+      : "var(--focus-ring, #0e7a53)",
+    color: secondary ? "var(--focus-ring, #0e7a53)" : "var(--bg-deep, #f7f3ed)",
+    border: secondary ? "1px solid var(--border-1, #e5dfd2)" : "none",
     borderRadius: 4,
-    cursor: 'pointer',
+    cursor: "pointer",
     fontWeight: 600,
     fontSize: 14,
     opacity: 1,
@@ -487,13 +595,13 @@ function ledgerDeltaStyle(negative: boolean): CSSProperties {
   return {
     fontSize: 18,
     fontWeight: 700,
-    color: negative ? '#f87171' : '#39ff14',
+    color: negative ? "var(--no-text, #a8472d)" : "#39ff14",
   };
 }
 
 function feedbackStyle(isError: boolean): CSSProperties {
   return {
-    color: isError ? '#fda4af' : '#86efac',
+    color: isError ? "#fda4af" : "#86efac",
     fontSize: 13,
   };
 }
@@ -504,156 +612,156 @@ const pageTitleStyle: CSSProperties = {
   fontSize: 28,
   fontWeight: 700,
   marginBottom: 8,
-  color: '#ffffff',
-  display: 'flex',
-  alignItems: 'baseline',
+  color: "var(--t1, #1a1a1a)",
+  display: "flex",
+  alignItems: "baseline",
   gap: 12,
-  flexWrap: 'wrap',
+  flexWrap: "wrap",
 };
 
 const lastAccrualBadgeStyle: CSSProperties = {
   fontSize: 12,
   fontWeight: 500,
-  color: '#94a3b8',
-  background: 'rgba(15, 52, 96, 0.6)',
-  padding: '3px 8px',
+  color: "var(--t3, #8b8378)",
+  background: "rgba(15, 52, 96, 0.6)",
+  padding: "3px 8px",
   borderRadius: 4,
-  border: '1px solid #1e3a5f',
-  whiteSpace: 'nowrap',
+  border: "1px solid #1e3a5f",
+  whiteSpace: "nowrap",
 };
 
 const subtitleStyle: CSSProperties = {
   margin: 0,
-  color: '#a0a0a0',
+  color: "var(--t2, #4a4a4a)",
   fontSize: 14,
 };
 
 const headerBarStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
   gap: 16,
   marginBottom: 24,
-  flexWrap: 'wrap',
+  flexWrap: "wrap",
 };
 
 const inlineActionsStyle: CSSProperties = {
-  display: 'flex',
+  display: "flex",
   gap: 10,
-  flexWrap: 'wrap',
+  flexWrap: "wrap",
 };
 
 const metricsGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
   gap: 16,
   marginBottom: 20,
 };
 
 const surfaceCardStyle: CSSProperties = {
   padding: 16,
-  backgroundColor: '#111631',
-  border: '1px solid #1a1f3a',
+  backgroundColor: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 8,
 };
 
 const metricLabelStyle: CSSProperties = {
   fontSize: 12,
-  color: '#94a3b8',
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
+  color: "var(--t3, #8b8378)",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
 };
 
 const metricValueStyle: CSSProperties = {
   fontSize: 24,
   fontWeight: 700,
-  color: '#ffffff',
+  color: "var(--t1, #1a1a1a)",
   marginTop: 8,
 };
 
 const gridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '2fr 1fr',
+  display: "grid",
+  gridTemplateColumns: "2fr 1fr",
   gap: 20,
 };
 
 const sectionTitleStyle: CSSProperties = {
   fontSize: 18,
   fontWeight: 700,
-  color: '#ffffff',
-  margin: '0 0 16px',
+  color: "var(--t1, #1a1a1a)",
+  margin: "0 0 16px",
 };
 
 const ledgerListStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: 12,
 };
 
 const ledgerItemStyle: CSSProperties = {
-  border: '1px solid #1a1f3a',
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 8,
   padding: 14,
-  background: 'rgba(15, 52, 96, 0.35)',
+  background: "rgba(15, 52, 96, 0.35)",
 };
 
 const ledgerHeadStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
+  display: "flex",
+  justifyContent: "space-between",
   gap: 12,
-  alignItems: 'center',
+  alignItems: "center",
   marginBottom: 8,
 };
 
 const ledgerTitleStyle: CSSProperties = {
   fontSize: 15,
   fontWeight: 600,
-  color: '#ffffff',
+  color: "var(--t1, #1a1a1a)",
 };
 
 const ledgerMetaStyle: CSSProperties = {
-  color: '#94a3b8',
+  color: "var(--t3, #8b8378)",
   fontSize: 12,
   lineHeight: 1.5,
 };
 
 const formStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: 12,
 };
 
 const labelStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: 6,
-  color: '#cbd5e1',
+  color: "#cbd5e1",
   fontSize: 13,
   fontWeight: 600,
 };
 
 const inputStyle: CSSProperties = {
-  padding: '10px 12px',
-  backgroundColor: '#1a1f3a',
-  border: '1px solid #1a1f3a',
-  color: '#ffffff',
+  padding: "10px 12px",
+  backgroundColor: "var(--border-1, #e5dfd2)",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  color: "var(--t1, #1a1a1a)",
   borderRadius: 4,
   fontSize: 14,
 };
 
 const textAreaStyle: CSSProperties = {
   minHeight: 96,
-  padding: '10px 12px',
-  backgroundColor: '#1a1f3a',
-  border: '1px solid #1a1f3a',
-  color: '#ffffff',
+  padding: "10px 12px",
+  backgroundColor: "var(--border-1, #e5dfd2)",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  color: "var(--t1, #1a1a1a)",
   borderRadius: 4,
   fontSize: 14,
-  resize: 'vertical',
+  resize: "vertical",
 };
 
 const helperTextStyle: CSSProperties = {
-  color: '#94a3b8',
+  color: "var(--t3, #8b8378)",
   fontSize: 12,
   lineHeight: 1.5,
 };
@@ -661,41 +769,41 @@ const helperTextStyle: CSSProperties = {
 /* Progress bar styles */
 
 const progressContainerStyle: CSSProperties = {
-  background: '#111631',
-  border: '1px solid #1a1f3a',
+  background: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 8,
   padding: 16,
   marginBottom: 20,
 };
 
 const progressTrackStyle: CSSProperties = {
-  width: '100%',
+  width: "100%",
   height: 10,
-  background: '#0f172a',
+  background: "#0f172a",
   borderRadius: 5,
-  overflow: 'hidden',
+  overflow: "hidden",
 };
 
 function progressBarStyle(percent: number): CSSProperties {
   return {
     width: `${percent}%`,
-    height: '100%',
-    background: 'linear-gradient(90deg, #4a7eff, #39ff14)',
+    height: "100%",
+    background: "linear-gradient(90deg, var(--focus-ring, #0e7a53), #39ff14)",
     borderRadius: 5,
-    transition: 'width 0.4s ease',
+    transition: "width 0.4s ease",
   };
 }
 
 /* Referral row styles */
 
 const referralRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
+  display: "flex",
+  alignItems: "center",
   gap: 12,
   padding: 12,
-  border: '1px solid #1a1f3a',
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 8,
-  background: 'rgba(15, 52, 96, 0.35)',
+  background: "rgba(15, 52, 96, 0.35)",
 };
 
 export default function LoyaltyDetailPage() {

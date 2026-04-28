@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Badge, Button, Card } from '../shared';
-import { useState } from 'react';
+import styled from "styled-components";
+import { Badge, Button, Card } from "../shared";
+import { useState } from "react";
 
 const ProfileContainer = styled.div`
   display: grid;
@@ -29,11 +29,15 @@ const Avatar = styled.div`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4a7eff 0%, #2e5cb8 100%);
+  background: linear-gradient(
+    135deg,
+    var(--focus-ring, #0e7a53) 0%,
+    #2e5cb8 100%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 700;
   font-size: 24px;
 `;
@@ -46,13 +50,13 @@ const Name = styled.h2`
   margin: 0 0 4px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const Email = styled.p`
   margin: 0 0 8px 0;
   font-size: 13px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const BadgeGroup = styled.div`
@@ -66,7 +70,7 @@ const InfoRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 12px 0;
-  border-bottom: 1px solid #1a1f3a;
+  border-bottom: 1px solid var(--border-1, #e5dfd2);
 
   &:last-child {
     border-bottom: none;
@@ -74,12 +78,12 @@ const InfoRow = styled.div`
 `;
 
 const InfoLabel = styled.span`
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   font-size: 12px;
 `;
 
 const InfoValue = styled.span`
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 600;
   font-size: 13px;
 `;
@@ -92,8 +96,10 @@ const TabsContainer = styled.div`
 
 const TabButton = styled.button<{ $active?: boolean }>`
   padding: 12px;
-  background-color: ${(props) => (props.$active ? '#4a7eff' : '#1a1f3a')};
-  color: ${(props) => (props.$active ? '#0b0e1c' : '#a0a0a0')};
+  background-color: ${(props) =>
+    props.$active ? "var(--focus-ring, #0e7a53)" : "var(--border-1, #e5dfd2)"};
+  color: ${(props) =>
+    props.$active ? "var(--bg-deep, #f7f3ed)" : "var(--t2, #4a4a4a)"};
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -102,7 +108,8 @@ const TabButton = styled.button<{ $active?: boolean }>`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${(props) => (props.$active ? '#4a7eff' : 'rgba(74, 126, 255, 0.2)')};
+    background-color: ${(props) =>
+      props.$active ? "var(--focus-ring, #0e7a53)" : "rgba(74, 126, 255, 0.2)"};
   }
 `;
 
@@ -115,12 +122,12 @@ const ActionButtons = styled.div`
 
 const ContentArea = styled(Card)`
   padding: 20px;
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
+  border: 1px solid var(--border-1, #e5dfd2);
 `;
 
 const TabContent = styled.div`
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 export interface PunterProfileData {
@@ -128,9 +135,9 @@ export interface PunterProfileData {
   name: string;
   email: string;
   createdAt: string;
-  status: 'active' | 'suspended' | 'inactive';
-  riskSegment: 'low' | 'medium' | 'high' | 'vip';
-  verificationStatus: 'verified' | 'pending' | 'failed';
+  status: "active" | "suspended" | "inactive";
+  riskSegment: "low" | "medium" | "high" | "vip";
+  verificationStatus: "verified" | "pending" | "failed";
   totalBets: number;
   pnl: number;
   balance: number;
@@ -147,35 +154,41 @@ export function PunterProfile({
   onAction,
   actionsAvailable = true,
 }: PunterProfileProps) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
 
   if (!punter) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#a0a0a0' }}>
+      <div
+        style={{
+          padding: "40px",
+          textAlign: "center",
+          color: "var(--t2, #4a4a4a)",
+        }}
+      >
         Select a punter to view profile
       </div>
     );
   }
 
   const initials = punter.name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase();
 
   const statusColor = {
-    active: 'success',
-    suspended: 'danger',
-    inactive: 'default',
+    active: "success",
+    suspended: "danger",
+    inactive: "default",
   } as const;
 
   const verificationColor = {
-    verified: 'success',
-    pending: 'warning',
-    failed: 'danger',
+    verified: "success",
+    pending: "warning",
+    failed: "danger",
   } as const;
-  const canSuspend = actionsAvailable && punter.status !== 'suspended';
-  const canActivate = actionsAvailable && punter.status === 'suspended';
+  const canSuspend = actionsAvailable && punter.status !== "suspended";
+  const canActivate = actionsAvailable && punter.status === "suspended";
 
   return (
     <ProfileContainer>
@@ -199,11 +212,22 @@ export function PunterProfile({
 
           <InfoRow>
             <InfoLabel>Member Since</InfoLabel>
-            <InfoValue>{new Date(punter.createdAt).toLocaleDateString()}</InfoValue>
+            <InfoValue>
+              {new Date(punter.createdAt).toLocaleDateString()}
+            </InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>Risk Segment</InfoLabel>
-            <InfoValue style={{ color: punter.riskSegment === 'high' ? '#f87171' : punter.riskSegment === 'vip' ? '#4a7eff' : '#a0a0a0' }}>
+            <InfoValue
+              style={{
+                color:
+                  punter.riskSegment === "high"
+                    ? "var(--no-text, #a8472d)"
+                    : punter.riskSegment === "vip"
+                      ? "var(--focus-ring, #0e7a53)"
+                      : "var(--t2, #4a4a4a)",
+              }}
+            >
               {punter.riskSegment.toUpperCase()}
             </InfoValue>
           </InfoRow>
@@ -217,29 +241,43 @@ export function PunterProfile({
           </InfoRow>
           <InfoRow>
             <InfoLabel>P&L</InfoLabel>
-            <InfoValue style={{ color: punter.pnl >= 0 ? '#22c55e' : '#f87171' }}>
-              {punter.pnl >= 0 ? '+' : ''}${Math.abs(punter.pnl).toLocaleString()}
+            <InfoValue
+              style={{
+                color:
+                  punter.pnl >= 0
+                    ? "var(--accent-lo, #1fa65e)"
+                    : "var(--no-text, #a8472d)",
+              }}
+            >
+              {punter.pnl >= 0 ? "+" : ""}$
+              {Math.abs(punter.pnl).toLocaleString()}
             </InfoValue>
           </InfoRow>
 
           <ActionButtons>
             <Button
               variant="secondary"
-              onClick={() => onAction?.(punter.status === 'suspended' ? 'activate' : 'suspend')}
+              onClick={() =>
+                onAction?.(
+                  punter.status === "suspended" ? "activate" : "suspend",
+                )
+              }
               disabled={!canSuspend && !canActivate}
             >
-              {punter.status === 'suspended' ? 'Activate Account' : 'Suspend Account'}
+              {punter.status === "suspended"
+                ? "Activate Account"
+                : "Suspend Account"}
             </Button>
             <Button
               variant="secondary"
-              onClick={() => onAction?.('resetPassword')}
+              onClick={() => onAction?.("resetPassword")}
               disabled={true}
             >
               Force Password Reset
             </Button>
             <Button
               variant="secondary"
-              onClick={() => onAction?.('addNote')}
+              onClick={() => onAction?.("addNote")}
               disabled={true}
             >
               Add Note
@@ -248,15 +286,15 @@ export function PunterProfile({
 
           <div
             style={{
-              marginTop: '12px',
-              fontSize: '12px',
-              color: '#a0a0a0',
+              marginTop: "12px",
+              fontSize: "12px",
+              color: "var(--t2, #4a4a4a)",
               lineHeight: 1.5,
             }}
           >
             {actionsAvailable
-              ? 'Suspend and activate are live. Password reset and note actions are still awaiting backend support.'
-              : 'Admin account mutations are read-only here until the Go backoffice mutation routes are implemented.'}
+              ? "Suspend and activate are live. Password reset and note actions are still awaiting backend support."
+              : "Admin account mutations are read-only here until the Go backoffice mutation routes are implemented."}
           </div>
         </InfoCard>
       </div>
@@ -264,34 +302,52 @@ export function PunterProfile({
       <div>
         <InfoCard>
           <TabsContainer>
-            <TabButton $active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>
+            <TabButton
+              $active={activeTab === "overview"}
+              onClick={() => setActiveTab("overview")}
+            >
               Overview
             </TabButton>
-            <TabButton $active={activeTab === 'bets'} onClick={() => setActiveTab('bets')}>
+            <TabButton
+              $active={activeTab === "bets"}
+              onClick={() => setActiveTab("bets")}
+            >
               Recent Bets
             </TabButton>
-            <TabButton $active={activeTab === 'wallet'} onClick={() => setActiveTab('wallet')}>
+            <TabButton
+              $active={activeTab === "wallet"}
+              onClick={() => setActiveTab("wallet")}
+            >
               Wallet
             </TabButton>
           </TabsContainer>
         </InfoCard>
 
         <ContentArea>
-          {activeTab === 'overview' && (
+          {activeTab === "overview" && (
             <TabContent>
-              <h4 style={{ color: '#ffffff', marginTop: 0 }}>Account Overview</h4>
-              <p>Detailed account information and activity logs would be displayed here.</p>
+              <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
+                Account Overview
+              </h4>
+              <p>
+                Detailed account information and activity logs would be
+                displayed here.
+              </p>
             </TabContent>
           )}
-          {activeTab === 'bets' && (
+          {activeTab === "bets" && (
             <TabContent>
-              <h4 style={{ color: '#ffffff', marginTop: 0 }}>Recent Bets</h4>
+              <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
+                Recent Bets
+              </h4>
               <p>Bet history table would be displayed here.</p>
             </TabContent>
           )}
-          {activeTab === 'wallet' && (
+          {activeTab === "wallet" && (
             <TabContent>
-              <h4 style={{ color: '#ffffff', marginTop: 0 }}>Wallet & Transactions</h4>
+              <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
+                Wallet & Transactions
+              </h4>
               <p>Transaction history would be displayed here.</p>
             </TabContent>
           )}

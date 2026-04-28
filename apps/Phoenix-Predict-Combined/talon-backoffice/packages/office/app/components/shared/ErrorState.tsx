@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
+import styled from "styled-components";
 
 const ErrorContainer = styled.div`
   padding: 40px 24px;
   text-align: center;
-  background-color: #1a1f3a;
-  border-radius: 8px;
-  border: 1px solid #d32f2f;
+  background-color: var(--surface-1, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--no, #ff8b6b);
 `;
 
 const ErrorIcon = styled.div`
@@ -18,30 +18,31 @@ const ErrorIcon = styled.div`
 const ErrorTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
-  color: #ff6b6b;
+  color: var(--no-text, #a8472d);
   margin: 0 0 12px 0;
 `;
 
 const ErrorMessage = styled.p`
   font-size: 14px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   margin: 0 0 24px 0;
   line-height: 1.6;
 `;
 
 const RetryButton = styled.button`
   padding: 8px 16px;
-  background-color: #4a7eff;
-  color: #0b0e1c;
+  background-color: var(--accent, #2be480);
+  color: #003827;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #6593ff;
-    transform: translateY(-2px);
+    background-color: var(--accent-lo, #1fa65e);
+    color: #ffffff;
+    transform: translateY(-1px);
   }
 `;
 
@@ -53,8 +54,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Failed to load data',
-  message = 'An error occurred while fetching the data. Please try again.',
+  title = "Failed to load data",
+  message = "An error occurred while fetching the data. Please try again.",
   onRetry,
   showRetryButton = true,
 }: ErrorStateProps) {

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes } from "styled-components";
 
 const spin = keyframes`
   0% {
@@ -24,14 +24,14 @@ const SpinnerContainer = styled.div<{ $centered?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  ${props => props.$centered ? 'min-height: 400px;' : ''}
+  ${(props) => (props.$centered ? "min-height: 400px;" : "")}
 `;
 
 const Spinner = styled.div`
   width: 40px;
   height: 40px;
-  border: 3px solid #1a1f3a;
-  border-top-color: #4a7eff;
+  border: 3px solid var(--border-1, #e5dfd2);
+  border-top-color: var(--accent, #2be480);
   border-radius: 50%;
   animation: ${spin} 0.8s linear infinite;
 `;
@@ -39,7 +39,7 @@ const Spinner = styled.div`
 const LoadingText = styled.p`
   margin: 12px 0 0 0;
   font-size: 14px;
-  color: #a0a0a0;
+  color: var(--t3, #8b8378);
   text-align: center;
 `;
 
@@ -48,7 +48,10 @@ interface LoadingSpinnerProps {
   text?: string;
 }
 
-export function LoadingSpinner({ centered = true, text = 'Loading...' }: LoadingSpinnerProps) {
+export function LoadingSpinner({
+  centered = true,
+  text = "Loading...",
+}: LoadingSpinnerProps) {
   return (
     <SpinnerContainer $centered={centered}>
       <div>
@@ -62,9 +65,14 @@ export function LoadingSpinner({ centered = true, text = 'Loading...' }: Loading
 // Skeleton for list items
 const SkeletonLine = styled.div`
   height: 16px;
-  background: linear-gradient(90deg, #1a1f3a 25%, #111631 50%, #1a1f3a 75%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2, #fcfaf5) 25%,
+    var(--border-1, #e5dfd2) 50%,
+    var(--surface-2, #fcfaf5) 75%
+  );
   background-size: 200% 100%;
-  border-radius: 4px;
+  border-radius: 6px;
   margin-bottom: 12px;
   animation: ${pulse} 1.5s ease-in-out infinite;
 
@@ -75,8 +83,9 @@ const SkeletonLine = styled.div`
 
 const SkeletonCard = styled.div`
   padding: 16px;
-  background-color: #1a1f3a;
-  border-radius: 8px;
+  background-color: var(--surface-1, #ffffff);
+  border: 1px solid var(--border-1, #e5dfd2);
+  border-radius: 12px;
   margin-bottom: 12px;
 `;
 
@@ -89,9 +98,9 @@ export function SkeletonLoader({ count = 3 }: SkeletonProps) {
     <>
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonCard key={i}>
-          <SkeletonLine style={{ width: '80%' }} />
-          <SkeletonLine style={{ width: '60%' }} />
-          <SkeletonLine style={{ width: '70%' }} />
+          <SkeletonLine style={{ width: "80%" }} />
+          <SkeletonLine style={{ width: "60%" }} />
+          <SkeletonLine style={{ width: "70%" }} />
         </SkeletonCard>
       ))}
     </>

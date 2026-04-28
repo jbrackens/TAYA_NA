@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Card, Badge } from '../../../../components/shared';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import styled from "styled-components";
+import { Card, Badge } from "../../../../components/shared";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 
 const PageTitle = styled.h1`
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 24px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const SectionTitle = styled.h2`
   font-size: 18px;
   font-weight: 600;
   margin: 24px 0 16px 0;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const InfoGrid = styled.div`
@@ -34,14 +34,14 @@ const InfoCard = styled(Card)`
 const InfoLabel = styled.p`
   margin: 0 0 8px 0;
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   text-transform: uppercase;
 `;
 
 const InfoValue = styled.div`
   font-size: 18px;
   font-weight: 700;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
 `;
 
 const TableContainer = styled(Card)`
@@ -56,18 +56,18 @@ const Table = styled.table`
   th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-weight: 600;
     font-size: 12px;
-    color: #a0a0a0;
+    color: var(--t2, #4a4a4a);
     text-transform: uppercase;
   }
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-size: 13px;
-    color: #ffffff;
+    color: var(--t1, #1a1a1a);
   }
 
   tr:hover {
@@ -76,7 +76,7 @@ const Table = styled.table`
 `;
 
 const LinkCell = styled(Link)`
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   text-decoration: none;
   font-weight: 600;
 
@@ -125,20 +125,25 @@ export default function FixtureDetailPage() {
         const [fixtureResponse, marketsResponse] = await Promise.all([
           fetch(`/api/v1/admin/trading/fixtures/${id}`, {
             headers: {
-              'X-Admin-Role': 'admin',
+              "X-Admin-Role": "admin",
             },
           }),
-          fetch(`/api/v1/admin/trading/markets?fixtureId=${encodeURIComponent(id)}&page=1&pageSize=50`, {
-            headers: {
-              'X-Admin-Role': 'admin',
+          fetch(
+            `/api/v1/admin/trading/markets?fixtureId=${encodeURIComponent(id)}&page=1&pageSize=50`,
+            {
+              headers: {
+                "X-Admin-Role": "admin",
+              },
             },
-          }),
+          ),
         ]);
 
-        if (!fixtureResponse.ok) throw new Error('Failed to fetch fixture');
+        if (!fixtureResponse.ok) throw new Error("Failed to fetch fixture");
 
         const fixtureData = await fixtureResponse.json();
-        const marketsData = marketsResponse.ok ? await marketsResponse.json() : {};
+        const marketsData = marketsResponse.ok
+          ? await marketsResponse.json()
+          : {};
         const markets = Array.isArray(marketsData?.items)
           ? marketsData.items.map((market: any) => ({
               id: market.id,
@@ -155,12 +160,12 @@ export default function FixtureDetailPage() {
         setFixture({
           id: fixtureData.id,
           match: `${fixtureData.homeTeam} vs ${fixtureData.awayTeam}`,
-          sport: fixtureData.sportKey || 'Unknown',
-          league: fixtureData.tournament || fixtureData.leagueKey || 'Unknown',
+          sport: fixtureData.sportKey || "Unknown",
+          league: fixtureData.tournament || fixtureData.leagueKey || "Unknown",
           homeTeam: fixtureData.homeTeam,
           awayTeam: fixtureData.awayTeam,
           startTime: fixtureData.startsAt,
-          status: 'OPEN',
+          status: "OPEN",
           totalLiability: 0,
           totalExposure: 0,
           totalRisk: 0,
@@ -169,7 +174,7 @@ export default function FixtureDetailPage() {
           markets,
         });
       } catch (error) {
-        console.error('Failed to fetch fixture:', error);
+        console.error("Failed to fetch fixture:", error);
         setFixture(null);
       } finally {
         setIsLoading(false);
@@ -182,18 +187,26 @@ export default function FixtureDetailPage() {
   }, [id]);
 
   if (isLoading) {
-    return <div style={{ padding: '40px', color: '#a0a0a0' }}>Loading fixture...</div>;
+    return (
+      <div style={{ padding: "40px", color: "var(--t2, #4a4a4a)" }}>
+        Loading fixture...
+      </div>
+    );
   }
 
   if (!fixture) {
-    return <div style={{ padding: '40px', color: '#a0a0a0' }}>Fixture not found</div>;
+    return (
+      <div style={{ padding: "40px", color: "var(--t2, #4a4a4a)" }}>
+        Fixture not found
+      </div>
+    );
   }
 
   const getRiskColor = (risk: number) => {
-    if (risk > 80) return '#f87171';
-    if (risk > 60) return '#fbbf24';
-    if (risk > 40) return '#60a5fa';
-    return '#22c55e';
+    if (risk > 80) return "var(--no-text, #a8472d)";
+    if (risk > 60) return "var(--warn, #d97706)";
+    if (risk > 40) return "#60a5fa";
+    return "var(--accent-lo, #1fa65e)";
   };
 
   return (
@@ -203,17 +216,17 @@ export default function FixtureDetailPage() {
       <InfoGrid>
         <InfoCard>
           <InfoLabel>Sport</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{fixture.sport}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{fixture.sport}</InfoValue>
         </InfoCard>
 
         <InfoCard>
           <InfoLabel>League</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{fixture.league}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{fixture.league}</InfoValue>
         </InfoCard>
 
         <InfoCard>
           <InfoLabel>Status</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{fixture.status}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{fixture.status}</InfoValue>
         </InfoCard>
 
         <InfoCard>
@@ -277,7 +290,10 @@ export default function FixtureDetailPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: '#a0a0a0' }}>
+                <td
+                  colSpan={6}
+                  style={{ textAlign: "center", color: "var(--t2, #4a4a4a)" }}
+                >
                   No markets found
                 </td>
               </tr>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Card, Badge } from '../shared';
+import styled from "styled-components";
+import { Card, Badge } from "../shared";
 
 const DashboardGrid = styled.div`
   display: grid;
@@ -18,17 +18,21 @@ const CardTitle = styled.h3`
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const ChartPlaceholder = styled.div`
   height: 200px;
-  background: linear-gradient(135deg, #1a1f3a 0%, #111631 100%);
+  background: linear-gradient(
+    135deg,
+    var(--border-1, #e5dfd2) 0%,
+    var(--surface-1, var(--t1, #1a1a1a)) 100%
+  );
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   font-size: 12px;
 `;
 
@@ -37,7 +41,7 @@ const MetricRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #1a1f3a;
+  border-bottom: 1px solid var(--border-1, #e5dfd2);
 
   &:last-child {
     border-bottom: none;
@@ -45,12 +49,12 @@ const MetricRow = styled.div`
 `;
 
 const MetricLabel = styled.span`
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   font-size: 12px;
 `;
 
 const MetricValue = styled.span`
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   font-weight: 600;
   font-size: 14px;
 `;
@@ -63,7 +67,7 @@ const FixtureList = styled.div`
 
 const FixtureItem = styled.div`
   padding: 12px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
   display: flex;
   justify-content: space-between;
@@ -72,7 +76,7 @@ const FixtureItem = styled.div`
 
 const FixtureName = styled.span`
   font-size: 13px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 500;
 `;
 
@@ -81,8 +85,10 @@ const LiabilityBadge = styled.span<{ $high?: boolean }>`
   border-radius: 3px;
   font-size: 11px;
   font-weight: 600;
-  background-color: ${(props) => (props.$high ? 'rgba(248, 113, 113, 0.2)' : 'rgba(74, 126, 255, 0.2)')};
-  color: ${(props) => (props.$high ? '#f87171' : '#4a7eff')};
+  background-color: ${(props) =>
+    props.$high ? "rgba(248, 113, 113, 0.2)" : "rgba(74, 126, 255, 0.2)"};
+  color: ${(props) =>
+    props.$high ? "var(--no-text, #a8472d)" : "var(--focus-ring, #0e7a53)"};
 `;
 
 interface RiskDashboardProps {
@@ -128,7 +134,14 @@ export function RiskDashboard({
         </MetricRow>
         <MetricRow>
           <MetricLabel>Max Exposure</MetricLabel>
-          <MetricValue style={{ color: maxExposure > 100000 ? '#f87171' : '#4a7eff' }}>
+          <MetricValue
+            style={{
+              color:
+                maxExposure > 100000
+                  ? "var(--no-text, #a8472d)"
+                  : "var(--focus-ring, #0e7a53)",
+            }}
+          >
             ${maxExposure.toLocaleString()}
           </MetricValue>
         </MetricRow>
@@ -148,7 +161,14 @@ export function RiskDashboard({
             ))}
           </FixtureList>
         ) : (
-          <div style={{ textAlign: 'center', padding: '20px', color: '#a0a0a0', fontSize: '12px' }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "20px",
+              color: "var(--t2, #4a4a4a)",
+              fontSize: "12px",
+            }}
+          >
             No fixtures with significant liability
           </div>
         )}

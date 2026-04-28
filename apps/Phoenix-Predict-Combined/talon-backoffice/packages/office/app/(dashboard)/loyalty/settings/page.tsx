@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import Link from 'next/link';
-import { CSSProperties, ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { ErrorBoundary, ErrorState, LoadingSpinner } from '../../../components/shared';
+import Link from "next/link";
+import {
+  CSSProperties,
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  ErrorBoundary,
+  ErrorState,
+  LoadingSpinner,
+} from "../../../components/shared";
 
 interface LoyaltyTier {
   tierCode: string;
@@ -32,34 +43,34 @@ interface LoyaltyRule {
 
 /** Convert an RFC3339 string to a datetime-local input value (YYYY-MM-DDTHH:mm). */
 function rfc3339ToLocal(rfc: string | undefined): string {
-  if (!rfc) return '';
+  if (!rfc) return "";
   try {
     const d = new Date(rfc);
-    if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => String(n).padStart(2, '0');
+    if (isNaN(d.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   } catch {
-    return '';
+    return "";
   }
 }
 
 /** Convert a datetime-local value back to an RFC3339 string with UTC offset. */
 function localToRfc3339(local: string): string {
-  if (!local) return '';
+  if (!local) return "";
   try {
     const d = new Date(local);
-    if (isNaN(d.getTime())) return '';
+    if (isNaN(d.getTime())) return "";
     return d.toISOString();
   } catch {
-    return '';
+    return "";
   }
 }
 
 function LoyaltySettingsPageContent() {
   const [tiers, setTiers] = useState<LoyaltyTier[]>([]);
   const [rules, setRules] = useState<LoyaltyRule[]>([]);
-  const [selectedTierCode, setSelectedTierCode] = useState('');
-  const [selectedRuleId, setSelectedRuleId] = useState('');
+  const [selectedTierCode, setSelectedTierCode] = useState("");
+  const [selectedRuleId, setSelectedRuleId] = useState("");
   const [tierDraft, setTierDraft] = useState<LoyaltyTier | null>(null);
   const [ruleDraft, setRuleDraft] = useState<LoyaltyRule | null>(null);
   const [referralBonusPoints, setReferralBonusPoints] = useState<number>(0);
@@ -67,30 +78,34 @@ function LoyaltySettingsPageContent() {
   const [isSavingTier, setIsSavingTier] = useState(false);
   const [isSavingRule, setIsSavingRule] = useState(false);
   const [isCreatingRule, setIsCreatingRule] = useState(false);
-  const [ruleMode, setRuleMode] = useState<'edit' | 'create'>('edit');
-  const [newRuleDraft, setNewRuleDraft] = useState<Omit<LoyaltyRule, 'ruleId'>>({
-    name: '',
-    sourceType: 'bet_settlement',
-    active: true,
-    multiplier: 1.0,
-    minQualifiedStakeCents: 0,
-    maxPointsPerEvent: 0,
-  });
+  const [ruleMode, setRuleMode] = useState<"edit" | "create">("edit");
+  const [newRuleDraft, setNewRuleDraft] = useState<Omit<LoyaltyRule, "ruleId">>(
+    {
+      name: "",
+      sourceType: "bet_settlement",
+      active: true,
+      multiplier: 1.0,
+      minQualifiedStakeCents: 0,
+      maxPointsPerEvent: 0,
+    },
+  );
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   // Benefits editor state — kept separate and merged into tierDraft on save
-  const [benefitRows, setBenefitRows] = useState<{ key: string; value: string }[]>([]);
+  const [benefitRows, setBenefitRows] = useState<
+    { key: string; value: string }[]
+  >([]);
 
   const loadConfig = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/v1/admin/loyalty/config', {
-        headers: { 'X-Admin-Role': 'admin' },
+      const response = await fetch("/api/v1/admin/loyalty/config", {
+        headers: { "X-Admin-Role": "admin" },
       });
       if (!response.ok) {
-        throw new Error('Failed to load loyalty configuration');
+        throw new Error("Failed to load loyalty configuration");
       }
       const data = await response.json();
       const nextTiers = Array.isArray(data?.tiers) ? data.tiers : [];
@@ -100,13 +115,17 @@ function LoyaltySettingsPageContent() {
       setReferralBonusPoints(Number(data?.referralBonusPoints || 0));
       const initialTier = nextTiers[0] || null;
       const initialRule = nextRules[0] || null;
-      setSelectedTierCode(initialTier?.tierCode || '');
-      setSelectedRuleId(initialRule?.ruleId || '');
+      setSelectedTierCode(initialTier?.tierCode || "");
+      setSelectedRuleId(initialRule?.ruleId || "");
       setTierDraft(initialTier);
       setRuleDraft(initialRule);
       syncBenefitRows(initialTier);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load loyalty configuration');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load loyalty configuration",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +137,9 @@ function LoyaltySettingsPageContent() {
       setBenefitRows([]);
       return;
     }
-    setBenefitRows(Object.entries(tier.benefits).map(([key, value]) => ({ key, value })));
+    setBenefitRows(
+      Object.entries(tier.benefits).map(([key, value]) => ({ key, value })),
+    );
   };
 
   useEffect(() => {
@@ -126,7 +147,8 @@ function LoyaltySettingsPageContent() {
   }, []);
 
   useEffect(() => {
-    const next = tiers.find((tier) => tier.tierCode === selectedTierCode) || null;
+    const next =
+      tiers.find((tier) => tier.tierCode === selectedTierCode) || null;
     setTierDraft(next);
     syncBenefitRows(next);
   }, [tiers, selectedTierCode]);
@@ -136,7 +158,13 @@ function LoyaltySettingsPageContent() {
   }, [rules, selectedRuleId]);
 
   const tierSummary = useMemo(
-    () => tiers.map((tier) => `${tier.displayName}: ${tier.minLifetimePoints.toLocaleString()}+`).join(' · '),
+    () =>
+      tiers
+        .map(
+          (tier) =>
+            `${tier.displayName}: ${tier.minLifetimePoints.toLocaleString()}+`,
+        )
+        .join(" · "),
     [tiers],
   );
 
@@ -162,25 +190,31 @@ function LoyaltySettingsPageContent() {
       const benefitsPayload = buildBenefitsRecord();
       const payload = {
         ...tierDraft,
-        benefits: Object.keys(benefitsPayload).length > 0 ? benefitsPayload : undefined,
+        benefits:
+          Object.keys(benefitsPayload).length > 0 ? benefitsPayload : undefined,
       };
-      const response = await fetch(`/api/v1/admin/loyalty/tiers/${encodeURIComponent(tierDraft.tierCode)}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Role': 'admin',
+      const response = await fetch(
+        `/api/v1/admin/loyalty/tiers/${encodeURIComponent(tierDraft.tierCode)}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Role": "admin",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
       if (!response.ok) {
-        throw new Error('Failed to save tier settings');
+        throw new Error("Failed to save tier settings");
       }
       const data = await response.json();
       const nextTiers = Array.isArray(data?.tiers) ? data.tiers : [];
       setTiers(nextTiers);
-      setFeedback('Tier thresholds updated.');
+      setFeedback("Tier thresholds updated.");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save tier settings');
+      setError(
+        err instanceof Error ? err.message : "Failed to save tier settings",
+      );
     } finally {
       setIsSavingTier(false);
     }
@@ -195,26 +229,33 @@ function LoyaltySettingsPageContent() {
     try {
       const payload = {
         ...ruleDraft,
-        effectiveFrom: localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveFrom)) || undefined,
-        effectiveTo: localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveTo)) || undefined,
+        effectiveFrom:
+          localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveFrom)) || undefined,
+        effectiveTo:
+          localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveTo)) || undefined,
       };
-      const response = await fetch(`/api/v1/admin/loyalty/rules/${encodeURIComponent(ruleDraft.ruleId)}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Role': 'admin',
+      const response = await fetch(
+        `/api/v1/admin/loyalty/rules/${encodeURIComponent(ruleDraft.ruleId)}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Admin-Role": "admin",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
       if (!response.ok) {
-        throw new Error('Failed to save accrual rule');
+        throw new Error("Failed to save accrual rule");
       }
       const data = await response.json();
       const nextRules = Array.isArray(data?.rules) ? data.rules : [];
       setRules(nextRules);
-      setFeedback('Accrual rule updated.');
+      setFeedback("Accrual rule updated.");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to save accrual rule');
+      setError(
+        err instanceof Error ? err.message : "Failed to save accrual rule",
+      );
     } finally {
       setIsSavingRule(false);
     }
@@ -230,16 +271,16 @@ function LoyaltySettingsPageContent() {
         ...newRuleDraft,
         maxPointsPerEvent: newRuleDraft.maxPointsPerEvent || undefined,
       };
-      const response = await fetch('/api/v1/admin/loyalty/rules', {
-        method: 'POST',
+      const response = await fetch("/api/v1/admin/loyalty/rules", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Role': 'admin',
+          "Content-Type": "application/json",
+          "X-Admin-Role": "admin",
         },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        throw new Error('Failed to create accrual rule');
+        throw new Error("Failed to create accrual rule");
       }
       const data = await response.json();
       const nextRules = Array.isArray(data?.rules) ? data.rules : [];
@@ -248,35 +289,48 @@ function LoyaltySettingsPageContent() {
       if (created) {
         setSelectedRuleId(created.ruleId);
       }
-      setFeedback('Accrual rule created.');
-      setRuleMode('edit');
+      setFeedback("Accrual rule created.");
+      setRuleMode("edit");
       setNewRuleDraft({
-        name: '',
-        sourceType: 'bet_settlement',
+        name: "",
+        sourceType: "bet_settlement",
         active: true,
         multiplier: 1.0,
         minQualifiedStakeCents: 0,
         maxPointsPerEvent: 0,
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create accrual rule');
+      setError(
+        err instanceof Error ? err.message : "Failed to create accrual rule",
+      );
     } finally {
       setIsCreatingRule(false);
     }
   };
 
   // Benefit row helpers
-  const addBenefitRow = () => setBenefitRows((rows) => [...rows, { key: '', value: '' }]);
-  const removeBenefitRow = (index: number) => setBenefitRows((rows) => rows.filter((_, i) => i !== index));
-  const updateBenefitRow = (index: number, field: 'key' | 'value', val: string) => {
-    setBenefitRows((rows) => rows.map((row, i) => (i === index ? { ...row, [field]: val } : row)));
+  const addBenefitRow = () =>
+    setBenefitRows((rows) => [...rows, { key: "", value: "" }]);
+  const removeBenefitRow = (index: number) =>
+    setBenefitRows((rows) => rows.filter((_, i) => i !== index));
+  const updateBenefitRow = (
+    index: number,
+    field: "key" | "value",
+    val: string,
+  ) => {
+    setBenefitRows((rows) =>
+      rows.map((row, i) => (i === index ? { ...row, [field]: val } : row)),
+    );
   };
 
   if (isLoading) {
     return (
       <div>
         <h1 style={pageTitleStyle}>Loyalty Settings</h1>
-        <LoadingSpinner centered={true} text="Loading loyalty rules and tiers..." />
+        <LoadingSpinner
+          centered={true}
+          text="Loading loyalty rules and tiers..."
+        />
       </div>
     );
   }
@@ -300,11 +354,15 @@ function LoyaltySettingsPageContent() {
         <div>
           <h1 style={pageTitleStyle}>Loyalty Settings</h1>
           <p style={subtitleStyle}>
-            Tune tier thresholds and settled-bet accrual rules without leaving the backoffice.
+            Tune tier thresholds and settled-bet accrual rules without leaving
+            the backoffice.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <Link href="/loyalty" style={{ ...buttonStyle(), textDecoration: 'none' }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link
+            href="/loyalty"
+            style={{ ...buttonStyle(), textDecoration: "none" }}
+          >
             Back to Loyalty
           </Link>
           <button style={buttonStyle()} onClick={() => void loadConfig()}>
@@ -314,27 +372,60 @@ function LoyaltySettingsPageContent() {
       </div>
 
       <div style={metricsGridStyle}>
-        <MetricCard label="Tier Ladder" value={tierSummary || 'No active tiers'} />
+        <MetricCard
+          label="Tier Ladder"
+          value={tierSummary || "No active tiers"}
+        />
         <MetricCard label="Rules" value={rules.length.toLocaleString()} />
-        <MetricCard label="Referral Bonus" value={`${referralBonusPoints.toLocaleString()} pts`} />
+        <MetricCard
+          label="Referral Bonus"
+          value={`${referralBonusPoints.toLocaleString()} pts`}
+        />
       </div>
 
       {/* Tier Ladder Visual */}
       {sortedTiers.length > 0 && (
         <div style={tierLadderContainerStyle}>
-          <h3 style={{ ...sectionTitleStyle, fontSize: 14, margin: '0 0 12px 0' }}>Tier Ladder</h3>
+          <h3
+            style={{ ...sectionTitleStyle, fontSize: 14, margin: "0 0 12px 0" }}
+          >
+            Tier Ladder
+          </h3>
           <div style={tierLadderRowStyle}>
             {sortedTiers.map((tier, idx) => (
-              <div key={tier.tierCode} style={{ display: 'flex', alignItems: 'flex-end', gap: 0 }}>
-                <div style={tierStepStyle(idx, sortedTiers.length, tier.active)}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: tier.active ? '#39ff14' : '#64748b' }}>
+              <div
+                key={tier.tierCode}
+                style={{ display: "flex", alignItems: "flex-end", gap: 0 }}
+              >
+                <div
+                  style={tierStepStyle(idx, sortedTiers.length, tier.active)}
+                >
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: tier.active ? "#39ff14" : "var(--t3, #8b8378)",
+                    }}
+                  >
                     {tier.displayName}
                   </div>
-                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--t3, #8b8378)",
+                      marginTop: 2,
+                    }}
+                  >
                     {tier.minLifetimePoints.toLocaleString()} pts
                   </div>
-                  <div style={{ fontSize: 10, marginTop: 4, color: tier.active ? '#4ade80' : '#475569' }}>
-                    {tier.active ? 'Active' : 'Inactive'}
+                  <div
+                    style={{
+                      fontSize: 10,
+                      marginTop: 4,
+                      color: tier.active ? "var(--accent, #2be480)" : "#475569",
+                    }}
+                  >
+                    {tier.active ? "Active" : "Inactive"}
                   </div>
                 </div>
                 {idx < sortedTiers.length - 1 && (
@@ -374,7 +465,11 @@ function LoyaltySettingsPageContent() {
                     style={inputStyle}
                     value={tierDraft.displayName}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setTierDraft((current) => current ? { ...current, displayName: event.target.value } : current)
+                      setTierDraft((current) =>
+                        current
+                          ? { ...current, displayName: event.target.value }
+                          : current,
+                      )
                     }
                   />
                 </label>
@@ -385,7 +480,11 @@ function LoyaltySettingsPageContent() {
                     type="number"
                     value={tierDraft.rank}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setTierDraft((current) => current ? { ...current, rank: Number(event.target.value) } : current)
+                      setTierDraft((current) =>
+                        current
+                          ? { ...current, rank: Number(event.target.value) }
+                          : current,
+                      )
                     }
                   />
                 </label>
@@ -398,7 +497,14 @@ function LoyaltySettingsPageContent() {
                     type="number"
                     value={tierDraft.minLifetimePoints}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setTierDraft((current) => current ? { ...current, minLifetimePoints: Number(event.target.value) } : current)
+                      setTierDraft((current) =>
+                        current
+                          ? {
+                              ...current,
+                              minLifetimePoints: Number(event.target.value),
+                            }
+                          : current,
+                      )
                     }
                   />
                 </label>
@@ -409,7 +515,14 @@ function LoyaltySettingsPageContent() {
                     type="number"
                     value={tierDraft.minRolling30dPoints || 0}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setTierDraft((current) => current ? { ...current, minRolling30dPoints: Number(event.target.value) } : current)
+                      setTierDraft((current) =>
+                        current
+                          ? {
+                              ...current,
+                              minRolling30dPoints: Number(event.target.value),
+                            }
+                          : current,
+                      )
                     }
                   />
                 </label>
@@ -419,7 +532,11 @@ function LoyaltySettingsPageContent() {
                   type="checkbox"
                   checked={tierDraft.active}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    setTierDraft((current) => current ? { ...current, active: event.target.checked } : current)
+                    setTierDraft((current) =>
+                      current
+                        ? { ...current, active: event.target.checked }
+                        : current,
+                    )
                   }
                 />
                 Tier is active
@@ -427,28 +544,52 @@ function LoyaltySettingsPageContent() {
 
               {/* Benefits Editor */}
               <div style={benefitsSectionStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ color: '#cbd5e1', fontSize: 13, fontWeight: 600 }}>Tier Benefits</span>
-                  <button type="button" style={smallButtonStyle} onClick={addBenefitRow}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  <span
+                    style={{ color: "#cbd5e1", fontSize: 13, fontWeight: 600 }}
+                  >
+                    Tier Benefits
+                  </span>
+                  <button
+                    type="button"
+                    style={smallButtonStyle}
+                    onClick={addBenefitRow}
+                  >
                     + Add Benefit
                   </button>
                 </div>
                 {benefitRows.length === 0 ? (
-                  <div style={helperTextStyle}>No benefits configured. Click &quot;Add Benefit&quot; to define key-value pairs.</div>
+                  <div style={helperTextStyle}>
+                    No benefits configured. Click &quot;Add Benefit&quot; to
+                    define key-value pairs.
+                  </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
                     {benefitRows.map((row, idx) => (
                       <div key={idx} style={benefitRowStyle}>
                         <input
-                          style={{ ...inputStyle, flex: '1 1 40%' }}
+                          style={{ ...inputStyle, flex: "1 1 40%" }}
                           value={row.key}
-                          onChange={(event: ChangeEvent<HTMLInputElement>) => updateBenefitRow(idx, 'key', event.target.value)}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                            updateBenefitRow(idx, "key", event.target.value)
+                          }
                           placeholder="e.g. cashback_rate"
                         />
                         <input
-                          style={{ ...inputStyle, flex: '1 1 40%' }}
+                          style={{ ...inputStyle, flex: "1 1 40%" }}
                           value={row.value}
-                          onChange={(event: ChangeEvent<HTMLInputElement>) => updateBenefitRow(idx, 'value', event.target.value)}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                            updateBenefitRow(idx, "value", event.target.value)
+                          }
                           placeholder="e.g. 5%"
                         />
                         <button
@@ -465,8 +606,12 @@ function LoyaltySettingsPageContent() {
                 )}
               </div>
 
-              <button type="submit" style={buttonStyle(isSavingTier)} disabled={isSavingTier}>
-                {isSavingTier ? 'Saving Tier...' : 'Save Tier'}
+              <button
+                type="submit"
+                style={buttonStyle(isSavingTier)}
+                disabled={isSavingTier}
+              >
+                {isSavingTier ? "Saving Tier..." : "Save Tier"}
               </button>
             </form>
           ) : (
@@ -481,21 +626,21 @@ function LoyaltySettingsPageContent() {
           <div style={{ ...pillRowStyle, marginBottom: 12 }}>
             <button
               type="button"
-              style={pillStyle(ruleMode === 'edit')}
-              onClick={() => setRuleMode('edit')}
+              style={pillStyle(ruleMode === "edit")}
+              onClick={() => setRuleMode("edit")}
             >
               Edit Existing
             </button>
             <button
               type="button"
-              style={pillStyle(ruleMode === 'create')}
-              onClick={() => setRuleMode('create')}
+              style={pillStyle(ruleMode === "create")}
+              onClick={() => setRuleMode("create")}
             >
               + Create Rule
             </button>
           </div>
 
-          {ruleMode === 'edit' ? (
+          {ruleMode === "edit" ? (
             <>
               <div style={pillRowStyle}>
                 {rules.map((rule) => (
@@ -519,7 +664,11 @@ function LoyaltySettingsPageContent() {
                       style={inputStyle}
                       value={ruleDraft.name}
                       onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                        setRuleDraft((current) => current ? { ...current, name: event.target.value } : current)
+                        setRuleDraft((current) =>
+                          current
+                            ? { ...current, name: event.target.value }
+                            : current,
+                        )
                       }
                     />
                   </label>
@@ -530,7 +679,11 @@ function LoyaltySettingsPageContent() {
                         style={inputStyle}
                         value={ruleDraft.sourceType}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setRuleDraft((current) => current ? { ...current, sourceType: event.target.value } : current)
+                          setRuleDraft((current) =>
+                            current
+                              ? { ...current, sourceType: event.target.value }
+                              : current,
+                          )
                         }
                       />
                     </label>
@@ -542,7 +695,14 @@ function LoyaltySettingsPageContent() {
                         step="0.1"
                         value={ruleDraft.multiplier}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setRuleDraft((current) => current ? { ...current, multiplier: Number(event.target.value) } : current)
+                          setRuleDraft((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  multiplier: Number(event.target.value),
+                                }
+                              : current,
+                          )
                         }
                       />
                     </label>
@@ -555,7 +715,16 @@ function LoyaltySettingsPageContent() {
                         type="number"
                         value={ruleDraft.minQualifiedStakeCents}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setRuleDraft((current) => current ? { ...current, minQualifiedStakeCents: Number(event.target.value) } : current)
+                          setRuleDraft((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  minQualifiedStakeCents: Number(
+                                    event.target.value,
+                                  ),
+                                }
+                              : current,
+                          )
                         }
                       />
                     </label>
@@ -566,7 +735,14 @@ function LoyaltySettingsPageContent() {
                         type="number"
                         value={ruleDraft.maxPointsPerEvent || 0}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                          setRuleDraft((current) => current ? { ...current, maxPointsPerEvent: Number(event.target.value) } : current)
+                          setRuleDraft((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  maxPointsPerEvent: Number(event.target.value),
+                                }
+                              : current,
+                          )
                         }
                       />
                     </label>
@@ -582,7 +758,14 @@ function LoyaltySettingsPageContent() {
                         value={rfc3339ToLocal(ruleDraft.effectiveFrom)}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
                           setRuleDraft((current) =>
-                            current ? { ...current, effectiveFrom: localToRfc3339(event.target.value) || undefined } : current,
+                            current
+                              ? {
+                                  ...current,
+                                  effectiveFrom:
+                                    localToRfc3339(event.target.value) ||
+                                    undefined,
+                                }
+                              : current,
                           )
                         }
                       />
@@ -595,7 +778,14 @@ function LoyaltySettingsPageContent() {
                         value={rfc3339ToLocal(ruleDraft.effectiveTo)}
                         onChange={(event: ChangeEvent<HTMLInputElement>) =>
                           setRuleDraft((current) =>
-                            current ? { ...current, effectiveTo: localToRfc3339(event.target.value) || undefined } : current,
+                            current
+                              ? {
+                                  ...current,
+                                  effectiveTo:
+                                    localToRfc3339(event.target.value) ||
+                                    undefined,
+                                }
+                              : current,
                           )
                         }
                       />
@@ -607,16 +797,26 @@ function LoyaltySettingsPageContent() {
                       type="checkbox"
                       checked={ruleDraft.active}
                       onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                        setRuleDraft((current) => current ? { ...current, active: event.target.checked } : current)
+                        setRuleDraft((current) =>
+                          current
+                            ? { ...current, active: event.target.checked }
+                            : current,
+                        )
                       }
                     />
                     Rule is active
                   </label>
                   <div style={helperTextStyle}>
-                    This MVP applies the first active settled-bet rule. Use one active default rule at a time until multi-rule evaluation is expanded.
+                    This MVP applies the first active settled-bet rule. Use one
+                    active default rule at a time until multi-rule evaluation is
+                    expanded.
                   </div>
-                  <button type="submit" style={buttonStyle(isSavingRule)} disabled={isSavingRule}>
-                    {isSavingRule ? 'Saving Rule...' : 'Save Rule'}
+                  <button
+                    type="submit"
+                    style={buttonStyle(isSavingRule)}
+                    disabled={isSavingRule}
+                  >
+                    {isSavingRule ? "Saving Rule..." : "Save Rule"}
                   </button>
                 </form>
               ) : (
@@ -631,7 +831,10 @@ function LoyaltySettingsPageContent() {
                   style={inputStyle}
                   value={newRuleDraft.name}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    setNewRuleDraft((current) => ({ ...current, name: event.target.value }))
+                    setNewRuleDraft((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
                   }
                   placeholder="e.g. Double Points Weekend"
                   required
@@ -644,7 +847,10 @@ function LoyaltySettingsPageContent() {
                     style={inputStyle}
                     value={newRuleDraft.sourceType}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setNewRuleDraft((current) => ({ ...current, sourceType: event.target.value }))
+                      setNewRuleDraft((current) => ({
+                        ...current,
+                        sourceType: event.target.value,
+                      }))
                     }
                   />
                 </label>
@@ -657,7 +863,10 @@ function LoyaltySettingsPageContent() {
                     min="0.1"
                     value={newRuleDraft.multiplier}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setNewRuleDraft((current) => ({ ...current, multiplier: Number(event.target.value) }))
+                      setNewRuleDraft((current) => ({
+                        ...current,
+                        multiplier: Number(event.target.value),
+                      }))
                     }
                   />
                 </label>
@@ -671,7 +880,10 @@ function LoyaltySettingsPageContent() {
                     min="0"
                     value={newRuleDraft.minQualifiedStakeCents}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setNewRuleDraft((current) => ({ ...current, minQualifiedStakeCents: Number(event.target.value) }))
+                      setNewRuleDraft((current) => ({
+                        ...current,
+                        minQualifiedStakeCents: Number(event.target.value),
+                      }))
                     }
                   />
                 </label>
@@ -683,7 +895,10 @@ function LoyaltySettingsPageContent() {
                     min="0"
                     value={newRuleDraft.maxPointsPerEvent || 0}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                      setNewRuleDraft((current) => ({ ...current, maxPointsPerEvent: Number(event.target.value) }))
+                      setNewRuleDraft((current) => ({
+                        ...current,
+                        maxPointsPerEvent: Number(event.target.value),
+                      }))
                     }
                   />
                 </label>
@@ -693,16 +908,24 @@ function LoyaltySettingsPageContent() {
                   type="checkbox"
                   checked={newRuleDraft.active}
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
-                    setNewRuleDraft((current) => ({ ...current, active: event.target.checked }))
+                    setNewRuleDraft((current) => ({
+                      ...current,
+                      active: event.target.checked,
+                    }))
                   }
                 />
                 Rule is active
               </label>
               <div style={helperTextStyle}>
-                Creates a new accrual rule. You can set effective dates after creation by editing the rule.
+                Creates a new accrual rule. You can set effective dates after
+                creation by editing the rule.
               </div>
-              <button type="submit" style={buttonStyle(isCreatingRule)} disabled={isCreatingRule}>
-                {isCreatingRule ? 'Creating Rule...' : 'Create Rule'}
+              <button
+                type="submit"
+                style={buttonStyle(isCreatingRule)}
+                disabled={isCreatingRule}
+              >
+                {isCreatingRule ? "Creating Rule..." : "Create Rule"}
               </button>
             </form>
           )}
@@ -727,213 +950,213 @@ const pageTitleStyle: CSSProperties = {
   fontSize: 28,
   fontWeight: 700,
   marginBottom: 8,
-  color: '#ffffff',
+  color: "var(--t1, #1a1a1a)",
 };
 
 const subtitleStyle: CSSProperties = {
   margin: 0,
-  color: '#a0a0a0',
+  color: "var(--t2, #4a4a4a)",
   fontSize: 14,
 };
 
 const headerRowStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
+  display: "flex",
+  justifyContent: "space-between",
   gap: 16,
-  alignItems: 'flex-end',
+  alignItems: "flex-end",
   marginBottom: 20,
 };
 
 const metricsGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
   gap: 16,
   marginBottom: 20,
 };
 
 const settingsGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
   gap: 20,
 };
 
 const surfaceCardStyle: CSSProperties = {
-  background: '#111631',
-  border: '1px solid #1a1f3a',
+  background: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 12,
   padding: 20,
 };
 
 const metricLabelStyle: CSSProperties = {
-  color: '#94a3b8',
+  color: "var(--t3, #8b8378)",
   fontSize: 12,
   fontWeight: 600,
   marginBottom: 8,
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
 };
 
 const metricValueStyle: CSSProperties = {
-  color: '#ffffff',
+  color: "var(--t1, #1a1a1a)",
   fontSize: 24,
   fontWeight: 800,
 };
 
 const sectionTitleStyle: CSSProperties = {
-  margin: '0 0 16px 0',
-  color: '#ffffff',
+  margin: "0 0 16px 0",
+  color: "var(--t1, #1a1a1a)",
   fontSize: 18,
   fontWeight: 700,
 };
 
 const formStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: 14,
 };
 
 const formColumnsStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
   gap: 12,
 };
 
 const labelStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
+  display: "flex",
+  flexDirection: "column",
   gap: 6,
-  color: '#cbd5e1',
+  color: "#cbd5e1",
   fontSize: 13,
   fontWeight: 600,
 };
 
 const inputStyle: CSSProperties = {
-  width: '100%',
-  background: '#0f172a',
-  border: '1px solid #1e3a5f',
+  width: "100%",
+  background: "#0f172a",
+  border: "1px solid #1e3a5f",
   borderRadius: 8,
-  padding: '10px 12px',
-  color: '#f8fafc',
+  padding: "10px 12px",
+  color: "var(--t1, #1a1a1a)",
   fontSize: 14,
 };
 
 const checkboxLabelStyle: CSSProperties = {
-  display: 'flex',
+  display: "flex",
   gap: 10,
-  alignItems: 'center',
-  color: '#cbd5e1',
+  alignItems: "center",
+  color: "#cbd5e1",
   fontSize: 13,
   fontWeight: 600,
 };
 
 const helperTextStyle: CSSProperties = {
-  color: '#94a3b8',
+  color: "var(--t3, #8b8378)",
   fontSize: 12,
   lineHeight: 1.5,
 };
 
 const pillRowStyle: CSSProperties = {
-  display: 'flex',
+  display: "flex",
   gap: 8,
-  flexWrap: 'wrap',
+  flexWrap: "wrap",
   marginBottom: 16,
 };
 
 function pillStyle(active: boolean): CSSProperties {
   return {
-    padding: '8px 12px',
+    padding: "8px 12px",
     borderRadius: 999,
-    border: `1px solid ${active ? '#4a7eff' : '#1e3a5f'}`,
-    background: active ? '#4a7eff' : '#0f172a',
-    color: active ? '#0b1020' : '#cbd5e1',
-    cursor: 'pointer',
+    border: `1px solid ${active ? "var(--focus-ring, #0e7a53)" : "#1e3a5f"}`,
+    background: active ? "var(--focus-ring, #0e7a53)" : "#0f172a",
+    color: active ? "#0b1020" : "#cbd5e1",
+    cursor: "pointer",
     fontSize: 12,
     fontWeight: 700,
-    display: 'inline-flex',
-    alignItems: 'center',
+    display: "inline-flex",
+    alignItems: "center",
     gap: 6,
   };
 }
 
 function statusDotStyle(active: boolean): CSSProperties {
   return {
-    display: 'inline-block',
+    display: "inline-block",
     width: 8,
     height: 8,
-    borderRadius: '50%',
-    backgroundColor: active ? '#39ff14' : '#475569',
+    borderRadius: "50%",
+    backgroundColor: active ? "#39ff14" : "#475569",
     flexShrink: 0,
   };
 }
 
 function buttonStyle(disabled = false): CSSProperties {
   return {
-    padding: '10px 16px',
-    backgroundColor: disabled ? '#3b4c7a' : '#4a7eff',
-    color: '#0b0e1c',
-    border: 'none',
+    padding: "10px 16px",
+    backgroundColor: disabled ? "#3b4c7a" : "var(--focus-ring, #0e7a53)",
+    color: "var(--bg-deep, #f7f3ed)",
+    border: "none",
     borderRadius: 8,
-    cursor: disabled ? 'not-allowed' : 'pointer',
+    cursor: disabled ? "not-allowed" : "pointer",
     fontWeight: 700,
     fontSize: 14,
   };
 }
 
 const smallButtonStyle: CSSProperties = {
-  padding: '4px 10px',
-  backgroundColor: 'transparent',
-  color: '#4a7eff',
-  border: '1px solid #4a7eff',
+  padding: "4px 10px",
+  backgroundColor: "transparent",
+  color: "var(--focus-ring, #0e7a53)",
+  border: "1px solid var(--focus-ring, #0e7a53)",
   borderRadius: 6,
-  cursor: 'pointer',
+  cursor: "pointer",
   fontWeight: 600,
   fontSize: 12,
 };
 
 const successBannerStyle: CSSProperties = {
   marginBottom: 16,
-  padding: '12px 14px',
+  padding: "12px 14px",
   borderRadius: 10,
-  background: 'rgba(34,197,94,0.14)',
-  border: '1px solid rgba(34,197,94,0.24)',
-  color: '#dcfce7',
+  background: "rgba(34,197,94,0.14)",
+  border: "1px solid rgba(34,197,94,0.24)",
+  color: "#dcfce7",
 };
 
 const errorBannerStyle: CSSProperties = {
   marginBottom: 16,
-  padding: '12px 14px',
+  padding: "12px 14px",
   borderRadius: 10,
-  background: 'rgba(248,113,113,0.14)',
-  border: '1px solid rgba(248,113,113,0.24)',
-  color: '#fee2e2',
+  background: "rgba(248,113,113,0.14)",
+  border: "1px solid rgba(248,113,113,0.24)",
+  color: "#fee2e2",
 };
 
 /* Benefits editor styles */
 
 const benefitsSectionStyle: CSSProperties = {
-  border: '1px solid #1e3a5f',
+  border: "1px solid #1e3a5f",
   borderRadius: 8,
   padding: 14,
-  background: 'rgba(15, 23, 42, 0.5)',
+  background: "rgba(15, 23, 42, 0.5)",
 };
 
 const benefitRowStyle: CSSProperties = {
-  display: 'flex',
+  display: "flex",
   gap: 8,
-  alignItems: 'center',
+  alignItems: "center",
 };
 
 const removeBenefitBtnStyle: CSSProperties = {
   width: 28,
   height: 28,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   borderRadius: 6,
-  border: '1px solid #7f1d1d',
-  background: 'rgba(127, 29, 29, 0.3)',
-  color: '#f87171',
-  cursor: 'pointer',
+  border: "1px solid #7f1d1d",
+  background: "rgba(127, 29, 29, 0.3)",
+  color: "var(--no-text, #a8472d)",
+  cursor: "pointer",
   fontSize: 16,
   fontWeight: 700,
   flexShrink: 0,
@@ -942,45 +1165,49 @@ const removeBenefitBtnStyle: CSSProperties = {
 /* Tier Ladder Visual styles */
 
 const tierLadderContainerStyle: CSSProperties = {
-  background: '#111631',
-  border: '1px solid #1a1f3a',
+  background: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 12,
   padding: 20,
   marginBottom: 20,
 };
 
 const tierLadderRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-end',
+  display: "flex",
+  alignItems: "flex-end",
   gap: 0,
-  overflowX: 'auto',
+  overflowX: "auto",
 };
 
-function tierStepStyle(idx: number, total: number, active: boolean): CSSProperties {
+function tierStepStyle(
+  idx: number,
+  total: number,
+  active: boolean,
+): CSSProperties {
   const minH = 48;
   const maxH = 110;
   const h = total > 1 ? minH + ((maxH - minH) * idx) / (total - 1) : maxH;
   return {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 100,
     height: h,
-    background: active ? 'rgba(74, 126, 255, 0.12)' : 'rgba(15, 23, 42, 0.6)',
-    border: `1px solid ${active ? '#4a7eff' : '#1e3a5f'}`,
+    background: active ? "rgba(74, 126, 255, 0.12)" : "rgba(15, 23, 42, 0.6)",
+    border: `1px solid ${active ? "var(--focus-ring, #0e7a53)" : "#1e3a5f"}`,
     borderRadius: 8,
-    padding: '8px 12px',
-    textAlign: 'center',
+    padding: "8px 12px",
+    textAlign: "center",
   };
 }
 
 const tierLadderConnectorStyle: CSSProperties = {
   width: 24,
   height: 2,
-  background: '#1e3a5f',
+  background: "#1e3a5f",
   flexShrink: 0,
-  alignSelf: 'center',
+  alignSelf: "center",
 };
 
 export default function LoyaltySettingsPage() {

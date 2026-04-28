@@ -181,19 +181,19 @@ function CampaignsPageContent() {
   const statusColor = (status: string) => {
     switch (status) {
       case "active":
-        return { bg: "rgba(34,197,94,0.15)", text: "#4ade80" };
+        return { bg: "rgba(34,197,94,0.15)", text: "var(--accent, #2be480)" };
       case "draft":
-        return { bg: "rgba(251,191,36,0.15)", text: "#fbbf24" };
+        return { bg: "rgba(251,191,36,0.15)", text: "var(--warn, #d97706)" };
       case "paused":
         return { bg: "rgba(96,165,250,0.15)", text: "#93c5fd" };
       case "completed":
-        return { bg: "rgba(34,197,94,0.15)", text: "#4ade80" };
+        return { bg: "rgba(34,197,94,0.15)", text: "var(--accent, #2be480)" };
       case "expired":
       case "forfeited":
       case "closed":
         return { bg: "rgba(239,68,68,0.15)", text: "#fca5a5" };
       default:
-        return { bg: "rgba(100,116,139,0.15)", text: "#94a3b8" };
+        return { bg: "rgba(100,116,139,0.15)", text: "var(--t3, #8b8378)" };
     }
   };
 
@@ -254,7 +254,7 @@ function CampaignsPageContent() {
                 onClick={() => closeCampaign(row.id)}
                 style={{
                   ...actionBtnStyle,
-                  borderColor: "#ef4444",
+                  borderColor: "var(--no-text, #a8472d)",
                   color: "#fca5a5",
                 }}
               >
@@ -326,7 +326,7 @@ function CampaignsPageContent() {
               onClick={() => forfeitBonus(row.id)}
               style={{
                 ...actionBtnStyle,
-                borderColor: "#ef4444",
+                borderColor: "var(--no-text, #a8472d)",
                 color: "#fca5a5",
               }}
             >
@@ -344,7 +344,7 @@ function CampaignsPageContent() {
     fontSize: "14px",
     fontWeight: 600,
     borderBottom: isActive ? "2px solid #39ff14" : "2px solid transparent",
-    color: isActive ? "#e2e8f0" : "#64748b",
+    color: isActive ? "var(--t1, #1a1a1a)" : "var(--t3, #8b8378)",
     background: "none",
     border: "none",
   });
@@ -359,7 +359,13 @@ function CampaignsPageContent() {
           marginBottom: "24px",
         }}
       >
-        <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#e2e8f0" }}>
+        <h1
+          style={{
+            fontSize: "24px",
+            fontWeight: 800,
+            color: "var(--t1, #1a1a1a)",
+          }}
+        >
           Campaigns & Bonuses
         </h1>
         {activeTab === "campaigns" && (
@@ -373,7 +379,7 @@ function CampaignsPageContent() {
         style={{
           display: "flex",
           gap: "4px",
-          borderBottom: "1px solid #1a1f3a",
+          borderBottom: "1px solid var(--border-1, #e5dfd2)",
           marginBottom: "20px",
         }}
       >
@@ -395,7 +401,7 @@ function CampaignsPageContent() {
 
       {showForm && (
         <div style={formStyle}>
-          <h3 style={{ color: "#e2e8f0", marginBottom: "12px" }}>
+          <h3 style={{ color: "var(--t1, #1a1a1a)", marginBottom: "12px" }}>
             New Campaign
           </h3>
           <input
@@ -476,9 +482,9 @@ const createBtnStyle: CSSProperties = {
 const cancelBtnStyle: CSSProperties = {
   padding: "8px 16px",
   borderRadius: "6px",
-  border: "1px solid #1a1f3a",
+  border: "1px solid var(--border-1, #e5dfd2)",
   backgroundColor: "transparent",
-  color: "#64748b",
+  color: "var(--t3, #8b8378)",
   fontSize: "13px",
   cursor: "pointer",
 };
@@ -497,16 +503,16 @@ const inputStyle: CSSProperties = {
   padding: "8px 12px",
   marginBottom: "8px",
   borderRadius: "6px",
-  border: "1px solid #1a1f3a",
-  backgroundColor: "#0b0e1c",
-  color: "#e2e8f0",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  backgroundColor: "var(--bg-deep, #f7f3ed)",
+  color: "var(--t1, #1a1a1a)",
   fontSize: "13px",
   outline: "none",
 };
 const formStyle: CSSProperties = {
   padding: "20px",
-  backgroundColor: "#0f1225",
-  border: "1px solid #1a1f3a",
+  backgroundColor: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: "8px",
   marginBottom: "20px",
 };

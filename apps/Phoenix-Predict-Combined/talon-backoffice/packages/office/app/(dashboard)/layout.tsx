@@ -77,58 +77,58 @@ export default function DashboardLayout({
           __html: `
         .dash-shell { display: flex; min-height: 100vh; }
         .dash-sidebar {
-          width: 240px; background: #0f1225; border-right: 1px solid #1a1f3a;
+          width: 240px; background: var(--surface-1); border-right: 1px solid var(--border-1);
           display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0;
           z-index: 10;
         }
         .dash-brand {
           padding: 24px 20px 20px; display: flex; align-items: center; gap: 12px;
-          border-bottom: 1px solid #1a1f3a;
+          border-bottom: 1px solid var(--border-1);
         }
         .dash-brand-logo {
           width: 36px; height: 36px; border-radius: 8px; object-fit: contain;
         }
-        .dash-brand-text { font-size: 14px; font-weight: 600; color: #D3D3D3; }
+        .dash-brand-text { font-size: 14px; font-weight: 600; color: var(--t1); }
         .dash-nav-section {
-          font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase;
+          font-size: 11px; font-weight: 600; color: var(--t3); text-transform: uppercase;
           letter-spacing: 0.04em; padding: 16px 16px 6px;
         }
         .dash-nav { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
         .dash-nav-item {
           display: flex; align-items: center; gap: 10px;
           padding: 9px 14px; border-radius: 8px;
-          font-size: 13px; font-weight: 500; color: #D3D3D3;
+          font-size: 13px; font-weight: 500; color: var(--t2);
           transition: all 0.15s; cursor: pointer; border: none; background: none;
           text-decoration: none; border-left: 3px solid transparent;
         }
-        .dash-nav-item:hover { color: #e2e8f0; background: #161a35; }
+        .dash-nav-item:hover { color: var(--t1); background: var(--surface-2); }
         .dash-nav-item.active {
-          color: #4ade80; background: #1a2040; font-weight: 600;
-          border-left-color: #4ade80;
+          color: var(--focus-ring); background: var(--accent-soft); font-weight: 600;
+          border-left-color: var(--focus-ring);
         }
-        .dash-nav-item.active svg { stroke: #4ade80; }
+        .dash-nav-item.active svg { stroke: var(--focus-ring); }
         .dash-nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
         .dash-content { flex: 1; margin-left: 240px; display: flex; flex-direction: column; min-height: 100vh; }
         .dash-header {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 18px 28px; background: #0f1225; border-bottom: 1px solid #1a1f3a;
+          padding: 18px 28px; background: var(--surface-1); border-bottom: 1px solid var(--border-1);
           position: sticky; top: 0; z-index: 5;
         }
-        .dash-header-title { font-size: 15px; font-weight: 600; color: #D3D3D3; }
+        .dash-header-title { font-size: 15px; font-weight: 600; color: var(--t1); letter-spacing: -0.01em; }
         .dash-user-badge {
           display: flex; align-items: center; gap: 10px;
-          padding: 6px 14px 6px 8px; border-radius: 8px; background: #161a35;
-          border: 1px solid #1a1f3a;
+          padding: 6px 14px 6px 8px; border-radius: 8px; background: var(--surface-2);
+          border: 1px solid var(--border-1);
         }
         .dash-avatar {
           width: 30px; height: 30px; border-radius: 8px;
-          background: linear-gradient(135deg, #4ade80, #22c55e);
+          background: var(--accent);
           display: flex; align-items: center; justify-content: center;
-          font-size: 13px; font-weight: 700; color: #101114;
+          font-size: 13px; font-weight: 700; color: #003827;
         }
         .dash-page { flex: 1; padding: 28px; }
-        .dash-signout { color: #ef4444 !important; font-size: 13px !important; }
-        .dash-signout:hover { background: rgba(239,68,68,0.08) !important; }
+        .dash-signout { color: var(--no-text) !important; font-size: 13px !important; }
+        .dash-signout:hover { background: var(--no-soft) !important; }
         @media (max-width: 768px) {
           .dash-shell { flex-direction: column; }
           .dash-sidebar {
@@ -137,12 +137,12 @@ export default function DashboardLayout({
             width: 100%;
             top: auto; bottom: auto; left: auto;
             border-right: none;
-            border-bottom: 1px solid #1a1f3a;
+            border-bottom: 1px solid var(--border-1);
           }
           .dash-brand {
             padding: 14px 16px;
             border-bottom: none;
-            border-right: 1px solid #1a1f3a;
+            border-right: 1px solid var(--border-1);
             min-width: max-content;
           }
           .dash-nav {
@@ -157,12 +157,12 @@ export default function DashboardLayout({
             padding: 10px 12px;
             border-left: none;
           }
-          .dash-nav-item.active { border-left: none; border-bottom: 2px solid #4ade80; }
+          .dash-nav-item.active { border-left: none; border-bottom: 2px solid var(--focus-ring); }
           .dash-nav-section { display: none; }
           .dash-sidebar > div:last-child {
             padding: 12px;
             border-top: none !important;
-            border-left: 1px solid #1a1f3a;
+            border-left: 1px solid var(--border-1);
           }
           .dash-content { margin-left: 0; }
           .dash-header {
@@ -245,7 +245,13 @@ export default function DashboardLayout({
             </span>
             <div className="dash-user-badge">
               <div className="dash-avatar">A</div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--t1, #1a1a1a)",
+                }}
+              >
                 Admin
               </span>
             </div>

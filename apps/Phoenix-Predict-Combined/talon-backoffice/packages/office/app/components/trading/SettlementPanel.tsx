@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Button, Badge } from '../shared';
-import { useState } from 'react';
+import styled from "styled-components";
+import { Button, Badge } from "../shared";
+import { useState } from "react";
 
 const PanelContainer = styled.div`
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
+  border: 1px solid var(--border-1, #e5dfd2);
   border-radius: 6px;
   padding: 20px;
 `;
@@ -15,7 +15,7 @@ const PanelTitle = styled.h3`
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const SelectionsList = styled.div`
@@ -27,9 +27,11 @@ const SelectionsList = styled.div`
 
 const SelectionRow = styled.div<{ $selected?: boolean }>`
   padding: 12px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
-  border: 2px solid ${(props) => (props.$selected ? '#4a7eff' : 'transparent')};
+  border: 2px solid
+    ${(props) =>
+      props.$selected ? "var(--focus-ring, #0e7a53)" : "transparent"};
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -37,7 +39,7 @@ const SelectionRow = styled.div<{ $selected?: boolean }>`
   align-items: center;
 
   &:hover {
-    border-color: #4a7eff;
+    border-color: var(--focus-ring, #0e7a53);
   }
 `;
 
@@ -47,7 +49,7 @@ const SelectionInfo = styled.div`
 
 const SelectionName = styled.div`
   font-size: 13px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 500;
   margin-bottom: 4px;
 `;
@@ -56,22 +58,22 @@ const SelectionStats = styled.div`
   display: flex;
   gap: 12px;
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const SelectCheckbox = styled.input`
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #4a7eff;
+  accent-color: var(--focus-ring, #0e7a53);
 `;
 
 const SummaryContainer = styled.div`
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   padding: 16px;
   border-radius: 4px;
   margin-bottom: 20px;
-  border-left: 3px solid #4a7eff;
+  border-left: 3px solid var(--focus-ring, #0e7a53);
 `;
 
 const SummaryRow = styled.div`
@@ -86,11 +88,11 @@ const SummaryRow = styled.div`
 `;
 
 const SummaryLabel = styled.span`
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const SummaryValue = styled.span`
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   font-weight: 600;
 `;
 
@@ -103,7 +105,7 @@ const ActionButtons = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 20px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 export interface SettlementSelection {
@@ -126,7 +128,9 @@ export function SettlementPanel({
   onCancel,
   isLoading = false,
 }: SettlementPanelProps) {
-  const [selectedWinners, setSelectedWinners] = useState<Set<string>>(new Set());
+  const [selectedWinners, setSelectedWinners] = useState<Set<string>>(
+    new Set(),
+  );
 
   const handleToggleSelection = (id: string) => {
     const newSelected = new Set(selectedWinners);
@@ -154,7 +158,9 @@ export function SettlementPanel({
     <PanelContainer>
       <PanelTitle>Market Settlement</PanelTitle>
 
-      <PanelTitle style={{ fontSize: '14px', marginTop: '16px' }}>Select Winner(s)</PanelTitle>
+      <PanelTitle style={{ fontSize: "14px", marginTop: "16px" }}>
+        Select Winner(s)
+      </PanelTitle>
       {selections.length > 0 ? (
         <SelectionsList>
           {selections.map((selection) => (
@@ -167,7 +173,9 @@ export function SettlementPanel({
                 <SelectionName>{selection.name}</SelectionName>
                 <SelectionStats>
                   <span>Bets: {selection.betCount}</span>
-                  <span>Payout: ${selection.potentialPayout.toLocaleString()}</span>
+                  <span>
+                    Payout: ${selection.potentialPayout.toLocaleString()}
+                  </span>
                 </SelectionStats>
               </SelectionInfo>
               <SelectCheckbox
@@ -193,9 +201,19 @@ export function SettlementPanel({
             <SummaryLabel>Affected Bets:</SummaryLabel>
             <SummaryValue>{affectedBets}</SummaryValue>
           </SummaryRow>
-          <SummaryRow style={{ fontSize: '14px', fontWeight: '600', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #111631' }}>
-            <SummaryLabel style={{ color: '#ffffff' }}>Total Payout:</SummaryLabel>
-            <SummaryValue style={{ color: '#f87171' }}>
+          <SummaryRow
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              marginTop: "8px",
+              paddingTop: "8px",
+              borderTop: "1px solid var(--surface-1, var(--t1, #1a1a1a))",
+            }}
+          >
+            <SummaryLabel style={{ color: "var(--t1, #1a1a1a)" }}>
+              Total Payout:
+            </SummaryLabel>
+            <SummaryValue style={{ color: "var(--no-text, #a8472d)" }}>
               ${totalPayout.toLocaleString()}
             </SummaryValue>
           </SummaryRow>
@@ -203,11 +221,7 @@ export function SettlementPanel({
       )}
 
       <ActionButtons>
-        <Button
-          variant="secondary"
-          onClick={onCancel}
-          disabled={isLoading}
-        >
+        <Button variant="secondary" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
         <Button
@@ -215,7 +229,7 @@ export function SettlementPanel({
           onClick={handleSettle}
           disabled={isLoading || selectedWinners.size === 0}
         >
-          {isLoading ? 'Settling...' : 'Confirm & Settle'}
+          {isLoading ? "Settling..." : "Confirm & Settle"}
         </Button>
       </ActionButtons>
     </PanelContainer>

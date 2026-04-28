@@ -1,22 +1,30 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { RiskDashboard, PlayerRiskTable } from '../../components/risk-management';
-import { ErrorBoundary, LoadingSpinner, ErrorState, SkeletonLoader } from '../../components/shared';
-import { useState, useEffect } from 'react';
+import styled from "styled-components";
+import {
+  RiskDashboard,
+  PlayerRiskTable,
+} from "../../components/risk-management";
+import {
+  ErrorBoundary,
+  LoadingSpinner,
+  ErrorState,
+  SkeletonLoader,
+} from "../../components/shared";
+import { useState, useEffect } from "react";
 
 const PageTitle = styled.h1`
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 24px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const SectionTitle = styled.h2`
   font-size: 18px;
   font-weight: 600;
   margin: 24px 0 16px 0;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 interface PlayerRiskData {
@@ -24,7 +32,7 @@ interface PlayerRiskData {
   name: string;
   email: string;
   riskScore: number;
-  segment: 'low' | 'medium' | 'high';
+  segment: "low" | "medium" | "high";
   totalBets: number;
   profit: number;
   lastActivity: string;
@@ -32,41 +40,51 @@ interface PlayerRiskData {
 
 const SAMPLE_PLAYERS: PlayerRiskData[] = [
   {
-    id: '1',
-    name: 'John Doe',
-    email: 'john@example.com',
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
     riskScore: 25,
-    segment: 'low',
+    segment: "low",
     totalBets: 245,
     profit: 1250,
-    lastActivity: '2024-04-01',
+    lastActivity: "2024-04-01",
   },
   {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
+    id: "2",
+    name: "Jane Smith",
+    email: "jane@example.com",
     riskScore: 65,
-    segment: 'medium',
+    segment: "medium",
     totalBets: 156,
     profit: -450,
-    lastActivity: '2024-03-31',
+    lastActivity: "2024-03-31",
   },
   {
-    id: '3',
-    name: 'High Roller',
-    email: 'roller@example.com',
+    id: "3",
+    name: "High Roller",
+    email: "roller@example.com",
     riskScore: 92,
-    segment: 'high',
+    segment: "high",
     totalBets: 512,
     profit: -8900,
-    lastActivity: '2024-04-01',
+    lastActivity: "2024-04-01",
   },
 ];
 
 const SAMPLE_TOP_FIXTURES = [
-  { id: '1', name: 'Man United vs Arsenal', liability: 45000, isHighRisk: false },
-  { id: '2', name: 'Barcelona vs Real Madrid', liability: 62000, isHighRisk: true },
-  { id: '3', name: 'Lakers vs Celtics', liability: 28000, isHighRisk: false },
+  {
+    id: "1",
+    name: "Man United vs Arsenal",
+    liability: 45000,
+    isHighRisk: false,
+  },
+  {
+    id: "2",
+    name: "Barcelona vs Real Madrid",
+    liability: 62000,
+    isHighRisk: true,
+  },
+  { id: "3", name: "Lakers vs Celtics", liability: 28000, isHighRisk: false },
 ];
 
 function RiskManagementPageContent() {
@@ -87,7 +105,9 @@ function RiskManagementPageContent() {
         setPlayers(SAMPLE_PLAYERS);
         setIsLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load risk data');
+        setError(
+          err instanceof Error ? err.message : "Failed to load risk data",
+        );
         setIsLoading(false);
       }
     }, 500);
@@ -96,7 +116,7 @@ function RiskManagementPageContent() {
   }, []);
 
   const handlePlayerClick = (player: PlayerRiskData) => {
-    console.log('Selected player:', player);
+    console.log("Selected player:", player);
     // Could navigate to player detail page
   };
 

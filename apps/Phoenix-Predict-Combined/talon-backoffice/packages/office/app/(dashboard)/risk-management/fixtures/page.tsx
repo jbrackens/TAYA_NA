@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Card, Badge } from '../../../components/shared';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import styled from "styled-components";
+import { Card, Badge } from "../../../components/shared";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 const PageTitle = styled.h1`
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 24px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const TableContainer = styled(Card)`
@@ -23,18 +23,18 @@ const Table = styled.table`
   th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-weight: 600;
     font-size: 12px;
-    color: #a0a0a0;
+    color: var(--t2, #4a4a4a);
     text-transform: uppercase;
   }
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-size: 13px;
-    color: #ffffff;
+    color: var(--t1, #1a1a1a);
   }
 
   tr:hover {
@@ -43,7 +43,7 @@ const Table = styled.table`
 `;
 
 const LinkCell = styled(Link)`
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   text-decoration: none;
   font-weight: 600;
   cursor: pointer;
@@ -56,7 +56,7 @@ const LinkCell = styled(Link)`
 const RiskBar = styled.div`
   display: flex;
   height: 20px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 3px;
   overflow: hidden;
   max-width: 100px;
@@ -68,8 +68,8 @@ interface RiskSegment {
 }
 
 const RiskSegmentComponent = styled.div<{ $width: number; $color: string }>`
-  width: ${props => props.$width}%;
-  background-color: ${props => props.$color};
+  width: ${(props) => props.$width}%;
+  background-color: ${(props) => props.$color};
   height: 100%;
 `;
 
@@ -82,7 +82,7 @@ interface Fixture {
   exposure: number;
   risk: number;
   marketCount: number;
-  status: 'low' | 'medium' | 'high' | 'critical';
+  status: "low" | "medium" | "high" | "critical";
 }
 
 export default function FixturesPage() {
@@ -92,29 +92,32 @@ export default function FixturesPage() {
   useEffect(() => {
     const fetchFixtures = async () => {
       try {
-        const response = await fetch('/api/v1/admin/trading/fixtures?page=1&pageSize=50', {
-          headers: {
-            'X-Admin-Role': 'admin',
+        const response = await fetch(
+          "/api/v1/admin/trading/fixtures?page=1&pageSize=50",
+          {
+            headers: {
+              "X-Admin-Role": "admin",
+            },
           },
-        });
-        if (!response.ok) throw new Error('Failed to fetch');
+        );
+        if (!response.ok) throw new Error("Failed to fetch");
         const data = await response.json();
         const items = Array.isArray(data?.items) ? data.items : [];
         setFixtures(
           items.map((item: any) => ({
             id: item.id,
             match: `${item.homeTeam} vs ${item.awayTeam}`,
-            sport: item.sportKey || 'Unknown',
-            league: item.tournament || item.leagueKey || 'Unknown',
+            sport: item.sportKey || "Unknown",
+            league: item.tournament || item.leagueKey || "Unknown",
             liability: 0,
             exposure: 0,
             risk: 0,
             marketCount: 0,
-            status: 'low' as const,
+            status: "low" as const,
           })),
         );
       } catch (error) {
-        console.error('Failed to fetch fixtures:', error);
+        console.error("Failed to fetch fixtures:", error);
         setFixtures([]);
       } finally {
         setIsLoading(false);
@@ -125,28 +128,32 @@ export default function FixturesPage() {
   }, []);
 
   const getRiskColor = (risk: number) => {
-    if (risk > 80) return '#f87171';
-    if (risk > 60) return '#fbbf24';
-    if (risk > 40) return '#60a5fa';
-    return '#22c55e';
+    if (risk > 80) return "var(--no-text, #a8472d)";
+    if (risk > 60) return "var(--warn, #d97706)";
+    if (risk > 40) return "#60a5fa";
+    return "var(--accent-lo, #1fa65e)";
   };
 
   const getRiskBadgeVariant = (status: string) => {
     switch (status) {
-      case 'critical':
-      case 'high':
-        return 'danger';
-      case 'medium':
-        return 'secondary';
-      case 'low':
-        return 'primary';
+      case "critical":
+      case "high":
+        return "danger";
+      case "medium":
+        return "secondary";
+      case "low":
+        return "primary";
       default:
-        return 'secondary';
+        return "secondary";
     }
   };
 
   if (isLoading) {
-    return <div style={{ padding: '40px', color: '#a0a0a0' }}>Loading fixtures...</div>;
+    return (
+      <div style={{ padding: "40px", color: "var(--t2, #4a4a4a)" }}>
+        Loading fixtures...
+      </div>
+    );
   }
 
   return (
@@ -188,7 +195,7 @@ export default function FixturesPage() {
                         $color={getRiskColor(fixture.risk)}
                       />
                     </RiskBar>
-                    <div style={{ fontSize: '11px', marginTop: '4px' }}>
+                    <div style={{ fontSize: "11px", marginTop: "4px" }}>
                       {fixture.risk.toFixed(1)}%
                     </div>
                   </td>
@@ -201,7 +208,10 @@ export default function FixturesPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: '#a0a0a0' }}>
+                <td
+                  colSpan={8}
+                  style={{ textAlign: "center", color: "var(--t2, #4a4a4a)" }}
+                >
                   No fixtures found
                 </td>
               </tr>

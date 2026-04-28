@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Badge } from '../shared';
-import { DataTable, ColumnDef } from '../shared/DataTable';
+import styled from "styled-components";
+import { Badge } from "../shared";
+import { DataTable, ColumnDef } from "../shared/DataTable";
 
 const TableWrapper = styled.div`
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
+  border: 1px solid var(--border-1, #e5dfd2);
   border-radius: 6px;
   padding: 20px;
 `;
@@ -15,7 +15,7 @@ const Title = styled.h3`
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const RiskScoreBadge = styled.span<{ $score: number }>`
@@ -23,21 +23,22 @@ const RiskScoreBadge = styled.span<{ $score: number }>`
   border-radius: 3px;
   font-weight: 600;
   background-color: ${(props) => {
-    if (props.$score >= 80) return 'rgba(248, 113, 113, 0.2)';
-    if (props.$score >= 60) return 'rgba(251, 146, 60, 0.2)';
-    if (props.$score >= 40) return 'rgba(251, 191, 36, 0.2)';
-    return 'rgba(34, 197, 94, 0.2)';
+    if (props.$score >= 80) return "rgba(248, 113, 113, 0.2)";
+    if (props.$score >= 60) return "rgba(251, 146, 60, 0.2)";
+    if (props.$score >= 40) return "rgba(251, 191, 36, 0.2)";
+    return "rgba(34, 197, 94, 0.2)";
   }};
   color: ${(props) => {
-    if (props.$score >= 80) return '#f87171';
-    if (props.$score >= 60) return '#fb923c';
-    if (props.$score >= 40) return '#fbbf24';
-    return '#22c55e';
+    if (props.$score >= 80) return "var(--no-text, #a8472d)";
+    if (props.$score >= 60) return "#fb923c";
+    if (props.$score >= 40) return "var(--warn, #d97706)";
+    return "var(--accent-lo, #1fa65e)";
   }};
 `;
 
 const PnLValue = styled.span<{ $positive?: boolean }>`
-  color: ${(props) => (props.$positive ? '#22c55e' : '#f87171')};
+  color: ${(props) =>
+    props.$positive ? "var(--accent-lo, #1fa65e)" : "var(--no-text, #a8472d)"};
   font-weight: 600;
 `;
 
@@ -46,7 +47,7 @@ export interface PlayerRiskData {
   name: string;
   email: string;
   riskScore: number;
-  segment: 'low' | 'medium' | 'high' | 'vip';
+  segment: "low" | "medium" | "high" | "vip";
   totalBets: number;
   pnl: number;
   lastActivity: string;
@@ -65,54 +66,60 @@ export function PlayerRiskTable({
 }: PlayerRiskTableProps) {
   const columns: ColumnDef<PlayerRiskData>[] = [
     {
-      key: 'name',
-      label: 'Name',
+      key: "name",
+      label: "Name",
       sortable: true,
     },
     {
-      key: 'email',
-      label: 'Email',
+      key: "email",
+      label: "Email",
       sortable: true,
     },
     {
-      key: 'riskScore',
-      label: 'Risk Score',
+      key: "riskScore",
+      label: "Risk Score",
       sortable: true,
-      render: (value) => <RiskScoreBadge $score={value}>{value.toFixed(1)}</RiskScoreBadge>,
+      render: (value) => (
+        <RiskScoreBadge $score={value}>{value.toFixed(1)}</RiskScoreBadge>
+      ),
     },
     {
-      key: 'segment',
-      label: 'Segment',
+      key: "segment",
+      label: "Segment",
       sortable: true,
       render: (value) => {
         const variantMap = {
-          low: 'primary',
-          medium: 'secondary',
-          high: 'danger',
-          vip: 'success',
+          low: "primary",
+          medium: "secondary",
+          high: "danger",
+          vip: "success",
         } as const;
-        return <Badge variant={variantMap[value as keyof typeof variantMap]}>{value.toUpperCase()}</Badge>;
+        return (
+          <Badge variant={variantMap[value as keyof typeof variantMap]}>
+            {value.toUpperCase()}
+          </Badge>
+        );
       },
     },
     {
-      key: 'totalBets',
-      label: 'Total Bets',
+      key: "totalBets",
+      label: "Total Bets",
       sortable: true,
       render: (value) => value.toLocaleString(),
     },
     {
-      key: 'pnl',
-      label: 'P&L',
+      key: "pnl",
+      label: "P&L",
       sortable: true,
       render: (value) => (
         <PnLValue $positive={value >= 0}>
-          {value >= 0 ? '+' : ''}${Math.abs(value).toLocaleString()}
+          {value >= 0 ? "+" : ""}${Math.abs(value).toLocaleString()}
         </PnLValue>
       ),
     },
     {
-      key: 'lastActivity',
-      label: 'Last Activity',
+      key: "lastActivity",
+      label: "Last Activity",
       sortable: true,
     },
   ];

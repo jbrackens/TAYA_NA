@@ -1,9 +1,23 @@
-'use client';
+"use client";
 
-import { ChangeEvent, CSSProperties, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { DataTable, ErrorBoundary, ErrorState, SkeletonLoader } from '../../components/shared';
-import type { ColumnDef } from '../../components/shared';
+import {
+  ChangeEvent,
+  CSSProperties,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useRouter } from "next/navigation";
+import {
+  DataTable,
+  ErrorBoundary,
+  ErrorState,
+  SkeletonLoader,
+} from "../../components/shared";
+import type { ColumnDef } from "../../components/shared";
 
 interface LeaderboardRow {
   leaderboardId: string;
@@ -25,10 +39,14 @@ interface LeaderboardRow {
 
 /** Format a window date pair into a short display string */
 function formatWindowRange(start?: string, end?: string): string {
-  if (!start && !end) return 'Open-ended';
+  if (!start && !end) return "Open-ended";
   const fmt = (iso: string) => {
     try {
-      return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      return new Date(iso).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     } catch {
       return iso;
     }
@@ -48,20 +66,20 @@ function LeaderboardsPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [form, setForm] = useState({
-    slug: '',
-    name: '',
-    description: '',
-    metricKey: 'net_profit_cents',
-    rankingMode: 'sum',
-    order: 'desc',
-    status: 'active',
-    currency: 'USD',
-    prizeSummary: '',
-    windowStartsAt: '',
-    windowEndsAt: '',
+    slug: "",
+    name: "",
+    description: "",
+    metricKey: "net_profit_cents",
+    rankingMode: "sum",
+    order: "desc",
+    status: "active",
+    currency: "USD",
+    prizeSummary: "",
+    windowStartsAt: "",
+    windowEndsAt: "",
   });
 
   const showFeedback = useCallback((message: string) => {
@@ -85,19 +103,24 @@ function LeaderboardsPageContent() {
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (search.trim()) params.set('search', search.trim());
-      if (statusFilter) params.set('status', statusFilter);
+      if (search.trim()) params.set("search", search.trim());
+      if (statusFilter) params.set("status", statusFilter);
       const query = params.toString();
-      const response = await fetch(`/api/v1/admin/leaderboards${query ? `?${query}` : ''}`, {
-        headers: { 'X-Admin-Role': 'admin' },
-      });
+      const response = await fetch(
+        `/api/v1/admin/leaderboards${query ? `?${query}` : ""}`,
+        {
+          headers: { "X-Admin-Role": "admin" },
+        },
+      );
       if (!response.ok) {
-        throw new Error('Failed to load leaderboards');
+        throw new Error("Failed to load leaderboards");
       }
       const data = await response.json();
       setItems(Array.isArray(data?.items) ? data.items : []);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load leaderboards');
+      setError(
+        err instanceof Error ? err.message : "Failed to load leaderboards",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -108,9 +131,9 @@ function LeaderboardsPageContent() {
   }, []);
 
   const recomputeAllActive = async () => {
-    const activeBoards = items.filter((item) => item.status === 'active');
+    const activeBoards = items.filter((item) => item.status === "active");
     if (!activeBoards.length) {
-      showFeedback('No active leaderboards to recompute.');
+      showFeedback("No active leaderboards to recompute.");
       return;
     }
     setIsBatchRecomputing(true);
@@ -120,10 +143,13 @@ function LeaderboardsPageContent() {
     let failed = 0;
     for (const board of activeBoards) {
       try {
-        const response = await fetch(`/api/v1/admin/leaderboards/${encodeURIComponent(board.leaderboardId)}/recompute`, {
-          method: 'POST',
-          headers: { 'X-Admin-Role': 'admin' },
-        });
+        const response = await fetch(
+          `/api/v1/admin/leaderboards/${encodeURIComponent(board.leaderboardId)}/recompute`,
+          {
+            method: "POST",
+            headers: { "X-Admin-Role": "admin" },
+          },
+        );
         if (!response.ok) {
           failed++;
         } else {
@@ -141,70 +167,87 @@ function LeaderboardsPageContent() {
     showFeedback(msg);
   };
 
-  const stats = useMemo(() => ({
-    total: items.length,
-    active: items.filter((item) => item.status === 'active').length,
-    draft: items.filter((item) => item.status === 'draft').length,
-    closed: items.filter((item) => item.status === 'closed').length,
-  }), [items]);
+  const stats = useMemo(
+    () => ({
+      total: items.length,
+      active: items.filter((item) => item.status === "active").length,
+      draft: items.filter((item) => item.status === "draft").length,
+      closed: items.filter((item) => item.status === "closed").length,
+    }),
+    [items],
+  );
 
   const columns: ColumnDef<LeaderboardRow>[] = [
     {
-      key: 'name',
-      label: 'Leaderboard',
+      key: "name",
+      label: "Leaderboard",
       sortable: true,
       render: (value, row) => (
         <div>
           <div style={{ fontWeight: 600 }}>{String(value)}</div>
-          <div style={{ color: '#94a3b8', fontSize: 12 }}>
+          <div style={{ color: "var(--t3, #8b8378)", fontSize: 12 }}>
             {row.slug || row.metricKey}
           </div>
         </div>
       ),
     },
     {
-      key: 'rankingMode',
-      label: 'Mode',
+      key: "rankingMode",
+      label: "Mode",
       sortable: true,
-      render: (value, row) => `${String(value).toUpperCase()} · ${String(row.order).toUpperCase()}`,
+      render: (value, row) =>
+        `${String(value).toUpperCase()} · ${String(row.order).toUpperCase()}`,
     },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       sortable: true,
-      render: (value) => <span style={badgeStyle(statusVariant(String(value)))}>{String(value).toUpperCase()}</span>,
+      render: (value) => (
+        <span style={badgeStyle(statusVariant(String(value)))}>
+          {String(value).toUpperCase()}
+        </span>
+      ),
     },
     {
-      key: 'metricKey',
-      label: 'Metric',
+      key: "metricKey",
+      label: "Metric",
       sortable: true,
     },
     {
-      key: 'windowStartsAt' as keyof LeaderboardRow,
-      label: 'Window',
+      key: "windowStartsAt" as keyof LeaderboardRow,
+      label: "Window",
       render: (_, row) => (
-        <span style={{ color: (row.windowStartsAt || row.windowEndsAt) ? '#f8fafc' : '#64748b', fontSize: 13 }}>
+        <span
+          style={{
+            color:
+              row.windowStartsAt || row.windowEndsAt
+                ? "var(--t1, #1a1a1a)"
+                : "var(--t3, #8b8378)",
+            fontSize: 13,
+          }}
+        >
           {formatWindowRange(row.windowStartsAt, row.windowEndsAt)}
         </span>
       ),
     },
     {
-      key: 'lastComputedAt',
-      label: 'Last Recompute',
+      key: "lastComputedAt",
+      label: "Last Recompute",
       sortable: true,
-      render: (value) => value ? new Date(String(value)).toLocaleString() : 'Never',
+      render: (value) =>
+        value ? new Date(String(value)).toLocaleString() : "Never",
     },
     {
-      key: 'updatedAt',
-      label: 'Updated',
+      key: "updatedAt",
+      label: "Updated",
       sortable: true,
       render: (value) => new Date(String(value)).toLocaleString(),
     },
     {
-      key: 'leaderboardId',
-      label: 'Actions',
+      key: "leaderboardId",
+      label: "Actions",
       render: (_, row) => (
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             style={miniButtonStyle(false)}
             onClick={(event) => {
@@ -223,23 +266,32 @@ function LeaderboardsPageContent() {
               setFeedback(null);
               setRecomputingId(row.leaderboardId);
               try {
-                const response = await fetch(`/api/v1/admin/leaderboards/${encodeURIComponent(row.leaderboardId)}/recompute`, {
-                  method: 'POST',
-                  headers: { 'X-Admin-Role': 'admin' },
-                });
+                const response = await fetch(
+                  `/api/v1/admin/leaderboards/${encodeURIComponent(row.leaderboardId)}/recompute`,
+                  {
+                    method: "POST",
+                    headers: { "X-Admin-Role": "admin" },
+                  },
+                );
                 if (!response.ok) {
-                  throw new Error('Failed to recompute leaderboard');
+                  throw new Error("Failed to recompute leaderboard");
                 }
                 showFeedback(`${row.name} recomputed successfully.`);
                 await loadItems();
               } catch (err: unknown) {
-                setError(err instanceof Error ? err.message : 'Failed to recompute leaderboard');
+                setError(
+                  err instanceof Error
+                    ? err.message
+                    : "Failed to recompute leaderboard",
+                );
               } finally {
                 setRecomputingId(null);
               }
             }}
           >
-            {recomputingId === row.leaderboardId ? 'Recomputing...' : 'Recompute'}
+            {recomputingId === row.leaderboardId
+              ? "Recomputing..."
+              : "Recompute"}
           </button>
         </div>
       ),
@@ -248,13 +300,13 @@ function LeaderboardsPageContent() {
 
   /** Convert a datetime-local value to RFC3339 */
   const toRFC3339 = (dtLocal: string): string => {
-    if (!dtLocal) return '';
+    if (!dtLocal) return "";
     try {
       const d = new Date(dtLocal);
-      if (Number.isNaN(d.getTime())) return '';
+      if (Number.isNaN(d.getTime())) return "";
       return d.toISOString();
     } catch {
-      return '';
+      return "";
     }
   };
 
@@ -263,16 +315,16 @@ function LeaderboardsPageContent() {
     setError(null);
     setFeedback(null);
     if (!form.name.trim() || !form.metricKey.trim()) {
-      setError('Name and metric key are required.');
+      setError("Name and metric key are required.");
       return;
     }
     setIsCreating(true);
     try {
-      const response = await fetch('/api/v1/admin/leaderboards', {
-        method: 'POST',
+      const response = await fetch("/api/v1/admin/leaderboards", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Admin-Role': 'admin',
+          "Content-Type": "application/json",
+          "X-Admin-Role": "admin",
         },
         body: JSON.stringify({
           ...form,
@@ -283,31 +335,33 @@ function LeaderboardsPageContent() {
           prizeSummary: form.prizeSummary.trim(),
           windowStartsAt: toRFC3339(form.windowStartsAt) || undefined,
           windowEndsAt: toRFC3339(form.windowEndsAt) || undefined,
-          createdBy: 'office-admin',
+          createdBy: "office-admin",
         }),
       });
       if (!response.ok) {
-        throw new Error('Failed to create leaderboard');
+        throw new Error("Failed to create leaderboard");
       }
       const created = await response.json();
-      showFeedback('Leaderboard created successfully.');
+      showFeedback("Leaderboard created successfully.");
       setForm({
-        slug: '',
-        name: '',
-        description: '',
-        metricKey: 'net_profit_cents',
-        rankingMode: 'sum',
-        order: 'desc',
-        status: 'active',
-        currency: 'USD',
-        prizeSummary: '',
-        windowStartsAt: '',
-        windowEndsAt: '',
+        slug: "",
+        name: "",
+        description: "",
+        metricKey: "net_profit_cents",
+        rankingMode: "sum",
+        order: "desc",
+        status: "active",
+        currency: "USD",
+        prizeSummary: "",
+        windowStartsAt: "",
+        windowEndsAt: "",
       });
       await loadItems();
       router.push(`/leaderboards/${created.leaderboardId}`);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to create leaderboard');
+      setError(
+        err instanceof Error ? err.message : "Failed to create leaderboard",
+      );
     } finally {
       setIsCreating(false);
     }
@@ -322,13 +376,13 @@ function LeaderboardsPageContent() {
             Manage sportsbook competitions, ranking logic, and recompute state.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button
             style={batchRecomputeButtonStyle(isBatchRecomputing)}
             disabled={isBatchRecomputing}
             onClick={() => void recomputeAllActive()}
           >
-            {isBatchRecomputing ? 'Recomputing All...' : 'Recompute All Active'}
+            {isBatchRecomputing ? "Recomputing All..." : "Recompute All Active"}
           </button>
           <button style={buttonStyle()} onClick={() => void loadItems()}>
             Refresh
@@ -350,31 +404,86 @@ function LeaderboardsPageContent() {
             <div style={formColumnsStyle}>
               <label style={labelStyle}>
                 Name
-                <input style={inputStyle} value={form.name} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, name: event.target.value }))} />
+                <input
+                  style={inputStyle}
+                  value={form.name}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                />
               </label>
               <label style={labelStyle}>
                 Slug
-                <input style={inputStyle} value={form.slug} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, slug: event.target.value }))} placeholder="weekly-profit-race" />
+                <input
+                  style={inputStyle}
+                  value={form.slug}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      slug: event.target.value,
+                    }))
+                  }
+                  placeholder="weekly-profit-race"
+                />
               </label>
             </div>
             <label style={labelStyle}>
               Description
-              <textarea style={textAreaStyle} value={form.description} onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setForm((current) => ({ ...current, description: event.target.value }))} />
+              <textarea
+                style={textAreaStyle}
+                value={form.description}
+                onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+                  setForm((current) => ({
+                    ...current,
+                    description: event.target.value,
+                  }))
+                }
+              />
             </label>
             <div style={formColumnsStyle}>
               <label style={labelStyle}>
                 Metric Key
-                <input style={inputStyle} value={form.metricKey} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, metricKey: event.target.value }))} />
+                <input
+                  style={inputStyle}
+                  value={form.metricKey}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      metricKey: event.target.value,
+                    }))
+                  }
+                />
               </label>
               <label style={labelStyle}>
                 Currency
-                <input style={inputStyle} value={form.currency} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, currency: event.target.value }))} />
+                <input
+                  style={inputStyle}
+                  value={form.currency}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      currency: event.target.value,
+                    }))
+                  }
+                />
               </label>
             </div>
             <div style={formColumnsStyle}>
               <label style={labelStyle}>
                 Ranking Mode
-                <select style={selectStyle} value={form.rankingMode} onChange={(event: ChangeEvent<HTMLSelectElement>) => setForm((current) => ({ ...current, rankingMode: event.target.value }))}>
+                <select
+                  style={selectStyle}
+                  value={form.rankingMode}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      rankingMode: event.target.value,
+                    }))
+                  }
+                >
                   <option value="sum">SUM</option>
                   <option value="min">MIN</option>
                   <option value="max">MAX</option>
@@ -382,14 +491,32 @@ function LeaderboardsPageContent() {
               </label>
               <label style={labelStyle}>
                 Order
-                <select style={selectStyle} value={form.order} onChange={(event: ChangeEvent<HTMLSelectElement>) => setForm((current) => ({ ...current, order: event.target.value }))}>
+                <select
+                  style={selectStyle}
+                  value={form.order}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      order: event.target.value,
+                    }))
+                  }
+                >
                   <option value="desc">DESC</option>
                   <option value="asc">ASC</option>
                 </select>
               </label>
               <label style={labelStyle}>
                 Status
-                <select style={selectStyle} value={form.status} onChange={(event: ChangeEvent<HTMLSelectElement>) => setForm((current) => ({ ...current, status: event.target.value }))}>
+                <select
+                  style={selectStyle}
+                  value={form.status}
+                  onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      status: event.target.value,
+                    }))
+                  }
+                >
                   <option value="draft">Draft</option>
                   <option value="active">Active</option>
                   <option value="closed">Closed</option>
@@ -399,21 +526,54 @@ function LeaderboardsPageContent() {
             <div style={formColumnsStyle}>
               <label style={labelStyle}>
                 Window Start
-                <input type="datetime-local" style={inputStyle} value={form.windowStartsAt} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, windowStartsAt: event.target.value }))} />
+                <input
+                  type="datetime-local"
+                  style={inputStyle}
+                  value={form.windowStartsAt}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      windowStartsAt: event.target.value,
+                    }))
+                  }
+                />
               </label>
               <label style={labelStyle}>
                 Window End
-                <input type="datetime-local" style={inputStyle} value={form.windowEndsAt} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, windowEndsAt: event.target.value }))} />
+                <input
+                  type="datetime-local"
+                  style={inputStyle}
+                  value={form.windowEndsAt}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setForm((current) => ({
+                      ...current,
+                      windowEndsAt: event.target.value,
+                    }))
+                  }
+                />
               </label>
             </div>
             <label style={labelStyle}>
               Prize Summary
-              <input style={inputStyle} value={form.prizeSummary} onChange={(event: ChangeEvent<HTMLInputElement>) => setForm((current) => ({ ...current, prizeSummary: event.target.value }))} />
+              <input
+                style={inputStyle}
+                value={form.prizeSummary}
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                  setForm((current) => ({
+                    ...current,
+                    prizeSummary: event.target.value,
+                  }))
+                }
+              />
             </label>
             {feedback ? <div style={successTextStyle}>{feedback}</div> : null}
             {error ? <div style={errorTextStyle}>{error}</div> : null}
-            <button style={buttonStyle(isCreating)} type="submit" disabled={isCreating}>
-              {isCreating ? 'Creating...' : 'Create Leaderboard'}
+            <button
+              style={buttonStyle(isCreating)}
+              type="submit"
+              disabled={isCreating}
+            >
+              {isCreating ? "Creating..." : "Create Leaderboard"}
             </button>
           </form>
         </div>
@@ -424,10 +584,18 @@ function LeaderboardsPageContent() {
             <input
               style={inputStyle}
               value={search}
-              onChange={(event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value)}
+              onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                setSearch(event.target.value)
+              }
               placeholder="Search name, slug, or description"
             />
-            <select style={selectStyle} value={statusFilter} onChange={(event: ChangeEvent<HTMLSelectElement>) => setStatusFilter(event.target.value)}>
+            <select
+              style={selectStyle}
+              value={statusFilter}
+              onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+                setStatusFilter(event.target.value)
+              }
+            >
               <option value="">All statuses</option>
               <option value="active">Active</option>
               <option value="draft">Draft</option>
@@ -441,7 +609,12 @@ function LeaderboardsPageContent() {
       </div>
 
       {error && !items.length && !isLoading ? (
-        <ErrorState title="Failed to load leaderboards" message={error} onRetry={() => void loadItems()} showRetryButton={true} />
+        <ErrorState
+          title="Failed to load leaderboards"
+          message={error}
+          onRetry={() => void loadItems()}
+          showRetryButton={true}
+        />
       ) : isLoading ? (
         <SkeletonLoader count={4} />
       ) : (
@@ -449,7 +622,9 @@ function LeaderboardsPageContent() {
           columns={columns}
           data={items}
           pageSize={10}
-          onRowClick={(row) => router.push(`/leaderboards/${row.leaderboardId}`)}
+          onRowClick={(row) =>
+            router.push(`/leaderboards/${row.leaderboardId}`)
+          }
           emptyMessage="No leaderboards match the current filters"
         />
       )}
@@ -466,31 +641,31 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function statusVariant(status: string): 'default' | 'success' | 'warning' {
+function statusVariant(status: string): "default" | "success" | "warning" {
   switch (status) {
-    case 'active':
-      return 'success';
-    case 'closed':
-      return 'warning';
+    case "active":
+      return "success";
+    case "closed":
+      return "warning";
     default:
-      return 'default';
+      return "default";
   }
 }
 
-function badgeStyle(variant: 'default' | 'success' | 'warning'): CSSProperties {
+function badgeStyle(variant: "default" | "success" | "warning"): CSSProperties {
   const backgrounds: Record<string, string> = {
-    default: '#1e3a5f',
-    success: '#065f46',
-    warning: '#92400e',
+    default: "#1e3a5f",
+    success: "#065f46",
+    warning: "#92400e",
   };
   const colors: Record<string, string> = {
-    default: '#bfdbfe',
-    success: '#dcfce7',
-    warning: '#fef3c7',
+    default: "#bfdbfe",
+    success: "#dcfce7",
+    warning: "#fef3c7",
   };
   return {
-    display: 'inline-block',
-    padding: '4px 8px',
+    display: "inline-block",
+    padding: "4px 8px",
     borderRadius: 4,
     fontSize: 12,
     fontWeight: 600,
@@ -501,12 +676,12 @@ function badgeStyle(variant: 'default' | 'success' | 'warning'): CSSProperties {
 
 function miniButtonStyle(disabled = false): CSSProperties {
   return {
-    padding: '6px 10px',
-    backgroundColor: disabled ? '#3b4c7a' : '#1a1f3a',
-    color: disabled ? '#cbd5e1' : '#93c5fd',
-    border: '1px solid #1e3a5f',
+    padding: "6px 10px",
+    backgroundColor: disabled ? "#3b4c7a" : "var(--border-1, #e5dfd2)",
+    color: disabled ? "#cbd5e1" : "#93c5fd",
+    border: "1px solid #1e3a5f",
     borderRadius: 6,
-    cursor: disabled ? 'not-allowed' : 'pointer',
+    cursor: disabled ? "not-allowed" : "pointer",
     fontSize: 12,
     fontWeight: 700,
   };
@@ -514,12 +689,12 @@ function miniButtonStyle(disabled = false): CSSProperties {
 
 function buttonStyle(disabled = false): CSSProperties {
   return {
-    padding: '8px 16px',
-    backgroundColor: disabled ? '#3b4c7a' : '#4a7eff',
-    color: '#0b0e1c',
-    border: 'none',
+    padding: "8px 16px",
+    backgroundColor: disabled ? "#3b4c7a" : "var(--focus-ring, #0e7a53)",
+    color: "var(--bg-deep, #f7f3ed)",
+    border: "none",
     borderRadius: 4,
-    cursor: disabled ? 'not-allowed' : 'pointer',
+    cursor: disabled ? "not-allowed" : "pointer",
     fontWeight: 600,
     fontSize: 14,
   };
@@ -527,35 +702,119 @@ function buttonStyle(disabled = false): CSSProperties {
 
 function batchRecomputeButtonStyle(disabled = false): CSSProperties {
   return {
-    padding: '8px 16px',
-    backgroundColor: disabled ? '#3b4c7a' : '#065f46',
-    color: disabled ? '#94a3b8' : '#86efac',
-    border: '1px solid #14532d',
+    padding: "8px 16px",
+    backgroundColor: disabled ? "#3b4c7a" : "#065f46",
+    color: disabled ? "var(--t3, #8b8378)" : "#86efac",
+    border: "1px solid #14532d",
     borderRadius: 4,
-    cursor: disabled ? 'not-allowed' : 'pointer',
+    cursor: disabled ? "not-allowed" : "pointer",
     fontWeight: 600,
     fontSize: 14,
   };
 }
 
-const pageTitleStyle: CSSProperties = { fontSize: 28, fontWeight: 700, marginBottom: 8, color: '#ffffff' };
-const subtitleStyle: CSSProperties = { margin: 0, color: '#a0a0a0', fontSize: 14 };
-const headerRowStyle: CSSProperties = { display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-end', marginBottom: 20 };
-const metricsGridStyle: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 20 };
-const formGridStyle: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(280px, 1fr)', gap: 20, marginBottom: 20 };
-const surfaceCardStyle: CSSProperties = { background: '#111328', border: '1px solid #1e2243', borderRadius: 12, padding: 20 };
-const sectionTitleStyle: CSSProperties = { fontSize: 18, fontWeight: 700, color: '#ffffff', marginTop: 0, marginBottom: 16 };
-const formStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 14 };
-const formColumnsStyle: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 };
-const filtersColumnStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12 };
-const labelStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, color: '#cbd5e1', fontSize: 13, fontWeight: 600 };
-const inputStyle: CSSProperties = { background: '#0b1021', border: '1px solid #263056', borderRadius: 8, padding: '10px 12px', color: '#f8fafc', fontSize: 14 };
-const selectStyle: CSSProperties = { ...inputStyle, appearance: 'none' };
-const textAreaStyle: CSSProperties = { ...inputStyle, minHeight: 84, resize: 'vertical' };
-const metricLabelStyle: CSSProperties = { color: '#94a3b8', fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 };
-const metricValueStyle: CSSProperties = { color: '#ffffff', fontSize: 26, fontWeight: 700 };
-const successTextStyle: CSSProperties = { color: '#86efac', fontSize: 13, fontWeight: 600 };
-const errorTextStyle: CSSProperties = { color: '#fca5a5', fontSize: 13, fontWeight: 600 };
+const pageTitleStyle: CSSProperties = {
+  fontSize: 28,
+  fontWeight: 700,
+  marginBottom: 8,
+  color: "var(--t1, #1a1a1a)",
+};
+const subtitleStyle: CSSProperties = {
+  margin: 0,
+  color: "var(--t2, #4a4a4a)",
+  fontSize: 14,
+};
+const headerRowStyle: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 16,
+  alignItems: "flex-end",
+  marginBottom: 20,
+};
+const metricsGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  gap: 16,
+  marginBottom: 20,
+};
+const formGridStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 2fr) minmax(280px, 1fr)",
+  gap: 20,
+  marginBottom: 20,
+};
+const surfaceCardStyle: CSSProperties = {
+  background: "#111328",
+  border: "1px solid #1e2243",
+  borderRadius: 12,
+  padding: 20,
+};
+const sectionTitleStyle: CSSProperties = {
+  fontSize: 18,
+  fontWeight: 700,
+  color: "var(--t1, #1a1a1a)",
+  marginTop: 0,
+  marginBottom: 16,
+};
+const formStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 14,
+};
+const formColumnsStyle: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+  gap: 12,
+};
+const filtersColumnStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 12,
+};
+const labelStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 6,
+  color: "#cbd5e1",
+  fontSize: 13,
+  fontWeight: 600,
+};
+const inputStyle: CSSProperties = {
+  background: "#0b1021",
+  border: "1px solid #263056",
+  borderRadius: 8,
+  padding: "10px 12px",
+  color: "var(--t1, #1a1a1a)",
+  fontSize: 14,
+};
+const selectStyle: CSSProperties = { ...inputStyle, appearance: "none" };
+const textAreaStyle: CSSProperties = {
+  ...inputStyle,
+  minHeight: 84,
+  resize: "vertical",
+};
+const metricLabelStyle: CSSProperties = {
+  color: "var(--t3, #8b8378)",
+  fontSize: 12,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  marginBottom: 8,
+};
+const metricValueStyle: CSSProperties = {
+  color: "var(--t1, #1a1a1a)",
+  fontSize: 26,
+  fontWeight: 700,
+};
+const successTextStyle: CSSProperties = {
+  color: "#86efac",
+  fontSize: 13,
+  fontWeight: 600,
+};
+const errorTextStyle: CSSProperties = {
+  color: "#fca5a5",
+  fontSize: 13,
+  fontWeight: 600,
+};
 
 export default function LeaderboardsPage() {
   return (

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { useState, useMemo } from 'react';
+import styled from "styled-components";
+import { useState, useMemo } from "react";
 
 const TableContainer = styled.div`
   width: 100%;
@@ -11,37 +11,40 @@ const TableContainer = styled.div`
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
-  background-color: #111631;
+  background-color: var(--surface-1, #ffffff);
+  border-radius: 12px;
+  overflow: hidden;
 
   th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-weight: 600;
     font-size: 12px;
-    color: #a0a0a0;
+    color: var(--t2, #4a4a4a);
     text-transform: uppercase;
-    background-color: #1a1f3a;
+    letter-spacing: 0.04em;
+    background-color: var(--surface-2, #fcfaf5);
     cursor: pointer;
     user-select: none;
 
     &:hover {
-      background-color: rgba(74, 126, 255, 0.1);
+      background-color: var(--accent-soft, rgba(43, 228, 128, 0.14));
     }
   }
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-size: 14px;
-    color: #ffffff;
+    color: var(--t1, #1a1a1a);
   }
 
   tbody tr {
     transition: background-color 0.2s ease;
 
     &:hover {
-      background-color: rgba(74, 126, 255, 0.05);
+      background-color: var(--surface-2, #fcfaf5);
     }
   }
 `;
@@ -50,7 +53,7 @@ const NoDataRow = styled.tr`
   td {
     text-align: center;
     padding: 32px 12px;
-    color: #a0a0a0;
+    color: var(--t3, #8b8378);
   }
 `;
 
@@ -60,12 +63,12 @@ const PaginationContainer = styled.div`
   justify-content: space-between;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #1a1f3a;
+  border-top: 1px solid var(--border-1, #e5dfd2);
 `;
 
 const PaginationInfo = styled.span`
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t3, #8b8378);
 `;
 
 const PaginationControls = styled.div`
@@ -75,23 +78,24 @@ const PaginationControls = styled.div`
 
 const SortIndicator = styled.span`
   margin-left: 4px;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
 `;
 
 const PaginationButton = styled.button<{ disabled?: boolean }>`
   padding: 6px 12px;
-  background-color: #1a1f3a;
-  color: #4a7eff;
-  border: 1px solid #1a1f3a;
-  border-radius: 4px;
+  background-color: var(--surface-1, #ffffff);
+  color: var(--t1, #1a1a1a);
+  border: 1px solid var(--border-1, #e5dfd2);
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 12px;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: #111631;
-    border-color: #4a7eff;
+    background-color: var(--surface-2, #fcfaf5);
+    border-color: var(--focus-ring, #0e7a53);
+    color: var(--focus-ring, #0e7a53);
   }
 
   &:disabled {
@@ -123,10 +127,10 @@ export function DataTable<T extends Record<string, any>>({
   pageSize = 10,
   onRowClick,
   loading = false,
-  emptyMessage = 'No data available',
+  emptyMessage = "No data available",
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
 
   const sortedData = useMemo(() => {
@@ -137,8 +141,8 @@ export function DataTable<T extends Record<string, any>>({
         const aVal = a[sortKey];
         const bVal = b[sortKey];
 
-        if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+        if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
         return 0;
       });
     }
@@ -158,10 +162,10 @@ export function DataTable<T extends Record<string, any>>({
     if (!column?.sortable) return;
 
     if (sortKey === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
     setCurrentPage(1);
   };
@@ -180,7 +184,9 @@ export function DataTable<T extends Record<string, any>>({
                 >
                   {col.label}
                   {col.sortable && sortKey === col.key && (
-                    <SortIndicator>{sortOrder === 'asc' ? '↑' : '↓'}</SortIndicator>
+                    <SortIndicator>
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </SortIndicator>
                   )}
                 </th>
               ))}
@@ -192,11 +198,13 @@ export function DataTable<T extends Record<string, any>>({
                 <tr
                   key={idx}
                   onClick={() => onRowClick?.(row)}
-                  style={{ cursor: onRowClick ? 'pointer' : 'default' }}
+                  style={{ cursor: onRowClick ? "pointer" : "default" }}
                 >
                   {columns.map((col) => (
                     <td key={String(col.key)}>
-                      {col.render ? col.render(row[col.key], row) : row[col.key]}
+                      {col.render
+                        ? col.render(row[col.key], row)
+                        : row[col.key]}
                     </td>
                   ))}
                 </tr>
