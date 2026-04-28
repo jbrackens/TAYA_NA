@@ -13,7 +13,7 @@ export default function PrivacyPage() {
           <p>
             We collect information you provide when creating an account (name,
             email, date of birth, address), payment information for deposits and
-            withdrawals, and usage data including betting history, device
+            withdrawals, and usage data including trading history, device
             information, and IP address.
           </p>
         </section>

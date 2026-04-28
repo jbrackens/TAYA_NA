@@ -148,7 +148,7 @@ export default function SelfExcludePage() {
                   <div>
                     <strong>No Access</strong>
                     <p>
-                      You will not be able to place bets or use any account
+                      You will not be able to place orders or use any account
                       features
                     </p>
                   </div>
