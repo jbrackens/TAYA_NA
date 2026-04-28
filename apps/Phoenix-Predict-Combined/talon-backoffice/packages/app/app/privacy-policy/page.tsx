@@ -7,7 +7,7 @@ const FALLBACK_CONTENT = `
 <p style="font-size: 12px; color: #4a5580; margin-bottom: 32px;">Effective: April 2026</p>
 
 <h2>1. Information We Collect</h2>
-<p>We collect information you provide when creating an account (name, email, date of birth, address), payment information for deposits and withdrawals, and usage data including betting history, device information, and IP address.</p>
+<p>We collect information you provide when creating an account (name, email, date of birth, address), payment information for deposits and withdrawals, and usage data including trading history, device information, and IP address.</p>
 
 <h2>2. How We Use Your Information</h2>
 <p>Your data is used to operate your account, process transactions, comply with regulatory obligations (KYC/AML), provide customer support, improve our services, and communicate important account updates.</p>

@@ -12,12 +12,7 @@ import {
 import { logger } from "../../lib/logger";
 
 type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";
-type TxType =
-  | "all"
-  | "deposit"
-  | "withdrawal"
-  | "bet_placement"
-  | "bet_settlement";
+type TxType = "all" | "deposit" | "withdrawal";
 
 export default function TransactionsPage() {
   const { user } = useAuth();
@@ -113,7 +108,7 @@ export default function TransactionsPage() {
         <div className="tx-header">
           <div>
             <h1>Transaction History</h1>
-            <p>View all your deposits, withdrawals, and bets</p>
+            <p>View all your deposits and withdrawals</p>
           </div>
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <button
@@ -170,15 +165,7 @@ export default function TransactionsPage() {
           <div className="tx-filter-group">
             <label className="tx-filter-label">Type</label>
             <div className="tx-filter-buttons">
-              {(
-                [
-                  "all",
-                  "deposit",
-                  "withdrawal",
-                  "bet_placement",
-                  "bet_settlement",
-                ] as const
-              ).map((t) => (
+              {(["all", "deposit", "withdrawal"] as const).map((t) => (
                 <button
                   key={t}
                   className={`tx-filter-btn ${txType === t ? "active" : ""}`}
@@ -191,11 +178,7 @@ export default function TransactionsPage() {
                     ? "All"
                     : t === "deposit"
                       ? "Deposit"
-                      : t === "withdrawal"
-                        ? "Withdrawal"
-                        : t === "bet_placement"
-                          ? "Bet Placement"
-                          : "Bet Settlement"}
+                      : "Withdrawal"}
                 </button>
               ))}
             </div>
@@ -237,11 +220,7 @@ export default function TransactionsPage() {
                               ? "Deposit"
                               : tx.type === "withdrawal"
                                 ? "Withdrawal"
-                                : tx.type === "bet_placement"
-                                  ? "Bet Placement"
-                                  : tx.type === "bet_settlement"
-                                    ? "Bet Settlement"
-                                    : tx.type}
+                                : tx.type}
                           </span>
                         </td>
                         <td>
@@ -250,11 +229,8 @@ export default function TransactionsPage() {
                               tx.type === "deposit" ? "tx-credit" : "tx-debit"
                             }
                           >
-                            {tx.type === "deposit" ||
-                            tx.type === "bet_settlement"
-                              ? "+"
-                              : "-"}
-                            ${Math.abs(tx.amount).toFixed(2)}
+                            {tx.type === "deposit" ? "+" : "-"}$
+                            {Math.abs(tx.amount).toFixed(2)}
                           </span>
                         </td>
                         <td>${tx.balanceAfter?.toFixed(2) || "—"}</td>
