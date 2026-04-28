@@ -147,7 +147,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		})
 	}
 	registerPredictionRoutes(mux, predictionService)
-	registerOrderRoutes(mux, predictionService)
+	registerOrderRoutes(mux, predictionService, wsHub)
 	registerPortfolioRoutes(mux, predictionService)
 	registerSettlementRoutes(mux, predictionService)
 	registerDiscoverRoutes(mux, walletService.DB())
@@ -181,7 +181,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		}
 
 		// --- Bot API Routes ---
-		registerBotRoutes(mux, predictionService, predRepo)
+		registerBotRoutes(mux, predictionService, predRepo, wsHub)
 	}
 
 	// --- Wallet Routes (kept from sportsbook — adapt for prediction stakes) ---
