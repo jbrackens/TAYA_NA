@@ -1,8 +1,4 @@
-import {
-  MenuItem,
-  MenuItemGroupEnum,
-  MenuItemGroupedIcons,
-} from "types/menu.d";
+import { MenuItem, MenuItemGroupEnum, MenuItemGroupedIcons } from "types/menu";
 import { DashboardOutlined, ReconciliationOutlined } from "@ant-design/icons";
 import defaultMenuStructure from "./structure";
 import { MenuModulesPathEnum } from "./structure";

@@ -2,7 +2,7 @@ import React from "react";
 import { Typography, Drawer, Timeline, Skeleton } from "antd";
 import { useTranslation } from "i18n";
 import UserTalonPunterRecentActivityItem from "./item";
-import { TalonPunterRecentActivityItem } from "../../../types/punters.d";
+import { TalonPunterRecentActivityItem } from "../../../types/punters";
 
 export type TalonPuntersRecentActivityProps = {
   data?: TalonPunterRecentActivityItem[];

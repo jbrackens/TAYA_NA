@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TalonFixture } from "../../types/fixture.d";
+import { TalonFixture } from "../../types/fixture";
 import { Id, FixtureStatus } from "@phoenix-ui/utils";
 import { Overwrite } from "utility-types";
 

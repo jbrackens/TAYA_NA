@@ -5,7 +5,7 @@ import {
   TableSorting,
   TableFilter,
 } from "types/filters";
-import { EnumedObject } from "types/utils.d";
+import { EnumedObject } from "types/utils";
 
 const FILTER_PAGINATION_DEFAULT_SIZE = 10;
 

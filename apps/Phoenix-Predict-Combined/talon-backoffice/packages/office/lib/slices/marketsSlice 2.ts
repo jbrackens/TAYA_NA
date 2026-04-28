@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TalonSingleMarketFixture } from "../../types/market.d";
+import { TalonSingleMarketFixture } from "../../types/market";
 import { parseTableMetaPagination } from "../utils/filters";
 import {
   TablePaginationResponse,

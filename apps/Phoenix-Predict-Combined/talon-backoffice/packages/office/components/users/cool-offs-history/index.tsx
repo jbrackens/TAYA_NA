@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "i18n";
-import { TablePagination } from "../../../types/filters.d";
-import { CoolOffCause, CoolOffsHistoryData } from "../../../types/punters.d";
+import { TablePagination } from "../../../types/filters";
+import { CoolOffCause, CoolOffsHistoryData } from "../../../types/punters";
 import Table from "../../layout/table";
 import dayjs from "dayjs";
 import { useTimezone } from "@phoenix-ui/utils";

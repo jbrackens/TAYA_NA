@@ -3,8 +3,8 @@ import {
   TalonPunterNotesAuthor,
   TalonPunterNotesItem,
   TalonPunterNotesTypeEnum,
-} from "../../types/punters.d";
-import { TablePaginationResponse } from "../../types/filters.d";
+} from "../../types/punters";
+import { TablePaginationResponse } from "../../types/filters";
 
 type GoSupportNote = {
   note_id?: string;
@@ -39,7 +39,9 @@ const isLegacyNoteItem = (item: any): item is TalonPunterNotesItem =>
   typeof item?.noteType === "string" &&
   typeof item?.text === "string";
 
-const splitAuthorName = (authorName?: string | null): TalonPunterNotesAuthor => {
+const splitAuthorName = (
+  authorName?: string | null,
+): TalonPunterNotesAuthor => {
   const trimmedAuthorName = `${authorName || ""}`.trim();
   if (!trimmedAuthorName) {
     return SYSTEM_AUTHOR;
@@ -66,9 +68,13 @@ const normalizeNoteItem = (item: GoSupportNote): TalonPunterNotesItem => ({
   text: item.text || "",
 });
 
-const extractNotes = (payload: GoSupportNotesResponse | TalonPunterNotes): TalonPunterNotes => {
+const extractNotes = (
+  payload: GoSupportNotesResponse | TalonPunterNotes,
+): TalonPunterNotes => {
   if (Array.isArray(payload)) {
-    return payload.map((item) => (isLegacyNoteItem(item) ? item : normalizeNoteItem(item as any)));
+    return payload.map((item) =>
+      isLegacyNoteItem(item) ? item : normalizeNoteItem(item as any),
+    );
   }
 
   const data = Array.isArray(payload?.data)
@@ -77,7 +83,9 @@ const extractNotes = (payload: GoSupportNotesResponse | TalonPunterNotes): Talon
       ? payload.items
       : [];
 
-  return data.map((item) => (isLegacyNoteItem(item) ? item : normalizeNoteItem(item)));
+  return data.map((item) =>
+    isLegacyNoteItem(item) ? item : normalizeNoteItem(item),
+  );
 };
 
 const normalizePagination = (

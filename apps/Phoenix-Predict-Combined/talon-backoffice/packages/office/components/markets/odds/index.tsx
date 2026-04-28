@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 // import TableActions from "../../layout/table/actions";
 import PageHeader from "../../layout/page-header";
-import { TalonMarket } from "../../../types/market.d";
+import { TalonMarket } from "../../../types/market";
 import { TalonSelectionOddAlign } from "../../../types/selections";
 import MarketsSelectionsPlaceStatic from "./static";
 import { Wrapper, WrapperDivider } from "./index.styled";
@@ -92,13 +92,10 @@ const MarketsSelectionsList = ({
     // },
   ];
 
-  const [activeSelection, setMarketSingleSelection] = useState<
-    TalonSelectionOddAlign
-  >();
-  const [
-    activeSelectionModalVisible,
-    setMarketSingleSelectionModalVisibility,
-  ] = useState(false);
+  const [activeSelection, setMarketSingleSelection] =
+    useState<TalonSelectionOddAlign>();
+  const [activeSelectionModalVisible, setMarketSingleSelectionModalVisibility] =
+    useState(false);
   const [
     activeMarketSelectionModalVisible,
     setMarketBatchSelectionModalVisible,

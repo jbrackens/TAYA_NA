@@ -1,11 +1,11 @@
 import React from "react";
 import { useTranslation } from "i18n";
-import { TablePagination } from "../../../types/filters.d";
+import { TablePagination } from "../../../types/filters";
 import {
   LimitsHistoryData,
   LimitType,
   PeriodType,
-} from "../../../types/punters.d";
+} from "../../../types/punters";
 import Table from "../../layout/table";
 import dayjs from "dayjs";
 import { useTimezone } from "@phoenix-ui/utils";

@@ -6,8 +6,8 @@ import {
   TalonPunterNotes,
   LimitsHistoryData,
   CoolOffsHistoryData,
-} from "../../types/punters.d";
-import { TalonAuditLog, TalonAuditLogs } from "../../types/logs.d";
+} from "../../types/punters";
+import { TalonAuditLog, TalonAuditLogs } from "../../types/logs";
 import { parseTableMetaPagination } from "../utils/filters";
 import { normalizeRecentActivities } from "../utils/recent-activities";
 import { normalizeSupportNotesResponse } from "../utils/support-notes";
@@ -15,8 +15,8 @@ import {
   TablePagination,
   TableMeta,
   TablePaginationResponse,
-} from "../../types/filters.d";
-import { TalonBets } from "../../types/bets.d";
+} from "../../types/filters";
+import { TalonBets } from "../../types/bets";
 
 export type UsersDetailsSliceState = {
   basic: TalonPunter;
@@ -276,9 +276,8 @@ const usersDetailsSlice = createSlice({
               totalCount: payload.totalCount || data.length,
             };
         state.auditLogs.data = [...data];
-        state.auditLogs.paginationResponse = parseTableMetaPagination(
-          pagination,
-        );
+        state.auditLogs.paginationResponse =
+          parseTableMetaPagination(pagination);
       }
     },
 
@@ -291,9 +290,8 @@ const usersDetailsSlice = createSlice({
       if (action?.payload) {
         const { data, ...rest } = action.payload;
         state.sessionHistory.data = [...data];
-        state.sessionHistory.paginationResponse = parseTableMetaPagination(
-          rest,
-        );
+        state.sessionHistory.paginationResponse =
+          parseTableMetaPagination(rest);
       }
     },
 
@@ -343,9 +341,8 @@ const usersDetailsSlice = createSlice({
         const { data, ...rest } = action.payload;
 
         state.coolOffsHistory.data = [...data];
-        state.coolOffsHistory.paginationResponse = parseTableMetaPagination(
-          rest,
-        );
+        state.coolOffsHistory.paginationResponse =
+          parseTableMetaPagination(rest);
       }
     },
   },
@@ -359,48 +356,32 @@ export const selectRecentActivities = (state: UsersDetailsSlice) =>
 export const selectBetsData = (state: UsersDetailsSlice) =>
   state.usersDetails.betsHistory.data;
 export const selectBetsTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.betsHistory;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.betsHistory;
   return { pagination, paginationResponse, filters, sorting };
 };
 
 export const selectWalletData = (state: UsersDetailsSlice) =>
   state.usersDetails.walletHistory.data;
 export const selectWalletTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.walletHistory;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.walletHistory;
   return { pagination, paginationResponse, filters, sorting };
 };
 
 export const selectAuditLogsData = (state: UsersDetailsSlice) =>
   state.usersDetails.auditLogs.data;
 export const selectAuditLogsTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.auditLogs;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.auditLogs;
   return { pagination, paginationResponse, filters, sorting };
 };
 
 export const selectSessionHistoryData = (state: UsersDetailsSlice) =>
   state.usersDetails.sessionHistory.data;
 export const selectSessionHistoryTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.sessionHistory;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.sessionHistory;
   return { pagination, paginationResponse, filters, sorting };
 };
 
@@ -409,36 +390,24 @@ export const selectNotesData = (state: UsersDetailsSlice) =>
 export const selectUpdateNotes = (state: UsersDetailsSlice) =>
   state.usersDetails.updateNotes;
 export const selectNotesTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.notes;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.notes;
   return { pagination, paginationResponse, filters, sorting };
 };
 
 export const selectLimitsHistoryData = (state: UsersDetailsSlice) =>
   state.usersDetails.limitsHistory.data;
 export const selectLimitsHistoryTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.limitsHistory;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.limitsHistory;
   return { pagination, paginationResponse, filters, sorting };
 };
 
 export const selectCoolOffsHistoryData = (state: UsersDetailsSlice) =>
   state.usersDetails.coolOffsHistory.data;
 export const selectCoolOffsHistoryTableMeta = (state: UsersDetailsSlice) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.usersDetails.coolOffsHistory;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.usersDetails.coolOffsHistory;
   return { pagination, paginationResponse, filters, sorting };
 };
 

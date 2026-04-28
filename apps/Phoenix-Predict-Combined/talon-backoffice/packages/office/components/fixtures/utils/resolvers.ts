@@ -1,7 +1,7 @@
 import { FixtureStatus, FixtureStatusEnum } from "@phoenix-ui/utils";
 import { enumToObject, inverseEnum } from "../../../lib/utils/enums";
 import { buildTableFilterOptions } from "../../../lib/utils/filters";
-import { TalonFixtureStatusColor } from "../../../types/fixture.d";
+import { TalonFixtureStatusColor } from "../../../types/fixture";
 
 export const resolveStatus = (status: FixtureStatus, prefix?: string) => {
   const valuesToKeys = inverseEnum(FixtureStatusEnum);

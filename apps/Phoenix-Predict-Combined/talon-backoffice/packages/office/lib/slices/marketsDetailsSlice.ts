@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TalonSingleMarketFixture } from "../../types/market.d";
+import { TalonSingleMarketFixture } from "../../types/market";
 import { Id, SelectionOdd } from "@phoenix-ui/utils";
 import { Overwrite } from "utility-types";
 
@@ -47,19 +47,26 @@ const initialState: MarketsDetailsSliceState = {
 // Map Go market status to Talon MarketLifecycleType
 const mapGoStatusToLifecycle = (status: string): string => {
   switch ((status || "").toLowerCase()) {
-    case "open": return "BETTABLE";
-    case "suspended": return "NOT_BETTABLE";
-    case "settled": return "SETTLED";
-    case "closed": return "SETTLED";
-    case "voided": return "CANCELLED";
-    default: return "UNKNOWN";
+    case "open":
+      return "BETTABLE";
+    case "suspended":
+      return "NOT_BETTABLE";
+    case "settled":
+      return "SETTLED";
+    case "closed":
+      return "SETTLED";
+    case "voided":
+      return "CANCELLED";
+    default:
+      return "UNKNOWN";
   }
 };
 
 // Normalize Go snake_case single market to Talon TalonSingleMarketFixture
 const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
   if (!raw || typeof raw !== "object") return raw;
-  const isGoFormat = "market_id" in raw || "event_id" in raw || "market_type" in raw;
+  const isGoFormat =
+    "market_id" in raw || "event_id" in raw || "market_type" in raw;
   if (!isGoFormat) return raw as TalonSingleMarketFixture;
 
   const outcomes = Array.isArray(raw.outcomes) ? raw.outcomes : [];
@@ -67,7 +74,9 @@ const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
     selectionId: o.outcome_id ?? o.selectionId ?? "",
     selectionName: o.name ?? o.selectionName ?? "",
     odds: Number(o.odds ?? 0),
-    displayOdds: o.odds ? { decimal: Number(o.odds), american: "", fractional: "" } : null,
+    displayOdds: o.odds
+      ? { decimal: Number(o.odds), american: "", fractional: "" }
+      : null,
     isStatic: false,
     active: (o.status ?? "active") === "active",
   }));
@@ -75,7 +84,11 @@ const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
   return {
     fixtureId: raw.event_id ?? "",
     fixtureName: raw.event_name ?? "",
-    sport: { id: raw.sport ?? "", name: raw.sport ?? "", abbreviation: raw.sport ?? "" },
+    sport: {
+      id: raw.sport ?? "",
+      name: raw.sport ?? "",
+      abbreviation: raw.sport ?? "",
+    },
     status: raw.status ?? "",
     startTime: raw.scheduled_start ?? "",
     isLive: false,
@@ -90,9 +103,10 @@ const normalizeGoMarketDetail = (raw: any): TalonSingleMarketFixture => {
         type: mapGoStatusToLifecycle(raw.status),
         changeReason: "",
       },
-      exposure: raw.total_matched != null
-        ? { amount: Number(raw.total_matched), currency: "USD" }
-        : { amount: 0, currency: "USD" },
+      exposure:
+        raw.total_matched != null
+          ? { amount: Number(raw.total_matched), currency: "USD" }
+          : { amount: 0, currency: "USD" },
       lifecycleChanges: [],
     },
   } as any;

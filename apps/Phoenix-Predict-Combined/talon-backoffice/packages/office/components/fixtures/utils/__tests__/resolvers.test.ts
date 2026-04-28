@@ -1,9 +1,6 @@
 import { FixtureStatusEnum } from "@phoenix-ui/utils";
-import {
-  resolveFixtureStatusColor,
-  resolveStatus,
-} from "../resolvers";
-import { TalonFixtureStatusColor } from "../../../../types/fixture.d";
+import { resolveFixtureStatusColor, resolveStatus } from "../resolvers";
+import { TalonFixtureStatusColor } from "../../../../types/fixture";
 
 describe("fixture resolvers", () => {
   test("maps Talon fixture enums to display colors", () => {

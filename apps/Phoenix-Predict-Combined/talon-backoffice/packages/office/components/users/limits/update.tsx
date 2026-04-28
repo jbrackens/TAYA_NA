@@ -5,7 +5,7 @@ import { FormValues } from "../../form/modal";
 import {
   TalonPunterLimits,
   TalonPunterLimitsTypesEnum,
-} from "../../../types/punters.d";
+} from "../../../types/punters";
 import PageHeader from "../../layout/page-header";
 import UsersDetailsLimitsSectionSwitch from "./section/switch";
 import UsersDetailsLimitsSection from "./section";

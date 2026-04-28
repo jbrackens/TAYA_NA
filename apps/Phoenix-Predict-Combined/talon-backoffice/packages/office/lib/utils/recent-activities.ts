@@ -1,7 +1,7 @@
 import {
   TalonPunterActivityEnum,
   TalonPunterRecentActivityItem,
-} from "../../types/punters.d";
+} from "../../types/punters";
 
 type GoTimelineEntry = {
   entry_id?: string;

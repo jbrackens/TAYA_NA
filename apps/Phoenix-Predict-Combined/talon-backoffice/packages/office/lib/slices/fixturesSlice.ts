@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { parseTableMetaPagination } from "../utils/filters";
-import { TalonFixture } from "../../types/fixture.d";
+import { TalonFixture } from "../../types/fixture";
 import {
   TablePaginationResponse,
   TableMeta,
@@ -32,13 +32,20 @@ const initialState: FixturesSliceState = {
 // Map Go fixture status to Talon FixtureStatusEnum values
 const mapGoFixtureStatus = (status: string): string => {
   switch ((status || "").toLowerCase()) {
-    case "scheduled": return "PRE_GAME";
-    case "live": return "IN_PLAY";
-    case "completed": return "POST_GAME";
-    case "cancelled": return "GAME_ABANDONED";
-    case "postponed": return "UNKNOWN";
-    case "abandoned": return "GAME_ABANDONED";
-    default: return "UNKNOWN";
+    case "scheduled":
+      return "PRE_GAME";
+    case "live":
+      return "IN_PLAY";
+    case "completed":
+      return "POST_GAME";
+    case "cancelled":
+      return "GAME_ABANDONED";
+    case "postponed":
+      return "UNKNOWN";
+    case "abandoned":
+      return "GAME_ABANDONED";
+    default:
+      return "UNKNOWN";
   }
 };
 
@@ -46,7 +53,8 @@ const mapGoFixtureStatus = (status: string): string => {
 const normalizeGoFixture = (raw: any): TalonFixture => {
   if (!raw || typeof raw !== "object") return raw;
   // Detect Go format by checking for snake_case fields
-  const isGoFormat = "event_id" in raw || "home_team" in raw || "scheduled_start" in raw;
+  const isGoFormat =
+    "event_id" in raw || "home_team" in raw || "scheduled_start" in raw;
   if (!isGoFormat) return raw as TalonFixture;
 
   return {
@@ -57,8 +65,26 @@ const normalizeGoFixture = (raw: any): TalonFixture => {
     startTime: raw.scheduled_start ?? raw.startTime ?? "",
     isLive: raw.status === "live",
     competitors: [
-      ...(raw.home_team ? [{ competitorId: "home", abbreviation: "", name: raw.home_team, qualifier: "home" }] : []),
-      ...(raw.away_team ? [{ competitorId: "away", abbreviation: "", name: raw.away_team, qualifier: "away" }] : []),
+      ...(raw.home_team
+        ? [
+            {
+              competitorId: "home",
+              abbreviation: "",
+              name: raw.home_team,
+              qualifier: "home",
+            },
+          ]
+        : []),
+      ...(raw.away_team
+        ? [
+            {
+              competitorId: "away",
+              abbreviation: "",
+              name: raw.away_team,
+              qualifier: "away",
+            },
+          ]
+        : []),
     ],
     score: raw.live_score
       ? { home: raw.live_score.home ?? 0, away: raw.live_score.away ?? 0 }
@@ -93,9 +119,13 @@ const fixturesSlice = createSlice({
       action: PayloadAction<FixturesResponse>,
     ) => {
       if (action?.payload) {
-        const rawData = Array.isArray(action.payload.data) ? action.payload.data : [];
+        const rawData = Array.isArray(action.payload.data)
+          ? action.payload.data
+          : [];
         state.data = rawData.map(normalizeGoFixture);
-        state.paginationResponse = parseTableMetaPagination(normalizeGoPagination(action.payload));
+        state.paginationResponse = parseTableMetaPagination(
+          normalizeGoPagination(action.payload),
+        );
       }
     },
   },
@@ -108,9 +138,7 @@ export const selectTableMeta = (state: FixturesSlice): TableMetaSelector => {
   return { pagination, paginationResponse, filters, sorting };
 };
 
-export const {
-  getFixturesList,
-  getFixturesListSucceeded,
-} = fixturesSlice.actions;
+export const { getFixturesList, getFixturesListSucceeded } =
+  fixturesSlice.actions;
 
 export default fixturesSlice.reducer;

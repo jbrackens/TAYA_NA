@@ -4,7 +4,7 @@ import usersReducer, {
 import usersDetailsReducer, {
   getUserRecentActivitiesSucceeded as getDetailsRecentActivitiesSucceeded,
 } from "../usersDetailsSlice";
-import { TalonPunterActivityEnum } from "../../../types/punters.d";
+import { TalonPunterActivityEnum } from "../../../types/punters";
 
 describe("users recent activity normalization", () => {
   test("accepts legacy recent activity arrays", () => {

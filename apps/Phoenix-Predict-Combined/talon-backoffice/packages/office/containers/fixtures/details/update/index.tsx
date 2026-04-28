@@ -10,7 +10,7 @@ import {
   postFixtureDetailsUpdate,
   postFixtureDetailsUpdateSucceeded,
 } from "../../../../lib/slices/fixturesDetailsSlice";
-import { TalonFixture } from "../../../../types/fixture.d";
+import { TalonFixture } from "../../../../types/fixture";
 
 const { Option } = Select;
 
@@ -108,11 +108,13 @@ const FixturesDetailsUpdate: React.FC<FixturesDetailsUpdateProps> = ({
         ]}
       >
         <Select disabled={loading}>
-          {composeOptions(t, "page-fixtures-details:STATUS").map(({ text, value }) => (
-            <Option key={`status-${value}`} value={value}>
-              {text}
-            </Option>
-          ))}
+          {composeOptions(t, "page-fixtures-details:STATUS").map(
+            ({ text, value }) => (
+              <Option key={`status-${value}`} value={value}>
+                {text}
+              </Option>
+            ),
+          )}
         </Select>
       </Form.Item>
     </FormModal>

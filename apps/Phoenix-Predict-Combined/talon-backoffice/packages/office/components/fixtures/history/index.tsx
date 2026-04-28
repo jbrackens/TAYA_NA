@@ -6,9 +6,9 @@ import FixtureMarketsHistoryItem, {
   FixtureMarketsHistoryDataItem,
   FixtureMarketsHistoryDataItemTypeEnum,
 } from "./item";
-import { TalonFixtureScoreHistory } from "../../../types/fixture.d";
-import { TalonMarket, TalonMarketLifecycle } from "../../../types/market.d";
-import { TalonCompetitorScoreHistory } from "../../../types/competitor.d";
+import { TalonFixtureScoreHistory } from "../../../types/fixture";
+import { TalonMarket, TalonMarketLifecycle } from "../../../types/market";
+import { TalonCompetitorScoreHistory } from "../../../types/competitor";
 
 export type FixtureMarketsHistoryData = {
   lifecycleChanges?: TalonMarketLifecycle[];

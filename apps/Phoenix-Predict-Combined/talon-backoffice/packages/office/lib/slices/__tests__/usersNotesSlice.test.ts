@@ -1,5 +1,5 @@
 import reducer, { getUserNotesSucceeded } from "../usersDetailsSlice";
-import { TalonPunterNotesTypeEnum } from "../../../types/punters.d";
+import { TalonPunterNotesTypeEnum } from "../../../types/punters";
 
 describe("users notes normalization", () => {
   test("maps Go support-notes payloads into Talon note items and pagination", () => {
@@ -64,10 +64,7 @@ describe("users notes normalization", () => {
       totalCount: 1,
     };
 
-    const state = reducer(
-      undefined,
-      getUserNotesSucceeded(payload as any),
-    );
+    const state = reducer(undefined, getUserNotesSucceeded(payload as any));
 
     expect(state.notes.data).toEqual(payload.data);
     expect(state.notes.paginationResponse).toEqual({

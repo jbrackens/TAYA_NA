@@ -1,10 +1,7 @@
 import React, { FC, useEffect, useState } from "react";
 import { Modal, Select, Spin } from "antd";
 import { useTranslation } from "i18n";
-import {
-  MarketVisibility,
-  MarketVisibilityEnum,
-} from "../../../types/market.d";
+import { MarketVisibility, MarketVisibilityEnum } from "../../../types/market";
 import { ModalContent, StyledAlert } from "./index.styled";
 import { useApi } from "../../../services/api/api-service";
 import { Method } from "@phoenix-ui/utils";

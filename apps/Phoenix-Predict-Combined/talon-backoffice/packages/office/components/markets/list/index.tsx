@@ -9,7 +9,7 @@ import {
 } from "../utils/resolvers";
 // import { RefsCollection } from "../../../lib/utils/filters";
 import Table from "../../layout/table";
-import { TalonSingleMarketFixture, TalonMarket } from "../../../types/market.d";
+import { TalonSingleMarketFixture, TalonMarket } from "../../../types/market";
 import { TablePagination } from "../../../types/filters";
 import SportScore from "../../sport/score";
 import TableActions from "../../layout/table/actions";

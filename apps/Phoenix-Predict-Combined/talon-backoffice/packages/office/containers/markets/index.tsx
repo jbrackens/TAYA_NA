@@ -9,7 +9,7 @@ import {
 import MarketsList from "../../components/markets/list";
 import { useApi } from "../../services/api/api-service";
 import { TableMetaSelector } from "../../types/filters";
-import { TalonSingleMarketFixture } from "../../types/market.d";
+import { TalonSingleMarketFixture } from "../../types/market";
 import { Method } from "@phoenix-ui/utils";
 import {
   TablePagination,
@@ -21,9 +21,8 @@ import { useRouter } from "next/router";
 const MarketsContainer = () => {
   const dispatch = useDispatch();
   const records: TalonSingleMarketFixture[] = useSelector(selectData);
-  const { paginationResponse }: TableMetaSelector = useSelector(
-    selectTableMeta,
-  );
+  const { paginationResponse }: TableMetaSelector =
+    useSelector(selectTableMeta);
   const [triggerMarketsListApi, isLoading] = useApi(
     "admin/markets",
     Method.GET,

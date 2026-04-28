@@ -3,11 +3,11 @@ import { useTranslation } from "i18n";
 import { isEmpty, snakeCase } from "lodash";
 import dayjs from "dayjs";
 import { Descriptions } from "antd";
-import { TablePagination } from "../../../types/filters.d";
+import { TablePagination } from "../../../types/filters";
 import {
   TalonPunterSessionHistory,
   TalonPunterSessionHistoryItem,
-} from "../../../types/punters.d";
+} from "../../../types/punters";
 // import { RefsCollection } from "../../../lib/utils/filters";
 // import TableFilterText from "../../layout/table/filter-text";
 import Table from "../../layout/table";

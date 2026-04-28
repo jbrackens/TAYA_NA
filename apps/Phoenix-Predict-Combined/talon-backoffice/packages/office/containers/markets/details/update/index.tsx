@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Input } from "antd";
 import { useTranslation } from "i18n";
-import { TalonSingleMarketFixture } from "../../../../types/market.d";
+import { TalonSingleMarketFixture } from "../../../../types/market";
 import FormModal from "../../../../components/form/modal";
 import { FormValues } from "../../../../components/form/modal";
 

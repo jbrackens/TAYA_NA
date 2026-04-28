@@ -11,7 +11,7 @@ import Table from "../../layout/table";
 import TableActions from "../../layout/table/actions";
 import defaultMenuStructure from "../../../providers/menu/structure";
 // import { PunterStatus } from "@phoenix-ui/utils";
-import { TalonPunterShort } from "../../../types/punters.d";
+import { TalonPunterShort } from "../../../types/punters";
 import { Input } from "antd";
 import { useRouter } from "next/router";
 import { addQueryParam } from "../../../utils/queryParams";
@@ -38,19 +38,14 @@ UsersListProps) => {
   const router = useRouter();
   const { Search } = Input;
 
-  const {
-    searchId,
-    searchName,
-    searchFName,
-    searchLName,
-    searchDob,
-  } = router.query as {
-    searchId?: string;
-    searchName?: string;
-    searchFName?: string;
-    searchLName?: string;
-    searchDob?: string;
-  };
+  const { searchId, searchName, searchFName, searchLName, searchDob } =
+    router.query as {
+      searchId?: string;
+      searchName?: string;
+      searchFName?: string;
+      searchLName?: string;
+      searchDob?: string;
+    };
 
   const generateColumnSearch = (
     fieldName: string,
