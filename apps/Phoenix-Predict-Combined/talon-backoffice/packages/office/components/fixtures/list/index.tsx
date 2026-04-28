@@ -7,7 +7,7 @@ import PageHeader from "../../layout/page-header";
 import { /*composeOptions,*/ resolveStatus } from "../utils/resolvers";
 // import { RefsCollection } from "../../../lib/utils/filters";
 import Table from "../../layout/table";
-import { TalonFixture } from "../../../types/fixture.d";
+import { TalonFixture } from "../../../types/fixture";
 import { TablePagination } from "../../../types/filters";
 import SportScore from "../../sport/score";
 

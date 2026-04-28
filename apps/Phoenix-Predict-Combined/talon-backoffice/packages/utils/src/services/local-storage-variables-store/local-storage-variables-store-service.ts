@@ -3,6 +3,20 @@ const REMEMBER_ME = "RememberMe";
 const TIMEZONE = "Timezone";
 const ODDSFORMAT = "OddsFormat";
 
+// Node 25+ exposes a stub `localStorage` global without the Web Storage API
+// methods unless `--localstorage-file` is set. Guarding on `typeof window`
+// instead is the only check that reliably distinguishes browser from SSR.
+const ls = {
+  getItem: (k: string): string | null =>
+    typeof window !== "undefined" ? window.localStorage.getItem(k) : null,
+  setItem: (k: string, v: string): void => {
+    if (typeof window !== "undefined") window.localStorage.setItem(k, v);
+  },
+  removeItem: (k: string): void => {
+    if (typeof window !== "undefined") window.localStorage.removeItem(k);
+  },
+};
+
 export type UseLocalStorageVariables = {
   getAppUserName: () => string | null;
   clearAppUserName: () => void;
@@ -20,38 +34,38 @@ export type UseLocalStorageVariables = {
 
 export const useLocalStorageVariables = (): UseLocalStorageVariables => {
   const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const getAppUserName = () => localStorage.getItem(APP_USERNAME);
-  const clearAppUserName = () => localStorage.removeItem(APP_USERNAME);
+  const getAppUserName = () => ls.getItem(APP_USERNAME);
+  const clearAppUserName = () => ls.removeItem(APP_USERNAME);
   const saveAppUserName = (userName?: string) => {
     if (typeof userName === "string") {
-      localStorage.setItem(APP_USERNAME, userName);
+      ls.setItem(APP_USERNAME, userName);
     }
   };
 
   const getRememberMe = () => {
-    const rememberMe = localStorage.getItem(REMEMBER_ME);
+    const rememberMe = ls.getItem(REMEMBER_ME);
     if (rememberMe) {
       return JSON.parse(rememberMe);
     }
     return rememberMe;
   };
-  const clearRememberMe = () => localStorage.removeItem(REMEMBER_ME);
+  const clearRememberMe = () => ls.removeItem(REMEMBER_ME);
   const saveRememberMe = (rememberMe: boolean) =>
-    localStorage.setItem(REMEMBER_ME, JSON.stringify(rememberMe));
+    ls.setItem(REMEMBER_ME, JSON.stringify(rememberMe));
 
-  const getTimezone = () => localStorage.getItem(TIMEZONE) || defaultTimezone;
-  const clearTimezone = () => localStorage.removeItem(TIMEZONE);
+  const getTimezone = () => ls.getItem(TIMEZONE) || defaultTimezone;
+  const clearTimezone = () => ls.removeItem(TIMEZONE);
   const saveTimezone = (timezone?: string) => {
     if (typeof timezone === "string") {
-      localStorage.setItem(TIMEZONE, timezone);
+      ls.setItem(TIMEZONE, timezone);
     }
   };
 
-  const getOddsFormat = () => localStorage.getItem(ODDSFORMAT) || "american";
-  const clearOddsFormat = () => localStorage.removeItem(ODDSFORMAT);
+  const getOddsFormat = () => ls.getItem(ODDSFORMAT) || "american";
+  const clearOddsFormat = () => ls.removeItem(ODDSFORMAT);
   const saveOddsFormat = (format?: string) => {
     if (typeof format === "string") {
-      localStorage.setItem(ODDSFORMAT, format);
+      ls.setItem(ODDSFORMAT, format);
     }
   };
 

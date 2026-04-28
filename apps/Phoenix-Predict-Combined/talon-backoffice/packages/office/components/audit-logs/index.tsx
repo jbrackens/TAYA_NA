@@ -17,8 +17,8 @@ import {
   TalonAuditLogs,
   TalonAuditLogCategory,
   TalonAuditLogType,
-} from "../../types/logs.d";
-import { TablePagination } from "../../types/filters.d";
+} from "../../types/logs";
+import { TablePagination } from "../../types/filters";
 import { useTimezone } from "@phoenix-ui/utils";
 
 const { Text } = Typography;
@@ -48,7 +48,8 @@ const AuditLogsList = ({
   const { t } = useTranslation(["common", "page-audit-logs"]);
   // const refs = new RefsCollection();
 
-  const formatJSON = (value: unknown) => JSON.stringify(value || {}, null, "  ");
+  const formatJSON = (value: unknown) =>
+    JSON.stringify(value || {}, null, "  ");
 
   const renderLog = (value: TalonAuditLog) => {
     const category = value?.category;

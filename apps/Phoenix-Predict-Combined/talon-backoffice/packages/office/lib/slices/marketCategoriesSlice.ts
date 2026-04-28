@@ -4,7 +4,7 @@ import {
   TablePagination,
   TableMeta,
   TablePaginationResponse,
-} from "../../types/filters.d";
+} from "../../types/filters";
 import { MarketCategories } from "../../types/market";
 import { SportType } from "../../types/sport";
 
@@ -74,12 +74,8 @@ export const selectMarketCategoriesData = (state: MarketCategoriesSlice) =>
 export const selectMarketCategoriesTableMeta = (
   state: MarketCategoriesSlice,
 ) => {
-  const {
-    pagination,
-    paginationResponse,
-    filters,
-    sorting,
-  } = state.marketCategories.categories;
+  const { pagination, paginationResponse, filters, sorting } =
+    state.marketCategories.categories;
   return { pagination, paginationResponse, filters, sorting };
 };
 

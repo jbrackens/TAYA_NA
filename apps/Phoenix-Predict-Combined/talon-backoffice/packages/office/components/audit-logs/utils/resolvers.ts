@@ -1,9 +1,6 @@
 import { enumToObject } from "../../../lib/utils/enums";
 import { buildTableFilterOptions } from "../../../lib/utils/filters";
-import {
-  TalonAuditLogCategory,
-  TalonAuditLogType,
-} from "../../../types/logs.d";
+import { TalonAuditLogCategory, TalonAuditLogType } from "../../../types/logs";
 
 const resolveActionCategory = (action: string): string => {
   if (
@@ -58,8 +55,10 @@ const actionTypeMap: Record<string, string> = {
   "provider.stream.reassigned": "CELL_ACTION_PROVIDER_REASSIGNED",
   "provider.stream.resolved": "CELL_ACTION_PROVIDER_RESOLVED",
   "provider.stream.reopened": "CELL_ACTION_PROVIDER_REOPENED",
-  "provider.stream.sla.default.updated": "CELL_ACTION_PROVIDER_ACK_SLA_DEFAULT_UPDATED",
-  "provider.stream.sla.adapter.updated": "CELL_ACTION_PROVIDER_ACK_SLA_ADAPTER_UPDATED",
+  "provider.stream.sla.default.updated":
+    "CELL_ACTION_PROVIDER_ACK_SLA_DEFAULT_UPDATED",
+  "provider.stream.sla.adapter.updated":
+    "CELL_ACTION_PROVIDER_ACK_SLA_ADAPTER_UPDATED",
   "prediction.market.created": "CELL_ACTION_PREDICTION_MARKET_CREATED",
   "prediction.market.updated": "CELL_ACTION_PREDICTION_MARKET_UPDATED",
   "prediction.market.suspended": "CELL_ACTION_PREDICTION_MARKET_SUSPENDED",
@@ -70,7 +69,10 @@ const actionTypeMap: Record<string, string> = {
   "prediction.order.previewed": "CELL_ACTION_PREDICTION_ORDER_PREVIEWED",
 };
 
-export const resolveProductLabel = (product?: string, action?: string): string => {
+export const resolveProductLabel = (
+  product?: string,
+  action?: string,
+): string => {
   const normalizedProduct = `${product || ""}`.trim().toLowerCase();
   if (normalizedProduct === "prediction") {
     return "CELL_PRODUCT_PREDICTION";
@@ -81,14 +83,19 @@ export const resolveProductLabel = (product?: string, action?: string): string =
   return "CELL_PRODUCT_SPORTSBOOK";
 };
 
-export const resolveType = (type?: TalonAuditLogType | string, action?: string) => {
+export const resolveType = (
+  type?: TalonAuditLogType | string,
+  action?: string,
+) => {
   switch (`${type || ""}`) {
     case TalonAuditLogType.ACCOUNT_CREATION:
       return "CELL_ACTION_ACCOUNT_CREATION";
     case TalonAuditLogType.ACCOUNT_CLOSURE:
       return "CELL_ACTION_ACCOUNT_CLOSURE";
     default:
-      return actionTypeMap[`${action || ""}`.toLowerCase()] || "CELL_ACTION_UNKNOWN";
+      return (
+        actionTypeMap[`${action || ""}`.toLowerCase()] || "CELL_ACTION_UNKNOWN"
+      );
   }
 };
 

@@ -7,7 +7,7 @@ import {
   TalonPunterNotesItem,
   TalonPunterNotesTypeEnum,
   TalonPunterNotesAuthor,
-} from "../../../../types/punters.d";
+} from "../../../../types/punters";
 import Table from "../../../layout/table";
 import { Popover } from "antd";
 import { useTimezone } from "@phoenix-ui/utils";

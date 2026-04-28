@@ -15,7 +15,7 @@ import TableFilterDateRange from "../../layout/table/filter-date-range";
 import {
   TalonPunterWallet,
   TalonPunterWalletItem,
-} from "../../../types/punters.d";
+} from "../../../types/punters";
 import { TablePagination } from "../../../types/filters";
 import {
   WalletHistoryStatus,
@@ -186,7 +186,8 @@ const UsersDetailsWalletsList = ({
                   <>
                     <br />
                     <Text strong={true}>
-                      {t("page-transactions:HEADER_PREDICTION_RESOLVED_TO")}:{" "}
+                      {t("page-transactions:HEADER_PREDICTION_RESOLVED_TO")}
+                      :{" "}
                     </Text>
                     <Text>{value.predictionContext.winningOutcomeLabel}</Text>
                   </>
@@ -195,7 +196,10 @@ const UsersDetailsWalletsList = ({
                   <>
                     <br />
                     <Text strong={true}>
-                      {t("page-transactions:HEADER_PREDICTION_SETTLEMENT_REASON")}:{" "}
+                      {t(
+                        "page-transactions:HEADER_PREDICTION_SETTLEMENT_REASON",
+                      )}
+                      :{" "}
                     </Text>
                     <Text>{value.predictionContext.settlementReason}</Text>
                   </>
@@ -204,7 +208,8 @@ const UsersDetailsWalletsList = ({
                   <>
                     <br />
                     <Text strong={true}>
-                      {t("page-transactions:HEADER_PREDICTION_SETTLED_BY")}:{" "}
+                      {t("page-transactions:HEADER_PREDICTION_SETTLED_BY")}
+                      :{" "}
                     </Text>
                     <Text>{value.predictionContext.settlementActor}</Text>
                   </>
@@ -213,9 +218,12 @@ const UsersDetailsWalletsList = ({
                   <>
                     <br />
                     <Text strong={true}>
-                      {t("page-transactions:HEADER_PREDICTION_PREVIOUS_STATUS")}:{" "}
+                      {t("page-transactions:HEADER_PREDICTION_PREVIOUS_STATUS")}
+                      :{" "}
                     </Text>
-                    <Text>{value.predictionContext.previousSettlementStatus}</Text>
+                    <Text>
+                      {value.predictionContext.previousSettlementStatus}
+                    </Text>
                   </>
                 )}
               </>

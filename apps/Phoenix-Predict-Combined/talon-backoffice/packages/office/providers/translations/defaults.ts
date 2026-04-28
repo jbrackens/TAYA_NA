@@ -1,4 +1,4 @@
-import { PageNamespaces } from "types/pages.d";
+import { PageNamespaces } from "types/pages";
 
 export const defaultNamespaces: PageNamespaces = [
   "header",

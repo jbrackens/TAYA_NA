@@ -18,10 +18,10 @@ import PageHeader from "../../../components/layout/page-header";
 import { useRouter } from "next/router";
 import { Id, Button as ButtonEnum, Method } from "@phoenix-ui/utils";
 import { resolveStatus } from "../../../components/fixtures/utils/resolvers";
-import { TalonFixture } from "../../../types/fixture.d";
+import { TalonFixture } from "../../../types/fixture";
 import SportScore from "../../../components/sport/score";
 import FixturesDetailsUpdate from "./update";
-import { TalonMarket } from "../../../types/market.d";
+import { TalonMarket } from "../../../types/market";
 import MarketsSelectionsPhoneBet from "../../../components/markets/phone-bet";
 import MarketsSelectionsList from "../../../components/markets/odds";
 import Spinner from "../../../components/layout/spinner";
@@ -41,10 +41,8 @@ const FixturesDetailsContainer = ({ id }: FixturesDetailsContainerProps) => {
   const { t } = useTranslation("page-fixtures-details");
   const dispatch = useDispatch();
   const [forceUpdate, setForceUpdate] = useState(true);
-  const [
-    fixturePhoneBetModalVisible,
-    setFixturePhoneBetModalVisible,
-  ] = useState(false);
+  const [fixturePhoneBetModalVisible, setFixturePhoneBetModalVisible] =
+    useState(false);
 
   const [historyVisible, setHistoryVisible] = useState(false);
 

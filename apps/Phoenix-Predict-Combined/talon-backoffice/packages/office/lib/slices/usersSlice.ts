@@ -1,12 +1,12 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { parseTableMetaPagination } from "../utils/filters";
 import { normalizeRecentActivities } from "../utils/recent-activities";
-import { TalonPunterShort } from "../../types/punters.d";
+import { TalonPunterShort } from "../../types/punters";
 import {
   TablePagination,
   TableMeta,
   TablePaginationResponse,
-} from "../../types/filters.d";
+} from "../../types/filters";
 
 export type UsersSliceState = {
   data: TalonPunterShort[];

@@ -9,7 +9,7 @@ import {
 import FixturesList from "../../components/fixtures/list";
 import { useApi } from "../../services/api/api-service";
 import { TableMetaSelector } from "../../types/filters";
-import { TalonFixture } from "../../types/fixture.d";
+import { TalonFixture } from "../../types/fixture";
 import { Method } from "@phoenix-ui/utils";
 import {
   TablePagination,
@@ -21,9 +21,8 @@ import { useRouter } from "next/router";
 const FixturesContainer = () => {
   const dispatch = useDispatch();
   const records: TalonFixture[] = useSelector(selectData);
-  const { paginationResponse }: TableMetaSelector = useSelector(
-    selectTableMeta,
-  );
+  const { paginationResponse }: TableMetaSelector =
+    useSelector(selectTableMeta);
   const [triggerFixturesListApi, isLoading] = useApi(
     "admin/fixtures",
     Method.GET,

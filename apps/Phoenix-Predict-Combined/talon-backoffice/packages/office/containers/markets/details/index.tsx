@@ -13,7 +13,7 @@ import PageHeader from "../../../components/layout/page-header";
 import { useRouter } from "next/router";
 import { Id, Method, Layout, PunterRoleEnum } from "@phoenix-ui/utils";
 import { resolveLifecycle } from "../../../components/markets/utils/resolvers";
-import { TalonSingleMarketFixture } from "../../../types/market.d";
+import { TalonSingleMarketFixture } from "../../../types/market";
 import SportScore from "../../../components/sport/score";
 import MarketsSelectionsList from "../../../components/markets/odds";
 import { FormItemPreview } from "../../../components/form/item/index.styled";
@@ -22,10 +22,7 @@ import { MenuModulesPathEnum } from "../../../providers/menu/structure";
 import Spinner from "../../../components/layout/spinner";
 import MarketLifecycleSuspend from "../../../components/markets/lifecycle/suspend";
 import GoMarketSettle from "../../../components/markets/lifecycle/settle/go-settle";
-import {
-  resolveToken,
-  validateAndCheckEligibility,
-} from "../../../utils/auth";
+import { resolveToken, validateAndCheckEligibility } from "../../../utils/auth";
 
 type MarketsDetailsContainerProps = {
   id: Id;

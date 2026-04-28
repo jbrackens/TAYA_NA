@@ -9,8 +9,8 @@ import {
 } from "@phoenix-ui/utils";
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";
-import { TalonMarket, TalonMarketLifecycle } from "../../../../types/market.d";
-import { TalonCompetitorScoreHistory } from "../../../../types/competitor.d";
+import { TalonMarket, TalonMarketLifecycle } from "../../../../types/market";
+import { TalonCompetitorScoreHistory } from "../../../../types/competitor";
 import { resolveLifecycle } from "../../../markets/utils/resolvers";
 import { isNil } from "lodash";
 

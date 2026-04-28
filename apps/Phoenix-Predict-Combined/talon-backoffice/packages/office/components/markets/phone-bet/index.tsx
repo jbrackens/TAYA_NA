@@ -4,7 +4,7 @@ import { useTranslation } from "i18n";
 import { find } from "lodash";
 import { FormValues } from "../../form/modal";
 import FormModal from "../../form/modal";
-import { TalonMarket } from "../../../types/market.d";
+import { TalonMarket } from "../../../types/market";
 import { TalonSelectionOdd } from "../../../types/selections";
 import { useApi } from "../../../services/api/api-service";
 import {
@@ -13,7 +13,7 @@ import {
   useSpy,
   DisplayOdds,
 } from "@phoenix-ui/utils";
-import { TalonPunterShort } from "../../../types/punters.d";
+import { TalonPunterShort } from "../../../types/punters";
 
 const { Option, OptGroup } = Select;
 
@@ -87,10 +87,8 @@ const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
               selectionOdds: Object.keys(selectionOdds)
                 .filter((value: string) => value.includes("bet-"))
                 .map((value: string) => {
-                  const [
-                    marketIdPrefixed,
-                    selectionId,
-                  ] = parseMarketSelectionId(value);
+                  const [marketIdPrefixed, selectionId] =
+                    parseMarketSelectionId(value);
                   const odds = selectionOdds[value];
                   return {
                     marketId: marketIdPrefixed.replace("bet-", ""),
@@ -156,24 +154,23 @@ const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
       };
     });
 
-  const composeSelectionsValues = (
-    buildResult: (rowId: string, selection: TalonSelectionOdd) => {},
-  ) => () =>
-    formData?.selections?.map((value: string) => {
-      const [marketId, selectiondId] = parseMarketSelectionId(value);
-      const market = find(
-        markets,
-        (item: TalonMarket) => item.marketId === marketId,
-      );
-      const selection = find(
-        market?.selectionOdds,
-        (item: TalonSelectionOdd) => item.selectionId === selectiondId,
-      );
-      if (selection) {
-        return buildResult(value, selection);
-      }
-      return null;
-    });
+  const composeSelectionsValues =
+    (buildResult: (rowId: string, selection: TalonSelectionOdd) => {}) => () =>
+      formData?.selections?.map((value: string) => {
+        const [marketId, selectiondId] = parseMarketSelectionId(value);
+        const market = find(
+          markets,
+          (item: TalonMarket) => item.marketId === marketId,
+        );
+        const selection = find(
+          market?.selectionOdds,
+          (item: TalonSelectionOdd) => item.selectionId === selectiondId,
+        );
+        if (selection) {
+          return buildResult(value, selection);
+        }
+        return null;
+      });
 
   const renderSelectionsRows = (
     value: string,

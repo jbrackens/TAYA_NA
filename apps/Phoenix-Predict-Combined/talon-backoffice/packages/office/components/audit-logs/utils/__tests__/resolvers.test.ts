@@ -1,5 +1,8 @@
 import { resolveCategory, resolveType } from "../resolvers";
-import { TalonAuditLogCategory, TalonAuditLogType } from "../../../../types/logs.d";
+import {
+  TalonAuditLogCategory,
+  TalonAuditLogType,
+} from "../../../../types/logs";
 
 describe("audit log resolver mappings", () => {
   test("keeps legacy category/type mappings", () => {

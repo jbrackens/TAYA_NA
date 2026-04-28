@@ -4,7 +4,7 @@ import {
 } from "@phoenix-ui/utils";
 import { enumToObject, inverseEnum } from "../../../lib/utils/enums";
 import { buildTableFilterOptions } from "../../../lib/utils/filters";
-import { TalonMarketLifecycleTypeColor } from "../../../types/market.d";
+import { TalonMarketLifecycleTypeColor } from "../../../types/market";
 
 export const resolveLifecycle = (
   status: MarketLifecycleType,
