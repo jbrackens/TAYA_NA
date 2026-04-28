@@ -16,7 +16,7 @@ export const FormItemPreview = styled(Form.Item)<FormItemProps>`
 
       font-style: italic;
 
-      background: #ffffff;
+      background: var(--surface-1, #ffffff);
 
       position: static;
 

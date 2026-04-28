@@ -23,5 +23,5 @@ export const FormFieldWrapper = styled.div<FormFieldWrapperProps>`
 
 export const ErrorMessageDiv = styled.div`
   float: left;
-  color: #ff4d4f;
+  color: var(--no-text, #a8472d);
 `;
