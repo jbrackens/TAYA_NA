@@ -21,7 +21,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import OrderBook from "../../components/prediction/OrderBook";
@@ -77,6 +77,11 @@ function synthesizeBook(market: PredictionMarket): {
 export default function MarketDetailPage() {
   const params = useParams() ?? {};
   const ticker = (params.ticker as string | undefined) ?? "";
+  // MarketCard's YES/NO pills deep-link here with `?side=yes` or
+  // `?side=no` so the ticket opens preselected on that side.
+  const search = useSearchParams();
+  const sideParam = search?.get("side");
+  const initialSide: OrderSide = sideParam === "no" ? "no" : "yes";
 
   const [market, setMarket] = useState<PredictionMarket | null>(null);
   const [event, setEvent] = useState<PredictionEvent | null>(null);
@@ -491,6 +496,7 @@ export default function MarketDetailPage() {
             <TradeTicket
               market={market}
               balance={typeof balance === "number" ? balance : undefined}
+              defaultSide={initialSide}
               onPreview={handlePreview}
               onSubmit={handleSubmit}
             />

@@ -88,113 +88,127 @@ export function MarketCard({
   return (
     <>
       <MarketCardStyles />
-      <Link
-        href={`/market/${ticker}`}
-        className="mkt"
-        aria-label={`${title}, YES ${yesPriceCents} cents, NO ${noPriceCents} cents`}
-      >
-        <div className="mkt-head">
-          <div className="mkt-head-text">
-            <span className="mkt-cat">{cat}</span>
-            <h3 className="mkt-title">{title}</h3>
-          </div>
-          {image.kind === "image" ? (
-            <img
-              className="mkt-img"
-              src={image.src}
-              alt=""
-              aria-hidden="true"
-            />
-          ) : (
-            <span
-              className={`mkt-img mkt-img-mono ${image.bgClass}`}
-              aria-hidden="true"
-            >
-              {image.monogram}
-            </span>
-          )}
-        </div>
-
-        <div className="mkt-stats">
-          <div className="mkt-stat-row">
-            <span className="mkt-stat-label">Volume</span>
-            <span className="mkt-stat-value">
-              {formatCompactUsd(volumeCents)}
-            </span>
-          </div>
-          <div className="mkt-stat-row">
-            <span className="mkt-stat-label">Closes</span>
-            <span className="mkt-stat-value">{formatCloseAt(closeAt)}</span>
-          </div>
-          <div className="mkt-stat-row">
-            <span className="mkt-stat-label">Open interest</span>
-            <span className="mkt-stat-value">
-              {formatOpenInterest(openInterestCents, yesLeads)}
-            </span>
-          </div>
-        </div>
-
-        {(yesIsExtreme || noIsExtreme) && (
-          <div className="mkt-bar-overlay-out">
-            {yesIsExtreme && (
-              <span className="mkt-bar-out-pct mkt-bar-out-yes">
-                YES {yesPriceCents}%
-              </span>
-            )}
-            {noIsExtreme && (
-              <span className="mkt-bar-out-pct mkt-bar-out-no">
-                NO {noPriceCents}%
-              </span>
-            )}
-          </div>
-        )}
-
-        <div
-          className="mkt-bar"
-          role="img"
-          aria-label={`${yesPriceCents} percent YES, ${noPriceCents} percent NO`}
+      {/* The card body links to the market detail page (no preselect).
+       * The YES/NO pills below are SIBLING links carrying ?side=yes|no
+       * so clicking a pill deep-links into a side-preselected ticket.
+       * Avoids invalid nested anchors. */}
+      <article className="mkt">
+        <Link
+          href={`/market/${ticker}`}
+          className="mkt-body"
+          aria-label={`${title}, YES ${yesPriceCents} cents, NO ${noPriceCents} cents`}
         >
-          <span
-            className="mkt-bar-yes"
-            style={
-              yesIsExtreme
-                ? { width: `${MIN_SEGMENT_PX}px` }
-                : noIsExtreme
-                  ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
-                  : { width: `${yesPriceCents}%` }
-            }
-          >
-            {!yesIsExtreme && (
-              <span className="mkt-bar-pct">{yesPriceCents}%</span>
+          <div className="mkt-head">
+            <div className="mkt-head-text">
+              <span className="mkt-cat">{cat}</span>
+              <h3 className="mkt-title">{title}</h3>
+            </div>
+            {image.kind === "image" ? (
+              <img
+                className="mkt-img"
+                src={image.src}
+                alt=""
+                aria-hidden="true"
+              />
+            ) : (
+              <span
+                className={`mkt-img mkt-img-mono ${image.bgClass}`}
+                aria-hidden="true"
+              >
+                {image.monogram}
+              </span>
             )}
-          </span>
-          <span
-            className="mkt-bar-no"
-            style={
-              noIsExtreme
-                ? { width: `${MIN_SEGMENT_PX}px` }
-                : yesIsExtreme
-                  ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
-                  : { width: `${noPriceCents}%` }
-            }
+          </div>
+
+          <div className="mkt-stats">
+            <div className="mkt-stat-row">
+              <span className="mkt-stat-label">Volume</span>
+              <span className="mkt-stat-value">
+                {formatCompactUsd(volumeCents)}
+              </span>
+            </div>
+            <div className="mkt-stat-row">
+              <span className="mkt-stat-label">Closes</span>
+              <span className="mkt-stat-value">{formatCloseAt(closeAt)}</span>
+            </div>
+            <div className="mkt-stat-row">
+              <span className="mkt-stat-label">Open interest</span>
+              <span className="mkt-stat-value">
+                {formatOpenInterest(openInterestCents, yesLeads)}
+              </span>
+            </div>
+          </div>
+
+          {(yesIsExtreme || noIsExtreme) && (
+            <div className="mkt-bar-overlay-out">
+              {yesIsExtreme && (
+                <span className="mkt-bar-out-pct mkt-bar-out-yes">
+                  YES {yesPriceCents}%
+                </span>
+              )}
+              {noIsExtreme && (
+                <span className="mkt-bar-out-pct mkt-bar-out-no">
+                  NO {noPriceCents}%
+                </span>
+              )}
+            </div>
+          )}
+
+          <div
+            className="mkt-bar"
+            role="img"
+            aria-label={`${yesPriceCents} percent YES, ${noPriceCents} percent NO`}
           >
-            {!noIsExtreme && (
-              <span className="mkt-bar-pct">{noPriceCents}%</span>
-            )}
-          </span>
-        </div>
+            <span
+              className="mkt-bar-yes"
+              style={
+                yesIsExtreme
+                  ? { width: `${MIN_SEGMENT_PX}px` }
+                  : noIsExtreme
+                    ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
+                    : { width: `${yesPriceCents}%` }
+              }
+            >
+              {!yesIsExtreme && (
+                <span className="mkt-bar-pct">{yesPriceCents}%</span>
+              )}
+            </span>
+            <span
+              className="mkt-bar-no"
+              style={
+                noIsExtreme
+                  ? { width: `${MIN_SEGMENT_PX}px` }
+                  : yesIsExtreme
+                    ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
+                    : { width: `${noPriceCents}%` }
+              }
+            >
+              {!noIsExtreme && (
+                <span className="mkt-bar-pct">{noPriceCents}%</span>
+              )}
+            </span>
+          </div>
+        </Link>
 
         <div className="mkt-pills">
-          <span className="mkt-pill mkt-pill-yes">
+          <Link
+            href={`/market/${ticker}?side=yes`}
+            className="mkt-pill mkt-pill-yes"
+            aria-label={`Buy YES at ${yesPriceCents} cents`}
+          >
             <span className="mkt-pill-label">YES</span>
             <span className="mkt-pill-price">{yesPriceCents}¢</span>
-          </span>
-          <span className="mkt-pill mkt-pill-no">
+          </Link>
+          <Link
+            href={`/market/${ticker}?side=no`}
+            className="mkt-pill mkt-pill-no"
+            aria-label={`Buy NO at ${noPriceCents} cents`}
+          >
             <span className="mkt-pill-label">NO</span>
             <span className="mkt-pill-price">{noPriceCents}¢</span>
-          </span>
+          </Link>
         </div>
-      </Link>
+      </article>
     </>
   );
 }
@@ -210,15 +224,22 @@ function MarketCardStyles() {
         background: var(--surface-1);
         border: 1px solid var(--border-1);
         border-radius: 14px;
-        text-decoration: none;
         color: var(--t1);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
       }
-      .mkt:hover {
+      .mkt:hover,
+      .mkt:focus-within {
         transform: translateY(-2px);
         box-shadow: 0 10px 24px rgba(60, 50, 30, 0.08);
         border-color: var(--border-2);
+      }
+      .mkt-body {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        text-decoration: none;
+        color: inherit;
       }
 
       .mkt-head {
@@ -361,6 +382,16 @@ function MarketCardStyles() {
         border: 1px solid var(--border-1);
         border-radius: 999px;
         font-family: 'Inter', sans-serif;
+        text-decoration: none;
+        transition: background 120ms ease, border-color 120ms ease;
+      }
+      .mkt-pill-yes:hover {
+        background: var(--yes-soft);
+        border-color: var(--yes-bar);
+      }
+      .mkt-pill-no:hover {
+        background: var(--no-soft);
+        border-color: var(--no-bar);
       }
       .mkt-pill-label {
         font-size: 11px;
