@@ -62,13 +62,21 @@ body {
    * pages-router surfaces.
    */
 :root {
-  /* Backdrop palette (DESIGN.md §3). Lives behind ALL glass — never seen
-   * directly. Used by body::before + BackdropScene. */
-  --bg-deep: #06101c;
+  /* P8 (2026-04-28): warm-cream page backdrop replacing the warm-dark
+   * navy. The chart-paper grid pattern is layered on top via --bg-pattern.
+   * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
+   * policy until each consuming surface migrates off them. */
+  --bg-deep: #f7f3ed;
   --bg-navy: #0c2a4a;
   --bg-teal: #0c2638;
   --bg-mint: #0d2a22;
   --bg-azure: #0e3858;
+
+  /* Chart-paper grid layered on the cream page bg (DESIGN.md §4). */
+  --bg-pattern:
+    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
+  --bg-pattern-size: 32px 32px;
 
   /* Glass surfaces — translucent bodies for the .glass utility */
   --glass-thick: rgba(255, 255, 255, 0.08);
@@ -96,11 +104,11 @@ body {
   --b2: #374151;
   --b3: #4b5563;
 
-  /* Text */
-  --t1: #ffffff;
-  --t2: rgba(255, 255, 255, 0.72);
-  --t3: rgba(255, 255, 255, 0.44);
-  --t4: rgba(255, 255, 255, 0.28);
+  /* Text — P8 light values. AAA contrast on cream + white. (DESIGN.md §3 + §8.) */
+  --t1: #1a1a1a;
+  --t2: #4a4a4a;
+  --t3: #8b8378;
+  --t4: #b5ae9f;
 
   /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
    * --accent-glow is kept as a COMPLETE box-shadow declaration so the
@@ -128,10 +136,15 @@ body {
    * scale, and (c) calm cool/warm complementary colors sit naturally
    * on the cool teal backdrop without fighting it. */
   --yes: #71eeb8;
-  --yes-soft: rgba(113, 238, 184, 0.14);
+  --yes-soft: rgba(113, 238, 184, 0.18);
   --yes-border: rgba(113, 238, 184, 0.35);
+  --yes-text: #1a6849; /* AA on white (6.7:1), cream (6.1:1), --surface-2 (6.5:1) */
+  --yes-bar: #8fe5c4; /* paler seafoam for probability bar segments */
   --no: #ff8b6b;
-  --no-soft: rgba(255, 139, 107, 0.14);
+  --no-soft: rgba(255, 139, 107, 0.16);
+  --no-text: #a8472d; /* AA on white (5.8:1), cream (5.3:1), --surface-2 (5.6:1) */
+  --no-bar: #f4a990; /* paler coral for probability bar segments */
+  --focus-ring: #0e7a53; /* dark mint, AA non-text on cream (4.8:1) and white (6.0:1) */
 
   /* --live is the only warm color outside --no. Distinct, redder, pulses. */
   --live: #ff6b6b;
@@ -166,10 +179,10 @@ body {
    * MarketCard, AllMarketsSection). Pre-P2 components keep using the
    * --glass-* tokens above until their phase migrates them.
    * ──────────────────────────────────────────────────────────────── */
-  --surface-1: #161d1d;
-  --surface-2: #1a2222;
-  --border-1: #1c2828;
-  --border-2: #243030;
+  --surface-1: #ffffff;
+  --surface-2: #fcfaf5;
+  --border-1: #e5dfd2;
+  --border-2: #d9d2bf;
 
   /* Robinhood radii (less bubbly than glass). Co-existing with the
    * glass scale above during the P2-P6 migration. New components
@@ -180,37 +193,21 @@ body {
   --r-rh-xl: 20px;
 }
 
-/* Backdrop scene — Layer 1 (DESIGN.md §5). Full-viewport radial
- * gradient stack. Fixed, non-interactive, sits at z-index -3 below
- * BackdropScene's SVG chart-lines (-2) and grid (-1). */
-body::before {
-  content: "";
-  position: fixed;
-  inset: -5%;
-  z-index: -3;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 35% 40% at 18% 22%,
-      var(--bg-navy) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 28% 28% at 82% 48%,
-      var(--bg-azure) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 45% 30% at 50% 92%,
-      var(--bg-mint) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 80% 60% at 50% 35%,
-      var(--bg-teal) 0%,
-      var(--bg-deep) 80%
-    ),
-    var(--bg-deep);
+/* P8 page background: cream + chart-paper grid. The dark-theme radial
+ * backdrop scene was retired in this swap (it fought the light surface).
+ * The 32px grid is the only decoration in the system per DESIGN.md §4. */
+body {
+  background-color: var(--bg-deep);
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size);
+}
+
+/* Focus ring (DESIGN.md §8): dark mint that clears AA non-text contrast
+ * on both cream and white surfaces. Brand mint --accent fails 3:1 on
+ * cream (1.6:1) and is reserved for fills only. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 /* Mono utility for prices/volumes/tabular numbers. Use on any element

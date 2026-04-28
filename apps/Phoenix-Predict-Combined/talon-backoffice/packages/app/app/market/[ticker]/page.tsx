@@ -411,7 +411,7 @@ export default function MarketDetailPage() {
           font-variant-numeric: tabular-nums;
           color: var(--t3);
         }
-        .md-related-yes { color: var(--yes); font-weight: 600; }
+        .md-related-yes { color: var(--yes-text); font-weight: 600; }
 
         @media (max-width: 1100px) {
           /* Single-column flow: dissolve the column wrappers via

@@ -224,7 +224,7 @@ function Styles() {
         border-radius: var(--r-sm);
         padding: 10px 12px;
         font-size: 12px;
-        color: var(--no);
+        color: var(--no-text);
       }
 
       .la-submit {

@@ -412,7 +412,7 @@ const selfExcludeStyles = `
   }
 
   .se-warning-card {
-    border-color: var(--no);
+    border-color: var(--no-text);
   }
 
   .se-warning-icon {
@@ -556,7 +556,7 @@ const selfExcludeStyles = `
   .se-review-warning {
     padding: 12px 16px; background: rgba(255, 155, 107, 0.08);
     border: 1px solid rgba(255, 155, 107, 0.2); border-radius: var(--r-rh-md);
-    color: var(--no); font-size: 13px; font-weight: 600;
+    color: var(--no-text); font-size: 13px; font-weight: 600;
   }
 
   .se-success-card {

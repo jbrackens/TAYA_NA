@@ -103,7 +103,10 @@ export default function MarketChart({
       : 0;
   const deltaStr = `${deltaCents >= 0 ? "+" : ""}${deltaCents}¢ · ${deltaCents >= 0 ? "+" : ""}${deltaPct.toFixed(1)}% 24h`;
   const isUp = deltaCents >= 0;
-  const lineColor = isUp ? "var(--yes)" : "var(--no)";
+  // Chart stroke uses --yes-text / --no-text on light surfaces (P8): the
+  // saturated --yes seafoam (1.9:1 on white) and --no coral (2.8:1) fail
+  // AA. The darker text variants clear AA on cream + white.
+  const lineColor = isUp ? "var(--yes-text)" : "var(--no-text)";
 
   const prob =
     typeof impliedProbability === "number" ? impliedProbability : yesPriceCents;
@@ -150,21 +153,21 @@ export default function MarketChart({
           font-family: 'IBM Plex Mono', monospace;
           font-size: 13px;
           font-weight: 600;
-          color: var(--yes);
+          color: var(--yes-text);
           padding: 4px 10px;
           border-radius: var(--r-pill);
           background: var(--yes-soft);
           font-variant-numeric: tabular-nums;
         }
         .mc-delta.down {
-          color: var(--no);
+          color: var(--no-text);
           background: var(--no-soft);
         }
         .mc-switcher {
           display: inline-flex;
           gap: 4px;
           padding: 3px;
-          background: rgba(255, 255, 255, 0.04);
+          background: var(--surface-2);
           border: 1px solid var(--border-1);
           border-radius: var(--r-pill);
         }
@@ -213,8 +216,8 @@ export default function MarketChart({
           color: var(--t1);
           font-variant-numeric: tabular-nums;
         }
-        .mc-stat .v.yes { color: var(--yes); }
-        .mc-stat .v.no { color: var(--no); }
+        .mc-stat .v.yes { color: var(--yes-text); }
+        .mc-stat .v.no { color: var(--no-text); }
         @media (max-width: 720px) {
           .mc-price { font-size: 40px; }
           .mc-foot { grid-template-columns: repeat(2, 1fr); }
@@ -264,7 +267,7 @@ export default function MarketChart({
             </linearGradient>
           </defs>
 
-          <g stroke="rgba(255,255,255,0.04)" strokeWidth="1">
+          <g stroke="rgba(26,26,26,0.07)" strokeWidth="1">
             <line x1="0" x2={width} y1={height * 0.2} y2={height * 0.2} />
             <line x1="0" x2={width} y1={height * 0.4} y2={height * 0.4} />
             <line x1="0" x2={width} y1={height * 0.6} y2={height * 0.6} />

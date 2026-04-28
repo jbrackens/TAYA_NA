@@ -86,11 +86,11 @@ export default function RecentTrades({
           padding: 2px 6px;
           border-radius: var(--r-pill);
         }
-        .rt-side.yes { color: var(--yes); background: var(--yes-soft); }
-        .rt-side.no  { color: var(--no);  background: var(--no-soft); }
+        .rt-side.yes { color: var(--yes-text); background: var(--yes-soft); }
+        .rt-side.no  { color: var(--no-text);  background: var(--no-soft); }
         .rt-px { font-weight: 600; }
-        .rt-px.yes { color: var(--yes); }
-        .rt-px.no  { color: var(--no); }
+        .rt-px.yes { color: var(--yes-text); }
+        .rt-px.no  { color: var(--no-text); }
         .rt-sz { color: var(--t2); font-size: 11px; }
         .rt-t  { text-align: right; color: var(--t3); font-size: 10px; }
         .rt-empty {

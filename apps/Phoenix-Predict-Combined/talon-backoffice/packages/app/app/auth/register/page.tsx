@@ -491,7 +491,7 @@ function Styles() {
       .ra-banner.error {
         background: rgba(255, 155, 107,0.1);
         border: 1px solid rgba(255, 155, 107,0.3);
-        color: var(--no);
+        color: var(--no-text);
       }
       .ra-banner.success {
         background: var(--accent-soft);
@@ -537,10 +537,10 @@ function Styles() {
         border-color: var(--accent);
         box-shadow: 0 0 0 2px var(--accent-soft);
       }
-      .ra-input-error { border-color: var(--no); }
+      .ra-input-error { border-color: var(--no-text); }
       .ra-field-error {
         font-size: 11px;
-        color: var(--no);
+        color: var(--no-text);
       }
 
       .ra-terms {

@@ -1,28 +1,34 @@
 "use client";
 
 /**
- * MarketCard — Robinhood-direction market tile (P3, see DESIGN.md §7).
+ * MarketCard — P8 composition (DESIGN.md §6).
  *
- * Shows BOTH the YES and NO prices side-by-side (seafoam YES, coral NO),
- * with a sparkline above and a delta pill to the right. Volume sits in a
- * small footer. Both prices are visible because prediction markets are
- * binary contracts where each side is an independent tradeable instrument
- * — forcing the user to compute "100 − leading" violates "don't make me
- * think" (Krug). See DESIGN.md §11 entry 2026-04-26.
+ *   ┌─────────────────────────────────────────────────────┐
+ *   │ [CATEGORY]                              [⊙ image]   │
+ *   │ Title clamped to 2 lines                            │
+ *   ├─────────────────────────────────────────────────────┤
+ *   │ ▢ Volume                              $25K          │
+ *   │ ▢ Closes                       Dec 31, 2026         │
+ *   │ ▢ Open interest                  37.94 NO           │
+ *   ├─────────────────────────────────────────────────────┤
+ *   │ ▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  7%    93%  │
+ *   ├─────────────────────────────────────────────────────┤
+ *   │ [ YES   7¢ ]            [ NO   93¢ ]                │
+ *   └─────────────────────────────────────────────────────┘
  *
- * The prop interface is kept stable so /predict, /category, /discover,
- * and the market-detail "related markets" rail keep compiling.
+ * Replaces the post-P3 sparkline + dual-mono-prices + delta-pill card.
+ * The bar shows the visual split; the pills show the execution price —
+ * mathematically the same number for binary contracts but different jobs.
  *
- * Color discipline (DESIGN.md §3 strict two-greens):
- *   - mint --accent: category pill (action-adjacent), brand
- *   - seafoam --yes: up-direction (sparkline up, delta-up pill,
- *     YES-leading price color)
- *   - coral --no: down-direction (NO-leading price color, down delta)
+ * Min-segment-width rule (DESIGN.md §6, from 2026-04-28 amendment): when
+ * a side is ≤5% the corresponding bar segment renders at min-width 12px
+ * (anything narrower disappears + can't carry overlaid text). The %
+ * label moves above the bar instead of being overlaid on a sliver.
  */
 
 import Link from "next/link";
-import { formatCompactUsd, formatTimeLeft } from "./market-display";
-import { deterministicDelta, sparklinePath } from "./utils/spark";
+import { formatCompactUsd } from "./market-display";
+import { getMarketImageProps } from "./utils/marketImage";
 
 interface MarketCardProps {
   ticker: string;
@@ -38,8 +44,26 @@ interface MarketCardProps {
   imagePath?: string;
 }
 
-function hoursUntil(iso: string): number {
-  return (new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60);
+const MIN_SEGMENT_PX = 12;
+const SMALL_THRESHOLD_PCT = 5;
+
+function formatCloseAt(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatOpenInterest(
+  openInterestCents: number | undefined,
+  yesLeads: boolean,
+): string {
+  if (!openInterestCents) return "—";
+  // Show as "$X NO" or "$X YES" — leading-side label gives a quick read of
+  // which side has more conviction (Robinhood convention).
+  return `${formatCompactUsd(openInterestCents)} ${yesLeads ? "YES" : "NO"}`;
 }
 
 export function MarketCard({
@@ -48,24 +72,18 @@ export function MarketCard({
   yesPriceCents,
   noPriceCents,
   volumeCents,
+  openInterestCents,
   closeAt,
-  status,
   categoryLabel,
-  // openInterestCents, liquidityCents, imagePath: kept on the prop interface
-  // for caller stability; not rendered in the Robinhood-direction card.
+  imagePath,
 }: MarketCardProps) {
-  const isSettled = status === "settled";
-  const timeLeft = isSettled ? "Settled" : formatTimeLeft(closeAt);
-  const soon = !isSettled && hoursUntil(closeAt) < 48;
-
-  const yesLeads = yesPriceCents >= noPriceCents;
-  const leadingPrice = yesLeads ? yesPriceCents : noPriceCents;
-
-  const { pct, up } = deterministicDelta(ticker, leadingPrice);
-  const sparkColor = up ? "var(--yes)" : "var(--no)";
-  const sparkD = sparklinePath(ticker, leadingPrice, up, 240, 36);
-
   const cat = (categoryLabel || ticker.split("-")[0]).toUpperCase();
+  const yesLeads = yesPriceCents >= noPriceCents;
+
+  const yesIsExtreme = yesPriceCents <= SMALL_THRESHOLD_PCT;
+  const noIsExtreme = noPriceCents <= SMALL_THRESHOLD_PCT;
+
+  const image = getMarketImageProps({ ticker, imagePath, categoryLabel });
 
   return (
     <>
@@ -73,48 +91,109 @@ export function MarketCard({
       <Link
         href={`/market/${ticker}`}
         className="mkt"
-        aria-label={`${title}, YES ${yesPriceCents} cents, NO ${noPriceCents} cents, ${up ? "+" : ""}${pct.toFixed(1)}%`}
+        aria-label={`${title}, YES ${yesPriceCents} cents, NO ${noPriceCents} cents`}
       >
         <div className="mkt-head">
-          <span className="mkt-cat">{cat}</span>
-          <span
-            className={`mkt-chip ${soon ? "soon" : isSettled ? "settled" : ""}`}
-          >
-            {timeLeft}
-          </span>
-        </div>
-
-        <h3 className="mkt-title">{title}</h3>
-
-        <span className="mkt-spark" aria-hidden="true">
-          <svg viewBox="0 0 240 36" preserveAspectRatio="none">
-            <path
-              d={sparkD}
-              stroke={sparkColor}
-              strokeWidth="1.8"
-              fill="none"
+          <div className="mkt-head-text">
+            <span className="mkt-cat">{cat}</span>
+            <h3 className="mkt-title">{title}</h3>
+          </div>
+          {image.kind === "image" ? (
+            <img
+              className="mkt-img"
+              src={image.src}
+              alt=""
+              aria-hidden="true"
             />
-          </svg>
-        </span>
+          ) : (
+            <span
+              className={`mkt-img mkt-img-mono ${image.bgClass}`}
+              aria-hidden="true"
+            >
+              {image.monogram}
+            </span>
+          )}
+        </div>
 
-        <div className="mkt-row">
-          <span className="mkt-prices">
-            <span className="mkt-px yes">
-              <span className="lbl">YES</span>
-              {yesPriceCents}¢
+        <div className="mkt-stats">
+          <div className="mkt-stat-row">
+            <span className="mkt-stat-label">Volume</span>
+            <span className="mkt-stat-value">
+              {formatCompactUsd(volumeCents)}
             </span>
-            <span className="mkt-px no">
-              <span className="lbl">NO</span>
-              {noPriceCents}¢
+          </div>
+          <div className="mkt-stat-row">
+            <span className="mkt-stat-label">Closes</span>
+            <span className="mkt-stat-value">{formatCloseAt(closeAt)}</span>
+          </div>
+          <div className="mkt-stat-row">
+            <span className="mkt-stat-label">Open interest</span>
+            <span className="mkt-stat-value">
+              {formatOpenInterest(openInterestCents, yesLeads)}
             </span>
+          </div>
+        </div>
+
+        {(yesIsExtreme || noIsExtreme) && (
+          <div className="mkt-bar-overlay-out">
+            {yesIsExtreme && (
+              <span className="mkt-bar-out-pct mkt-bar-out-yes">
+                YES {yesPriceCents}%
+              </span>
+            )}
+            {noIsExtreme && (
+              <span className="mkt-bar-out-pct mkt-bar-out-no">
+                NO {noPriceCents}%
+              </span>
+            )}
+          </div>
+        )}
+
+        <div
+          className="mkt-bar"
+          role="img"
+          aria-label={`${yesPriceCents} percent YES, ${noPriceCents} percent NO`}
+        >
+          <span
+            className="mkt-bar-yes"
+            style={
+              yesIsExtreme
+                ? { width: `${MIN_SEGMENT_PX}px` }
+                : noIsExtreme
+                  ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
+                  : { width: `${yesPriceCents}%` }
+            }
+          >
+            {!yesIsExtreme && (
+              <span className="mkt-bar-pct">{yesPriceCents}%</span>
+            )}
           </span>
-          <span className={`mkt-delta ${up ? "up" : "down"}`}>
-            {up ? "+" : ""}
-            {pct.toFixed(1)}%
+          <span
+            className="mkt-bar-no"
+            style={
+              noIsExtreme
+                ? { width: `${MIN_SEGMENT_PX}px` }
+                : yesIsExtreme
+                  ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
+                  : { width: `${noPriceCents}%` }
+            }
+          >
+            {!noIsExtreme && (
+              <span className="mkt-bar-pct">{noPriceCents}%</span>
+            )}
           </span>
         </div>
 
-        <div className="mkt-foot">{formatCompactUsd(volumeCents)} vol</div>
+        <div className="mkt-pills">
+          <span className="mkt-pill mkt-pill-yes">
+            <span className="mkt-pill-label">YES</span>
+            <span className="mkt-pill-price">{yesPriceCents}¢</span>
+          </span>
+          <span className="mkt-pill mkt-pill-no">
+            <span className="mkt-pill-label">NO</span>
+            <span className="mkt-pill-price">{noPriceCents}¢</span>
+          </span>
+        </div>
       </Link>
     </>
   );
@@ -126,51 +205,42 @@ function MarketCardStyles() {
       .mkt {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        padding: 22px;
+        gap: 14px;
+        padding: 20px;
         background: var(--surface-1);
         border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-lg);
+        border-radius: 14px;
         text-decoration: none;
         color: var(--t1);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        transition: background 120ms ease, transform 120ms ease, border-color 120ms ease;
+        transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
       }
       .mkt:hover {
-        background: var(--surface-2);
         transform: translateY(-2px);
-      }
-      .mkt:focus-visible {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 2px var(--accent-soft);
+        box-shadow: 0 10px 24px rgba(60, 50, 30, 0.08);
+        border-color: var(--border-2);
       }
 
       .mkt-head {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
+        gap: 12px;
+      }
+      .mkt-head-text {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
         gap: 8px;
       }
       .mkt-cat {
-        color: var(--accent);
+        align-self: flex-start;
+        color: var(--t2);
         font-size: 11px;
         font-weight: 600;
-        letter-spacing: 0.04em;
-        padding: 4px 10px;
-        border-radius: var(--r-pill);
-        background: var(--accent-soft);
+        letter-spacing: 0.06em;
       }
-      .mkt-chip {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 11px;
-        color: var(--t3);
-        padding: 4px 0;
-        font-variant-numeric: tabular-nums;
-      }
-      .mkt-chip.soon { color: var(--live); }
-      .mkt-chip.settled { color: var(--t3); }
-
       .mkt-title {
         font-size: 16px;
         font-weight: 600;
@@ -178,68 +248,139 @@ function MarketCardStyles() {
         letter-spacing: -0.01em;
         color: var(--t1);
         margin: 0;
-        min-height: 42px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
       }
 
-      .mkt-spark {
-        display: block;
-        width: 100%;
-        height: 36px;
-      }
-      .mkt-spark svg { width: 100%; height: 100%; display: block; }
-
-      .mkt-row {
-        display: flex;
+      .mkt-img {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
+        font-family: 'Inter Tight', 'Inter', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: -0.01em;
+        color: #fff;
+      }
+      .mkt-img-mono.bg-blue { background: #3b82f6; }
+      .mkt-img-mono.bg-orange { background: #f59e0b; }
+      .mkt-img-mono.bg-emerald { background: #10b981; }
+      .mkt-img-mono.bg-purple { background: #8b5cf6; }
+      .mkt-img-mono.bg-cyan { background: #06b6d4; }
+      .mkt-img-mono.bg-green { background: #22c55e; }
+      .mkt-img-mono.bg-slate { background: #64748b; }
+
+      .mkt-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding-top: 2px;
+      }
+      .mkt-stat-row {
+        display: flex;
+        align-items: baseline;
         justify-content: space-between;
         gap: 12px;
-        padding-top: 4px;
+        font-size: 12px;
       }
-      .mkt-prices {
+      .mkt-stat-label {
+        color: var(--t3);
+        font-weight: 500;
+      }
+      .mkt-stat-value {
+        color: var(--t1);
+        font-family: 'IBM Plex Mono', monospace;
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .mkt-bar-overlay-out {
+        display: flex;
+        justify-content: space-between;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        color: var(--t2);
+        font-weight: 600;
+      }
+
+      .mkt-bar {
+        display: flex;
+        height: 28px;
+        border-radius: 6px;
+        overflow: hidden;
+        background: var(--surface-2);
+      }
+      .mkt-bar-yes,
+      .mkt-bar-no {
+        display: inline-flex;
+        align-items: center;
+        transition: width 200ms ease;
+        min-width: 0;
+      }
+      .mkt-bar-yes {
+        background: var(--yes-bar);
+        justify-content: flex-end;
+        padding-right: 10px;
+      }
+      .mkt-bar-no {
+        background: var(--no-bar);
+        justify-content: flex-start;
+        padding-left: 10px;
+      }
+      .mkt-bar-pct {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.01em;
+      }
+      .mkt-bar-yes .mkt-bar-pct { color: #1A4830; }
+      .mkt-bar-no  .mkt-bar-pct { color: #5C2516; }
+
+      .mkt-pills {
+        display: flex;
+        gap: 10px;
+      }
+      .mkt-pill {
+        flex: 1 1 0;
         display: inline-flex;
         align-items: baseline;
-        gap: 16px;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 14px;
+        background: var(--surface-2);
+        border: 1px solid var(--border-1);
+        border-radius: 999px;
+        font-family: 'Inter', sans-serif;
       }
-      .mkt-px {
+      .mkt-pill-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+      .mkt-pill-price {
         font-family: 'IBM Plex Mono', monospace;
-        font-size: 22px;
+        font-size: 16px;
         font-weight: 600;
         font-variant-numeric: tabular-nums;
         letter-spacing: -0.02em;
-        line-height: 1;
-        white-space: nowrap;
       }
-      .mkt-px.yes { color: var(--yes); }
-      .mkt-px.no  { color: var(--no); }
-      .mkt-px .lbl {
-        font-family: 'Inter', sans-serif;
-        font-size: 10px;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        color: var(--t3);
-        margin-right: 6px;
-        text-transform: uppercase;
+      .mkt-pill-yes .mkt-pill-label,
+      .mkt-pill-yes .mkt-pill-price {
+        color: var(--yes-text);
       }
-      .mkt-delta {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
-        padding: 4px 10px;
-        border-radius: var(--r-pill);
-      }
-      .mkt-delta.up { background: var(--yes-soft); color: var(--yes); }
-      .mkt-delta.down { background: var(--no-soft); color: var(--no); }
-
-      .mkt-foot {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 11px;
-        color: var(--t3);
-        font-variant-numeric: tabular-nums;
+      .mkt-pill-no .mkt-pill-label,
+      .mkt-pill-no .mkt-pill-price {
+        color: var(--no-text);
       }
     `}</style>
   );

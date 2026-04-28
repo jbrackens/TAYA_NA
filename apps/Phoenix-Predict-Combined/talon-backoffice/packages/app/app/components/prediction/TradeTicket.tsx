@@ -190,8 +190,8 @@ export function TradeTicket({
           margin-bottom: 6px;
           display: block;
         }
-        .tt-side.yes.is-selected .tt-side-label { color: var(--yes); }
-        .tt-side.no.is-selected  .tt-side-label { color: var(--no); }
+        .tt-side.yes.is-selected .tt-side-label { color: var(--yes-text); }
+        .tt-side.no.is-selected  .tt-side-label { color: var(--no-text); }
         .tt-side-price {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 28px;
@@ -202,8 +202,8 @@ export function TradeTicket({
           color: var(--t1);
           display: block;
         }
-        .tt-side.yes.is-selected .tt-side-price { color: var(--yes); }
-        .tt-side.no.is-selected  .tt-side-price { color: var(--no); }
+        .tt-side.yes.is-selected .tt-side-price { color: var(--yes-text); }
+        .tt-side.no.is-selected  .tt-side-price { color: var(--no-text); }
         .tt-side-sub {
           font-family: 'IBM Plex Mono', monospace;
           font-size: 11px;
@@ -266,7 +266,7 @@ export function TradeTicket({
           font-variant-numeric: tabular-nums;
           line-height: 1.4;
         }
-        .tt-amt-sub .win { color: var(--yes); font-weight: 600; }
+        .tt-amt-sub .win { color: var(--yes-text); font-weight: 600; }
 
         .tt-chips {
           display: grid;
@@ -309,7 +309,7 @@ export function TradeTicket({
         .tt-summary-row { display: flex; justify-content: space-between; }
         .tt-summary-row .k { color: var(--t3); }
         .tt-summary-row .v { color: var(--t1); }
-        .tt-summary-row .v.accent { color: var(--yes); }
+        .tt-summary-row .v.accent { color: var(--yes-text); }
 
         .tt-cta {
           margin-top: 16px;
@@ -336,7 +336,7 @@ export function TradeTicket({
         .tt-error {
           margin-top: 10px;
           font-size: 12px;
-          color: var(--no);
+          color: var(--no-text);
           text-align: center;
         }
         .tt-closed {

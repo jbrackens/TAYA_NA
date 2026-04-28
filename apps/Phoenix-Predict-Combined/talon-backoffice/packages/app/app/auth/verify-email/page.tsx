@@ -54,7 +54,7 @@ export default function VerifyEmailPage() {
         }
         .ve-err {
           font-size: 13px;
-          color: var(--no);
+          color: var(--no-text);
           margin: 0 0 16px;
         }
         .ve-spinner {

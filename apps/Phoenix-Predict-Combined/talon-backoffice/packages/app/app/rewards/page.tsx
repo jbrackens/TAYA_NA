@@ -636,7 +636,7 @@ function Styles() {
       }
       .rw-num { text-align: right; }
       .rw-pos { color: var(--accent); }
-      .rw-neg { color: var(--no); }
+      .rw-neg { color: var(--no-text); }
       .rw-subtle { color: var(--t3); }
       .rw-date { color: var(--t2); white-space: nowrap; }
       .rw-event { color: var(--t1); }
