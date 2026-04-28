@@ -139,28 +139,52 @@ describe("MarketCard: style hoisted outside Link", () => {
   });
 });
 
-// ── Bug F: prediction homepage must not fake analytics ────────────
+// ── Bug F: P8 MarketCard invariants ───────────────────────────────
 //
-// Phase 4 of the Liquid Glass redesign retired WhaleTicker,
-// WhaleActivityCard, TopMoversCard, and FeaturedHero — the
-// "fake analytics" surfaces this test suite was originally locking
-// down against regression. The MarketCard surface was rewritten to
-// use a depth bar (still named .mkt-bar in the new file) without
-// synthetic sparklines or placeholder deltas. The rest of this
-// section's assertions referenced files that no longer exist;
-// keeping a single assertion on MarketCard so the regression
-// guarantee survives the rename.
+// Replaces the Phase-4 / Robinhood-P3 era assertions. P8 (light theme,
+// landed 2026-04-28) composes MarketCard from: corner image, three stat
+// rows, a probability bar with overlaid % segments, and YES/NO pills as
+// siblings of the body link. The probability bar uses leading-side
+// modifier classes (mkt-bar-yes-leads / mkt-bar-no-leads) to align the
+// overlaid % per side and a 36px min-segment width so labels never
+// fall outside the colored segment.
 
-// SKIPPED 2026-04-27: these assertions captured the post-Phase-4 design where
-// MarketCard rendered a depth bar instead of a sparkline. The Robinhood P3
-// redesign (2026-04-26) intentionally re-introduced the sparkline + delta pill,
-// and P8 (in flight) will swap MarketCard composition again to a probability
-// bar with overlaid % segments. The post-Phase-4 invariants below are obsolete;
-// the relevant invariants for the Robinhood/P8 era will be added when P8 lands.
-describe.skip("MarketCard renders a live pricing bar (post-Phase-4) — OBSOLETE post P3 redesign", () => {
+describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
 
-  it("market card has no seeded sparkline or placeholder deltas", () => {
+  it("renders the .mkt-bar probability bar", () => {
+    assert.ok(
+      /mkt-bar/.test(marketCardSource),
+      "MarketCard should render a YES/NO probability bar (.mkt-bar)",
+    );
+  });
+
+  it("emits leading-side modifier classes for label alignment", () => {
+    assert.ok(
+      marketCardSource.includes("mkt-bar-yes-leads"),
+      "MarketCard should toggle .mkt-bar-yes-leads when YES is the leading side",
+    );
+    assert.ok(
+      marketCardSource.includes("mkt-bar-no-leads"),
+      "MarketCard should toggle .mkt-bar-no-leads when NO is the leading side",
+    );
+  });
+
+  it("enforces a min-segment width so % labels stay inside the bar", () => {
+    assert.ok(
+      /MIN_SEGMENT_PX\s*=\s*\d+/.test(marketCardSource),
+      "MarketCard should declare a MIN_SEGMENT_PX constant (probability-bar safety)",
+    );
+  });
+
+  it("YES/NO pills deep-link with ?side= so the trade ticket pre-selects", () => {
+    assert.ok(
+      /\?side=yes/.test(marketCardSource) && /\?side=no/.test(marketCardSource),
+      "MarketCard pills should link to /market/<ticker>?side=yes|no",
+    );
+  });
+
+  it("does not render seeded placeholder sparklines or fake deltas", () => {
     assert.ok(
       !marketCardSource.includes("seededSparklinePoints"),
       "MarketCard should not render seeded placeholder sparklines",
@@ -168,13 +192,6 @@ describe.skip("MarketCard renders a live pricing bar (post-Phase-4) — OBSOLETE
     assert.ok(
       !marketCardSource.includes("mkt-delta"),
       "MarketCard should not render placeholder cent deltas",
-    );
-  });
-
-  it("renders a depth-style pricing bar", () => {
-    assert.ok(
-      /mkt-bar/.test(marketCardSource),
-      "MarketCard should render a YES/NO depth bar (.mkt-bar)",
     );
   });
 });
