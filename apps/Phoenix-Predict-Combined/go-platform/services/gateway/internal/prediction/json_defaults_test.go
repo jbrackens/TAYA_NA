@@ -108,6 +108,9 @@ func (r *jsonDefaultRepo) ListSettledPositions(context.Context, string, int, int
 func (r *jsonDefaultRepo) GetDiscovery(context.Context) (*DiscoveryResponse, error) {
 	return nil, errors.New("not found")
 }
+func (r *jsonDefaultRepo) DashboardVolumeStatsSince(context.Context, time.Time, int) (*DashboardVolumeStats, error) {
+	return nil, nil
+}
 
 func TestCreateMarketDefaultsSettlementParamsToJSONObject(t *testing.T) {
 	repo := &jsonDefaultRepo{}
