@@ -1,10 +1,10 @@
 # Design System — TAYA NA Predict
 
-> Robinhood for prediction markets. Warm-dark surfaces, soft-flat cards, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
+> Robinhood for prediction markets, **light theme**. Warm-light surfaces on a faint chart-paper grid, soft-flat cards, big confident numbers, a dominant chart, mint as the action color. Markets are treated like stocks: the question is the sub-headline, the price IS the page, two pill buttons commit you to a side.
 
 This document governs the **Predict player app** at `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app/` (port 3000). The admin backoffice is still on the sportsbook system (see `DESIGN-SPORTSBOOK.md`).
 
-The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. Its decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, and the multi-stop backdrop scene are all out. Implementation lands in phases (see §11 entry 2026-04-26).
+The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. The warm-dark Robinhood spec (active 2026-04-26 → 2026-04-27) is retired. Their decisions remain in §11 for context. Glass tokens, rim highlights, chromatic fringes, multi-stop backdrop scene, and the dark surface system are all out. Implementation lands in phases (see §11 entry 2026-04-27 P8).
 
 ---
 
@@ -26,19 +26,20 @@ The prior Liquid Glass spec (active 2026-04-24 → 2026-04-26) is retired. Its d
 
 **Stock-detail-page treatment for prediction markets.** The hero IS a market detail. Big YES price (88px), green delta below it, gradient-filled chart dominates the right two-thirds, "Buy YES" and "Buy NO" sit as pill buttons. The market question becomes a sub-headline, not the page header. Below the hero: a stat row (24h volume, open interest, traders, closes), then a Top Movers rail. Discovery surfaces (homepage, category pages) reuse the same component vocabulary.
 
-**Mood descriptors:** familiar, trustworthy, modern app, calm, confident.
+**Mood descriptors:** familiar, trustworthy, modern app, calm, confident. Light theme keeps the same Robinhood-stock-detail-page mood; only the surface flips from dark to light.
 
-**Decoration level:** minimal. No glass, no blur, no chromatic fringes, no backdrop scene. Surfaces carry weight through subtle borders and density alone.
+**Decoration level:** minimal-with-grid. No glass, no blur, no chromatic fringes, no backdrop scene. Page background carries a faint chart-paper grid (3.5% opacity, 32px squares) — the only decoration. Cards stay flat on top of it; weight comes from hairline borders, density, and the bar visualization.
 
 **Explicit rejection:**
 - **No glass / glassmorphism.** The Liquid Glass material is retired. Genres reset.
-- **No bubble-radius.** Rounded but not playful. Cards 16px, pills full, smaller elements 8-12px.
+- **No bubble-radius.** Rounded but not playful. Cards 14px, pills full, smaller elements 6–10px.
 - **No 3-stop accent gradient.** The mint→teal→azure brand gradient is retired. Accent is a single color now.
-- **No multi-color backdrop.** No `--bg-navy`, `--bg-teal`, `--bg-mint`, `--bg-azure` orchestra. One warm-dark surface.
+- **No multi-color backdrop.** One warm-light surface (cream `#F7F3ED`) with a faint chart-paper grid. No `--bg-navy`, `--bg-teal`, `--bg-mint`, `--bg-azure` orchestra.
+- **No corporate pure-white.** Polymarket and Kalshi go pure white; we go warm cream. Distinguishable in the category lane.
+- **No editorial-magazine vibe.** Considered diagonal hatch (Robin Markets) and serif headers (Cosmos / Substack); both read "newsletter" not "trading app." Rejected. Background pattern is chart-paper grid (stock-trading vocabulary), title font is sans (Inter Tight).
 - **No purple/violet anywhere.** Reads as AI slop or crypto-broker.
 - **No 3-column icon grid with colored circles.** Reads as SaaS marketing-site cliché.
 - **No left sidebar** for categories. Category pills along the top.
-- **No display serifs.** Considered editorial direction (Cosmos / Substack), rejected because it reads "magazine" not "trading app."
 - **No pixel/CRT fonts.** Considered Y2K direction, rejected because it fights financial legitimacy.
 
 ---
@@ -75,21 +76,22 @@ No letter-spacing on lowercase text. Curly quotes (`"`) and ellipsis (`…`) in 
 
 ## 3. Color
 
-### Background and surfaces
+### Background and surfaces (light)
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--bg-deep` | `#0F1414` | The page backdrop. Warm dark with a faint green undertone. Replaces `#06101c`. |
-| `--surface-1` | `#161D1D` | Card and panel background. |
-| `--surface-2` | `#1A2222` | Hovered card background. |
-| `--border-1` | `#1c2828` | Subtle border for cards, panels, separators. ~1px. |
-| `--border-2` | `#243030` | Slightly stronger border for emphasized panels. |
+| `--bg-deep` | `#F7F3ED` | The page backdrop. Warm cream — distinguishably warmer than pure white. Replaces the warm-dark `#0F1414`. |
+| `--bg-pattern` | chart-paper grid (32px, `rgba(26,26,26,0.035)`) | Faint stock-paper grid layered on `--bg-deep`. Page-level only — cards, panels, and modals do not carry the pattern. |
+| `--surface-1` | `#FFFFFF` | Card and panel background. Pure white sits cleanly on the cream backdrop without competing. |
+| `--surface-2` | `#FCFAF5` | Hovered card / inner subsurface background. Slightly cream-tinted to match the page. |
+| `--border-1` | `#E5DFD2` | Hairline beige border for cards, panels, separators. ~1px. |
+| `--border-2` | `#D9D2BF` | Slightly stronger beige for emphasized or hovered borders. |
 
-### Text (unchanged)
+### Text (warm-dark on cream)
 
-`--t1: #ffffff` / `--t2: rgba(255,255,255,0.72)` / `--t3: rgba(255,255,255,0.44)` / `--t4: rgba(255,255,255,0.28)`.
+`--t1: #1A1A1A` / `--t2: #4A4A4A` / `--t3: #8B8378` / `--t4: #B5AE9F`.
 
-The big hero price uses `--t1` (white). The ¢ subscript and the secondary "Today" label use `--t3` for hierarchy.
+Warm gray hierarchy — the muted tones (`--t3`, `--t4`) carry a warm beige cast (`#8B…`, `#B5…`) rather than cool slate, so they pair with the cream backdrop. The big hero price uses `--t1`. The ¢ subscript and "Today" labels use `--t3` for hierarchy.
 
 ### Brand accent (mint, unchanged)
 
@@ -104,19 +106,20 @@ Accent family kept: `--accent-soft: rgba(43,228,128,0.14)` for soft pill backgro
 
 **Retired:** `--accent-hi`, `--accent-lo`, `--accent-deep`, `--accent-gradient`. The 3-stop signature gradient is gone.
 
-### Semantic (data layer)
+### Semantic (data layer — kept seafoam + coral)
 
-`--yes` and `--no` are the trading-signal colors, used for:
-- Sparkline strokes (mint when going up, coral when going down).
-- Delta pill text (mint for up, coral for down).
-- Inline change indicators.
+`--yes` and `--no` are the trading-signal colors. **Resolved 2026-04-27 (P8):** the entire semantic palette stays unchanged through the light pivot — the same seafoam YES + coral NO hues we tuned in the dark theme work on the cream surface (verified in P8 mockup). The only change is two new tokens for the probability bar fill:
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--yes` | `#71eeb8` | Seafoam. **Resolved 2026-04-26:** keep seafoam, do not unify with `--accent`. Two-greens discipline preserved. |
-| `--no` | `#ff8b6b` | Coral, unchanged. |
-| `--yes-soft` | `rgba(113,238,184,0.14)` | Up-delta pill background. |
-| `--no-soft` | `rgba(255,139,107,0.14)` | Down-delta pill background. |
+| `--yes` | `#71eeb8` | Seafoam — used for: line-chart strokes when up, "YES" labels in card pills, up-delta indicators, the YES-side probability-bar segment when needing the saturated tone. |
+| `--yes-text` | `#1A6849` | Dark seafoam for text-on-light contexts (small "YES" pill labels). 6.7:1 on white `--surface-1`, 6.1:1 on cream `--bg-deep`, 6.5:1 on hover-surface `--surface-2` — AA pass on all three. |
+| `--yes-soft` | `rgba(113,238,184,0.18)` | Up-delta pill background. |
+| `--yes-bar` | `#8FE5C4` | Calmer seafoam for the YES segment of the probability bar — desaturated so the bar feels like a calm split, not a brand. |
+| `--no` | `#ff8b6b` | Coral, unchanged. Used for: line-chart strokes when down, "NO" labels in card pills, down indicators. |
+| `--no-text` | `#A8472D` | Dark coral for text-on-light contexts. 5.8:1 on white `--surface-1`, 5.3:1 on cream `--bg-deep`, 5.6:1 on hover-surface `--surface-2` — AA pass on all three. |
+| `--no-soft` | `rgba(255,139,107,0.16)` | Down-delta pill background. |
+| `--no-bar` | `#F4A990` | Calmer coral for the NO segment of the probability bar. |
 
 `--live: #ff6b6b` — the only red, used for the "LIVE" pulse dot only.
 
@@ -151,27 +154,42 @@ Mint and seafoam are visually distinguishable: mint is brighter/more saturated; 
 
 ## 4. Surfaces (replaces "Material System")
 
-Flat soft surfaces. No blur, no rim highlights, no chromatic edges, no backdrop refraction.
+Flat soft surfaces on a cream page with a chart-paper grid. No blur, no rim highlights, no chromatic edges, no backdrop refraction.
 
-### The recipe
+### Page background
 
 ```css
-.card {
-  background: var(--surface-1);
-  border: 1px solid var(--border-1);
-  border-radius: 16px;
-  padding: 22px;
-  transition: background 120ms, transform 120ms;
-}
-.card:hover {
-  background: var(--surface-2);
-  transform: translateY(-2px);
+body {
+  background: var(--bg-deep); /* #F7F3ED cream */
+  background-image:
+    linear-gradient(to right, rgba(26,26,26,0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26,26,26,0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 ```
 
-That is the entire surface system. No tiers, no glass-thick / glass-thin / glass-inset hierarchy. One card style; emphasis comes from size and content, not material.
+The grid is the only decoration in the system. **Stock-trading vocabulary, not editorial.** Considered alternatives logged 2026-04-27: diagonal hatch (Robin Markets — too editorial), ticker-tape horizontal lines (more "stock-ticker" than "stock-chart"), dotted grid (too retail-y). Graph paper won.
 
-The hero is the same surface, sized larger and split across a 2.5fr/1fr grid with the Top Movers rail.
+### Card recipe
+
+```css
+.card {
+  background: var(--surface-1);          /* white */
+  border: 1px solid var(--border-1);     /* hairline beige */
+  border-radius: 14px;
+  padding: 20px;
+  transition: transform 140ms, box-shadow 140ms, border-color 140ms;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(60, 50, 30, 0.08);   /* warm soft shadow */
+  border-color: var(--border-2);
+}
+```
+
+That is the entire surface system. No tiers, no glass-thick / glass-thin / glass-inset hierarchy. One card style; emphasis comes from size and content, not material. The warm soft shadow on hover is intentional — on light surfaces a flat hover state reads as broken.
+
+The hero is the same surface, sized larger and split across a 2.5fr/1fr grid with the trade ticket.
 
 ### Pills
 
@@ -317,13 +335,51 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 
 ### Roster (post-redesign)
 
-- **DiscoveryHero** — hero card with eyebrow, market question, big price, delta, gradient-filled chart, time-period pills, Buy YES / Buy NO, stat row.
+- **DiscoveryHero** — hero card with eyebrow, market question, big price, delta, gradient-filled chart (sage line, soft seafoam fill below), time-period pills, Buy YES / Buy NO, stat row.
 - **TopMoversRail** (replaces TrendingSidebar) — vertical list of trending markets. Each row: category pill, question (2-line), mini sparkline, big price (right-aligned), delta pill below.
-- **MarketCard** — soft-flat card. Head: category pill + days-left. Title: 16px / 600. Sparkline (36px tall, full-width, stroke matches direction). Price row: BOTH YES + NO prices (22px mono, seafoam YES, coral NO) on the left, delta pill on the right. Footer: volume.
+- **MarketCard** (rewritten 2026-04-27 for P8) — see "MarketCard composition" below. Replaces the dark-theme P3 card (sparkline + dual mono prices + delta pill).
 - **AllMarketsSection** — paginated grid. Section header is a single row of pills: category pills (`All / Politics / Crypto / ...`) on the left, closing-window pill segmented control (`All / 1D / 1W / 1M`) on the right. No title — the layout is self-evident. Owns its own filter state. "Load more" pill at bottom.
 - **MarketFilterBar** — retired 2026-04-26. The category pill row it used to render now lives inline inside AllMarketsSection.
-- **TopBar** — top navigation, unchanged structurally; warm-dark background instead of glass.
-- **MarketHead, OrderBook, RecentTrades, TradeTicket** — market detail page components, restyled for warm-dark surfaces but functionally unchanged.
+- **TopBar** — top navigation, unchanged structurally; opaque cream background `--bg-deep` with a 1px hairline `--border-1` bottom edge for sticky-state distinction. No backdrop-filter — consistent with §9's "no backdrop-filter anywhere" rule and the P6 retirement of TopBar blur (see §11 `2026-04-27 P6 shipped`).
+- **MarketHead, OrderBook, RecentTrades, TradeTicket** — market detail page components, restyled for the new light surfaces.
+
+### MarketCard composition (P8)
+
+```
+┌─────────────────────────────────────────────────────┐
+│ [POLITICS]                              [⊙ image]   │ ← eyebrow + corner image
+│ Will Trump acquire Greenland before 2027?           │ ← title 2-line clamped
+├─────────────────────────────────────────────────────┤
+│ ▢ Volume                              $25K          │ ← 3 stat rows with line icons
+│ ▢ Closes                       Dec 31, 2026         │
+│ ▢ Open interest                  37.94 NO           │
+├─────────────────────────────────────────────────────┤
+│ ▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 7%   93%  │ ← probability bar split,
+│                                                     │   sage YES + coral NO,
+│                                                     │   widths = prices, % overlaid
+├─────────────────────────────────────────────────────┤
+│ [ YES   7¢ ]            [ NO   93¢ ]                │ ← clear pills with prices
+└─────────────────────────────────────────────────────┘
+```
+
+**Rules:**
+- **Card image is required.** Every card carries a circular image in the top-right corner, ~44×44px (≤15% of card area at 300px-wide grid). Imported markets use the `imagePath` populated by the discovery sync. Native (gateway-authored) markets use a deterministic placeholder — colored monogram disc, hue derived from category, label = first ~2 chars of the ticker. Never render a card with an empty corner.
+- **Probability bar replaces the sparkline.** Two solid horizontal segments inside a 28px-tall, 6px-radius track: sage `--yes-bar` for YES (left), coral `--no-bar` for NO (right). Segment widths are proportional to prices (which equal probabilities for binary contracts). The leading-side **percentage** is overlaid right-aligned in dark text on the larger segment; the trailing-side percentage is overlaid left-aligned in dark text on the smaller segment. Smooths to widths on price update with a 200ms transition.
+- **Min segment width on extremes.** When a side's probability is ≤5% (or, equivalently, a price ≤5¢), the corresponding bar segment renders at a min-width of 12px instead of its proportional width — anything narrower disappears visually and can't carry overlaid text. The dominant segment shrinks to absorb the difference (its width = 100% − 12px), keeping the track full-width. The percentage that would have been overlaid on the small segment is moved **outside** the bar — rendered just above the small segment in `--t2`, 12px IBM Plex Mono. Mirrored for the opposite extreme (NO ≤5%).
+- **Clear pills carry the price.** Two side-by-side pills below the bar: light gray fill `--surface-2`, hairline beige border, 999px radius. Left pill: `YES` label in `--yes-text` + price in `¢` mono `--yes-text`. Right pill: `NO` label in `--no-text` + price in `¢` mono `--no-text`. The pill IS the click affordance for fast-trade flows on `/predict`.
+- **Stat rows replace the volume footer.** Three rows max: Volume / Closes / Open interest. Line-icon (14px) on the left, label in `--t3`, value in `--t1` IBM Plex Mono on the right. The "Open interest" row uses the Robin convention of showing the leading side as an inline pill ("37.94 NO" or "84.47 YES") — gives a quick read of which side has more conviction.
+
+**Bar % vs pill ¢ — why both numbers?** In a binary market, YES price (¢) equals YES probability (%) by definition. They are mathematically the same number. The bar shows the **split visually** (the eye reads "this market is mostly NO" from the bar widths alone); the pills show the **execution price** (the user clicks one to trade). Different jobs, same number.
+
+### Legacy token disposition (carries forward from P6)
+
+The dark-theme tokens still living in `globals.css` — `--glass-*`, `--rim-*`, `--chroma-*`, `--bg-{navy,teal,mint,azure}`, `--accent-{hi,lo,deep,gradient}`, `--yes-{glow,border,hi,lo}`, `--no-{glow,border,hi,lo}` — are **not** deleted wholesale in P8. The retirement policy is per-surface, inherited from the P6 entry in §11: a token retires when the last surface consuming it migrates to the light system. The implementation agent for P8 should:
+
+1. Migrate `--bg-deep`, `--surface-*`, `--border-*`, `--t*` tokens to their P8 values (the warm-light values listed in §3 §4 above).
+2. Migrate the MarketCard component to the new composition.
+3. Leave the legacy dark tokens in `globals.css` untouched. PR #2 (`p7-cleanup-tokens`) already retires the 10 already-unreferenced glass-era tokens; remaining tokens get retired on future cleanup PRs as each consuming surface migrates.
+
+This avoids a wave of cascading breakage on secondary surfaces that haven't been restyled yet (cashier was migrated in P7 / PR #1 alongside auth, leaderboards, rewards, account, profile — those have already moved off the dark token system; the office back-office and any non-app legacy CSS still consume them).
 
 ### Components retired in this redesign
 
@@ -335,20 +391,25 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 ### Component rules
 
 - **Hero owns the page.** The hero card is the single most important element on `/predict` and `/market/[ticker]`. Other surfaces are supporting.
-- **Sparklines everywhere.** Trending rail, market cards, hero chart. Mint stroke when up, coral when down. No fill on small ones (rail / card); gradient fill on the hero chart.
-- **Delta pills are the indicator pattern.** Anywhere a price is shown, a delta pill says where it's been recently. `+X.X%` for up, `-X.X%` for down, mint background for up, coral for down.
-- **Big numbers carry hierarchy.** A 26px card price + 12px delta pill is the same pattern at three scales (card, rail, hero — 26 / 30 / 88).
+- **Probability bars on cards, sparklines in the trending rail and hero chart.** P8 swap: cards visualize the YES/NO split (more useful for the buy decision); the sparkline pattern stays for the trending rail and hero chart where price-history-over-time is the right read.
+- **Delta pills are kept on the rail and hero.** Anywhere a single price is shown without a bar, a delta pill says where it's been recently. Sage `+X.X%` for up, coral `-X.X%` for down. On cards the delta is folded into the bar+pills (no separate delta pill on the card).
+- **Big numbers carry hierarchy.** Hero hero 72–88px, rail 30px, card pills 14–16px (price + side-label). Same Inter Tight + IBM Plex Mono recipe at every scale.
 
 ---
 
 ## 8. Accessibility
 
-### Contrast
+### Contrast (light theme)
 
-- Body text on `--bg-deep`: `--t1` is 18:1, `--t2` is 13:1, `--t3` is 8:1. All exceed WCAG AAA.
-- Mint `#2be480` on dark `#0F1414`: 9.1:1, exceeds AA Large + AAA.
-- Mint on white (button label): 4.0:1 — borderline. Use `#061a10` ink-dark text on the mint button instead, which gives 18:1.
-- Coral `#ff8b6b` on dark: 6.3:1, AA.
+Ratios computed with the WCAG 2.x relative-luminance formula. Cream `--bg-deep` = `#F7F3ED` (Y ≈ 0.899); white `--surface-1` = `#FFFFFF` (Y = 1.000); hover surface `--surface-2` = `#FCFAF5` (Y ≈ 0.956). AA = 4.5:1 normal text / 3.0:1 large; AA non-text UI = 3.0:1 (WCAG 2.5.8). Numbers below were recomputed 2026-04-27 after a review pass caught the original spec overstating ratios by ~1.3–2.0× — the token values were darkened until both white and cream cleared AA.
+
+- `--t1` `#1A1A1A` body text: 16.6:1 on cream, 17.5:1 on white. AAA on both.
+- `--t2` `#4A4A4A` secondary text: 8.4:1 on cream, 8.9:1 on white. AAA on both.
+- `--t3` `#8B8378` metadata text: 3.4:1 on cream, 3.6:1 on white. **Passes AA Large only** — use only for ≥18px or ≥14px-bold metadata text, never for body.
+- Mint `--accent` `#2be480` text on cream: 1.6:1 — fails. **Never use mint as text.** Mint is only for fills (button bg, active pill bg, LIVE pulse). Button label text on mint stays `#04140a` ink-dark (≈ 16:1).
+- Seafoam `--yes` `#71eeb8` text on white: 1.9:1 — fails. **Use `--yes-text` `#1A6849`** for all seafoam-colored text on light surfaces — 6.7:1 on white, 6.1:1 on cream, 6.5:1 on `--surface-2`. AA pass on all three. The `--yes` hue is reserved for fills (chart strokes, bar segments, soft pill backgrounds).
+- Coral `--no` `#ff8b6b` text on white: 2.8:1 — fails AA for body. **Use `--no-text` `#A8472D`** for coral-colored text on light — 5.8:1 on white, 5.3:1 on cream, 5.6:1 on `--surface-2`. AA pass on all three. `--no` for fills only.
+- Probability-bar overlay text: `7%` in `#1A4830` on `--yes-bar` `#8FE5C4` ≈ 7.0:1; `93%` in `#5C2516` on `--no-bar` `#F4A990` ≈ 6.3:1. Both AA. These two overlay colors are component-local constants and intentionally not promoted to tokens — they only ever appear inside the probability bar.
 
 ### Reduced transparency
 
@@ -360,7 +421,7 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 
 ### Keyboard navigation
 
-- All interactive elements have visible `:focus-visible` rings (2px mint outline at 2px offset).
+- All interactive elements have visible `:focus-visible` rings: 2px outline `#0E7A53` at 2px offset (a darker mint that clears 4.8:1 on cream and 6.0:1 on white, satisfying WCAG 2.5.8 non-text contrast). The brand mint `--accent` `#2be480` is **not** used for the focus ring on light surfaces because it only reaches 1.6:1 on cream and fails 3:1.
 - Tab order follows visual order: nav → category pills → hero buy buttons → time-period pills → stat row → featured cards → all markets.
 - The chart is non-interactive at keyboard level (visual only). Time-period pills are buttons in tab order.
 
@@ -380,11 +441,11 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 
 ## 10. What's out of scope
 
-- Light mode. Dark only for now.
+- **Dark mode.** Was the only mode through 2026-04-27. P8 pivot inverts: light is the only mode now. Dark mode could return as a user preference later but is not in scope for the P8 implementation. (Carried-forward retiree from the original §10: "Light mode. Dark only for now" — flipped 2026-04-27.)
 - Internationalization. English only for now.
 - Custom font (Capsule-style) — using Inter as approximation. May commission a custom display face later.
 - 3D / depth effects. The Robinhood look is flat-soft, not skeuomorphic.
-- Variable / animated gradients. Backgrounds are static.
+- Variable / animated gradients. Backgrounds are static (cream + chart-paper grid only).
 - Dense table view (Bloomberg / dexscreener style). Considered for D direction; rejected for first pass. Could be added later as `/predict?view=dense`.
 
 ---
@@ -422,3 +483,4 @@ Charts get an entrance fade on mount (200ms opacity 0 → 1). The line is drawn 
 | 2026-04-27 | **P6 shipped: TopBar + portfolio + category restyled, primary surfaces complete** | TopBar drops backdrop-filter blur, drops `--accent-gradient` (mint pill is solid `--accent`), Inter replaces Outfit on the balance label, search results dropdown uses `--surface-1` instead of glass. Active nav link is mint-filled (was a soft white inset highlight). Portfolio's stat strip + tab bar + table all swap from glass to warm-dark surfaces; stat value color glows are dropped. Category page (`/category/[slug]`) page-title weight matches the design system (700 not 800), empty state uses `--surface-1` instead of dashed-glass. Primary player surfaces (predict, discover, market detail, category, portfolio, top nav) are now Robinhood-treated. Out of scope for this migration: cashier (sportsbook era), auth pages, leaderboards, rewards, account, profile — they retain the glass treatment until separately touched. The legacy `--glass-*`, `--rim-*`, `--chroma-*`, `--bg-{navy,teal,mint,azure}`, `--accent-{hi,lo,deep,gradient}`, `--yes-{glow,border,hi,lo}`, `--no-{glow,border,hi,lo}` tokens stay in `globals.css` for those secondary surfaces. The `.glass` utility class stays. Outfit font load stays in `layout.tsx` for the same reason. Each will be retired the next time the secondary surface that uses them is restyled. |
 | 2026-04-28 | **P7 shipped: all secondary surfaces migrated to Robinhood warm-dark** | Migrated 14 surfaces: `/account` hub, `/account/transactions`, `/account/security`, `/account/notifications`, `/account/rg-history`, `/account/self-exclude`, `/auth/login`, `/auth/register`, globals.css auth shell (`.auth-card`, `.auth-input`, `.auth-submit`, `.auth-link`) + `/auth/verify-email`, `/leaderboards`, `/rewards`, `/cashier` (submit-hover fix) + `/cashier/cheque`, `/privacy`, `/profile`. Every page now uses `--surface-1/2`, `--border-1/2`, `--r-rh-*` tokens; glass backgrounds, `backdrop-filter`, rim box-shadows, chromatic fringes, and gradient buttons are gone from all secondary surfaces. The `.glass` utility class and its tokens (`--glass-*`, `--rim-*`, `--chroma-*`) are retained in `globals.css` because `ContentPage.tsx`, `discover/page.tsx`, and `market/[ticker]/page.tsx` still use `.glass` — these are in-scope for a future P8 sweep when those components are revisited. The `--accent-glow-color`, `--accent-lo`, `--accent-gradient`, `--accent-glow` tokens are retained because P1-P6 components still use them (error pages, `MobileTabBar`, `BrandMark`, `LandingPage`, `portfolio`). TypeScript check passes clean (no new errors). |
 | 2026-04-27 | **Self-correction: P5 reverted from single-column to 2-col layout on /market/[ticker]** | The morning's P5 ship collapsed the page to a single vertical column with TradeTicket centered at `max-width: 720px` between the chart and orderbook. Live design review the same afternoon found three problems: (1) at >=1280px the ticket left **41% of horizontal space empty** (496px of dead-space wings) because the chart above and orderbook below filled the full 1216px content width — the centered island broke the layout rhythm; (2) the collapsed hero was 680px tall on a 720px viewport, pushing the trade button below the fold and violating Robinhood's "action above the fold" rule; (3) OrderBook and RecentTrades at 596px each looked hollow for the density of content they hold (3-level synth book, ~10 trades). Fix: restored the 2-col grid the file's own header diagram described — left column carries hero + orderbook/trades + details, right column carries TradeTicket (sticky `top: 84px`) + Related. Below 1100px collapses to single column via `display: contents` + grid `order` so the ticket sits in position 2 directly under the hero. Measured deltas at 1280×800: page height 2000px → 1513px (−24%), hero 680px → 628px, dead space 496px → 0, OrderBook+RecentTrades 596px → ~404px each. CSS-only change in `app/market/[ticker]/page.tsx`; no component prop changes. Lesson: the morning's "simplification" optimized for source clarity at the cost of visual composition — single-column is right for narrow viewports, but on wide viewports a centered slab between full-width siblings reads as a layout error. The file diagram was right; the implementation overshot. |
+| 2026-04-27 | **P8 spec: pivot from warm-dark to warm-light, restructure MarketCard** | Same Robinhood "stock-detail-page" mood — only the surface inverts: warm-dark `#0F1414` → warm-cream `#F7F3ED`, with a faint chart-paper grid (32px / 3.5%) the only decoration. Rejected alternatives: pure-white (Polymarket / Kalshi corporate-clean lane), diagonal hatch (Robin Markets — read editorial), serif title (read magazine). Trading palette unchanged — `--accent` mint, `--yes` seafoam, `--no` coral all kept; two new fill tokens `--yes-bar` / `--no-bar` added for the probability bar (slightly desaturated so the bar reads calm); two new text tokens `--yes-text` / `--no-text` added for AA contrast on white. MarketCard rewritten: corner circular image (≤15% of card area, every card carries one — `imagePath` from discovery sync for imports, deterministic monogram disc for native markets), three stat rows (Volume / Closes / Open interest with leading-side-pill), horizontal probability bar (sage YES + coral NO segments, widths = prices, % overlaid on segments), two clear pills below carrying YES ¢ / NO ¢ as the click-to-trade affordance. Replaces the dark-theme P3 card (deterministic-sparkline + dual-mono-prices + delta-pill). Bar % and pill ¢ are mathematically the same number for binary markets — bar shows the visual split, pills show the execution price; different jobs. Implementation deferred until PRs #1–#5 land (P7 secondary-surface migration + token cleanup + dead-code removal — those clean up the dark-theme token system and benefit a clean light-pivot branch). Once those merge, "P8" lands as one or more migration PRs that swap `--bg-deep`, `--surface-*`, `--border-*`, `--t*` tokens, retire dark-theme component CSS, and ship the new MarketCard composition. The §10 "Light mode. Dark only for now" exclusion is flipped — light is the only mode now. Preview at `~/.gstack/projects/jbrackens-TAYA_NA/designs/p8-light-pivot-20260427/preview.html`. |
