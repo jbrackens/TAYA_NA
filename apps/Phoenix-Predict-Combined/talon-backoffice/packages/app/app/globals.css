@@ -46,7 +46,9 @@ body {
     "Segoe UI",
     sans-serif;
   background: var(--bg-deep);
-  color: var(--t1, #ffffff);
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size);
+  color: var(--t1, #1A1A1A);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -62,9 +64,8 @@ body {
    * pages-router surfaces.
    */
 :root {
-  /* Backdrop palette (DESIGN.md §3). Lives behind ALL glass — never seen
-   * directly. Used by body::before + BackdropScene. */
-  --bg-deep: #06101c;
+  /* Backdrop palette (DESIGN.md §3). P8 warm-light cream. */
+  --bg-deep: #F7F3ED;
   --bg-navy: #0c2a4a;
   --bg-teal: #0c2638;
   --bg-mint: #0d2a22;
@@ -96,11 +97,11 @@ body {
   --b2: #374151;
   --b3: #4b5563;
 
-  /* Text */
-  --t1: #ffffff;
-  --t2: rgba(255, 255, 255, 0.72);
-  --t3: rgba(255, 255, 255, 0.44);
-  --t4: rgba(255, 255, 255, 0.28);
+  /* Text — P8 warm-dark hierarchy on cream */
+  --t1: #1A1A1A;
+  --t2: #4A4A4A;
+  --t3: #8B8378;
+  --t4: #B5AE9F;
 
   /* Accent (mint emerald — brand channel). Replaces neon-lime #39ff14.
    * --accent-glow is kept as a COMPLETE box-shadow declaration so the
@@ -166,10 +167,22 @@ body {
    * MarketCard, AllMarketsSection). Pre-P2 components keep using the
    * --glass-* tokens above until their phase migrates them.
    * ──────────────────────────────────────────────────────────────── */
-  --surface-1: #161d1d;
-  --surface-2: #1a2222;
-  --border-1: #1c2828;
-  --border-2: #243030;
+  --surface-1: #FFFFFF;
+  --surface-2: #FCFAF5;
+  --border-1: #E5DFD2;
+  --border-2: #D9D2BF;
+
+  /* P8 semantic text-on-light variants — AA contrast on white + cream */
+  --yes-text: #1A6849; /* 6.7:1 on white, 6.1:1 on cream, 6.5:1 on surface-2 */
+  --no-text:  #A8472D; /* 5.8:1 on white, 5.3:1 on cream, 5.6:1 on surface-2 */
+  /* P8 probability bar fills — desaturated so bar reads calm, not brand */
+  --yes-bar:  #8FE5C4;
+  --no-bar:   #F4A990;
+  /* P8 chart-paper page background grid */
+  --bg-pattern:
+    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
+  --bg-pattern-size: 32px 32px;
 
   /* Robinhood radii (less bubbly than glass). Co-existing with the
    * glass scale above during the P2-P6 migration. New components
@@ -180,38 +193,6 @@ body {
   --r-rh-xl: 20px;
 }
 
-/* Backdrop scene — Layer 1 (DESIGN.md §5). Full-viewport radial
- * gradient stack. Fixed, non-interactive, sits at z-index -3 below
- * BackdropScene's SVG chart-lines (-2) and grid (-1). */
-body::before {
-  content: "";
-  position: fixed;
-  inset: -5%;
-  z-index: -3;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      ellipse 35% 40% at 18% 22%,
-      var(--bg-navy) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 28% 28% at 82% 48%,
-      var(--bg-azure) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 45% 30% at 50% 92%,
-      var(--bg-mint) 0%,
-      transparent 55%
-    ),
-    radial-gradient(
-      ellipse 80% 60% at 50% 35%,
-      var(--bg-teal) 0%,
-      var(--bg-deep) 80%
-    ),
-    var(--bg-deep);
-}
 
 /* Mono utility for prices/volumes/tabular numbers. Use on any element
    * displaying cents or dollar amounts — gives tabular-nums alignment so
@@ -240,6 +221,20 @@ body::before {
     opacity: 0.35;
   }
 }
+/* P8 focus ring — dark mint #0E7A53 (4.8:1 on cream, 6.0:1 on white),
+   passes WCAG 2.5.8 non-text contrast. The brand mint --accent #2be480
+   only reaches 1.6:1 on cream and must NOT be used as a focus ring on
+   light surfaces. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #0E7A53;
+  outline-offset: 2px;
+}
+
 a {
   color: inherit;
   text-decoration: none;
