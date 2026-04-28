@@ -75,9 +75,8 @@ const normalizeFinancialSummary = (
 export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
   const { t } = useTranslation("page-users-details");
   const { TabPane } = Tabs;
-  const [financialSummary, setFinancialSummary] = useState<
-    FinancialSummaryWithProductBreakdown
-  >();
+  const [financialSummary, setFinancialSummary] =
+    useState<FinancialSummaryWithProductBreakdown>();
 
   const [triggerApi, isLoading, response] = useApi(
     "admin/punters/:id/financial-summary",
@@ -145,7 +144,7 @@ export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
               <Statistic
                 title={t("HEADER_CARD_FINANCIAL_SUMMARY_LIFETIME_DEPOSITS")}
                 value={`${financialSummary?.lifetimeDeposits.amount}`}
-                valueStyle={{ color: "#3f8600" }}
+                valueStyle={{ color: "var(--yes-text, #1a6849)" }}
                 prefix="$"
               />
             </Col>
@@ -153,7 +152,7 @@ export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
               <Statistic
                 title={t("HEADER_CARD_FINANCIAL_SUMMARY_LIFETIME_WITHDRAWALS")}
                 value={`${financialSummary?.lifetimeWithdrawals.amount}`}
-                valueStyle={{ color: "#cf1322" }}
+                valueStyle={{ color: "var(--no-text, #a8472d)" }}
                 prefix="$"
               />
             </Col>
@@ -164,7 +163,7 @@ export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
               <Statistic
                 title={t("HEADER_CARD_FINANCIAL_SUMMARY_PENDING_WITHDRAWALS")}
                 value={`${financialSummary?.pendingWithdrawals.amount}`}
-                valueStyle={{ color: "#cf1322" }}
+                valueStyle={{ color: "var(--no-text, #a8472d)" }}
                 prefix="$"
               />
             </Col>
@@ -173,7 +172,9 @@ export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
                 title={t("HEADER_CARD_FINANCIAL_SUMMARY_PROFIT")}
                 value={`${profit}`}
                 valueStyle={
-                  profit < 0 ? { color: "#cf1322" } : { color: "#3f8600" }
+                  profit < 0
+                    ? { color: "var(--no-text, #a8472d)" }
+                    : { color: "var(--yes-text, #1a6849)" }
                 }
                 prefix="$"
               />
@@ -185,7 +186,8 @@ export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
               <Statistic
                 title={t("HEADER_CARD_FINANCIAL_SUMMARY_SPORTSBOOK_EXPOSURE")}
                 value={`${
-                  financialSummary?.productBreakdown.sportsbook.openExposure.amount
+                  financialSummary?.productBreakdown.sportsbook.openExposure
+                    .amount
                 }`}
                 prefix="$"
               />
@@ -194,7 +196,8 @@ export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
               <Statistic
                 title={t("HEADER_CARD_FINANCIAL_SUMMARY_PREDICTION_EXPOSURE")}
                 value={`${
-                  financialSummary?.productBreakdown.prediction.openExposure.amount
+                  financialSummary?.productBreakdown.prediction.openExposure
+                    .amount
                 }`}
                 prefix="$"
               />
