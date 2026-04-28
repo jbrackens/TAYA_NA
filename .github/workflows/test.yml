@@ -11,7 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+        # Workspace root — yarn workspaces are declared here and yarn.lock
+        # lives here. Installing from a sub-package via npm causes hour-long
+        # resolution loops because the workspace root isn't detected.
+        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice
 
     steps:
       - uses: actions/checkout@v4
@@ -19,13 +22,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
+      - name: Install dependencies (workspace root)
+        run: yarn install --frozen-lockfile
 
       - name: Run unit tests
         # Top-level tests only. Integration tests live in __tests__/integration/
         # and need a running gateway; they run in a separate workflow.
+        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
         run: npx tsx --test --test-reporter=tap app/__tests__/*.test.ts
 
   go-build-and-test:
