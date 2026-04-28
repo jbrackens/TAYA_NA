@@ -21,7 +21,6 @@
     "isolatedModules": true,
     "baseUrl": "./",
     "paths": {
-      "i18n": ["i18n.js"],
       "@phoenix-ui/design-system": ["../design-system/src"],
       "@phoenix-ui/design-system/*": ["../design-system/src/*"],
       "@phoenix-api/client": ["../api-client/src"],
