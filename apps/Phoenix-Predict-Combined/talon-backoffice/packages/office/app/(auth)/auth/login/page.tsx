@@ -1,9 +1,24 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
+// useSearchParams() reads URL state on the client, so static prerender
+// must be skipped for this route. Without this, Next.js 16 errors out
+// during build with "useSearchParams() should be wrapped in a suspense
+// boundary at page /auth/login". The Suspense fallback below is a
+// secondary safety net for any future static-export attempt.
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
