@@ -167,7 +167,7 @@ export default function MarketChart({
           display: inline-flex;
           gap: 4px;
           padding: 3px;
-          background: rgba(255, 255, 255, 0.04);
+          background: var(--surface-2);
           border: 1px solid var(--border-1);
           border-radius: var(--r-pill);
         }
