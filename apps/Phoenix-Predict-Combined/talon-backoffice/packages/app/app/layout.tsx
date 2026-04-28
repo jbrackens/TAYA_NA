@@ -1,7 +1,6 @@
 import React from "react";
 import "./globals.css";
 import AppShell from "./components/AppShell";
-import BackdropScene from "./components/BackdropScene";
 
 export default function RootLayout({
   children,
@@ -38,7 +37,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         )}
       </head>
       <body>
-        <BackdropScene />
         {process.env.NODE_ENV === "production" && (
           <noscript>
             <iframe

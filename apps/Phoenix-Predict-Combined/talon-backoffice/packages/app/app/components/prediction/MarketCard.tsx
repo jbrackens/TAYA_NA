@@ -154,8 +154,17 @@ export function MarketCard({
             </div>
           )}
 
+          {/* Bar labels follow DESIGN.md §6: leading-side label right-aligned
+           * on its segment (toward the boundary), trailing-side label
+           * left-aligned (also toward the boundary). The result: when YES
+           * leads, both labels meet at the boundary (close together). When
+           * NO leads, the leading NO% pushes to the far right of its big
+           * segment and the trailing YES% sits at the far left of its
+           * small segment — opening up space between them. Without this,
+           * NO-leading bars end up with both labels crammed at the segment
+           * boundary, looking like a single combined "27% 73%" label. */}
           <div
-            className="mkt-bar"
+            className={`mkt-bar mkt-bar-${yesLeads ? "yes-leads" : "no-leads"}`}
             role="img"
             aria-label={`${yesPriceCents} percent YES, ${noPriceCents} percent NO`}
           >
@@ -346,17 +355,23 @@ function MarketCardStyles() {
         align-items: center;
         transition: width 200ms ease;
         min-width: 0;
+        padding: 0 10px;
       }
-      .mkt-bar-yes {
-        background: var(--yes-bar);
-        justify-content: flex-end;
-        padding-right: 10px;
-      }
-      .mkt-bar-no {
-        background: var(--no-bar);
-        justify-content: flex-start;
-        padding-left: 10px;
-      }
+      .mkt-bar-yes { background: var(--yes-bar); }
+      .mkt-bar-no  { background: var(--no-bar); }
+      /* When YES leads (left segment is the larger one), push YES% to its
+       * inner edge (right side, toward boundary) and pull NO% to its inner
+       * edge too (left side, toward boundary). Both labels meet at the
+       * boundary, balanced. */
+      .mkt-bar-yes-leads .mkt-bar-yes { justify-content: flex-end; }
+      .mkt-bar-yes-leads .mkt-bar-no  { justify-content: flex-start; }
+      /* When NO leads (right segment is the larger one), push NO% to the
+       * outer edge of its big segment (far right) and pull the trailing
+       * YES% to the outer edge of its small segment (far left). Opens
+       * breathing room between the two labels instead of crowding them at
+       * the boundary. */
+      .mkt-bar-no-leads .mkt-bar-no  { justify-content: flex-end; }
+      .mkt-bar-no-leads .mkt-bar-yes { justify-content: flex-start; }
       .mkt-bar-pct {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 12px;
