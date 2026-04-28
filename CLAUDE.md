@@ -238,9 +238,11 @@ codesign --force --sign - /opt/homebrew/lib/libbrotlienc.1.dylib
 ```
 On Intel Macs: check `/usr/local/lib/` instead of `/opt/homebrew/lib/`.
 
-### Use npm, not yarn
+### Use yarn at the workspace root
 
-Use `npm install --legacy-peer-deps` — yarn has peer dependency conflicts with this monorepo.
+The `talon-backoffice/` directory is a yarn-workspaces monorepo (`workspaces: ["packages/**/*"]` in `package.json`, `engines: { yarn: ">=1.22.22 <2" }`). Run `yarn install --frozen-lockfile` from `talon-backoffice/`, not from any sub-package. CI does the same — see `.github/workflows/test.yml`.
+
+Older notes recommended `npm install --legacy-peer-deps` from the app sub-directory; that path hangs in CI for hours because npm doesn't detect the workspace declaration up-tree. Yarn install at the workspace root completes in ~6 seconds.
 
 ## Environment Variables
 
