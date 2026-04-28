@@ -1,0 +1,436 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * P8 AntD overrides — Phase O2 of the office migration.
+ *
+ * AntD 4.16.12 compiles its theme via Less variables at build time, so
+ * the runtime token API in AntD 5 isn't available here. Instead, this
+ * stylesheet overrides the high-traffic component classes against the
+ * P8 tokens declared in p8-tokens.css. New tokens are NOT introduced;
+ * each rule references --t1 / --surface-1 / --border-1 / --accent /
+ * --focus-ring / --yes-text / --no-text already defined upstream.
+ *
+ * Scope: only the components used by the prediction-admin and risk
+ * pages (markets table, settlement queue, audit log, account forms,
+ * navigation chrome). Less common AntD widgets (Carousel, Calendar,
+ * Tree, Steps) keep their default ant.css until a page that uses them
+ * is migrated. (Boil the lake when the page demands it, not before.)
+ *
+ * Rules use specificity 0,1,1 (single class) where possible. The few
+ * rules that need !important are marked inline with the AntD class
+ * they're beating; this is unavoidable for the antd.css base values
+ * shipped via the global stylesheet.
+ * ────────────────────────────────────────────────────────────────── */
+
+/* ── Layout / page chrome ──────────────────────────────────────── */
+
+.ant-layout,
+.ant-layout-content,
+.ant-layout-footer {
+  background: transparent;
+}
+
+.ant-layout-header {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-1);
+  color: var(--t1);
+  height: 64px;
+  line-height: 64px;
+  padding: 0 24px;
+}
+
+.ant-layout-sider {
+  background: var(--surface-1);
+  border-right: 1px solid var(--border-1);
+}
+
+/* ── Cards ────────────────────────────────────────────────────── */
+
+.ant-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-rh-md);
+  color: var(--t1);
+  box-shadow: none;
+}
+
+.ant-card-head {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-1);
+  color: var(--t1);
+}
+
+.ant-card-head-title {
+  color: var(--t1);
+  font-weight: 600;
+}
+
+.ant-card-body {
+  color: var(--t1);
+}
+
+.ant-card-bordered {
+  border-color: var(--border-1);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+
+.ant-btn {
+  background: var(--surface-1);
+  border-color: var(--border-1);
+  color: var(--t1);
+  border-radius: var(--r-rh-sm);
+  height: 36px;
+  font-weight: 500;
+}
+.ant-btn:hover,
+.ant-btn:focus {
+  background: var(--surface-2);
+  border-color: var(--focus-ring);
+  color: var(--t1);
+}
+.ant-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #003827;
+  font-weight: 600;
+}
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background: var(--accent-lo);
+  border-color: var(--accent-lo);
+  color: #ffffff;
+}
+.ant-btn-primary[disabled],
+.ant-btn-primary[disabled]:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: var(--t3);
+}
+.ant-btn-dangerous,
+.ant-btn-danger {
+  background: var(--surface-1);
+  border-color: var(--no);
+  color: var(--no-text);
+}
+.ant-btn-dangerous:hover,
+.ant-btn-danger:hover {
+  background: var(--no-soft);
+  border-color: var(--no-text);
+  color: var(--no-text);
+}
+.ant-btn-link {
+  color: var(--focus-ring);
+}
+.ant-btn-link:hover {
+  color: var(--accent-lo);
+}
+
+/* ── Inputs ───────────────────────────────────────────────────── */
+
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-picker,
+.ant-select-selector,
+textarea.ant-input {
+  background: var(--surface-1) !important;
+  border-color: var(--border-1) !important;
+  color: var(--t1) !important;
+  border-radius: var(--r-rh-sm);
+}
+.ant-input::placeholder,
+textarea.ant-input::placeholder {
+  color: var(--t3);
+}
+.ant-input:hover,
+.ant-input-affix-wrapper:hover,
+.ant-input-number:hover,
+.ant-picker:hover,
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: var(--focus-ring) !important;
+}
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-input-number-focused,
+.ant-picker-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--focus-ring) !important;
+  box-shadow: 0 0 0 2px var(--accent-soft) !important;
+}
+
+/* ── Tables ───────────────────────────────────────────────────── */
+
+.ant-table {
+  background: var(--surface-1);
+  color: var(--t1);
+  border-radius: var(--r-rh-md);
+}
+.ant-table-thead > tr > th {
+  background: var(--surface-2);
+  color: var(--t2);
+  border-bottom: 1px solid var(--border-1);
+  font-weight: 600;
+}
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--border-1);
+  color: var(--t1);
+}
+.ant-table-tbody > tr:hover > td,
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background: var(--surface-2);
+}
+.ant-table-tbody > tr.ant-table-row-selected > td {
+  background: var(--accent-soft);
+}
+.ant-table-empty .ant-empty-description {
+  color: var(--t3);
+}
+
+/* ── Pagination ───────────────────────────────────────────────── */
+
+.ant-pagination-item {
+  background: var(--surface-1);
+  border-color: var(--border-1);
+  color: var(--t2);
+}
+.ant-pagination-item-active {
+  background: var(--accent-soft);
+  border-color: var(--focus-ring);
+}
+.ant-pagination-item-active a {
+  color: var(--focus-ring) !important;
+  font-weight: 600;
+}
+
+/* ── Menu (sidebar + header) ──────────────────────────────────── */
+
+.ant-menu-light,
+.ant-menu-light > .ant-menu {
+  background: var(--surface-1);
+  color: var(--t1);
+  border-right: 0;
+}
+.ant-menu-light .ant-menu-item,
+.ant-menu-light .ant-menu-submenu-title {
+  color: var(--t2);
+}
+.ant-menu-light .ant-menu-item a {
+  color: var(--t2);
+}
+.ant-menu-light .ant-menu-item:hover,
+.ant-menu-light .ant-menu-submenu-title:hover {
+  color: var(--focus-ring);
+}
+.ant-menu-light .ant-menu-item-selected,
+.ant-menu-light .ant-menu-item:active {
+  background: var(--accent-soft) !important;
+  color: var(--focus-ring) !important;
+}
+.ant-menu-light .ant-menu-item-selected a {
+  color: var(--focus-ring) !important;
+}
+.ant-menu-horizontal {
+  background: var(--surface-1);
+  border-bottom-color: var(--border-1);
+}
+.ant-menu-horizontal > .ant-menu-item-selected,
+.ant-menu-horizontal > .ant-menu-submenu-selected {
+  border-bottom-color: var(--focus-ring) !important;
+  color: var(--focus-ring);
+}
+
+/* ── Modal / Drawer ───────────────────────────────────────────── */
+
+.ant-modal-content,
+.ant-drawer-content {
+  background: var(--surface-1);
+  border-radius: var(--r-rh-lg);
+  color: var(--t1);
+  box-shadow:
+    0 12px 48px rgba(26, 26, 26, 0.08),
+    0 1px 2px rgba(26, 26, 26, 0.04);
+}
+.ant-modal-header,
+.ant-drawer-header {
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border-1);
+  border-radius: var(--r-rh-lg) var(--r-rh-lg) 0 0;
+}
+.ant-modal-title,
+.ant-drawer-title {
+  color: var(--t1);
+  font-weight: 600;
+}
+.ant-modal-body,
+.ant-drawer-body {
+  color: var(--t1);
+}
+.ant-modal-footer,
+.ant-drawer-footer {
+  border-top: 1px solid var(--border-1);
+  background: var(--surface-1);
+}
+.ant-modal-mask {
+  background: rgba(26, 26, 26, 0.45);
+}
+
+/* ── Form ─────────────────────────────────────────────────────── */
+
+.ant-form-item-label > label {
+  color: var(--t2);
+  font-weight: 500;
+}
+.ant-form-item-explain-error {
+  color: var(--no-text);
+}
+.ant-form-item-required::before {
+  color: var(--no-text) !important;
+}
+
+/* ── Tags / status pills ──────────────────────────────────────── */
+
+.ant-tag {
+  background: var(--surface-2);
+  border: 1px solid var(--border-1);
+  color: var(--t2);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-weight: 500;
+}
+.ant-tag-success,
+.ant-tag-green {
+  background: var(--yes-soft);
+  border-color: var(--yes);
+  color: var(--yes-text);
+}
+.ant-tag-error,
+.ant-tag-red {
+  background: var(--no-soft);
+  border-color: var(--no);
+  color: var(--no-text);
+}
+.ant-tag-warning,
+.ant-tag-orange,
+.ant-tag-gold {
+  background: rgba(217, 119, 6, 0.12);
+  border-color: rgba(217, 119, 6, 0.4);
+  color: var(--warn);
+}
+.ant-tag-blue,
+.ant-tag-processing {
+  background: rgba(43, 228, 128, 0.12);
+  border-color: var(--accent);
+  color: var(--focus-ring);
+}
+
+/* ── Dropdown ─────────────────────────────────────────────────── */
+
+.ant-dropdown-menu,
+.ant-select-dropdown {
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-rh-md);
+  box-shadow:
+    0 8px 24px rgba(26, 26, 26, 0.08),
+    0 1px 2px rgba(26, 26, 26, 0.04);
+}
+.ant-dropdown-menu-item,
+.ant-select-item {
+  color: var(--t1);
+}
+.ant-dropdown-menu-item:hover,
+.ant-select-item-option-active {
+  background: var(--surface-2);
+}
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background: var(--accent-soft);
+  color: var(--focus-ring);
+  font-weight: 600;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────── */
+
+.ant-tabs-tab {
+  color: var(--t2);
+}
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--focus-ring) !important;
+  font-weight: 600;
+}
+.ant-tabs-ink-bar {
+  background: var(--focus-ring);
+}
+.ant-tabs-top > .ant-tabs-nav::before {
+  border-bottom-color: var(--border-1);
+}
+
+/* ── Statistic / numeric display ──────────────────────────────── */
+
+.ant-statistic-title {
+  color: var(--t2);
+  font-weight: 500;
+}
+.ant-statistic-content {
+  color: var(--t1);
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Typography ───────────────────────────────────────────────── */
+
+.ant-typography {
+  color: var(--t1);
+}
+h1.ant-typography,
+h2.ant-typography,
+h3.ant-typography,
+h4.ant-typography,
+h5.ant-typography {
+  color: var(--t1);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── Message / Notification ───────────────────────────────────── */
+
+.ant-message-notice-content {
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  color: var(--t1);
+  border-radius: var(--r-rh-md);
+  box-shadow:
+    0 12px 48px rgba(26, 26, 26, 0.08),
+    0 1px 2px rgba(26, 26, 26, 0.04);
+}
+.ant-message-success .anticon {
+  color: var(--yes-text);
+}
+.ant-message-error .anticon {
+  color: var(--no-text);
+}
+.ant-message-warning .anticon {
+  color: var(--warn);
+}
+
+/* ── Divider ──────────────────────────────────────────────────── */
+
+.ant-divider {
+  border-color: var(--border-1);
+  background: var(--border-1);
+}
+
+/* ── Switch / Checkbox / Radio (state colors) ─────────────────── */
+
+.ant-switch-checked {
+  background-color: var(--accent);
+}
+.ant-checkbox-checked .ant-checkbox-inner,
+.ant-radio-checked .ant-radio-inner {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+.ant-checkbox-checked .ant-checkbox-inner::after {
+  border-color: #003827;
+}
+.ant-radio-inner::after {
+  background-color: var(--accent);
+}

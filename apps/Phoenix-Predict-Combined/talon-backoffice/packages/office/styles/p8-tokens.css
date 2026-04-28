@@ -1,0 +1,167 @@
+/* ──────────────────────────────────────────────────────────────────────
+ * P8 design system tokens for the office package.
+ *
+ * Mirrors the player app's app/globals.css token definitions so the
+ * back-office shares the same warm-cream + chart-paper-grid look that
+ * landed on 2026-04-28 (PR #17). See repo-root DESIGN.md §3 / §4 / §8
+ * for the canonical palette, surfaces, and focus-ring rationale.
+ *
+ * Phase O1 (this file): tokens only. Existing AntD components keep
+ * their default ant.css colors for now — Phase O2 wires those to the
+ * P8 tokens via ConfigProvider, and Phase O3 swaps the chrome
+ * (sidebar / header / page shells).
+ * ────────────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+
+:root {
+  /* Page backdrop — warm cream + chart-paper grid. Identical values to
+   * the player app so the two surfaces feel like one product. */
+  --bg-deep: #f7f3ed;
+  --bg-pattern:
+    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
+  --bg-pattern-size: 32px 32px;
+
+  /* Surfaces (DESIGN.md §4). White cards on cream, with --surface-2 as
+   * the slightly warmer fill used inside cards (table headers, chips). */
+  --surface-1: #ffffff;
+  --surface-2: #fcfaf5;
+
+  /* Borders. --border-1 is the default card edge; --border-2 is the
+   * stronger divider used at section boundaries inside dense tables. */
+  --border-1: #e5dfd2;
+  --border-2: #d9d2bf;
+
+  /* Text. AAA on cream + white. --t1 body, --t2 secondary, --t3
+   * tertiary (timestamps, table captions), --t4 disabled. */
+  --t1: #1a1a1a;
+  --t2: #4a4a4a;
+  --t3: #8b8378;
+  --t4: #b5ae9f;
+
+  /* Brand accent (mint emerald) — identity / primary CTA fills. Never
+   * use --accent for text on light surfaces; it fails 3:1 on cream
+   * (1.6:1). Use --focus-ring or --yes-text instead for AA text. */
+  --accent: #2be480;
+  --accent-lo: #1fa65e;
+  --accent-soft: rgba(43, 228, 128, 0.14);
+
+  /* Trading signals (DESIGN.md §3). YES = mint, NO = coral. */
+  --yes: #71eeb8;
+  --yes-soft: rgba(113, 238, 184, 0.18);
+  --yes-text: #1a6849; /* AA on white (6.7:1), cream (6.1:1) */
+  --yes-bar: #8fe5c4;
+  --no: #ff8b6b;
+  --no-soft: rgba(255, 139, 107, 0.16);
+  --no-text: #a8472d; /* AA on white (5.8:1), cream (5.3:1) */
+  --no-bar: #f4a990;
+
+  /* Focus ring. Dark mint, AA non-text on cream (4.8:1) and white
+   * (6.0:1). Picked over --accent because the brand fill mint fails
+   * AA non-text on every light surface. (DESIGN.md §8.) */
+  --focus-ring: #0e7a53;
+
+  /* Status / alert channels — re-used by AntD message + tag colors
+   * once Phase O2 wires ConfigProvider. */
+  --warn: #d97706; /* warm amber, AA on white (4.5:1) */
+  --danger: #c0392b; /* warm red, AA on white (5.4:1) */
+
+  /* Radii (Robinhood scale, less bubbly than the prior glass scale).
+   * Used by P8 components. AntD's default 2px radius is overridden in
+   * Phase O2 via theme.token.borderRadius. */
+  --r-rh-sm: 8px;
+  --r-rh-md: 12px;
+  --r-rh-lg: 16px;
+  --r-rh-xl: 20px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Body / page shell
+ * ─────────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg-deep);
+}
+
+body {
+  min-height: 100%;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background-color: var(--bg-deep);
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size);
+  color: var(--t1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular-numerics utility — apply to any element rendering cents,
+ * dollar amounts, or volumes so digits sit at the same width. */
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus ring — system-wide default (DESIGN.md §8). AntD adds its own
+ * outline on form controls; we replace it with the P8 dark-mint ring
+ * via theme.token.colorPrimary in Phase O2. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * AntD overrides (minimal, applied globally so existing pages improve
+ * even before Phase O2 lands ConfigProvider).
+ *
+ * The strategy is: don't re-skin AntD here, just align the page chrome
+ * (body, layout, scrollbar) with the P8 backdrop so the cards stop
+ * floating on a dark void. Each token override lives in Phase O2.
+ * ─────────────────────────────────────────────────────────────────── */
+
+.ant-layout {
+  background: transparent !important;
+}
+
+.ant-layout-content {
+  background: transparent !important;
+}
+
+/* AntD's default body color is rgba(0, 0, 0, 0.85); we want our P8 --t1
+ * everywhere so headings + paragraphs match the player app. */
+body,
+.ant-typography,
+.ant-table {
+  color: var(--t1);
+}
+
+/* Scrollbar — minimal cream-aligned thumb so the office doesn't have
+ * a glaring grey scrollbar on the new light surfaces. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 999px;
+  border: 2px solid var(--bg-deep);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--t3);
+}

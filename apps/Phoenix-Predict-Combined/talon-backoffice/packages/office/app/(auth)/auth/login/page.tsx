@@ -1,9 +1,24 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
+// useSearchParams() reads URL state on the client, so static prerender
+// must be skipped for this route. Without this, Next.js 16 errors out
+// during build with "useSearchParams() should be wrapped in a suspense
+// boundary at page /auth/login". The Suspense fallback below is a
+// secondary safety net for any future static-export attempt.
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get("returnUrl") || "/dashboard";
 
@@ -68,16 +83,22 @@ export default function LoginPage() {
   const inputStyle = (field: string): React.CSSProperties => ({
     width: "100%",
     padding: "12px 16px",
-    backgroundColor: "#0b0e1c",
-    border: `1.5px solid ${focusedField === field ? "#4ade80" : "#1a1f3a"}`,
-    borderRadius: 6,
-    color: "#e2e8f0",
+    backgroundColor: "var(--surface-1, #ffffff)",
+    border: `1.5px solid ${
+      focusedField === field
+        ? "var(--focus-ring, #0e7a53)"
+        : "var(--border-1, #e5dfd2)"
+    }`,
+    borderRadius: 8,
+    color: "var(--t1, #1a1a1a)",
     fontSize: 14,
-    fontFamily: "'IBM Plex Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     outline: "none",
     transition: "border-color 0.2s, box-shadow 0.2s",
     boxShadow:
-      focusedField === field ? "0 0 0 2px rgba(74,222,128,0.15)" : "none",
+      focusedField === field
+        ? "0 0 0 3px var(--accent-soft, rgba(43, 228, 128, 0.14))"
+        : "none",
     boxSizing: "border-box" as const,
   });
 
@@ -88,8 +109,9 @@ export default function LoginPage() {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0b0e1c 0%, #0f1225 50%, #0b0e1c 100%)",
+        background: "var(--bg-deep, #f7f3ed)",
+        backgroundImage: "var(--bg-pattern)",
+        backgroundSize: "var(--bg-pattern-size, 32px 32px)",
         padding: 20,
       }}
     >
@@ -98,11 +120,11 @@ export default function LoginPage() {
           width: "100%",
           maxWidth: 420,
           padding: "44px 40px",
-          background: "#0f1225",
-          borderRadius: 12,
-          border: "1px solid #1a1f3a",
+          background: "var(--surface-1, #ffffff)",
+          borderRadius: 16,
+          border: "1px solid var(--border-1, #e5dfd2)",
           boxShadow:
-            "0 25px 60px rgba(0,0,0,0.5), 0 0 120px rgba(74,222,128,0.03)",
+            "0 12px 48px rgba(26, 26, 26, 0.06), 0 1px 2px rgba(26, 26, 26, 0.04)",
         }}
       >
         {/* Logo */}
@@ -116,13 +138,20 @@ export default function LoginPage() {
             style={{
               fontSize: 22,
               fontWeight: 700,
-              color: "#f8fafc",
+              color: "var(--t1, #1a1a1a)",
               marginBottom: 6,
+              letterSpacing: "-0.01em",
             }}
           >
             TAYA NA! Backoffice
           </h1>
-          <p style={{ fontSize: 14, color: "#D3D3D3", fontWeight: 400 }}>
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--t2, #4a4a4a)",
+              fontWeight: 400,
+            }}
+          >
             Sign in to your admin account
           </p>
         </div>
@@ -135,10 +164,10 @@ export default function LoginPage() {
             <div
               style={{
                 padding: "12px 16px",
-                background: "rgba(239,68,68,0.08)",
-                border: "1px solid rgba(239,68,68,0.2)",
+                background: "var(--no-soft, rgba(255, 139, 107, 0.16))",
+                border: "1px solid var(--no, #ff8b6b)",
                 borderRadius: 8,
-                color: "#f87171",
+                color: "var(--no-text, #a8472d)",
                 fontSize: 13,
                 fontWeight: 500,
               }}
@@ -152,7 +181,7 @@ export default function LoginPage() {
               style={{
                 fontSize: 13,
                 fontWeight: 500,
-                color: "#D3D3D3",
+                color: "var(--t2, #4a4a4a)",
                 letterSpacing: "0.02em",
               }}
             >
@@ -182,7 +211,7 @@ export default function LoginPage() {
                 style={{
                   fontSize: 13,
                   fontWeight: 500,
-                  color: "#D3D3D3",
+                  color: "var(--t2, #4a4a4a)",
                   letterSpacing: "0.02em",
                 }}
               >
@@ -190,7 +219,11 @@ export default function LoginPage() {
               </label>
               <a
                 href="#"
-                style={{ fontSize: 12, color: "#4ade80", fontWeight: 500 }}
+                style={{
+                  fontSize: 12,
+                  color: "var(--focus-ring, #0e7a53)",
+                  fontWeight: 500,
+                }}
               >
                 Forgot password?
               </a>
@@ -215,18 +248,20 @@ export default function LoginPage() {
               padding: "12px 20px",
               marginTop: 4,
               background: loading
-                ? "#1a2040"
-                : "linear-gradient(135deg, #4ade80, #22c55e)",
+                ? "var(--accent-soft, rgba(43, 228, 128, 0.14))"
+                : "var(--accent, #2be480)",
               border: "none",
               borderRadius: 8,
-              color: loading ? "#64748b" : "#101114",
+              color: loading ? "var(--t3, #8b8378)" : "#003827",
               fontSize: 14,
               fontWeight: 600,
               cursor: loading ? "not-allowed" : "pointer",
-              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               transition: "all 0.2s",
               opacity: loading ? 0.7 : 1,
-              boxShadow: loading ? "none" : "0 4px 12px rgba(74,222,128,0.15)",
+              boxShadow: loading
+                ? "none"
+                : "0 4px 12px rgba(43, 228, 128, 0.18)",
             }}
           >
             {loading ? "Signing in..." : "Sign In"}
@@ -238,7 +273,7 @@ export default function LoginPage() {
             textAlign: "center",
             marginTop: 28,
             fontSize: 12,
-            color: "#64748b",
+            color: "var(--t3, #8b8378)",
           }}
         >
           TAYA NA Predict Admin
