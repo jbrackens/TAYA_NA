@@ -144,16 +144,17 @@ function DiscoveryHero({
           font-variant-numeric: tabular-nums;
           margin-bottom: 28px;
         }
-        .rh-change.up    { color: var(--yes); }
-        .rh-change.down  { color: var(--no); }
+        /* P8: use --yes-text/--no-text for colored text on light surface */
+        .rh-change.up    { color: var(--yes-text); }
+        .rh-change.down  { color: var(--no-text); }
         .rh-change .arrow {
           display: inline-block;
           width: 0; height: 0;
           border-left: 5px solid transparent;
           border-right: 5px solid transparent;
         }
-        .rh-change.up   .arrow { border-bottom: 7px solid var(--yes); }
-        .rh-change.down .arrow { border-top:    7px solid var(--no); }
+        .rh-change.up   .arrow { border-bottom: 7px solid var(--yes-text); }
+        .rh-change.down .arrow { border-top:    7px solid var(--no-text); }
         .rh-change .label {
           color: var(--t3); font-weight: 500; font-size: 14px;
         }
@@ -265,22 +266,25 @@ function DiscoveryHero({
           <svg viewBox="0 0 800 220" preserveAspectRatio="none">
             <defs>
               <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
+                {/* Fill stays soft seafoam/coral — decorative, not text */}
                 <stop
                   offset="0%"
-                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
-                  stopOpacity="0.32"
+                  stopColor={isUp ? "#71eeb8" : "#ff8b6b"}
+                  stopOpacity="0.18"
                 />
                 <stop
                   offset="100%"
-                  stopColor={isUp ? "var(--yes)" : "var(--no)"}
+                  stopColor={isUp ? "#71eeb8" : "#ff8b6b"}
                   stopOpacity="0"
                 />
               </linearGradient>
             </defs>
             <path d={chart.fill} fill="url(#rh-chart-fill)" />
+            {/* P8: stroke uses --yes-text/#1A6849 (6.7:1 on white), not --yes
+                (#71eeb8, 1.9:1) which fails AA on light surfaces. */}
             <path
               d={chart.line}
-              stroke={isUp ? "var(--yes)" : "var(--no)"}
+              stroke={isUp ? "var(--yes-text)" : "var(--no-text)"}
               strokeWidth={2.5}
               fill="none"
             />

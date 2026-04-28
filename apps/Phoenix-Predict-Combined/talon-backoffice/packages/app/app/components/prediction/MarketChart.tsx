@@ -103,7 +103,10 @@ export default function MarketChart({
       : 0;
   const deltaStr = `${deltaCents >= 0 ? "+" : ""}${deltaCents}¢ · ${deltaCents >= 0 ? "+" : ""}${deltaPct.toFixed(1)}% 24h`;
   const isUp = deltaCents >= 0;
-  const lineColor = isUp ? "var(--yes)" : "var(--no)";
+  /* P8: line stroke uses --yes-text/#1A6849 (6.7:1 on white) not --yes
+   * (#71eeb8, 1.9:1) which fails AA on light surfaces. Gradient fill
+   * stays soft seafoam/coral (decorative, not text). */
+  const lineColor = isUp ? "var(--yes-text)" : "var(--no-text)";
 
   const prob =
     typeof impliedProbability === "number" ? impliedProbability : yesPriceCents;
@@ -150,14 +153,14 @@ export default function MarketChart({
           font-family: 'IBM Plex Mono', monospace;
           font-size: 13px;
           font-weight: 600;
-          color: var(--yes);
+          color: var(--yes-text);
           padding: 4px 10px;
           border-radius: var(--r-pill);
           background: var(--yes-soft);
           font-variant-numeric: tabular-nums;
         }
         .mc-delta.down {
-          color: var(--no);
+          color: var(--no-text);
           background: var(--no-soft);
         }
         .mc-switcher {
@@ -213,8 +216,8 @@ export default function MarketChart({
           color: var(--t1);
           font-variant-numeric: tabular-nums;
         }
-        .mc-stat .v.yes { color: var(--yes); }
-        .mc-stat .v.no { color: var(--no); }
+        .mc-stat .v.yes { color: var(--yes-text); }
+        .mc-stat .v.no  { color: var(--no-text); }
         @media (max-width: 720px) {
           .mc-price { font-size: 40px; }
           .mc-foot { grid-template-columns: repeat(2, 1fr); }
@@ -259,12 +262,12 @@ export default function MarketChart({
               x2="0"
               y2="1"
             >
-              <stop offset="0%" stopColor={lineColor} stopOpacity="0.32" />
-              <stop offset="100%" stopColor={lineColor} stopOpacity="0" />
+              <stop offset="0%" stopColor={isUp ? "#71eeb8" : "#ff8b6b"} stopOpacity="0.18" />
+              <stop offset="100%" stopColor={isUp ? "#71eeb8" : "#ff8b6b"} stopOpacity="0" />
             </linearGradient>
           </defs>
 
-          <g stroke="rgba(255,255,255,0.04)" strokeWidth="1">
+          <g stroke="rgba(26,26,26,0.06)" strokeWidth="1">
             <line x1="0" x2={width} y1={height * 0.2} y2={height * 0.2} />
             <line x1="0" x2={width} y1={height * 0.4} y2={height * 0.4} />
             <line x1="0" x2={width} y1={height * 0.6} y2={height * 0.6} />
@@ -273,7 +276,7 @@ export default function MarketChart({
           <g
             fontFamily="IBM Plex Mono"
             fontSize="10"
-            fill="rgba(255,255,255,0.28)"
+            fill="#8B8378"
           >
             <text x="8" y="20">
               100¢
@@ -314,7 +317,7 @@ export default function MarketChart({
           />
           <g transform={`translate(${width},${markerY})`}>
             <circle r="5" fill={lineColor} />
-            <circle r="3" fill="#ffffff" />
+            <circle r="3" fill="var(--surface-1)" />
           </g>
         </svg>
 
