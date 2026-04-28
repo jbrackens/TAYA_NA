@@ -31,6 +31,12 @@ import type {
 interface TradeTicketProps {
   market: PredictionMarket;
   balance?: number;
+  /**
+   * Preselected side for the ticket. Threaded through from the
+   * `?side=yes|no` query param on /market/[ticker] so MarketCard's pills
+   * can deep-link into a side-specific trade. Defaults to "yes".
+   */
+  defaultSide?: OrderSide;
   onPreview?: (
     side: OrderSide,
     quantity: number,
@@ -45,10 +51,11 @@ type TicketMode = "market" | "limit";
 export function TradeTicket({
   market,
   balance,
+  defaultSide = "yes",
   onPreview: _onPreview,
   onSubmit,
 }: TradeTicketProps) {
-  const [side, setSide] = useState<OrderSide>("yes");
+  const [side, setSide] = useState<OrderSide>(defaultSide);
   const [amount, setAmount] = useState(25);
   const [mode, setMode] = useState<TicketMode>("market");
   const [submitting, setSubmitting] = useState(false);
