@@ -58,8 +58,6 @@ module.exports = {
         ...config.resolve,
         alias: {
           ...config.resolve.alias,
-          i18n: path.resolve(__dirname, "i18n.js"),
-          "next/config$": path.resolve(__dirname, "lib/next-runtime-config.js"),
           "@phoenix-ui/utils$": path.resolve(__dirname, "../utils/src"),
         },
       },
