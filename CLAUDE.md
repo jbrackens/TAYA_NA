@@ -38,8 +38,8 @@ Taya_Na_Predict/
 │   └── docker-compose.yml                 ← PostgreSQL (5434) + Redis (6380) + services
 ├── reference/v2-prediction/               ← Old v2 prediction prototype kept for reference
 ├── CLAUDE.md                              ← this file
-├── DESIGN.md                              ← prediction design system (dark broadcast, Outfit + IBM Plex Mono, neon phoenix green #39ff14 accent + two-greens discipline) — READ BEFORE ANY UI CHANGE
-├── DESIGN-SPORTSBOOK.md                   ← archived sportsbook spec (backoffice still uses this)
+├── DESIGN.md                              ← prediction design system (P8: warm-cream backdrop + chart-paper grid + Inter + IBM Plex Mono + mint emerald accent + AA contrast) — governs BOTH player app and backoffice as of 2026-04-28. READ BEFORE ANY UI CHANGE.
+├── DESIGN-SPORTSBOOK.md                   ← ARCHIVED legacy sportsbook spec — kept for git-blame context only, do NOT read for new work
 └── PRIMER.md                              ← session primer (older — parts are out of date)
 ```
 
@@ -117,8 +117,8 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 
 **Path:** `apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/`
 
-- **Framework:** Next.js with Pages Router (NOT App Router)
-- **UI:** Ant Design + styled-components
+- **Framework:** Next.js with Pages Router (NOT App Router) — but a parallel App Router tree under `app/` exists for newer admin pages (dashboard, audit-logs, trading, users). Both routers coexist.
+- **UI:** Ant Design 4.16 + styled-components, both wired to the **P8 design tokens** as of 2026-04-28. Stylesheet stack: `antd/dist/antd.css` → `styles/p8-tokens.css` (declares `--bg-deep` / `--surface-1/2` / `--border-1/2` / `--t1..4` / `--yes-text` / `--no-text` / `--focus-ring` / `--accent[*]` / `--r-rh-*`) → `styles/p8-antd.css` (overrides AntD component classes against the tokens). New styling work MUST reference these CSS custom properties — DO NOT introduce hex literals.
 - **API:** shared `useApi` hook via `services/api/api-service`
 - **Auth:** securedPage wrapper with PunterRoleEnum (ADMIN, TRADER, OPERATOR)
 

@@ -1,4 +1,10 @@
-# TAYA NA! Unified Design System
+# TAYA NA! Unified Design System (ARCHIVED)
+
+> **ARCHIVED 2026-04-28.** This is the legacy sportsbook spec from before the predict fork. It governed the back-office (port 3001) until the office P8 migration on 2026-04-28 brought both the player app (port 3000) and the back-office onto the single warm-cream + chart-paper-grid design system documented in [DESIGN.md](./DESIGN.md). Kept here for git-blame archaeology and historical reference; do NOT read from this for new work.
+>
+> If you're looking at this file because you found a sportsbook-era hex literal in the office, use the hex → token map in DESIGN.md §11 (entry dated 2026-04-28: "Office package migrated to P8"). Anything else, cross-reference DESIGN.md.
+
+---
 
 > One brand. Two surfaces. Shared foundations, app-specific extensions.
 
