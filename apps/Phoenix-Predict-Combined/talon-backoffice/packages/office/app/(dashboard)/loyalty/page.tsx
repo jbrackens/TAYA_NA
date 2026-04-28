@@ -1,10 +1,21 @@
-'use client';
+"use client";
 
-import { ChangeEvent, CSSProperties, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { DataTable, ErrorBoundary, ErrorState, SkeletonLoader } from '../../components/shared';
-import type { ColumnDef } from '../../components/shared';
+import {
+  ChangeEvent,
+  CSSProperties,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  DataTable,
+  ErrorBoundary,
+  ErrorState,
+  SkeletonLoader,
+} from "../../components/shared";
+import type { ColumnDef } from "../../components/shared";
 
 interface LoyaltyAccountRow {
   accountId: string;
@@ -25,27 +36,32 @@ function LoyaltyPageContent() {
   const [accounts, setAccounts] = useState<LoyaltyAccountRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [tierCode, setTierCode] = useState('');
+  const [search, setSearch] = useState("");
+  const [tierCode, setTierCode] = useState("");
 
   const loadAccounts = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
-      if (search.trim()) params.set('search', search.trim());
-      if (tierCode) params.set('tierCode', tierCode);
+      if (search.trim()) params.set("search", search.trim());
+      if (tierCode) params.set("tierCode", tierCode);
       const query = params.toString();
-      const response = await fetch(`/api/v1/admin/loyalty/accounts${query ? `?${query}` : ''}`, {
-        headers: { 'X-Admin-Role': 'admin' },
-      });
+      const response = await fetch(
+        `/api/v1/admin/loyalty/accounts${query ? `?${query}` : ""}`,
+        {
+          headers: { "X-Admin-Role": "admin" },
+        },
+      );
       if (!response.ok) {
-        throw new Error('Failed to load loyalty accounts');
+        throw new Error("Failed to load loyalty accounts");
       }
       const data = await response.json();
       setAccounts(Array.isArray(data?.items) ? data.items : []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load loyalty accounts');
+      setError(
+        err instanceof Error ? err.message : "Failed to load loyalty accounts",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -58,27 +74,36 @@ function LoyaltyPageContent() {
   const stats = useMemo(() => {
     return {
       totalAccounts: accounts.length,
-      totalBalance: accounts.reduce((sum, account) => sum + account.pointsBalance, 0),
-      totalLifetime: accounts.reduce((sum, account) => sum + account.pointsEarnedLifetime, 0),
-      vipCount: accounts.filter((account) => account.currentTier === 'vip').length,
+      totalBalance: accounts.reduce(
+        (sum, account) => sum + account.pointsBalance,
+        0,
+      ),
+      totalLifetime: accounts.reduce(
+        (sum, account) => sum + account.pointsEarnedLifetime,
+        0,
+      ),
+      vipCount: accounts.filter((account) => account.currentTier === "vip")
+        .length,
     };
   }, [accounts]);
 
   const columns: ColumnDef<LoyaltyAccountRow>[] = [
     {
-      key: 'playerId',
-      label: 'Player',
+      key: "playerId",
+      label: "Player",
       sortable: true,
       render: (value, row) => (
         <div>
           <div style={{ fontWeight: 600 }}>{String(value)}</div>
-          <div style={{ color: '#94a3b8', fontSize: 12 }}>{row.accountId}</div>
+          <div style={{ color: "var(--t3, #8b8378)", fontSize: 12 }}>
+            {row.accountId}
+          </div>
         </div>
       ),
     },
     {
-      key: 'currentTier',
-      label: 'Tier',
+      key: "currentTier",
+      label: "Tier",
       sortable: true,
       render: (value) => (
         <span style={badgeStyle(tierVariant(String(value)))}>
@@ -87,27 +112,29 @@ function LoyaltyPageContent() {
       ),
     },
     {
-      key: 'pointsBalance',
-      label: 'Balance',
+      key: "pointsBalance",
+      label: "Balance",
       sortable: true,
       render: (value) => <strong>{Number(value).toLocaleString()}</strong>,
     },
     {
-      key: 'pointsEarnedLifetime',
-      label: 'Lifetime',
+      key: "pointsEarnedLifetime",
+      label: "Lifetime",
       sortable: true,
       render: (value) => Number(value).toLocaleString(),
     },
     {
-      key: 'pointsToNextTier',
-      label: 'To Next Tier',
+      key: "pointsToNextTier",
+      label: "To Next Tier",
       sortable: true,
       render: (value, row) =>
-        row.nextTier ? `${Number(value).toLocaleString()} to ${row.nextTier.toUpperCase()}` : 'Top tier',
+        row.nextTier
+          ? `${Number(value).toLocaleString()} to ${row.nextTier.toUpperCase()}`
+          : "Top tier",
     },
     {
-      key: 'updatedAt',
-      label: 'Updated',
+      key: "updatedAt",
+      label: "Updated",
       sortable: true,
       render: (value) => new Date(String(value)).toLocaleString(),
     },
@@ -119,11 +146,15 @@ function LoyaltyPageContent() {
         <div>
           <h1 style={pageTitleStyle}>Loyalty</h1>
           <p style={subtitleStyle}>
-            Review player rewards balances, tier position, and recent accrual momentum.
+            Review player rewards balances, tier position, and recent accrual
+            momentum.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <Link href="/loyalty/settings" style={{ ...buttonStyle(), textDecoration: 'none' }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link
+            href="/loyalty/settings"
+            style={{ ...buttonStyle(), textDecoration: "none" }}
+          >
             Manage Rules & Tiers
           </Link>
           <button style={buttonStyle()} onClick={() => void loadAccounts()}>
@@ -133,24 +164,40 @@ function LoyaltyPageContent() {
       </div>
 
       <div style={metricsGridStyle}>
-        <MetricCard label="Total Accounts" value={stats.totalAccounts.toLocaleString()} />
-        <MetricCard label="Points In Balance" value={stats.totalBalance.toLocaleString()} />
-        <MetricCard label="Lifetime Points" value={stats.totalLifetime.toLocaleString()} />
-        <MetricCard label="VIP Players" value={stats.vipCount.toLocaleString()} />
+        <MetricCard
+          label="Total Accounts"
+          value={stats.totalAccounts.toLocaleString()}
+        />
+        <MetricCard
+          label="Points In Balance"
+          value={stats.totalBalance.toLocaleString()}
+        />
+        <MetricCard
+          label="Lifetime Points"
+          value={stats.totalLifetime.toLocaleString()}
+        />
+        <MetricCard
+          label="VIP Players"
+          value={stats.vipCount.toLocaleString()}
+        />
       </div>
 
       <div style={{ ...surfaceCardStyle, marginBottom: 20 }}>
         <div style={filtersRowStyle}>
           <input
-            style={{ ...inputStyle, minWidth: 260, flex: '1 1 260px' }}
+            style={{ ...inputStyle, minWidth: 260, flex: "1 1 260px" }}
             value={search}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value)}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setSearch(event.target.value)
+            }
             placeholder="Search by player or account id"
           />
           <select
             style={selectStyle}
             value={tierCode}
-            onChange={(event: ChangeEvent<HTMLSelectElement>) => setTierCode(event.target.value)}
+            onChange={(event: ChangeEvent<HTMLSelectElement>) =>
+              setTierCode(event.target.value)
+            }
           >
             <option value="">All tiers</option>
             <option value="bronze">Bronze</option>
@@ -195,35 +242,39 @@ function MetricCard({ label, value }: { label: string; value: string }) {
   );
 }
 
-function tierVariant(tier: string): 'default' | 'success' | 'warning' | 'danger' {
+function tierVariant(
+  tier: string,
+): "default" | "success" | "warning" | "danger" {
   switch (tier) {
-    case 'vip':
-      return 'danger';
-    case 'gold':
-      return 'warning';
-    case 'silver':
-      return 'success';
+    case "vip":
+      return "danger";
+    case "gold":
+      return "warning";
+    case "silver":
+      return "success";
     default:
-      return 'default';
+      return "default";
   }
 }
 
-function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSProperties {
+function badgeStyle(
+  variant: "default" | "success" | "warning" | "danger",
+): CSSProperties {
   const backgroundByVariant: Record<string, string> = {
-    default: '#1a1f3a',
-    success: '#065f46',
-    warning: '#92400e',
-    danger: '#7f1d1d',
+    default: "var(--border-1, #e5dfd2)",
+    success: "#065f46",
+    warning: "#92400e",
+    danger: "#7f1d1d",
   };
   const colorByVariant: Record<string, string> = {
-    default: '#93c5fd',
-    success: '#dcfce7',
-    warning: '#fef3c7',
-    danger: '#fee2e2',
+    default: "#93c5fd",
+    success: "#dcfce7",
+    warning: "#fef3c7",
+    danger: "#fee2e2",
   };
   return {
-    display: 'inline-block',
-    padding: '4px 8px',
+    display: "inline-block",
+    padding: "4px 8px",
     borderRadius: 4,
     fontSize: 12,
     fontWeight: 600,
@@ -234,12 +285,12 @@ function badgeStyle(variant: 'default' | 'success' | 'warning' | 'danger'): CSSP
 
 function buttonStyle(): CSSProperties {
   return {
-    padding: '8px 16px',
-    backgroundColor: '#4a7eff',
-    color: '#0b0e1c',
-    border: 'none',
+    padding: "8px 16px",
+    backgroundColor: "var(--focus-ring, #0e7a53)",
+    color: "var(--bg-deep, #f7f3ed)",
+    border: "none",
     borderRadius: 4,
-    cursor: 'pointer',
+    cursor: "pointer",
     fontWeight: 600,
     fontSize: 14,
   };
@@ -249,73 +300,73 @@ const pageTitleStyle: CSSProperties = {
   fontSize: 28,
   fontWeight: 700,
   marginBottom: 8,
-  color: '#ffffff',
+  color: "var(--t1, #1a1a1a)",
 };
 
 const subtitleStyle: CSSProperties = {
   margin: 0,
-  color: '#a0a0a0',
+  color: "var(--t2, #4a4a4a)",
   fontSize: 14,
 };
 
 const headerRowStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
+  display: "flex",
+  justifyContent: "space-between",
   gap: 16,
-  alignItems: 'flex-end',
+  alignItems: "flex-end",
   marginBottom: 20,
-  flexWrap: 'wrap',
+  flexWrap: "wrap",
 };
 
 const metricsGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
   gap: 16,
   marginBottom: 24,
 };
 
 const metricLabelStyle: CSSProperties = {
   fontSize: 12,
-  color: '#94a3b8',
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
+  color: "var(--t3, #8b8378)",
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
 };
 
 const metricValueStyle: CSSProperties = {
   fontSize: 26,
   fontWeight: 700,
-  color: '#ffffff',
+  color: "var(--t1, #1a1a1a)",
   marginTop: 8,
 };
 
 const surfaceCardStyle: CSSProperties = {
   padding: 16,
-  backgroundColor: '#111631',
-  border: '1px solid #1a1f3a',
+  backgroundColor: "var(--surface-1, var(--t1, #1a1a1a))",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 8,
 };
 
 const filtersRowStyle: CSSProperties = {
-  display: 'flex',
+  display: "flex",
   gap: 12,
-  flexWrap: 'wrap',
-  alignItems: 'center',
+  flexWrap: "wrap",
+  alignItems: "center",
 };
 
 const inputStyle: CSSProperties = {
-  padding: '10px 12px',
-  backgroundColor: '#1a1f3a',
-  border: '1px solid #1a1f3a',
-  color: '#ffffff',
+  padding: "10px 12px",
+  backgroundColor: "var(--border-1, #e5dfd2)",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  color: "var(--t1, #1a1a1a)",
   borderRadius: 4,
   fontSize: 14,
 };
 
 const selectStyle: CSSProperties = {
-  padding: '10px 12px',
-  backgroundColor: '#1a1f3a',
-  border: '1px solid #1a1f3a',
-  color: '#ffffff',
+  padding: "10px 12px",
+  backgroundColor: "var(--border-1, #e5dfd2)",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  color: "var(--t1, #1a1a1a)",
   borderRadius: 4,
   fontSize: 14,
 };

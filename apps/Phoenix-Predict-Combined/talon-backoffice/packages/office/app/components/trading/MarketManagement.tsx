@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Badge, Button } from '../shared';
-import { useState } from 'react';
+import styled from "styled-components";
+import { Badge, Button } from "../shared";
+import { useState } from "react";
 
 const Container = styled.div`
   display: flex;
@@ -12,7 +12,7 @@ const Container = styled.div`
 
 const MarketRow = styled.div`
   padding: 12px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr auto;
@@ -27,7 +27,7 @@ const MarketRow = styled.div`
 
 const MarketName = styled.span`
   font-size: 13px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 500;
 `;
 
@@ -36,19 +36,19 @@ const MarketInfo = styled.div`
   gap: 8px;
   align-items: center;
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const SelectionCount = styled.span`
-  background-color: #111631;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
   padding: 2px 6px;
   border-radius: 3px;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   font-weight: 600;
 `;
 
 const Liability = styled.span`
-  color: #f87171;
+  color: var(--no-text, #a8472d);
   font-weight: 600;
 `;
 
@@ -64,13 +64,13 @@ const SuspendButton = styled(Button)`
 const EmptyState = styled.div`
   text-align: center;
   padding: 40px 20px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 export interface MarketData {
   id: string;
   name: string;
-  status: 'open' | 'suspended' | 'settled';
+  status: "open" | "suspended" | "settled";
   selectionCount: number;
   liability: number;
   betCount?: number;
@@ -88,7 +88,7 @@ export function MarketManagement({
   onViewSelections,
 }: MarketManagementProps) {
   const [localMarkets, setLocalMarkets] = useState<MarketData[]>(markets);
-  const canToggleMarkets = typeof onMarketToggle === 'function';
+  const canToggleMarkets = typeof onMarketToggle === "function";
 
   const handleToggle = (marketId: string) => {
     if (!canToggleMarkets) {
@@ -97,7 +97,7 @@ export function MarketManagement({
     setLocalMarkets((prev) =>
       prev.map((m) =>
         m.id === marketId
-          ? { ...m, status: m.status === 'open' ? 'suspended' : 'open' }
+          ? { ...m, status: m.status === "open" ? "suspended" : "open" }
           : m,
       ),
     );
@@ -106,11 +106,11 @@ export function MarketManagement({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'open':
+      case "open":
         return <Badge variant="primary">Open</Badge>;
-      case 'suspended':
+      case "suspended":
         return <Badge variant="danger">Suspended</Badge>;
-      case 'settled':
+      case "settled":
         return <Badge variant="secondary">Settled</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
@@ -124,26 +124,26 @@ export function MarketManagement({
           <MarketRow key={market.id}>
             <MarketName>{market.name}</MarketName>
 
+            <MarketInfo>{getStatusBadge(market.status)}</MarketInfo>
+
             <MarketInfo>
-              {getStatusBadge(market.status)}
+              Selections:{" "}
+              <SelectionCount>{market.selectionCount}</SelectionCount>
             </MarketInfo>
 
             <MarketInfo>
-              Selections: <SelectionCount>{market.selectionCount}</SelectionCount>
-            </MarketInfo>
-
-            <MarketInfo>
-              Liability: <Liability>${(market.liability / 1000).toFixed(1)}K</Liability>
+              Liability:{" "}
+              <Liability>${(market.liability / 1000).toFixed(1)}K</Liability>
             </MarketInfo>
 
             <ActionButtons>
               <SuspendButton
-                variant={market.status === 'open' ? 'danger' : 'primary'}
+                variant={market.status === "open" ? "danger" : "primary"}
                 size="sm"
                 onClick={() => handleToggle(market.id)}
                 disabled={!canToggleMarkets}
               >
-                {market.status === 'open' ? 'Suspend' : 'Resume'}
+                {market.status === "open" ? "Suspend" : "Resume"}
               </SuspendButton>
               <Button
                 variant="secondary"
@@ -162,14 +162,15 @@ export function MarketManagement({
       {!canToggleMarkets && localMarkets.length > 0 && (
         <div
           style={{
-            fontSize: '12px',
-            color: '#a0a0a0',
-            padding: '10px 12px',
-            backgroundColor: 'rgba(15, 52, 96, 0.5)',
-            borderRadius: '4px',
+            fontSize: "12px",
+            color: "var(--t2, #4a4a4a)",
+            padding: "10px 12px",
+            backgroundColor: "rgba(15, 52, 96, 0.5)",
+            borderRadius: "4px",
           }}
         >
-          Market controls are view-only. Toggle requires the onMarketToggle prop.
+          Market controls are view-only. Toggle requires the onMarketToggle
+          prop.
         </div>
       )}
     </Container>

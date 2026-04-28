@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Card } from '../shared';
+import styled from "styled-components";
+import { Card } from "../shared";
 
 const WidgetCard = styled(Card)`
   padding: 20px;
@@ -19,7 +19,7 @@ const WidgetCard = styled(Card)`
 const Label = styled.p`
   margin: 0 0 12px 0;
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   text-transform: uppercase;
   font-weight: 500;
 `;
@@ -36,9 +36,9 @@ const TimelineItem = styled.div`
   display: flex;
   gap: 12px;
   padding: 12px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
-  border-left: 3px solid #4a7eff;
+  border-left: 3px solid var(--focus-ring, #0e7a53);
 `;
 
 const IconContainer = styled.div`
@@ -61,25 +61,25 @@ const ItemContent = styled.div`
 const ItemTitle = styled.div`
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   margin-bottom: 2px;
 `;
 
 const ItemDescription = styled.p`
   margin: 0;
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const ItemTime = styled.span`
   font-size: 10px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 20px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   font-size: 12px;
 `;
 
@@ -98,24 +98,29 @@ interface RecentActivityWidgetProps {
 
 const getActivityIcon = (action: string) => {
   switch (action) {
-    case 'suspend':
-      return '🔒';
-    case 'settle':
-      return '✓';
-    case 'adjust':
-      return '⚙️';
-    case 'login':
-      return '👤';
+    case "suspend":
+      return "🔒";
+    case "settle":
+      return "✓";
+    case "adjust":
+      return "⚙️";
+    case "login":
+      return "👤";
     default:
-      return '📝';
+      return "📝";
   }
 };
 
-export function RecentActivityWidget({ activities = [] }: RecentActivityWidgetProps) {
+export function RecentActivityWidget({
+  activities = [],
+}: RecentActivityWidgetProps) {
   const formatTime = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } catch {
       return timestamp;
     }
@@ -129,7 +134,9 @@ export function RecentActivityWidget({ activities = [] }: RecentActivityWidgetPr
         <Timeline>
           {activities.map((activity) => (
             <TimelineItem key={activity.id}>
-              <IconContainer>{activity.icon || getActivityIcon(activity.action)}</IconContainer>
+              <IconContainer>
+                {activity.icon || getActivityIcon(activity.action)}
+              </IconContainer>
               <ItemContent>
                 <ItemTitle>
                   {activity.actor} - {activity.action}

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Card } from '../shared';
+import styled from "styled-components";
+import { Card } from "../shared";
 
 const WidgetCard = styled(Card)`
   padding: 20px;
@@ -10,7 +10,7 @@ const WidgetCard = styled(Card)`
 const Label = styled.p`
   margin: 0 0 12px 0;
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   text-transform: uppercase;
   font-weight: 500;
 `;
@@ -18,7 +18,7 @@ const Label = styled.p`
 const MetricValue = styled.div`
   font-size: 32px;
   font-weight: 700;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
   margin-bottom: 16px;
 `;
 
@@ -34,19 +34,19 @@ const PeriodRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
 `;
 
 const PeriodLabel = styled.span`
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const PeriodValue = styled.span`
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const ChangeContainer = styled.div`
@@ -54,13 +54,14 @@ const ChangeContainer = styled.div`
   align-items: center;
   gap: 8px;
   padding-top: 12px;
-  border-top: 1px solid #1a1f3a;
+  border-top: 1px solid var(--border-1, #e5dfd2);
 `;
 
 const ChangeValue = styled.span<{ $positive?: boolean }>`
   font-size: 14px;
   font-weight: 600;
-  color: ${(props) => (props.$positive ? '#22c55e' : '#f87171')};
+  color: ${(props) =>
+    props.$positive ? "var(--accent-lo, #1fa65e)" : "var(--no-text, #a8472d)"};
 `;
 
 const Sparkline = styled.svg`
@@ -87,7 +88,7 @@ export function RevenueWidget({
 }: RevenueWidgetProps) {
   // Generate sparkline path
   const generateSparklinePath = (data: number[]) => {
-    if (data.length === 0) return '';
+    if (data.length === 0) return "";
 
     const max = Math.max(...data);
     const min = Math.min(...data);
@@ -113,7 +114,7 @@ export function RevenueWidget({
       <Sparkline viewBox="0 0 100 30" preserveAspectRatio="none">
         <path
           d={generateSparklinePath(sparklineData)}
-          stroke="#4a7eff"
+          stroke="var(--focus-ring, #0e7a53)"
           fill="none"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -136,9 +137,12 @@ export function RevenueWidget({
       </PeriodsContainer>
 
       <ChangeContainer>
-        <span style={{ fontSize: '12px', color: '#a0a0a0' }}>vs previous period</span>
+        <span style={{ fontSize: "12px", color: "var(--t2, #4a4a4a)" }}>
+          vs previous period
+        </span>
         <ChangeValue $positive={changePercent >= 0}>
-          {changePercent >= 0 ? '+' : ''}{changePercent}%
+          {changePercent >= 0 ? "+" : ""}
+          {changePercent}%
         </ChangeValue>
       </ChangeContainer>
     </WidgetCard>

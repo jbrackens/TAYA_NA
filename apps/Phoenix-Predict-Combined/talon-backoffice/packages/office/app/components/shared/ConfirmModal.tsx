@@ -1,56 +1,60 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
+import styled from "styled-components";
 
 const ModalOverlay = styled.div<{ $isOpen?: boolean }>`
-  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
+  display: ${(props) => (props.$isOpen ? "flex" : "none")};
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(26, 26, 26, 0.45);
   align-items: center;
   justify-content: center;
   z-index: 1000;
 `;
 
 const ModalContent = styled.div`
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
-  border-radius: 8px;
+  background-color: var(--surface-1, #ffffff);
+  border: 1px solid var(--border-1, #e5dfd2);
+  border-radius: 16px;
   padding: 24px;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 12px 48px rgba(26, 26, 26, 0.08),
+    0 1px 2px rgba(26, 26, 26, 0.04);
 `;
 
 const ModalTitle = styled.h2`
   margin: 0 0 12px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
+  letter-spacing: -0.01em;
 `;
 
 const ModalMessage = styled.p`
   margin: 0 0 20px 0;
   font-size: 14px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   line-height: 1.5;
 `;
 
 const ImpactSummary = styled.div`
-  background-color: #1a1f3a;
+  background-color: var(--no-soft, rgba(255, 139, 107, 0.16));
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-bottom: 20px;
-  border-left: 3px solid #f87171;
+  border-left: 3px solid var(--no-text, #a8472d);
 `;
 
 const ImpactText = styled.p`
   margin: 0;
   font-size: 13px;
-  color: #ffffff;
+  color: var(--no-text, #a8472d);
+  font-weight: 500;
 `;
 
 const ButtonGroup = styled.div`
@@ -60,9 +64,9 @@ const ButtonGroup = styled.div`
 `;
 
 const BaseButton = styled.button`
-  padding: 8px 16px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
@@ -75,35 +79,36 @@ const BaseButton = styled.button`
   }
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 `;
 
 const CancelButton = styled(BaseButton)`
-  background-color: #1a1f3a;
-  color: #4a7eff;
-  border: 1px solid #1a1f3a;
+  background-color: var(--surface-1, #ffffff);
+  color: var(--t1, #1a1a1a);
+  border: 1px solid var(--border-1, #e5dfd2);
 
   &:hover:not(:disabled) {
-    background-color: #111631;
-    border-color: #4a7eff;
+    background-color: var(--surface-2, #fcfaf5);
+    border-color: var(--focus-ring, #0e7a53);
   }
 `;
 
 const ConfirmButton = styled(BaseButton)`
-  background-color: #4a7eff;
-  color: #0b0e1c;
+  background-color: var(--accent, #2be480);
+  color: #003827;
 
   &:hover:not(:disabled) {
-    background-color: #6593ff;
+    background-color: var(--accent-lo, #1fa65e);
+    color: #ffffff;
   }
 
   &.danger {
-    background-color: #f87171;
+    background-color: var(--no-text, #a8472d);
     color: #ffffff;
 
     &:hover:not(:disabled) {
-      background-color: #ef4444;
+      background-color: #8b3a25;
     }
   }
 `;
@@ -115,7 +120,7 @@ interface ConfirmModalProps {
   impactSummary?: string;
   confirmText?: string;
   cancelText?: string;
-  variant?: 'danger' | 'warning' | 'info';
+  variant?: "danger" | "warning" | "info";
   isLoading?: boolean;
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
@@ -126,9 +131,9 @@ export function ConfirmModal({
   title,
   message,
   impactSummary,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
-  variant = 'warning',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  variant = "warning",
   isLoading = false,
   onConfirm,
   onCancel,
@@ -146,18 +151,15 @@ export function ConfirmModal({
         )}
 
         <ButtonGroup>
-          <CancelButton
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <CancelButton onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </CancelButton>
           <ConfirmButton
-            className={variant === 'danger' ? 'danger' : ''}
+            className={variant === "danger" ? "danger" : ""}
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? 'Processing...' : confirmText}
+            {isLoading ? "Processing..." : confirmText}
           </ConfirmButton>
         </ButtonGroup>
       </ModalContent>

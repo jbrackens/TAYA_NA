@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Button } from '../shared';
-import { useState } from 'react';
+import styled from "styled-components";
+import { Button } from "../shared";
+import { useState } from "react";
 
 const EditorRow = styled.div`
   padding: 12px;
-  background-color: #1a1f3a;
+  background-color: var(--border-1, #e5dfd2);
   border-radius: 4px;
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr auto;
@@ -21,7 +21,7 @@ const EditorRow = styled.div`
 
 const SelectionName = styled.span`
   font-size: 13px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
   font-weight: 500;
 `;
 
@@ -34,8 +34,8 @@ const OddsContainer = styled.div`
 const OddsButton = styled.button`
   width: 28px;
   height: 28px;
-  background-color: #4a7eff;
-  color: #0b0e1c;
+  background-color: var(--focus-ring, #0e7a53);
+  color: var(--bg-deep, #f7f3ed);
   border: none;
   border-radius: 3px;
   cursor: pointer;
@@ -60,22 +60,22 @@ const OddsInput = styled.input`
   width: 70px;
   padding: 6px 8px;
   text-align: center;
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
-  color: #4a7eff;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
+  border: 1px solid var(--border-1, #e5dfd2);
+  color: var(--focus-ring, #0e7a53);
   font-weight: 600;
   border-radius: 3px;
   font-size: 13px;
 
   &:focus {
     outline: none;
-    border-color: #4a7eff;
+    border-color: var(--focus-ring, #0e7a53);
   }
 `;
 
 const InfoText = styled.span`
   font-size: 11px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
 `;
 
 const ActionButtons = styled.div`
@@ -127,7 +127,10 @@ export function SelectionOddsEditor({
       <SelectionName>{selection.name}</SelectionName>
 
       <OddsContainer>
-        <OddsButton onClick={() => handleOddsChange(-0.05)} disabled={isSaving || odds <= 1.05}>
+        <OddsButton
+          onClick={() => handleOddsChange(-0.05)}
+          disabled={isSaving || odds <= 1.05}
+        >
           -
         </OddsButton>
         <OddsInput
@@ -158,7 +161,7 @@ export function SelectionOddsEditor({
           onClick={handleSave}
           disabled={isSaving || odds === selection.currentOdds}
         >
-          {isSaving ? 'Saving...' : 'Save'}
+          {isSaving ? "Saving..." : "Save"}
         </Button>
         <Button
           variant="secondary"

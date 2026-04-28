@@ -1,53 +1,56 @@
-'use client';
+"use client";
 
-import React, { ReactNode, ErrorInfo } from 'react';
-import styled from 'styled-components';
+import React, { ReactNode, ErrorInfo } from "react";
+import styled from "styled-components";
 
 const ErrorContainer = styled.div`
   padding: 24px;
-  background-color: #0b0e1c;
-  border: 1px solid #d32f2f;
-  border-radius: 8px;
+  background-color: var(--surface-1, #ffffff);
+  border: 1px solid var(--no, #ff8b6b);
+  border-radius: 12px;
   margin: 24px 0;
 `;
 
 const ErrorTitle = styled.h2`
   font-size: 18px;
   font-weight: 600;
-  color: #ff6b6b;
+  color: var(--no-text, #a8472d);
   margin: 0 0 12px 0;
 `;
 
 const ErrorMessage = styled.p`
   font-size: 14px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   margin: 0 0 12px 0;
   line-height: 1.6;
 `;
 
 const ErrorDetails = styled.pre`
-  background-color: #1a1f3a;
+  background-color: var(--surface-2, #fcfaf5);
+  border: 1px solid var(--border-1, #e5dfd2);
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   overflow-x: auto;
   margin: 12px 0 0 0;
 `;
 
 const RetryButton = styled.button`
   padding: 8px 16px;
-  background-color: #4a7eff;
-  color: #0b0e1c;
+  background-color: var(--accent, #2be480);
+  color: #003827;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: #6593ff;
-    transform: translateY(-2px);
+    background-color: var(--accent-lo, #1fa65e);
+    color: #ffffff;
+    transform: translateY(-1px);
   }
 `;
 
@@ -61,7 +64,10 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -81,7 +87,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       errorInfo,
     });
     // Log to error reporting service
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   handleRetry = () => {
@@ -98,12 +104,13 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         <ErrorContainer>
           <ErrorTitle>Oops! Something went wrong</ErrorTitle>
           <ErrorMessage>
-            We encountered an unexpected error. Please try again or contact support if the problem persists.
+            We encountered an unexpected error. Please try again or contact
+            support if the problem persists.
           </ErrorMessage>
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {process.env.NODE_ENV === "development" && this.state.error && (
             <ErrorDetails>
               {this.state.error.toString()}
-              {'\n\n'}
+              {"\n\n"}
               {this.state.errorInfo?.componentStack}
             </ErrorDetails>
           )}

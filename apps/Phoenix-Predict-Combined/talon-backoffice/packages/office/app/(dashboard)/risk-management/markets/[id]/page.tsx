@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Card, Badge } from '../../../../components/shared';
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import styled from "styled-components";
+import { Card, Badge } from "../../../../components/shared";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 
 const PageTitle = styled.h1`
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 24px;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const SectionTitle = styled.h2`
   font-size: 18px;
   font-weight: 600;
   margin: 24px 0 16px 0;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const InfoGrid = styled.div`
@@ -33,14 +33,14 @@ const InfoCard = styled(Card)`
 const InfoLabel = styled.p`
   margin: 0 0 8px 0;
   font-size: 12px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   text-transform: uppercase;
 `;
 
 const InfoValue = styled.div`
   font-size: 18px;
   font-weight: 700;
-  color: #4a7eff;
+  color: var(--focus-ring, #0e7a53);
 `;
 
 const TableContainer = styled(Card)`
@@ -55,18 +55,18 @@ const Table = styled.table`
   th {
     text-align: left;
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-weight: 600;
     font-size: 12px;
-    color: #a0a0a0;
+    color: var(--t2, #4a4a4a);
     text-transform: uppercase;
   }
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #1a1f3a;
+    border-bottom: 1px solid var(--border-1, #e5dfd2);
     font-size: 13px;
-    color: #ffffff;
+    color: var(--t1, #1a1a1a);
   }
 
   tr:hover {
@@ -110,18 +110,18 @@ export default function MarketDetailPage() {
       try {
         const response = await fetch(`/api/v1/admin/trading/markets/${id}`, {
           headers: {
-            'X-Admin-Role': 'admin',
+            "X-Admin-Role": "admin",
           },
         });
-        if (!response.ok) throw new Error('Failed to fetch');
+        if (!response.ok) throw new Error("Failed to fetch");
         const data = await response.json();
         setMarket({
           id: data.id,
           name: data.name,
-          fixture: data.fixtureId || 'Unknown fixture',
-          sport: 'Unknown',
-          league: 'Unknown',
-          status: data.status || 'unknown',
+          fixture: data.fixtureId || "Unknown fixture",
+          sport: "Unknown",
+          league: "Unknown",
+          status: data.status || "unknown",
           totalBets: 0,
           totalStake: 0,
           totalLiability: 0,
@@ -130,7 +130,7 @@ export default function MarketDetailPage() {
           selections: [],
         });
       } catch (error) {
-        console.error('Failed to fetch market:', error);
+        console.error("Failed to fetch market:", error);
         setMarket(null);
       } finally {
         setIsLoading(false);
@@ -143,18 +143,26 @@ export default function MarketDetailPage() {
   }, [id]);
 
   if (isLoading) {
-    return <div style={{ padding: '40px', color: '#a0a0a0' }}>Loading market...</div>;
+    return (
+      <div style={{ padding: "40px", color: "var(--t2, #4a4a4a)" }}>
+        Loading market...
+      </div>
+    );
   }
 
   if (!market) {
-    return <div style={{ padding: '40px', color: '#a0a0a0' }}>Market not found</div>;
+    return (
+      <div style={{ padding: "40px", color: "var(--t2, #4a4a4a)" }}>
+        Market not found
+      </div>
+    );
   }
 
   const getRiskColor = (risk: number) => {
-    if (risk > 80) return '#f87171';
-    if (risk > 60) return '#fbbf24';
-    if (risk > 40) return '#60a5fa';
-    return '#22c55e';
+    if (risk > 80) return "var(--no-text, #a8472d)";
+    if (risk > 60) return "var(--warn, #d97706)";
+    if (risk > 40) return "#60a5fa";
+    return "var(--accent-lo, #1fa65e)";
   };
 
   return (
@@ -164,22 +172,22 @@ export default function MarketDetailPage() {
       <InfoGrid>
         <InfoCard>
           <InfoLabel>Fixture</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{market.fixture}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{market.fixture}</InfoValue>
         </InfoCard>
 
         <InfoCard>
           <InfoLabel>Sport</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{market.sport}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{market.sport}</InfoValue>
         </InfoCard>
 
         <InfoCard>
           <InfoLabel>League</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{market.league}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{market.league}</InfoValue>
         </InfoCard>
 
         <InfoCard>
           <InfoLabel>Status</InfoLabel>
-          <InfoValue style={{ fontSize: '14px' }}>{market.status}</InfoValue>
+          <InfoValue style={{ fontSize: "14px" }}>{market.status}</InfoValue>
         </InfoCard>
 
         <InfoCard>
@@ -237,7 +245,10 @@ export default function MarketDetailPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: '#a0a0a0' }}>
+                <td
+                  colSpan={6}
+                  style={{ textAlign: "center", color: "var(--t2, #4a4a4a)" }}
+                >
                   No selections found
                 </td>
               </tr>

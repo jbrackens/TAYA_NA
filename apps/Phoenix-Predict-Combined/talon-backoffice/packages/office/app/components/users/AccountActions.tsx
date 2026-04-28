@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import styled from 'styled-components';
-import { Button } from '../shared';
-import { useState } from 'react';
-import { ConfirmModal } from '../shared/ConfirmModal';
-import { useConfirm } from '../../hooks/useConfirm';
+import styled from "styled-components";
+import { Button } from "../shared";
+import { useState } from "react";
+import { ConfirmModal } from "../shared/ConfirmModal";
+import { useConfirm } from "../../hooks/useConfirm";
 
 const ActionsContainer = styled.div`
-  background-color: #111631;
-  border: 1px solid #1a1f3a;
+  background-color: var(--surface-1, var(--t1, #1a1a1a));
+  border: 1px solid var(--border-1, #e5dfd2);
   border-radius: 6px;
   padding: 20px;
 `;
@@ -17,7 +17,7 @@ const Title = styled.h3`
   margin: 0 0 16px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--t1, #1a1a1a);
 `;
 
 const ActionGroup = styled.div`
@@ -31,7 +31,7 @@ const ActionGroup = styled.div`
 const GroupTitle = styled.h4`
   margin: 0 0 12px 0;
   font-size: 13px;
-  color: #a0a0a0;
+  color: var(--t2, #4a4a4a);
   text-transform: uppercase;
   font-weight: 600;
 `;
@@ -49,33 +49,40 @@ const StyledButton = styled(Button)`
 const WarningText = styled.p`
   margin: 12px 0 0 0;
   font-size: 11px;
-  color: #f87171;
+  color: var(--no-text, #a8472d);
   padding: 8px;
   background-color: rgba(248, 113, 113, 0.1);
   border-radius: 3px;
 `;
 
 interface AccountActionsProps {
-  currentStatus?: 'active' | 'suspended' | 'inactive';
+  currentStatus?: "active" | "suspended" | "inactive";
   onAction?: (action: string, data?: any) => void | Promise<void>;
 }
 
-export function AccountActions({ currentStatus, onAction }: AccountActionsProps) {
+export function AccountActions({
+  currentStatus,
+  onAction,
+}: AccountActionsProps) {
   const confirm = useConfirm();
   const [isLoading, setIsLoading] = useState(false);
-  const statusActionsAvailable = typeof onAction === 'function';
-  const canSuspend = statusActionsAvailable && currentStatus !== 'suspended';
-  const canActivate = statusActionsAvailable && currentStatus === 'suspended';
+  const statusActionsAvailable = typeof onAction === "function";
+  const canSuspend = statusActionsAvailable && currentStatus !== "suspended";
+  const canActivate = statusActionsAvailable && currentStatus === "suspended";
 
-  const handleAction = async (action: string, title: string, message: string) => {
+  const handleAction = async (
+    action: string,
+    title: string,
+    message: string,
+  ) => {
     if (!statusActionsAvailable) {
       return;
     }
     confirm.openConfirm({
       title,
       message,
-      confirmText: 'Confirm',
-      variant: 'danger',
+      confirmText: "Confirm",
+      variant: "danger",
       onConfirm: async () => {
         setIsLoading(true);
         try {
@@ -99,9 +106,9 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
               variant="danger"
               onClick={() =>
                 handleAction(
-                  'suspend',
-                  'Suspend Account',
-                  'Suspend this punter\'s account immediately.',
+                  "suspend",
+                  "Suspend Account",
+                  "Suspend this punter's account immediately.",
                 )
               }
               disabled={isLoading || !canSuspend}
@@ -112,9 +119,9 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
               variant="secondary"
               onClick={() =>
                 handleAction(
-                  'activate',
-                  'Activate Account',
-                  'Activate this suspended account.',
+                  "activate",
+                  "Activate Account",
+                  "Activate this suspended account.",
                 )
               }
               disabled={isLoading || !canActivate}
@@ -131,9 +138,9 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
               variant="secondary"
               onClick={() =>
                 handleAction(
-                  'resetPassword',
-                  'Force Password Reset',
-                  'Force this punter to reset their password on next login.',
+                  "resetPassword",
+                  "Force Password Reset",
+                  "Force this punter to reset their password on next login.",
                 )
               }
               disabled={isLoading}
@@ -144,9 +151,9 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
               variant="secondary"
               onClick={() =>
                 handleAction(
-                  'disable2FA',
-                  'Disable 2FA',
-                  'Disable two-factor authentication for this punter.',
+                  "disable2FA",
+                  "Disable 2FA",
+                  "Disable two-factor authentication for this punter.",
                 )
               }
               disabled={isLoading}
@@ -163,9 +170,9 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
               variant="secondary"
               onClick={() =>
                 handleAction(
-                  'adjustSegment',
-                  'Adjust Risk Segment',
-                  'Adjust this punter\'s risk classification.',
+                  "adjustSegment",
+                  "Adjust Risk Segment",
+                  "Adjust this punter's risk classification.",
                 )
               }
               disabled={isLoading}
@@ -176,9 +183,9 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
               variant="secondary"
               onClick={() =>
                 handleAction(
-                  'setLimits',
-                  'Set Manual Limits',
-                  'Set custom deposit, stake, or session time limits.',
+                  "setLimits",
+                  "Set Manual Limits",
+                  "Set custom deposit, stake, or session time limits.",
                 )
               }
               disabled={isLoading}
@@ -190,14 +197,14 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
 
         <ActionGroup>
           <GroupTitle>Notes & Documentation</GroupTitle>
-          <ButtonGrid style={{ gridTemplateColumns: '1fr' }}>
+          <ButtonGrid style={{ gridTemplateColumns: "1fr" }}>
             <StyledButton
               variant="secondary"
               onClick={() =>
                 handleAction(
-                  'addNote',
-                  'Add Admin Note',
-                  'Attach an admin note to this punter\'s profile.',
+                  "addNote",
+                  "Add Admin Note",
+                  "Attach an admin note to this punter's profile.",
                 )
               }
               disabled={isLoading}
@@ -214,7 +221,7 @@ export function AccountActions({ currentStatus, onAction }: AccountActionsProps)
         message={confirm.message}
         confirmText={confirm.confirmText}
         cancelText={confirm.cancelText}
-        variant={confirm.variant as 'danger' | 'warning' | 'info'}
+        variant={confirm.variant as "danger" | "warning" | "info"}
         isLoading={confirm.isLoading}
         onConfirm={confirm.handleConfirm}
         onCancel={confirm.handleCancel}
