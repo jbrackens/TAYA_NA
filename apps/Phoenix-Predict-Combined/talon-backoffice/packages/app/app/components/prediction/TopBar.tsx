@@ -253,9 +253,9 @@ export function TopBar() {
           transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
           white-space: nowrap;
         }
-        .tb-link:hover { color: var(--t1); background: rgba(255,255,255,0.06); }
+        .tb-link:hover { color: var(--t1); background: rgba(0,0,0,0.05); }
         .tb-link.is-active {
-          color: #061a10;
+          color: #04140a;
           background: var(--accent);
           font-weight: 600;
         }
@@ -309,7 +309,7 @@ export function TopBar() {
           background: var(--surface-1);
           border: 1px solid var(--border-1);
           border-radius: var(--r-rh-md);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+          box-shadow: 0 10px 32px rgba(60, 50, 30, 0.12);
           z-index: 110;
           max-height: 360px;
           overflow-y: auto;
@@ -394,7 +394,7 @@ export function TopBar() {
           transition: transform 150ms ease, filter 150ms ease;
         }
         .tb-btn-ghost { background: transparent; color: var(--t1); }
-        .tb-btn-ghost:hover { background: rgba(255,255,255,0.06); }
+        .tb-btn-ghost:hover { background: rgba(0,0,0,0.05); }
         .tb-btn-accent {
           color: #061a10;
           background: var(--accent);
@@ -410,7 +410,7 @@ export function TopBar() {
           border: 1px solid var(--border-1);
           border-radius: var(--r-rh-md);
           padding: 4px;
-          box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+          box-shadow: 0 10px 32px rgba(60, 50, 30, 0.12);
           z-index: 110;
         }
         .tb-menu a, .tb-menu button {
@@ -429,7 +429,7 @@ export function TopBar() {
           cursor: pointer;
           font-family: inherit;
         }
-        .tb-menu a:hover, .tb-menu button:hover { background: rgba(255,255,255,0.08); }
+        .tb-menu a:hover, .tb-menu button:hover { background: rgba(0,0,0,0.05); }
 
         /* Mobile: hide nav links + search, keep brand + balance + avatar */
         @media (max-width: 900px) {
@@ -572,7 +572,7 @@ export function TopBar() {
                   <div
                     style={{
                       height: 1,
-                      background: "rgba(255,255,255,0.08)",
+                      background: "var(--border-1)",
                       margin: "4px 0",
                     }}
                   />
