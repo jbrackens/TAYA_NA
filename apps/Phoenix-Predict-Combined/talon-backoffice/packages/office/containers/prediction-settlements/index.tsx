@@ -103,14 +103,37 @@ export default function PredictionSettlementsContainer() {
       dataIndex: "yesPriceCents",
       key: "yes",
       width: 80,
-      render: (v: number) => <Text strong>{v}%</Text>,
+      render: (v: number) => (
+        <Text
+          strong
+          style={{
+            color: "var(--yes-text, #1a6849)",
+            fontFamily:
+              "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {v}%
+        </Text>
+      ),
     },
     {
       title: "Volume",
       dataIndex: "volumeCents",
       key: "vol",
       width: 100,
-      render: (v: number) => `$${(v / 100).toLocaleString()}`,
+      render: (v: number) => (
+        <span
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+            fontVariantNumeric: "tabular-nums",
+            color: "var(--t1, #1a1a1a)",
+          }}
+        >
+          ${(v / 100).toLocaleString()}
+        </span>
+      ),
     },
     {
       title: "Closed",

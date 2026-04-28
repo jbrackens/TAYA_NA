@@ -165,7 +165,18 @@ export default function PredictionMarketsContainer() {
       dataIndex: "volumeCents",
       key: "vol",
       width: 100,
-      render: (v: number) => formatUsd(v),
+      render: (v: number) => (
+        <span
+          style={{
+            fontFamily:
+              "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+            fontVariantNumeric: "tabular-nums",
+            color: "var(--t1, #1a1a1a)",
+          }}
+        >
+          {formatUsd(v)}
+        </span>
+      ),
     },
     {
       title: "Closes",
