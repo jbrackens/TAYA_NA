@@ -91,6 +91,10 @@ func (s *Service) GetDiscovery(ctx context.Context) (*DiscoveryResponse, error) 
 	return s.repo.GetDiscovery(ctx)
 }
 
+func (s *Service) DashboardVolumeStats(ctx context.Context, since time.Time, topMovers int) (*DashboardVolumeStats, error) {
+	return s.repo.DashboardVolumeStatsSince(ctx, since, topMovers)
+}
+
 // --- Trading ---
 
 // PreviewOrder returns a cost preview for a proposed order without executing it.

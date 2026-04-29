@@ -360,6 +360,9 @@ func (r *memRepo) ListSettledPositions(context.Context, string, int, int) ([]Pay
 	return nil, 0, nil
 }
 func (r *memRepo) GetDiscovery(context.Context) (*DiscoveryResponse, error) { return nil, nil }
+func (r *memRepo) DashboardVolumeStatsSince(context.Context, time.Time, int) (*DashboardVolumeStats, error) {
+	return nil, nil
+}
 
 func cloneOrder(o *Order) *Order {
 	if o == nil {

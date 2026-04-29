@@ -197,3 +197,76 @@ export interface PaginatedResponse<T> {
   data: T[];
   meta: PageMeta;
 }
+
+// --- Admin ---
+
+export interface CreateMarketRequest {
+  eventId: string;
+  ticker: string;
+  title: string;
+  description?: string;
+  settlementSourceKey: string;
+  settlementRule: string;
+  settlementParams?: Record<string, unknown>;
+  fallbackSourceKey?: string;
+  closeAt: string;
+  settlementCutoffAt?: string;
+  feeRateBps?: number;
+  ammLiquidityParam?: number;
+  ammSubsidyCents?: number;
+}
+
+export type MarketLifecycleAction = "open" | "halt" | "close" | "void";
+
+export type MarketResult = "yes" | "no";
+
+export interface SettleMarketRequest {
+  result: MarketResult;
+  attestationSource: string;
+  attestationId?: string;
+  attestationData?: Record<string, unknown>;
+  reason?: string;
+}
+
+export interface SettlementRecord {
+  id: string;
+  marketId: string;
+  result: MarketResult;
+  attestationSource: string;
+  attestationId?: string;
+  attestationData?: Record<string, unknown>;
+  settledBy?: string;
+  settledAt: string;
+}
+
+export interface SettlementPayout {
+  id: string;
+  settlementId: string;
+  positionId: string;
+  userId: string;
+  payoutCents: number;
+}
+
+export interface SettleMarketResponse {
+  settlement: SettlementRecord;
+  payouts: SettlementPayout[];
+}
+
+// --- Admin: Dashboard ---
+
+export interface DashboardMover {
+  marketId: string;
+  ticker: string;
+  title: string;
+  yesPriceCentsStart: number;
+  yesPriceCentsNow: number;
+  volumeCents: number;
+}
+
+export interface DashboardVolumeStats {
+  since: string;
+  windowSeconds: number;
+  totalVolumeCents: number;
+  tradeCount: number;
+  topMovers: DashboardMover[];
+}

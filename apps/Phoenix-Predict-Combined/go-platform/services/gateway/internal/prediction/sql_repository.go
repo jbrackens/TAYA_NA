@@ -1312,6 +1312,97 @@ func nullStr(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: true}
 }
 
+// DashboardVolumeStatsSince aggregates trade activity since `since` and returns
+// total volume, trade count, and the top N markets by absolute YES-price change
+// over the same window. Used by the admin dashboard.
+func (r *SQLRepository) DashboardVolumeStatsSince(
+	ctx context.Context,
+	since time.Time,
+	topMovers int,
+) (*DashboardVolumeStats, error) {
+	if topMovers <= 0 {
+		topMovers = 5
+	}
+
+	stats := &DashboardVolumeStats{
+		Since:         since,
+		WindowSeconds: int(time.Since(since).Seconds()),
+		TopMovers:     []DashboardMover{},
+	}
+
+	// Aggregate volume + count across all trades in the window. Volume is
+	// price_cents * quantity (the dollar size of each fill).
+	row := r.db.QueryRowContext(ctx, `
+		SELECT
+			COALESCE(SUM(price_cents::BIGINT * quantity), 0)::BIGINT,
+			COUNT(*)
+		FROM prediction_trades
+		WHERE traded_at > $1
+	`, since)
+	if err := row.Scan(&stats.TotalVolumeCents, &stats.TradeCount); err != nil {
+		return nil, fmt.Errorf("dashboard volume aggregate: %w", err)
+	}
+
+	if stats.TradeCount == 0 {
+		return stats, nil
+	}
+
+	// Top movers: per-market first vs last YES-side trade in the window,
+	// ranked by absolute price delta. side='yes' restricts to fills against
+	// YES contracts so the price arc is comparable across markets.
+	rows, err := r.db.QueryContext(ctx, `
+		WITH window_trades AS (
+			SELECT market_id, price_cents, quantity, traded_at
+			FROM prediction_trades
+			WHERE traded_at > $1 AND side = 'yes'
+		),
+		first_last AS (
+			SELECT
+				market_id,
+				(array_agg(price_cents ORDER BY traded_at ASC))[1]  AS first_price,
+				(array_agg(price_cents ORDER BY traded_at DESC))[1] AS last_price,
+				COALESCE(SUM(price_cents::BIGINT * quantity), 0)::BIGINT AS volume_cents
+			FROM window_trades
+			GROUP BY market_id
+		)
+		SELECT
+			fl.market_id,
+			m.ticker,
+			m.title,
+			fl.first_price,
+			fl.last_price,
+			fl.volume_cents
+		FROM first_last fl
+		JOIN prediction_markets m ON m.id = fl.market_id
+		ORDER BY ABS(fl.last_price - fl.first_price) DESC, fl.volume_cents DESC
+		LIMIT $2
+	`, since, topMovers)
+	if err != nil {
+		return nil, fmt.Errorf("dashboard top movers query: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var m DashboardMover
+		if err := rows.Scan(
+			&m.MarketID,
+			&m.Ticker,
+			&m.Title,
+			&m.YesPriceCentsStart,
+			&m.YesPriceCentsNow,
+			&m.VolumeCents,
+		); err != nil {
+			return nil, fmt.Errorf("dashboard top movers scan: %w", err)
+		}
+		stats.TopMovers = append(stats.TopMovers, m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("dashboard top movers rows: %w", err)
+	}
+
+	return stats, nil
+}
+
 func (r *SQLRepository) ensurePunterExists(ctx context.Context, userID string) error {
 	return r.ensurePunterExistsWithExec(ctx, r.db, userID)
 }

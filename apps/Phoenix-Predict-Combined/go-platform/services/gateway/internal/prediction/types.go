@@ -344,3 +344,25 @@ type PageMeta struct {
 	Total     int  `json:"total"`
 	HasNext   bool `json:"hasNext"`
 }
+
+// DashboardMover is a single market in the "biggest YES price moves" list,
+// computed as the difference between the first and last YES trade in the window.
+type DashboardMover struct {
+	MarketID           string `json:"marketId"`
+	Ticker             string `json:"ticker"`
+	Title              string `json:"title"`
+	YesPriceCentsStart int    `json:"yesPriceCentsStart"`
+	YesPriceCentsNow   int    `json:"yesPriceCentsNow"`
+	VolumeCents        int64  `json:"volumeCents"`
+}
+
+// DashboardVolumeStats aggregates trade activity over a time window for the
+// admin dashboard. Computed from prediction_trades; window is open-bounded
+// at Since (exclusive) and the present.
+type DashboardVolumeStats struct {
+	Since            time.Time        `json:"since"`
+	WindowSeconds    int              `json:"windowSeconds"`
+	TotalVolumeCents int64            `json:"totalVolumeCents"`
+	TradeCount       int              `json:"tradeCount"`
+	TopMovers        []DashboardMover `json:"topMovers"`
+}

@@ -17,31 +17,17 @@ import {
   message,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
-import { adminApi } from "../../services/api/admin-api";
-import { Method } from "@phoenix-ui/utils";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import type {
+  Category,
+  PredictionMarket,
+  MarketLifecycleAction,
+} from "@phoenix-ui/api-client/src/prediction-types";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TextArea } = Input;
 
-interface Market {
-  id: string;
-  ticker: string;
-  title: string;
-  status: string;
-  yesPriceCents: number;
-  noPriceCents: number;
-  volumeCents: number;
-  openInterestCents: number;
-  closeAt: string;
-  settlementSourceKey: string;
-  settlementRule: string;
-}
-
-interface Category {
-  id: string;
-  slug: string;
-  name: string;
-}
+const predictionClient = createPredictionClient();
 
 const statusColors: Record<string, string> = {
   unopened: "default",
@@ -56,9 +42,8 @@ const formatUsd = (cents: number) =>
   `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
 export default function PredictionMarketsContainer() {
-  const api = adminApi;
-  const [markets, setMarkets] = useState<Market[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [markets, setMarkets] = useState<PredictionMarket[]>([]);
+  const [, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [form] = Form.useForm();
@@ -71,13 +56,10 @@ export default function PredictionMarketsContainer() {
     setLoading(true);
     try {
       const [mkts, cats] = await Promise.all([
-        api.request({
-          url: "/api/v1/markets?pageSize=100",
-          method: Method.GET,
-        }),
-        api.request({ url: "/api/v1/categories", method: Method.GET }),
+        predictionClient.getMarkets({ pageSize: 100 }),
+        predictionClient.getCategories(),
       ]);
-      setMarkets(mkts?.data || []);
+      setMarkets(mkts.data || []);
       setCategories(cats || []);
     } catch {
       message.error("Failed to load markets");
@@ -88,23 +70,23 @@ export default function PredictionMarketsContainer() {
 
   async function handleCreate(values: Record<string, unknown>) {
     try {
-      await api.request({
-        url: "/api/v1/admin/markets/",
-        method: Method.POST,
-        data: {
-          eventId: values.eventId,
-          ticker: values.ticker,
-          title: values.title,
-          description: values.description,
-          settlementSourceKey: values.settlementSourceKey,
-          settlementRule: values.settlementRule,
-          settlementParams: values.settlementParams
-            ? JSON.parse(values.settlementParams as string)
-            : {},
-          closeAt: values.closeAt,
-          ammLiquidityParam: values.ammLiquidityParam || 100,
-          feeRateBps: values.feeRateBps || 0,
-        },
+      const settlementParams = values.settlementParams
+        ? (JSON.parse(values.settlementParams as string) as Record<
+            string,
+            unknown
+          >)
+        : undefined;
+      await predictionClient.createMarket({
+        eventId: values.eventId as string,
+        ticker: values.ticker as string,
+        title: values.title as string,
+        description: values.description as string | undefined,
+        settlementSourceKey: values.settlementSourceKey as string,
+        settlementRule: values.settlementRule as string,
+        settlementParams,
+        closeAt: values.closeAt as string,
+        ammLiquidityParam: (values.ammLiquidityParam as number) || 100,
+        feeRateBps: (values.feeRateBps as number) || 0,
       });
       message.success("Market created");
       setCreateOpen(false);
@@ -115,13 +97,16 @@ export default function PredictionMarketsContainer() {
     }
   }
 
-  async function handleLifecycle(marketId: string, action: string) {
+  async function handleLifecycle(
+    marketId: string,
+    action: MarketLifecycleAction,
+  ) {
     try {
-      await api.request({
-        url: `/api/v1/admin/markets/${marketId}/lifecycle/${action}`,
-        method: Method.POST,
-        data: { reason: `Admin: ${action}` },
-      });
+      await predictionClient.transitionMarketLifecycle(
+        marketId,
+        action,
+        `Admin: ${action}`,
+      );
       message.success(`Market ${action}`);
       loadData();
     } catch {
@@ -195,7 +180,7 @@ export default function PredictionMarketsContainer() {
       title: "Actions",
       key: "actions",
       width: 180,
-      render: (_: unknown, record: Market) => (
+      render: (_: unknown, record: PredictionMarket) => (
         <Space size="small">
           {record.status === "unopened" && (
             <Button
@@ -211,13 +196,13 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 danger
-                onClick={() => handleLifecycle(record.id, "halted")}
+                onClick={() => handleLifecycle(record.id, "halt")}
               >
                 Halt
               </Button>
               <Button
                 size="small"
-                onClick={() => handleLifecycle(record.id, "closed")}
+                onClick={() => handleLifecycle(record.id, "close")}
               >
                 Close
               </Button>
