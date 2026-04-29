@@ -2,10 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { getLimitsHistory } from "../../lib/api/compliance-client";
 import type { LimitHistoryItem } from "../../lib/api/compliance-client";
+import { FEATURE_RG } from "../../lib/features";
 
 interface GroupedHistory {
   limits: LimitHistoryItem[];
@@ -14,6 +16,11 @@ interface GroupedHistory {
 }
 
 export default function RGHistoryPage() {
+  if (!FEATURE_RG) notFound();
+  return <RGHistoryPageContent />;
+}
+
+function RGHistoryPageContent() {
   const { user } = useAuth();
   const toast = useToast();
 
