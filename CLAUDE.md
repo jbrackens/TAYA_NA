@@ -254,6 +254,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
 
 # Frontend feature flags (see app/lib/features.ts) — default off, set "true" to enable
 NEXT_PUBLIC_FEATURE_RG=        # responsible-gambling pages (rg-history, self-exclude, /responsible-gaming/)
+NEXT_PUBLIC_FEATURE_KYC=       # KYC / identity verification surface on /profile/
 
 # Gateway
 GATEWAY_DB_DSN=postgres://...
