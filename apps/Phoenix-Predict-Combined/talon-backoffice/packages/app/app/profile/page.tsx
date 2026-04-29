@@ -17,6 +17,7 @@ import {
 import { useToast } from "../components/ToastProvider";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
+import { FEATURE_KYC } from "../lib/features";
 
 type TabType = "settings" | "limits" | "verification" | "security";
 
@@ -704,53 +705,57 @@ export default function ProfilePage() {
                     status={profile?.phone ? "verified" : "pending"}
                   />
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "12px 0",
-                    borderBottom: "1px solid var(--border-1)",
-                  }}
-                >
-                  <span style={{ color: "var(--t3)", fontSize: "14px" }}>
-                    Identity Verification (KYC)
-                  </span>
-                  <StatusBadge
-                    status={
-                      profile?.kycStatus === "approved"
-                        ? "verified"
-                        : profile?.kycStatus === "pending"
-                          ? "pending"
-                          : "failed"
-                    }
-                  />
-                </div>
+                {FEATURE_KYC && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "12px 0",
+                      borderBottom: "1px solid var(--border-1)",
+                    }}
+                  >
+                    <span style={{ color: "var(--t3)", fontSize: "14px" }}>
+                      Identity Verification (KYC)
+                    </span>
+                    <StatusBadge
+                      status={
+                        profile?.kycStatus === "approved"
+                          ? "verified"
+                          : profile?.kycStatus === "pending"
+                            ? "pending"
+                            : "failed"
+                      }
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <h2
-                style={{
-                  fontSize: "16px",
-                  fontWeight: "600",
-                  marginBottom: "16px",
-                  color: "var(--t1)",
-                }}
-              >
-                Complete Verification
-              </h2>
-              <p
-                style={{
-                  color: "var(--t3)",
-                  fontSize: "14px",
-                  marginBottom: "16px",
-                }}
-              >
-                Verify your identity to unlock higher limits and improved
-                features.
-              </p>
-              <button style={btnStyle}>Start Verification</button>
-            </div>
+            {FEATURE_KYC && (
+              <div style={{ marginBottom: "24px" }}>
+                <h2
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    marginBottom: "16px",
+                    color: "var(--t1)",
+                  }}
+                >
+                  Complete Verification
+                </h2>
+                <p
+                  style={{
+                    color: "var(--t3)",
+                    fontSize: "14px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  Verify your identity to unlock higher limits and improved
+                  features.
+                </p>
+                <button style={btnStyle}>Start Verification</button>
+              </div>
+            )}
           </>
         )}
 
