@@ -1,6 +1,8 @@
 "use client";
 
+import { notFound } from "next/navigation";
 import { ContentPageRenderer } from "../components/ContentPage";
+import { FEATURE_RG } from "../lib/features";
 
 const FALLBACK_CONTENT = `
 <h1>Responsible Gaming</h1>
@@ -61,6 +63,7 @@ const FALLBACK_CONTENT = `
 `;
 
 export default function ResponsibleGamingPage() {
+  if (!FEATURE_RG) notFound();
   return (
     <ContentPageRenderer
       slug="responsible-gaming"
