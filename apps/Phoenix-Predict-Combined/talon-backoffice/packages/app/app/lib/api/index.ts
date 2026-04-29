@@ -34,50 +34,6 @@ export {
   type AcceptTermsResponse,
 } from "./auth-client";
 
-// Betting client
-export {
-  placeBet,
-  placeParlay,
-  getUserBets,
-  getBet,
-  getCashoutOffer,
-  cashoutBet,
-  precheckBets,
-  type PlaceBetRequest,
-  type PlaceParlayRequest,
-  type PrecheckBetsRequest,
-  type PlaceBetResponse,
-  type PlaceParlayResponse,
-  type UserBet,
-  type BetSelection,
-  type CashoutOffer,
-  type CashoutResponse,
-  type PrecheckBetsResponse,
-} from "./betting-client";
-
-// Events client
-export {
-  getSports,
-  getLeagues,
-  getEvents,
-  getEvent,
-  type GetEventsParams,
-  type Sport,
-  type League,
-  type Event,
-  type EventDetail,
-  type GetEventsPaginatedResponse,
-} from "./events-client";
-
-// Markets client
-export {
-  getMarkets,
-  getMarket,
-  type GetMarketsParams,
-  type Market,
-  type MarketSelection,
-} from "./markets-client";
-
 // Wallet client
 export {
   getBalance,
