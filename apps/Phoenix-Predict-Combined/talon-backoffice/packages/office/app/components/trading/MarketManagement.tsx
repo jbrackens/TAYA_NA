@@ -89,6 +89,7 @@ export function MarketManagement({
 }: MarketManagementProps) {
   const [localMarkets, setLocalMarkets] = useState<MarketData[]>(markets);
   const canToggleMarkets = typeof onMarketToggle === "function";
+  const canViewSelections = typeof onViewSelections === "function";
 
   const handleToggle = (marketId: string) => {
     if (!canToggleMarkets) {
@@ -145,13 +146,15 @@ export function MarketManagement({
               >
                 {market.status === "open" ? "Suspend" : "Resume"}
               </SuspendButton>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onViewSelections?.(market.id)}
-              >
-                View
-              </Button>
+              {canViewSelections && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => onViewSelections?.(market.id)}
+                >
+                  View
+                </Button>
+              )}
             </ActionButtons>
           </MarketRow>
         ))

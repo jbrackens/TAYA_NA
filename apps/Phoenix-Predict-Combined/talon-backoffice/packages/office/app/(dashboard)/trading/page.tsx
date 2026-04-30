@@ -8,7 +8,6 @@ import {
   LoadingSpinner,
   ErrorState,
 } from "../../components/shared";
-import { useRouter } from "next/navigation";
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -49,7 +48,6 @@ interface MarketData {
 }
 
 function TradingPageContent() {
-  const router = useRouter();
   const [fixtures, setFixtures] = useState<FixtureData[]>([]);
   const [selectedFixtureId, setSelectedFixtureId] = useState<string>("");
   const [markets, setMarkets] = useState<MarketData[]>([]);
@@ -230,9 +228,11 @@ function TradingPageContent() {
                 setError("Failed to toggle market status");
               }
             }}
-            onViewSelections={(marketId) =>
-              router.push(`/risk-management/markets/${marketId}`)
-            }
+            // onViewSelections intentionally omitted — the legacy
+            // /risk-management/markets/:id detail page was a sportsbook-shaped
+            // stub that has been retired. MarketManagement hides the View
+            // button when this prop is absent. Re-add when a real
+            // prediction-shaped market detail surface ships.
           />
         )}
       </TradingLayout>
