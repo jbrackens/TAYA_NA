@@ -201,24 +201,34 @@ type marketUpdateBroadcaster interface {
 }
 
 // marketUpdatePayload is the wire shape published on `market:<id>` after
-// a successful order. Keep this in sync with the TS PredictionMarket
-// shape on the frontend (api-client/src/prediction-types.ts) — the
-// frontend merges these fields into local market state on receive.
+// a successful order OR a market lifecycle transition. Keep this in sync
+// with the TS PredictionMarket shape on the frontend
+// (api-client/src/prediction-types.ts) — the frontend merges these fields
+// into local market state on receive.
+//
+// Status and Result are included so lifecycle transitions (open → halted →
+// closed → settled / voided) propagate to subscribers without a refresh.
+// Order-fill paths also include them — those don't change on a fill, but
+// sending them is harmless and keeps the payload schema uniform.
 type marketUpdatePayload struct {
-	MarketID            string `json:"marketId"`
-	Ticker              string `json:"ticker"`
-	YesPriceCents       int    `json:"yesPriceCents"`
-	NoPriceCents        int    `json:"noPriceCents"`
-	LastTradePriceCents *int   `json:"lastTradePriceCents,omitempty"`
-	VolumeCents         int64  `json:"volumeCents"`
-	OpenInterestCents   int64  `json:"openInterestCents"`
-	Ts                  string `json:"ts"`
+	MarketID            string                   `json:"marketId"`
+	Ticker              string                   `json:"ticker"`
+	Status              prediction.MarketStatus  `json:"status"`
+	Result              *prediction.MarketResult `json:"result,omitempty"`
+	YesPriceCents       int                      `json:"yesPriceCents"`
+	NoPriceCents        int                      `json:"noPriceCents"`
+	LastTradePriceCents *int                     `json:"lastTradePriceCents,omitempty"`
+	VolumeCents         int64                    `json:"volumeCents"`
+	OpenInterestCents   int64                    `json:"openInterestCents"`
+	Ts                  string                   `json:"ts"`
 }
 
 func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 	return marketUpdatePayload{
 		MarketID:            m.ID,
 		Ticker:              m.Ticker,
+		Status:              m.Status,
+		Result:              m.Result,
 		YesPriceCents:       m.YesPriceCents,
 		NoPriceCents:        m.NoPriceCents,
 		LastTradePriceCents: m.LastTradePriceCents,

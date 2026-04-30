@@ -9,11 +9,22 @@ import (
 
 // Service is the primary business logic layer for the prediction platform.
 type Service struct {
-	repo       Repository
-	wallet     WalletAdapter
-	amm        *AMMEngine
-	settlement *SettlementEngine
+	repo              Repository
+	wallet            WalletAdapter
+	amm               *AMMEngine
+	settlement        *SettlementEngine
+	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit
 }
+
+// MarketLifecycleHandler is a post-commit callback invoked after a successful
+// market lifecycle transition (open / halt / close / void / settled). The
+// `market` argument is the post-transition market state. The `event` argument
+// is the lifecycle audit record that was just persisted.
+//
+// Handlers run in a goroutine, fire-and-forget — failures should not block
+// the caller. Typical use: publish a WebSocket update on `market:<id>` so
+// subscribers see the new state without refreshing.
+type MarketLifecycleHandler func(market *Market, event LifecycleEvent)
 
 // NewService creates a new prediction service.
 // If wallet is nil, a NoopWallet is used (useful for tests).
@@ -41,6 +52,17 @@ func (s *Service) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
 // WebSocket publish.
 func (s *Service) SetTierPromotedHandler(fn TierPromotedHandler) {
 	s.settlement.SetTierPromotedHandler(fn)
+}
+
+// SetMarketLifecycleHandler wires the post-commit callback fired after every
+// successful market lifecycle transition: open / halt / close / void from
+// TransitionMarketStatus, settled from ResolveMarket, voided from VoidMarket.
+// Both HTTP-triggered admin actions and background-worker auto-transitions
+// (closer, settler, discover.promote) flow through these methods, so a single
+// hook covers all paths. Pass nil to disable.
+func (s *Service) SetMarketLifecycleHandler(fn MarketLifecycleHandler) {
+	s.onMarketLifecycle = fn
+	s.settlement.SetMarketLifecycleHandler(fn)
 }
 
 // --- Categories ---
@@ -358,14 +380,25 @@ func (s *Service) TransitionMarketStatus(ctx context.Context, marketID string, t
 		return fmt.Errorf("update market status: %w", err)
 	}
 
-	s.repo.CreateLifecycleEvent(ctx, &LifecycleEvent{
+	event := LifecycleEvent{
 		MarketID:   marketID,
 		EventType:  string(to),
 		ActorID:    actorID,
 		ActorType:  actorType(actorID),
 		Reason:     &reason,
 		OccurredAt: time.Now().UTC(),
-	})
+	}
+	s.repo.CreateLifecycleEvent(ctx, &event)
+
+	// Post-commit hook fires the new status to WebSocket subscribers, so
+	// clients see the transition without refreshing. UpdateMarketStatus
+	// only mutates status + updated_at, so the in-memory `market` plus
+	// the new status reflects the post-transition state without a re-fetch.
+	if s.onMarketLifecycle != nil {
+		market.Status = to
+		market.UpdatedAt = event.OccurredAt
+		go s.onMarketLifecycle(market, event)
+	}
 
 	return nil
 }
