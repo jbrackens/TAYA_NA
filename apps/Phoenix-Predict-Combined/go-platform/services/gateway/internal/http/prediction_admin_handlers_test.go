@@ -216,6 +216,9 @@ func (r *predictionAdminRepo) ListSettledPositions(context.Context, string, int,
 func (r *predictionAdminRepo) GetDiscovery(context.Context) (*prediction.DiscoveryResponse, error) {
 	return nil, errors.New("not found")
 }
+func (r *predictionAdminRepo) DashboardVolumeStatsSince(context.Context, time.Time, int) (*prediction.DashboardVolumeStats, error) {
+	return nil, nil
+}
 
 type predictionAdminWallet struct{}
 

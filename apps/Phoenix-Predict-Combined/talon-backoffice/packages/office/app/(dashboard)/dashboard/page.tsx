@@ -1,15 +1,16 @@
 "use client";
-import {
-  DashboardLayout,
-  RevenueWidget,
-  ActiveBetsWidget,
-  LiveMatchesWidget,
-  RiskAlertsWidget,
-  RecentActivityWidget,
-} from "../../components/dashboard";
+import { DashboardLayout } from "../../components/dashboard";
 import { ErrorBoundary, ErrorState } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import type {
+  PredictionMarket,
+  DashboardVolumeStats,
+  PaginatedResponse,
+} from "@phoenix-ui/api-client/src/prediction-types";
+
+const predictionClient = createPredictionClient();
 
 const pageTitleStyle: React.CSSProperties = {
   fontSize: 28,
@@ -41,152 +42,83 @@ const loadingTextStyle: React.CSSProperties = {
   textAlign: "center",
 };
 
+const cardStyle: React.CSSProperties = {
+  background: "var(--surface-1, #ffffff)",
+  border: "1px solid var(--border-1, #e5dfd2)",
+  borderRadius: 8,
+  padding: 20,
+};
+
+const cardLabelStyle: React.CSSProperties = {
+  fontSize: 12,
+  textTransform: "uppercase",
+  letterSpacing: "0.04em",
+  color: "var(--t3, #757575)",
+  marginBottom: 8,
+};
+
+const cardValueStyle: React.CSSProperties = {
+  fontSize: 32,
+  fontWeight: 700,
+  color: "var(--t1, #1a1a1a)",
+  fontFamily: "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+  fontVariantNumeric: "tabular-nums",
+};
+
+const cardSubStyle: React.CSSProperties = {
+  fontSize: 13,
+  color: "var(--t2, #4a4a4a)",
+  marginTop: 6,
+};
+
+const listStyle: React.CSSProperties = {
+  listStyle: "none",
+  margin: 0,
+  padding: 0,
+};
+
+const listItemStyle: React.CSSProperties = {
+  padding: "8px 0",
+  borderBottom: "1px solid var(--border-2, #f0ead7)",
+  fontSize: 13,
+  color: "var(--t1, #1a1a1a)",
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 12,
+};
+
+function formatUsd(cents: number) {
+  return `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString();
+}
+
 function DashboardPageContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [dashboardData, setDashboardData] = useState<{
-    revenueData: {
-      todayRevenue: number;
-      weekRevenue: number;
-      mtdRevenue: number;
-      changePercent: number;
-      sparklineData: number[];
-    };
-    activeBetsData: {
-      activeBets: number;
-      settledLastHour: number;
-      settlementRate: number;
-    };
-    liveMatchesData: { sport: string; count: number }[];
-    riskAlertsData: {
-      id: string;
-      severity: "low" | "medium" | "high" | "critical";
-      description: string;
-      timestamp: string;
-      action?: { label: string; onClick: () => void };
-    }[];
-    recentActivityData: {
-      id: string;
-      actor: string;
-      action: string;
-      description: string;
-      timestamp: string;
-      icon?: string;
-    }[];
-  } | null>(null);
+  const [openMarkets, setOpenMarkets] =
+    useState<PaginatedResponse<PredictionMarket> | null>(null);
+  const [closedMarkets, setClosedMarkets] =
+    useState<PaginatedResponse<PredictionMarket> | null>(null);
+  const [volume, setVolume] = useState<DashboardVolumeStats | null>(null);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const headers = { "X-Admin-Role": "admin" };
-        const [walletResponse, auditResponse, fixturesResponse, feedResponse] =
-          await Promise.all([
-            fetch("/api/v1/admin/wallet/reconciliation", { headers }),
-            fetch("/api/v1/admin/audit-logs?page=1&pageSize=5", { headers }),
-            fetch("/api/v1/admin/trading/fixtures?page=1&pageSize=50", {
-              headers,
-            }),
-            fetch("/api/v1/admin/feed-health", { headers }),
-          ]);
-
-        if (
-          !walletResponse.ok ||
-          !auditResponse.ok ||
-          !fixturesResponse.ok ||
-          !feedResponse.ok
-        ) {
-          throw new Error("Failed to load dashboard");
-        }
-
-        const wallet = await walletResponse.json();
-        const audit = await auditResponse.json();
-        const fixtures = await fixturesResponse.json();
-        const feed = await feedResponse.json();
-
-        const fixtureItems = Array.isArray(fixtures?.items)
-          ? fixtures.items
-          : [];
-        const auditItems = Array.isArray(audit?.items) ? audit.items : [];
-        const liveMatchesBySport = fixtureItems.reduce(
-          (acc: Record<string, number>, item: any) => {
-            const sport = item.sportKey || "unknown";
-            acc[sport] = (acc[sport] || 0) + 1;
-            return acc;
-          },
-          {},
-        );
-
-        const liveMatchesData = Object.entries(liveMatchesBySport).map(
-          ([sport, count]) => ({
-            sport,
-            count,
-          }),
-        );
-
-        const recentActivityData = auditItems.map((item: any) => ({
-          id: item.id,
-          actor: item.actorId,
-          action: item.action,
-          description: item.details || item.targetId || "Activity recorded",
-          timestamp: item.occurredAt,
-        }));
-
-        const riskAlertsData = [
-          ...(feed.summary?.hasErrors
-            ? [
-                {
-                  id: "feed-health-error",
-                  severity: "critical" as const,
-                  description: `Feed health degraded: ${feed.summary.unhealthyStreams || 0} unhealthy streams`,
-                  timestamp: new Date().toISOString(),
-                  action: {
-                    label: "Inspect",
-                    onClick: () => router.push("/reports"),
-                  },
-                },
-              ]
-            : []),
-          ...(Number(wallet.entryCount || 0) === 0
-            ? [
-                {
-                  id: "wallet-empty",
-                  severity: "medium" as const,
-                  description: "No wallet reconciliation entries recorded yet",
-                  timestamp: new Date().toISOString(),
-                  action: {
-                    label: "View Reports",
-                    onClick: () => router.push("/reports"),
-                  },
-                },
-              ]
-            : []),
-        ];
-
-        setDashboardData({
-          revenueData: {
-            todayRevenue: (wallet.netMovementCents || 0) / 100,
-            weekRevenue: (wallet.netMovementCents || 0) / 100,
-            mtdRevenue: (wallet.netMovementCents || 0) / 100,
-            changePercent: 0,
-            sparklineData: [
-              wallet.totalCreditsCents || 0,
-              wallet.totalDebitsCents || 0,
-              wallet.netMovementCents || 0,
-            ].map((value: number) => value / 100),
-          },
-          activeBetsData: {
-            activeBets: Number(wallet.entryCount || 0),
-            settledLastHour: 0,
-            settlementRate: feed.enabled ? 100 : 0,
-          },
-          liveMatchesData,
-          riskAlertsData,
-          recentActivityData,
-        });
+        const [open, closed, volStats] = await Promise.all([
+          predictionClient.getMarkets({ status: "open", pageSize: 100 }),
+          predictionClient.getMarkets({ status: "closed", pageSize: 100 }),
+          predictionClient.getDashboardVolume("24h", 5),
+        ]);
+        setOpenMarkets(open);
+        setClosedMarkets(closed);
+        setVolume(volStats);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load dashboard",
@@ -197,12 +129,11 @@ function DashboardPageContent() {
     };
 
     loadDashboard();
-  }, [reloadKey, router]);
+  }, [reloadKey]);
 
   const handleRetry = () => {
     setIsLoading(true);
     setError(null);
-    setDashboardData(null);
     setReloadKey((value) => value + 1);
   };
 
@@ -239,26 +170,139 @@ function DashboardPageContent() {
     );
   }
 
-  if (!dashboardData) {
+  if (!openMarkets || !closedMarkets || !volume) {
     return null;
   }
+
+  // Closing soon: top 5 open markets by closeAt ASC
+  const closingSoon = [...openMarkets.data]
+    .sort(
+      (a, b) => new Date(a.closeAt).getTime() - new Date(b.closeAt).getTime(),
+    )
+    .slice(0, 5);
+
+  // Settlement queue: closed markets awaiting resolution
+  const settlementQueue = [...closedMarkets.data]
+    .sort(
+      (a, b) => new Date(a.closeAt).getTime() - new Date(b.closeAt).getTime(),
+    )
+    .slice(0, 5);
 
   return (
     <div>
       <h1 style={pageTitleStyle}>Dashboard</h1>
 
       <DashboardLayout>
-        <RevenueWidget {...dashboardData.revenueData} />
-        <ActiveBetsWidget
-          {...dashboardData.activeBetsData}
-          onViewBets={() => router.push("/reports")}
-        />
-        <LiveMatchesWidget
-          matches={dashboardData.liveMatchesData}
-          onSportClick={() => router.push("/trading")}
-        />
-        <RiskAlertsWidget alerts={dashboardData.riskAlertsData} />
-        <RecentActivityWidget activities={dashboardData.recentActivityData} />
+        {/* Open Markets */}
+        <section style={cardStyle}>
+          <div style={cardLabelStyle}>Open Markets</div>
+          <div style={cardValueStyle}>{openMarkets.meta.total}</div>
+          <div style={cardSubStyle}>Closing soon:</div>
+          <ul style={listStyle}>
+            {closingSoon.map((m) => (
+              <li
+                key={m.id}
+                style={{ ...listItemStyle, cursor: "pointer" }}
+                onClick={() => router.push(`/prediction-admin/markets`)}
+              >
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {m.ticker}
+                </span>
+                <span style={{ color: "var(--t2, #4a4a4a)" }}>
+                  {formatDate(m.closeAt)}
+                </span>
+              </li>
+            ))}
+            {closingSoon.length === 0 && (
+              <li style={listItemStyle}>
+                <span style={{ color: "var(--t2, #4a4a4a)" }}>
+                  No open markets
+                </span>
+              </li>
+            )}
+          </ul>
+        </section>
+
+        {/* Settlement Queue */}
+        <section style={cardStyle}>
+          <div style={cardLabelStyle}>Settlement Queue</div>
+          <div style={cardValueStyle}>{closedMarkets.meta.total}</div>
+          <div style={cardSubStyle}>Awaiting resolution:</div>
+          <ul style={listStyle}>
+            {settlementQueue.map((m) => (
+              <li
+                key={m.id}
+                style={{ ...listItemStyle, cursor: "pointer" }}
+                onClick={() => router.push(`/prediction-admin/settlements`)}
+              >
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {m.ticker}
+                </span>
+                <span style={{ color: "var(--t2, #4a4a4a)" }}>
+                  closed {formatDate(m.closeAt)}
+                </span>
+              </li>
+            ))}
+            {settlementQueue.length === 0 && (
+              <li style={listItemStyle}>
+                <span style={{ color: "var(--t2, #4a4a4a)" }}>Queue empty</span>
+              </li>
+            )}
+          </ul>
+        </section>
+
+        {/* 24h Trade Volume */}
+        <section style={cardStyle}>
+          <div style={cardLabelStyle}>24h Volume</div>
+          <div style={cardValueStyle}>{formatUsd(volume.totalVolumeCents)}</div>
+          <div style={cardSubStyle}>
+            {volume.tradeCount} trade{volume.tradeCount === 1 ? "" : "s"}
+          </div>
+        </section>
+
+        {/* Top Movers */}
+        <section style={cardStyle}>
+          <div style={cardLabelStyle}>Top Movers (24h)</div>
+          <ul style={listStyle}>
+            {volume.topMovers.map((mv) => {
+              const delta = mv.yesPriceCentsNow - mv.yesPriceCentsStart;
+              const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
+              const color =
+                delta > 0
+                  ? "var(--yes-text, #1a6849)"
+                  : delta < 0
+                    ? "var(--no-text, #b03a3a)"
+                    : "var(--t2, #4a4a4a)";
+              return (
+                <li key={mv.marketId} style={listItemStyle}>
+                  <span
+                    style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                  >
+                    {mv.ticker}
+                  </span>
+                  <span
+                    style={{
+                      color,
+                      fontFamily:
+                        "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {mv.yesPriceCentsStart}% → {mv.yesPriceCentsNow}% ({sign}
+                    {Math.abs(delta)})
+                  </span>
+                </li>
+              );
+            })}
+            {volume.topMovers.length === 0 && (
+              <li style={listItemStyle}>
+                <span style={{ color: "var(--t2, #4a4a4a)" }}>
+                  No trades in window
+                </span>
+              </li>
+            )}
+          </ul>
+        </section>
       </DashboardLayout>
     </div>
   );

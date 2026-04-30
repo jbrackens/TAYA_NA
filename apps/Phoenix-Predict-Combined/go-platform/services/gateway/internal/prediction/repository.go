@@ -74,6 +74,9 @@ type Repository interface {
 
 	// Discovery
 	GetDiscovery(ctx context.Context) (*DiscoveryResponse, error)
+
+	// Dashboard
+	DashboardVolumeStatsSince(ctx context.Context, since time.Time, topMovers int) (*DashboardVolumeStats, error)
 }
 
 // AtomicFilledOrderPersister is an optional repository capability for commits

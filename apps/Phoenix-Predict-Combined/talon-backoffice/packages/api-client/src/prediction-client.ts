@@ -17,6 +17,11 @@ import type {
   PlaceOrderRequest,
   PlaceOrderResponse,
   PaginatedResponse,
+  CreateMarketRequest,
+  MarketLifecycleAction,
+  SettleMarketRequest,
+  SettleMarketResponse,
+  DashboardVolumeStats,
 } from "./prediction-types";
 
 export class PredictionApiClient {
@@ -181,6 +186,51 @@ export class PredictionApiClient {
   ): Promise<PaginatedResponse<SettledPayout>> {
     return this.request(
       `/api/v1/portfolio/history?page=${page}&pageSize=${pageSize}`,
+    );
+  }
+
+  // --- Admin: Markets ---
+
+  async createMarket(req: CreateMarketRequest): Promise<PredictionMarket> {
+    return this.request("/api/v1/admin/markets", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  }
+
+  async transitionMarketLifecycle(
+    marketId: string,
+    action: MarketLifecycleAction,
+    reason?: string,
+  ): Promise<{ marketId: string; status: string; reason: string }> {
+    return this.request(
+      `/api/v1/admin/markets/${marketId}/lifecycle/${action}`,
+      {
+        method: "POST",
+        body: JSON.stringify(reason ? { reason } : {}),
+      },
+    );
+  }
+
+  async settleMarket(
+    marketId: string,
+    req: SettleMarketRequest,
+  ): Promise<SettleMarketResponse> {
+    return this.request(`/api/v1/admin/settlements/${marketId}`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  }
+
+  // --- Admin: Dashboard ---
+
+  // since: Go duration ("24h", "7d") — gateway capped at 30 days.
+  async getDashboardVolume(
+    since = "24h",
+    topMovers = 5,
+  ): Promise<DashboardVolumeStats> {
+    return this.request(
+      `/api/v1/admin/dashboard/volume?since=${encodeURIComponent(since)}&topN=${topMovers}`,
     );
   }
 }

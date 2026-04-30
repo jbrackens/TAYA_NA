@@ -515,6 +515,62 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	slog.Info("settlement routes registered")
 }
 
+// registerDashboardRoutes mounts admin dashboard aggregate endpoints. These are
+// summary/aggregate signals computed on demand from raw prediction tables —
+// not stored materializations.
+func registerDashboardRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
+	// Admin: Volume + top movers over a recent window.
+	// Query params:
+	//   since   — Go duration, e.g. "24h", "7d" (default "24h"). Capped at 30d.
+	//   topN    — number of top movers to return (default 5, max 50).
+	mux.Handle("/api/v1/admin/dashboard/volume", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+
+		sinceParam := strings.TrimSpace(r.URL.Query().Get("since"))
+		if sinceParam == "" {
+			sinceParam = "24h"
+		}
+		// Allow "7d" / "30d" by translating to hours; Go's time.ParseDuration
+		// doesn't accept "d" units.
+		if strings.HasSuffix(sinceParam, "d") {
+			n, err := strconv.Atoi(strings.TrimSuffix(sinceParam, "d"))
+			if err != nil || n <= 0 {
+				return httpx.BadRequest("invalid since parameter", map[string]any{"since": sinceParam})
+			}
+			sinceParam = strconv.Itoa(n*24) + "h"
+		}
+		dur, err := time.ParseDuration(sinceParam)
+		if err != nil || dur <= 0 {
+			return httpx.BadRequest("invalid since parameter", map[string]any{"since": sinceParam})
+		}
+		const maxWindow = 30 * 24 * time.Hour
+		if dur > maxWindow {
+			dur = maxWindow
+		}
+
+		topN := intQueryParam(r, "topN", 5)
+		if topN < 1 {
+			topN = 1
+		}
+		if topN > 50 {
+			topN = 50
+		}
+
+		stats, err := svc.DashboardVolumeStats(r.Context(), time.Now().Add(-dur), topN)
+		if err != nil {
+			return httpx.Internal("failed to load dashboard volume", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, stats)
+	}))
+
+	slog.Info("dashboard routes registered")
+}
+
 func decodeLifecycleReason(r *stdhttp.Request) (string, error) {
 	if r.Body == nil {
 		return "", nil
