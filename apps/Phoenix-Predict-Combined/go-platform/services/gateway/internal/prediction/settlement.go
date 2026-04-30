@@ -10,10 +10,11 @@ import (
 
 // SettlementEngine handles resolving markets and distributing payouts.
 type SettlementEngine struct {
-	repo             Repository
-	wallet           WalletAdapter
-	loyalty          LoyaltyAdapter      // optional; nil means no loyalty accrual on settlement
-	onTierPromoted   TierPromotedHandler // optional; fired post-commit per plan §8
+	repo              Repository
+	wallet            WalletAdapter
+	loyalty           LoyaltyAdapter         // optional; nil means no loyalty accrual on settlement
+	onTierPromoted    TierPromotedHandler    // optional; fired post-commit per plan §8
+	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit on settle/void
 }
 
 // TierPromotedHandler is a post-commit callback invoked once per user whose
@@ -41,6 +42,15 @@ func (s *SettlementEngine) SetLoyaltyAdapter(adapter LoyaltyAdapter) {
 // accrual advances the user's tier. Pass nil to disable. See plan §8.
 func (s *SettlementEngine) SetTierPromotedHandler(fn TierPromotedHandler) {
 	s.onTierPromoted = fn
+}
+
+// SetMarketLifecycleHandler wires the post-commit callback fired after a
+// market is resolved or voided. Pass nil to disable. Same hook is fired
+// from Service.TransitionMarketStatus for open/halt/close/void via a
+// non-settlement path; this engine fires it for settle (ResolveMarket)
+// and void (VoidMarket).
+func (s *SettlementEngine) SetMarketLifecycleHandler(fn MarketLifecycleHandler) {
+	s.onMarketLifecycle = fn
 }
 
 // ResolveMarket settles a market with the given result and attestation.
@@ -170,6 +180,7 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 					}
 				}
 			}
+			s.fireMarketLifecycle(market, lifecycle)
 			return settlement, payouts, nil
 		}
 	}
@@ -197,7 +208,19 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 	}
 	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
+	s.fireMarketLifecycle(market, lifecycle)
 	return settlement, payouts, nil
+}
+
+// fireMarketLifecycle dispatches the post-commit lifecycle callback if one
+// is registered. Always fires in a goroutine so a slow / blocking handler
+// (e.g. a stuck WebSocket publish) cannot stall the settlement caller.
+// Safe to call with nil handler.
+func (s *SettlementEngine) fireMarketLifecycle(market *Market, lifecycle *LifecycleEvent) {
+	if s.onMarketLifecycle == nil || market == nil || lifecycle == nil {
+		return
+	}
+	go s.onMarketLifecycle(market, *lifecycle)
 }
 
 // calculatePayout determines the payout for a single position.
@@ -301,6 +324,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 			if err := atomicRepo.PersistVoidedMarketAtomic(ctx, s.wallet, market, payouts, credits, lifecycle); err != nil {
 				return nil, fmt.Errorf("persist voided market atomically: %w", err)
 			}
+			s.fireMarketLifecycle(market, lifecycle)
 			return payouts, nil
 		}
 	}
@@ -315,6 +339,7 @@ func (s *SettlementEngine) VoidMarket(ctx context.Context, marketID string, reas
 	}
 	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
+	s.fireMarketLifecycle(market, lifecycle)
 	return payouts, nil
 }
 

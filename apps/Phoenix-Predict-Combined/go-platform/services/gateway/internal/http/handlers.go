@@ -146,6 +146,15 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			})
 		})
 	}
+	// Post-commit market lifecycle → WebSocket. Covers both HTTP-triggered
+	// admin actions (halt/close/void/settle from registerSettlementRoutes)
+	// and background-worker auto-transitions (closer, settler, discover.
+	// promote — they all flow through Service.TransitionMarketStatus and
+	// SettlementEngine.{ResolveMarket,VoidMarket}). Fire-and-forget; a
+	// dropped push is recoverable on the client by refetching market state.
+	predictionService.SetMarketLifecycleHandler(func(market *prediction.Market, _ prediction.LifecycleEvent) {
+		wsHub.NotifyPredictionMarketUpdate(market.ID, buildMarketUpdatePayload(market))
+	})
 	registerPredictionRoutes(mux, predictionService)
 	registerOrderRoutes(mux, predictionService, wsHub)
 	registerPortfolioRoutes(mux, predictionService)
