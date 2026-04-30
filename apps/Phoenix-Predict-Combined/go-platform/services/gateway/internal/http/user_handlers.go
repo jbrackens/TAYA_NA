@@ -62,14 +62,10 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 	// GET: returns profile derived from auth session
 	// PUT: updates stored profile fields
 	mux.Handle("/api/v1/users/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method == stdhttp.MethodOptions {
-			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-			w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRF-Token")
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.WriteHeader(stdhttp.StatusNoContent)
-			return nil
-		}
+		// CORS allowlist + OPTIONS short-circuit are handled by httpx.CORS in
+		// the outer middleware chain. The handler must NOT set ACAO/ACAC
+		// here — doing so would overwrite the allowlist check and let any
+		// origin read profile responses with credentials attached.
 
 		// Parse: /api/v1/users/{userId}/profile[/preferences]
 		trimmed := strings.TrimPrefix(r.URL.Path, "/api/v1/users/")
@@ -89,8 +85,6 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			}
 			storeKey := requestedUserID + ":" + subRoute
 			profileStore.Store(storeKey, body)
-			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			return httpx.WriteJSON(w, stdhttp.StatusOK, body)
 		}
 
@@ -164,8 +158,6 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			UpdatedAt: now,
 		}
 
-		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		return httpx.WriteJSON(w, stdhttp.StatusOK, profile)
 	}))
 }

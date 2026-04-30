@@ -80,11 +80,7 @@ func main() {
 	if corsOrigins == "" {
 		corsOrigins = "http://localhost:3000,http://localhost:3001"
 	}
-	allowedOrigins := map[string]struct{}{}
-	for _, o := range strings.Split(corsOrigins, ",") {
-		allowedOrigins[strings.TrimSpace(o)] = struct{}{}
-	}
-	corsMW := cors(allowedOrigins)
+	corsMW := httpx.CORS(strings.Split(corsOrigins, ","))
 
 	// Build middleware chain — execution order is right-to-left:
 	// Recovery -> Metrics -> AccessLog -> CSRF -> Auth -> RequestID -> handler
@@ -188,30 +184,6 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	return nil
 }
 
-// cors returns a middleware that attaches CORS headers for allowed origins.
-// The preflight OPTIONS request short-circuits with 204 before any route
-// handler runs. Credentials are allowed so cookie-based auth works cross-origin
-// — this REQUIRES an exact origin match (not "*") per the CORS spec, which is
-// why the caller provides an allow-list instead of a wildcard.
-func cors(allowed map[string]struct{}) httpx.Middleware {
-	return func(next stdhttp.Handler) stdhttp.Handler {
-		return stdhttp.HandlerFunc(func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
-			origin := r.Header.Get("Origin")
-			if origin != "" {
-				if _, ok := allowed[origin]; ok {
-					w.Header().Set("Access-Control-Allow-Origin", origin)
-					w.Header().Set("Vary", "Origin")
-					w.Header().Set("Access-Control-Allow-Credentials", "true")
-					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRF-Token, X-User-ID")
-					w.Header().Set("Access-Control-Max-Age", "86400")
-				}
-			}
-			if r.Method == stdhttp.MethodOptions {
-				w.WriteHeader(stdhttp.StatusNoContent)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	}
-}
+// CORS configuration moved to platform/transport/httpx as httpx.CORS — see
+// that package for the implementation and security notes (it ships with a
+// strict allowlist contract that route handlers must not bypass).
