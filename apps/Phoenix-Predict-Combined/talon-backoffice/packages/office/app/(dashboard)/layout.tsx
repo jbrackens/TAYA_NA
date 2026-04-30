@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
   { href: "/trading", label: "Trading", icon: "trending-up" },
-  { href: "/risk-management", label: "Risk Management", icon: "shield-alert" },
+  {
+    href: "/risk-management/summary/",
+    label: "Risk Management",
+    icon: "shield-alert",
+  },
   { href: "/users", label: "Users", icon: "users" },
   { href: "/content", label: "Content", icon: "file-text" },
   { href: "/campaigns", label: "Campaigns", icon: "gift" },
