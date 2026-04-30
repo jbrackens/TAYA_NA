@@ -22,6 +22,9 @@
     "start:stage": "env-cmd -f .env.staging next start",
     "export": "yarn build && next export",
     "test": "jest --passWithNoTests --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
+    "test:node": "tsx --test app/__tests__/api-client.test.ts app/__tests__/odds.test.ts app/__tests__/auth-flow.test.ts app/__tests__/bet-placement.test.ts app/__tests__/compliance-paths.test.ts app/__tests__/csrf-headers.test.ts app/__tests__/error-handling.test.ts app/__tests__/qa-regressions-2026-04-18.test.ts app/__tests__/wallet-paths.test.ts",
+    "test:integration": "tsx --test app/__tests__/integration/stack-smoke.test.ts",
+    "test:all": "yarn test && yarn test:node",
     "test:coverage": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
     "test:smoke": "playwright test --config=./playwright.config.ts",
     "test:smoke:ui": "playwright test --config=./playwright.config.ts --ui",
@@ -67,6 +70,7 @@
     "i18next-hmr": "^1.6.0",
     "react-test-renderer": "19.2.4",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "5.3.3"
   },
   "serial-number": 188
