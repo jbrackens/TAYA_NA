@@ -8,9 +8,12 @@ import (
 	stdhttp "net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
+	"phoenix-revival/gateway/internal/cache"
 	gatewayhttp "phoenix-revival/gateway/internal/http"
 	"phoenix-revival/gateway/internal/tracing"
 	"phoenix-revival/platform/logging"
@@ -82,40 +85,64 @@ func main() {
 	}
 	corsMW := httpx.CORS(strings.Split(corsOrigins, ","))
 
-	// Build middleware chain — execution order is right-to-left:
-	// Recovery -> Metrics -> AccessLog -> CSRF -> Auth -> RequestID -> handler
+	// Rate limiting. Keyed by r.RemoteAddr by default (X-Forwarded-For is
+	// honored only when GATEWAY_TRUSTED_PROXY_CIDRS lists the proxy that
+	// terminated the TLS connection — see buildRateLimitMiddleware). Sits
+	// OUTSIDE auth so unauthenticated abuse traffic is dropped before any
+	// DB or session-service work happens. Scope is limited to public read
+	// paths in v1 (see rateLimitedReadPrefixes); authenticated mutations
+	// are bounded by the auth-service login limiter and per-user wallet
+	// idempotency keys instead.
+	//
+	//   GATEWAY_RATELIMIT_ENABLED=false        → middleware not installed
+	//   GATEWAY_RATELIMIT_RPM=120              → per-key requests per minute
+	//   GATEWAY_TRUSTED_PROXY_CIDRS=10.0.0.0/8 → comma-list of proxy CIDRs
+	//
+	// Backend: Redis (fixed-window counter via atomic INCR+PEXPIRE Lua) when
+	// REDIS_URL is reachable so all replicas share counters; in-memory
+	// sliding-window fallback otherwise (single-instance deployments + dev).
+	rateLimitMW, rateLimitInstalled := buildRateLimitMiddleware()
+
 	authEnabled := strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_AUTH_ENABLED"))) != "false"
 
+	// httpx.Chain wraps so slice[0] is OUTERMOST (runs first on the way in),
+	// slice[len-1] is INNERMOST (closest to handler). Rate limit must come
+	// BEFORE Auth in the slice so abusive traffic is dropped before we hit
+	// the auth service. Drop the rate-limit entry entirely when
+	// GATEWAY_RATELIMIT_ENABLED=false.
+	//
+	// NOTE: AccessLog/Metrics/Recovery sit at the end of this slice (matching
+	// the pre-existing convention) which means they run AFTER Auth/CSRF and
+	// AFTER RateLimit on the way in. That is a pre-existing ordering quirk
+	// — fixing it is out of scope for this PR. The practical implication is
+	// that 429 responses do not appear in AccessLog or the request-count
+	// metric. They are still observable via the gateway error logger and
+	// the client-side Retry-After header.
 	middlewares := []httpx.Middleware{
 		httpx.RequestID(),
 		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
 		tracing.Middleware(),
 		httpx.SecurityHeaders(),
 		corsMW,
-		httpx.AccessLog(log.Default()),
-		httpx.Metrics(metricsRegistry),
-		httpx.Recovery(log.Default()),
-		httpx.MaxBodySize(1 << 20), // 1 MB — applied first (outermost)
 	}
-
+	if rateLimitInstalled {
+		middlewares = append(middlewares, rateLimitMW)
+	}
 	if authEnabled {
-		middlewares = []httpx.Middleware{
-			httpx.RequestID(),
-			httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
-			tracing.Middleware(),
-			httpx.SecurityHeaders(),
-			corsMW,
+		middlewares = append(middlewares,
 			httpx.Auth(authServiceURL, publicPrefixes),
 			httpx.CSRF(csrfSkipPrefixes),
-			httpx.AccessLog(log.Default()),
-			httpx.Metrics(metricsRegistry),
-			httpx.Recovery(log.Default()),
-			httpx.MaxBodySize(1 << 20), // 1 MB — applied first (outermost)
-		}
+		)
 		slog.Info("auth middleware enabled", "auth_service", authServiceURL)
 	} else {
 		slog.Warn("auth middleware DISABLED — all routes are unprotected", "reason", "GATEWAY_AUTH_ENABLED=false")
 	}
+	middlewares = append(middlewares,
+		httpx.AccessLog(log.Default()),
+		httpx.Metrics(metricsRegistry),
+		httpx.Recovery(log.Default()),
+		httpx.MaxBodySize(1<<20), // 1 MB body cap (innermost)
+	)
 	slog.Info("CORS configured", "origins", corsOrigins)
 
 	handler := httpx.Chain(mux, middlewares...)
@@ -171,6 +198,93 @@ func gatewayCSRFSkipPrefixes() []string {
 		"/api/v1/status",
 		"/api/v1/payments/webhook",
 	}
+}
+
+// rateLimitedReadPrefixes are the public, unauthenticated read paths that
+// are the prime abuse target — anyone on the internet can hit them, no
+// session needed. We rate-limit ONLY these in v1 so a Redis blip
+// (which fails open) cannot accidentally let through unbounded traffic on
+// money-moving endpoints. Mutating + authenticated endpoints are bounded
+// by the auth-service login limiter and per-user wallet idempotency
+// rather than this IP-keyed gate; revisit when we need per-user write
+// throttling (separate fail-closed policy).
+//
+// Keep this in sync with `gatewayPublicPrefixes` for the read-only entries.
+func rateLimitedReadPrefixes() []string {
+	return []string{
+		"/api/v1/discovery",
+		"/api/v1/discover",
+		"/api/v1/categories",
+		"/api/v1/events",
+		"/api/v1/markets",
+		"/api/v1/leaderboards",
+		"/api/v1/content",
+		"/api/v1/banners",
+	}
+}
+
+// buildRateLimitMiddleware wires the rate-limit middleware. Returns the
+// installed flag = false when GATEWAY_RATELIMIT_ENABLED=false. Falls back
+// from Redis to in-memory when REDIS_URL is unset or unreachable.
+func buildRateLimitMiddleware() (httpx.Middleware, bool) {
+	if strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_RATELIMIT_ENABLED"))) == "false" {
+		slog.Warn("rate limiting DISABLED", "reason", "GATEWAY_RATELIMIT_ENABLED=false")
+		return nil, false
+	}
+
+	rpm := 120
+	if v := strings.TrimSpace(os.Getenv("GATEWAY_RATELIMIT_RPM")); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil && parsed > 0 {
+			rpm = parsed
+		} else {
+			slog.Warn("invalid GATEWAY_RATELIMIT_RPM, using default", "value", v, "default", rpm)
+		}
+	}
+
+	var limiter httpx.RateLimiter
+	backend := "memory"
+	if redisClient, err := cache.NewRedisClientFromEnv(); err == nil {
+		limiter = httpx.NewRedisRateLimiter(redisClient.Client(), "rl:gateway")
+		backend = "redis"
+	} else {
+		slog.Warn("rate limiter falling back to in-memory (Redis unreachable)",
+			"error", err,
+			"impact", "counters not shared across replicas")
+		limiter = httpx.NewMemoryRateLimiter()
+	}
+
+	// Trusted-proxy CIDRs let us safely honor X-Forwarded-For. If unset,
+	// the limiter keys on r.RemoteAddr only — correct for direct-to-gateway
+	// dev, and safe (but coarse) when deployed behind a proxy without
+	// configuration: every request looks like it came from the proxy IP,
+	// so the proxy itself gets rate-limited instead of individual clients.
+	// Set GATEWAY_TRUSTED_PROXY_CIDRS to enable per-client keying.
+	keyFunc := httpx.ClientIP
+	if cidrs := strings.TrimSpace(os.Getenv("GATEWAY_TRUSTED_PROXY_CIDRS")); cidrs != "" {
+		fn, err := httpx.TrustedProxyClientIP(strings.Split(cidrs, ","))
+		if err != nil {
+			// Fail-fast on misconfiguration — a bad CIDR string at startup
+			// is far better than silently keying all requests on the proxy.
+			log.Fatalf("invalid GATEWAY_TRUSTED_PROXY_CIDRS: %v", err)
+		}
+		keyFunc = fn
+		slog.Info("rate limiter trusts X-Forwarded-For from configured proxies", "cidrs", cidrs)
+	}
+
+	cfg := httpx.RateLimitConfig{
+		Limiter:      limiter,
+		Limit:        rpm,
+		Window:       time.Minute,
+		PathPrefixes: rateLimitedReadPrefixes(),
+		KeyFunc:      keyFunc,
+	}
+	slog.Info("rate limiting enabled",
+		"backend", backend,
+		"rpm", rpm,
+		"scope", "public reads only",
+		"prefixes", cfg.PathPrefixes,
+	)
+	return httpx.RateLimit(cfg), true
 }
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
