@@ -48,3 +48,22 @@ export const FEATURE_RG = process.env.NEXT_PUBLIC_FEATURE_RG === "true";
  * tooling (FEATURE_RG).
  */
 export const FEATURE_KYC = process.env.NEXT_PUBLIC_FEATURE_KYC === "true";
+
+/**
+ * User-facing spending-limit tooling: the deposit / stake / session limits
+ * UI on /profile/'s Limits tab. Off by default. Turn on for jurisdictional
+ * deploys that require self-imposed spending caps (UK, regulated US sports
+ * + prediction markets like Kalshi). Off for offshore-style deploys
+ * (Polymarket-style) where users trade without limit-setting tools.
+ *
+ * Currently gates: the "Limits" tab on /profile/ (filtered out of the
+ * tab navigation when off) and its panel content.
+ *
+ * Out of scope of this flag:
+ *   - The /cashier/ deposit/withdraw flow itself — that ships regardless.
+ *   - Server-side AML threshold checks (getMonthlyDepositTotal) — those
+ *     are not user-set and stay always-on.
+ *   - getLimitsHistory called from /account/rg-history/ — that page is
+ *     already gated by FEATURE_RG.
+ */
+export const FEATURE_LIMITS = process.env.NEXT_PUBLIC_FEATURE_LIMITS === "true";

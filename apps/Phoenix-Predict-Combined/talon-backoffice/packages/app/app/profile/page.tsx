@@ -17,11 +17,13 @@ import {
 import { useToast } from "../components/ToastProvider";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
-import { FEATURE_KYC } from "../lib/features";
+import { FEATURE_KYC, FEATURE_LIMITS } from "../lib/features";
 
 type TabType = "settings" | "limits" | "verification" | "security";
 
-const tabValues: TabType[] = ["settings", "limits", "verification", "security"];
+const tabValues: TabType[] = (
+  ["settings", "limits", "verification", "security"] as TabType[]
+).filter((v) => FEATURE_LIMITS || v !== "limits");
 
 function StatusBadge({
   status,
@@ -63,7 +65,9 @@ function TabNavigation({
   activeTabIndex: number;
   onChange: (index: number) => void;
 }) {
-  const tabs = ["Settings", "Limits", "Verification", "Security"];
+  const tabs = ["Settings", "Limits", "Verification", "Security"].filter(
+    (label) => FEATURE_LIMITS || label !== "Limits",
+  );
 
   return (
     <div
