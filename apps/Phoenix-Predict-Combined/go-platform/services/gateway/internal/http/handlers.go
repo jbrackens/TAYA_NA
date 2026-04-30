@@ -271,15 +271,12 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 		stdhttp.Error(w, `{"error":{"code":"service_unavailable","message":"auth service unreachable"}}`, stdhttp.StatusBadGateway)
 	}
 
+	// CORS and OPTIONS short-circuit are handled by httpx.CORS in the
+	// outer middleware chain. Setting Access-Control-Allow-Origin here
+	// would overwrite the allowlist check and let any origin read
+	// auth-proxy responses with credentials — exactly the bypass this
+	// retires. Same for the user_handlers.go callsites.
 	authHandler := func(w stdhttp.ResponseWriter, r *stdhttp.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		if r.Method == stdhttp.MethodOptions {
-			w.WriteHeader(stdhttp.StatusNoContent)
-			return
-		}
 		if strings.HasPrefix(r.URL.Path, "/auth/") {
 			r.URL.Path = "/api/v1" + r.URL.Path
 		}

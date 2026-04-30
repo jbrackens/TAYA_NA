@@ -205,3 +205,126 @@ func TestMaxBodySizeRejectsOversized(t *testing.T) {
 		t.Fatalf("expected 413 for oversized body, got %d", rec2.Code)
 	}
 }
+
+// CORS allowlist tests. Critical for production — these encode the contract
+// that route handlers MUST NOT set their own Access-Control-Allow-Origin.
+// Regressing any of these means a handler can leak authenticated responses
+// cross-origin.
+
+func TestCORSAllowedOriginGetsACAOReflectedAndCredentials(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := CORS([]string{"https://allowed.example", "https://office.example"})
+	wrapped := Chain(handler, mw)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/markets", nil)
+	req.Header.Set("Origin", "https://allowed.example")
+	rec := httptest.NewRecorder()
+	wrapped.ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "https://allowed.example" {
+		t.Errorf("expected ACAO https://allowed.example, got %q", got)
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Credentials"); got != "true" {
+		t.Errorf("expected ACAC true, got %q", got)
+	}
+	if got := rec.Header().Get("Vary"); got != "Origin" {
+		t.Errorf("expected Vary Origin, got %q", got)
+	}
+}
+
+func TestCORSDisallowedOriginEmitsNoCORSHeaders(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := CORS([]string{"https://allowed.example"})
+	wrapped := Chain(handler, mw)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/markets", nil)
+	req.Header.Set("Origin", "https://evil.example")
+	rec := httptest.NewRecorder()
+	wrapped.ServeHTTP(rec, req)
+
+	// The browser will refuse to expose the response to JS on this origin
+	// because no ACAO header matches. This is the correct same-origin-policy
+	// outcome for a disallowed origin.
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
+		t.Errorf("expected no ACAO for disallowed origin, got %q", got)
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Credentials"); got != "" {
+		t.Errorf("expected no ACAC for disallowed origin, got %q", got)
+	}
+}
+
+func TestCORSPreflightOPTIONSShortCircuitsWith204(t *testing.T) {
+	handlerCalled := false
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		handlerCalled = true
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := CORS([]string{"https://allowed.example"})
+	wrapped := Chain(handler, mw)
+
+	req := httptest.NewRequest(http.MethodOptions, "/api/v1/markets", nil)
+	req.Header.Set("Origin", "https://allowed.example")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+	rec := httptest.NewRecorder()
+	wrapped.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNoContent {
+		t.Errorf("expected 204 for preflight, got %d", rec.Code)
+	}
+	if handlerCalled {
+		t.Error("preflight should short-circuit before route handler runs")
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Methods"); got == "" {
+		t.Error("preflight missing Access-Control-Allow-Methods")
+	}
+}
+
+func TestCORSEmptyOriginEmitsNoCORSHeaders(t *testing.T) {
+	// Same-origin requests from the browser don't send Origin. The middleware
+	// should pass through without adding CORS headers.
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := CORS([]string{"https://allowed.example"})
+	wrapped := Chain(handler, mw)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/markets", nil)
+	// no Origin header
+	rec := httptest.NewRecorder()
+	wrapped.ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
+		t.Errorf("expected no ACAO for empty Origin, got %q", got)
+	}
+	if rec.Code != http.StatusOK {
+		t.Errorf("expected request to pass through, got %d", rec.Code)
+	}
+}
+
+func TestCORSTrimsWhitespaceInAllowlist(t *testing.T) {
+	// Real-world: allowlist often comes from a comma-split env var. Whitespace
+	// around values must not break exact-match.
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	mw := CORS([]string{"  https://padded.example  ", ""})
+	wrapped := Chain(handler, mw)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/markets", nil)
+	req.Header.Set("Origin", "https://padded.example")
+	rec := httptest.NewRecorder()
+	wrapped.ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "https://padded.example" {
+		t.Errorf("expected ACAO https://padded.example for trimmed allowlist entry, got %q", got)
+	}
+}

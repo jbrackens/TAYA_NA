@@ -418,6 +418,58 @@ func RequireRole(r *http.Request, role string) error {
 	return nil
 }
 
+// CORS returns a middleware that attaches CORS headers for browsers calling
+// the service from the listed origins.
+//
+// Behavior:
+//   - The Origin header on the request is checked against the allowlist.
+//   - On allowed origins, the response gets `Access-Control-Allow-Origin: <origin>`
+//     plus standard companion headers (Vary, Methods, Headers, Max-Age) and
+//     `Access-Control-Allow-Credentials: true` so cookie auth works cross-origin.
+//   - On disallowed origins, NO CORS headers are emitted; the browser will block
+//     the response from being read by the calling JS, which is the correct
+//     same-origin-policy outcome.
+//   - Preflight (OPTIONS) requests short-circuit with 204 BEFORE the route
+//     handler runs, so route handlers never need to handle OPTIONS themselves.
+//
+// Production note: do NOT set ACAO to `*` here AND keep credentials true — the
+// CORS spec rejects that combination. The allowlist enforces exact-origin match.
+//
+// SECURITY: route handlers MUST NOT set their own
+// `Access-Control-Allow-Origin` header. Doing so overwrites the middleware's
+// allowlist check and (when paired with credentials) lets ANY origin read
+// authenticated responses — including session-bearing JSON. If a handler sets
+// CORS headers, the allowlist becomes decorative.
+func CORS(allowedOrigins []string) Middleware {
+	allowed := make(map[string]struct{}, len(allowedOrigins))
+	for _, o := range allowedOrigins {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			allowed[o] = struct{}{}
+		}
+	}
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
+			if origin != "" {
+				if _, ok := allowed[origin]; ok {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Vary", "Origin")
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
+					w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+					w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-CSRF-Token, X-User-ID")
+					w.Header().Set("Access-Control-Max-Age", "86400")
+				}
+			}
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // SecurityHeaders adds standard security headers to all responses.
 func SecurityHeaders() Middleware {
 	return func(next http.Handler) http.Handler {
