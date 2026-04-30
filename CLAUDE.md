@@ -252,6 +252,9 @@ NEXT_PUBLIC_API_URL=http://localhost:18080
 NEXT_PUBLIC_AUTH_URL=http://localhost:18081
 NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws
 
+# Frontend feature flags (see app/lib/features.ts) — default off, set "true" to enable
+NEXT_PUBLIC_FEATURE_RG=        # responsible-gambling pages (rg-history, self-exclude, /responsible-gaming/)
+
 # Gateway
 GATEWAY_DB_DSN=postgres://...
 WALLET_DB_DSN=postgres://...    # same DB, separate env (wallet service reads its own)

@@ -33,6 +33,7 @@ import type { Balance } from "../lib/api/wallet-client";
 import type { PortfolioSummary } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { getPrivacy, updatePrivacy } from "../lib/api/privacy-client";
+import { FEATURE_RG } from "../lib/features";
 
 const api = createPredictionClient();
 
@@ -138,12 +139,14 @@ export default function AccountPage() {
           title="Alerts"
           desc="Control market and account notifications"
         />
-        <ActionCard
-          href="/responsible-gaming"
-          icon={<HeartHandshake size={20} />}
-          title="Play responsibly"
-          desc="Deposit limits, cool-offs, and self-exclusion"
-        />
+        {FEATURE_RG && (
+          <ActionCard
+            href="/responsible-gaming"
+            icon={<HeartHandshake size={20} />}
+            title="Play responsibly"
+            desc="Deposit limits, cool-offs, and self-exclusion"
+          />
+        )}
       </section>
     </div>
   );

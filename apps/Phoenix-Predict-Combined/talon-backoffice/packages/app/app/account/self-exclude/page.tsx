@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
   AlertTriangle,
   Ban,
@@ -17,11 +18,17 @@ import {
   selfExclude,
   SelfExcludeResponse,
 } from "../../lib/api/compliance-client";
+import { FEATURE_RG } from "../../lib/features";
 
 type Step = "warning" | "form" | "confirm" | "success";
 type Duration = "1" | "5" | "lifetime";
 
 export default function SelfExcludePage() {
+  if (!FEATURE_RG) notFound();
+  return <SelfExcludePageContent />;
+}
+
+function SelfExcludePageContent() {
   const { user } = useAuth();
   const toast = useToast();
 
