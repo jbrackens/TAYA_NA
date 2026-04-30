@@ -2,9 +2,12 @@ package ws
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"log/slog"
 	"sync"
+	"time"
 )
 
 // Hub manages WebSocket client connections and channel subscriptions
@@ -18,6 +21,17 @@ type Hub struct {
 	unsubscribe chan *unsubscribeCmd
 	disconnect  chan *Client
 	broadcast   chan *broadcastCmd
+
+	// pubMu guards publisher. SetPublisher mutates; handleBroadcast and
+	// the inbound subscribe goroutine read. A plain mutex is fine because
+	// the read is one pointer load on the hot path.
+	pubMu     sync.RWMutex
+	publisher Publisher
+
+	// instanceID identifies this hub uniquely so the inbound subscribe
+	// loop can skip messages we sent ourselves (avoids double-delivery
+	// when origin-side local fanout is enabled).
+	instanceID string
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -37,6 +51,10 @@ type unsubscribeCmd struct {
 type broadcastCmd struct {
 	channel string
 	message []byte
+	// local indicates this broadcast must NOT be republished to the
+	// shared Publisher (it came in over the bus already). Outbound
+	// broadcasts use local=false; the subscribe loop enqueues local=true.
+	local bool
 }
 
 // NewHub creates a new WebSocket Hub
@@ -47,11 +65,34 @@ func NewHub() *Hub {
 		subscribe:   make(chan *subscribeCmd, 100),
 		unsubscribe: make(chan *unsubscribeCmd, 100),
 		disconnect:  make(chan *Client, 100),
-		broadcast:   make(chan *broadcastCmd, 100),
+		broadcast:   make(chan *broadcastCmd, 256),
+		instanceID:  newInstanceID(),
 		ctx:         ctx,
 		cancel:      cancel,
 		done:        make(chan struct{}),
 	}
+}
+
+// newInstanceID returns 16 hex chars from crypto/rand. Collision-resistant
+// in practice for any plausible cluster size (2^64 instances).
+func newInstanceID() string {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		// rand.Read on Linux/macOS doesn't fail in practice; fall back to
+		// a process-uniqueness sentinel rather than panic.
+		return "fallback-" + time.Now().Format("20060102T150405.000000000")
+	}
+	return hex.EncodeToString(b[:])
+}
+
+// busEnvelope is the wire format for cross-replica messages. The origin
+// instance ID lets the receiver skip messages it just sent to avoid the
+// duplicate fanout that would otherwise occur when origin-side local
+// fanout is enabled.
+type busEnvelope struct {
+	Origin  string          `json:"o"`
+	Channel string          `json:"c"`
+	Body    json.RawMessage `json:"b"`
 }
 
 // Run starts the hub's event loop. Must be called in a separate goroutine.
@@ -121,22 +162,61 @@ func (h *Hub) handleDisconnect(client *Client) {
 	slog.Info("ws client disconnected", "user_id", client.userID)
 }
 
-// handleBroadcast sends a message to all clients subscribed to a channel
+// handleBroadcast fans a message out to local subscribers and, when a
+// Publisher is configured, asynchronously republishes it to the shared bus
+// for the other replicas. The origin's own clients always see the update
+// from this in-process fanout — independent of bus health — so a Redis
+// hiccup degrades cross-replica delivery rather than dropping the origin's
+// users entirely.
+//
+// Inbound (cmd.local == true) means the message arrived via the bus and
+// was already de-duped against this hub's instanceID; we MUST NOT
+// republish it.
 func (h *Hub) handleBroadcast(cmd *broadcastCmd) {
+	// Local fanout — always.
 	h.mu.RLock()
 	clients, exists := h.channels[cmd.channel]
-	if !exists {
+	if exists {
+		targets := make([]*Client, 0, len(clients))
+		for client := range clients {
+			targets = append(targets, client)
+		}
 		h.mu.RUnlock()
+		for _, client := range targets {
+			client.SendMessage(cmd.message)
+		}
+	} else {
+		h.mu.RUnlock()
+	}
+	// Outbound? Send to the bus off the hub goroutine — Publish can block
+	// up to 2s on a slow Redis and we don't want to stall subscribe /
+	// unsubscribe / disconnect processing.
+	if cmd.local {
 		return
 	}
-	targets := make([]*Client, 0, len(clients))
-	for client := range clients {
-		targets = append(targets, client)
+	h.pubMu.RLock()
+	pub := h.publisher
+	h.pubMu.RUnlock()
+	if pub == nil {
+		return
 	}
-	h.mu.RUnlock()
-	for _, client := range targets {
-		client.SendMessage(cmd.message)
+	envelope, err := json.Marshal(busEnvelope{
+		Origin:  h.instanceID,
+		Channel: cmd.channel,
+		Body:    cmd.message,
+	})
+	if err != nil {
+		slog.Error("ws hub: marshal envelope failed", "channel", cmd.channel, "error", err)
+		return
 	}
+	go func() {
+		ctx, cancel := context.WithTimeout(h.ctx, 2*time.Second)
+		defer cancel()
+		if err := pub.Publish(ctx, cmd.channel, envelope); err != nil {
+			slog.Warn("ws hub: cross-replica publish failed; this replica's clients still received the message",
+				"channel", cmd.channel, "error", err)
+		}
+	}()
 }
 
 // Subscribe is called by a client to subscribe to a channel
@@ -163,12 +243,62 @@ func (h *Hub) Disconnect(client *Client) {
 	}
 }
 
-// Broadcast sends a message to all clients subscribed to a channel
+// Broadcast sends a message to all clients subscribed to a channel.
+// When a Publisher is configured, the message is shipped over the shared
+// bus and every replica (including this one) fans it out via the
+// subscribe loop.
 func (h *Hub) Broadcast(channel string, message []byte) {
 	select {
-	case h.broadcast <- &broadcastCmd{channel: channel, message: message}:
+	case h.broadcast <- &broadcastCmd{channel: channel, message: message, local: false}:
 	case <-h.ctx.Done():
 	}
+}
+
+// SetPublisher wires the hub to a multi-replica fanout backend (Redis
+// pubsub) and starts the subscriber goroutine. Pass nil to detach.
+//
+// Intended to be called once at startup, BEFORE Run(). Calling it more
+// than once does NOT stop the prior subscriber goroutine — the previous
+// publisher's Close() is the supported teardown path.
+//
+// Inbound messages are deduped: any envelope whose Origin matches this
+// hub's instanceID is skipped, since handleBroadcast already fanned the
+// message out to local clients on the publish-out path.
+func (h *Hub) SetPublisher(p Publisher) {
+	h.pubMu.Lock()
+	h.publisher = p
+	h.pubMu.Unlock()
+	if p == nil {
+		return
+	}
+	go func() {
+		err := p.Subscribe(h.ctx, func(_ string, payload []byte) {
+			var env busEnvelope
+			if jsonErr := json.Unmarshal(payload, &env); jsonErr != nil {
+				slog.Warn("ws hub: malformed bus envelope; dropping",
+					"size", len(payload), "error", jsonErr)
+				return
+			}
+			if env.Origin == h.instanceID {
+				// Self-loop. Already fanned out locally on publish-out.
+				return
+			}
+			// Drop on overflow rather than blocking — pubsub messages
+			// are best-effort by design and our event types are
+			// idempotent / re-emitted regularly.
+			select {
+			case h.broadcast <- &broadcastCmd{channel: env.Channel, message: env.Body, local: true}:
+			case <-h.ctx.Done():
+				return
+			default:
+				slog.Warn("ws hub: broadcast channel saturated; dropping inbound bus message",
+					"channel", env.Channel)
+			}
+		})
+		if err != nil && err != context.Canceled && err != context.DeadlineExceeded {
+			slog.Error("ws hub: publisher Subscribe exited", "error", err)
+		}
+	}()
 }
 
 // BroadcastEvent broadcasts a typed event to a channel

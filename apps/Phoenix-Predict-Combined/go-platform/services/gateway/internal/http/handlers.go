@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/cache"
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
@@ -39,8 +40,26 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		}
 	}()
 
-	// Initialize WebSocket hub
+	// Initialize WebSocket hub. When GATEWAY_WS_PUBSUB_ENABLED is set (and
+	// REDIS_URL is reachable) wire Redis pubsub so broadcasts fan out to
+	// every gateway replica. Without it, the hub fans out to clients
+	// connected to THIS process only — fine for single-instance dev,
+	// silently dropped messages for replicas otherwise.
 	wsHub := ws.NewHub()
+	if strings.ToLower(strings.TrimSpace(os.Getenv("GATEWAY_WS_PUBSUB_ENABLED"))) == "true" {
+		if redisClient, err := cache.NewRedisClientFromEnv(); err == nil {
+			prefix := strings.TrimSpace(os.Getenv("GATEWAY_WS_PUBSUB_PREFIX"))
+			if prefix == "" {
+				prefix = "ws:gateway"
+			}
+			pub := ws.NewRedisPublisher(redisClient.Client(), prefix)
+			wsHub.SetPublisher(pub)
+			slog.Info("ws hub: Redis pubsub enabled", "prefix", prefix)
+		} else {
+			slog.Warn("ws hub: GATEWAY_WS_PUBSUB_ENABLED=true but Redis unreachable; running single-node",
+				"error", err)
+		}
+	}
 	go wsHub.Run(context.Background())
 	registerWebSocketRoutes(mux, wsHub)
 

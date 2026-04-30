@@ -166,5 +166,12 @@ func (r *RedisClient) Close() error {
 	return r.client.Close()
 }
 
+// Client exposes the underlying go-redis client for callers that need raw
+// commands (e.g. PSUBSCRIBE for ws/pubsub.go). Use sparingly — most callers
+// should use the typed Get/Set/Delete helpers above.
+func (r *RedisClient) Client() *redis.Client {
+	return r.client
+}
+
 // ErrCacheMiss is returned when a key is not found in the cache
 var ErrCacheMiss = fmt.Errorf("cache miss")
