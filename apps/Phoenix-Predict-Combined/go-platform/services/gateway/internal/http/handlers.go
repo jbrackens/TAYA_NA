@@ -17,6 +17,7 @@ import (
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/prediction/feed"
 	"phoenix-revival/gateway/internal/prediction/workers"
+	"phoenix-revival/gateway/internal/risk"
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/gateway/internal/ws"
 	"phoenix-revival/platform/transport/httpx"
@@ -161,6 +162,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerSettlementRoutes(mux, predictionService)
 	registerDashboardRoutes(mux, predictionService)
 	registerDiscoverRoutes(mux, walletService.DB())
+
+	// --- Risk Dashboard (admin only) ---
+	// Wired only when a DB is available — every metric is SQL-driven.
+	if walletDB := walletService.DB(); walletDB != nil {
+		riskService := risk.NewService(risk.NewSQLRepository(walletDB))
+		registerRiskDashboardRoutes(mux, riskService)
+	}
 
 	// --- Feed Adapters & Background Workers ---
 	if predRepo != nil {
