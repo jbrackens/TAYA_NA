@@ -16,7 +16,7 @@ export default function OpenChatButton() {
     // Open external support chat
     const chatUrl =
       process.env.NEXT_PUBLIC_SUPPORT_CHAT_URL ||
-      "https://support.tayanasportsbook.com/chat";
+      "https://support.tayanapredict.com/chat";
     window.open(chatUrl, "supportChat", "width=800,height=600");
   };
 

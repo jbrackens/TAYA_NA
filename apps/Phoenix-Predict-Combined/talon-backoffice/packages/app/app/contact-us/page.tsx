@@ -256,7 +256,7 @@ export default function ContactUsPage() {
         <div style={infoTitleStyle}>Other Ways to Reach Us</div>
         <div style={infoItemStyle}>
           <strong style={{ color: "var(--t1)" }}>Email:</strong>{" "}
-          support@tayanasportsbook.com
+          support@tayanapredict.com
         </div>
         <div style={infoItemStyle}>
           <strong style={{ color: "var(--t1)" }}>Phone:</strong> 1-800-TAYA-NA
