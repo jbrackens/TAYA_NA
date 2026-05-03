@@ -10,11 +10,25 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
+
+// safeReturnPath validates a returnUrl query param before honoring it.
+// We accept only same-origin absolute paths so a crafted login link
+// cannot redirect a user to an attacker-controlled URL after sign-in.
+function safeReturnPath(raw: string | null): string {
+  if (!raw) return "/predict";
+  // Must start with a single slash and not include "//" (protocol-relative)
+  // or backslashes (some browsers normalize them to forward slashes).
+  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) {
+    return "/predict";
+  }
+  return raw;
+}
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuth();
   const isLocalDev = process.env.NODE_ENV !== "production";
 
@@ -31,14 +45,18 @@ export default function LoginPage() {
       setError(null);
       try {
         await login(username, password);
-        router.push("/predict");
+        // Honor ?returnUrl=… if it's a safe same-origin path. Falls
+        // back to /predict otherwise. This is what makes logging in
+        // from /portfolio, /rewards, /leaderboards, etc. land back on
+        // the page the user originally asked for.
+        router.push(safeReturnPath(searchParams.get("returnUrl")));
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Login failed");
       } finally {
         setSubmitting(false);
       }
     },
-    [username, password, login, router],
+    [username, password, login, router, searchParams],
   );
 
   return (
