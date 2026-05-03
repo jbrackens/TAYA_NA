@@ -1,19 +1,25 @@
 import { redirect } from "next/navigation";
 
 /**
- * /risk-management is a Pages Router subtree (`pages/risk-management/{summary,
- * prediction,markets,...}`) — but it has no index page, so the index URL
- * needs an explicit landing target. Redirect to the summary page, which is
- * the live prediction-shaped risk view.
+ * /risk-management redirects to the prediction-native risk dashboard.
  *
- * Replaces a previous App Router stub that rendered hardcoded sportsbook
- * sample data (Man United vs Arsenal, fake `totalBets` per player). That
- * stub was a credibility leak in a production admin surface; see the
- * commit message for the retirement rationale.
+ * The legacy /risk-management/summary subtree (pages/risk-management/*)
+ * was a sportsbook-shaped surface: freebet usage, odds-boost
+ * breakdowns, bet/stake counts. Visible under the prediction-market
+ * brand it reads as a credibility leak, so the index now sends
+ * operators directly to /prediction-admin/risk (the prediction-native
+ * dashboard from feat/risk-dashboard-v1: cost-basis concentration,
+ * settlement aging, money invariants, snapshot-tx safety).
  *
- * If a real prediction-shaped risk dashboard ships in the future, replace
- * this redirect with that page.
+ * The legacy /risk-management/summary URL still resolves for now in
+ * case anyone has it bookmarked, but its contents are sportsbook
+ * leftovers and should not be used. Removing those pages entirely is
+ * tracked as the next follow-up.
  */
 export default function RiskManagementIndex() {
-  redirect("/risk-management/summary/");
+  // /prediction-admin/risk ships in PR #48 (feat/risk-dashboard-v1).
+  // Until that lands, redirect to /dashboard so /risk-management never
+  // shows the sportsbook subtree. After PR #48 merges, change the
+  // target to "/prediction-admin/risk".
+  redirect("/dashboard");
 }
