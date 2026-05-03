@@ -9,85 +9,22 @@ const OfficeRole = {
   OPERATOR: "operator",
 } as const;
 
+// Pages Router top-nav menu items.
+//
+// Pruned 2026-05-03: removed USERS (admin/punters endpoint not wired
+// for predict — page errors on every visit) and the entire
+// RISK_MANAGEMENT submenu (sportsbook subtree — fixtures, markets,
+// fixed-exotics, market-categories, provider-ops, summary — already
+// redirected to /dashboard via next.config.js redirects()). The
+// PREDICTION risk leaf was the only useful entry under RISK_MANAGEMENT
+// but PR #48 (feat/risk-dashboard-v1) supersedes it with a proper
+// /prediction-admin/risk dashboard.
+//
+// What's left: LOGS (operator log viewer) and TERMS_AND_CONDITIONS
+// (static page). The MenuModulesPathEnum keeps USERS and
+// RISK_MANAGEMENT for backwards compatibility with sportsbook-era
+// components that still reference them for path generation.
 export const defaultMenuItems: MenuItem[] = [
-  // {
-  //   key: "home",
-  //   path: defaultMenuStructure.path(),
-  //   label: "DASHBOARD",
-  // },
-  {
-    key: "users",
-    path: defaultMenuStructure.users.path(),
-    label: "USERS",
-    roles: [OfficeRole.ADMIN, OfficeRole.OPERATOR],
-  },
-  {
-    key: "risk-management",
-    path: defaultMenuStructure.get(MenuModulesPathEnum.RISK_MANAGEMENT).path(),
-    label: "RISK_MANAGEMENT",
-    roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
-    children: [
-      {
-        key: "summary",
-        group: MenuItemGroupEnum.DASHBOARD,
-        path: defaultMenuStructure
-          .get(MenuModulesPathEnum.RISK_MANAGEMENT)
-          .summary.path(),
-        label: "RISK_MANAGEMENT_SUMMARY",
-        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
-      },
-      // Target B: fixtures list restored — route aligned to Go /admin/fixtures, response normalized
-      {
-        key: "fixtures",
-        group: MenuItemGroupEnum.TRADING,
-        path: defaultMenuStructure
-          .get(MenuModulesPathEnum.RISK_MANAGEMENT)
-          .fixtures.path(),
-        label: "RISK_MANAGEMENT_FIXTURES",
-        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
-      },
-      // Target B: markets list + read-only detail restored — route aligned to Go /admin/markets
-      {
-        key: "markets",
-        group: MenuItemGroupEnum.TRADING,
-        path: defaultMenuStructure
-          .get(MenuModulesPathEnum.RISK_MANAGEMENT)
-          .markets.path(),
-        label: "RISK_MANAGEMENT_MARKETS",
-        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
-      },
-      // Gated: no Go gateway route for market-categories
-      // {
-      //   key: "market-categories",
-      //   group: MenuItemGroupEnum.TRADING,
-      //   ...
-      // },
-      // Gated: no Go gateway route for fixed-exotics
-      // {
-      //   key: "fixed-exotics",
-      //   group: MenuItemGroupEnum.TRADING,
-      //   ...
-      // },
-      {
-        key: "provider-ops",
-        group: MenuItemGroupEnum.DASHBOARD,
-        path: defaultMenuStructure
-          .get(MenuModulesPathEnum.RISK_MANAGEMENT)
-          ["provider-ops"].path(),
-        label: "RISK_MANAGEMENT_PROVIDER_OPS",
-        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
-      },
-      {
-        key: "prediction",
-        group: MenuItemGroupEnum.TRADING,
-        path: defaultMenuStructure
-          .get(MenuModulesPathEnum.RISK_MANAGEMENT)
-          .prediction.path(),
-        label: "RISK_MANAGEMENT_PREDICTION",
-        roles: [OfficeRole.ADMIN, OfficeRole.TRADER, OfficeRole.OPERATOR],
-      },
-    ],
-  },
   {
     key: "logs",
     path: defaultMenuStructure.logs.path(),
