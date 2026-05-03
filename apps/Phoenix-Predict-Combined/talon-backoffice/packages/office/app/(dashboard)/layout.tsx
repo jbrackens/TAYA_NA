@@ -2,12 +2,23 @@
 
 import { usePathname } from "next/navigation";
 
+// Sidebar navigation. Only entries whose backend is wired for the
+// prediction platform are shown. Removed entries (sportsbook-era, never
+// ported to prediction): /users, /content, /campaigns, /loyalty,
+// /leaderboards, /audit-logs, /reports, /risk-management. Their gateway
+// endpoints (admin/punters, admin/content, admin/campaigns,
+// admin/loyalty, admin/leaderboards, admin/audit-logs, admin/wallet/
+// reconciliation, etc.) all return 404 because they were never
+// implemented on the predict-native gateway. Their UI shells were
+// carried wholesale from the sportsbook fork and render "Failed to
+// load X" red banners on every visit.
+//
+// Restoration plan: each entry comes back when its backend is wired.
+// The pages themselves still exist under app/(dashboard)/<name>/page.tsx
+// for direct URL access during development; deleting them is a separate
+// follow-up once the team confirms none will be ported.
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
-  // Markets points at the Pages Router prediction-admin surface, which is
-  // the only prediction-native admin surface. The legacy /trading App Router
-  // page was a sportsbook fixture/selection viewer and was retired — markets
-  // here means binary YES/NO contracts, not home/away fixtures.
   {
     href: "/prediction-admin/markets",
     label: "Markets",
@@ -18,18 +29,6 @@ const navItems = [
     label: "Settlements",
     icon: "check-square",
   },
-  {
-    href: "/risk-management/summary/",
-    label: "Risk Management",
-    icon: "shield-alert",
-  },
-  { href: "/users", label: "Users", icon: "users" },
-  { href: "/content", label: "Content", icon: "file-text" },
-  { href: "/campaigns", label: "Campaigns", icon: "gift" },
-  { href: "/loyalty", label: "Loyalty", icon: "trophy" },
-  { href: "/leaderboards", label: "Leaderboards", icon: "medal" },
-  { href: "/audit-logs", label: "Audit Logs", icon: "scroll-text" },
-  { href: "/reports", label: "Reports", icon: "file-text" },
 ];
 
 /* Lucide icon SVG paths — inlined to avoid a runtime dependency in the office package */
@@ -207,33 +206,7 @@ export default function DashboardLayout({
           </div>
           <nav className="dash-nav">
             <div className="dash-nav-section">Operations</div>
-            {navItems.slice(0, 5).map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`dash-nav-item ${pathname?.startsWith(item.href) ? "active" : ""}`}
-              >
-                <span className="dash-nav-icon">
-                  <LucideIcon name={item.icon} />
-                </span>
-                {item.label}
-              </a>
-            ))}
-            <div className="dash-nav-section">Engagement</div>
-            {navItems.slice(5, 7).map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`dash-nav-item ${pathname?.startsWith(item.href) ? "active" : ""}`}
-              >
-                <span className="dash-nav-icon">
-                  <LucideIcon name={item.icon} />
-                </span>
-                {item.label}
-              </a>
-            ))}
-            <div className="dash-nav-section">System</div>
-            {navItems.slice(7).map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}

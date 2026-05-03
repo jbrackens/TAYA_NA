@@ -373,7 +373,8 @@ function LeaderboardsPageContent() {
         <div>
           <h1 style={pageTitleStyle}>Leaderboards</h1>
           <p style={subtitleStyle}>
-            Manage sportsbook competitions, ranking logic, and recompute state.
+            Manage prediction-market leaderboards, ranking logic, and recompute
+            state.
           </p>
         </div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
