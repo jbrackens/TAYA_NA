@@ -119,6 +119,17 @@ func (s *Service) DashboardVolumeStats(ctx context.Context, since time.Time, top
 
 // --- Trading ---
 
+// WalletBalance returns the current wallet balance in cents for a user,
+// or -1 if the wallet adapter is unavailable / errors. Used by the HTTP
+// layer to populate wallet:<uid> WS broadcasts after order fills without
+// having to import the wallet package directly.
+func (s *Service) WalletBalance(userID string) int64 {
+	if s == nil || s.wallet == nil {
+		return -1
+	}
+	return s.wallet.Balance(userID)
+}
+
 // PreviewOrder returns a cost preview for a proposed order without executing it.
 func (s *Service) PreviewOrder(ctx context.Context, req PlaceOrderRequest) (*OrderPreview, error) {
 	market, err := s.repo.GetMarket(ctx, req.MarketID)
