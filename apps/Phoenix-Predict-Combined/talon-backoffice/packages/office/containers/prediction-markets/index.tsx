@@ -12,6 +12,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
   DatePicker,
   message,
@@ -116,7 +117,23 @@ export default function PredictionMarketsContainer() {
 
   const columns = [
     { title: "Ticker", dataIndex: "ticker", key: "ticker", width: 160 },
-    { title: "Title", dataIndex: "title", key: "title", ellipsis: true },
+    {
+      // Title column was truncating to ~3-6 chars at narrow widths
+      // because Antd allocates remaining space after fixed-width
+      // columns and the rest of the row is greedy. Give Title a
+      // generous explicit width AND keep ellipsis with a hover tooltip
+      // so the full title is always reachable.
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      width: 360,
+      ellipsis: { showTitle: false } as const,
+      render: (title: string) => (
+        <Tooltip placement="topLeft" title={title}>
+          <span>{title}</span>
+        </Tooltip>
+      ),
+    },
     {
       title: "Status",
       dataIndex: "status",
