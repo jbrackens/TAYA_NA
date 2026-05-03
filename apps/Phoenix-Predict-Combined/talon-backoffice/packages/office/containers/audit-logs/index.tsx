@@ -116,9 +116,7 @@ const providerOpsAuditPresets: AuditLogPreset[] = [
   },
 ];
 
-const resolvePresetByKey = (
-  key: string,
-): AuditLogPreset | undefined =>
+const resolvePresetByKey = (key: string): AuditLogPreset | undefined =>
   providerOpsAuditPresets.find((preset) => preset.key === key);
 
 const buildScopedAuditUrl = (
@@ -149,8 +147,18 @@ const AuditLogsContainer = () => {
 
   const router = useRouter();
 
-  const { p, limit, preset, action, actorId, targetId, userId, freebetId, oddsBoostId, product } =
-    router.query as {
+  const {
+    p,
+    limit,
+    preset,
+    action,
+    actorId,
+    targetId,
+    userId,
+    freebetId,
+    oddsBoostId,
+    product,
+  } = router.query as {
     p?: string | string[];
     limit?: string | string[];
     preset?: string | string[];
@@ -192,14 +200,14 @@ const AuditLogsContainer = () => {
       targetId: explicitFilters.targetId || presetFilters.targetId || "",
       userId: explicitFilters.userId || presetFilters.userId || "",
       freebetId: explicitFilters.freebetId || presetFilters.freebetId || "",
-      oddsBoostId: explicitFilters.oddsBoostId || presetFilters.oddsBoostId || "",
+      oddsBoostId:
+        explicitFilters.oddsBoostId || presetFilters.oddsBoostId || "",
       product: explicitFilters.product || presetFilters.product || "",
     }),
     [explicitFilters, presetFilters],
   );
-  const [draftFilters, setDraftFilters] = useState<AuditLogFilters>(
-    appliedFilters,
-  );
+  const [draftFilters, setDraftFilters] =
+    useState<AuditLogFilters>(appliedFilters);
   const [copiedScopedUrl, setCopiedScopedUrl] = useState(false);
   const [copyFallbackUrl, setCopyFallbackUrl] = useState("");
 
@@ -398,7 +406,11 @@ const AuditLogsContainer = () => {
   };
 
   const openScopedUrl = (url: string) => {
-    if (!url || typeof window === "undefined" || typeof window.open !== "function") {
+    if (
+      !url ||
+      typeof window === "undefined" ||
+      typeof window.open !== "function"
+    ) {
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
@@ -443,6 +455,10 @@ const AuditLogsContainer = () => {
     );
   };
 
+  // Audit log columns. Freebet and Odds-boost columns were sportsbook
+  // leftovers — prediction markets have no freebets, no odds boosts.
+  // Columns surfaced empty values across every row in the predict
+  // platform and made the table look broken. Removed 2026-05-04.
   const columns = [
     {
       index: 1,
@@ -456,20 +472,6 @@ const AuditLogsContainer = () => {
       value: {
         title: t("HEADER_USER"),
         dataIndex: "userId",
-      },
-    },
-    {
-      index: 3,
-      value: {
-        title: t("HEADER_FREEBET"),
-        dataIndex: "freebetId",
-      },
-    },
-    {
-      index: 4,
-      value: {
-        title: t("HEADER_ODDS_BOOST"),
-        dataIndex: "oddsBoostId",
       },
     },
   ];
@@ -513,7 +515,10 @@ const AuditLogsContainer = () => {
                       value={copyFallbackUrl}
                       onFocus={(event) => event.target.select()}
                     />
-                    <Button size="small" onClick={() => openScopedUrl(copyFallbackUrl)}>
+                    <Button
+                      size="small"
+                      onClick={() => openScopedUrl(copyFallbackUrl)}
+                    >
                       {t("FILTER_PRESET_COPY_URL_OPEN")}
                     </Button>
                   </Space>
@@ -572,30 +577,13 @@ const AuditLogsContainer = () => {
               placeholder={t("FILTER_USER_PLACEHOLDER")}
             />
           </Col>
-          <Col xs={24} md={12} lg={8}>
-            <Input
-              value={draftFilters.freebetId}
-              onChange={(event) =>
-                setDraftFilters((previous) => ({
-                  ...previous,
-                  freebetId: event.target.value,
-                }))
-              }
-              placeholder={t("FILTER_FREEBET_PLACEHOLDER")}
-            />
-          </Col>
-          <Col xs={24} md={12} lg={8}>
-            <Input
-              value={draftFilters.oddsBoostId}
-              onChange={(event) =>
-                setDraftFilters((previous) => ({
-                  ...previous,
-                  oddsBoostId: event.target.value,
-                }))
-              }
-              placeholder={t("FILTER_ODDS_BOOST_PLACEHOLDER")}
-            />
-          </Col>
+          {/*
+            Freebet ID and Odds boost ID filter inputs were sportsbook
+            leftovers — prediction markets have no freebets and no odds
+            boosts. Removed 2026-05-04 (ISSUE-002 from /qa UAT). The
+            draftFilters.freebetId / .oddsBoostId fields stay in state
+            (other reducers depend on the shape) but no UI exposes them.
+          */}
           <Col xs={24} md={12} lg={8}>
             <Input
               value={draftFilters.product}
@@ -609,13 +597,20 @@ const AuditLogsContainer = () => {
             />
           </Col>
           <Col span={24}>
-            <Button type="primary" onClick={applyFilters} style={{ marginRight: 8 }}>
+            <Button
+              type="primary"
+              onClick={applyFilters}
+              style={{ marginRight: 8 }}
+            >
               {t("FILTER_APPLY")}
             </Button>
             <Button onClick={resetFilters}>{t("FILTER_RESET")}</Button>
           </Col>
           <Col span={24}>
-            <Typography.Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+            <Typography.Text
+              type="secondary"
+              style={{ display: "block", marginBottom: 8 }}
+            >
               {t("FILTER_PRESETS_LABEL")}
             </Typography.Text>
             <Space size={[8, 8]} wrap>
