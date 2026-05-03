@@ -10,10 +10,10 @@ module.exports = {
   // Transpile workspace packages that expose raw TypeScript source
   outputFileTracingRoot: path.join(__dirname, "../.."),
   transpilePackages: [
-    '@phoenix-ui/design-system',
-    '@phoenix-ui/utils',
-    '@phoenix-ui/api-client',
-    '@phoenix-api/client',
+    "@phoenix-ui/design-system",
+    "@phoenix-ui/utils",
+    "@phoenix-ui/api-client",
+    "@phoenix-api/client",
   ],
   async headers() {
     return [
@@ -28,16 +28,38 @@ module.exports = {
       beforeFiles: [
         // Proxy API requests to Go backend (for development, avoids CORS issues)
         {
-          source: '/api/v1/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080'}/api/v1/:path*`,
+          source: "/api/v1/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"}/api/v1/:path*`,
         },
         // Proxy admin requests to Go backend
         {
-          source: '/admin/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080'}/admin/:path*`,
+          source: "/admin/:path*",
+          destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"}/admin/:path*`,
         },
       ],
     };
+  },
+  // Redirect the entire legacy /risk-management subtree to /dashboard.
+  // pages/risk-management/{summary,prediction,markets,fixed-exotics,
+  // market-categories,provider-ops}/ render sportsbook-shaped surfaces
+  // (freebet usage, odds-boost breakdowns, bet/stake counts, fixture
+  // exposure) that don't exist in the prediction-market product. Visible
+  // under the prediction brand they read as a credibility leak.
+  //
+  // The page files stay on disk (deleting them is a separate cleanup
+  // PR — they share state with sportsbook-era hooks that need an audit
+  // first); the redirect just makes sure no operator can land on them.
+  // When PR #48 (feat/risk-dashboard-v1) merges, change the destination
+  // to /prediction-admin/risk so the redirect lands on the real
+  // prediction-native dashboard.
+  async redirects() {
+    return [
+      {
+        source: "/risk-management/:path*",
+        destination: "/dashboard",
+        permanent: false,
+      },
+    ];
   },
   webpack: (config, options) => {
     if (!options.isServer) {
