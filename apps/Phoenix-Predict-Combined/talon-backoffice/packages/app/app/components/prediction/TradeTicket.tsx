@@ -491,7 +491,15 @@ export function TradeTicket({
             className="tt-cta"
             disabled={submitting || quantity < 1}
           >
-            {submitting ? "Placing…" : `Review trade · $${amount.toFixed(2)}`}
+            {/*
+              Label says "Place trade", not "Review trade", because
+              clicking this button submits the order immediately. The
+              quote panel above already shows fill price, shares, and
+              payout — that IS the review surface. A "Review" label
+              would imply a confirm modal that does not exist and was
+              a stage gotcha during the 2026-05-03 demo dry-run.
+            */}
+            {submitting ? "Placing…" : `Place trade · $${amount.toFixed(2)}`}
           </button>
         ) : (
           <div className="tt-closed">
