@@ -424,9 +424,17 @@ export async function getTransactions(
     ledgerParams,
   );
 
+  // The gateway's wallet.Service.ledgerFromDB queries ORDER BY id DESC
+  // (newest first) but then reverses the slice before returning, so the
+  // wire response is oldest-first chronological. Consumers (cashier
+  // "Recent transactions", profile transaction list) want newest-first
+  // — most recent ledger entry at the top. Reverse here so callers get
+  // a consistent newest-first ordering regardless of the gateway's
+  // build-then-reverse implementation choice.
   const page = params?.page || 1;
   const limit = params?.limit || raw.items.length || 10;
-  const filtered = raw.items.filter((item) =>
+  const newestFirst = [...raw.items].reverse();
+  const filtered = newestFirst.filter((item) =>
     params?.transaction_type
       ? mapLedgerType(item.type) === params.transaction_type
       : true,
