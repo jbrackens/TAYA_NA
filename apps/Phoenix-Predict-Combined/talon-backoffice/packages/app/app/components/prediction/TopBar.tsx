@@ -535,7 +535,16 @@ export function TopBar() {
             <div className="tb-balance">
               <span className="lbl">BAL</span>
               <span>
-                ${typeof balance === "number" ? balance.toFixed(2) : "0.00"}
+                {/*
+                  Render a placeholder when the balance is undefined
+                  (still loading) instead of "$0.00". The literal $0
+                  was misleading: on every page navigation, between the
+                  initial render and the wallet API resolving (~300ms-3s
+                  in dev), the user saw "BAL $0.00" — easy to read as
+                  "your account is empty" and panic. A neutral "—"
+                  reads as "loading" without claiming a value.
+                */}
+                {typeof balance === "number" ? `$${balance.toFixed(2)}` : "$—"}
               </span>
             </div>
           )}
