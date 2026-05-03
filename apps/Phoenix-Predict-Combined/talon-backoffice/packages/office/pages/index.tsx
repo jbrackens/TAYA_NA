@@ -14,10 +14,14 @@ function Dashboard() {
   const token = typeof localStorage !== "undefined" ? getToken() : "";
 
   useEffect(() => {
+    // After login, send admins to the prediction-platform dashboard (App
+    // Router /dashboard route). The legacy default "/users" was a leftover
+    // from the sportsbook fork and that page currently errors with
+    // "Failed to load users" because the backing endpoint isn't wired.
     if (token !== null && token !== "" && validateAndCheckEligibility(token)) {
-      window.location.replace("/users");
+      window.location.replace("/dashboard");
     } else {
-      window.location.replace("auth?redirectTo=users");
+      window.location.replace("/auth/login?returnUrl=/dashboard");
     }
   }, []);
 
