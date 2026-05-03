@@ -192,12 +192,25 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 	slog.Info("prediction routes registered")
 }
 
-// marketUpdateBroadcaster is the small slice of ws.Notifier the order
+// marketUpdateBroadcaster is the slice of ws.Notifier the order
 // handlers need. Defined here (not imported from internal/ws) so the
 // prediction HTTP layer stays loosely coupled — any test or future
 // transport can plug in a stub.
+//
+// Includes the four event channels emitted on a successful order fill:
+//   - market:<id>     — price/status snapshot for chart + ticker
+//   - trades:<id>     — individual trade fill (timestamp, side, price, qty)
+//   - portfolio:<uid> — the buyer's updated position row
+//   - wallet:<uid>    — the buyer's new balance after the cost+fee debit
+//
+// All four are fire-and-forget per PLAN §8 — a missed publish is
+// recoverable on the client by refetching, but emitting them is what
+// makes the live order book / portfolio / balance feel real.
 type marketUpdateBroadcaster interface {
 	NotifyPredictionMarketUpdate(marketID string, data interface{})
+	NotifyPredictionTrade(marketID string, data interface{})
+	NotifyPortfolioUpdate(userID string, data interface{})
+	NotifyWalletUpdate(userID string, data interface{})
 }
 
 // marketUpdatePayload is the wire shape published on `market:<id>` after
@@ -236,6 +249,47 @@ func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 		OpenInterestCents:   m.OpenInterestCents,
 		Ts:                  time.Now().UTC().Format(time.RFC3339),
 	}
+}
+
+// buildTradeFillPayload is the wire shape published on `trades:<marketID>`
+// after a fill. The TS PredictionTradeFeed component on the player app
+// consumes this to render the live tape.
+func buildTradeFillPayload(t *prediction.Trade) map[string]any {
+	return map[string]any{
+		"tradeId":     t.ID,
+		"marketId":    t.MarketID,
+		"side":        t.Side,
+		"priceCents":  t.PriceCents,
+		"quantity":    t.Quantity,
+		"feeCents":    t.FeeCents,
+		"isAmmTrade":  t.IsAMMTrade,
+		"tradedAt":    t.TradedAt.UTC().Format(time.RFC3339),
+		"ts":          time.Now().UTC().Format(time.RFC3339),
+	}
+}
+
+// buildPortfolioUpdatePayload is the wire shape published on
+// `portfolio:<userID>` after a fill. The TS portfolio store merges this
+// onto the user's local position cache so a trade in one tab updates
+// portfolio totals in another tab without a refetch.
+//
+// Only fields the client actually needs to merge are included — full
+// position details still come from /api/v1/portfolio on demand.
+func buildPortfolioUpdatePayload(o *prediction.Order, t *prediction.Trade) map[string]any {
+	out := map[string]any{
+		"userId":   o.UserID,
+		"marketId": o.MarketID,
+		"orderId":  o.ID,
+		"side":     o.Side,
+		"action":   o.Action,
+		"ts":       time.Now().UTC().Format(time.RFC3339),
+	}
+	if t != nil {
+		out["tradeId"] = t.ID
+		out["filledQuantity"] = t.Quantity
+		out["filledPriceCents"] = t.PriceCents
+	}
+	return out
 }
 
 func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifier marketUpdateBroadcaster) {
@@ -290,15 +344,35 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 				return httpx.BadRequest(err.Error(), nil)
 			}
 
-			// Broadcast the post-trade market state on `market:<id>`.
-			// Refetch via the service so the published prices reflect the
-			// post-AMM-mutation state (PlaceOrder doesn't return the market
-			// to keep its signature small). Fire-and-forget: a missed
-			// broadcast is acceptable — the client refetches on focus and
-			// the next trade re-publishes.
+			// Broadcast the post-trade state on four channels.
+			// All publishes are fire-and-forget per PLAN §8 — a missed
+			// broadcast is recoverable on the client by refetching, and
+			// the next trade re-publishes anyway.
+			//
+			//   market:<id>     — price/status snapshot for chart + ticker
+			//   trades:<id>     — the new trade fill (price, qty, side, ts)
+			//   portfolio:<uid> — buyer's updated position holdings + cost basis
+			//   wallet:<uid>    — buyer's new balance after debit + fee
+			//
+			// Without these broadcasts a user watching their portfolio in
+			// one tab would not see their own trade until they manually
+			// refreshed. Defining the wider notifier interface but not
+			// calling it (the prior state) was dead wiring.
 			if notifier != nil {
-				if updated, err := svc.GetMarket(r.Context(), req.MarketID); err == nil {
+				if updated, mErr := svc.GetMarket(r.Context(), req.MarketID); mErr == nil {
 					notifier.NotifyPredictionMarketUpdate(req.MarketID, buildMarketUpdatePayload(updated))
+				}
+				if trade != nil {
+					notifier.NotifyPredictionTrade(req.MarketID, buildTradeFillPayload(trade))
+				}
+				notifier.NotifyPortfolioUpdate(userID, buildPortfolioUpdatePayload(order, trade))
+				if balance := svc.WalletBalance(userID); balance >= 0 {
+					notifier.NotifyWalletUpdate(userID, map[string]any{
+						"userId":       userID,
+						"balanceCents": balance,
+						"reason":       "order_fill",
+						"orderId":      order.ID,
+					})
 				}
 			}
 
