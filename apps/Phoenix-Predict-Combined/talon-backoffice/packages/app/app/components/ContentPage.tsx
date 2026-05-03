@@ -6,6 +6,7 @@ import {
   getPage,
   type ContentPage as ContentPageType,
 } from "../lib/api/content-client";
+import { FEATURE_CMS } from "../lib/features";
 
 interface ContentPageProps {
   slug: string;
@@ -15,6 +16,12 @@ interface ContentPageProps {
 /**
  * Renders a CMS-driven content page by slug.
  * Falls back to provided static content if the CMS page is not found.
+ *
+ * Skips the CMS GET when FEATURE_CMS is off (default) — every
+ * /api/v1/content/{slug} call returned 404 because the CMS isn't
+ * wired for the prediction platform yet, and each 404 polluted the
+ * browser console on every static-page visit. Caller's
+ * fallbackContent is the source of truth until the CMS lands.
  */
 export const ContentPageRenderer: React.FC<ContentPageProps> = ({
   slug,
@@ -22,10 +29,11 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
 }) => {
   const { t } = useTranslation("content");
   const [page, setPage] = useState<ContentPageType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(FEATURE_CMS);
+  const [error, setError] = useState(!FEATURE_CMS);
 
   useEffect(() => {
+    if (!FEATURE_CMS) return;
     let cancelled = false;
     getPage(slug)
       .then((data) => {

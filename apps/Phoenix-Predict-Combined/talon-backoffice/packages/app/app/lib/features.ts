@@ -67,3 +67,21 @@ export const FEATURE_KYC = process.env.NEXT_PUBLIC_FEATURE_KYC === "true";
  *     already gated by FEATURE_RG.
  */
 export const FEATURE_LIMITS = process.env.NEXT_PUBLIC_FEATURE_LIMITS === "true";
+
+/**
+ * FEATURE_CMS gates the CMS-driven static-page fetch in
+ * `app/components/ContentPage.tsx`. When OFF (default), the
+ * ContentPageRenderer skips its `/api/v1/content/{slug}` GET and
+ * renders the caller's fallbackContent immediately. When ON, the
+ * renderer hits the CMS API and falls back to fallbackContent only
+ * on error.
+ *
+ * The default is OFF because the CMS backend isn't populated for
+ * the prediction platform yet — every /api/v1/content/{slug} call
+ * was returning 404, polluting the console with one error per
+ * static page load (about, terms, privacy, contact-us, etc.).
+ *
+ * Flip to "true" via NEXT_PUBLIC_FEATURE_CMS=true once the CMS
+ * is wired and content slugs exist.
+ */
+export const FEATURE_CMS = process.env.NEXT_PUBLIC_FEATURE_CMS === "true";
