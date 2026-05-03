@@ -285,6 +285,42 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return httpx.BadRequest("invalid request body", nil)
 			}
+			// Explicit field validation. The struct already carries
+			// `validate:"required,oneof=..."` tags, but no validator
+			// is wired into the handler chain — without these checks,
+			// invalid requests (e.g. missing `action`) reach the
+			// repository INSERT and trigger a Postgres CHECK constraint
+			// error like
+			//   pq: new row for relation "prediction_orders" violates
+			//   check constraint "prediction_orders_action_check"
+			// which surfaces as a confusing 400 to the client. These
+			// checks turn that into a clean, actionable error.
+			if strings.TrimSpace(req.MarketID) == "" {
+				return httpx.BadRequest("marketId is required", map[string]any{"field": "marketId"})
+			}
+			switch req.Side {
+			case prediction.OrderSideYes, prediction.OrderSideNo:
+			default:
+				return httpx.BadRequest("side must be \"yes\" or \"no\"", map[string]any{"field": "side", "got": string(req.Side)})
+			}
+			switch req.Action {
+			case prediction.OrderActionBuy, prediction.OrderActionSell:
+			default:
+				return httpx.BadRequest("action must be \"buy\" or \"sell\"", map[string]any{"field": "action", "got": string(req.Action)})
+			}
+			switch req.OrderType {
+			case prediction.OrderTypeMarket, prediction.OrderTypeLimit:
+			default:
+				return httpx.BadRequest("orderType must be \"market\" or \"limit\"", map[string]any{"field": "orderType", "got": string(req.OrderType)})
+			}
+			if req.Quantity <= 0 {
+				return httpx.BadRequest("quantity must be > 0", map[string]any{"field": "quantity", "got": req.Quantity})
+			}
+			if req.OrderType == prediction.OrderTypeLimit {
+				if req.PriceCents == nil || *req.PriceCents < 1 || *req.PriceCents > 99 {
+					return httpx.BadRequest("limit orders require priceCents in 1..99", map[string]any{"field": "priceCents"})
+				}
+			}
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
 				return httpx.BadRequest(err.Error(), nil)
