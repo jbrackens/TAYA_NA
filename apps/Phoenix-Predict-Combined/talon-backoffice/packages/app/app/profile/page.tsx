@@ -160,7 +160,10 @@ const TIMEZONES = [
   "Africa/Johannesburg",
 ];
 
-const ODDS_FORMATS = ["Decimal", "American", "Fractional"] as const;
+// Prediction markets price in cents (0–99 = implied probability), so an
+// "odds format" preference (Decimal/American/Fractional) does not apply.
+// This radio group + the phoenix_odds_format localStorage key are
+// sportsbook leftovers from the fork and were removed on 2026-05-03.
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -182,13 +185,6 @@ export default function ProfilePage() {
     }
     return "UTC";
   });
-  const [prefOddsFormat, setPrefOddsFormat] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("phoenix_odds_format") || "Decimal";
-    }
-    return "Decimal";
-  });
-
   // Profile state
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
@@ -305,20 +301,18 @@ export default function ProfilePage() {
       if (typeof window !== "undefined") {
         localStorage.setItem("phoenix_language", prefLanguage);
         localStorage.setItem("phoenix_timezone", prefTimezone);
-        localStorage.setItem("phoenix_odds_format", prefOddsFormat);
       }
       i18n.changeLanguage(prefLanguage);
       logger.info("Profile", "Preferences saved", {
         prefLanguage,
         prefTimezone,
-        prefOddsFormat,
       });
       toast.success("Preferences Saved", "Your preferences have been updated.");
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error("Save Failed", msg);
     }
-  }, [prefLanguage, prefTimezone, prefOddsFormat, i18n, toast]);
+  }, [prefLanguage, prefTimezone, i18n, toast]);
 
   // Change password
   const handleChangePassword = useCallback(async () => {
@@ -534,34 +528,6 @@ export default function ProfilePage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div style={{ marginBottom: "16px" }}>
-                <label style={labelStyle}>Odds Format</label>
-                <div style={{ display: "flex", gap: "16px" }}>
-                  {ODDS_FORMATS.map((fmt) => (
-                    <label
-                      key={fmt}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        color: "var(--t1)",
-                        fontSize: "14px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <input
-                        type="radio"
-                        name="oddsFormat"
-                        value={fmt}
-                        checked={prefOddsFormat === fmt}
-                        onChange={(e) => setPrefOddsFormat(e.target.value)}
-                      />
-                      {fmt}
-                    </label>
-                  ))}
-                </div>
               </div>
 
               <button onClick={handleSavePreferences} style={btnStyle}>
