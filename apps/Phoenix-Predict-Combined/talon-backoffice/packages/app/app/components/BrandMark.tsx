@@ -1,13 +1,13 @@
 /**
- * BrandMark — 28px gradient-filled brand square with a "P" letterform.
+ * BrandMark — 28px gradient-filled brand square with an "H" letterform.
  *
  * The one place in the app where the signature 3-stop mint → teal →
  * azure gradient appears. See DESIGN.md §3 (brand discipline: "gradient
  * is reserved for the brand moment") and §6 (shell structure).
  *
  * Specular highlight + mint glow sit on top of the gradient, and a
- * heavy 900-weight "P" is centered in dark-emerald so it reads as
- * embossed into the mark rather than stamped on top.
+ * heavy 900-weight "H" (for Hula Na!) is centered in dark-emerald so
+ * it reads as embossed into the mark rather than stamped on top.
  */
 
 type BrandMarkProps = {
@@ -15,7 +15,7 @@ type BrandMarkProps = {
   glyph?: string;
 };
 
-export default function BrandMark({ size = 28, glyph = "P" }: BrandMarkProps) {
+export default function BrandMark({ size = 28, glyph = "H" }: BrandMarkProps) {
   const radius = Math.round(size * 0.285);
   const fontSize = Math.round(size * 0.46);
   return (

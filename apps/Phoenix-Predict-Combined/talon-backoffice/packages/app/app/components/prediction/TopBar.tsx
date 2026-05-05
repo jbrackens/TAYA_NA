@@ -440,14 +440,10 @@ export function TopBar() {
       `}</style>
 
       <header className="tb">
-        <Link
-          href="/predict"
-          className="tb-brand"
-          aria-label="TAYA NA Predict — home"
-        >
+        <Link href="/predict" className="tb-brand" aria-label="Hula Na! — home">
           <BrandMark />
           <span className="tb-brand-txt">
-            TAYA<span className="accent">Predict</span>
+            Hula<span className="accent">Na!</span>
           </span>
         </Link>
 

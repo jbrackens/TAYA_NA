@@ -38,7 +38,7 @@ export async function generateBetCardImage(data: BetCardData): Promise<Blob> {
   ctx.font = "bold 48px sans-serif";
   ctx.fillStyle = "#ffffff";
   ctx.textBaseline = "top";
-  ctx.fillText("TAYA NA!", 40, 32);
+  ctx.fillText("Hula Na!", 40, 32);
 
   // Selection name — center
   ctx.font = "bold 64px sans-serif";
@@ -126,7 +126,7 @@ export function downloadBetCard(data: BetCardData): void {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `taya-na-win-${data.betId}.png`;
+      a.download = `hula-na-win-${data.betId}.png`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -28,7 +28,7 @@ const FALLBACK_CONTENT = `
 <p>We retain account data for the duration of your account and for a period thereafter as required by regulatory obligations. Transaction records are retained for a minimum of 5 years.</p>
 
 <h2>8. Contact</h2>
-<p>Privacy inquiries can be sent to <a href="mailto:privacy@tayanapredict.com">privacy@tayanapredict.com</a>.</p>
+<p>Privacy inquiries can be sent to <a href="mailto:privacy@hulana.com">privacy@hulana.com</a>.</p>
 `;
 
 export default function PrivacyPolicyPage() {

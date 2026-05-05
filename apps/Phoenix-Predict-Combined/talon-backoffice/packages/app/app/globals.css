@@ -1762,7 +1762,7 @@ button {
   gap: 24px;
   max-width: 500px;
 }
-.taya-logo-wrapper {
+.brand-logo-wrapper {
   position: relative;
   width: 120px;
   height: 120px;
@@ -1770,7 +1770,7 @@ button {
   align-items: center;
   justify-content: center;
 }
-.taya-circle {
+.brand-circle {
   width: 120px;
   height: 120px;
   border-radius: 50%;
@@ -1781,7 +1781,7 @@ button {
   animation: pulseLogo 2s ease-in-out infinite;
   box-shadow: 0 0 30px var(--accent-glow-color);
 }
-.taya-letter {
+.brand-letter {
   font-size: 46px;
   font-weight: 900;
   color: #ffffff;

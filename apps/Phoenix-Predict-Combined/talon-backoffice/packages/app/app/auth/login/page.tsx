@@ -66,7 +66,7 @@ export default function LoginPage() {
         <header className="la-head">
           <span className="la-eyebrow">Player access</span>
           <h1 className="la-title">
-            TAYA <span>Predict</span>
+            Hula <span>Na!</span>
           </h1>
           <p className="la-sub">
             Sign in to track your positions, follow live markets, and trade on
