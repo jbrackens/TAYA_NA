@@ -30,6 +30,7 @@ import RecentTrades from "../../components/prediction/RecentTrades";
 import { TradeTicket } from "../../components/prediction/TradeTicket";
 import { logger } from "../../lib/logger";
 import { subscribePredictWs } from "../../lib/websocket/predict-ws";
+import { useAuth } from "../../hooks/useAuth";
 import { useAppSelector } from "../../lib/store/hooks";
 import { selectCurrentBalance } from "../../lib/store/cashierSlice";
 import type {
@@ -91,6 +92,7 @@ export default function MarketDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const balance = useAppSelector(selectCurrentBalance);
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const loadMarket = useCallback(async () => {
     const m = await api.getMarket(ticker);
@@ -171,7 +173,7 @@ export default function MarketDetailPage() {
   const latestTsRef = useRef<string>("");
   useEffect(() => {
     const id = market?.id;
-    if (!id) return;
+    if (!id || authLoading || !isAuthenticated) return;
     // Reset the ts watermark each time we resubscribe — a new market id
     // means the timeline restarts.
     latestTsRef.current = "";
@@ -190,7 +192,7 @@ export default function MarketDetailPage() {
       setMarket((prev) => (prev ? { ...prev, ...marketFields } : prev));
     });
     return unsubscribe;
-  }, [market?.id]);
+  }, [market?.id, authLoading, isAuthenticated]);
 
   const handlePreview = useCallback(
     async (side: OrderSide, quantity: number): Promise<OrderPreview | null> => {
