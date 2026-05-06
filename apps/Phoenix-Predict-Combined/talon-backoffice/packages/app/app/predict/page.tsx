@@ -226,7 +226,10 @@ function DiscoveryHero({
           .rh-hero { padding: 24px; }
           .rh-bigprice { font-size: 64px; }
           .rh-bigprice .cents { font-size: 40px; }
-          .rh-hero-q { font-size: 22px; }
+          .rh-hero-q { font-size: 22px; margin-bottom: 18px; }
+          .rh-change { margin-bottom: 18px; }
+          .rh-chart svg { height: 160px; }
+          .rh-actions { margin-top: 18px; }
           .rh-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
         }
       `}</style>
