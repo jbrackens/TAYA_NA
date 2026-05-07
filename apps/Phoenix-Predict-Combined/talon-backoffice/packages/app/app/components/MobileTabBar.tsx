@@ -3,10 +3,9 @@
 /**
  * MobileTabBar — fixed bottom navigation on mobile (<900px, per D12).
  *
- * 5 slots matching the desktop TopBar nav plus Account. Renders as a
- * sticky .glass.glass-med strip with 48px tap targets; hidden on
- * desktop (nav lives in TopBar there). Active route gets a mint label
- * + mint glow bar above the icon.
+ * 5 slots matching the desktop TopBar nav plus Account. Uses the same
+ * warm-light P8 surface system as TopBar, with 48px tap targets and
+ * safe-area spacing. Hidden on desktop (nav lives in TopBar there).
  */
 
 import Link from "next/link";
@@ -78,22 +77,15 @@ export default function MobileTabBar() {
           position: fixed;
           left: 12px;
           right: 12px;
-          bottom: 12px;
+          bottom: max(12px, env(safe-area-inset-bottom));
           z-index: 90;
           display: grid;
           grid-template-columns: repeat(${TABS.length}, 1fr);
           padding: 6px;
-          border-radius: var(--r-xl);
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%),
-            rgba(10, 8, 32, 0.62);
-          backdrop-filter: blur(26px) saturate(180%);
-          -webkit-backdrop-filter: blur(26px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 -2px 8px rgba(0, 0, 0, 0.25),
-            0 20px 40px rgba(0, 0, 0, 0.4);
+          border-radius: var(--r-rh-xl);
+          background: var(--surface-1);
+          border: 1px solid var(--border-1);
+          box-shadow: 0 10px 28px rgba(60, 50, 30, 0.14);
         }
         .mtb-item {
           display: flex;
@@ -103,7 +95,7 @@ export default function MobileTabBar() {
           gap: 4px;
           min-height: 48px;
           padding: 8px 2px;
-          border-radius: var(--r-md);
+          border-radius: var(--r-rh-md);
           color: var(--t3);
           font-family: inherit;
           font-size: 10px;
@@ -113,19 +105,17 @@ export default function MobileTabBar() {
           text-align: center;
           transition: color 150ms ease, background 150ms ease;
         }
-        .mtb-item:hover { color: var(--t1); background: rgba(255, 255, 255, 0.04); }
+        .mtb-item:hover { color: var(--t1); background: var(--surface-2); }
         .mtb-item.is-active {
-          color: var(--accent);
-          background: rgba(43, 228, 128, 0.08);
-          box-shadow: inset 0 1px 0 rgba(43, 228, 128, 0.18);
-          text-shadow: 0 0 6px var(--accent-glow-color);
+          color: #061a10;
+          background: var(--accent);
+          font-weight: 700;
         }
-        .mtb-item.is-active svg { filter: drop-shadow(0 0 6px var(--accent-glow-color)); }
         .mtb-icon { display: block; }
         /* Page content lifts above the floating tab bar so last rows
          * aren't clipped on scroll. Paired with max-width main padding. */
         @media (max-width: 899px) {
-          main { padding-bottom: 96px !important; }
+          main { padding-bottom: calc(108px + env(safe-area-inset-bottom)) !important; }
         }
       `}</style>
       <nav className="mtb" aria-label="Primary (mobile)">

@@ -469,6 +469,11 @@ export function TopBar() {
             aria-haspopup="listbox"
             aria-expanded={searchOpen && searchResults.length > 0}
             aria-owns="tb-search-listbox"
+            aria-activedescendant={
+              searchOpen && searchResults[cursor]
+                ? `tb-search-option-${searchResults[cursor].id}`
+                : undefined
+            }
           >
             <label className="tb-search-label">
               <Search size={14} className="tb-search-icon" />
@@ -506,6 +511,7 @@ export function TopBar() {
                   searchResults.map((m, i) => (
                     <li
                       key={m.id}
+                      id={`tb-search-option-${m.id}`}
                       role="option"
                       aria-selected={i === cursor}
                       className={`tb-search-hit ${i === cursor ? "active" : ""}`}

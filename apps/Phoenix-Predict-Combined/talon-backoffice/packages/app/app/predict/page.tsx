@@ -288,7 +288,16 @@ function DiscoveryHero({
               fill="none"
             />
           </svg>
-          <div className="rh-periods" role="tablist" aria-label="Chart range">
+          <div
+            className="rh-periods"
+            role="tablist"
+            aria-label="Chart range"
+            aria-describedby="rh-periods-note"
+          >
+            <span id="rh-periods-note" className="sr-only">
+              Chart time range selection is unavailable until backend price
+              history is connected.
+            </span>
             {HERO_PERIODS.map((p) => (
               <button
                 key={p}
@@ -296,8 +305,8 @@ function DiscoveryHero({
                 role="tab"
                 className={`rh-period ${p === "1D" ? "is-active" : ""}`}
                 aria-selected={p === "1D"}
+                aria-disabled="true"
                 disabled
-                title="Time-period selection coming with backend price history"
               >
                 {p}
               </button>

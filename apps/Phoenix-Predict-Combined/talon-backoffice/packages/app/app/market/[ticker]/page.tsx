@@ -83,6 +83,9 @@ export default function MarketDetailPage() {
   const search = useSearchParams();
   const sideParam = search?.get("side");
   const initialSide: OrderSide = sideParam === "no" ? "no" : "yes";
+  const amountParam = Number(search?.get("amount"));
+  const initialAmount =
+    Number.isFinite(amountParam) && amountParam >= 1 ? amountParam : 25;
 
   const [market, setMarket] = useState<PredictionMarket | null>(null);
   const [event, setEvent] = useState<PredictionEvent | null>(null);
@@ -499,6 +502,9 @@ export default function MarketDetailPage() {
               market={market}
               balance={typeof balance === "number" ? balance : undefined}
               defaultSide={initialSide}
+              defaultAmount={initialAmount}
+              isAuthenticated={isAuthenticated}
+              authLoading={authLoading}
               onPreview={handlePreview}
               onSubmit={handleSubmit}
             />
