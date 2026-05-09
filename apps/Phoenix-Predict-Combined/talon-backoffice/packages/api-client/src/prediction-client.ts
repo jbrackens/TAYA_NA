@@ -22,6 +22,8 @@ import type {
   SettleMarketRequest,
   SettleMarketResponse,
   DashboardVolumeStats,
+  OrderBook,
+  DriftAlertsResponse,
 } from "./prediction-types";
 
 export class PredictionApiClient {
@@ -130,7 +132,23 @@ export class PredictionApiClient {
   }
 
   async getMarketTrades(marketId: string, limit = 50): Promise<Trade[]> {
+    // Server caps limit at 200; values above are clamped server-side.
     return this.request(`/api/v1/markets/${marketId}/trades?limit=${limit}`);
+  }
+
+  /**
+   * Fetch the L2 order book for a market. Only meaningful for markets with
+   * `executionMode === "order_book"`; AMM markets return an empty book.
+   *
+   * `depth` is the number of price levels per side (yes bids, yes asks, no
+   * bids, no asks). Server clamps to [1, 100]; default 20 is good for the
+   * compact ladder shown in the trade ticket. Use 50–100 for the full book
+   * panel on the market detail page.
+   */
+  async getOrderBook(marketIdOrTicker: string, depth = 20): Promise<OrderBook> {
+    return this.request(
+      `/api/v1/markets/${marketIdOrTicker}/orderbook?depth=${depth}`,
+    );
   }
 
   // --- Trading ---
@@ -231,6 +249,17 @@ export class PredictionApiClient {
   ): Promise<DashboardVolumeStats> {
     return this.request(
       `/api/v1/admin/dashboard/volume?since=${encodeURIComponent(since)}&topN=${topMovers}`,
+    );
+  }
+
+  /**
+   * Recent collateral drift alerts. One row per market with `adjustment`
+   * ledger entries since the lookback window (Go duration string, e.g.
+   * "24h", "7d"). Empty `data` when nothing tripped. Gateway caps at 30d.
+   */
+  async getDriftAlerts(since = "24h"): Promise<DriftAlertsResponse> {
+    return this.request(
+      `/api/v1/admin/prediction/drift-alerts?since=${encodeURIComponent(since)}`,
     );
   }
 }

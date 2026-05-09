@@ -67,6 +67,19 @@ export interface PredictionMarket {
   closeAt: string;
   createdAt: string;
   imagePath?: string;
+
+  // Exchange engine fields (migration 019). Markets created before
+  // 019 default executionMode='amm'; new markets default 'order_book'.
+  // Trade ticket UI must branch on this — order book markets support
+  // limit/market/sell/IOC/FOK; AMM markets remain buy-only.
+  executionMode?: ExecutionMode;
+  collateralPoolCents?: number;
+  settledPayoutPoolCents?: number;
+  bestYesBidCents?: number;
+  bestYesAskCents?: number;
+  bestNoBidCents?: number;
+  bestNoAskCents?: number;
+  lastQuoteAt?: string;
 }
 
 export type MarketStatus =
@@ -86,7 +99,34 @@ export type OrderStatus =
   | "partial"
   | "filled"
   | "cancelled"
-  | "expired";
+  | "expired"
+  | "rejected";
+
+export type TimeInForce = "gtc" | "ioc" | "fok";
+
+export type SelfMatchAction = "cancel_taker" | "cancel_maker" | "cancel_both";
+
+export type ExecutionMode = "order_book" | "amm";
+
+export type TradeKind = "secondary" | "issuance";
+
+export type EngineKind = "order_book" | "amm";
+
+/**
+ * Failure reason values populated on `PredictionOrder.failureReason` when
+ * an order is rejected or cancelled by the exchange engine. Mirrors the
+ * Go-side `Failure*` constants in internal/prediction/types.go.
+ */
+export type OrderFailureReason =
+  | "price_band_violation"
+  | "post_only_would_take"
+  | "self_match_rejected"
+  | "closed_market"
+  | "insufficient_balance"
+  | "insufficient_position"
+  | "notional_cap_missing"
+  | "notional_cap_exceeded"
+  | "fok_unavailable";
 
 export interface PredictionOrder {
   id: string;
@@ -104,6 +144,20 @@ export interface PredictionOrder {
   filledAt?: string;
   cancelledAt?: string;
   createdAt: string;
+
+  // Exchange engine fields (present on order_book markets; ignored on AMM).
+  timeInForce?: TimeInForce;
+  reservedCashCents?: number;
+  capturedCashCents?: number;
+  releasedCashCents?: number;
+  reservedQuantity?: number;
+  averageFillPriceCents?: number;
+  filledCostCents?: number;
+  failureReason?: OrderFailureReason;
+  postOnly?: boolean;
+  clientOrderId?: string;
+  selfMatchAction?: SelfMatchAction;
+  notionalCapCents?: number;
 }
 
 export interface Position {
@@ -115,18 +169,30 @@ export interface Position {
   avgPriceCents: number;
   totalCostCents: number;
   realizedPnlCents: number;
+  reservedQuantity?: number;
 }
 
 export interface Trade {
   id: string;
   marketId: string;
   buyerId: string;
+  sellerId?: string;
+  buyOrderId?: string;
+  sellOrderId?: string;
   side: OrderSide;
   priceCents: number;
   quantity: number;
   feeCents: number;
   isAmmTrade: boolean;
   tradedAt: string;
+
+  // Exchange engine fields. matchId links the two trade rows produced by a
+  // complementary issuance fill (yes + no, prices summing to 100); equals
+  // trade id for secondary transfers. UI groups the trade tape by matchId
+  // for issuance and renders one row per match.
+  matchId?: string;
+  tradeKind?: TradeKind;
+  engineKind?: EngineKind;
 }
 
 export interface OrderPreview {
@@ -179,6 +245,61 @@ export interface PlaceOrderRequest {
   priceCents?: number;
   quantity: number;
   idempotencyKey?: string;
+
+  // Exchange engine fields. Ignored on AMM-mode markets.
+  // - timeInForce: gtc rests, ioc cancels remainder, fok all-or-nothing.
+  // - postOnly: reject if the order would take any quantity at submission.
+  // - clientOrderId: caller-supplied ID separate from idempotencyKey.
+  // - selfMatchAction: how to handle same-user crossings.
+  // - notionalCapCents: required for market BUY orders (slippage cap).
+  timeInForce?: TimeInForce;
+  postOnly?: boolean;
+  clientOrderId?: string;
+  selfMatchAction?: SelfMatchAction;
+  notionalCapCents?: number;
+}
+
+/**
+ * One price level in the L2 order book. `total` is the cumulative quantity
+ * up to and including this level (used for ladder rendering).
+ */
+export interface OrderBookLevel {
+  priceCents: number;
+  quantity: number;
+  total: number;
+}
+
+export interface OrderBookSide {
+  bids: OrderBookLevel[];
+  asks: OrderBookLevel[];
+}
+
+/**
+ * Full L2 order book for a market. Both yes and no sides; bids descending
+ * price, asks ascending. `total` on each level is the cumulative quantity
+ * from the top of the book.
+ *
+ * Populated by GET /api/v1/markets/{idOrTicker}/orderbook?depth=N.
+ * Server clamps depth to [1, 100].
+ */
+export interface OrderBook {
+  marketId: string;
+  yes: OrderBookSide;
+  no: OrderBookSide;
+}
+
+/**
+ * WebSocket payload for `orderbook:{marketId}` channel. Hint-only; clients
+ * refetch the full book via GET /orderbook on receipt.
+ */
+export interface OrderBookHint {
+  marketId: string;
+  bestYesBidCents?: number;
+  bestYesAskCents?: number;
+  bestNoBidCents?: number;
+  bestNoAskCents?: number;
+  lastQuoteAt?: string;
+  ts: string;
 }
 
 export interface PlaceOrderResponse {
@@ -220,12 +341,47 @@ export type MarketLifecycleAction = "open" | "halt" | "close" | "void";
 
 export type MarketResult = "yes" | "no";
 
+/**
+ * One row in the backoffice drift-alert table — markets with
+ * `prediction_collateral_ledger entry_type='adjustment'` rows in the
+ * lookback window. Surfaced by the reconciliation cron after Phase 2 of
+ * the two-phase check writes a forensic adjustment.
+ */
+export interface CollateralDriftAlert {
+  marketId: string;
+  ticker: string;
+  adjustmentCount: number;
+  maxDriftCents: number;
+  totalDriftCents: number;
+  latestAdjustedAt: string;
+  latestReason: string;
+}
+
+export interface DriftAlertsResponse {
+  data: CollateralDriftAlert[];
+  sinceText: string;
+}
+
 export interface SettleMarketRequest {
   result: MarketResult;
   attestationSource: string;
   attestationId?: string;
   attestationData?: Record<string, unknown>;
   reason?: string;
+
+  // Settlement override audit (engine plan §Settlement Plan, schema 019).
+  // Required when an admin proceeds with settlement despite a collateral
+  // imbalance. The gateway populates `overridden_by_user_id` and
+  // `overridden_at` server-side from the session and timestamp; the admin
+  // only supplies the human-readable reason here. All-or-none CHECK
+  // constraint on the schema enforces consistency.
+  overrideReason?: string;
+}
+
+export interface SettlementRecord_Audit {
+  overrideReason?: string;
+  overriddenByUserId?: string;
+  overriddenAt?: string;
 }
 
 export interface SettlementRecord {
