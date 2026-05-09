@@ -251,7 +251,9 @@ export async function uploadKycDocument(
   file: File,
   documentType: string,
 ): Promise<{ documentId: string; status: string }> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
+  // `??` (not `||`) so an explicit empty string opts into same-origin
+  // mode; only undefined/null falls through to the dev fallback.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:18080";
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("phoenix_access_token")

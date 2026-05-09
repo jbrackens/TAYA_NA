@@ -265,14 +265,23 @@ export class PredictionApiClient {
 }
 
 /**
- * Create a PredictionApiClient with the default API URL.
+ * Create a PredictionApiClient with a context-appropriate base URL.
  *
- * Resolution order:
- *   1. explicit `baseUrl` argument
- *   2. Next.js runtime config (publicRuntimeConfig.apiUrl injected at build
- *      time and surfaced via window.__NEXT_DATA__)
- *   3. NEXT_PUBLIC_API_URL (build-time env var, inlined by webpack)
- *   4. localhost fallback for dev
+ * Resolution:
+ *   1. Explicit `baseUrl` argument (highest priority — caller knows best).
+ *   2. Browser context: prefer NEXT_DATA runtime config, then
+ *      NEXT_PUBLIC_API_URL, then **same-origin (empty string)**. Same-origin
+ *      means fetches go through the Next.js rewrite proxy at /api/v1/*,
+ *      which avoids CORS entirely and works on whatever port Next is
+ *      serving from (3000, 3010, ephemeral preview ports, etc.).
+ *   3. SSR / Node context: env var or localhost fallback (no proxy on the
+ *      server side, so we need an absolute URL).
+ *
+ * Why this matters: the previous implementation used `||` which treats
+ * empty string as "fall through to the hardcoded localhost." That meant
+ * `NEXT_PUBLIC_API_URL=""` (the natural way to opt into same-origin
+ * proxy mode) silently became `http://localhost:18080` on the client and
+ * broke under CORS as soon as the dev server moved off port 3000.
  */
 interface NextDataRuntimeConfig {
   __NEXT_DATA__?: {
@@ -283,15 +292,21 @@ interface NextDataRuntimeConfig {
 }
 
 export function createPredictionClient(baseUrl?: string): PredictionApiClient {
-  let runtimeUrl: string | undefined;
+  if (baseUrl !== undefined) return new PredictionApiClient(baseUrl);
+
   if (typeof window !== "undefined") {
     const w = window as unknown as NextDataRuntimeConfig;
-    runtimeUrl = w.__NEXT_DATA__?.runtimeConfig?.apiUrl;
+    const runtimeUrl = w.__NEXT_DATA__?.runtimeConfig?.apiUrl;
+    if (runtimeUrl) return new PredictionApiClient(runtimeUrl);
+    // Truthy NEXT_PUBLIC_API_URL wins; empty string or undefined → same-origin.
+    if (process.env.NEXT_PUBLIC_API_URL) {
+      return new PredictionApiClient(process.env.NEXT_PUBLIC_API_URL);
+    }
+    return new PredictionApiClient("");
   }
-  const url =
-    baseUrl ||
-    runtimeUrl ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:18080";
-  return new PredictionApiClient(url);
+
+  // SSR: no proxy, need an absolute URL.
+  return new PredictionApiClient(
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080",
+  );
 }
