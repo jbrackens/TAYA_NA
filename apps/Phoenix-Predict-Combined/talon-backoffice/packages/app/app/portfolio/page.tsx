@@ -414,11 +414,19 @@ function PositionsTable({
         { label: "Market", width: "minmax(200px, 2fr)" },
         { label: "Side", width: "60px", align: "center" },
         { label: "Qty", width: "60px", align: "right" },
+        { label: "Available", width: "80px", align: "right" },
         { label: "Avg price", width: "90px", align: "right" },
         { label: "Cost", width: "90px", align: "right" },
       ]}
       rows={positions.map((p) => {
         const m = marketsById.get(p.marketId);
+        // available = quantity - reservedQuantity. reservedQuantity is the
+        // share lock count from resting sell orders the user has placed
+        // (engine plan §Sell NO/YES). Older AMM positions don't carry the
+        // field — treat undefined as zero so available == quantity for
+        // back-compat.
+        const reserved = p.reservedQuantity ?? 0;
+        const available = Math.max(0, p.quantity - reserved);
         return {
           key: p.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -427,6 +435,20 @@ function PositionsTable({
             <SideChip key="s" side={p.side} />,
             <span key="q" className="mono">
               {p.quantity}
+            </span>,
+            <span
+              key="av"
+              className="mono"
+              title={
+                reserved > 0
+                  ? `${reserved} share${reserved === 1 ? "" : "s"} locked by resting sell orders`
+                  : undefined
+              }
+              style={
+                reserved > 0 ? { color: "var(--accent, var(--t1))" } : undefined
+              }
+            >
+              {available}
             </span>,
             <span key="p" className="mono">
               {p.avgPriceCents}¢
@@ -477,7 +499,11 @@ function OrdersTable({
             <span key="c" className="mono">
               {formatUSD(o.totalCostCents)}
             </span>,
-            <StatusChip key="st" status={o.status} />,
+            <StatusChip
+              key="st"
+              status={o.status}
+              failureReason={o.failureReason}
+            />,
             <span key="d" className="mono pf-dim">
               {formatDate(o.createdAt)}
             </span>,
@@ -591,8 +617,43 @@ function SideChip({ side }: { side: "yes" | "no" }) {
   );
 }
 
-function StatusChip({ status }: { status: OrderStatus }) {
-  return <span className={`pf-status pf-status-${status}`}>{status}</span>;
+/**
+ * Map raw failure_reason enum values from the gateway into short
+ * user-readable phrases. Mirrors the Go-side `Failure*` constants in
+ * internal/prediction/types.go. Unknown reasons fall through as-is so
+ * future additions don't render blank.
+ */
+const FAILURE_REASON_TEXT: Record<string, string> = {
+  price_band_violation: "price out of bounds (1¢–99¢)",
+  post_only_would_take: "post-only would have crossed the book",
+  self_match_rejected: "blocked: would have crossed your own order",
+  closed_market: "market is no longer open",
+  insufficient_balance: "insufficient balance",
+  insufficient_position: "not enough shares to sell",
+  notional_cap_missing: "market order needs a notional cap",
+  notional_cap_exceeded: "notional cap exceeded",
+  fok_unavailable: "fill-or-kill couldn't fully fill",
+};
+
+function StatusChip({
+  status,
+  failureReason,
+}: {
+  status: OrderStatus;
+  failureReason?: string;
+}) {
+  const phrase = failureReason
+    ? FAILURE_REASON_TEXT[failureReason] || failureReason
+    : undefined;
+  return (
+    <span
+      className={`pf-status pf-status-${status}`}
+      title={phrase}
+      style={phrase ? { cursor: "help" } : undefined}
+    >
+      {status}
+    </span>
+  );
 }
 
 interface Column {

@@ -26,8 +26,24 @@ import Link from "next/link";
 import type {
   PredictionMarket,
   OrderSide,
+  OrderAction,
   OrderPreview,
+  TimeInForce,
 } from "@phoenix-ui/api-client/src/prediction-types";
+
+/**
+ * Extra fields the trade ticket can pass to the parent's submit handler
+ * when an exchange-mode market enables advanced order types. All optional
+ * for backward compatibility — AMM-mode markets ignore them entirely.
+ */
+export interface TradeTicketSubmitOptions {
+  orderType?: "market" | "limit";
+  priceCents?: number;
+  action?: OrderAction;
+  timeInForce?: TimeInForce;
+  postOnly?: boolean;
+  notionalCapCents?: number;
+}
 
 interface TradeTicketProps {
   market: PredictionMarket;
@@ -41,11 +57,18 @@ interface TradeTicketProps {
   defaultAmount?: number;
   isAuthenticated: boolean;
   authLoading: boolean;
+  /** Available shares the user can sell from their YES/NO position. */
+  availableYesShares?: number;
+  availableNoShares?: number;
   onPreview?: (
     side: OrderSide,
     quantity: number,
   ) => Promise<OrderPreview | null>;
-  onSubmit?: (side: OrderSide, quantity: number) => Promise<void>;
+  onSubmit?: (
+    side: OrderSide,
+    quantity: number,
+    opts?: TradeTicketSubmitOptions,
+  ) => Promise<void>;
 }
 
 const QUICK_AMOUNTS = [5, 25, 100] as const;
@@ -59,19 +82,34 @@ export function TradeTicket({
   defaultAmount = 25,
   isAuthenticated,
   authLoading,
+  availableYesShares = 0,
+  availableNoShares = 0,
   onPreview: _onPreview,
   onSubmit,
 }: TradeTicketProps) {
   const [side, setSide] = useState<OrderSide>(defaultSide);
   const [amount, setAmount] = useState(defaultAmount);
   const [mode, setMode] = useState<TicketMode>("market");
+  const [action, setAction] = useState<OrderAction>("buy");
+  // Limit-mode price the user wants to bid/offer. Defaults to mid; exchange
+  // mode enables editing.
+  const [limitPriceCents, setLimitPriceCents] = useState<number>(
+    side === "yes" ? market.yesPriceCents : market.noPriceCents,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isOpen = market.status === "open";
-  const price = side === "yes" ? market.yesPriceCents : market.noPriceCents;
+  const isExchange = market.executionMode === "order_book";
+  const marketPrice =
+    side === "yes" ? market.yesPriceCents : market.noPriceCents;
+  // Effective price drives quantity math: limit orders use the user's price
+  // (capped to [1, 99] at the API boundary); market orders use the snapshot.
+  const price = mode === "limit" && isExchange ? limitPriceCents : marketPrice;
   const otherPrice =
     side === "yes" ? market.noPriceCents : market.yesPriceCents;
+  const availableShares =
+    side === "yes" ? availableYesShares : availableNoShares;
 
   // quantity = # of contracts; cost = quantity * price / 100
   const quantity = useMemo(
@@ -82,14 +120,20 @@ export function TradeTicket({
   const payout = shares * 1; // winning contracts pay $1 each
   const impliedProb = price; // cents are already 0-100, readable as %
   const hasKnownBalance = typeof balance === "number";
+  // Cash-side check applies only to buys. Sells require enough position.
   const insufficientFunds =
-    isAuthenticated && hasKnownBalance && amount > balance;
+    action === "buy" && isAuthenticated && hasKnownBalance && amount > balance;
+  const insufficientShares =
+    action === "sell" &&
+    isAuthenticated &&
+    Math.floor(quantity) > availableShares;
   const loginReturnPath = `/market/${market.ticker}?side=${side}&amount=${amount.toFixed(2)}`;
   const loginHref = `/auth/login?returnUrl=${encodeURIComponent(loginReturnPath)}`;
 
   const handleSubmit = useCallback(async () => {
     if (!onSubmit) return;
-    if (!isAuthenticated || authLoading || insufficientFunds || !isOpen) return;
+    if (!isAuthenticated || authLoading || !isOpen) return;
+    if (insufficientFunds || insufficientShares) return;
     if (quantity < 1) {
       setError("Amount too small — minimum 1 share per trade.");
       return;
@@ -97,7 +141,28 @@ export function TradeTicket({
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(side, Math.floor(quantity));
+      const qty = Math.floor(quantity);
+      if (isExchange) {
+        const opts: TradeTicketSubmitOptions = {
+          orderType: mode,
+          action,
+        };
+        if (mode === "limit") {
+          opts.priceCents = limitPriceCents;
+          // Default time-in-force gtc; advanced section can override later.
+          opts.timeInForce = "gtc";
+        } else {
+          // Market buy: send a notional cap so the gateway can reject mis-priced
+          // fills. Server enforces this is required for market buys.
+          if (action === "buy") {
+            opts.notionalCapCents = Math.ceil(amount * 100);
+          }
+        }
+        await onSubmit(side, qty, opts);
+      } else {
+        // AMM mode: buy-only, market-only — preserve existing call shape.
+        await onSubmit(side, qty);
+      }
       setAmount(25);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Order failed");
@@ -111,7 +176,13 @@ export function TradeTicket({
     isAuthenticated,
     authLoading,
     insufficientFunds,
+    insufficientShares,
     isOpen,
+    isExchange,
+    mode,
+    action,
+    limitPriceCents,
+    amount,
   ]);
 
   const setSideAndReset = (s: OrderSide) => {
@@ -406,14 +477,53 @@ export function TradeTicket({
               role="tab"
               aria-selected={mode === "limit"}
               className={mode === "limit" ? "is-active" : ""}
-              onClick={() => setMode("limit")}
-              disabled
-              title="Limit orders arrive in the next phase"
+              onClick={() => isExchange && setMode("limit")}
+              disabled={!isExchange}
+              title={
+                isExchange
+                  ? "Limit order — set your max buy / min sell price"
+                  : "Limit orders require an exchange-mode market"
+              }
             >
               Limit
             </button>
           </div>
         </div>
+
+        {/* Buy/Sell toggle — only meaningful for exchange markets. AMM stays
+            buy-only because the curve only mints; sell support is the
+            order-book book's job. */}
+        {isExchange && (
+          <div
+            className="tt-mode"
+            role="tablist"
+            aria-label="Action"
+            style={{ marginBottom: 14, alignSelf: "flex-start" }}
+          >
+            <button
+              role="tab"
+              aria-selected={action === "buy"}
+              className={action === "buy" ? "is-active" : ""}
+              onClick={() => setAction("buy")}
+            >
+              Buy
+            </button>
+            <button
+              role="tab"
+              aria-selected={action === "sell"}
+              className={action === "sell" ? "is-active" : ""}
+              onClick={() => setAction("sell")}
+              disabled={availableShares === 0}
+              title={
+                availableShares === 0
+                  ? "You don't have shares on this side to sell"
+                  : `Sell up to ${availableShares} ${side.toUpperCase()} shares`
+              }
+            >
+              Sell
+            </button>
+          </div>
+        )}
 
         <div className="tt-sides" role="tablist" aria-label="Side">
           <button
@@ -445,11 +555,70 @@ export function TradeTicket({
           </button>
         </div>
 
+        {/* Limit price input — appears in exchange + limit mode. Bounded
+            [1, 99] cents per the engine's price bounds (out-of-range prices
+            are rejected at the API). Step is 1¢ to match tick size. */}
+        {isExchange && mode === "limit" && (
+          <div
+            className="tt-amount"
+            style={{ marginBottom: 14 }}
+            aria-label="Limit price"
+          >
+            <div className="tt-amt-head">
+              <span className="tt-amt-label">
+                Limit price ({side.toUpperCase()})
+              </span>
+              <span className="tt-amt-balance">Mid {marketPrice}¢</span>
+            </div>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              step={1}
+              value={limitPriceCents}
+              onChange={(e) => {
+                const v = parseInt(e.target.value, 10);
+                if (Number.isFinite(v)) {
+                  setLimitPriceCents(Math.max(1, Math.min(99, v)));
+                }
+              }}
+              style={{
+                width: "100%",
+                background: "var(--surface-2)",
+                border: "1px solid var(--border-1)",
+                color: "var(--t1)",
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 22,
+                fontVariantNumeric: "tabular-nums",
+                padding: "10px 12px",
+                borderRadius: "var(--r-rh-md)",
+                outline: "none",
+              }}
+            />
+            <p
+              style={{
+                fontSize: 11,
+                color: "var(--t3)",
+                marginTop: 6,
+                fontFamily: "'IBM Plex Mono', monospace",
+              }}
+            >
+              {action === "buy"
+                ? `Pays up to ${limitPriceCents}¢/share. Rest unfilled at limit.`
+                : `Sells at ${limitPriceCents}¢/share or better.`}
+            </p>
+          </div>
+        )}
+
         <div className="tt-amount">
           <div className="tt-amt-head">
-            <span className="tt-amt-label">Amount</span>
+            <span className="tt-amt-label">
+              {action === "sell" ? "Shares to sell" : "Amount"}
+            </span>
             <span className="tt-amt-balance">
-              Balance ${typeof balance === "number" ? balance.toFixed(2) : "—"}
+              {action === "sell"
+                ? `Available ${availableShares}`
+                : `Balance $${typeof balance === "number" ? balance.toFixed(2) : "—"}`}
             </span>
           </div>
           <div className="tt-amt-display">
@@ -541,6 +710,16 @@ export function TradeTicket({
                 Your available balance is below this ${amount.toFixed(2)} order.
               </p>
             </>
+          ) : insufficientShares ? (
+            <>
+              <button type="button" className="tt-cta" disabled>
+                Not enough shares
+              </button>
+              <p className="tt-state-note" role="alert">
+                You have {availableShares} {side.toUpperCase()} shares
+                available; this sell is for {Math.floor(quantity)}.
+              </p>
+            </>
           ) : (
             <button
               type="button"
@@ -556,7 +735,9 @@ export function TradeTicket({
                 would imply a confirm modal that does not exist and was
                 a stage gotcha during the 2026-05-03 demo dry-run.
               */}
-              {submitting ? "Placing…" : `Place trade · $${amount.toFixed(2)}`}
+              {submitting
+                ? "Placing…"
+                : `${action === "sell" ? "Sell" : "Place trade"} · $${amount.toFixed(2)}`}
             </button>
           )
         ) : (

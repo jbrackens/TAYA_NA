@@ -27,7 +27,10 @@ import MarketChart from "../../components/prediction/MarketChart";
 import OrderBook from "../../components/prediction/OrderBook";
 import type { BookLevel } from "../../components/prediction/OrderBook";
 import RecentTrades from "../../components/prediction/RecentTrades";
-import { TradeTicket } from "../../components/prediction/TradeTicket";
+import {
+  TradeTicket,
+  type TradeTicketSubmitOptions,
+} from "../../components/prediction/TradeTicket";
 import { logger } from "../../lib/logger";
 import { subscribePredictWs } from "../../lib/websocket/predict-ws";
 import { useAuth } from "../../hooks/useAuth";
@@ -40,6 +43,7 @@ import type {
   Category,
   OrderSide,
   OrderPreview,
+  OrderBook as ApiOrderBook,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 
@@ -75,6 +79,39 @@ function synthesizeBook(market: PredictionMarket): {
   return { bids, asks };
 }
 
+/**
+ * Adapt a real /orderbook response into the legacy {bids, asks} pair the
+ * OrderBook presentational component expects. The visual convention is:
+ *   - bids = YES buy orders (priceCents = YES price ladder, descending)
+ *   - asks = NO buy orders rendered as YES sells (the OrderBook component
+ *     internally inverts NO bids to "ask at 100-NoBid"). For an exchange
+ *     market we use the real NO bid ladder for the ask side; real YES
+ *     sells (yes.asks) would also belong here but the component doesn't
+ *     yet know how to merge two ask sources, so v1 keeps the NO-bids
+ *     convention for backward visual parity.
+ */
+function adaptBookForDisplay(book: ApiOrderBook): {
+  bids: BookLevel[];
+  asks: BookLevel[];
+} {
+  const bids: BookLevel[] = book.yes.bids.map((lvl) => ({
+    priceCents: lvl.priceCents,
+    size: lvl.quantity,
+    total: lvl.total,
+  }));
+  // Ask side: render NO bids in descending order for visual stack consistency.
+  // The OrderBook component inverts these to "NO Xc" labels via its own logic.
+  const asks: BookLevel[] = book.no.bids
+    .slice()
+    .reverse()
+    .map((lvl) => ({
+      priceCents: lvl.priceCents,
+      size: lvl.quantity,
+      total: lvl.total,
+    }));
+  return { bids, asks };
+}
+
 export default function MarketDetailPage() {
   const params = useParams() ?? {};
   const ticker = (params.ticker as string | undefined) ?? "";
@@ -94,6 +131,9 @@ export default function MarketDetailPage() {
   const [related, setRelated] = useState<PredictionMarket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Real /orderbook fetch (only populated when executionMode='order_book').
+  // null while loading or when AMM mode; falls back to synthesizeBook below.
+  const [orderBook, setOrderBook] = useState<ApiOrderBook | null>(null);
   const balance = useAppSelector(selectCurrentBalance);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -197,6 +237,42 @@ export default function MarketDetailPage() {
     return unsubscribe;
   }, [market?.id, authLoading, isAuthenticated]);
 
+  // Real /orderbook fetch + WS refresh for exchange-mode markets.
+  //
+  // AMM markets ignore this entirely — synthesizeBook handles them. For
+  // order-book markets we fetch once on market load, then refetch on the
+  // `orderbook:<id>` WS channel which carries a "stale" hint after each
+  // fill (engine plan §Data Flow: one batched orderbook update per
+  // request). Failures fall back to the synthesized ladder so the page
+  // still renders even if /orderbook is temporarily unreachable.
+  useEffect(() => {
+    const id = market?.id;
+    if (!id) return;
+    if (market?.executionMode !== "order_book") {
+      setOrderBook(null);
+      return;
+    }
+    let cancelled = false;
+    const fetchBook = async () => {
+      try {
+        const book = await api.getOrderBook(id, 20);
+        if (!cancelled) setOrderBook(book);
+      } catch (err: unknown) {
+        logger.warn("MarketDetail", "orderbook fetch failed", err);
+      }
+    };
+    fetchBook();
+    const unsubscribe = subscribePredictWs(`orderbook:${id}`, () => {
+      // Hint payload carries best bid/ask but the OrderBook component
+      // wants full depth; refetch on every hint.
+      if (!cancelled) fetchBook();
+    });
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [market?.id, market?.executionMode]);
+
   const handlePreview = useCallback(
     async (side: OrderSide, quantity: number): Promise<OrderPreview | null> => {
       if (!market) return null;
@@ -217,14 +293,25 @@ export default function MarketDetailPage() {
   );
 
   const handleSubmit = useCallback(
-    async (side: OrderSide, quantity: number) => {
+    async (
+      side: OrderSide,
+      quantity: number,
+      opts?: TradeTicketSubmitOptions,
+    ) => {
       if (!market) return;
+      // AMM-mode default: market buy. Exchange-mode markets pass opts that
+      // carry order type, action (buy/sell), limit price, TIF, and notional
+      // cap. Forward straight through to the gateway.
       await api.placeOrder({
         marketId: market.id,
         side,
-        action: "buy",
-        orderType: "market",
+        action: opts?.action ?? "buy",
+        orderType: opts?.orderType ?? "market",
         quantity,
+        priceCents: opts?.priceCents,
+        timeInForce: opts?.timeInForce,
+        postOnly: opts?.postOnly,
+        notionalCapCents: opts?.notionalCapCents,
       });
       try {
         const updated = await loadMarket();
@@ -233,6 +320,16 @@ export default function MarketDetailPage() {
           setTrades(t);
         } catch (err: unknown) {
           logger.warn("MarketDetail", "post-trade trades refresh failed", err);
+        }
+        // Refresh the order book too — a successful order on an exchange
+        // market changes the depth even when the order rests (no fill).
+        if (updated.executionMode === "order_book") {
+          try {
+            const book = await api.getOrderBook(updated.id, 20);
+            setOrderBook(book);
+          } catch (err: unknown) {
+            logger.warn("MarketDetail", "post-trade book refresh failed", err);
+          }
         }
       } catch (err: unknown) {
         logger.error("MarketDetail", "post-trade market refresh failed", err);
@@ -253,7 +350,11 @@ export default function MarketDetailPage() {
     return <PageState tone="error">{error || "Market not found"}</PageState>;
   }
 
-  const { bids, asks } = synthesizeBook(market);
+  // Real book wins when populated (exchange-mode markets); fall back to
+  // synthesizeBook for AMM markets and during the initial fetch.
+  const { bids, asks } = orderBook
+    ? adaptBookForDisplay(orderBook)
+    : synthesizeBook(market);
   const tradersCount =
     trades.length >= 2 ? new Set(trades.map((t) => t.buyerId)).size : undefined;
 

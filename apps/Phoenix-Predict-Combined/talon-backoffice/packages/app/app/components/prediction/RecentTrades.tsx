@@ -23,11 +23,63 @@ function timeAgo(iso: string, now: number = Date.now()): string {
   return `${Math.floor(delta / 86400)}d`;
 }
 
+/**
+ * Render row for the trade tape. Either a single secondary trade or a
+ * collapsed issuance pair (two rows from the gateway sharing matchId).
+ */
+type TapeRow =
+  | { kind: "secondary"; trade: Trade }
+  | {
+      kind: "issuance";
+      matchId: string;
+      yesTrade: Trade;
+      noTrade: Trade;
+    };
+
+/**
+ * Collapse trades into tape rows. Issuance trades arrive as two trade
+ * rows from /trades sharing a matchId — group them so the tape shows
+ * one line per match (with both YES and NO prices) instead of two
+ * apparently-duplicate lines. Secondary trades pass through 1:1.
+ *
+ * Order is preserved by first-occurrence timestamp.
+ */
+function collapseTrades(trades: Trade[]): TapeRow[] {
+  const seen = new Map<string, TapeRow>();
+  const order: string[] = [];
+  for (const t of trades) {
+    if (t.tradeKind === "issuance" && t.matchId) {
+      const existing = seen.get(t.matchId);
+      if (!existing) {
+        const row: TapeRow = {
+          kind: "issuance",
+          matchId: t.matchId,
+          yesTrade: t.side === "yes" ? t : t,
+          noTrade: t.side === "no" ? t : t,
+        };
+        // Initial fill: one side known, other will arrive next.
+        seen.set(t.matchId, row);
+        order.push(t.matchId);
+      } else if (existing.kind === "issuance") {
+        if (t.side === "yes") existing.yesTrade = t;
+        else existing.noTrade = t;
+      }
+    } else {
+      // Secondary or untagged (legacy AMM trades have no matchId/tradeKind).
+      const key = t.id;
+      seen.set(key, { kind: "secondary", trade: t });
+      order.push(key);
+    }
+  }
+  return order.map((k) => seen.get(k)!).filter(Boolean);
+}
+
 export default function RecentTrades({
   trades,
   limit = 12,
 }: RecentTradesProps) {
-  const visible = trades.slice(0, limit);
+  const collapsed = collapseTrades(trades);
+  const visible = collapsed.slice(0, limit);
 
   return (
     <>
@@ -111,7 +163,41 @@ export default function RecentTrades({
           <div className="rt-empty">No recent trades.</div>
         ) : (
           <div className="rt-tape">
-            {visible.map((t) => {
+            {visible.map((row) => {
+              if (row.kind === "issuance") {
+                // Both sides minted in one match. Show a "MINT" pill and
+                // both prices side-by-side. Notional = qty * 100¢ ($1/contract).
+                const yPx = row.yesTrade.priceCents;
+                const nPx = row.noTrade.priceCents;
+                const qty = row.yesTrade.quantity;
+                const size = qty; // $1/contract on issuance
+                return (
+                  <div key={row.matchId} className="rt-row">
+                    <span
+                      className="rt-side"
+                      style={{
+                        background: "var(--accent-soft)",
+                        color: "var(--accent)",
+                      }}
+                      title="Complementary issuance — both sides minted from collateral"
+                    >
+                      MINT
+                    </span>
+                    <span className="rt-px">
+                      <span className="rt-px yes">{yPx}¢</span>
+                      <span style={{ color: "var(--t3)", margin: "0 4px" }}>
+                        /
+                      </span>
+                      <span className="rt-px no">{nPx}¢</span>
+                    </span>
+                    <span className="rt-sz">${size.toFixed(2)}</span>
+                    <span className="rt-t">
+                      {timeAgo(row.yesTrade.tradedAt)}
+                    </span>
+                  </div>
+                );
+              }
+              const t = row.trade;
               const sideKey = t.side === "yes" ? "yes" : "no";
               const px = t.side === "yes" ? t.priceCents : 100 - t.priceCents;
               const size = (t.quantity * px) / 100;
