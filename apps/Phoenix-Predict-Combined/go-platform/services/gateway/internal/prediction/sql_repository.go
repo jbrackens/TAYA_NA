@@ -1091,7 +1091,10 @@ func marketSelectQuery() string {
 	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_cents,
 	               m.settlement_source_key, m.settlement_cutoff_at, m.settlement_rule, m.settlement_params,
 	               m.fallback_source_key, m.fee_rate_bps, m.maker_rebate_bps,
-	               m.open_at, m.close_at, m.created_at, m.updated_at, m.image_path
+	               m.open_at, m.close_at, m.created_at, m.updated_at, m.image_path,
+	               m.execution_mode, m.collateral_pool_cents, m.settled_payout_pool_cents,
+	               m.best_yes_bid_cents, m.best_yes_ask_cents,
+	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at
 	        FROM prediction_markets m`
 }
 
@@ -1105,6 +1108,10 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var result, fallback, imagePath sql.NullString
 	var lastTradePrice sql.NullInt64
 	var settleCutoff, openAt sql.NullTime
+	// Exchange engine fields (migration 019). Best-quote columns are
+	// populated by the post-match refresher; null until first match.
+	var bestYesBid, bestYesAsk, bestNoBid, bestNoAsk sql.NullInt64
+	var lastQuoteAt sql.NullTime
 
 	err := row.Scan(&m.ID, &m.EventID, &m.Ticker, &m.Title, &desc, &m.Status, &result,
 		&m.YesPriceCents, &m.NoPriceCents, &lastTradePrice,
@@ -1112,7 +1119,9 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyCents,
 		&m.SettlementSourceKey, &settleCutoff, &m.SettlementRule, &m.SettlementParams,
 		&fallback, &m.FeeRateBps, &m.MakerRebateBps,
-		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath)
+		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
+		&m.ExecutionMode, &m.CollateralPoolCents, &m.SettledPayoutPoolCents,
+		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt)
 	if err != nil {
 		return nil, err
 	}
@@ -1136,6 +1145,25 @@ func scanMarketRow(row scannable) (*Market, error) {
 	}
 	if imagePath.Valid {
 		m.ImagePath = imagePath.String
+	}
+	if bestYesBid.Valid {
+		v := int(bestYesBid.Int64)
+		m.BestYesBidCents = &v
+	}
+	if bestYesAsk.Valid {
+		v := int(bestYesAsk.Int64)
+		m.BestYesAskCents = &v
+	}
+	if bestNoBid.Valid {
+		v := int(bestNoBid.Int64)
+		m.BestNoBidCents = &v
+	}
+	if bestNoAsk.Valid {
+		v := int(bestNoAsk.Int64)
+		m.BestNoAskCents = &v
+	}
+	if lastQuoteAt.Valid {
+		m.LastQuoteAt = &lastQuoteAt.Time
 	}
 	return &m, nil
 }
