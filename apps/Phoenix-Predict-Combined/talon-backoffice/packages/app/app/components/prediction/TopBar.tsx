@@ -37,12 +37,16 @@ import BrandMark from "../BrandMark";
 
 const api = createPredictionClient();
 
-const NAV_LINKS: { href: string; label: string }[] = [
+// Top-level nav. `requiresAuth` items are hidden from logged-out visitors —
+// they would either land on a sign-in wall (Portfolio) or render with an
+// empty / placeholder state (Leaderboards, Rewards), neither of which makes
+// sense as a discoverable destination before login.
+const NAV_LINKS: { href: string; label: string; requiresAuth?: boolean }[] = [
   { href: "/predict", label: "Markets" },
   { href: "/discover", label: "Discover" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/leaderboards", label: "Leaderboards" },
-  { href: "/rewards", label: "Rewards" },
+  { href: "/portfolio", label: "Portfolio", requiresAuth: true },
+  { href: "/leaderboards", label: "Leaderboards", requiresAuth: true },
+  { href: "/rewards", label: "Rewards", requiresAuth: true },
 ];
 
 export function TopBar() {
@@ -449,15 +453,17 @@ export function TopBar() {
 
         {isDesktop && (
           <nav className="tb-nav" aria-label="Primary">
-            {NAV_LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
-              >
-                {l.label}
-              </Link>
-            ))}
+            {NAV_LINKS.filter((l) => !l.requiresAuth || isAuthenticated).map(
+              (l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
+                >
+                  {l.label}
+                </Link>
+              ),
+            )}
           </nav>
         )}
 
