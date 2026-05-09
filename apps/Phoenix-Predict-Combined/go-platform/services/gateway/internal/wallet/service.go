@@ -645,6 +645,199 @@ WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
 	return nil
 }
 
+// ============================================================================
+// Transactional reservation methods (HoldWithTx / CaptureReservationWithTx /
+// ReleaseReservationWithTx) participate in a caller-managed *sql.Tx so that
+// reservation moves and prediction-engine writes commit atomically. Used by
+// the binary exchange engine. Requires migration 020 (captured_amount_cents
+// column on wallet_reservations).
+//
+// Isolation note: the caller's tx isolation wins for the whole transaction;
+// these methods do not call BeginTx. The exchange engine calls BeginTx at
+// READ COMMITTED with a per-market advisory lock to serialize matching.
+// ============================================================================
+
+// HoldWithTx is the transactional variant of Hold. Performs the same
+// idempotency check, balance verification, and reservation insert, but
+// participates in the caller's tx.
+func (s *Service) HoldWithTx(ctx context.Context, tx *sql.Tx, request HoldRequest) (Reservation, error) {
+	if request.UserID == "" || request.AmountCents <= 0 || request.ReferenceID == "" {
+		return Reservation{}, ErrInvalidMutationRequest
+	}
+	if request.ReferenceType == "" {
+		request.ReferenceType = "bet"
+	}
+	if request.ExpiresIn <= 0 {
+		request.ExpiresIn = 24 * time.Hour
+	}
+
+	// Idempotency: return existing reservation for (reference_type, reference_id).
+	var existing Reservation
+	var existingExpiresAt, existingCreatedAt time.Time
+	err := tx.QueryRowContext(ctx, `
+SELECT id, user_id, amount_cents, reference_type, reference_id, status,
+       created_at, expires_at
+FROM wallet_reservations
+WHERE reference_type = $1 AND reference_id = $2
+LIMIT 1`, request.ReferenceType, request.ReferenceID).Scan(
+		&existing.ID, &existing.UserID, &existing.AmountCents,
+		&existing.ReferenceType, &existing.ReferenceID, &existing.Status,
+		&existingCreatedAt, &existingExpiresAt)
+	if err == nil {
+		existing.CreatedAt = existingCreatedAt.Format(time.RFC3339)
+		existing.ExpiresAt = existingExpiresAt.Format(time.RFC3339)
+		return existing, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return Reservation{}, err
+	}
+
+	// Lock the user's balance row to compute available funds.
+	var balance int64
+	if err := tx.QueryRowContext(ctx, `
+SELECT balance_cents FROM wallet_balances WHERE user_id = $1 FOR UPDATE`,
+		request.UserID).Scan(&balance); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return Reservation{}, ErrInsufficientFunds
+		}
+		return Reservation{}, err
+	}
+
+	// Sum the uncaptured portion of held reservations for this user.
+	var heldTotal int64
+	if err := tx.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents - captured_amount_cents), 0)
+FROM wallet_reservations
+WHERE user_id = $1 AND status = 'held' AND expires_at > NOW()`,
+		request.UserID).Scan(&heldTotal); err != nil {
+		return Reservation{}, err
+	}
+
+	if balance-heldTotal < request.AmountCents {
+		return Reservation{}, ErrInsufficientFunds
+	}
+
+	expiresAt := time.Now().UTC().Add(request.ExpiresIn)
+	var reservationID int64
+	if err := tx.QueryRowContext(ctx, `
+INSERT INTO wallet_reservations (user_id, amount_cents, reference_type, reference_id, status, expires_at)
+VALUES ($1, $2, $3, $4, 'held', $5)
+RETURNING id`,
+		request.UserID, request.AmountCents, request.ReferenceType,
+		request.ReferenceID, expiresAt).Scan(&reservationID); err != nil {
+		return Reservation{}, err
+	}
+
+	return Reservation{
+		ID:            fmt.Sprintf("rsv:%d", reservationID),
+		UserID:        request.UserID,
+		AmountCents:   request.AmountCents,
+		ReferenceType: request.ReferenceType,
+		ReferenceID:   request.ReferenceID,
+		Status:        "held",
+		CreatedAt:     time.Now().UTC().Format(time.RFC3339),
+		ExpiresAt:     expiresAt.Format(time.RFC3339),
+	}, nil
+}
+
+// CaptureReservationWithTx captures up to amountCents from the held reservation
+// identified by (referenceType, referenceID), debiting the user's wallet for
+// that amount via applyMutationTx. Cumulative captures across calls cannot
+// exceed the reservation's amount_cents; once they equal it, the reservation
+// transitions to status='captured'. Pass amountCents=0 for a no-op (returns
+// a zero LedgerEntry and a nil error).
+//
+// captureKey must be unique per capture call (e.g., "prediction_fill:<trade_id>")
+// to keep wallet ledger writes idempotent across retries.
+func (s *Service) CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, referenceType, referenceID string, amountCents int64, captureKey string) (LedgerEntry, error) {
+	if amountCents < 0 {
+		return LedgerEntry{}, ErrInvalidMutationRequest
+	}
+	if amountCents == 0 {
+		return LedgerEntry{}, nil
+	}
+	if captureKey == "" {
+		return LedgerEntry{}, ErrInvalidMutationRequest
+	}
+
+	var resID int64
+	var userID string
+	var amount, captured int64
+	var status string
+	var expiresAt time.Time
+	err := tx.QueryRowContext(ctx, `
+SELECT id, user_id, amount_cents, captured_amount_cents, status, expires_at
+FROM wallet_reservations
+WHERE reference_type = $1 AND reference_id = $2
+FOR UPDATE`,
+		referenceType, referenceID).Scan(&resID, &userID, &amount, &captured, &status, &expiresAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return LedgerEntry{}, ErrReservationNotFound
+		}
+		return LedgerEntry{}, err
+	}
+	if status != "held" {
+		return LedgerEntry{}, ErrReservationNotHeld
+	}
+	if time.Now().UTC().After(expiresAt) {
+		if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_reservations SET status = 'expired', resolved_at = NOW() WHERE id = $1`, resID); err != nil {
+			return LedgerEntry{}, err
+		}
+		return LedgerEntry{}, ErrReservationExpired
+	}
+
+	remaining := amount - captured
+	if amountCents > remaining {
+		return LedgerEntry{}, fmt.Errorf("capture %d exceeds remaining %d on reservation %s:%s",
+			amountCents, remaining, referenceType, referenceID)
+	}
+
+	entry, err := applyMutationTx(ctx, tx, "debit", MutationRequest{
+		UserID:         userID,
+		AmountCents:    amountCents,
+		IdempotencyKey: captureKey,
+		Reason:         fmt.Sprintf("partial capture %s:%s", referenceType, referenceID),
+	})
+	if err != nil {
+		return LedgerEntry{}, err
+	}
+
+	newCaptured := captured + amountCents
+	if newCaptured == amount {
+		if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_reservations
+SET captured_amount_cents = $2, status = 'captured', resolved_at = NOW()
+WHERE id = $1`, resID, newCaptured); err != nil {
+			return LedgerEntry{}, err
+		}
+	} else {
+		if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_reservations SET captured_amount_cents = $2 WHERE id = $1`,
+			resID, newCaptured); err != nil {
+			return LedgerEntry{}, err
+		}
+	}
+
+	return entry, nil
+}
+
+// ReleaseReservationWithTx releases the uncaptured remainder of a held
+// reservation, freeing the user's available balance. Idempotent: releasing an
+// already-released or already-captured reservation is a no-op (returns nil).
+// Any captured portion remains debited; only the uncaptured remainder is freed.
+func (s *Service) ReleaseReservationWithTx(ctx context.Context, tx *sql.Tx, referenceType, referenceID string) error {
+	if _, err := tx.ExecContext(ctx, `
+UPDATE wallet_reservations
+SET status = 'released', resolved_at = NOW()
+WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
+		referenceType, referenceID); err != nil {
+		return err
+	}
+	return nil
+}
+
 // ExpireStaleReservations marks overdue held reservations as expired.
 // Should be called periodically (e.g., every minute) as a background job.
 func (s *Service) ExpireStaleReservations() (int64, error) {
