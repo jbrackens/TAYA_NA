@@ -23,6 +23,7 @@ import type {
   Category,
   PredictionMarket,
   MarketLifecycleAction,
+  CollateralDriftAlert,
 } from "@phoenix-ui/api-client/src/prediction-types";
 
 const { Text } = Typography;
@@ -47,6 +48,11 @@ export default function PredictionMarketsContainer() {
   const [, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  // Drift alerts keyed by marketId so the table render can lookup in O(1).
+  // Empty until first load completes; treated as "no drift" until then.
+  const [driftByMarket, setDriftByMarket] = useState<
+    Record<string, CollateralDriftAlert>
+  >({});
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -66,6 +72,21 @@ export default function PredictionMarketsContainer() {
       message.error("Failed to load markets");
     } finally {
       setLoading(false);
+    }
+
+    // Drift alerts run as a follow-up so a 404 (gateway pre-rebuild)
+    // doesn't fail the main markets load. Quiet failure on the row badge
+    // is fine — it just won't render the warning indicator.
+    try {
+      const alerts = await predictionClient.getDriftAlerts("24h");
+      const byId: Record<string, CollateralDriftAlert> = {};
+      for (const a of alerts.data) {
+        byId[a.marketId] = a;
+      }
+      setDriftByMarket(byId);
+    } catch {
+      // Silent — likely 404 on older gateway builds. Row badge just
+      // won't appear; nothing else degrades.
     }
   }
 
@@ -116,7 +137,33 @@ export default function PredictionMarketsContainer() {
   }
 
   const columns = [
-    { title: "Ticker", dataIndex: "ticker", key: "ticker", width: 160 },
+    {
+      title: "Ticker",
+      dataIndex: "ticker",
+      key: "ticker",
+      width: 200,
+      render: (ticker: string, record: PredictionMarket) => {
+        const drift = driftByMarket[record.id];
+        if (!drift) {
+          return <Text>{ticker}</Text>;
+        }
+        // Drift detected within last 24h. Show a red dot with tooltip;
+        // adjustmentCount and maxDrift drive the urgency message.
+        const tip = `${drift.adjustmentCount} adjustment${
+          drift.adjustmentCount === 1 ? "" : "s"
+        } · max drift ${formatUsd(Math.abs(drift.maxDriftCents))} · ${drift.latestReason || "see ledger"}`;
+        return (
+          <Space size={6}>
+            <Text>{ticker}</Text>
+            <Tooltip title={tip}>
+              <Tag color="red" style={{ marginLeft: 0 }}>
+                drift
+              </Tag>
+            </Tooltip>
+          </Space>
+        );
+      },
+    },
     {
       // Title column was truncating to ~3-6 chars at narrow widths
       // because Antd allocates remaining space after fixed-width
@@ -142,6 +189,22 @@ export default function PredictionMarketsContainer() {
       render: (status: string) => (
         <Tag color={statusColors[status] || "default"}>{status}</Tag>
       ),
+    },
+    {
+      // Exchange engine: 'order_book' (real CLOB matching) vs 'amm' (legacy
+      // LMSR). New markets default to order_book per migration 019; existing
+      // markets stay AMM until manually flipped. Surfaces here so trading
+      // ops can spot pre-launch markets at a glance.
+      title: "Engine",
+      dataIndex: "executionMode",
+      key: "executionMode",
+      width: 96,
+      render: (mode?: string) => {
+        const m = mode || "amm";
+        const color = m === "order_book" ? "geekblue" : "default";
+        const label = m === "order_book" ? "book" : "amm";
+        return <Tag color={color}>{label}</Tag>;
+      },
     },
     {
       title: "YES",

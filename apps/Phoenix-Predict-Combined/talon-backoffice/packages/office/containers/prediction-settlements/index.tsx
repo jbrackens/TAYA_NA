@@ -65,11 +65,20 @@ export default function PredictionSettlementsContainer() {
             unknown
           >)
         : undefined;
+      const overrideReasonRaw = values.overrideReason as string | undefined;
+      const overrideReason = overrideReasonRaw?.trim()
+        ? overrideReasonRaw.trim()
+        : undefined;
       const result = await predictionClient.settleMarket(selectedMarket.id, {
         result: values.result as "yes" | "no",
         attestationSource: (values.attestationSource as string) || "admin",
         attestationData,
         reason: values.reason as string | undefined,
+        // Override flag — gateway requires this if the market has a
+        // collateral imbalance (schema 019 CHECK + service-layer guard).
+        // Empty string treated as not-supplied so the gateway's all-or-none
+        // CHECK passes when no override is intended.
+        overrideReason,
       });
       const payoutCount = result.payouts?.length || 0;
       message.success(
@@ -79,8 +88,12 @@ export default function PredictionSettlementsContainer() {
       setSelectedMarket(null);
       form.resetFields();
       loadData();
-    } catch {
-      message.error("Settlement failed");
+    } catch (err: unknown) {
+      // Surface the gateway's error string (often "collateral imbalance —
+      // override required") instead of a generic message so the admin
+      // knows to fill the override reason and retry.
+      const detail = err instanceof Error ? err.message : "Settlement failed";
+      message.error(detail);
     }
   }
 
@@ -229,6 +242,24 @@ export default function PredictionSettlementsContainer() {
           </Form.Item>
           <Form.Item name="reason" label="Reason">
             <Input placeholder="e.g., Official result confirmed by AP" />
+          </Form.Item>
+          {/*
+            Collateral-imbalance override. Required only when the gateway
+            detects that prediction_collateral_ledger doesn't match the
+            sum of YES/NO positions × 100¢ on this market. If the gateway
+            rejects with "override_reason required", admin fills this and
+            re-submits. Leaving it empty is the default safe path — the
+            gateway will reject if it actually needs an override.
+          */}
+          <Form.Item
+            name="overrideReason"
+            label="Override Reason (only if collateral imbalance)"
+            help="Required when the gateway flags a collateral mismatch. Otherwise leave empty."
+          >
+            <TextArea
+              rows={2}
+              placeholder="e.g., Drift confirmed at $0.12 — investigated, ops approved settlement; ticket OPS-1234"
+            />
           </Form.Item>
         </Form>
       </Modal>
