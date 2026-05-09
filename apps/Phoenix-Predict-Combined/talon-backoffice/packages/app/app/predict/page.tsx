@@ -226,7 +226,10 @@ function DiscoveryHero({
           .rh-hero { padding: 24px; }
           .rh-bigprice { font-size: 64px; }
           .rh-bigprice .cents { font-size: 40px; }
-          .rh-hero-q { font-size: 22px; }
+          .rh-hero-q { font-size: 22px; margin-bottom: 18px; }
+          .rh-change { margin-bottom: 18px; }
+          .rh-chart svg { height: 160px; }
+          .rh-actions { margin-top: 18px; }
           .rh-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
         }
       `}</style>
@@ -285,7 +288,16 @@ function DiscoveryHero({
               fill="none"
             />
           </svg>
-          <div className="rh-periods" role="tablist" aria-label="Chart range">
+          <div
+            className="rh-periods"
+            role="tablist"
+            aria-label="Chart range"
+            aria-describedby="rh-periods-note"
+          >
+            <span id="rh-periods-note" className="sr-only">
+              Chart time range selection is unavailable until backend price
+              history is connected.
+            </span>
             {HERO_PERIODS.map((p) => (
               <button
                 key={p}
@@ -293,8 +305,8 @@ function DiscoveryHero({
                 role="tab"
                 className={`rh-period ${p === "1D" ? "is-active" : ""}`}
                 aria-selected={p === "1D"}
+                aria-disabled="true"
                 disabled
-                title="Time-period selection coming with backend price history"
               >
                 {p}
               </button>

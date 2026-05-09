@@ -4,6 +4,16 @@ Design and product debt tracked across planning cycles. Items here are intention
 
 ## Open
 
+### Backoffice Ant Design 4 / React 19 compatibility warnings
+
+- **What:** `/prediction-admin/markets` and `/prediction-admin/settlements` still emit development console warnings/errors from Ant Design 4 internals under React 19, including `render` / `unmountComponentAtNode` import warnings and `element.ref` access errors.
+- **Why:** gstack QA on 2026-05-06 restored the broken Create Market and Settle modals by switching the affected AntD 4 modal props from `open` to `visible`, but the broader dependency compatibility issue remains.
+- **Pros of deciding now:** Removing the warnings would improve console health and reduce risk that other AntD modal/table/typography interactions break as React tightens compatibility.
+- **Cons:** The durable fix likely requires a scoped AntD compatibility pass or dependency upgrade, not a one-line admin workflow fix.
+- **Context:** Deferred from gstack QA of the player app and backoffice on branch `chore/rebrand-player-hula-na`. Evidence lives in `.gstack/qa-reports/qa-report-localhost-2026-05-06.md`.
+- **Depends on / blocked by:** Decision on whether to keep the legacy Pages Router AntD admin surface or migrate those pages onto the newer backoffice app shell/components.
+- **Revisit when:** Before shipping React 19 backoffice admin changes, or when touching the prediction admin markets/settlements pages again.
+
 ### Predict fee model decision
 
 - **What:** Decide how Predict handles trading fees. Current state: `fee_rate_bps` column defaults to 0, no market sets it, no user-tier mechanism. Industry precedent: Kalshi uses a price-curve formula (`0.07 × P × (1−P)`, peaks at 50¢), Polymarket uses market-category tiers with maker rebates (2026 update); neither uses user-loyalty-tier fees.

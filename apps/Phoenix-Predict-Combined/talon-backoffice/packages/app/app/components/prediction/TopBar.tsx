@@ -440,14 +440,10 @@ export function TopBar() {
       `}</style>
 
       <header className="tb">
-        <Link
-          href="/predict"
-          className="tb-brand"
-          aria-label="TAYA NA Predict — home"
-        >
+        <Link href="/predict" className="tb-brand" aria-label="Hula Na! — home">
           <BrandMark />
           <span className="tb-brand-txt">
-            TAYA<span className="accent">Predict</span>
+            Hula<span className="accent">Na!</span>
           </span>
         </Link>
 
@@ -473,6 +469,11 @@ export function TopBar() {
             aria-haspopup="listbox"
             aria-expanded={searchOpen && searchResults.length > 0}
             aria-owns="tb-search-listbox"
+            aria-activedescendant={
+              searchOpen && searchResults[cursor]
+                ? `tb-search-option-${searchResults[cursor].id}`
+                : undefined
+            }
           >
             <label className="tb-search-label">
               <Search size={14} className="tb-search-icon" />
@@ -510,6 +511,7 @@ export function TopBar() {
                   searchResults.map((m, i) => (
                     <li
                       key={m.id}
+                      id={`tb-search-option-${m.id}`}
                       role="option"
                       aria-selected={i === cursor}
                       className={`tb-search-hit ${i === cursor ? "active" : ""}`}

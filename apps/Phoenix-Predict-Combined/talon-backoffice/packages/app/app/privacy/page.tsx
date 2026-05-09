@@ -80,10 +80,7 @@ export default function PrivacyPage() {
           <h2>8. Contact</h2>
           <p>
             Privacy inquiries can be sent to{" "}
-            <a href="mailto:privacy@tayanapredict.com">
-              privacy@tayanapredict.com
-            </a>
-            .
+            <a href="mailto:privacy@hulana.com">privacy@hulana.com</a>.
           </p>
         </section>
       </div>

@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * TradeTicket — Liquid Glass trade form on /market/[ticker].
+ * TradeTicket — warm-light trade form on /market/[ticker].
  *
  * Layout (DESIGN.md §6 + §8):
  *   Title + mode switcher (Market / Limit)
- *   YES/NO side selector (glass buttons with liquid-tint ::after on select)
- *   Amount block (.glass-inset display + chips + balance)
+ *   YES/NO side selector
+ *   Amount block + chips + balance
  *   Summary rows (avg fill, slippage, shares, payout)
- *   Review CTA (2-stop mint → teal gradient, shimmer)
+ *   Auth-aware CTA
  *
  * Amount is in dollars. Quantity (shares) = amount / price * 100. The
  * PredictionApiClient interface still takes `quantity`, so we convert
@@ -22,6 +22,7 @@
  */
 
 import { useState, useCallback, useMemo } from "react";
+import Link from "next/link";
 import type {
   PredictionMarket,
   OrderSide,
@@ -37,6 +38,9 @@ interface TradeTicketProps {
    * can deep-link into a side-specific trade. Defaults to "yes".
    */
   defaultSide?: OrderSide;
+  defaultAmount?: number;
+  isAuthenticated: boolean;
+  authLoading: boolean;
   onPreview?: (
     side: OrderSide,
     quantity: number,
@@ -52,11 +56,14 @@ export function TradeTicket({
   market,
   balance,
   defaultSide = "yes",
+  defaultAmount = 25,
+  isAuthenticated,
+  authLoading,
   onPreview: _onPreview,
   onSubmit,
 }: TradeTicketProps) {
   const [side, setSide] = useState<OrderSide>(defaultSide);
-  const [amount, setAmount] = useState(25);
+  const [amount, setAmount] = useState(defaultAmount);
   const [mode, setMode] = useState<TicketMode>("market");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,9 +81,15 @@ export function TradeTicket({
   const shares = quantity;
   const payout = shares * 1; // winning contracts pay $1 each
   const impliedProb = price; // cents are already 0-100, readable as %
+  const hasKnownBalance = typeof balance === "number";
+  const insufficientFunds =
+    isAuthenticated && hasKnownBalance && amount > balance;
+  const loginReturnPath = `/market/${market.ticker}?side=${side}&amount=${amount.toFixed(2)}`;
+  const loginHref = `/auth/login?returnUrl=${encodeURIComponent(loginReturnPath)}`;
 
   const handleSubmit = useCallback(async () => {
     if (!onSubmit) return;
+    if (!isAuthenticated || authLoading || insufficientFunds || !isOpen) return;
     if (quantity < 1) {
       setError("Amount too small — minimum 1 share per trade.");
       return;
@@ -91,7 +104,15 @@ export function TradeTicket({
     } finally {
       setSubmitting(false);
     }
-  }, [side, quantity, onSubmit]);
+  }, [
+    side,
+    quantity,
+    onSubmit,
+    isAuthenticated,
+    authLoading,
+    insufficientFunds,
+    isOpen,
+  ]);
 
   const setSideAndReset = (s: OrderSide) => {
     setSide(s);
@@ -101,9 +122,6 @@ export function TradeTicket({
   const dollars = Math.floor(amount);
   const cents = Math.round((amount - dollars) * 100);
   const centsStr = cents.toString().padStart(2, "0");
-
-  const maxAmount =
-    typeof balance === "number" ? Math.floor(balance) : Infinity;
 
   return (
     <>
@@ -330,6 +348,10 @@ export function TradeTicket({
           font-size: 15px;
           font-weight: 600;
           cursor: pointer;
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           transition: filter 120ms ease, transform 120ms ease;
         }
         .tt-cta:hover { filter: brightness(1.05); transform: translateY(-1px); }
@@ -345,6 +367,17 @@ export function TradeTicket({
           font-size: 12px;
           color: var(--no-text);
           text-align: center;
+        }
+        .tt-state-note,
+        .tt-trust {
+          margin-top: 10px;
+          font-size: 12px;
+          line-height: 1.45;
+          color: var(--t2);
+          text-align: center;
+        }
+        .tt-trust {
+          color: var(--t3);
         }
         .tt-closed {
           margin-top: 12px;
@@ -485,26 +518,58 @@ export function TradeTicket({
         </div>
 
         {isOpen ? (
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="tt-cta"
-            disabled={submitting || quantity < 1}
-          >
-            {/*
-              Label says "Place trade", not "Review trade", because
-              clicking this button submits the order immediately. The
-              quote panel above already shows fill price, shares, and
-              payout — that IS the review surface. A "Review" label
-              would imply a confirm modal that does not exist and was
-              a stage gotcha during the 2026-05-03 demo dry-run.
-            */}
-            {submitting ? "Placing…" : `Place trade · $${amount.toFixed(2)}`}
-          </button>
+          authLoading ? (
+            <button type="button" className="tt-cta" disabled>
+              Checking session…
+            </button>
+          ) : !isAuthenticated ? (
+            <>
+              <Link href={loginHref} className="tt-cta">
+                Log in to trade
+              </Link>
+              <p className="tt-state-note">
+                Prices are public. Sign in to place this {side.toUpperCase()}{" "}
+                order.
+              </p>
+            </>
+          ) : insufficientFunds ? (
+            <>
+              <Link href="/cashier" className="tt-cta">
+                Add funds
+              </Link>
+              <p className="tt-state-note" role="alert">
+                Your available balance is below this ${amount.toFixed(2)} order.
+              </p>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="tt-cta"
+              disabled={submitting || quantity < 1}
+            >
+              {/*
+                Label says "Place trade", not "Review trade", because
+                clicking this button submits the order immediately. The
+                quote panel above already shows fill price, shares, and
+                payout — that IS the review surface. A "Review" label
+                would imply a confirm modal that does not exist and was
+                a stage gotcha during the 2026-05-03 demo dry-run.
+              */}
+              {submitting ? "Placing…" : `Place trade · $${amount.toFixed(2)}`}
+            </button>
+          )
         ) : (
           <div className="tt-closed">
             This market is {market.status}. Trading is paused.
           </div>
+        )}
+
+        {isOpen && (
+          <p className="tt-trust">
+            {price}¢ means a {impliedProb}% implied probability. Winning
+            contracts pay $1 each.
+          </p>
         )}
 
         {/* Suppress unused-warning: API surface preserved for Phase 4 */}

@@ -10,7 +10,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <title>TAYA NA Predict</title>
+        <title>Hula Na!</title>
         <meta
           name="description"
           content="Trade on the outcome of real-world events — politics, crypto, sports, and more."

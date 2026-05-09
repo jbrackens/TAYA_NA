@@ -181,7 +181,7 @@ export default function PredictionSettlementsContainer() {
 
       <Modal
         title={`Settle: ${selectedMarket?.ticker || ""}`}
-        open={settleOpen}
+        visible={settleOpen}
         onCancel={() => {
           setSettleOpen(false);
           setSelectedMarket(null);
