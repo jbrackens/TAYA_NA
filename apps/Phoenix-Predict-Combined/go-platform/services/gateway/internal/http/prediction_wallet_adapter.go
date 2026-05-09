@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/wallet"
@@ -74,4 +75,37 @@ func (a *predictionWalletAdapter) CreditWithTx(ctx context.Context, tx *sql.Tx, 
 		Reason:         reason,
 	})
 	return err
+}
+
+// --- ExchangeWalletAdapter implementation ---
+
+// BeginExchangeTx opens a READ COMMITTED transaction for the exchange engine.
+// Per-market serialization is provided by pg_advisory_xact_lock taken by the
+// caller after BEGIN; SERIALIZABLE would only add retry overhead without
+// correctness benefit when the lock already serializes contending writers.
+func (a *predictionWalletAdapter) BeginExchangeTx(ctx context.Context) (*sql.Tx, error) {
+	if a.svc == nil || a.svc.DB() == nil {
+		return nil, fmt.Errorf("wallet database unavailable")
+	}
+	return a.svc.DB().BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
+}
+
+func (a *predictionWalletAdapter) HoldWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, refType, refID string, expiresIn time.Duration) error {
+	_, err := a.svc.HoldWithTx(ctx, tx, wallet.HoldRequest{
+		UserID:        userID,
+		AmountCents:   amountCents,
+		ReferenceType: refType,
+		ReferenceID:   refID,
+		ExpiresIn:     expiresIn,
+	})
+	return err
+}
+
+func (a *predictionWalletAdapter) CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string, amountCents int64, captureKey string) error {
+	_, err := a.svc.CaptureReservationWithTx(ctx, tx, refType, refID, amountCents, captureKey)
+	return err
+}
+
+func (a *predictionWalletAdapter) ReleaseReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string) error {
+	return a.svc.ReleaseReservationWithTx(ctx, tx, refType, refID)
 }

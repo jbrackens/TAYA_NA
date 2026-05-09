@@ -255,6 +255,13 @@ func (h *Hub) NotifyPredictionTrade(marketID string, data interface{}) {
 	h.BroadcastEvent("trades:"+marketID, "trade", "trade_fill", data)
 }
 
+// NotifyPredictionOrderBookUpdate broadcasts a top-of-book change. Clients
+// refetch /orderbook on receipt; the payload carries best bid/ask as a
+// quick-look hint.
+func (h *Hub) NotifyPredictionOrderBookUpdate(marketID string, data interface{}) {
+	h.BroadcastEvent("orderbook:"+marketID, "orderbook_update", "book_change", data)
+}
+
 // NotifyPortfolioUpdate broadcasts a position change for a user
 func (h *Hub) NotifyPortfolioUpdate(userID string, data interface{}) {
 	h.BroadcastEvent("portfolio:"+userID, "portfolio_update", "position_update", data)

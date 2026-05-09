@@ -15,10 +15,11 @@ import (
 // that don't care about WS notifications.
 type stubMarketBroadcaster struct{}
 
-func (stubMarketBroadcaster) NotifyPredictionMarketUpdate(string, interface{}) {}
-func (stubMarketBroadcaster) NotifyPredictionTrade(string, interface{})        {}
-func (stubMarketBroadcaster) NotifyPortfolioUpdate(string, interface{})        {}
-func (stubMarketBroadcaster) NotifyWalletUpdate(string, interface{})           {}
+func (stubMarketBroadcaster) NotifyPredictionMarketUpdate(string, interface{})   {}
+func (stubMarketBroadcaster) NotifyPredictionTrade(string, interface{})           {}
+func (stubMarketBroadcaster) NotifyPredictionOrderBookUpdate(string, interface{}) {}
+func (stubMarketBroadcaster) NotifyPortfolioUpdate(string, interface{})           {}
+func (stubMarketBroadcaster) NotifyWalletUpdate(string, interface{})              {}
 
 const orderTestUserID = "u-test"
 

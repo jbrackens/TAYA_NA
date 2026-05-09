@@ -8,6 +8,11 @@ type Notifier interface {
 	// NotifyPredictionTrade broadcasts a trade fill on a market
 	NotifyPredictionTrade(marketID string, data interface{})
 
+	// NotifyPredictionOrderBookUpdate broadcasts a top-of-book change after
+	// a successful exchange-engine match. Subscribers refetch /orderbook for
+	// full depth; the payload is a small "stale" hint with best bid/ask.
+	NotifyPredictionOrderBookUpdate(marketID string, data interface{})
+
 	// NotifyPortfolioUpdate broadcasts a position change for a user
 	NotifyPortfolioUpdate(userID string, data interface{})
 

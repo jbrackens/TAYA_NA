@@ -176,6 +176,14 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.WriteJSON(w, stdhttp.StatusOK, market)
 		case "trades":
 			limit := intQueryParam(r, "limit", 50)
+			// Clamp limit to a sane range; the trade tape ships with the
+			// new match_id column so clients can group issuance pairs.
+			if limit > 200 {
+				limit = 200
+			}
+			if limit < 1 {
+				return httpx.BadRequest("limit must be >= 1", nil)
+			}
 			trades, err := svc.ListTrades(r.Context(), market.ID, limit)
 			if err != nil {
 				return httpx.Internal("failed to fetch trades", err)
@@ -184,6 +192,18 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 				trades = []prediction.Trade{}
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, trades)
+		case "orderbook":
+			// Order-book depth: server-side capped at 100 (matches Kalshi).
+			// Smaller defaults reduce payload for typical UI use.
+			depth := intQueryParam(r, "depth", 20)
+			if depth < 1 {
+				return httpx.BadRequest("depth must be >= 1", nil)
+			}
+			book, err := svc.GetOrderBook(r.Context(), market.ID, depth)
+			if err != nil {
+				return httpx.Internal("failed to fetch orderbook", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, book)
 		default:
 			return httpx.NotFound("market subresource not found")
 		}
@@ -209,6 +229,7 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 type marketUpdateBroadcaster interface {
 	NotifyPredictionMarketUpdate(marketID string, data interface{})
 	NotifyPredictionTrade(marketID string, data interface{})
+	NotifyPredictionOrderBookUpdate(marketID string, data interface{})
 	NotifyPortfolioUpdate(userID string, data interface{})
 	NotifyWalletUpdate(userID string, data interface{})
 }
@@ -234,6 +255,21 @@ type marketUpdatePayload struct {
 	VolumeCents         int64                    `json:"volumeCents"`
 	OpenInterestCents   int64                    `json:"openInterestCents"`
 	Ts                  string                   `json:"ts"`
+}
+
+// buildOrderBookHintPayload is the wire shape published on `orderbook:<id>`
+// after a successful exchange match. Carries best bid/ask for a quick-look
+// update; clients refetch GET /markets/{id}/orderbook for full depth.
+func buildOrderBookHintPayload(m *prediction.Market) map[string]any {
+	return map[string]any{
+		"marketId":         m.ID,
+		"bestYesBidCents":  m.BestYesBidCents,
+		"bestYesAskCents":  m.BestYesAskCents,
+		"bestNoBidCents":   m.BestNoBidCents,
+		"bestNoAskCents":   m.BestNoAskCents,
+		"lastQuoteAt":      m.LastQuoteAt,
+		"ts":               time.Now().UTC().Format(time.RFC3339),
+	}
 }
 
 func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
@@ -375,6 +411,33 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 					return httpx.BadRequest("limit orders require priceCents in 1..99", map[string]any{"field": "priceCents"})
 				}
 			}
+			// Exchange-engine field validation. These map 1:1 to schema
+			// CHECK constraints from migration 019 — without validation here,
+			// invalid values (e.g. timeInForce="abc") surface as Postgres
+			// constraint violations downstream. Empty/zero values are fine;
+			// the service applies defaults (gtc + cancel_taker).
+			if req.TimeInForce != "" {
+				switch req.TimeInForce {
+				case prediction.TIFGTC, prediction.TIFIOC, prediction.TIFFOK:
+				default:
+					return httpx.BadRequest("timeInForce must be one of gtc, ioc, fok", map[string]any{"field": "timeInForce", "got": string(req.TimeInForce)})
+				}
+			}
+			if req.SelfMatchAction != "" {
+				switch req.SelfMatchAction {
+				case prediction.SelfMatchCancelTaker, prediction.SelfMatchCancelMaker, prediction.SelfMatchCancelBoth:
+				default:
+					return httpx.BadRequest("selfMatchAction must be one of cancel_taker, cancel_maker, cancel_both", map[string]any{"field": "selfMatchAction", "got": string(req.SelfMatchAction)})
+				}
+			}
+			// Market orders MUST carry a notional cap so accidental fat-finger
+			// market orders can't drain a wallet. Polymarket enforces this by
+			// requiring quote-denominated quantities; we use an explicit field.
+			if req.OrderType == prediction.OrderTypeMarket && req.Action == prediction.OrderActionBuy {
+				if req.NotionalCapCents == nil || *req.NotionalCapCents <= 0 {
+					return httpx.BadRequest("market buy orders require notionalCapCents > 0", map[string]any{"field": "notionalCapCents"})
+				}
+			}
 			order, trade, err := svc.PlaceOrder(r.Context(), req, userID)
 			if err != nil {
 				return httpx.BadRequest(err.Error(), nil)
@@ -397,6 +460,12 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			if notifier != nil {
 				if updated, mErr := svc.GetMarket(r.Context(), req.MarketID); mErr == nil {
 					notifier.NotifyPredictionMarketUpdate(req.MarketID, buildMarketUpdatePayload(updated))
+					// Exchange-mode markets also publish a book-change hint
+					// so subscribers know to refetch /orderbook. The payload
+					// carries best bid/ask for a quick-look update.
+					if updated.ExecutionMode == prediction.ExecutionModeOrderBook {
+						notifier.NotifyPredictionOrderBookUpdate(req.MarketID, buildOrderBookHintPayload(updated))
+					}
 				}
 				if trade != nil {
 					notifier.NotifyPredictionTrade(req.MarketID, buildTradeFillPayload(trade))
@@ -686,6 +755,48 @@ func registerDashboardRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.Internal("failed to load dashboard volume", err)
 		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, stats)
+	}))
+
+	// Admin: Recent collateral drift alerts. One row per market with
+	// adjustment ledger entries since `since`. Default 24h, capped at 30d.
+	// Backoffice ops page consumes this to badge markets needing
+	// investigation.
+	mux.Handle("/api/v1/admin/prediction/drift-alerts", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		sinceParam := strings.TrimSpace(r.URL.Query().Get("since"))
+		if sinceParam == "" {
+			sinceParam = "24h"
+		}
+		if strings.HasSuffix(sinceParam, "d") {
+			n, err := strconv.Atoi(strings.TrimSuffix(sinceParam, "d"))
+			if err != nil || n <= 0 {
+				return httpx.BadRequest("invalid since parameter", map[string]any{"since": sinceParam})
+			}
+			sinceParam = strconv.Itoa(n*24) + "h"
+		}
+		dur, err := time.ParseDuration(sinceParam)
+		if err != nil || dur <= 0 {
+			return httpx.BadRequest("invalid since parameter", map[string]any{"since": sinceParam})
+		}
+		if dur > 30*24*time.Hour {
+			dur = 30 * 24 * time.Hour
+		}
+		alerts, err := svc.ListRecentDriftAlerts(r.Context(), dur)
+		if err != nil {
+			return httpx.Internal("failed to load drift alerts", err)
+		}
+		if alerts == nil {
+			alerts = []prediction.CollateralDriftAlert{}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
+			"data":      alerts,
+			"sinceText": sinceParam,
+		})
 	}))
 
 	slog.Info("dashboard routes registered")

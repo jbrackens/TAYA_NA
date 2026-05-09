@@ -176,7 +176,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		settler := workers.NewAutoSettler(predRepo, feedRegistry, predWallet, 60*time.Second)
 		go settler.Run(context.Background())
 
-		slog.Info("prediction: background workers started (closer, settler)")
+		// Reconciler: 15-minute two-phase collateral check across all open
+		// order-book markets per the engine plan. Phase 1 reads without
+		// taking the per-market advisory lock so healthy markets see zero
+		// matching contention.
+		reconciler := workers.NewReconciler(predRepo, 15*time.Minute)
+		go reconciler.Run(context.Background())
+
+		slog.Info("prediction: background workers started (closer, settler, reconciler)")
 
 		// Leaderboards recomputer: 5-minute tick per PLAN §8. First tick runs
 		// immediately so the boards populate at startup.
