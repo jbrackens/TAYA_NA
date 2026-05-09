@@ -70,20 +70,6 @@ interface SelfExcludeResponseRaw {
   created_at: string;
 }
 
-interface LimitHistoryItemRaw {
-  limit_type: string;
-  old_value?: number | boolean;
-  new_value?: number | boolean;
-  effective_date: string;
-  created_at: string;
-}
-
-interface GetLimitsHistoryResponseRaw {
-  user_id: string;
-  history: LimitHistoryItemRaw[];
-  total: number;
-}
-
 // Normalized response types (camelCase)
 export interface DepositLimits {
   userId: string;
@@ -144,9 +130,7 @@ export interface GetLimitsHistoryResponse {
 }
 
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(
-  obj: T,
-): Record<string, unknown> {
+function normalizeSnakeCase<T extends object>(obj: T): unknown {
   if (Array.isArray(obj)) {
     return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
@@ -191,7 +175,7 @@ export async function setDepositLimits(
       ),
     },
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as DepositLimits;
 }
 
 /**
@@ -208,7 +192,7 @@ export async function setStakeLimits(
       amountCents: Math.round((request.max_stake || 0) * 100),
     },
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as StakeLimits;
 }
 
 /**
@@ -224,7 +208,7 @@ export async function setSessionLimits(
       session_duration_minutes: request.session_duration_minutes,
     },
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as SessionLimits;
 }
 
 /**
@@ -240,7 +224,7 @@ export async function coolOff(
       durationHours: Math.max(24, request.duration_days * 24),
     },
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as CoolOffResponse;
 }
 
 /**
@@ -421,12 +405,17 @@ export async function getCoolOffStatus(userId: string): Promise<CoolOffStatus> {
     "/api/v1/compliance/rg/restrictions",
     { userId },
   );
+  // Restrictions blob is shaped at runtime by the gateway — cast the
+  // normalized result to the camelCase shape we read below.
   const restrictions =
     raw &&
     typeof raw === "object" &&
     raw.restrictions &&
     typeof raw.restrictions === "object"
-      ? normalizeSnakeCase(raw.restrictions as Record<string, unknown>)
+      ? (normalizeSnakeCase(raw.restrictions) as {
+          isOnCoolOff?: boolean;
+          coolOffUntil?: string | null;
+        })
       : null;
 
   if (

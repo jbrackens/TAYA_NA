@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { updatePreferences } from "../../lib/api/user-client";
-import { UpdatePreferencesRequest } from "../../lib/api/user-client";
 
 export default function NotificationsPage() {
   const { user } = useAuth();
@@ -17,7 +16,6 @@ export default function NotificationsPage() {
     notification_push: true,
     marketing_email: false,
   });
-  const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
   // Email frequency

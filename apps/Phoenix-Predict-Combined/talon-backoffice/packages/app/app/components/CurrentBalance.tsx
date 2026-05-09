@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getBalance, Balance } from "../lib/api/wallet-client";
 import { Spinner } from "./Spinner";

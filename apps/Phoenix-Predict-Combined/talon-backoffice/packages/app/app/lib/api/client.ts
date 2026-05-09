@@ -16,12 +16,12 @@ function readCookie(name: string) {
 }
 
 function syncAuthCookie(token?: string) {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   if (token) {
     document.cookie = `authToken=${encodeURIComponent(token)}; path=/; SameSite=Lax`;
     return;
   }
-  document.cookie = 'authToken=; path=/; Max-Age=0; SameSite=Lax';
+  document.cookie = "authToken=; path=/; Max-Age=0; SameSite=Lax";
 }
 
 class ApiClient {
@@ -56,14 +56,16 @@ class ApiClient {
   }
 
   private getHeaders(includeCsrf = false): Record<string, string> {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (typeof window !== 'undefined') {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (typeof window !== "undefined") {
       const token =
-        localStorage.getItem('phoenix_access_token') || readCookie('authToken');
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+        localStorage.getItem("phoenix_access_token") || readCookie("authToken");
+      if (token) headers["Authorization"] = `Bearer ${token}`;
       if (includeCsrf) {
-        const csrf = readCookie('csrf_token');
-        if (csrf) headers['X-CSRF-Token'] = csrf;
+        const csrf = readCookie("csrf_token");
+        if (csrf) headers["X-CSRF-Token"] = csrf;
       }
     }
     return headers;
@@ -71,72 +73,100 @@ class ApiClient {
 
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
     const normalizedPath = this.normalizePath(path);
-    const origin = this.baseUrl
-      || (typeof window !== "undefined" ? window.location.origin : (process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080"));
+    const origin =
+      this.baseUrl ||
+      (typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080");
     const url = new URL(`${origin}${normalizedPath}`);
-    if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fetch(url.toString(), { headers: this.getHeaders(), credentials: 'include' });
+    if (params)
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    const res = await fetch(url.toString(), {
+      headers: this.getHeaders(),
+      credentials: "include",
+    });
     if (!res.ok) throw new ApiError(res.status, await res.text());
-    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
+    if (res.status === 204 || res.headers.get("content-length") === "0")
+      return undefined as T;
     return res.json();
   }
 
-  async post<T>(path: string, body?: Record<string, unknown>): Promise<T> {
+  async post<T>(path: string, body?: object): Promise<T> {
     const normalizedPath = this.normalizePath(path);
-    const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
+    const url = this.baseUrl
+      ? `${this.baseUrl}${normalizedPath}`
+      : normalizedPath;
     const res = await fetch(url, {
-      method: 'POST', headers: this.getHeaders(true), credentials: 'include', body: body ? JSON.stringify(body) : undefined
+      method: "POST",
+      headers: this.getHeaders(true),
+      credentials: "include",
+      body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
-    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
+    if (res.status === 204 || res.headers.get("content-length") === "0")
+      return undefined as T;
     return res.json();
   }
 
-  async put<T>(path: string, body?: Record<string, unknown>): Promise<T> {
+  async put<T>(path: string, body?: object): Promise<T> {
     const normalizedPath = this.normalizePath(path);
-    const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
+    const url = this.baseUrl
+      ? `${this.baseUrl}${normalizedPath}`
+      : normalizedPath;
     const res = await fetch(url, {
-      method: 'PUT', headers: this.getHeaders(true), credentials: 'include', body: body ? JSON.stringify(body) : undefined
+      method: "PUT",
+      headers: this.getHeaders(true),
+      credentials: "include",
+      body: body ? JSON.stringify(body) : undefined,
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
-    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
+    if (res.status === 204 || res.headers.get("content-length") === "0")
+      return undefined as T;
     return res.json();
   }
 
   async delete<T>(path: string): Promise<T> {
     const normalizedPath = this.normalizePath(path);
-    const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
+    const url = this.baseUrl
+      ? `${this.baseUrl}${normalizedPath}`
+      : normalizedPath;
     const res = await fetch(url, {
-      method: 'DELETE', headers: this.getHeaders(true), credentials: 'include'
+      method: "DELETE",
+      headers: this.getHeaders(true),
+      credentials: "include",
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
-    if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;
+    if (res.status === 204 || res.headers.get("content-length") === "0")
+      return undefined as T;
     return res.json();
   }
 
   // Token management
   setToken(accessToken: string, refreshToken?: string) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('phoenix_access_token', accessToken);
-      if (refreshToken) localStorage.setItem('phoenix_refresh_token', refreshToken);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("phoenix_access_token", accessToken);
+      if (refreshToken)
+        localStorage.setItem("phoenix_refresh_token", refreshToken);
       syncAuthCookie(accessToken);
     }
   }
 
   getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('phoenix_access_token') || readCookie('authToken');
+    if (typeof window === "undefined") return null;
+    return (
+      localStorage.getItem("phoenix_access_token") || readCookie("authToken")
+    );
   }
 
   getRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('phoenix_refresh_token');
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("phoenix_refresh_token");
   }
 
   clearTokens() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('phoenix_access_token');
-      localStorage.removeItem('phoenix_refresh_token');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("phoenix_access_token");
+      localStorage.removeItem("phoenix_refresh_token");
       syncAuthCookie();
     }
   }
@@ -152,16 +182,12 @@ export class ApiError extends Error {
     let readable = body;
     try {
       const parsed: unknown = JSON.parse(body);
-      if (
-        parsed &&
-        typeof parsed === 'object' &&
-        'error' in parsed
-      ) {
+      if (parsed && typeof parsed === "object" && "error" in parsed) {
         const errObj = (parsed as Record<string, unknown>).error;
-        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+        if (errObj && typeof errObj === "object" && "message" in errObj) {
           readable = String((errObj as Record<string, unknown>).message);
         }
-      } else if (parsed && typeof parsed === 'object' && 'message' in parsed) {
+      } else if (parsed && typeof parsed === "object" && "message" in parsed) {
         readable = String((parsed as Record<string, unknown>).message);
       }
     } catch {
@@ -169,7 +195,7 @@ export class ApiError extends Error {
     }
     super(readable);
     this.status = status;
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 

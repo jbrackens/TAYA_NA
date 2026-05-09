@@ -9,7 +9,7 @@ import {
   getSessions,
   revokeSession,
 } from "../../lib/api/auth-client";
-import { ChangePasswordRequest, Session } from "../../lib/api/auth-client";
+import { Session } from "../../lib/api/auth-client";
 import { logger } from "../../lib/logger";
 
 export default function SecurityPage() {

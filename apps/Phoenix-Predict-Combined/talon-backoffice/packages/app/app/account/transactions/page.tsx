@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../components/ToastProvider";
 import { getTransactions } from "../../lib/api/wallet-client";
-import {
-  Transaction,
-  GetTransactionsPaginatedResponse,
-} from "../../lib/api/wallet-client";
+import { GetTransactionsPaginatedResponse } from "../../lib/api/wallet-client";
 import { logger } from "../../lib/logger";
 
 type DateRange = "all" | "24h" | "week" | "month" | "3m" | "6m" | "year";

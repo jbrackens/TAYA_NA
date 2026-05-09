@@ -6,6 +6,10 @@
 ###############################################################################
 
 set +e  # Do NOT use set -e — grep returns 1 when no matches found, which is expected
+set -o pipefail  # Pipeline exit = rightmost non-zero command. Without this,
+                 # `tsc | tee log` and `next build | tee log` always returned
+                 # 0 (tee's exit), making Gates 1 and 8 silently always-pass.
+                 # No effect on Gates 2/3/6 — those read pipe output, not $?.
 
 # Color codes for terminal output
 RED='\033[0;31m'
@@ -278,8 +282,12 @@ gate_router_conflict() {
 gate_next_build() {
     print_gate_start "8" "Next.js Build"
 
-    # Run next build with 5-minute timeout
-    if timeout 300 npx next build 2>&1 | tee /tmp/next_build.log; then
+    # Run next build with 5-minute timeout. --webpack keeps the bundler
+    # consistent with next.config.js (which has webpack-specific config:
+    # polyfill fallbacks, externals, the @phoenix-ui/utils alias). Without
+    # this flag, Next.js 16 defaults to Turbopack and would silently drop
+    # the webpack config.
+    if timeout 300 npx next build --webpack 2>&1 | tee /tmp/next_build.log; then
         print_pass
     else
         local exit_code=$?

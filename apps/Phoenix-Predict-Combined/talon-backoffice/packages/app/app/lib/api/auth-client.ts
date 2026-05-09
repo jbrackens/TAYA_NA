@@ -182,11 +182,9 @@ export interface AcceptTermsResponse {
 }
 
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(
-  obj: T,
-): Record<string, unknown> {
+function normalizeSnakeCase<T extends object>(obj: T): unknown {
   if (Array.isArray(obj)) {
-    return (obj.map(normalizeSnakeCase) as unknown) as Record<string, unknown>;
+    return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
   if (obj !== null && typeof obj === "object") {
     return Object.entries(obj).reduce<Record<string, unknown>>(
@@ -222,9 +220,9 @@ export async function login(request: GoLoginRequest): Promise<GoLoginResponse> {
     let readable = body || "Login failed";
     try {
       const parsed: unknown = JSON.parse(body);
-      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+      if (parsed && typeof parsed === "object" && "error" in parsed) {
         const errObj = (parsed as Record<string, unknown>).error;
-        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+        if (errObj && typeof errObj === "object" && "message" in errObj) {
           readable = String((errObj as Record<string, unknown>).message);
         }
       }
@@ -254,9 +252,9 @@ export async function refresh(): Promise<GoRefreshResponse> {
     let readable = body || "Session refresh failed";
     try {
       const parsed: unknown = JSON.parse(body);
-      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+      if (parsed && typeof parsed === "object" && "error" in parsed) {
         const errObj = (parsed as Record<string, unknown>).error;
-        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+        if (errObj && typeof errObj === "object" && "message" in errObj) {
           readable = String((errObj as Record<string, unknown>).message);
         }
       }
@@ -282,9 +280,9 @@ export async function getSession(): Promise<SessionResponse> {
     let readable = body || "Session validation failed";
     try {
       const parsed: unknown = JSON.parse(body);
-      if (parsed && typeof parsed === 'object' && 'error' in parsed) {
+      if (parsed && typeof parsed === "object" && "error" in parsed) {
         const errObj = (parsed as Record<string, unknown>).error;
-        if (errObj && typeof errObj === 'object' && 'message' in errObj) {
+        if (errObj && typeof errObj === "object" && "message" in errObj) {
           readable = String((errObj as Record<string, unknown>).message);
         }
       }
@@ -308,7 +306,7 @@ export async function register(
     "/api/v1/auth/register",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as RegisterResponse;
 }
 
 /**
@@ -321,7 +319,7 @@ export async function forgotPassword(
     "/api/v1/auth/forgot-password",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as ForgotPasswordResponse;
 }
 
 /**
@@ -334,7 +332,7 @@ export async function resetPassword(
     "/api/v1/auth/reset-password",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as ResetPasswordResponse;
 }
 
 /**
@@ -347,7 +345,7 @@ export async function verifyEmail(
     "/api/v1/auth/verify-email",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as VerifyEmailResponse;
 }
 
 /**
@@ -360,7 +358,7 @@ export async function verifyMfa(
     "/api/v1/auth/verify-mfa",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as VerifyMfaResponse;
 }
 
 /**
@@ -373,7 +371,7 @@ export async function requestMfaCode(
     "/api/v1/auth/request-mfa-code",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as RequestMfaCodeResponse;
 }
 
 /**
@@ -386,7 +384,7 @@ export async function changePassword(
     "/api/v1/auth/change-password",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as ChangePasswordResponse;
 }
 
 /**
@@ -399,7 +397,7 @@ export async function acceptTerms(
     "/api/v1/auth/accept-terms",
     request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as AcceptTermsResponse;
 }
 
 // Session types
@@ -427,12 +425,7 @@ export async function getSessions(userId: string): Promise<Session[]> {
     user_id: userId,
   });
   if (Array.isArray(raw)) {
-    return raw.map(
-      (s) =>
-        (normalizeSnakeCase(
-          s as Record<string, unknown>,
-        ) as unknown) as Session,
-    );
+    return raw.map((s) => normalizeSnakeCase(s) as Session);
   }
   return [];
 }

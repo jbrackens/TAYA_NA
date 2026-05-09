@@ -5,6 +5,28 @@ interface TimedCacheEntry<T> {
   ts: number;
 }
 
+/**
+ * Permissive shape used when normalizing payment responses. The gateway
+ * may return fields either at the top level or nested under `.transaction`,
+ * and either in camelCase or snake_case. The deposit/withdraw/status
+ * functions normalize across both layouts via `||` chains; this type
+ * names the camelCase superset so the union narrowing problem in TS goes
+ * away.
+ */
+type PaymentTxFields = {
+  transactionId?: string;
+  userId?: string;
+  amountCents?: number;
+  status?: string;
+  paymentMethod?: string;
+  currency?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  processedAt?: string;
+  redirectUrl?: string;
+  requiresRedirect?: boolean;
+};
+
 // Request types
 export interface DepositRequest {
   amount: number;
@@ -230,9 +252,7 @@ function isFresh<T>(
 }
 
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(
-  obj: T,
-): Record<string, unknown> {
+function normalizeSnakeCase<T extends object>(obj: T): unknown {
   if (Array.isArray(obj)) {
     return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
@@ -319,7 +339,7 @@ export async function deposit(
       currency: request.currency,
     },
   );
-  const transaction = raw.transaction || raw;
+  const transaction = (raw.transaction || raw) as PaymentTxFields;
   return {
     transactionId: transaction.transactionId || raw.transaction_id || "",
     userId: transaction.userId || raw.user_id || userId,
@@ -361,7 +381,7 @@ export async function withdraw(
       currency: request.currency,
     },
   );
-  const transaction = raw.transaction || raw;
+  const transaction = (raw.transaction || raw) as PaymentTxFields;
   return {
     transactionId: transaction.transactionId || raw.transaction_id || "",
     userId: transaction.userId || raw.user_id || userId,
@@ -395,7 +415,7 @@ export async function getTransactionStatus(
     "/api/v1/payments/status",
     { transactionId },
   );
-  const transaction = raw.transaction || raw;
+  const transaction = (raw.transaction || raw) as PaymentTxFields;
   return {
     transactionId:
       transaction.transactionId || raw.transaction_id || transactionId,

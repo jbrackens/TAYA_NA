@@ -83,7 +83,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
   onRemove,
 }) => {
   const [exiting, setExiting] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const c = colors[toast.type];
   const toastId = toast.id;
   const toastDuration = toast.duration;

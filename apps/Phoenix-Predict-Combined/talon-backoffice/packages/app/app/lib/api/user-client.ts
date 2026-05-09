@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient } from "./client";
 
 interface TimedCacheEntry<T> {
   data: T;
@@ -99,18 +99,24 @@ function isFresh<T>(
 }
 
 // Utility function to normalize snake_case to camelCase
-function normalizeSnakeCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+function normalizeSnakeCase<T extends object>(obj: T): unknown {
   if (Array.isArray(obj)) {
     return obj.map(normalizeSnakeCase) as unknown as Record<string, unknown>;
   }
-  if (obj !== null && typeof obj === 'object') {
-    return Object.entries(obj).reduce<Record<string, unknown>>((acc, [key, value]) => {
-      const camelKey = key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
-      acc[camelKey] = typeof value === 'object' && value !== null
-        ? normalizeSnakeCase(value as Record<string, unknown>)
-        : value;
-      return acc;
-    }, {});
+  if (obj !== null && typeof obj === "object") {
+    return Object.entries(obj).reduce<Record<string, unknown>>(
+      (acc, [key, value]) => {
+        const camelKey = key.replace(/_([a-z])/g, (_, letter: string) =>
+          letter.toUpperCase(),
+        );
+        acc[camelKey] =
+          typeof value === "object" && value !== null
+            ? normalizeSnakeCase(value as Record<string, unknown>)
+            : value;
+        return acc;
+      },
+      {},
+    );
   }
   return obj;
 }
@@ -128,7 +134,9 @@ export async function getProfile(userId: string): Promise<UserProfile> {
   }
 
   const promise = (async () => {
-    const raw = await apiClient.get<UserProfileRaw>(`/api/v1/users/${userId}/profile`);
+    const raw = await apiClient.get<UserProfileRaw>(
+      `/api/v1/users/${userId}/profile`,
+    );
     const result = normalizeSnakeCase(raw) as UserProfile;
     profileCache.set(userId, {
       entry: { data: result, ts: Date.now() },
@@ -150,10 +158,13 @@ export async function getProfile(userId: string): Promise<UserProfile> {
  */
 export async function updateProfile(
   userId: string,
-  request: UpdateProfileRequest
+  request: UpdateProfileRequest,
 ): Promise<UserProfile> {
-  const raw = await apiClient.put<UserProfileRaw>(`/api/v1/users/${userId}/profile`, request);
-  return normalizeSnakeCase(raw);
+  const raw = await apiClient.put<UserProfileRaw>(
+    `/api/v1/users/${userId}/profile`,
+    request,
+  );
+  return normalizeSnakeCase(raw) as UserProfile;
 }
 
 /**
@@ -161,21 +172,26 @@ export async function updateProfile(
  */
 export async function updatePreferences(
   userId: string,
-  request: UpdatePreferencesRequest
+  request: UpdatePreferencesRequest,
 ): Promise<Preferences> {
   const raw = await apiClient.put<PreferencesRaw>(
     `/api/v1/users/${userId}/profile/preferences`,
-    request
+    request,
   );
-  return normalizeSnakeCase(raw);
+  return normalizeSnakeCase(raw) as Preferences;
 }
 
 /**
  * Delete account (schedules deletion)
  */
-export async function deleteAccount(userId: string): Promise<DeleteAccountResponse> {
-  const raw = await apiClient.post<DeleteAccountResponseRaw>('/api/v1/punters/delete', {
-    user_id: userId
-  });
-  return normalizeSnakeCase(raw);
+export async function deleteAccount(
+  userId: string,
+): Promise<DeleteAccountResponse> {
+  const raw = await apiClient.post<DeleteAccountResponseRaw>(
+    "/api/v1/punters/delete",
+    {
+      user_id: userId,
+    },
+  );
+  return normalizeSnakeCase(raw) as DeleteAccountResponse;
 }

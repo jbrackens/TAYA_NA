@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 
 interface CodeInputProps {
   length?: number;
@@ -92,7 +92,7 @@ export default function CodeInput({
     justifyContent: "center",
   };
 
-  const getInputStyle = (index: number): React.CSSProperties => {
+  const getInputStyle = (_index: number): React.CSSProperties => {
     const baseStyle: React.CSSProperties = {
       width: "48px",
       height: "48px",

@@ -68,9 +68,4 @@ module.exports = {
   },
   // compiler.styledComponents removed — no longer using styled-components in app/
   trailingSlash: true,
-  typescript: {
-    // antd 4.x class components don't declare `children` in props,
-    // which breaks with @types/react 18. Runtime is unaffected.
-    ignoreBuildErrors: true,
-  },
 };

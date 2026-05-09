@@ -34,7 +34,7 @@ export const IdComplyModal: React.FC<IdComplyModalProps> = ({
   isOpen,
   onClose,
   onVerified,
-  verificationType = "auto",
+  verificationType: _verificationType = "auto",
 }) => {
   const { user } = useAuth();
   const [step, setStep] = useState<

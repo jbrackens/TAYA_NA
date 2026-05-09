@@ -4,15 +4,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, updateProfile } from "../lib/api/user-client";
 import { UserProfile, UpdateProfileRequest } from "../lib/api/user-client";
-import {
-  setDepositLimits,
-  setStakeLimits,
-  getLimitsHistory,
-} from "../lib/api/compliance-client";
+import { setDepositLimits, setStakeLimits } from "../lib/api/compliance-client";
 import {
   SetDepositLimitsRequest,
   SetStakeLimitsRequest,
-  LimitHistoryItem,
 } from "../lib/api/compliance-client";
 import { useToast } from "../components/ToastProvider";
 import { useTranslation } from "react-i18next";

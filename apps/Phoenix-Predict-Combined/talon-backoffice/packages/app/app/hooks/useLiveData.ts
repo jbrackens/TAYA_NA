@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useCallback } from 'react';
-import { PhoenixWebSocketClient } from '@phoenix-ui/api-client';
+import { useEffect, useRef, useCallback } from "react";
+import { PhoenixWebSocketClient } from "@phoenix-ui/api-client";
 
 export interface UseLiveDataConfig {
   channel: string;
@@ -19,7 +19,7 @@ export const useLiveData = (config: UseLiveDataConfig) => {
     if (!config.enabled) return;
 
     try {
-      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:18080/ws';
+      const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:18080/ws";
       const client = new PhoenixWebSocketClient({
         url: wsUrl,
         token: config.token,
@@ -32,7 +32,10 @@ export const useLiveData = (config: UseLiveDataConfig) => {
       clientRef.current = client;
 
       unsubscribeRef.current = client.subscribe(config.channel, (message) => {
-        config.onMessage?.(message.data);
+        // message.data is `Record<string, any> | undefined`; widen + guard.
+        if (message.data !== undefined) {
+          config.onMessage?.(message.data as Record<string, unknown>);
+        }
       });
 
       client.onError((error) => {
