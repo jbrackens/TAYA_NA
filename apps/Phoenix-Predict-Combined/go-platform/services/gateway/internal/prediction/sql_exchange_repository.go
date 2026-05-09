@@ -1,0 +1,554 @@
+package prediction
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"time"
+)
+
+// Compile-time check: SQLRepository implements ExchangeRepository. If the
+// interface or a method signature drifts, the build fails here.
+var _ ExchangeRepository = (*SQLRepository)(nil)
+
+// PersistMatchAtomic applies a MatchPlan to the database in a single
+// transaction held under a per-market advisory lock.
+//
+// Order of operations within the tx:
+//  1. BEGIN at READ COMMITTED via wallet.BeginExchangeTx
+//  2. pg_advisory_xact_lock(hashtext(market_id))
+//  3. Re-lock and verify market is still open (defends against drift)
+//  4. Apply HoldReservation (taker's cash hold) if present
+//  5. Apply CaptureReservations (per-fill partial debits)
+//  6. Apply ReleaseReservations (free uncaptured remainder)
+//  7. INSERT trades
+//  8. UPDATE maker orders + taker order (fill state)
+//  9. Apply position mutations (group, load, mutate, upsert)
+//  10. INSERT collateral ledger entries with running balance_after
+//  11. UPDATE market quote snapshot + collateral_pool
+//  12. COMMIT
+//
+// Returns nil on success. On any failure the transaction rolls back; the
+// caller must surface the error to the user (and may persist a rejected
+// order separately if appropriate).
+func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter ExchangeWalletAdapter, plan *MatchPlan) error {
+	if plan == nil {
+		return fmt.Errorf("nil plan")
+	}
+	tx, err := walletAdapter.BeginExchangeTx(ctx)
+	if err != nil {
+		return fmt.Errorf("begin exchange tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if _, err := tx.ExecContext(ctx,
+		"SELECT pg_advisory_xact_lock(hashtext($1))", plan.Market.ID,
+	); err != nil {
+		return fmt.Errorf("acquire market lock: %w", err)
+	}
+
+	// Re-lock the market row and verify it's still open. Guards against an
+	// admin halting/closing the market between plan construction and persist.
+	var marketStatus string
+	if err := tx.QueryRowContext(ctx,
+		"SELECT status FROM prediction_markets WHERE id = $1 FOR UPDATE",
+		plan.Market.ID,
+	).Scan(&marketStatus); err != nil {
+		return fmt.Errorf("re-lock market: %w", err)
+	}
+	if marketStatus != string(MarketStatusOpen) {
+		return ErrClosedMarket
+	}
+
+	if plan.HoldReservation != nil {
+		h := plan.HoldReservation
+		if err := walletAdapter.HoldWithTx(ctx, tx, h.UserID, h.AmountCents, h.Type, h.ID, h.ExpiresIn); err != nil {
+			return fmt.Errorf("hold reservation: %w", err)
+		}
+	}
+
+	for _, c := range plan.CaptureReservations {
+		if err := walletAdapter.CaptureReservationWithTx(ctx, tx, c.Type, c.ID, c.AmountCents, c.CaptureKey); err != nil {
+			return fmt.Errorf("capture %s:%s: %w", c.Type, c.ID, err)
+		}
+	}
+	for _, rel := range plan.ReleaseReservations {
+		if err := walletAdapter.ReleaseReservationWithTx(ctx, tx, rel.Type, rel.ID); err != nil {
+			return fmt.Errorf("release %s:%s: %w", rel.Type, rel.ID, err)
+		}
+	}
+
+	for i := range plan.Trades {
+		if err := r.insertExchangeTradeWithTx(ctx, tx, &plan.Trades[i]); err != nil {
+			return fmt.Errorf("insert trade %s: %w", plan.Trades[i].ID, err)
+		}
+	}
+
+	for i := range plan.MakerUpdates {
+		if err := r.updateOrderFillStateWithTx(ctx, tx, &plan.MakerUpdates[i]); err != nil {
+			return fmt.Errorf("update maker %s: %w", plan.MakerUpdates[i].ID, err)
+		}
+	}
+	if err := r.updateOrderFillStateWithTx(ctx, tx, &plan.Taker); err != nil {
+		return fmt.Errorf("update taker %s: %w", plan.Taker.ID, err)
+	}
+
+	if err := r.applyPositionMutationsWithTx(ctx, tx, plan.Market.ID, plan.PositionMutations); err != nil {
+		return fmt.Errorf("apply positions: %w", err)
+	}
+
+	if err := r.insertLedgerEntriesWithTx(ctx, tx, plan.Market.ID, plan.LedgerEntries); err != nil {
+		return fmt.Errorf("insert ledger: %w", err)
+	}
+
+	if err := r.updateMarketAfterMatchWithTx(ctx, tx, &plan.Market); err != nil {
+		return fmt.Errorf("update market: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+// insertExchangeTradeWithTx inserts a trade row with the engine-supplied ID
+// and the new exchange columns (match_id, trade_kind, engine_kind). Differs
+// from createTradeWithExec which DB-generates the ID for AMM trades.
+func (r *SQLRepository) insertExchangeTradeWithTx(ctx context.Context, tx *sql.Tx, t *Trade) error {
+	if err := r.ensurePunterExistsWithExec(ctx, tx, t.BuyerID); err != nil {
+		return err
+	}
+	if t.SellerID != nil {
+		if err := r.ensurePunterExistsWithExec(ctx, tx, *t.SellerID); err != nil {
+			return err
+		}
+	}
+	_, err := tx.ExecContext(ctx,
+		`INSERT INTO prediction_trades
+		 (id, market_id, buy_order_id, sell_order_id, buyer_id, seller_id,
+		  side, price_cents, quantity, fee_cents, is_amm_trade,
+		  match_id, trade_kind, engine_kind, traded_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+		t.ID, t.MarketID, t.BuyOrderID, t.SellOrderID, t.BuyerID, t.SellerID,
+		string(t.Side), t.PriceCents, t.Quantity, t.FeeCents, t.IsAMMTrade,
+		t.MatchID, string(t.TradeKind), string(t.EngineKind), t.TradedAt,
+	)
+	return err
+}
+
+// updateOrderFillStateWithTx writes the post-match fill state for an order.
+// Updates only fields the match engine touches; leaves the rest alone.
+func (r *SQLRepository) updateOrderFillStateWithTx(ctx context.Context, tx *sql.Tx, o *Order) error {
+	_, err := tx.ExecContext(ctx,
+		`UPDATE prediction_orders SET
+		   filled_quantity = $2,
+		   remaining_quantity = $3,
+		   status = $4,
+		   captured_cash_cents = $5,
+		   released_cash_cents = $6,
+		   filled_cost_cents = $7,
+		   average_fill_price_cents = $8,
+		   failure_reason = $9,
+		   filled_at = $10,
+		   cancelled_at = $11,
+		   updated_at = NOW()
+		 WHERE id = $1`,
+		o.ID, o.FilledQuantity, o.RemainingQuantity, string(o.Status),
+		o.CapturedCashCents, o.ReleasedCashCents, o.FilledCostCents,
+		o.AverageFillPriceCents, o.FailureReason, o.FilledAt, o.CancelledAt,
+	)
+	return err
+}
+
+// applyPositionMutationsWithTx groups mutations by (user_id, side), loads
+// each existing position FOR UPDATE, applies the group's mutations in order
+// via ApplyPositionMutation, and upserts the merged result.
+//
+// reserved_quantity is preserved from the existing row (the existing UPSERT
+// clause does not overwrite it). Reserved-quantity bookkeeping for
+// resting/cancelled sell orders is handled by separate paths (TODO Lane C
+// follow-up).
+func (r *SQLRepository) applyPositionMutationsWithTx(ctx context.Context, tx *sql.Tx, marketID string, mutations []PositionMutation) error {
+	type key struct {
+		UserID string
+		Side   OrderSide
+	}
+	groups := make(map[key][]PositionMutation)
+	for _, m := range mutations {
+		k := key{m.UserID, m.Side}
+		groups[k] = append(groups[k], m)
+	}
+
+	for k, ms := range groups {
+		var p Position
+		err := tx.QueryRowContext(ctx,
+			`SELECT id, user_id, market_id, side, quantity, avg_price_cents,
+			        total_cost_cents, realized_pnl_cents, reserved_quantity,
+			        created_at, updated_at
+			 FROM prediction_positions
+			 WHERE user_id = $1 AND market_id = $2 AND side = $3
+			 FOR UPDATE`,
+			k.UserID, marketID, string(k.Side),
+		).Scan(
+			&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity, &p.AvgPriceCents,
+			&p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity,
+			&p.CreatedAt, &p.UpdatedAt,
+		)
+		if errors.Is(err, sql.ErrNoRows) {
+			p = Position{UserID: k.UserID, MarketID: marketID, Side: k.Side}
+		} else if err != nil {
+			return fmt.Errorf("load position %s/%s: %w", k.UserID, k.Side, err)
+		}
+
+		for _, m := range ms {
+			ApplyPositionMutation(&p, m)
+		}
+
+		if err := r.upsertPositionWithExec(ctx, tx, &p); err != nil {
+			return fmt.Errorf("upsert position %s/%s: %w", k.UserID, k.Side, err)
+		}
+	}
+	return nil
+}
+
+// insertLedgerEntriesWithTx writes ledger rows in order, computing
+// balance_after_cents as a running sum of pool-affecting entries against
+// the current market collateral_pool_cents.
+//
+// Entry types that affect the pool: issue_collateral, settlement_payout,
+// refund, adjustment. Fee and rebate entries record amount_cents but leave
+// the running balance unchanged (those flow through wallet ledgers, not
+// the collateral pool).
+func (r *SQLRepository) insertLedgerEntriesWithTx(ctx context.Context, tx *sql.Tx, marketID string, entries []CollateralLedgerEntry) error {
+	if len(entries) == 0 {
+		return nil
+	}
+	var poolBalance int64
+	if err := tx.QueryRowContext(ctx,
+		"SELECT collateral_pool_cents FROM prediction_markets WHERE id = $1",
+		marketID,
+	).Scan(&poolBalance); err != nil {
+		return fmt.Errorf("read pool balance: %w", err)
+	}
+
+	for i := range entries {
+		e := &entries[i]
+		if entryAffectsPool(e.EntryType) {
+			poolBalance += e.AmountCents
+		}
+		e.BalanceAfterCents = poolBalance
+		if _, err := tx.ExecContext(ctx,
+			`INSERT INTO prediction_collateral_ledger
+			 (market_id, trade_id, order_id, user_id, entry_type,
+			  amount_cents, balance_after_cents, reason)
+			 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+			e.MarketID, e.TradeID, e.OrderID, e.UserID,
+			string(e.EntryType), e.AmountCents, e.BalanceAfterCents, e.Reason,
+		); err != nil {
+			return fmt.Errorf("insert ledger row: %w", err)
+		}
+	}
+	return nil
+}
+
+// entryAffectsPool reports whether a ledger entry should change the
+// running collateral pool balance. Fee and rebate entries are recorded for
+// audit but flow through wallet ledgers, not the pool.
+func entryAffectsPool(t CollateralEntryType) bool {
+	switch t {
+	case CollateralIssue, CollateralSettlementPayout, CollateralRefund, CollateralAdjustment:
+		return true
+	default:
+		return false
+	}
+}
+
+// LoadMakersForSecondary returns resting orders that could fill an incoming
+// taker via secondary same-side transfer (Buy YES taker → Sell YES makers).
+// Ordered by price-time priority. Limit is the depth to consider.
+//
+// For Buy taker: makers are SELLs on the same side, sorted price ASC (lowest
+// ask first). Crossing condition: maker.price <= taker.limit (or any price
+// for market-order takers).
+//
+// For Sell taker: makers are BUYs on the same side, sorted price DESC
+// (highest bid first). Crossing condition: maker.price >= taker.limit.
+//
+// The query lands on idx_pred_orders_book_{sell,buy}_{yes,no} partial indexes.
+func (r *SQLRepository) LoadMakersForSecondary(ctx context.Context, marketID string, takerSide OrderSide, takerAction OrderAction, takerLimit *int, limit int) ([]Order, error) {
+	if limit <= 0 {
+		limit = 100
+	}
+	makerAction := OrderActionSell
+	direction := "ASC"
+	if takerAction == OrderActionSell {
+		makerAction = OrderActionBuy
+		direction = "DESC"
+	}
+
+	args := []any{marketID, string(takerSide), string(makerAction)}
+	priceFilter := ""
+	if takerLimit != nil {
+		args = append(args, *takerLimit)
+		if takerAction == OrderActionBuy {
+			priceFilter = " AND price_cents <= $4"
+		} else {
+			priceFilter = " AND price_cents >= $4"
+		}
+	}
+	args = append(args, limit)
+	limitParam := fmt.Sprintf("$%d", len(args))
+
+	q := `SELECT id, user_id, market_id, side, action, order_type, price_cents,
+	             quantity, filled_quantity, remaining_quantity, total_cost_cents,
+	             status, time_in_force, reserved_cash_cents, captured_cash_cents,
+	             released_cash_cents, reserved_quantity, filled_cost_cents,
+	             post_only, COALESCE(self_match_action, 'cancel_taker') AS self_match_action,
+	             created_at, updated_at
+	      FROM prediction_orders
+	      WHERE market_id = $1 AND side = $2 AND action = $3
+	        AND status IN ('open','partial')
+	        AND price_cents IS NOT NULL` + priceFilter + `
+	      ORDER BY price_cents ` + direction + `, created_at ASC
+	      LIMIT ` + limitParam
+
+	return r.scanOrderRows(ctx, q, args...)
+}
+
+// LoadMakersForIssuance returns resting Buy orders on the OPPOSITE side that
+// could fill the incoming taker via complementary issuance.
+//
+// Taker is Buy YES with limit L → makers are resting Buy NO orders with
+// price >= 100-L (so the sum is >= 100). Sorted price DESC (highest NO bid
+// first; satisfies the issuance feasibility condition with the smallest
+// surplus to release).
+//
+// The query lands on idx_pred_orders_book_buy_{yes,no} partial indexes.
+func (r *SQLRepository) LoadMakersForIssuance(ctx context.Context, marketID string, otherSide OrderSide, takerLimit int, limit int) ([]Order, error) {
+	if limit <= 0 {
+		limit = 100
+	}
+	minMakerPrice := ParPriceCents - takerLimit
+	if minMakerPrice < MinTickPriceCents {
+		minMakerPrice = MinTickPriceCents
+	}
+
+	q := `SELECT id, user_id, market_id, side, action, order_type, price_cents,
+	             quantity, filled_quantity, remaining_quantity, total_cost_cents,
+	             status, time_in_force, reserved_cash_cents, captured_cash_cents,
+	             released_cash_cents, reserved_quantity, filled_cost_cents,
+	             post_only, COALESCE(self_match_action, 'cancel_taker') AS self_match_action,
+	             created_at, updated_at
+	      FROM prediction_orders
+	      WHERE market_id = $1 AND side = $2 AND action = 'buy'
+	        AND status IN ('open','partial')
+	        AND price_cents IS NOT NULL
+	        AND price_cents >= $3
+	      ORDER BY price_cents DESC, created_at ASC
+	      LIMIT $4`
+
+	return r.scanOrderRows(ctx, q, marketID, string(otherSide), minMakerPrice, limit)
+}
+
+// scanOrderRows is a shared scan helper for the two maker-loading queries.
+func (r *SQLRepository) scanOrderRows(ctx context.Context, q string, args ...any) ([]Order, error) {
+	rows, err := r.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	orders := make([]Order, 0, 32)
+	for rows.Next() {
+		var o Order
+		var price sql.NullInt64
+		var tif, sma sql.NullString
+		if err := rows.Scan(
+			&o.ID, &o.UserID, &o.MarketID, &o.Side, &o.Action, &o.OrderType, &price,
+			&o.Quantity, &o.FilledQuantity, &o.RemainingQuantity, &o.TotalCostCents,
+			&o.Status, &tif, &o.ReservedCashCents, &o.CapturedCashCents,
+			&o.ReleasedCashCents, &o.ReservedQuantity, &o.FilledCostCents,
+			&o.PostOnly, &sma,
+			&o.CreatedAt, &o.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		if price.Valid {
+			p := int(price.Int64)
+			o.PriceCents = &p
+		}
+		if tif.Valid {
+			o.TimeInForce = TimeInForce(tif.String)
+		}
+		if sma.Valid {
+			o.SelfMatchAction = SelfMatchAction(sma.String)
+		}
+		orders = append(orders, o)
+	}
+	return orders, rows.Err()
+}
+
+// ListRecentDriftAlerts aggregates `adjustment` ledger rows since `since`
+// per market. Joins to prediction_markets for the ticker and (left-)joins
+// to the most recent reason via DISTINCT ON. Single query, indexed on
+// idx_pred_coll_ledger_market_time.
+//
+// Sort: most recent adjustment first, since ops typically wants to see
+// fresh drift at the top of the page.
+func (r *SQLRepository) ListRecentDriftAlerts(ctx context.Context, since time.Time) ([]CollateralDriftAlert, error) {
+	q := `
+WITH latest AS (
+  SELECT DISTINCT ON (market_id)
+    market_id, reason, created_at
+  FROM prediction_collateral_ledger
+  WHERE entry_type = 'adjustment' AND created_at >= $1
+  ORDER BY market_id, created_at DESC
+)
+SELECT
+  l.market_id,
+  COALESCE(m.ticker, '') AS ticker,
+  COUNT(*) FILTER (WHERE l.entry_type = 'adjustment')::int AS adjustment_count,
+  COALESCE(MAX(ABS(l.amount_cents)), 0) AS max_drift,
+  COALESCE(SUM(l.amount_cents), 0) AS total_drift,
+  MAX(l.created_at) AS latest_at,
+  COALESCE(latest.reason, '') AS latest_reason
+FROM prediction_collateral_ledger l
+LEFT JOIN prediction_markets m ON m.id = l.market_id
+LEFT JOIN latest ON latest.market_id = l.market_id
+WHERE l.entry_type = 'adjustment' AND l.created_at >= $1
+GROUP BY l.market_id, m.ticker, latest.reason
+ORDER BY MAX(l.created_at) DESC`
+
+	rows, err := r.db.QueryContext(ctx, q, since)
+	if err != nil {
+		return nil, fmt.Errorf("list drift alerts: %w", err)
+	}
+	defer rows.Close()
+
+	out := make([]CollateralDriftAlert, 0, 8)
+	for rows.Next() {
+		var a CollateralDriftAlert
+		if err := rows.Scan(
+			&a.MarketID, &a.Ticker, &a.AdjustmentCount,
+			&a.MaxDriftCents, &a.TotalDriftCents,
+			&a.LatestAdjustedAt, &a.LatestReason,
+		); err != nil {
+			return nil, err
+		}
+		out = append(out, a)
+	}
+	return out, rows.Err()
+}
+
+// updateMarketAfterMatchWithTx writes the post-match market state. Touches
+// only fields the match engine changes: collateral_pool_cents,
+// last_trade_price_cents, last_quote_at, volume_cents.
+//
+// best_yes/no_bid/ask_cents are deliberately NOT written here — those are
+// refreshed by a separate background job that re-aggregates the book after
+// the match commits. Computing them inside the match tx requires re-querying
+// the (now-updated) book, which adds latency without correctness benefit.
+func (r *SQLRepository) updateMarketAfterMatchWithTx(ctx context.Context, tx *sql.Tx, m *Market) error {
+	_, err := tx.ExecContext(ctx,
+		`UPDATE prediction_markets SET
+		   collateral_pool_cents = $2,
+		   last_trade_price_cents = $3,
+		   last_quote_at = $4,
+		   volume_cents = $5,
+		   updated_at = NOW()
+		 WHERE id = $1`,
+		m.ID, m.CollateralPoolCents, m.LastTradePriceCents,
+		m.LastQuoteAt, m.VolumeCents,
+	)
+	return err
+}
+
+// GetOrderBook returns the L2 order book for a market, summing
+// remaining_quantity per price level for each (side, action) and computing
+// running totals. Resolves four queries against the partial indexes built in
+// migration 019:
+//
+//	idx_pred_orders_book_buy_yes  (yes bids, price DESC)
+//	idx_pred_orders_book_sell_yes (yes asks, price ASC)
+//	idx_pred_orders_book_buy_no   (no bids, price DESC)
+//	idx_pred_orders_book_sell_no  (no asks, price ASC)
+//
+// depth is server-side clamped to [1, MaxOrderBookDepth] (100). Caller passes
+// the user-supplied depth; clamping is done here defensively even if the
+// handler already validated.
+//
+// Empty book is returned with non-nil empty slices so JSON marshalling is
+// stable (`[]` not `null`).
+func (r *SQLRepository) GetOrderBook(ctx context.Context, marketID string, depth int) (*OrderBook, error) {
+	if depth < 1 {
+		depth = 1
+	}
+	if depth > MaxOrderBookDepth {
+		depth = MaxOrderBookDepth
+	}
+
+	yesBidsRows, err := r.aggregateOrders(ctx, marketID, OrderSideYes, OrderActionBuy, depth)
+	if err != nil {
+		return nil, fmt.Errorf("aggregate yes bids: %w", err)
+	}
+	yesAsksRows, err := r.aggregateOrders(ctx, marketID, OrderSideYes, OrderActionSell, depth)
+	if err != nil {
+		return nil, fmt.Errorf("aggregate yes asks: %w", err)
+	}
+	noBidsRows, err := r.aggregateOrders(ctx, marketID, OrderSideNo, OrderActionBuy, depth)
+	if err != nil {
+		return nil, fmt.Errorf("aggregate no bids: %w", err)
+	}
+	noAsksRows, err := r.aggregateOrders(ctx, marketID, OrderSideNo, OrderActionSell, depth)
+	if err != nil {
+		return nil, fmt.Errorf("aggregate no asks: %w", err)
+	}
+
+	return AssembleOrderBook(
+		marketID,
+		BookLevels(yesBidsRows, depth),
+		BookLevels(yesAsksRows, depth),
+		BookLevels(noBidsRows, depth),
+		BookLevels(noAsksRows, depth),
+	), nil
+}
+
+// aggregateOrders runs the GROUP BY price_cents query for one (side, action)
+// against the prediction_orders table. ORDER BY direction matches the partial
+// index on which the planner should land:
+//   - Buy:  price DESC (best bid first)
+//   - Sell: price ASC  (best ask first)
+//
+// Status filter `('open','partial')` matches the partial-index predicates so
+// the planner picks the right index (verified in test 61 of the test plan).
+func (r *SQLRepository) aggregateOrders(ctx context.Context, marketID string, side OrderSide, action OrderAction, limit int) ([]AggregatedLevel, error) {
+	direction := "DESC"
+	if action == OrderActionSell {
+		direction = "ASC"
+	}
+
+	q := `SELECT price_cents, COALESCE(SUM(remaining_quantity), 0)::int AS qty
+	      FROM prediction_orders
+	      WHERE market_id = $1
+	        AND side = $2
+	        AND action = $3
+	        AND status IN ('open','partial')
+	        AND price_cents IS NOT NULL
+	      GROUP BY price_cents
+	      ORDER BY price_cents ` + direction + `
+	      LIMIT $4`
+
+	rows, err := r.db.QueryContext(ctx, q, marketID, string(side), string(action), limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	out := make([]AggregatedLevel, 0, limit)
+	for rows.Next() {
+		var lvl AggregatedLevel
+		if err := rows.Scan(&lvl.PriceCents, &lvl.Quantity); err != nil {
+			return nil, err
+		}
+		out = append(out, lvl)
+	}
+	return out, rows.Err()
+}

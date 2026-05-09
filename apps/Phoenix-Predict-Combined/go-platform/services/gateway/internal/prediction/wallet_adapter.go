@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"math"
+	"time"
 )
 
 // WalletAdapter is the prediction platform's view of the wallet service.
@@ -30,6 +31,42 @@ type TxWalletAdapter interface {
 	BeginTx(ctx context.Context) (*sql.Tx, error)
 	DebitWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error
 	CreditWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, idempotencyKey, reason string) error
+}
+
+// ExchangeWalletAdapter is the wallet capability surface required by the
+// binary exchange engine. It extends TxWalletAdapter with reservation
+// primitives (Hold/Capture/Release variants) and a READ COMMITTED tx opener
+// suitable for matching under a per-market advisory lock.
+//
+// SERIALIZABLE adds retry overhead without benefit when contending writers
+// are already serialized by the advisory lock; matching uses READ COMMITTED.
+//
+// Reservation methods take (refType, refID) instead of a reservation ID so
+// that lookups stay idempotent across retries; the prediction engine uses
+// refType="prediction_order" and refID=order.id for buy reservations.
+type ExchangeWalletAdapter interface {
+	TxWalletAdapter
+
+	// BeginExchangeTx opens a transaction at READ COMMITTED isolation,
+	// suitable for matching after the caller has taken pg_advisory_xact_lock
+	// on the market.
+	BeginExchangeTx(ctx context.Context) (*sql.Tx, error)
+
+	// HoldWithTx reserves amountCents from the user's available balance
+	// inside the caller's tx. Idempotent on (refType, refID).
+	HoldWithTx(ctx context.Context, tx *sql.Tx, userID string, amountCents int64, refType, refID string, expiresIn time.Duration) error
+
+	// CaptureReservationWithTx debits amountCents from the user's wallet,
+	// drawing against the reservation identified by (refType, refID).
+	// Cumulative captures across calls cannot exceed the reservation's
+	// original amount. captureKey must be unique per call (e.g.,
+	// "prediction_fill:<trade_id>") for ledger idempotency.
+	CaptureReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string, amountCents int64, captureKey string) error
+
+	// ReleaseReservationWithTx releases the uncaptured remainder of the
+	// reservation. Idempotent: releasing an already-released or
+	// already-captured reservation is a no-op.
+	ReleaseReservationWithTx(ctx context.Context, tx *sql.Tx, refType, refID string) error
 }
 
 // NoopWallet is a WalletAdapter that does nothing — used when the wallet

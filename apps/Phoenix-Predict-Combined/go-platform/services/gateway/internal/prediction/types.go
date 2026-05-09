@@ -86,6 +86,15 @@ const (
 	MarketResultNo  MarketResult = "no"
 )
 
+// ExecutionMode determines whether a market matches via the AMM or the
+// real order book exchange engine.
+type ExecutionMode string
+
+const (
+	ExecutionModeOrderBook ExecutionMode = "order_book"
+	ExecutionModeAMM       ExecutionMode = "amm"
+)
+
 // Market represents an individual binary contract within an event.
 type Market struct {
 	ID                   string          `json:"id" db:"id"`
@@ -117,6 +126,16 @@ type Market struct {
 	CreatedAt            time.Time       `json:"createdAt" db:"created_at"`
 	UpdatedAt            time.Time       `json:"updatedAt" db:"updated_at"`
 	ImagePath            string          `json:"imagePath,omitempty" db:"image_path"`
+
+	// Exchange engine fields (migration 019).
+	ExecutionMode           ExecutionMode `json:"executionMode" db:"execution_mode"`
+	CollateralPoolCents     int64         `json:"collateralPoolCents" db:"collateral_pool_cents"`
+	SettledPayoutPoolCents  int64         `json:"settledPayoutPoolCents" db:"settled_payout_pool_cents"`
+	BestYesBidCents         *int          `json:"bestYesBidCents,omitempty" db:"best_yes_bid_cents"`
+	BestYesAskCents         *int          `json:"bestYesAskCents,omitempty" db:"best_yes_ask_cents"`
+	BestNoBidCents          *int          `json:"bestNoBidCents,omitempty" db:"best_no_bid_cents"`
+	BestNoAskCents          *int          `json:"bestNoAskCents,omitempty" db:"best_no_ask_cents"`
+	LastQuoteAt             *time.Time    `json:"lastQuoteAt,omitempty" db:"last_quote_at"`
 }
 
 // OrderSide is the side of a prediction (YES or NO).
@@ -153,6 +172,38 @@ const (
 	OrderStatusFilled    OrderStatus = "filled"
 	OrderStatusCancelled OrderStatus = "cancelled"
 	OrderStatusExpired   OrderStatus = "expired"
+	OrderStatusRejected  OrderStatus = "rejected"
+)
+
+// TimeInForce specifies the lifetime of a limit order.
+type TimeInForce string
+
+const (
+	TIFGTC TimeInForce = "gtc"
+	TIFIOC TimeInForce = "ioc"
+	TIFFOK TimeInForce = "fok"
+)
+
+// SelfMatchAction tells the exchange how to handle same-user crossings.
+type SelfMatchAction string
+
+const (
+	SelfMatchCancelTaker SelfMatchAction = "cancel_taker"
+	SelfMatchCancelMaker SelfMatchAction = "cancel_maker"
+	SelfMatchCancelBoth  SelfMatchAction = "cancel_both"
+)
+
+// Failure-reason constants populated on rejected/cancelled orders.
+const (
+	FailurePriceBandViolation    = "price_band_violation"
+	FailurePostOnlyWouldTake     = "post_only_would_take"
+	FailureSelfMatchRejected     = "self_match_rejected"
+	FailureClosedMarket          = "closed_market"
+	FailureInsufficientBalance   = "insufficient_balance"
+	FailureInsufficientPosition  = "insufficient_position"
+	FailureNotionalCapMissing    = "notional_cap_missing"
+	FailureNotionalCapExceeded   = "notional_cap_exceeded"
+	FailureFOKUnavailable        = "fok_unavailable"
 )
 
 // Order represents a user's order to buy or sell contracts.
@@ -176,6 +227,20 @@ type Order struct {
 	CancelledAt         *time.Time  `json:"cancelledAt,omitempty" db:"cancelled_at"`
 	CreatedAt           time.Time   `json:"createdAt" db:"created_at"`
 	UpdatedAt           time.Time   `json:"updatedAt" db:"updated_at"`
+
+	// Exchange engine fields (migration 019).
+	TimeInForce            TimeInForce      `json:"timeInForce" db:"time_in_force"`
+	ReservedCashCents      int64            `json:"reservedCashCents" db:"reserved_cash_cents"`
+	CapturedCashCents      int64            `json:"capturedCashCents" db:"captured_cash_cents"`
+	ReleasedCashCents      int64            `json:"releasedCashCents" db:"released_cash_cents"`
+	ReservedQuantity       int              `json:"reservedQuantity" db:"reserved_quantity"`
+	AverageFillPriceCents  *int             `json:"averageFillPriceCents,omitempty" db:"average_fill_price_cents"`
+	FilledCostCents        int64            `json:"filledCostCents" db:"filled_cost_cents"`
+	FailureReason          *string          `json:"failureReason,omitempty" db:"failure_reason"`
+	PostOnly               bool             `json:"postOnly" db:"post_only"`
+	ClientOrderID          *string          `json:"clientOrderId,omitempty" db:"client_order_id"`
+	SelfMatchAction        SelfMatchAction  `json:"selfMatchAction" db:"self_match_action"`
+	NotionalCapCents       *int64           `json:"notionalCapCents,omitempty" db:"notional_cap_cents"`
 }
 
 // Position represents a user's net holding in a market on one side.
@@ -190,7 +255,27 @@ type Position struct {
 	RealizedPnlCents int64     `json:"realizedPnlCents" db:"realized_pnl_cents"`
 	CreatedAt        time.Time `json:"createdAt" db:"created_at"`
 	UpdatedAt        time.Time `json:"updatedAt" db:"updated_at"`
+
+	// Exchange engine fields (migration 019). reserved_quantity is the count
+	// of shares locked by resting sell orders. available = quantity - reserved.
+	ReservedQuantity int `json:"reservedQuantity" db:"reserved_quantity"`
 }
+
+// TradeKind distinguishes secondary transfers from complementary issuance.
+type TradeKind string
+
+const (
+	TradeKindSecondary TradeKind = "secondary"
+	TradeKindIssuance  TradeKind = "issuance"
+)
+
+// EngineKind tags trade rows with the engine that produced them.
+type EngineKind string
+
+const (
+	EngineKindOrderBook EngineKind = "order_book"
+	EngineKindAMM       EngineKind = "amm"
+)
 
 // Trade is an immutable fill record.
 type Trade struct {
@@ -206,6 +291,71 @@ type Trade struct {
 	FeeCents    int       `json:"feeCents" db:"fee_cents"`
 	IsAMMTrade  bool      `json:"isAmmTrade" db:"is_amm_trade"`
 	TradedAt    time.Time `json:"tradedAt" db:"traded_at"`
+
+	// Exchange engine fields (migration 019). MatchID links the two rows of a
+	// complementary issuance fill; equals trade ID for secondary transfers.
+	MatchID    string     `json:"matchId" db:"match_id"`
+	TradeKind  TradeKind  `json:"tradeKind" db:"trade_kind"`
+	EngineKind EngineKind `json:"engineKind" db:"engine_kind"`
+}
+
+// CollateralEntryType identifies a row in prediction_collateral_ledger.
+type CollateralEntryType string
+
+const (
+	CollateralIssue            CollateralEntryType = "issue_collateral"
+	CollateralSettlementPayout CollateralEntryType = "settlement_payout"
+	CollateralFee              CollateralEntryType = "fee"
+	CollateralRefund           CollateralEntryType = "refund"
+	CollateralAdjustment       CollateralEntryType = "adjustment"
+	CollateralRebate           CollateralEntryType = "rebate"
+)
+
+// CollateralDriftAlert summarises recent adjustment ledger rows on a market.
+// Surfaced to backoffice ops so the risk page can highlight markets with
+// unresolved drift detected by the reconciliation cron.
+type CollateralDriftAlert struct {
+	MarketID         string    `json:"marketId"`
+	Ticker           string    `json:"ticker"`
+	AdjustmentCount  int       `json:"adjustmentCount"`
+	MaxDriftCents    int64     `json:"maxDriftCents"`
+	TotalDriftCents  int64     `json:"totalDriftCents"`
+	LatestAdjustedAt time.Time `json:"latestAdjustedAt"`
+	LatestReason     string    `json:"latestReason"`
+}
+
+// CollateralLedgerEntry is an append-only collateral movement on a market.
+type CollateralLedgerEntry struct {
+	ID                string              `json:"id" db:"id"`
+	MarketID          string              `json:"marketId" db:"market_id"`
+	TradeID           *string             `json:"tradeId,omitempty" db:"trade_id"`
+	OrderID           *string             `json:"orderId,omitempty" db:"order_id"`
+	UserID            *string             `json:"userId,omitempty" db:"user_id"`
+	EntryType         CollateralEntryType `json:"entryType" db:"entry_type"`
+	AmountCents       int64               `json:"amountCents" db:"amount_cents"`
+	BalanceAfterCents int64               `json:"balanceAfterCents" db:"balance_after_cents"`
+	Reason            string              `json:"reason" db:"reason"`
+	CreatedAt         time.Time           `json:"createdAt" db:"created_at"`
+}
+
+// OrderBookLevel is one price level in the order book.
+type OrderBookLevel struct {
+	PriceCents int `json:"priceCents"`
+	Quantity   int `json:"quantity"`
+	Total      int `json:"total"`
+}
+
+// OrderBookSide is one side (yes or no) with bids and asks.
+type OrderBookSide struct {
+	Bids []OrderBookLevel `json:"bids"`
+	Asks []OrderBookLevel `json:"asks"`
+}
+
+// OrderBook is the full L2 book for a market, returned by GET /orderbook.
+type OrderBook struct {
+	MarketID string        `json:"marketId"`
+	Yes      OrderBookSide `json:"yes"`
+	No       OrderBookSide `json:"no"`
 }
 
 // Settlement records a market resolution.
@@ -221,6 +371,12 @@ type Settlement struct {
 	SettledAt          time.Time       `json:"settledAt" db:"settled_at"`
 	TotalPayoutCents   int64           `json:"totalPayoutCents" db:"total_payout_cents"`
 	PositionsSettled   int             `json:"positionsSettled" db:"positions_settled"`
+
+	// Admin override audit (migration 019). Either all three are null or all
+	// three are set together; enforced by a CHECK constraint.
+	OverrideReason       *string    `json:"overrideReason,omitempty" db:"override_reason"`
+	OverriddenByUserID   *string    `json:"overriddenByUserId,omitempty" db:"overridden_by_user_id"`
+	OverriddenAt         *time.Time `json:"overriddenAt,omitempty" db:"overridden_at"`
 }
 
 // Payout records a per-position settlement credit.
@@ -276,6 +432,13 @@ type PlaceOrderRequest struct {
 	PriceCents     *int        `json:"priceCents,omitempty"`
 	Quantity       int         `json:"quantity" validate:"required,gt=0"`
 	IdempotencyKey *string     `json:"idempotencyKey,omitempty"`
+
+	// Exchange engine fields (ignored on AMM-mode markets).
+	TimeInForce      TimeInForce      `json:"timeInForce,omitempty"`
+	PostOnly         bool             `json:"postOnly,omitempty"`
+	ClientOrderID    *string          `json:"clientOrderId,omitempty"`
+	SelfMatchAction  SelfMatchAction  `json:"selfMatchAction,omitempty"`
+	NotionalCapCents *int64           `json:"notionalCapCents,omitempty"`
 }
 
 // OrderPreview is the response from previewing an order cost.

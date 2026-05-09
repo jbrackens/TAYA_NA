@@ -106,6 +106,52 @@ type WalletCreditRequest struct {
 	Reason         string
 }
 
+// ExchangeRepository is the optional repository capability surface for the
+// binary exchange engine. SQLRepository implements it; in-memory fakes for
+// tests may opt in by implementing the same methods. Callers should type-
+// assert and degrade gracefully when not present (the AMM-only path doesn't
+// need the order book API).
+type ExchangeRepository interface {
+	// GetOrderBook returns the L2 book for a market — yes/no bids and asks
+	// with running totals, depth-capped at MaxOrderBookDepth.
+	GetOrderBook(ctx context.Context, marketID string, depth int) (*OrderBook, error)
+
+	// PersistMatchAtomic applies a match plan to the database in a single
+	// transaction held under a per-market advisory lock. Trades, order
+	// updates, position mutations, ledger entries, and market quote updates
+	// all commit together or not at all.
+	PersistMatchAtomic(ctx context.Context, walletAdapter ExchangeWalletAdapter, plan *MatchPlan) error
+
+	// LoadMakersForSecondary returns resting opposite-action orders on the
+	// same side, ordered by price-time priority. Used by the match engine
+	// to find candidates for secondary same-side transfer.
+	LoadMakersForSecondary(ctx context.Context, marketID string, takerSide OrderSide, takerAction OrderAction, takerLimit *int, limit int) ([]Order, error)
+
+	// LoadMakersForIssuance returns resting Buy orders on the opposite side
+	// whose price plus the taker's limit can mint a complementary pair
+	// (sum >= 100). Used by the match engine for issuance.
+	LoadMakersForIssuance(ctx context.Context, marketID string, otherSide OrderSide, takerLimit int, limit int) ([]Order, error)
+
+	// RefreshMarketBestQuotes recomputes the market's top-of-book columns
+	// from the current open-order partial indexes. Called after a match
+	// commits so `market:<id>` subscribers see updated bid/ask without
+	// re-aggregating client-side.
+	RefreshMarketBestQuotes(ctx context.Context, marketID string) error
+
+	// ReconcileMarket runs a two-phase collateral invariant check for a
+	// market. Phase 1 reads without a lock; Phase 2 only runs if Phase 1
+	// suspects drift, takes the per-market advisory lock briefly, and
+	// writes a forensic ledger entry. See reconciliation.go for details.
+	ReconcileMarket(ctx context.Context, marketID string) (*CollateralDriftReport, error)
+
+	// ListRecentDriftAlerts returns markets that had collateral
+	// `adjustment` ledger entries written since `since`. One row per
+	// market; aggregates count, max drift, total drift, and most recent
+	// adjustment timestamp. Used by the backoffice ops page to surface
+	// markets needing investigation.
+	ListRecentDriftAlerts(ctx context.Context, since time.Time) ([]CollateralDriftAlert, error)
+}
+
 // AtomicMarketSettlementPersister is an optional repository capability for
 // market settlement/void flows that need wallet credits and prediction writes
 // to commit together.
