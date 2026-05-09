@@ -217,16 +217,31 @@ function LoginForm() {
               >
                 Password
               </label>
-              <a
-                href="#"
+              {/*
+                Admin password recovery is intentionally not self-serve:
+                an XSS in any admin page would otherwise let an attacker
+                trigger a reset email to a fresh account. Locked-out
+                admins email IT to be re-issued credentials. We surface
+                the address inline so the dead `href="#"` link is gone.
+              */}
+              <span
                 style={{
                   fontSize: 12,
-                  color: "var(--focus-ring, #0e7a53)",
+                  color: "var(--t3, #8b8378)",
                   fontWeight: 500,
                 }}
               >
-                Forgot password?
-              </a>
+                Locked out?{" "}
+                <a
+                  href="mailto:admin@hulana.com?subject=Backoffice%20password%20reset"
+                  style={{
+                    color: "var(--focus-ring, #0e7a53)",
+                    fontWeight: 500,
+                  }}
+                >
+                  Email IT
+                </a>
+              </span>
             </div>
             <input
               type="password"

@@ -68,8 +68,13 @@ export default function PredictionMarketsContainer() {
       ]);
       setMarkets(mkts.data || []);
       setCategories(cats || []);
-    } catch {
-      message.error("Failed to load markets");
+    } catch (err: unknown) {
+      // Surface the gateway error verbatim so admins can act on it
+      // (auth expired, schema mismatch, etc.) instead of guessing
+      // why a generic "Failed to load markets" toast appeared.
+      const detail =
+        err instanceof Error ? err.message : "Failed to load markets";
+      message.error(detail);
     } finally {
       setLoading(false);
     }
@@ -114,26 +119,92 @@ export default function PredictionMarketsContainer() {
       setCreateOpen(false);
       form.resetFields();
       loadData();
-    } catch {
-      message.error("Failed to create market");
+    } catch (err: unknown) {
+      // Surface JSON parse errors from settlementParams + gateway 4xx
+      // (e.g. "ticker already exists") instead of a generic toast.
+      const detail =
+        err instanceof Error ? err.message : "Failed to create market";
+      message.error(detail);
     }
   }
 
   async function handleLifecycle(
     marketId: string,
     action: MarketLifecycleAction,
+    reasonOverride?: string,
   ) {
     try {
       await predictionClient.transitionMarketLifecycle(
         marketId,
         action,
-        `Admin: ${action}`,
+        reasonOverride && reasonOverride.trim()
+          ? reasonOverride.trim()
+          : `Admin: ${action}`,
       );
       message.success(`Market ${action}`);
       loadData();
-    } catch {
-      message.error(`Failed to ${action} market`);
+    } catch (err: unknown) {
+      const detail =
+        err instanceof Error ? err.message : `Failed to ${action} market`;
+      message.error(detail);
     }
+  }
+
+  /**
+   * Halt and Close are destructive: halting a live market mid-trading
+   * blocks new orders and leaves resting bids/asks dangling, and Close
+   * is a one-way transition into the settlement queue. Both should
+   * require an explicit confirm + reason for the audit log. Open and
+   * Resume are constructive (no user-visible loss) and stay one-click.
+   *
+   * The reason captured here lands in the lifecycle event ledger via
+   * `transitionMarketLifecycle(marketId, action, reason)`. Admins should
+   * write something a regulator can read 6 months later: "MM agreement
+   * expired", "Polymarket settlement source disagreed", etc.
+   */
+  function confirmLifecycle(
+    market: PredictionMarket,
+    action: "halt" | "close",
+  ) {
+    let reason = "";
+    const verb = action === "halt" ? "Halt" : "Close";
+    const consequence =
+      action === "halt"
+        ? "New orders blocked. Resting orders stay until you resume or close."
+        : "Trading stops permanently. Market enters the settlement queue.";
+    Modal.confirm({
+      title: `${verb} ${market.ticker}?`,
+      width: 520,
+      content: (
+        <div>
+          <p style={{ marginBottom: 8 }}>{consequence}</p>
+          <p
+            style={{
+              marginBottom: 8,
+              fontSize: 12,
+              color: "var(--t3, #8b8378)",
+            }}
+          >
+            Reason is written to the lifecycle audit log.
+          </p>
+          <TextArea
+            rows={3}
+            placeholder={
+              action === "halt"
+                ? "e.g. Settlement source disputed; pausing pending review"
+                : "e.g. Event resolved; routing to settlement"
+            }
+            onChange={(e) => {
+              reason = e.target.value;
+            }}
+          />
+        </div>
+      ),
+      okText: `${verb} market`,
+      okButtonProps: { danger: action === "halt" },
+      cancelText: "Cancel",
+      onOk: () => handleLifecycle(market.id, action, reason),
+    });
   }
 
   const columns = [
@@ -276,13 +347,13 @@ export default function PredictionMarketsContainer() {
               <Button
                 size="small"
                 danger
-                onClick={() => handleLifecycle(record.id, "halt")}
+                onClick={() => confirmLifecycle(record, "halt")}
               >
                 Halt
               </Button>
               <Button
                 size="small"
-                onClick={() => handleLifecycle(record.id, "close")}
+                onClick={() => confirmLifecycle(record, "close")}
               >
                 Close
               </Button>

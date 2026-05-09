@@ -196,6 +196,9 @@ export default function PredictionSettlementsContainer() {
         title={`Settle: ${selectedMarket?.ticker || ""}`}
         visible={settleOpen}
         onCancel={() => {
+          // Reset on cancel so a stale ticker-confirm value from a
+          // previous market doesn't leak into the next Settle attempt.
+          form.resetFields();
           setSettleOpen(false);
           setSelectedMarket(null);
         }}
@@ -259,6 +262,36 @@ export default function PredictionSettlementsContainer() {
             <TextArea
               rows={2}
               placeholder="e.g., Drift confirmed at $0.12 — investigated, ops approved settlement; ticket OPS-1234"
+            />
+          </Form.Item>
+          {/*
+            Settlement is irreversible: payouts are credited atomically
+            against the collateral pool and there is no "unsettle" path.
+            Require the admin to type the exact ticker (case-sensitive)
+            before the OK button accepts the form. Validates against
+            selectedMarket.ticker via the rule below — same pattern as
+            GitHub's destructive-action confirmations.
+          */}
+          <Form.Item
+            name="confirmTicker"
+            label={`Type "${selectedMarket?.ticker || ""}" to confirm`}
+            rules={[
+              { required: true, message: "Type the ticker to confirm" },
+              {
+                validator: (_, value) =>
+                  value === selectedMarket?.ticker
+                    ? Promise.resolve()
+                    : Promise.reject(
+                        new Error(
+                          `Must match "${selectedMarket?.ticker || ""}" exactly`,
+                        ),
+                      ),
+              },
+            ]}
+          >
+            <Input
+              placeholder={selectedMarket?.ticker || ""}
+              autoComplete="off"
             />
           </Form.Item>
         </Form>
