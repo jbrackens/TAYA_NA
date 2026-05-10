@@ -30,6 +30,7 @@ import type {
   OrderPreview,
   TimeInForce,
 } from "@phoenix-ui/api-client/src/prediction-types";
+import { useToast } from "../ToastProvider";
 
 /**
  * Extra fields the trade ticket can pass to the parent's submit handler
@@ -98,6 +99,7 @@ export function TradeTicket({
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   const isOpen = market.status === "open";
   const isExchange = market.executionMode === "order_book";
@@ -163,7 +165,23 @@ export function TradeTicket({
         // AMM mode: buy-only, market-only — preserve existing call shape.
         await onSubmit(side, qty);
       }
-      setAmount(25);
+      // Confirm to the user that the order went through. Without this, a
+      // successful submit looked indistinguishable from a no-op: the only
+      // visual change was the amount silently snapping back to $25, which
+      // QA reported as "I clicked $5, then it moved to $25 and froze."
+      // Keep the user's chosen amount so a follow-up click on Place trade
+      // reissues the same size — most users want to repeat the bet, not
+      // restart from $25.
+      const verb =
+        action === "sell"
+          ? "Sold"
+          : mode === "limit"
+            ? "Limit placed"
+            : "Bought";
+      toast.success(
+        `${verb} ${qty} ${side.toUpperCase()} share${qty === 1 ? "" : "s"}`,
+        `$${amount.toFixed(2)} on ${market.ticker}`,
+      );
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Order failed");
     } finally {
@@ -183,6 +201,8 @@ export function TradeTicket({
     action,
     limitPriceCents,
     amount,
+    market.ticker,
+    toast,
   ]);
 
   const setSideAndReset = (s: OrderSide) => {
