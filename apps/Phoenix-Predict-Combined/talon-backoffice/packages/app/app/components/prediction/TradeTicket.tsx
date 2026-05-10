@@ -644,21 +644,36 @@ export function TradeTicket({
             </div>
           </div>
           <div className="tt-chips" role="group" aria-label="Quick amount">
-            {QUICK_AMOUNTS.map((a) => (
-              <button
-                key={a}
-                type="button"
-                onClick={() => setAmount(a)}
-                className={`tt-chip ${Math.floor(amount) === a ? "is-active" : ""}`}
-              >
-                ${a}
-              </button>
-            ))}
+            {QUICK_AMOUNTS.map((a) => {
+              const isActive = Math.floor(amount) === a;
+              return (
+                <button
+                  key={a}
+                  type="button"
+                  // No-op when the chip is already active. Without this guard
+                  // every click on the active chip still calls setAmount with
+                  // the same value, which React treats as an update and
+                  // triggers a re-render of the ticket. Cheap individually,
+                  // but combined with a parent that prefetches a returnUrl
+                  // bound to amount it can feel like the page hangs in dev
+                  // mode while chunks recompile. Cheap defensive change.
+                  onClick={() => {
+                    if (!isActive) setAmount(a);
+                  }}
+                  aria-pressed={isActive}
+                  className={`tt-chip ${isActive ? "is-active" : ""}`}
+                >
+                  ${a}
+                </button>
+              );
+            })}
             <button
               type="button"
-              onClick={() =>
-                setAmount(typeof balance === "number" ? Math.floor(balance) : 0)
-              }
+              onClick={() => {
+                if (typeof balance !== "number" || balance <= 0) return;
+                const next = Math.floor(balance);
+                if (Math.floor(amount) !== next) setAmount(next);
+              }}
               className="tt-chip"
               disabled={typeof balance !== "number" || balance <= 0}
             >

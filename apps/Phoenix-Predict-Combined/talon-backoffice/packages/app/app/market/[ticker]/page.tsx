@@ -44,6 +44,7 @@ import type {
   OrderSide,
   OrderPreview,
   OrderBook as ApiOrderBook,
+  Position,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 
@@ -134,6 +135,11 @@ export default function MarketDetailPage() {
   // Real /orderbook fetch (only populated when executionMode='order_book').
   // null while loading or when AMM mode; falls back to synthesizeBook below.
   const [orderBook, setOrderBook] = useState<ApiOrderBook | null>(null);
+  // User's positions on THIS market — drives the Sell tab. Empty array when
+  // signed out (no positions) or before /portfolio responds. Without this,
+  // TradeTicket received availableYes/NoShares = 0 and the Sell button was
+  // permanently disabled even for users holding hundreds of contracts.
+  const [positions, setPositions] = useState<Position[]>([]);
   const balance = useAppSelector(selectCurrentBalance);
   const { isAuthenticated, isLoading: authLoading } = useAuth();
 
@@ -201,6 +207,29 @@ export default function MarketDetailPage() {
       cancelled = true;
     };
   }, [market]);
+
+  // Fetch the user's positions filtered to this market so the Sell tab can
+  // show actual available share counts. Refreshes when the market id or
+  // auth state changes; refetched after a successful submit (see handleSubmit
+  // below) so the count reflects the new fill.
+  const loadPositions = useCallback(async () => {
+    if (!isAuthenticated || !market) {
+      setPositions([]);
+      return;
+    }
+    try {
+      const all = await api.getPositions();
+      const onThisMarket = (all || []).filter((p) => p.marketId === market.id);
+      setPositions(onThisMarket);
+    } catch (err: unknown) {
+      logger.warn("MarketDetail", "positions fetch failed", err);
+      setPositions([]);
+    }
+  }, [isAuthenticated, market]);
+
+  useEffect(() => {
+    loadPositions();
+  }, [loadPositions]);
 
   // Live price updates via the gateway's `market:<id>` channel. Gateway
   // publishes the post-AMM market state after every successful order on
@@ -331,11 +360,16 @@ export default function MarketDetailPage() {
             logger.warn("MarketDetail", "post-trade book refresh failed", err);
           }
         }
+        // Refresh positions so the Sell tab's available-shares count
+        // reflects the new fill (or the new reservation, for a resting
+        // limit order). Without this the count is stale until the next
+        // navigation.
+        await loadPositions();
       } catch (err: unknown) {
         logger.error("MarketDetail", "post-trade market refresh failed", err);
       }
     },
-    [market, loadMarket],
+    [market, loadMarket, loadPositions],
   );
 
   const category = useMemo(() => {
@@ -606,6 +640,24 @@ export default function MarketDetailPage() {
               defaultAmount={initialAmount}
               isAuthenticated={isAuthenticated}
               authLoading={authLoading}
+              // Available = quantity minus reserved (already-spoken-for in
+              // open sell orders). Sum across positions on this side; in
+              // practice the gateway returns at most one row per (user,
+              // market, side) but defensively reduce in case that changes.
+              availableYesShares={positions
+                .filter((p) => p.side === "yes")
+                .reduce(
+                  (sum, p) =>
+                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                  0,
+                )}
+              availableNoShares={positions
+                .filter((p) => p.side === "no")
+                .reduce(
+                  (sum, p) =>
+                    sum + Math.max(0, p.quantity - (p.reservedQuantity || 0)),
+                  0,
+                )}
               onPreview={handlePreview}
               onSubmit={handleSubmit}
             />
