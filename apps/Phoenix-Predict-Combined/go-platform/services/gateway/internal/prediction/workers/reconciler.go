@@ -97,9 +97,14 @@ func (w *Reconciler) tick(ctx context.Context) {
 			"market", m.Ticker,
 			"market_id", m.ID,
 			"drift_cents", report.DriftCents,
-			"expected_yes_pool", report.ExpectedYesPool,
-			"expected_no_pool", report.ExpectedNoPool,
+			// Authoritative: drift = ledger_sum - actual_pool.
+			"ledger_sum", report.LedgerSumCents,
 			"actual_pool", report.ActualPoolCents,
+			// Forensic position aggregates (don't drive drift, but help
+			// bisect ledger-vs-positions disagreements when both surface
+			// at once).
+			"position_yes_pool", report.ExpectedYesPool,
+			"position_no_pool", report.ExpectedNoPool,
 			"yes_no_mismatch", report.YesNoMismatch,
 			"adjustment_written", report.AdjustmentWritten,
 		)

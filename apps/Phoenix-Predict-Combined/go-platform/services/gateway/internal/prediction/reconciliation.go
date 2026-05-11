@@ -8,16 +8,24 @@ import (
 )
 
 // CollateralDriftReport summarises a single market's reconciliation pass.
-// drift_cents = expected_collateral - market.collateral_pool_cents.
-// Negative drift means the pool is over-funded (a refund is owed); positive
-// means under-funded (a customer-facing imbalance to investigate).
+// drift_cents = ledger_sum - market.collateral_pool_cents.
+// Negative drift means the pool is over-funded relative to the ledger
+// (the column got incremented without a corresponding ledger row, which
+// is bad); positive means the column missed an increment a ledger row
+// implied was applied (also bad, equally rare).
+//
+// ExpectedYesPool / ExpectedNoPool are position-derived integrity checks
+// kept alongside the ledger-derived expected pool for forensic value:
+// when ledger and positions disagree, both numbers help bisect which
+// table was last touched.
 type CollateralDriftReport struct {
 	MarketID         string
-	ExpectedYesPool  int64 // sum of YES position qty × 100
-	ExpectedNoPool   int64 // sum of NO position qty × 100
+	ExpectedYesPool  int64 // sum of YES position qty × 100 (forensic only)
+	ExpectedNoPool   int64 // sum of NO position qty × 100 (forensic only)
+	LedgerSumCents   int64 // sum of non-adjustment ledger rows; the truth
 	ActualPoolCents  int64 // market.collateral_pool_cents
 	DriftCents       int64 // 0 if invariants hold
-	YesNoMismatch    bool  // YES sum != NO sum (per-share invariant)
+	YesNoMismatch    bool  // YES sum != NO sum (per-share invariant, still useful)
 	AdjustmentWritten bool // true if Phase 2 wrote a ledger row
 }
 
@@ -71,9 +79,11 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 
 	// Confirmed drift. Write an adjustment ledger row for forensics. Do NOT
 	// move funds or change user-visible state — ops investigates separately.
+	// Drift is ledger_sum - actual_pool; the position columns are forensic.
 	reason := fmt.Sprintf(
-		"reconciliation drift: drift=%d cents, yes_pool=%d, no_pool=%d, actual_pool=%d",
-		confirmed.DriftCents, confirmed.ExpectedYesPool, confirmed.ExpectedNoPool, confirmed.ActualPoolCents,
+		"reconciliation drift: drift=%d cents, ledger_sum=%d, actual_pool=%d, position_yes=%d, position_no=%d",
+		confirmed.DriftCents, confirmed.LedgerSumCents, confirmed.ActualPoolCents,
+		confirmed.ExpectedYesPool, confirmed.ExpectedNoPool,
 	)
 	if _, err := tx.ExecContext(ctx,
 		`INSERT INTO prediction_collateral_ledger
@@ -93,6 +103,27 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 
 // readDriftSnapshot computes the expected vs actual collateral pool for a
 // market. Reusable across phase 1 (db handle) and phase 2 (tx).
+//
+// The expected pool is derived from prediction_collateral_ledger — the
+// immutable record of every cent that entered or left the pool. We
+// deliberately EXCLUDE entry_type='adjustment' so the reconciler's own
+// output doesn't poison the next pass. Everything else (issue_collateral,
+// settlement_payout, fee, refund, rebate) is a real movement that
+// collateral_pool_cents must reflect.
+//
+// Position quantities are tracked alongside as forensic data only — they
+// don't drive the drift calculation. A market with AMM-era positions and
+// no order-book ledger entries (the common state for markets that were
+// migrated from amm to order_book mode after launch) was previously
+// flagged as drifted because the old logic multiplied position qty × 100¢
+// and demanded that as the pool. AMM positions never wrote to the
+// collateral ledger, so they have no claim on the pool; the ledger-based
+// check correctly ignores them.
+//
+// YesNoMismatch is retained as a separate signal because for a pure
+// order-book market issuance fills always create equal YES+NO, so an
+// imbalance there is its own bug worth surfacing — independent of pool
+// drift.
 func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, marketID string) (*CollateralDriftReport, error) {
 	var report CollateralDriftReport
 	report.MarketID = marketID
@@ -107,6 +138,22 @@ func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, mark
 		return nil, err
 	}
 
+	// Authoritative expected pool: the immutable ledger. Drift = sum of
+	// real movements minus what the column currently shows. Excludes
+	// adjustment rows so prior reconciliation passes don't contaminate
+	// the answer.
+	if err := q.QueryRowContext(ctx,
+		`SELECT COALESCE(SUM(amount_cents), 0)
+		 FROM prediction_collateral_ledger
+		 WHERE market_id = $1 AND entry_type != 'adjustment'`,
+		marketID,
+	).Scan(&report.LedgerSumCents); err != nil {
+		return nil, err
+	}
+
+	// Position aggregates: forensic only. Useful when ledger disagrees
+	// with positions (means an upstream write got skipped) but not the
+	// driver of the drift number.
 	if err := q.QueryRowContext(ctx,
 		`SELECT COALESCE(SUM(quantity), 0) * 100
 		 FROM prediction_positions
@@ -125,14 +172,7 @@ func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, mark
 	}
 
 	report.YesNoMismatch = report.ExpectedYesPool != report.ExpectedNoPool
-	// For an issuance-only market the expected pool == YES pool == NO pool.
-	// Drift = expected - actual. If Yes/No mismatch we use the larger as
-	// the conservative expected (something has gone wrong either way).
-	expected := report.ExpectedYesPool
-	if report.ExpectedNoPool > expected {
-		expected = report.ExpectedNoPool
-	}
-	report.DriftCents = expected - report.ActualPoolCents
+	report.DriftCents = report.LedgerSumCents - report.ActualPoolCents
 	return &report, nil
 }
 
