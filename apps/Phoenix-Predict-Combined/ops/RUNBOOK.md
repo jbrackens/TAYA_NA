@@ -416,31 +416,27 @@ COMMIT;
 Reservations are released by the existing `ExpireStaleReservations`
 worker within 60 seconds.
 
-### Known constraint — market orders don't issuance-match
+### Resolved — market orders now issuance-match (commit pending)
 
-The CLOB engine only loads complementary-issuance makers when the
-incoming order has an explicit `priceCents` (i.e. it's a limit
-order). Market orders that need to cross via issuance return
-`cancelled — no matching liquidity` even when the SMM has Buy-NO
-quotes sitting on the book that would match a Buy-YES limit at the
-same effective price.
+Earlier versions of the engine skipped the issuance loop for market
+orders because the `taker.PriceCents != nil` guard short-circuited the
+match — every market buy on a market with only SMM Buy-NO quotes
+returned `cancelled — no matching liquidity` even when feasible fills
+were sitting on the book.
 
-**Symptom:** users on the default trade ticket (market buy) get
-"Order cancelled" toasts on every order_book market the SMM is
-servicing.
+Fixed by treating a market buy as having an implied taker limit of
+`MaxTickPriceCents` (99). Feasibility check `99 + maker_limit >= 100`
+is true for any in-band maker, so every Buy-NO maker becomes
+eligible. The notional cap on the request bounds total dollar
+exposure. See `service.go::placeExchangeOrder` and
+`exchange.go::BuildPlan` for the wiring; regression coverage is in
+`exchange_market_issuance_test.go`.
 
-**Workaround:** switch the trade ticket to Limit mode. A limit-buy
-at the bot's complementary price fills correctly.
-
-**Real fix:** teach `placeExchangeOrder` to treat a market buy as
-an issuance-eligible order at the implied par-minus-maker price.
-Or: add a UI hint "you have a better fill price via Limit" when only
-issuance liquidity exists. Tracked in `internal/prediction/exchange.go`
-near `LoadMakersForIssuance` — the condition there filters market
-orders out.
-
-Until that ships, users get correct CLOB execution only via limit
-orders. Communicate this in the UI or in user education.
+Side note for on-call: an IOC market order with partial fill returns
+`status='cancelled'` with `filled_quantity > 0`. That's correct
+behavior — IOC fills what it can and cancels the unfilled remainder.
+The trade ticket UI handles this by toasting "Partially filled: N of M"
+rather than "Order cancelled" when filled > 0.
 
 ---
 

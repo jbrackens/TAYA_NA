@@ -423,12 +423,29 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		return nil, nil, fmt.Errorf("load secondary makers: %w", err)
 	}
 	var makersIss []Order
-	if req.Action == OrderActionBuy && req.PriceCents != nil {
+	if req.Action == OrderActionBuy {
 		otherSide := OrderSideNo
 		if req.Side == OrderSideNo {
 			otherSide = OrderSideYes
 		}
-		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, *req.PriceCents, MaxOrderBookDepth)
+		// For market buys the taker has no explicit price; treat it as
+		// willing to pay up to the highest in-band price (MaxTickPriceCents)
+		// for issuance feasibility. That makes every Buy-NO maker eligible
+		// because `taker_limit + maker_limit >= par` reduces to
+		// `99 + maker_limit >= 100`, which is true for any maker_limit >= 1.
+		// The notional cap on the request bounds the dollar exposure
+		// upstream of the match loop.
+		//
+		// Before this change, market buys returned "cancelled — no matching
+		// liquidity" on every order_book market even when SMM-provided Buy-NO
+		// quotes were sitting on the book — flagged in SMM Phase 1's runbook
+		// known-constraint section. With this fix, the default trade ticket
+		// (market buy) fills against issuance makers correctly.
+		takerLimit := MaxTickPriceCents
+		if req.PriceCents != nil {
+			takerLimit = *req.PriceCents
+		}
+		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
 		if err != nil {
 			return nil, nil, fmt.Errorf("load issuance makers: %w", err)
 		}

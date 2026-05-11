@@ -208,21 +208,40 @@ export function TradeTicket({
           "Order submitted",
           `${qty} ${sideLabel} on ${market.ticker}`,
         );
-      } else if (status === "filled" && filled > 0) {
-        const verb = action === "sell" ? "Sold" : "Bought";
-        toast.success(
-          `${verb} ${filled} ${sideLabel} share${filled === 1 ? "" : "s"}`,
-          `$${amount.toFixed(2)} on ${market.ticker}`,
-        );
-      } else if (status === "partial" && filled > 0) {
-        const verb = action === "sell" ? "Partially sold" : "Partially filled";
-        toast.success(
-          `${verb}: ${filled} of ${qty} ${sideLabel}`,
-          `Remainder ${qty - filled} ${mode === "limit" ? "resting on the book" : "cancelled (no more liquidity)"}`,
-        );
+      } else if (filled > 0) {
+        // ANYTHING with a non-zero fill counts as a success toast,
+        // regardless of the terminal status. IOC market orders that
+        // exhaust their feasible liquidity end with status='cancelled'
+        // and filled=N>0 (the unfilled remainder is what got
+        // cancelled, not the fill). Showing "Order cancelled" for a
+        // 21-share fill would lie to the user — they did buy 21
+        // shares. Order of clauses matters: check filled first.
+        if (filled === qty) {
+          // Full fill — clean success toast.
+          const verb = action === "sell" ? "Sold" : "Bought";
+          toast.success(
+            `${verb} ${filled} ${sideLabel} share${filled === 1 ? "" : "s"}`,
+            `$${amount.toFixed(2)} on ${market.ticker}`,
+          );
+        } else {
+          // Partial — explain what happened to the remainder. IOC
+          // market orders cancel the rest; resting limit orders book it.
+          const verb =
+            action === "sell" ? "Partially sold" : "Partially filled";
+          const remainderFate =
+            status === "open"
+              ? "resting on the book"
+              : status === "partial" && mode === "limit"
+                ? "resting on the book"
+                : "cancelled (no more liquidity)";
+          toast.success(
+            `${verb}: ${filled} of ${qty} ${sideLabel}`,
+            `Remainder ${qty - filled} ${remainderFate}`,
+          );
+        }
       } else if (status === "open") {
         // Limit order rested without crossing — most common outcome on a
-        // thin book.
+        // thin book. (filled=0, status=open.)
         const priceLabel =
           mode === "limit" ? `${limitPriceCents}¢` : `${price}¢`;
         toast.info(
@@ -230,8 +249,8 @@ export function TradeTicket({
           `${qty} ${sideLabel} @ ${priceLabel} — waiting for a match`,
         );
       } else if (status === "cancelled" || status === "rejected") {
-        // Engine wrote a rejection. failureReason is one of the typed
-        // sentinels; fall back to a generic message if missing.
+        // Zero-fill cancellation/rejection. failureReason is one of the
+        // typed sentinels; fall back to a generic message if missing.
         const why = failureReason
           ? failureReason.replace(/_/g, " ")
           : "no matching liquidity";

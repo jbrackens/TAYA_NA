@@ -218,11 +218,25 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 			fillSecondary(plan, &taker, maker, fillQty, fillPrice, input.Now, input.IDFactory)
 		}
 
-		// Complementary issuance: only attempt if taker is a limit order with
-		// a price (market orders without a price cannot bound the issuance
-		// counterparty's takerLimit; market complementary fills are out of v1
-		// scope and would always go through secondary).
-		if !takerDone(&taker) && taker.PriceCents != nil {
+		// Complementary issuance against opposite-side Buy makers.
+		//
+		// For limit orders the taker's PriceCents bounds feasibility:
+		// `taker_limit + maker_limit >= par`. For market orders the taker
+		// has no explicit limit, so we use par-1 (MaxTickPriceCents) as the
+		// implied taker price. That makes every in-band maker
+		// (price >= 1) feasible — the notional cap on the request limits
+		// total dollar exposure upstream.
+		//
+		// SMM Phase 1 surfaced that without this market-order issuance
+		// path, the default trade ticket got "cancelled — no matching
+		// liquidity" on every order_book market with only SMM-provided
+		// Buy-NO quotes. Users had to switch to Limit mode to get fills.
+		// Fixed here so market buys cross issuance correctly.
+		if !takerDone(&taker) {
+			takerPriceForIssuance := MaxTickPriceCents
+			if taker.PriceCents != nil {
+				takerPriceForIssuance = *taker.PriceCents
+			}
 			for i := range input.MakersIssuance {
 				if takerDone(&taker) {
 					break
@@ -231,7 +245,7 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 				if maker.PriceCents == nil {
 					continue
 				}
-				if !IssuanceFillFeasible(*taker.PriceCents, *maker.PriceCents) {
+				if !IssuanceFillFeasible(takerPriceForIssuance, *maker.PriceCents) {
 					break // book ordered by maker price; no further matches
 				}
 				if blocked, blockErr := applySelfMatch(&taker, maker); blockErr != nil {
