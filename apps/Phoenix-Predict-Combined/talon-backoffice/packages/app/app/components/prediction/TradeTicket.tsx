@@ -325,6 +325,19 @@ export function TradeTicket({
           color: #061a10;
           background: var(--accent);
         }
+        /* AMM markets disable the Limit toggle (no limit-order support).
+         * Without these styles the button looked fully clickable, which
+         * QA reported as "clicking Limit on AMM appears to do nothing."
+         * Now the disabled state is visually unambiguous. */
+        .tt-mode button:disabled {
+          color: var(--t3);
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+        .tt-mode button:disabled:hover {
+          color: var(--t3);
+          background: transparent;
+        }
 
         .tt-sides {
           display: grid;

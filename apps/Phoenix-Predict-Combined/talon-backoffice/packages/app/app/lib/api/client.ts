@@ -71,6 +71,70 @@ class ApiClient {
     return headers;
   }
 
+  // refreshLock dedupes concurrent refresh attempts. Without it, a page that
+  // fires 5 parallel API calls and gets back 5 × 401s would attempt 5
+  // refreshes, race the refresh-token's idempotency, and likely cascade-fail.
+  // A single in-flight promise serves all concurrent retries.
+  private refreshLock: Promise<boolean> | null = null;
+
+  // tryRefresh attempts one refresh roundtrip. Returns true on success, false
+  // on failure (refresh token also expired). Failure is the trigger for the
+  // calling page to redirect to /auth/login — AuthProvider listens for the
+  // ApiError(401) that follows.
+  private async tryRefresh(): Promise<boolean> {
+    if (typeof window === "undefined") return false;
+    if (this.refreshLock) return this.refreshLock;
+    this.refreshLock = (async () => {
+      try {
+        const csrf = readCookie("csrf_token");
+        const res = await fetch(`${this.baseUrl || ""}/api/v1/auth/refresh/`, {
+          method: "POST",
+          credentials: "include",
+          headers: csrf
+            ? { "Content-Type": "application/json", "X-CSRF-Token": csrf }
+            : { "Content-Type": "application/json" },
+        });
+        return res.ok;
+      } catch {
+        return false;
+      } finally {
+        // Always clear the lock so the next 401 can attempt a fresh refresh.
+        // Setting to null in a microtask so callers awaiting this promise
+        // resolve with the result before lock state changes.
+        setTimeout(() => {
+          this.refreshLock = null;
+        }, 0);
+      }
+    })();
+    return this.refreshLock;
+  }
+
+  // fetchWithRetry wraps a fetch call so that a 401 triggers exactly one
+  // refresh-then-retry attempt before propagating the error. This closes the
+  // silent-failure gap where a stale access token would leave the
+  // portfolio/wallet pages showing empty data instead of refreshing the
+  // session. QA report 2026-05-11.
+  private async fetchWithRetry(
+    input: RequestInfo,
+    init: RequestInit & { _retried?: boolean },
+  ): Promise<Response> {
+    const res = await fetch(input, init);
+    if (res.status !== 401 || init._retried) return res;
+    const refreshed = await this.tryRefresh();
+    if (!refreshed) return res;
+    // Rebuild headers — the Authorization header may have changed if the
+    // refresh issued a new access token to localStorage. CSRF cookie may
+    // also have rotated.
+    const retryInit: RequestInit & { _retried: boolean } = {
+      ...init,
+      _retried: true,
+      headers: this.getHeaders(
+        init.method !== "GET" && init.method !== undefined,
+      ),
+    };
+    return fetch(input, retryInit);
+  }
+
   async get<T>(path: string, params?: Record<string, string>): Promise<T> {
     const normalizedPath = this.normalizePath(path);
     const origin =
@@ -81,7 +145,8 @@ class ApiClient {
     const url = new URL(`${origin}${normalizedPath}`);
     if (params)
       Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-    const res = await fetch(url.toString(), {
+    const res = await this.fetchWithRetry(url.toString(), {
+      method: "GET",
       headers: this.getHeaders(),
       credentials: "include",
     });
@@ -96,7 +161,7 @@ class ApiClient {
     const url = this.baseUrl
       ? `${this.baseUrl}${normalizedPath}`
       : normalizedPath;
-    const res = await fetch(url, {
+    const res = await this.fetchWithRetry(url, {
       method: "POST",
       headers: this.getHeaders(true),
       credentials: "include",
@@ -113,7 +178,7 @@ class ApiClient {
     const url = this.baseUrl
       ? `${this.baseUrl}${normalizedPath}`
       : normalizedPath;
-    const res = await fetch(url, {
+    const res = await this.fetchWithRetry(url, {
       method: "PUT",
       headers: this.getHeaders(true),
       credentials: "include",
@@ -130,7 +195,7 @@ class ApiClient {
     const url = this.baseUrl
       ? `${this.baseUrl}${normalizedPath}`
       : normalizedPath;
-    const res = await fetch(url, {
+    const res = await this.fetchWithRetry(url, {
       method: "DELETE",
       headers: this.getHeaders(true),
       credentials: "include",
