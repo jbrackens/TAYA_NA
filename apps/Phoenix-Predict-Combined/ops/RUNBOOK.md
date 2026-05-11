@@ -352,6 +352,98 @@ and this scenario reduces to a UI click. Tracked TODO in
 
 ---
 
+## 6. SMM (synthetic market maker) misbehaving
+
+**Symptom:** users report "I can't trade on market X" or the bot's own
+orders are filling against each other in weird ways. Grafana panel
+"Top 10 markets by order rate" shows user-bot dominating.
+
+The SMM is a platform-operated bot (worker goroutine in the gateway)
+that posts two-sided limit orders on every open order_book market.
+Provides liquidity before external MMs sign. Identity: `user-bot`.
+Code: `internal/prediction/workers/smm.go`.
+
+### Diagnose
+
+```bash
+# Is the SMM enabled at all?
+docker exec predict_gateway env | grep ^SMM_
+
+# Recent SMM log lines
+gwlog | grep -i "smm:" | tail -30
+```
+
+```sql
+-- Bot's open orders right now
+SELECT m.ticker, o.side, o.price_cents, o.quantity, o.created_at
+FROM prediction_orders o
+JOIN prediction_markets m ON m.id = o.market_id
+WHERE o.user_id = 'user-bot' AND o.status = 'open'
+ORDER BY o.created_at DESC LIMIT 50;
+
+-- Bot's cash + commitment
+SELECT
+  (SELECT balance_cents FROM wallet_balances WHERE user_id = 'user-bot') AS balance,
+  (SELECT COALESCE(SUM(amount_cents - captured_amount_cents), 0)
+   FROM wallet_reservations WHERE user_id = 'user-bot' AND status = 'held') AS reserved,
+  (SELECT COUNT(*) FROM prediction_orders WHERE user_id = 'user-bot' AND status = 'open') AS open_orders;
+```
+
+### Halt switch
+
+Fastest stop: restart gateway with `SMM_ENABLED=false`. The bot's
+shutdown handler cancels all its open orders before exit, so the
+restart unwinds the book cleanly.
+
+```bash
+docker compose stop gateway
+SMM_ENABLED=false docker compose up -d gateway
+```
+
+If you can't restart, cancel the bot's orders directly:
+
+```sql
+-- Inside a single transaction so it's reviewable
+BEGIN;
+UPDATE prediction_orders
+SET status = 'cancelled',
+    failure_reason = 'admin: halt SMM via ' || NOW()::text,
+    updated_at = NOW()
+WHERE user_id = 'user-bot' AND status = 'open';
+COMMIT;
+```
+
+Reservations are released by the existing `ExpireStaleReservations`
+worker within 60 seconds.
+
+### Known constraint — market orders don't issuance-match
+
+The CLOB engine only loads complementary-issuance makers when the
+incoming order has an explicit `priceCents` (i.e. it's a limit
+order). Market orders that need to cross via issuance return
+`cancelled — no matching liquidity` even when the SMM has Buy-NO
+quotes sitting on the book that would match a Buy-YES limit at the
+same effective price.
+
+**Symptom:** users on the default trade ticket (market buy) get
+"Order cancelled" toasts on every order_book market the SMM is
+servicing.
+
+**Workaround:** switch the trade ticket to Limit mode. A limit-buy
+at the bot's complementary price fills correctly.
+
+**Real fix:** teach `placeExchangeOrder` to treat a market buy as
+an issuance-eligible order at the implied par-minus-maker price.
+Or: add a UI hint "you have a better fill price via Limit" when only
+issuance liquidity exists. Tracked in `internal/prediction/exchange.go`
+near `LoadMakersForIssuance` — the condition there filters market
+orders out.
+
+Until that ships, users get correct CLOB execution only via limit
+orders. Communicate this in the UI or in user education.
+
+---
+
 ## Evidence checklist before closing any ticket
 
 Every scenario above ends here. Don't resolve a ticket without:

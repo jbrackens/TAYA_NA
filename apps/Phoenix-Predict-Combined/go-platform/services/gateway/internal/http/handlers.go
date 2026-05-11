@@ -194,7 +194,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		reconciler.SetMetrics(predictionMetrics)
 		go reconciler.Run(context.Background())
 
-		slog.Info("prediction: background workers started (closer, settler, reconciler)")
+		// Synthetic Market Maker (SMM) — provides resting two-sided
+		// liquidity on order_book markets so users can actually trade
+		// against a CLOB before external MMs sign. Disabled by default
+		// (SMM_ENABLED=false). Operates as the seeded user-bot account.
+		// See workers/smm.go for design + risk controls. Cancels any
+		// leftover open orders from a prior run on startup, then
+		// re-quotes on every tick. SetMetrics not yet implemented;
+		// orders the bot places flow through the same RecordOrder path
+		// as every other order so the existing dashboards capture them.
+		smm := workers.NewSMMFromEnv(predictionService, predRepo)
+		go smm.Run(context.Background())
+
+		slog.Info("prediction: background workers started (closer, settler, reconciler, smm)")
 
 		// Leaderboards recomputer: 5-minute tick per PLAN §8. First tick runs
 		// immediately so the boards populate at startup.
