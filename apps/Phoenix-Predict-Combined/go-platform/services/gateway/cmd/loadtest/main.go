@@ -35,6 +35,7 @@ import (
 	"net/url"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -44,7 +45,8 @@ type Config struct {
 	Gateway     string
 	Username    string
 	Password    string
-	Ticker      string
+	Ticker      string // single-market mode (back-compat with v1)
+	Tickers     string // comma-separated list for multi-market mode
 	Orders      int
 	Concurrency int
 	Side        string
@@ -58,16 +60,20 @@ func parseFlags() Config {
 	flag.StringVar(&c.Gateway, "gateway", "http://localhost:18080", "gateway base URL")
 	flag.StringVar(&c.Username, "username", "demo@phoenix.local", "login username")
 	flag.StringVar(&c.Password, "password", "demo123", "login password")
-	flag.StringVar(&c.Ticker, "ticker", "", "market ticker (required)")
-	flag.IntVar(&c.Orders, "orders", 200, "total number of orders to place")
-	flag.IntVar(&c.Concurrency, "concurrency", 10, "concurrent workers")
+	flag.StringVar(&c.Ticker, "ticker", "", "single market ticker (mutually exclusive with -tickers)")
+	flag.StringVar(&c.Tickers, "tickers", "", "comma-separated tickers for multi-market sweep (validates linear lock scaling)")
+	flag.IntVar(&c.Orders, "orders", 200, "total number of orders to place (split across tickers)")
+	flag.IntVar(&c.Concurrency, "concurrency", 10, "concurrent workers (round-robin across tickers)")
 	flag.StringVar(&c.Side, "side", "yes", "yes or no")
 	flag.IntVar(&c.PriceCents, "price", 1, "limit price in cents (1-99)")
 	flag.IntVar(&c.Quantity, "qty", 1, "quantity per order")
 	flag.DurationVar(&c.Timeout, "timeout", 10*time.Second, "per-request timeout")
 	flag.Parse()
-	if c.Ticker == "" {
-		log.Fatal("-ticker is required")
+	if c.Ticker == "" && c.Tickers == "" {
+		log.Fatal("either -ticker or -tickers is required")
+	}
+	if c.Ticker != "" && c.Tickers != "" {
+		log.Fatal("-ticker and -tickers are mutually exclusive")
 	}
 	return c
 }
@@ -198,12 +204,53 @@ func placeOrder(client *http.Client, cfg Config, token, csrf, marketID string, n
 	return dur, nil
 }
 
+// resolveTickerList returns the list of tickers to test against. Single-
+// market mode (-ticker FOO) returns [FOO]; multi-market mode (-tickers
+// A,B,C) returns the comma-split list trimmed of whitespace.
+func resolveTickerList(cfg Config) []string {
+	if cfg.Ticker != "" {
+		return []string{cfg.Ticker}
+	}
+	raw := strings.Split(cfg.Tickers, ",")
+	out := make([]string, 0, len(raw))
+	for _, t := range raw {
+		t = strings.TrimSpace(t)
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
+}
+
+// resolveMarketIDByTicker is the per-ticker variant of resolveMarketID
+// used by multi-market mode. Same code path as the gateway's market
+// detail endpoint.
+func resolveMarketIDByTicker(client *http.Client, gateway, token, ticker string) (string, error) {
+	req, _ := http.NewRequest("GET", gateway+"/api/v1/markets/"+ticker+"/", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		buf, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("get market %s: status %d: %s", ticker, resp.StatusCode, string(buf))
+	}
+	var m marketResponse
+	if err := json.NewDecoder(resp.Body).Decode(&m); err != nil {
+		return "", err
+	}
+	return m.ID, nil
+}
+
 func main() {
 	cfg := parseFlags()
 	client := httpClient(cfg.Timeout)
 
-	fmt.Printf("loadtest: %d orders, concurrency=%d, ticker=%s, side=%s, price=%d¢, qty=%d\n",
-		cfg.Orders, cfg.Concurrency, cfg.Ticker, cfg.Side, cfg.PriceCents, cfg.Quantity)
+	tickers := resolveTickerList(cfg)
+	fmt.Printf("loadtest: %d orders, concurrency=%d, tickers=%v, side=%s, price=%d¢, qty=%d\n",
+		cfg.Orders, cfg.Concurrency, tickers, cfg.Side, cfg.PriceCents, cfg.Quantity)
 
 	token, err := login(client, cfg)
 	if err != nil {
@@ -215,17 +262,33 @@ func main() {
 	}
 	fmt.Printf("logged in (csrf=%s...)\n", csrf[:8])
 
-	marketID, err := resolveMarketID(client, cfg, token)
-	if err != nil {
-		log.Fatalf("resolve market: %v", err)
+	// Resolve each ticker to its UUID up front so the hot loop doesn't
+	// pay for a lookup per request.
+	marketIDs := make([]string, 0, len(tickers))
+	for _, t := range tickers {
+		id, err := resolveMarketIDByTicker(client, cfg.Gateway, token, t)
+		if err != nil {
+			log.Fatalf("resolve market %s: %v", t, err)
+		}
+		marketIDs = append(marketIDs, id)
+		fmt.Printf("  %s -> %s\n", t, id)
 	}
-	fmt.Printf("market id: %s\n\n", marketID)
+	fmt.Println()
+
+	// Per-market counters so we can verify load actually spread evenly
+	// across tickers (no single market starved by the round-robin).
+	perMarketOK := make([]int64, len(marketIDs))
+	perMarketFail := make([]int64, len(marketIDs))
 
 	latencies := make([]time.Duration, 0, cfg.Orders)
 	var mu sync.Mutex
 	var ok, fail int64
 
-	jobs := make(chan int, cfg.Orders)
+	type job struct {
+		seq       int
+		marketIdx int
+	}
+	jobs := make(chan job, cfg.Orders)
 	var wg sync.WaitGroup
 	start := time.Now()
 
@@ -233,22 +296,27 @@ func main() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for n := range jobs {
-				dur, err := placeOrder(client, cfg, token, csrf, marketID, n)
+			for j := range jobs {
+				dur, err := placeOrder(client, cfg, token, csrf, marketIDs[j.marketIdx], j.seq)
 				mu.Lock()
 				latencies = append(latencies, dur)
 				mu.Unlock()
 				if err != nil {
 					atomic.AddInt64(&fail, 1)
+					atomic.AddInt64(&perMarketFail[j.marketIdx], 1)
 				} else {
 					atomic.AddInt64(&ok, 1)
+					atomic.AddInt64(&perMarketOK[j.marketIdx], 1)
 				}
 			}
 		}()
 	}
 
+	// Round-robin tickers so load spreads evenly. The advisory lock is
+	// keyed on market_id, so distinct markets shouldn't serialise on
+	// each other — this is the whole point of multi-market mode.
 	for i := 0; i < cfg.Orders; i++ {
-		jobs <- i
+		jobs <- job{seq: i, marketIdx: i % len(marketIDs)}
 	}
 	close(jobs)
 	wg.Wait()
@@ -291,6 +359,16 @@ func main() {
 		pct(0.99).Round(time.Microsecond),
 		pct(1.00).Round(time.Microsecond),
 	)
+
+	// Per-market split: surfaces uneven distribution if the round-robin
+	// got knocked sideways by a hot worker, plus tells you which market
+	// took the heat in multi-market mode.
+	if len(marketIDs) > 1 {
+		fmt.Println("\nper-market split:")
+		for i, t := range tickers {
+			fmt.Printf("  %-20s ok=%d fail=%d\n", t, perMarketOK[i], perMarketFail[i])
+		}
+	}
 
 	if fail > 0 {
 		os.Exit(1)
