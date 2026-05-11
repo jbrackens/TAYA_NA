@@ -330,8 +330,10 @@ export default function MarketDetailPage() {
       if (!market) return;
       // AMM-mode default: market buy. Exchange-mode markets pass opts that
       // carry order type, action (buy/sell), limit price, TIF, and notional
-      // cap. Forward straight through to the gateway.
-      await api.placeOrder({
+      // cap. Forward straight through to the gateway. Return the response
+      // so TradeTicket can show a truthful toast (filled vs. rested vs.
+      // cancelled) instead of guessing from the requested quantity.
+      const response = await api.placeOrder({
         marketId: market.id,
         side,
         action: opts?.action ?? "buy",
@@ -368,6 +370,7 @@ export default function MarketDetailPage() {
       } catch (err: unknown) {
         logger.error("MarketDetail", "post-trade market refresh failed", err);
       }
+      return response;
     },
     [market, loadMarket, loadPositions],
   );

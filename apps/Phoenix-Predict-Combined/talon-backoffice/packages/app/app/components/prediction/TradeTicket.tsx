@@ -28,6 +28,7 @@ import type {
   OrderSide,
   OrderAction,
   OrderPreview,
+  PlaceOrderResponse,
   TimeInForce,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { useToast } from "../ToastProvider";
@@ -65,11 +66,23 @@ interface TradeTicketProps {
     side: OrderSide,
     quantity: number,
   ) => Promise<OrderPreview | null>;
+  /**
+   * Submit handler returns the gateway's PlaceOrderResponse so the ticket
+   * can show a truthful toast — what was filled vs. what rested vs. what
+   * got rejected. Returning void (the prior contract) meant the toast had
+   * to guess from the request, which produced "Bought 7 YES shares" when
+   * the actual outcome was status=cancelled, filled_quantity=0 (no
+   * matching liquidity for the IOC market order).
+   *
+   * Returning `void` is still accepted for back-compat with tests/mocks
+   * that don't care about the response; the ticket falls back to a
+   * neutral "Order accepted" toast in that case.
+   */
   onSubmit?: (
     side: OrderSide,
     quantity: number,
     opts?: TradeTicketSubmitOptions,
-  ) => Promise<void>;
+  ) => Promise<PlaceOrderResponse | void>;
 }
 
 const QUICK_AMOUNTS = [5, 25, 100] as const;
@@ -144,6 +157,7 @@ export function TradeTicket({
     setError(null);
     try {
       const qty = Math.floor(quantity);
+      let response: PlaceOrderResponse | void;
       if (isExchange) {
         const opts: TradeTicketSubmitOptions = {
           orderType: mode,
@@ -160,28 +174,70 @@ export function TradeTicket({
             opts.notionalCapCents = Math.ceil(amount * 100);
           }
         }
-        await onSubmit(side, qty, opts);
+        response = await onSubmit(side, qty, opts);
       } else {
         // AMM mode: buy-only, market-only — preserve existing call shape.
-        await onSubmit(side, qty);
+        response = await onSubmit(side, qty);
       }
-      // Confirm to the user that the order went through. Without this, a
-      // successful submit looked indistinguishable from a no-op: the only
-      // visual change was the amount silently snapping back to $25, which
-      // QA reported as "I clicked $5, then it moved to $25 and froze."
-      // Keep the user's chosen amount so a follow-up click on Place trade
-      // reissues the same size — most users want to repeat the bet, not
-      // restart from $25.
-      const verb =
-        action === "sell"
-          ? "Sold"
-          : mode === "limit"
-            ? "Limit placed"
-            : "Bought";
-      toast.success(
-        `${verb} ${qty} ${side.toUpperCase()} share${qty === 1 ? "" : "s"}`,
-        `$${amount.toFixed(2)} on ${market.ticker}`,
-      );
+      // Truthful post-trade toast. The old version unconditionally said
+      // "Bought N YES shares" based on the requested quantity, which lied
+      // when the order didn't actually fill — e.g. an IOC market buy
+      // against an empty book lands as status=cancelled, filled=0, yet
+      // we used to claim "Bought 7 YES shares." Inspect the response and
+      // branch on the terminal order status the gateway returns.
+      //
+      // Keep the user's chosen amount in either branch so a follow-up
+      // click reissues the same size — most users want to repeat the
+      // bet, not restart from $25.
+      const sideLabel = side.toUpperCase();
+      const status = response?.order?.status;
+      const filled = response?.order?.filledQuantity ?? 0;
+      const failureReason = response?.order?.failureReason;
+      if (!response) {
+        // Legacy onSubmit returning void (tests/mocks). Don't claim a
+        // fill we can't confirm; just acknowledge.
+        toast.info(
+          "Order submitted",
+          `${qty} ${sideLabel} on ${market.ticker}`,
+        );
+      } else if (status === "filled" && filled > 0) {
+        const verb = action === "sell" ? "Sold" : "Bought";
+        toast.success(
+          `${verb} ${filled} ${sideLabel} share${filled === 1 ? "" : "s"}`,
+          `$${amount.toFixed(2)} on ${market.ticker}`,
+        );
+      } else if (status === "partial" && filled > 0) {
+        const verb = action === "sell" ? "Partially sold" : "Partially filled";
+        toast.success(
+          `${verb}: ${filled} of ${qty} ${sideLabel}`,
+          `Remainder ${qty - filled} ${mode === "limit" ? "resting on the book" : "cancelled (no more liquidity)"}`,
+        );
+      } else if (status === "open") {
+        // Limit order rested without crossing — most common outcome on a
+        // thin book.
+        const priceLabel =
+          mode === "limit" ? `${limitPriceCents}¢` : `${price}¢`;
+        toast.info(
+          `Order resting on the book`,
+          `${qty} ${sideLabel} @ ${priceLabel} — waiting for a match`,
+        );
+      } else if (status === "cancelled" || status === "rejected") {
+        // Engine wrote a rejection. failureReason is one of the typed
+        // sentinels; fall back to a generic message if missing.
+        const why = failureReason
+          ? failureReason.replace(/_/g, " ")
+          : "no matching liquidity";
+        toast.error(
+          `Order ${status}`,
+          `${qty} ${sideLabel} on ${market.ticker} — ${why}`,
+        );
+      } else {
+        // pending/expired/unknown: don't pretend it worked.
+        toast.info(
+          `Order ${status || "submitted"}`,
+          `${qty} ${sideLabel} on ${market.ticker}`,
+        );
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Order failed");
     } finally {
