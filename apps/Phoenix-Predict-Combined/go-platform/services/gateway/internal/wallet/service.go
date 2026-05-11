@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -188,6 +189,21 @@ func NewServiceWithDB(driver string, dsn string) (*Service, error) {
 		return nil, err
 	}
 
+	// Pool limits. Go's default is unlimited open connections, which under
+	// a burst can exhaust Postgres's max_connections (typically 100) before
+	// any in-process backpressure kicks in. The values below leave room
+	// for migrations, admin tooling, and the auth service while still
+	// giving the gateway enough connections to use the DB pool effectively
+	// at the measured ~420 ops/sec throughput ceiling (see
+	// EXCHANGE_MATURITY_BASELINE.md — the ceiling is round-trip-bound,
+	// not connection-bound, so 50 is plenty).
+	//
+	// All four are env-tunable so prod can adjust without a code change.
+	db.SetMaxOpenConns(envInt("WALLET_DB_MAX_OPEN_CONNS", 50))
+	db.SetMaxIdleConns(envInt("WALLET_DB_MAX_IDLE_CONNS", 10))
+	db.SetConnMaxLifetime(envDuration("WALLET_DB_CONN_MAX_LIFETIME", 10*time.Minute))
+	db.SetConnMaxIdleTime(envDuration("WALLET_DB_CONN_MAX_IDLE_TIME", 5*time.Minute))
+
 	ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
@@ -201,6 +217,37 @@ func NewServiceWithDB(driver string, dsn string) (*Service, error) {
 		return nil, err
 	}
 	return svc, nil
+}
+
+// envInt reads an int from an environment variable, falling back to the
+// provided default when unset, empty, or unparseable.
+func envInt(key string, fallback int) int {
+	v := strings.TrimSpace(os.Getenv(key))
+	if v == "" {
+		return fallback
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		slog.Warn("invalid int env var, using default", "key", key, "value", v, "default", fallback)
+		return fallback
+	}
+	return n
+}
+
+// envDuration reads a time.Duration from an environment variable (e.g.
+// "10m", "30s"), falling back to the provided default when unset or
+// unparseable.
+func envDuration(key string, fallback time.Duration) time.Duration {
+	v := strings.TrimSpace(os.Getenv(key))
+	if v == "" {
+		return fallback
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		slog.Warn("invalid duration env var, using default", "key", key, "value", v, "default", fallback)
+		return fallback
+	}
+	return d
 }
 
 func NewServiceWithPath(statePath string) *Service {

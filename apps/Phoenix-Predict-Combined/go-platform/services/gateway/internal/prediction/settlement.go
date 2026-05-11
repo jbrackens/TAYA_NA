@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -88,6 +89,17 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 		AttestationData:   defaultJSONObject(req.AttestationData),
 		SettledBy:         settledBy,
 		SettledAt:         time.Now().UTC(),
+		// Override reason flows from the back-office settlement modal
+		// through ResolveMarketRequest. Empty string is treated the same
+		// as nil — the back-office sends "" when the field is untouched
+		// rather than omitting it. The CHECK constraint on the
+		// prediction_settlements table requires either a non-empty
+		// override_reason and the override flag set together, or both
+		// absent; normalising to nil keeps that invariant honest.
+	}
+	if req.OverrideReason != nil && strings.TrimSpace(*req.OverrideReason) != "" {
+		trimmed := strings.TrimSpace(*req.OverrideReason)
+		settlement.OverrideReason = &trimmed
 	}
 
 	// Get all positions for this market
@@ -184,11 +196,7 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 					}
 				}
 			}
-			// TODO: thread override flag through ResolveMarketRequest once the
-// HTTP layer pipes overrideReason from the back-office settlement
-// modal into the request body. Until then, every settlement records
-// override=false even when the admin filled in the override field.
-s.metrics.RecordSettlement(marketID, string(result), false)
+			s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
 			s.fireMarketLifecycle(market, lifecycle)
 			return settlement, payouts, nil
 		}

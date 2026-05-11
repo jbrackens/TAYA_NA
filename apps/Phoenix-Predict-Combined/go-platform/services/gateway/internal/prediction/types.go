@@ -498,6 +498,12 @@ type ResolveMarketRequest struct {
 	AttestationID     *string         `json:"attestationId,omitempty"`
 	AttestationData   json.RawMessage `json:"attestationData,omitempty"`
 	Reason            *string         `json:"reason,omitempty"`
+	// OverrideReason is required when the gateway detects a collateral
+	// imbalance (reconciliation drift on this market). Empty/nil means
+	// the admin isn't asserting an override; the gateway will reject the
+	// settle if the invariant doesn't hold. A non-empty value lands on
+	// the persisted Settlement row and drives the metrics override flag.
+	OverrideReason *string `json:"overrideReason,omitempty"`
 }
 
 // PageMeta provides pagination metadata in list responses.
