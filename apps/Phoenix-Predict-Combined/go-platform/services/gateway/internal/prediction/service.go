@@ -16,6 +16,19 @@ type Service struct {
 	amm               *AMMEngine
 	settlement        *SettlementEngine
 	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit
+	// Optional Prometheus-format counter registry. nil is safe — Record*
+	// methods no-op when the receiver is nil. Wired in main.go alongside
+	// the platform-level httpx.MetricsRegistry.
+	metrics *Metrics
+}
+
+// SetMetrics enables domain-level Prometheus counter emission. Wire after
+// construction so tests that don't care about observability can pass nil.
+func (s *Service) SetMetrics(m *Metrics) {
+	s.metrics = m
+	if s.settlement != nil {
+		s.settlement.metrics = m
+	}
 }
 
 // MarketLifecycleHandler is a post-commit callback invoked after a successful
@@ -438,6 +451,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		taker.Status = OrderStatusRejected
 		taker.FailureReason = &reason
 		_ = s.repo.UpdateOrder(ctx, taker)
+		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
 		return taker, nil, nil
 	}
 
@@ -456,6 +470,14 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 
 	if err := exchangeRepo.PersistMatchAtomic(ctx, exchangeWallet, plan); err != nil {
 		return nil, nil, fmt.Errorf("persist match: %w", err)
+	}
+
+	// Domain metrics: one order observation by final status, one trade
+	// observation per fill. Cheap (a few map ops under a mutex). Failure
+	// to record is silent — see Metrics docstring.
+	s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, plan.Taker.Status)
+	for _, t := range plan.Trades {
+		s.metrics.RecordTrade(market.ID, t.TradeKind, t.EngineKind)
 	}
 
 	// Post-commit: refresh top-of-book snapshot on the market row so
@@ -522,6 +544,7 @@ func (s *Service) persistRejectedExchangeOrder(ctx context.Context, req PlaceOrd
 	if err := s.repo.CreateOrder(ctx, o); err != nil {
 		return nil, nil, fmt.Errorf("persist rejected order: %w", err)
 	}
+	s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
 	return o, nil, nil
 }
 

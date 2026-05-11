@@ -15,6 +15,10 @@ type SettlementEngine struct {
 	loyalty           LoyaltyAdapter         // optional; nil means no loyalty accrual on settlement
 	onTierPromoted    TierPromotedHandler    // optional; fired post-commit per plan §8
 	onMarketLifecycle MarketLifecycleHandler // optional; fired post-commit on settle/void
+	// Optional Prometheus-format counter registry. Wired through from the
+	// parent Service via SetMetrics so a settle records a counter. nil is
+	// safe — the Record* helpers no-op.
+	metrics *Metrics
 }
 
 // TierPromotedHandler is a post-commit callback invoked once per user whose
@@ -180,6 +184,11 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 					}
 				}
 			}
+			// TODO: thread override flag through ResolveMarketRequest once the
+// HTTP layer pipes overrideReason from the back-office settlement
+// modal into the request body. Until then, every settlement records
+// override=false even when the admin filled in the override field.
+s.metrics.RecordSettlement(marketID, string(result), false)
 			s.fireMarketLifecycle(market, lifecycle)
 			return settlement, payouts, nil
 		}
@@ -208,6 +217,11 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 	}
 	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
+	// TODO: thread override flag through ResolveMarketRequest once the
+// HTTP layer pipes overrideReason from the back-office settlement
+// modal into the request body. Until then, every settlement records
+// override=false even when the admin filled in the override field.
+s.metrics.RecordSettlement(marketID, string(result), false)
 	s.fireMarketLifecycle(market, lifecycle)
 	return settlement, payouts, nil
 }

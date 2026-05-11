@@ -134,6 +134,16 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	}
 	predWallet := newPredictionWalletAdapter(walletService)
 	predictionService := prediction.NewService(predRepo, predWallet)
+	// Prediction-domain counters: orders placed (by status + side + action +
+	// type), trades produced, reconciler runs (clean/drift/error), drift
+	// events per market, settlements (by result + override). Mounted at
+	// /metrics/prediction so a single Prometheus scrape config can pull
+	// both this and the platform-level /metrics. nil-safe — the service +
+	// reconciler still function if SetMetrics is never called (e.g. in
+	// tests).
+	predictionMetrics := prediction.NewMetrics()
+	predictionService.SetMetrics(predictionMetrics)
+	mux.Handle("/metrics/prediction", predictionMetrics.Handler())
 	if predictLoyaltyService != nil {
 		predictionService.SetLoyaltyAdapter(newPredictionLoyaltyAdapter(predictLoyaltyService))
 		// Post-commit tier-up → WebSocket. Fire-and-forget per plan §8;
@@ -181,6 +191,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		// taking the per-market advisory lock so healthy markets see zero
 		// matching contention.
 		reconciler := workers.NewReconciler(predRepo, 15*time.Minute)
+		reconciler.SetMetrics(predictionMetrics)
 		go reconciler.Run(context.Background())
 
 		slog.Info("prediction: background workers started (closer, settler, reconciler)")

@@ -1,0 +1,239 @@
+{
+  "title": "Hula Na — Prediction Exchange",
+  "uid": "hulana-prediction-exchange",
+  "schemaVersion": 38,
+  "version": 1,
+  "tags": ["hulana", "prediction", "exchange"],
+  "timezone": "",
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "market_id",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(prediction_orders_total, market_id)",
+        "includeAll": true,
+        "multi": true,
+        "current": { "selected": false, "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Order rate (last 5 min)",
+      "description": "Orders placed per second across all markets, including rejections. Excludes nothing — every POST /api/v1/orders that reached the engine.",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(prediction_orders_total{market_id=~\"$market_id\"}[5m]))",
+          "legendFormat": "orders/sec",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 1 } }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Rejection rate (last 5 min)",
+      "description": "Share of orders the engine rejected. Healthy: <5%. Persistent >20% means validation is too strict or a client is misbehaving.",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(prediction_orders_total{market_id=~\"$market_id\",status=\"rejected\"}[5m])) / clamp_min(sum(rate(prediction_orders_total{market_id=~\"$market_id\"}[5m])), 0.001)",
+          "legendFormat": "rejected %",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.05 },
+              { "color": "red", "value": 0.2 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Trades/sec (last 5 min)",
+      "description": "Fills produced by the engine. One row per Trade, so an issuance fill that mints YES+NO counts as 2.",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(prediction_trades_total{market_id=~\"$market_id\"}[5m]))",
+          "legendFormat": "trades/sec",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "area"
+      },
+      "fieldConfig": { "defaults": { "unit": "ops", "decimals": 2 } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Drift events (24h)",
+      "description": "Reconciler-detected collateral discrepancies in the last 24 hours. Should be 0 in steady state. Each event has a row in prediction_collateral_ledger with the cents amount.",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(increase(prediction_drift_events_total{market_id=~\"$market_id\"}[24h]))",
+          "legendFormat": "drift events",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Order rate by status",
+      "description": "Time series of order placements split by terminal status. Watch the rejected line for spikes correlated with deploys or feature flips.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(prediction_orders_total{market_id=~\"$market_id\"}[1m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Order rate by side / action",
+      "description": "Time series split by side (yes/no) and action (buy/sell). A sustained imbalance is a useful signal — e.g. heavy buy-yes flow with no sell-yes makers will exhaust the book quickly.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "expr": "sum by (side, action) (rate(prediction_orders_total{market_id=~\"$market_id\"}[1m]))",
+          "legendFormat": "{{action}} {{side}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 2 } }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Top 10 markets by order rate",
+      "description": "Hottest markets in the last 1 minute. Use this to spot single-market load that might be saturating the per-market advisory lock (375 ops/sec ceiling per the load harness baseline).",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (market_id) (rate(prediction_orders_total[1m])))",
+          "legendFormat": "{{market_id}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "decimals": 1 } }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Trades by kind (secondary vs issuance)",
+      "description": "Secondary fills are taker-vs-maker on the same side (real CLOB depth getting hit). Issuance fills mint YES+NO pairs against opposite-side buy orders. A market with only issuance trades has no resting same-side liquidity.",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        {
+          "expr": "sum by (trade_kind) (rate(prediction_trades_total{market_id=~\"$market_id\"}[1m]))",
+          "legendFormat": "{{trade_kind}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "decimals": 2 } }
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Reconciler outcomes",
+      "description": "Per-tick reconciler results. Clean = invariants hold. Drift = adjustment written. Error = reconciler iteration failed (DB unreachable, market disappeared, etc). Sustained error > 0 needs investigation.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 21 },
+      "targets": [
+        {
+          "expr": "sum by (outcome) (rate(prediction_reconciler_runs_total[5m]))",
+          "legendFormat": "{{outcome}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "decimals": 3 } }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Settlements (1h)",
+      "description": "Markets settled. Override = the admin needed to supply an override reason because the gateway detected collateral imbalance pre-settle. A trickle of overrides is fine; a steady stream means matching is producing inconsistent state.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 21 },
+      "targets": [
+        {
+          "expr": "sum by (result, override) (increase(prediction_settlements_total[1h]))",
+          "legendFormat": "{{result}} (override={{override}})",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "decimals": 0 } }
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Drift events — by market (last 24h)",
+      "description": "Per-market drift event counter for the last 24 hours. Markets at the top of this table need a manual reconciliation pass.",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 29 },
+      "targets": [
+        {
+          "expr": "topk(20, sum by (market_id) (increase(prediction_drift_events_total[24h])))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true, "service": true } } }
+      ]
+    }
+  ]
+}
