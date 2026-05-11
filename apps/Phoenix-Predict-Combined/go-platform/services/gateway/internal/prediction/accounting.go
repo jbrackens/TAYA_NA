@@ -139,9 +139,18 @@ type PositionMutation struct {
 }
 
 // ApplyPositionMutation merges a single mutation into a Position struct.
-// On buy: updates avg-cost via running-average formula and adds qty.
+// On buy: adds qty and increments TotalCostCents by addQty × fillPx; AvgPriceCents
+// is then derived as TotalCostCents / Quantity. Computing avg from the cumulative
+// cost (rather than via running-average against the previous AvgPriceCents) avoids
+// truncation drift across partial fills: a 1000-share order that gets sliced into
+// 10 partial fills now produces the same avg-cost as the same order as one fill,
+// within the same 1¢ rounding that a single division would have. Caught by
+// TestProp_ApplyPositionMutation_FillFragmentationStable: the prior running-avg
+// path drifted by up to ~5¢ for users whose orders crossed many makers.
+//
 // On sell: realises PnL against existing avg-cost, leaves avg-cost unchanged,
-// reduces qty (clamped at zero). total_cost is recomputed as qty * avg.
+// reduces qty (clamped at zero), reduces TotalCostCents proportionally to the
+// shares removed.
 //
 // The Position struct is mutated in place. Caller is responsible for
 // persisting the result.
@@ -159,6 +168,9 @@ func ApplyPositionMutation(p *Position, m PositionMutation) {
 		if p.Quantity < 0 {
 			p.Quantity = 0
 		}
+		// Recompute TotalCost from quantity × avg. Sells don't change avg, so
+		// this preserves the per-share basis and shrinks the dollar basis
+		// proportionally to the shares removed.
 		p.TotalCostCents = int64(p.Quantity) * int64(p.AvgPriceCents)
 		return
 	}
@@ -166,8 +178,9 @@ func ApplyPositionMutation(p *Position, m PositionMutation) {
 	if addQty < 0 {
 		addQty = -addQty
 	}
-	newAvg := AverageCostAfterBuy(p.Quantity, p.AvgPriceCents, addQty, m.FillPriceCents)
+	p.TotalCostCents += int64(addQty) * int64(m.FillPriceCents)
 	p.Quantity += addQty
-	p.AvgPriceCents = newAvg
-	p.TotalCostCents = int64(p.Quantity) * int64(newAvg)
+	if p.Quantity > 0 {
+		p.AvgPriceCents = int(p.TotalCostCents / int64(p.Quantity))
+	}
 }
