@@ -167,17 +167,25 @@ export function TradeTicket({
           opts.priceCents = limitPriceCents;
           // Default time-in-force gtc; advanced section can override later.
           opts.timeInForce = "gtc";
-        } else {
-          // Market buy: send a notional cap so the gateway can reject mis-priced
-          // fills. Server enforces this is required for market buys.
-          if (action === "buy") {
-            opts.notionalCapCents = Math.ceil(amount * 100);
-          }
+        } else if (action === "buy") {
+          // Market buy: send a notional cap so the gateway can reject
+          // mis-priced fills. Server enforces this is required for ALL
+          // market buys — exchange and AMM alike. (QA caught this when
+          // AMM-mode markets returned 400 "market buy orders require
+          // notionalCapCents > 0".)
+          opts.notionalCapCents = Math.ceil(amount * 100);
         }
         response = await onSubmit(side, qty, opts);
       } else {
-        // AMM mode: buy-only, market-only — preserve existing call shape.
-        response = await onSubmit(side, qty);
+        // AMM mode: buy-only, market-only. Still needs the notional cap
+        // — the gateway-side validator doesn't care about execution_mode,
+        // only about orderType+action. Pass opts through so the cap
+        // arrives in the request body.
+        response = await onSubmit(side, qty, {
+          orderType: "market",
+          action: "buy",
+          notionalCapCents: Math.ceil(amount * 100),
+        });
       }
       // Truthful post-trade toast. The old version unconditionally said
       // "Bought N YES shares" based on the requested quantity, which lied

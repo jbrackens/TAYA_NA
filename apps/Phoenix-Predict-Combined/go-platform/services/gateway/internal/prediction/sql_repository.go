@@ -574,11 +574,28 @@ func (r *SQLRepository) createTradeWithExec(ctx context.Context, execer sqlRowEx
 			return err
 		}
 	}
+	// Migration 019 added match_id / trade_kind / engine_kind as NOT NULL.
+	// The exchange path populates them explicitly via sql_exchange_repository.go.
+	// This AMM path (still the only one for amm markets) didn't, which broke
+	// every AMM order with `null value in column "match_id" violates
+	// not-null constraint`. Defaults that make sense for AMM trades:
+	//   match_id   = the trade's own id (matches the migration backfill rule
+	//                — AMM trades aren't paired so a self-reference is the
+	//                cleanest "match")
+	//   trade_kind = 'secondary' (curve-driven single-counterparty fills,
+	//                not the complementary YES+NO mint of issuance)
+	//   engine_kind = 'amm'
+	// gen_random_uuid() once + reuse for both id and match_id keeps the
+	// invariant `id = match_id` for unpaired trades.
 	return execer.QueryRowContext(ctx,
-		`INSERT INTO prediction_trades
-		 (market_id, buy_order_id, sell_order_id, buyer_id, seller_id,
-		  side, price_cents, quantity, fee_cents, is_amm_trade)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		`WITH new_id AS (SELECT gen_random_uuid() AS id)
+		 INSERT INTO prediction_trades
+		 (id, match_id, market_id, buy_order_id, sell_order_id,
+		  buyer_id, seller_id, side, price_cents, quantity, fee_cents,
+		  is_amm_trade, trade_kind, engine_kind)
+		 SELECT new_id.id, new_id.id, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+		        'secondary', 'amm'
+		 FROM new_id
 		 RETURNING id, traded_at`,
 		t.MarketID, t.BuyOrderID, t.SellOrderID, t.BuyerID, t.SellerID,
 		t.Side, t.PriceCents, t.Quantity, t.FeeCents, t.IsAMMTrade,
