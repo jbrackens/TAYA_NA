@@ -96,13 +96,19 @@ import (
 // SMMConfig is the bot's per-run configuration. Loaded from env in
 // NewSMMFromEnv. Exported for tests + override hooks.
 type SMMConfig struct {
-	Enabled            bool
-	UserID             string // wallet/punter id, defaults to "user-bot"
-	TickInterval       time.Duration
-	DepthCents         int64 // max committed cash per market per side
-	HalfSpreadCents    int   // 1¢ → 2¢ spread (bid at mid-1, ask at mid+1)
-	MaxDriftCents      int   // re-quote if our resting price has drifted > this from current target
-	MaxMarketsPerTick  int   // safety cap; 0 = no limit
+	Enabled           bool
+	UserID            string // wallet/punter id, defaults to "user-bot"
+	TickInterval      time.Duration
+	DepthCents        int64 // max committed cash per market per side
+	HalfSpreadCents   int   // 1¢ → 2¢ spread (bid at mid-1, ask at mid+1)
+	MaxDriftCents     int   // re-quote if our resting price has drifted > this from current target
+	MaxMarketsPerTick int   // safety cap; 0 = no limit
+	// MaxPositionQty caps total accumulated YES or NO inventory the bot
+	// can hold on a single market. When the bot's existing position on a
+	// side hits this, it stops posting quotes that would grow that side
+	// further. 0 = no limit (Phase 1 behaviour). Phase 2.1 risk control;
+	// see SMM_MAX_POSITION_QTY in the README + RUNBOOK.
+	MaxPositionQty int
 }
 
 // DefaultSMMConfig returns the documented defaults. Used when env vars
@@ -116,6 +122,10 @@ func DefaultSMMConfig() SMMConfig {
 		HalfSpreadCents:   3,
 		MaxDriftCents:     2,
 		MaxMarketsPerTick: 0,
+		// Default 500 shares per side per market. At a 50¢ mid that's
+		// $250 of one-sided exposure (worst case if the market crashes
+		// to 0). Tunable per environment.
+		MaxPositionQty: 500,
 	}
 }
 
@@ -155,14 +165,26 @@ func NewSMMFromEnv(svc *prediction.Service, repo prediction.Repository) *SMM {
 			cfg.MaxMarketsPerTick = n
 		}
 	}
+	if v := os.Getenv("SMM_MAX_POSITION_QTY"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n >= 0 {
+			cfg.MaxPositionQty = n
+		}
+	}
 	return &SMM{cfg: cfg, svc: svc, repo: repo}
 }
 
 // SMM is the synthetic market maker worker.
 type SMM struct {
-	cfg  SMMConfig
-	svc  *prediction.Service
-	repo prediction.Repository
+	cfg     SMMConfig
+	svc     *prediction.Service
+	repo    prediction.Repository
+	metrics *prediction.Metrics // optional; nil-safe via RecordSMMSkip
+}
+
+// SetMetrics wires the prediction-domain Prometheus counter registry so
+// the bot can emit skip counters. nil-safe.
+func (s *SMM) SetMetrics(m *prediction.Metrics) {
+	s.metrics = m
 }
 
 // Run starts the SMM tick loop. Blocks until ctx is cancelled. Safe to
@@ -180,6 +202,7 @@ func (s *SMM) Run(ctx context.Context) {
 		"depth_cents", s.cfg.DepthCents,
 		"half_spread_cents", s.cfg.HalfSpreadCents,
 		"max_drift_cents", s.cfg.MaxDriftCents,
+		"max_position_qty", s.cfg.MaxPositionQty,
 	)
 
 	// Cancel any leftover open orders from a previous run before quoting.
@@ -308,27 +331,71 @@ func (s *SMM) quoteMarket(ctx context.Context, m *prediction.Market) error {
 		}
 	}
 
+	// Position-cap check before posting fresh quotes. Phase 2.1 risk
+	// control — bounds the worst-case loss on any one market regardless
+	// of volatility or P&L. A Buy YES limit that fills via secondary
+	// match grows the bot's YES inventory; a Buy NO limit that fills
+	// via complementary issuance grows NO inventory. If either side is
+	// already at MaxPositionQty, skip posting on that side.
+	//
+	// MaxPositionQty=0 disables the check entirely (Phase 1 behaviour).
+	yesPosQty, noPosQty := s.botPositionQtys(ctx, m.ID)
+	yesCapped := s.cfg.MaxPositionQty > 0 && yesPosQty >= s.cfg.MaxPositionQty
+	noCapped := s.cfg.MaxPositionQty > 0 && noPosQty >= s.cfg.MaxPositionQty
+
 	// Post fresh orders where needed. Depth converts cents → shares at
 	// the order's limit price: $50 at 60c = 83 shares. Floor to whole.
 	if !hasGoodYesBid {
-		qty := int(s.cfg.DepthCents / int64(bidYesPrice))
-		if qty > 0 {
-			if err := s.placeBuyLimit(ctx, m.ID, prediction.OrderSideYes, bidYesPrice, qty); err != nil {
-				slog.Warn("smm: place yes bid failed",
-					"market", m.Ticker, "price", bidYesPrice, "qty", qty, "error", err)
+		if yesCapped {
+			s.metrics.RecordSMMSkip(m.ID, "yes", "position_cap")
+			slog.Info("smm: skip yes — position cap",
+				"market", m.Ticker, "position", yesPosQty, "cap", s.cfg.MaxPositionQty)
+		} else {
+			qty := int(s.cfg.DepthCents / int64(bidYesPrice))
+			if qty > 0 {
+				if err := s.placeBuyLimit(ctx, m.ID, prediction.OrderSideYes, bidYesPrice, qty); err != nil {
+					slog.Warn("smm: place yes bid failed",
+						"market", m.Ticker, "price", bidYesPrice, "qty", qty, "error", err)
+				}
 			}
 		}
 	}
 	if !hasGoodNoBid {
-		qty := int(s.cfg.DepthCents / int64(bidNoComplementary))
-		if qty > 0 {
-			if err := s.placeBuyLimit(ctx, m.ID, prediction.OrderSideNo, bidNoComplementary, qty); err != nil {
-				slog.Warn("smm: place no bid failed",
-					"market", m.Ticker, "price", bidNoComplementary, "qty", qty, "error", err)
+		if noCapped {
+			s.metrics.RecordSMMSkip(m.ID, "no", "position_cap")
+			slog.Info("smm: skip no — position cap",
+				"market", m.Ticker, "position", noPosQty, "cap", s.cfg.MaxPositionQty)
+		} else {
+			qty := int(s.cfg.DepthCents / int64(bidNoComplementary))
+			if qty > 0 {
+				if err := s.placeBuyLimit(ctx, m.ID, prediction.OrderSideNo, bidNoComplementary, qty); err != nil {
+					slog.Warn("smm: place no bid failed",
+						"market", m.Ticker, "price", bidNoComplementary, "qty", qty, "error", err)
+				}
 			}
 		}
 	}
 	return nil
+}
+
+// botPositionQtys returns the SMM's current YES and NO holdings on the
+// given market. Best-effort: a load failure returns (0, 0), which
+// effectively disables the cap for this tick rather than blocking the
+// bot. Logged so on-call sees repeated failures.
+func (s *SMM) botPositionQtys(ctx context.Context, marketID string) (yes int, no int) {
+	yesPos, err := s.repo.GetPosition(ctx, s.cfg.UserID, marketID, prediction.OrderSideYes)
+	if err == nil && yesPos != nil {
+		yes = yesPos.Quantity
+	} else if err != nil {
+		slog.Warn("smm: get yes position failed", "market_id", marketID, "error", err)
+	}
+	noPos, err := s.repo.GetPosition(ctx, s.cfg.UserID, marketID, prediction.OrderSideNo)
+	if err == nil && noPos != nil {
+		no = noPos.Quantity
+	} else if err != nil {
+		slog.Warn("smm: get no position failed", "market_id", marketID, "error", err)
+	}
+	return yes, no
 }
 
 // placeBuyLimit posts one buy-limit order for the bot. Idempotency-Key

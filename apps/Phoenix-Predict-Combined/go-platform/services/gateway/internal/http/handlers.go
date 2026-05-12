@@ -204,6 +204,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		// orders the bot places flow through the same RecordOrder path
 		// as every other order so the existing dashboards capture them.
 		smm := workers.NewSMMFromEnv(predictionService, predRepo)
+		smm.SetMetrics(predictionMetrics)
 		go smm.Run(context.Background())
 
 		slog.Info("prediction: background workers started (closer, settler, reconciler, smm)")

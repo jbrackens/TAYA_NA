@@ -234,6 +234,39 @@
       "transformations": [
         { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true, "service": true } } }
       ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "SMM skips by reason (last 1h)",
+      "description": "Reasons the synthetic market maker declined to post a quote. position_cap = market's bot inventory hit SMM_MAX_POSITION_QTY (defensive — bot stops accumulating one side). price_band = market sits at the edge of [1,99] and a symmetric quote would fall outside. Sustained position_cap on one market means users are only taking one side; investigate market dynamics.",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 39 },
+      "targets": [
+        {
+          "expr": "sum by (reason) (rate(prediction_smm_skips_total[5m]))",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "decimals": 3 } }
+    },
+    {
+      "id": 13,
+      "type": "table",
+      "title": "SMM skips — top markets (last 1h)",
+      "description": "Markets where the SMM is throttling. Reason=position_cap indicates the bot has reached its position limit on that side and has stopped posting quotes there. Workflow: confirm the bot's actual position vs SMM_MAX_POSITION_QTY, decide whether to raise the cap or take inventory off the books.",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 39 },
+      "targets": [
+        {
+          "expr": "topk(15, sum by (market_id, side, reason) (increase(prediction_smm_skips_total[1h])))",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "excludeByName": { "Time": true, "__name__": true, "job": true, "instance": true, "service": true } } }
+      ]
     }
   ]
 }

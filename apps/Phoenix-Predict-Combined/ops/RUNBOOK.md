@@ -389,6 +389,36 @@ SELECT
   (SELECT COUNT(*) FROM prediction_orders WHERE user_id = 'user-bot' AND status = 'open') AS open_orders;
 ```
 
+### Risk controls (Phase 2.1)
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `SMM_ENABLED` | `false` | Master kill switch |
+| `SMM_DEPTH_CENTS` | `5000` | Cash committed per market per side ($50) |
+| `SMM_HALF_SPREAD_CENTS` | `3` | Half spread (full spread = 2×) |
+| `SMM_MAX_DRIFT_CENTS` | `2` | Re-quote when drifted > this from current target |
+| `SMM_TICK_INTERVAL` | `30s` | Tick cadence |
+| `SMM_MAX_MARKETS_PER_TICK` | `0` (unlimited) | Cap on markets touched per tick |
+| `SMM_MAX_POSITION_QTY` | `500` | Cap on accumulated YES or NO inventory per market |
+
+When position cap fires, expect log lines like:
+
+```
+smm: skip no — position cap  market=TICKER position=21 cap=10
+```
+
+And a Grafana / Prometheus signal:
+
+```
+prediction_smm_skips_total{market_id="<uuid>",side="no",reason="position_cap"} N
+```
+
+A sustained climb in `position_cap` skips on a single market means
+the bot has accumulated its limit and either users keep crossing the
+remaining side or the market is one-sided. Investigate: is mid moving
+fast in one direction (bot underwater on one side)? Or did users
+take all the bot's liquidity on the other side?
+
 ### Halt switch
 
 Fastest stop: restart gateway with `SMM_ENABLED=false`. The bot's

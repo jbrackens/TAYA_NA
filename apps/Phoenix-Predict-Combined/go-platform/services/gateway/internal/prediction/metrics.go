@@ -41,6 +41,15 @@ type Metrics struct {
 
 	// Settlements by (market_id, result, override).
 	settlements map[settlementKey]int64
+
+	// SMM skip counts — reasons the synthetic market maker chose not to
+	// post a quote on a tick. Key is the reason string (kept opaque so
+	// callers can add new reasons without touching this file).
+	smmSkips map[smmSkipKey]int64
+}
+
+type smmSkipKey struct {
+	market, side, reason string
 }
 
 type orderKey struct {
@@ -63,7 +72,29 @@ func NewMetrics() *Metrics {
 		reconcilerRuns: make(map[string]int64),
 		driftEvents:    make(map[string]int64),
 		settlements:    make(map[settlementKey]int64),
+		smmSkips:       make(map[smmSkipKey]int64),
 	}
+}
+
+// RecordSMMSkip increments a counter when the SMM declines to post a
+// quote on a tick. Reasons are short opaque strings, e.g.:
+//   - "position_cap"  — bot's accumulated position on this side has
+//                       hit SMM_MAX_POSITION_QTY
+//   - "price_band"    — market sits at the edge of [1, 99] and a
+//                       symmetric quote would fall outside
+//   - "stale_price"   — market.last_quote_at is older than threshold
+//                       (Phase 2: not yet implemented)
+//
+// Side is the side the bot wanted to post on ("yes"|"no"), market
+// is the market_id. nil receiver is safe (no-op).
+func (m *Metrics) RecordSMMSkip(marketID, side, reason string) {
+	if m == nil || marketID == "" || reason == "" {
+		return
+	}
+	k := smmSkipKey{market: marketID, side: side, reason: reason}
+	m.mu.Lock()
+	m.smmSkips[k]++
+	m.mu.Unlock()
 }
 
 // RecordOrder is called once per order placement, whether accepted or
@@ -233,7 +264,32 @@ func (m *Metrics) Render() string {
 		)
 	}
 
+	// SMM skips
+	b.WriteString("# HELP prediction_smm_skips_total SMM ticks where a quote was suppressed, by market/side/reason.\n")
+	b.WriteString("# TYPE prediction_smm_skips_total counter\n")
+	skKeys := make([]smmSkipKey, 0, len(m.smmSkips))
+	for k := range m.smmSkips {
+		skKeys = append(skKeys, k)
+	}
+	sort.Slice(skKeys, func(i, j int) bool { return smmSkipKeyLess(skKeys[i], skKeys[j]) })
+	for _, k := range skKeys {
+		fmt.Fprintf(&b,
+			`prediction_smm_skips_total{market_id=%q,side=%q,reason=%q} %d`+"\n",
+			esc(k.market), esc(k.side), esc(k.reason), m.smmSkips[k],
+		)
+	}
+
 	return b.String()
+}
+
+func smmSkipKeyLess(a, b smmSkipKey) bool {
+	if a.market != b.market {
+		return a.market < b.market
+	}
+	if a.side != b.side {
+		return a.side < b.side
+	}
+	return a.reason < b.reason
 }
 
 // Handler returns an http.Handler that serves the Prometheus text format
