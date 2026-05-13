@@ -291,6 +291,11 @@ export default function MarketDetailPage() {
       }
     };
     fetchBook();
+    if (authLoading || !isAuthenticated) {
+      return () => {
+        cancelled = true;
+      };
+    }
     const unsubscribe = subscribePredictWs(`orderbook:${id}`, () => {
       // Hint payload carries best bid/ask but the OrderBook component
       // wants full depth; refetch on every hint.
@@ -300,7 +305,7 @@ export default function MarketDetailPage() {
       cancelled = true;
       unsubscribe();
     };
-  }, [market?.id, market?.executionMode]);
+  }, [market?.id, market?.executionMode, authLoading, isAuthenticated]);
 
   const handlePreview = useCallback(
     async (side: OrderSide, quantity: number): Promise<OrderPreview | null> => {
@@ -789,7 +794,10 @@ function PageState({
           </h1>
           {isError && (
             <>
-              <p className="md-state-copy">{children}</p>
+              <p className="md-state-copy">
+                {children}. Check the market ticker or return to the market list
+                and open one of the available contracts.
+              </p>
               <Link href="/predict" className="md-state-action">
                 Back to Markets
               </Link>

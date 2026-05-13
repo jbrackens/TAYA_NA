@@ -13,11 +13,24 @@ import { expect, Page, test as base } from "@playwright/test";
  * This helper file exports:
  *   - test: the standard Playwright test (re-exported for convenience).
  *   - expect: the standard assertion library (re-exported).
- *   - captureConsoleErrors(page): attach a console listener; returns a
+ *   - captureConsoleErrors(page, options): attach a console listener; returns a
  *     function that asserts no errors fired when called at end of test.
  *   - assertPageHealthy(page, path): navigate + assert 200 + no error
  *     boundary + non-empty body.
  */
+
+type ConsoleErrorAllow = string | RegExp | ((text: string) => boolean);
+
+function isAllowedConsoleError(
+  text: string,
+  allow: ConsoleErrorAllow[] = [],
+): boolean {
+  return allow.some((matcher) => {
+    if (typeof matcher === "string") return text.includes(matcher);
+    if (matcher instanceof RegExp) return matcher.test(text);
+    return matcher(text);
+  });
+}
 
 /**
  * Attach a console listener to the page that records errors. Returns a
@@ -29,7 +42,10 @@ import { expect, Page, test as base } from "@playwright/test";
  *   - Background /api/v1/auth/session polls during transient states
  *   - /api/v1/status transient 5xx from BackendStatusBanner poll
  */
-export function captureConsoleErrors(page: Page): () => void {
+export function captureConsoleErrors(
+  page: Page,
+  options: { allow?: ConsoleErrorAllow[] } = {},
+): () => void {
   const errors: string[] = [];
   page.on("console", (msg) => {
     if (msg.type() !== "error") return;
@@ -39,7 +55,8 @@ export function captureConsoleErrors(page: Page): () => void {
       text.includes("hydration") ||
       text.includes("failed to load font") ||
       text.includes("/api/v1/auth/session") ||
-      text.match(/\/api\/v1\/status.*\b5\d{2}\b/) !== null
+      text.match(/\/api\/v1\/status.*\b5\d{2}\b/) !== null ||
+      isAllowedConsoleError(text, options.allow)
     ) {
       return;
     }

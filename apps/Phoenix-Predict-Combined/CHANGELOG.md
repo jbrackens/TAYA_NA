@@ -1,4 +1,35 @@
-# Phoenix Sportsbook: Release Changelog
+# Taya NA Predict Changelog
+
+## [2.0.0] - 2026-04-16
+
+### Prediction-Market Fork
+
+Taya NA Predict forked from Taya NA Sportsbook and replaced the sportsbook domain with prediction-market contracts.
+
+### Changed
+
+- Player app now centers on `/predict`, `/market/[ticker]`, `/portfolio`, and category discovery.
+- Domain language changed from fixtures/selections/bets to categories/events/markets/orders/positions.
+- Prices are cents from 0 to 100; YES price maps to implied probability.
+- Gateway exposes prediction, order, portfolio, settlement, wallet, loyalty, leaderboard, and auth-proxy routes.
+- Docker Compose uses prediction-specific local ports: PostgreSQL `5434`, Redis `6380`, gateway `18080`, auth `18081`.
+- Demo player login remains `demo@phoenix.local` / `demo123`.
+
+### Migration Notes
+
+- Do not edit shipped migration `014_prediction_schema.sql` in place. Add new goose migrations for schema changes.
+- Do not introduce new sportsbook naming in prediction code. Avoid `fixtures`, `selections`, `betslip`, `sport_key`, and `punter_bets`.
+- Use `@phoenix-ui/api-client` prediction exports for new client code.
+- Use `npm run dev -- -p 3010` for the player-only development loop.
+
+### Known Gaps
+
+- Historical chart time-range controls are disabled until backend price history is connected.
+- Some archived sportsbook documentation remains under legacy/reference directories for git-blame context.
+
+---
+
+# Archived Phoenix Sportsbook Release Changelog
 
 ## [1.2.0] - 2026-04-16
 

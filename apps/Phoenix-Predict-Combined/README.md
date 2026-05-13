@@ -1,222 +1,117 @@
-# Phoenix Sportsbook Platform
+# Phoenix Predict Combined
 
-A production-ready, multi-sport sportsbook platform built with Go, Next.js, PostgreSQL, and Redis. Designed for high-volume betting operations with real-time market updates, comprehensive risk management, and full compliance framework.
-
-## What is Phoenix Sportsbook?
-
-Phoenix is a complete sportsbook solution featuring:
-
-- **Real-time Betting** — WebSocket-powered live market updates and instant bet placement
-- **Multi-Sport Support** — Football, Basketball, Tennis, Cricket, and more with sport-specific market types
-- **Player App** — Modern React/Next.js frontend for bettors with dark theme and responsive design
-- **Backoffice Dashboard** — Administrative interface for risk management, user control, and market settlement
-- **Trading View** — Advanced market analytics and trading controls
-- **Payment Integration** — Stub payment processing for account deposits/withdrawals
-- **Compliance Framework** — Audit logging, KYC/AML hooks, and regulatory compliance tools
-- **High Performance** — Gateway designed for 10K+ concurrent WebSocket connections
+Full local stack for Taya NA Predict: a player prediction-market app, admin backoffice, Go gateway, Go auth service, PostgreSQL, and Redis.
 
 ## Quick Start
 
-### Prerequisites
-- Go 1.24+
-- Node.js 18+ (with npm)
-- Docker and Docker Compose
-- PostgreSQL 16 (via Docker)
-- Redis 7 (via Docker)
+```bash
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined
+docker compose up -d postgres redis gateway auth
+```
 
-### One Command Setup
+Then start the player app:
 
 ```bash
-make bootstrap && make start
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+NEXT_PUBLIC_API_URL=http://localhost:18080 \
+NEXT_PUBLIC_AUTH_URL=http://localhost:18081 \
+NEXT_PUBLIC_WS_URL=ws://localhost:18080/ws \
+npm run dev -- -p 3010
 ```
 
-This will:
-1. Install all dependencies (Go, Node, npm)
-2. Set up local environment files
-3. Start PostgreSQL, Redis, and all services via Docker
-4. Run database migrations
-5. Load seed data
+Open `http://localhost:3010/predict`.
 
-### Service URLs
+## Services
 
-Once running, access the platform at:
+| Service | URL | Notes |
+| --- | --- | --- |
+| Player app | `http://localhost:3010/predict` | Market discovery, market detail, trade ticket, portfolio |
+| Backoffice | `http://localhost:3001` | Market creation, lifecycle, settlement, risk |
+| Gateway API | `http://localhost:18080/api/v1` | Prediction, orders, portfolio, wallet, auth proxy |
+| Auth service | `http://localhost:18081` | Login, refresh, session management |
+| PostgreSQL | `localhost:5434` | Database `predict`, user `predict`, password `localdev` |
+| Redis | `localhost:6380` | Cache and pub/sub |
 
-- **Player App** — http://localhost:3000
-- **Backoffice** — http://localhost:3001
-- **Gateway API** — http://localhost:18080/api/v1
-- **Auth Service** — http://localhost:18081/auth
-- **PostgreSQL** — localhost:5432 (user: `phoenix`, password: `localdev`)
-- **Redis** — localhost:6379
+Demo player:
 
-### Demo Credentials
+- Email: `demo@phoenix.local`
+- Password: `demo123`
 
-Log in with these test accounts:
+Demo admin:
 
-- **Username:** demo@phoenix.local
-- **Password:** demo123
-- **Account Balance:** 1000 credits
+- Email: `admin@phoenix.local`
+- Password: `admin123`
 
-## Architecture Overview
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Client Layer                                                 │
-├──────────────────────┬──────────────────────┐────────────────┤
-│ Player App (Next.js) │ Backoffice (Next.js) │ External APIs  │
-│ :3000                │ :3001                │                │
-└──────────┬───────────┴──────────┬───────────┴────────────────┘
-           │                      │
-           └──────────┬───────────┘
-                      │ REST/WebSocket
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ Service Layer                                                │
-├─────────────────────────┬─────────────────────┬──────────────┤
-│ Gateway (:18080)        │ Auth (:18081)       │ Cache Layer  │
-│ - Bet placement         │ - Token validation  │ (Redis)      │
-│ - Market updates        │ - User auth         │              │
-│ - Real-time WebSocket   │ - Session mgmt      │              │
-└──────────┬──────────────┴────────────┬────────┴──────────────┘
-           │                          │
-           │        PostgreSQL        │
-           └──────────┬───────────────┘
-                      ▼
-┌─────────────────────────────────────────────────────────────┐
-│ Data Layer                                                   │
-├────────────┬────────────┬────────────┬──────────┬────────────┤
-│ Punters    │ Markets    │ Bets       │ Wallets  │ Audit Logs │
-│ Fixtures   │ Selections │ Freebets   │ Ledger   │ Timelines  │
-└────────────┴────────────┴────────────┴──────────┴────────────┘
+Player App / Backoffice
+        |
+        v
+Gateway API + WebSocket hub
+        |
+        +--> Auth service
+        +--> PostgreSQL
+        +--> Redis
 ```
 
-For detailed architecture, see [ARCHITECTURE.md](./ARCHITECTURE.md).
-
-## Documentation
-
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** — System design, data flow, database schema, deployment topology
-- **[DEVELOPMENT.md](./DEVELOPMENT.md)** — Developer setup, running services locally, common tasks
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** — Production deployment, K8s configuration, monitoring setup
-- **[RUNBOOKS.md](./RUNBOOKS.md)** — Operational procedures for market settlement, troubleshooting, incident response
-- **[CHANGELOG.md](./CHANGELOG.md)** — Release notes and version history
-- **[LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md)** — Pre-launch verification checklist
-
-## Project Structure
+Prediction hierarchy:
 
 ```
-Phoenix-Sportsbook-Combined/
-├── go-platform/                    # Go backend services
-│   ├── modules/platform/           # Shared platform libraries
-│   ├── services/
-│   │   ├── gateway/                # Main API gateway & WebSocket
-│   │   └── auth/                   # Authentication service
-│   └── go.work                     # Go workspace config
-│
-├── talon-backoffice/               # Frontend applications
-│   └── packages/
-│       ├── app/                    # Player app (Next.js, port 3000)
-│       ├── office/                 # Admin backoffice (Next.js, port 3001)
-│       ├── api-client/             # TypeScript API client
-│       ├── design-system/          # Shared UI components
-│       └── utils/                  # Utility functions
-│
-├── scripts/                        # Automation and operations
-│   ├── local-stack.sh              # Local development setup
-│   ├── data/                       # Database migrations & seeds
-│   ├── qa/                         # Testing scripts
-│   └── release/                    # Release & deployment scripts
-│
-├── docker-compose.yml              # Local development stack
-├── Makefile                        # Build and deployment targets
-└── README.md                       # This file
+Category -> Series -> Event -> Market -> Orders / Positions / Trades / Settlement
 ```
 
 ## Common Commands
 
-### Development
+Backend stack:
 
 ```bash
-# Start all services locally
-make start
-
-# View service status and logs
-make status
-make logs
-
-# Run Go tests
-make go-test
-
-# Run full verification (compile, test, build)
-make verify
-
-# Run E2E tests
-make qa-e2e-critical
+docker compose ps
+docker compose logs -f gateway auth
+docker compose down
 ```
 
-### Production
+Player app:
 
 ```bash
-# Build Docker images for all services
-make docker-build
-
-# Validate database migrations
-make validate-migrations
-
-# Run load testing
-make qa-load-baseline
-
-# Launch readiness checklist
-make release-launch-readiness
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
+npm run dev -- -p 3010
+npm run typecheck
+npm test
+PLAYWRIGHT_BASE_URL=http://localhost:3010 npm run test:smoke
 ```
 
-## Key Features
+Go services:
 
-### Real-Time Betting
-- WebSocket-powered live odds updates
-- Instant bet placement and confirmation
-- Live market suspend/resume controls
+```bash
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform
+go test ./modules/platform/... ./services/gateway/... ./services/auth/...
+```
 
-### Market Management
-- Multi-market types per fixture (moneyline, spread, totals, props)
-- Automatic odds calculation
-- Live odds adjustment and trading
-- Market suspension and manual settlement
+Migrations and seeds:
 
-### User Management
-- Account creation and KYC verification
-- Wallet management with deposit/withdrawal
-- Bonus and freebet allocation
-- Self-exclusion and responsible gaming
+```bash
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway
+GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
+MIGRATIONS_DIR="$(pwd)/migrations" \
+go run ./cmd/migrate up
 
-### Risk Management
-- Live exposure tracking
-- Automatic suspension on threshold breach
-- Manual account suspension
-- Bet limits and time-based restrictions
+GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
+go run ./cmd/seed
+```
 
-### Compliance
-- Comprehensive audit logging
-- User action tracking
-- Data retention policies
-- Export for regulatory reporting
+## Documentation
 
-## Technology Stack
+- [Developer setup](./DEVELOPMENT.md)
+- [API examples](./API_EXAMPLES.md)
+- [Error and debugging guide](./ERRORS.md)
+- [Changelog](./CHANGELOG.md)
+- [Migration guide](./MIGRATION.md)
+- [Upgrade guide](./UPGRADE.md)
+- [Developer experience scorecard](./DX.md)
+- [Gateway OpenAPI spec](./go-platform/services/gateway/api/openapi.yaml)
+- [Grafana prediction dashboard](./ops/grafana/README.md)
 
-- **Backend** — Go 1.24, PostgreSQL 16, Redis 7
-- **Frontend** — Next.js 16, React 19, TypeScript
-- **API** — REST + WebSocket (RFC 6455)
-- **Database** — PostgreSQL with JSON support
-- **Caching** — Redis with pub/sub
-- **Infrastructure** — Docker, Kubernetes (production)
-- **DevOps** — GitHub Actions, Makefile automation
+## Notes For Contributors
 
-## Getting Help
-
-- Check [DEVELOPMENT.md](./DEVELOPMENT.md) for setup issues
-- See [RUNBOOKS.md](./RUNBOOKS.md) for operational procedures
-- Review [DEPLOYMENT.md](./DEPLOYMENT.md) for infrastructure questions
-- Check service logs: `make logs`
-- Review migrations: `go-platform/services/gateway/migrations/`
-
-## License
-
-Phoenix Sportsbook Platform. All rights reserved.
+This package still contains some archived sportsbook-era directories and markdown. New work should follow the prediction-market model and the root `CLAUDE.md` guardrails.

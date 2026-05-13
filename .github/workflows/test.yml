@@ -32,7 +32,7 @@ jobs:
         # Top-level tests only. Integration tests live in __tests__/integration/
         # and need a running gateway; they run in a separate workflow.
         working-directory: apps/Phoenix-Predict-Combined/talon-backoffice/packages/app
-        run: npx tsx --test --test-reporter=tap app/__tests__/*.test.ts
+        run: npm test
 
   go-build-and-test:
     runs-on: ubuntu-latest

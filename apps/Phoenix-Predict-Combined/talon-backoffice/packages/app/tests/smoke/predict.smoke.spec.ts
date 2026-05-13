@@ -17,12 +17,12 @@ test.describe("/predict — discovery landing", () => {
       page.getByText(/politics|crypto|sports/i).first(),
     ).toBeVisible();
 
-    // At least one market-like element should render. We match on the YES/NO
-    // cent text pattern since MarketCard's exact DOM shape is expected to
-    // change during the redesign.
-    await expect(page.getByText(/\d+¢\s*YES/i).first()).toBeVisible({
-      timeout: 10_000,
-    });
+    // At least one market card should expose both sides in its accessible name.
+    // The visual order can change (YES 65 cents vs 65 cents YES), but the card
+    // still needs to announce the tradeable YES/NO prices.
+    await expect(
+      page.getByRole("link", { name: /YES \d+ cents.*NO \d+ cents/i }).first(),
+    ).toBeVisible({ timeout: 10_000 });
 
     checkErrors();
   });

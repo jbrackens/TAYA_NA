@@ -27,8 +27,23 @@ const PUBLIC_ROUTES = [
   "/terms-and-conditions",
 ];
 
+const PROTECTED_ROUTES = [
+  "/account",
+  "/cashier",
+  "/leaderboards",
+  "/portfolio",
+  "/profile",
+  "/rewards",
+];
+
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 }
@@ -77,7 +92,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (!token) {
+  if (!token && isProtectedRoute(pathname)) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("returnUrl", pathname);
     return NextResponse.redirect(loginUrl);

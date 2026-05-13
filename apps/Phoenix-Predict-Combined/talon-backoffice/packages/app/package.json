@@ -4,6 +4,7 @@
   "description": "Next.js React App - The Phoenix UI",
   "scripts": {
     "bootstrap:locales": "node ./scripts/translations/generate.js",
+    "dev": "next dev --webpack",
     "run-local:dev": "yarn watch & next dev --webpack",
     "build": "yarn bootstrap:locales && next build && ./scripts/check-no-upstream-leak.sh",
     "check:no-upstream-leak": "./scripts/check-no-upstream-leak.sh",
@@ -21,7 +22,8 @@
     "start:dev": "env-cmd -f .env.development next start",
     "start:stage": "env-cmd -f .env.staging next start",
     "export": "yarn build && next export",
-    "test": "jest --passWithNoTests --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
+    "test": "tsx --test --test-reporter=tap app/__tests__/*.test.ts",
+    "test:jest": "jest --passWithNoTests --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
     "test:coverage": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
     "test:smoke": "playwright test --config=./playwright.config.ts",
     "test:smoke:ui": "playwright test --config=./playwright.config.ts --ui",

@@ -10,7 +10,7 @@ import { defineConfig, devices } from "@playwright/test";
  *
  * Prereqs for local runs:
  *   1. docker compose up -d postgres redis gateway auth    (predict stack)
- *   2. cd packages/app && npm run dev                       (Next.js 3000)
+ *   2. cd packages/app && npm run dev -- -p 3010             (Next.js 3010)
  *   3. npx playwright install chromium                      (one-time)
  *   4. yarn test:smoke                                      (this config)
  *
@@ -39,7 +39,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3010",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "off",

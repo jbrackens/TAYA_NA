@@ -54,7 +54,7 @@ test.describe("/market/[ticker] — market detail", () => {
   test.describe("unauthenticated trade ticket", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
-    test("quick amount chips keep the selected amount when balance is zero", async ({
+    test("public market page stays console-clean and keeps selected quick amount", async ({
       page,
     }) => {
       const checkErrors = captureConsoleErrors(page);
@@ -86,9 +86,51 @@ test.describe("/market/[ticker] — market detail", () => {
       // balance was zero because they clamped to the user's balance.
       // Found by /qa on 2026-04-25.
       // Report: .gstack/qa-reports/qa-report-localhost-3000-2026-04-25.md
-      await page.getByRole("button", { name: "$100" }).click();
       await expect(
-        page.getByRole("button", { name: "Review trade · $100.00" }),
+        page.getByRole("link", { name: "Log in to trade" }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "$100" }).click();
+      await expect(page.locator(".tt-amt-display")).toContainText("$100.00");
+      await expect(
+        page.getByRole("link", { name: "Log in to trade" }),
+      ).toBeVisible();
+
+      checkErrors();
+    });
+
+    test("invalid market ticker shows recovery UI with only the expected 404 noise", async ({
+      page,
+    }) => {
+      const ticker = "NOT-A-REAL-MARKET";
+      const checkErrors = captureConsoleErrors(page, {
+        allow: [
+          `/api/v1/markets/${ticker}`,
+          (text) =>
+            text.includes("Failed to load resource") && text.includes("404"),
+        ],
+      });
+      const marketNotFound = page.waitForResponse(
+        (response) =>
+          response.url().includes(`/api/v1/markets/${ticker}`) &&
+          response.status() === 404,
+      );
+
+      const response = await page.goto(`/market/${ticker}`, {
+        waitUntil: "domcontentloaded",
+      });
+
+      expect(response?.ok(), `/market/${ticker} route should render`).toBe(
+        true,
+      );
+      await marketNotFound;
+      await expect(page.getByText("Market unavailable")).toBeVisible({
+        timeout: 10_000,
+      });
+      await expect(
+        page.getByRole("heading", { name: /couldn't open that market/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: "Back to Markets" }),
       ).toBeVisible();
 
       checkErrors();

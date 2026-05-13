@@ -1,13 +1,13 @@
 openapi: 3.0.3
 info:
-  title: Phoenix Sportsbook API
-  version: 1.0.0
-  description: Complete API specification for Phoenix Sportsbook Go backend
+  title: Taya NA Predict API
+  version: 2.0.0
+  description: API specification for the Taya NA Predict gateway, including prediction markets, orders, portfolio, wallet, auth proxy, and admin operations.
 
 servers:
-  - url: http://localhost:8000
+  - url: http://localhost:18080
     description: Local development
-  - url: https://api.phoenix-sportsbook.com
+  - url: https://api.taya-na-predict.example
     description: Production
 
 components:
@@ -53,14 +53,28 @@ components:
 
     ErrorResponse:
       type: object
+      required:
+        - error
       properties:
         error:
-          type: string
-        message:
-          type: string
-        details:
           type: object
-          additionalProperties: true
+          required:
+            - code
+            - message
+            - requestId
+          properties:
+            code:
+              type: string
+              example: not_found
+            message:
+              type: string
+              example: market not found
+            requestId:
+              type: string
+              example: 13de804b17b9b2f800458e7faf7e4679
+            details:
+              type: object
+              additionalProperties: true
 
     TokenResponse:
       type: object
