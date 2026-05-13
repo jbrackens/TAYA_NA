@@ -555,6 +555,27 @@ export default function CashierPage() {
 }
 
 const cashierStyles = `
+  /*
+   * P8 token override scope. The cashier predates the P8 design migration
+   * and references the legacy --s1 / --s2 / --b1 / --b2 surface aliases
+   * from globals.css, which still resolve to dark-navy values (P6
+   * sportsbook era — kept for backward compat with surfaces that haven't
+   * migrated yet). Until each cashier surface is rewritten against the
+   * new --surface-1 / --border-1 token names, redirect the aliases
+   * inside this page only so the cashier renders with the warm-cream
+   * palette every other player-app surface uses. Doesn't affect other
+   * pages — scoped to .cashier-page descendants.
+   *
+   * Discovered by /qa on 2026-05-12: cashier was the only logged-in
+   * surface rendering dark; jarring context switch from /account/ or
+   * /portfolio/.
+   */
+  .cashier-page {
+    --s1: var(--surface-1, #ffffff);
+    --s2: var(--surface-2, #fbfaf6);
+    --b1: var(--border-1, #e5dfd2);
+    --b2: var(--border-2, #d7d1c0);
+  }
   .cashier-page { max-width: 1100px; margin: 0 auto; padding: 24px 24px 60px; }
   .cashier-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; color: var(--t1); margin: 0 0 16px; }
   .cashier-balance-banner {
