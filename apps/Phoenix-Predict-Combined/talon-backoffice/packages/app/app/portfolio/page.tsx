@@ -144,15 +144,18 @@ export default function PortfolioPage() {
     };
   }, []);
 
+  const activeOrders = useMemo(
+    () => orders.filter((o) => o.status === "open" || o.status === "partial"),
+    [orders],
+  );
+
   const counts = useMemo(
     () => ({
       positions: positions.length,
-      orders: orders.filter(
-        (o) => o.status === "open" || o.status === "partial",
-      ).length,
+      orders: activeOrders.length,
       history: history.length,
     }),
-    [positions, orders, history],
+    [positions, activeOrders.length, history],
   );
 
   if (loading) {
@@ -194,7 +197,7 @@ export default function PortfolioPage() {
         <PositionsTable positions={positions} marketsById={marketsById} />
       )}
       {tab === "orders" && (
-        <OrdersTable orders={orders} marketsById={marketsById} />
+        <OrdersTable orders={activeOrders} marketsById={marketsById} />
       )}
       {tab === "history" && (
         <HistoryTable
@@ -473,7 +476,7 @@ function OrdersTable({
   marketsById: Map<string, PredictionMarket>;
 }) {
   if (orders.length === 0) {
-    return <EmptyState line="No orders yet." />;
+    return <EmptyState line="No open orders." />;
   }
   return (
     <DataTable
