@@ -226,17 +226,27 @@ export function TopBar() {
         .tb-brand {
           display: inline-flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           min-height: 44px;
-          font-size: 15px;
-          font-weight: 800;
-          letter-spacing: -0.01em;
-          color: var(--t1);
+          font-family: 'Bebas Neue', 'Arial Narrow', Impact, sans-serif;
+          font-size: 28px;
+          font-weight: 400;
+          letter-spacing: 0.025em;
+          line-height: 1;
+          color: #121114;
           text-decoration: none;
           flex-shrink: 0;
         }
-        .tb-brand-txt { white-space: nowrap; }
-        .tb-brand-txt .accent { color: var(--accent); margin-left: 6px; }
+        .tb-brand-txt {
+          white-space: nowrap;
+          text-transform: uppercase;
+          transform: translateY(1px);
+        }
+        .tb-brand-txt .accent {
+          color: #25eb2a;
+          margin-left: 4px;
+          text-shadow: 0 0 12px rgba(37, 235, 42, 0.18);
+        }
 
         .tb-nav {
           display: flex;
@@ -438,6 +448,7 @@ export function TopBar() {
         /* Mobile: hide nav links + search, keep brand + balance + avatar */
         @media (max-width: 900px) {
           .tb { gap: 12px; padding: 0 16px; }
+          .tb-brand { font-size: 24px; gap: 7px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
         }

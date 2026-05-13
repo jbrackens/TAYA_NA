@@ -3,6 +3,7 @@
  * @source directives tell Tailwind where to scan for class names; defaults
  * usually pick these up, but we declare them explicitly to be safe with
  * Next.js's App Router directory layout. */
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
 @import "tailwindcss";
 
 @source "./";
@@ -62,20 +63,18 @@ body {
    * pages-router surfaces.
    */
 :root {
-  /* P8 (2026-04-28): warm-cream page backdrop replacing the warm-dark
-   * navy. The chart-paper grid pattern is layered on top via --bg-pattern.
+  /* P8 (2026-04-28): light neutral page backdrop replacing the warm-dark
+   * navy. The pattern hook is retained for legacy call sites.
    * Legacy --bg-{navy,teal,mint,azure} retained per P6 carry-forward
    * policy until each consuming surface migrates off them. */
-  --bg-deep: #f7f3ed;
+  --bg-deep: #f8f9fa;
   --bg-navy: #0c2a4a;
   --bg-teal: #0c2638;
   --bg-mint: #0d2a22;
   --bg-azure: #0e3858;
 
-  /* Chart-paper grid layered on the cream page bg (DESIGN.md §4). */
-  --bg-pattern:
-    linear-gradient(to right, rgba(26, 26, 26, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(26, 26, 26, 0.035) 1px, transparent 1px);
+  /* Pattern hook preserved for older surfaces; predict uses a flat backdrop. */
+  --bg-pattern: none;
   --bg-pattern-size: 32px 32px;
 
   /* Glass surfaces — translucent bodies for the .glass utility */
@@ -193,9 +192,8 @@ body {
   --r-rh-xl: 20px;
 }
 
-/* P8 page background: cream + chart-paper grid. The dark-theme radial
- * backdrop scene was retired in this swap (it fought the light surface).
- * The 32px grid is the only decoration in the system per DESIGN.md §4. */
+/* P8 page background: flat light neutral. The dark-theme radial backdrop
+ * scene and chart-paper grid were retired in this swap. */
 body {
   background-color: var(--bg-deep);
   background-image: var(--bg-pattern);
