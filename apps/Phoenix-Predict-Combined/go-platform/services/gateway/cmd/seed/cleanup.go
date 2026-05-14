@@ -10,12 +10,13 @@ import (
 // surfaces in the seed log. Each count is the number of rows the cleanup
 // SQL touched.
 type CleanupResult struct {
-	StalePendingCancelled int64
-	DemoOrdersDeleted     int64
-	DemoTradesDeleted     int64
-	DemoLedgerDeleted     int64
+	StalePendingCancelled  int64
+	ExpiredReservationsHealed int64
+	DemoOrdersDeleted      int64
+	DemoTradesDeleted      int64
+	DemoLedgerDeleted      int64
 	DemoSettlementsDeleted int64
-	DemoPositionsDeleted  int64
+	DemoPositionsDeleted   int64
 }
 
 // stalePendingCutoff is the age at which a 'pending' order is considered
@@ -62,6 +63,37 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 		return r, fmt.Errorf("cancel stale pending orders: %w", err)
 	}
 	r.StalePendingCancelled, _ = res.RowsAffected()
+
+	// Step 1b: heal expired reservations on orders that are still open.
+	// Old code reserved cash for 24h regardless of TIF. GTC limit orders
+	// that survived past 24h had their reservations expire while the
+	// order was still live on the book. When a taker eventually matched
+	// the maker's bid, the capture path errored with
+	// "reservation is not in held status". The Service-level fix in
+	// service.go::reservationTTL prevents this for new orders, but
+	// pre-existing expired-reservation orders need a heal pass.
+	//
+	// Policy: for any 'expired' wallet reservation whose linked order is
+	// still 'open' or 'partial', bump status back to 'held' and push
+	// expires_at out to NOW() + 30 days. The order's continued open
+	// status is the source of truth — the wallet reservation must
+	// reflect that. captured_amount_cents stays as-is (any prior
+	// partial fills are still captured).
+	res, err = db.Exec(`
+		UPDATE wallet_reservations r
+		SET status='held',
+		    expires_at = NOW() + INTERVAL '30 days',
+		    resolved_at = NULL
+		FROM prediction_orders o
+		WHERE r.reference_type='prediction_order'
+		  AND r.reference_id::text = o.id::text
+		  AND r.status='expired'
+		  AND o.status IN ('open','partial')
+	`)
+	if err != nil {
+		return r, fmt.Errorf("heal expired reservations: %w", err)
+	}
+	r.ExpiredReservationsHealed, _ = res.RowsAffected()
 
 	// Step 2a: delete demo-keyed ledger entries first (FK target). A ledger
 	// row qualifies as 'demo' if it carries demo provenance on any of the

@@ -24,6 +24,7 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 		return fmt.Errorf("phase 0: %w", err)
 	}
 	fmt.Printf("  stale pending cancelled: %d\n", cleanup.StalePendingCancelled)
+	fmt.Printf("  expired reservations healed: %d\n", cleanup.ExpiredReservationsHealed)
 	fmt.Printf("  demo orders deleted:     %d\n", cleanup.DemoOrdersDeleted)
 	fmt.Printf("  demo trades deleted:     %d\n", cleanup.DemoTradesDeleted)
 	fmt.Printf("  demo ledger deleted:     %d\n", cleanup.DemoLedgerDeleted)
@@ -101,6 +102,7 @@ func RunWipe(db *sql.DB) error {
 		return fmt.Errorf("wipe: %w", err)
 	}
 	fmt.Printf("  stale pending cancelled: %d\n", cleanup.StalePendingCancelled)
+	fmt.Printf("  expired reservations healed: %d\n", cleanup.ExpiredReservationsHealed)
 	fmt.Printf("  demo orders deleted:     %d\n", cleanup.DemoOrdersDeleted)
 	fmt.Printf("  demo trades deleted:     %d\n", cleanup.DemoTradesDeleted)
 	fmt.Printf("  demo ledger deleted:     %d\n", cleanup.DemoLedgerDeleted)

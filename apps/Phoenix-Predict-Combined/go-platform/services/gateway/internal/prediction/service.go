@@ -481,7 +481,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 			AmountCents: totalCost,
 			Type:        "prediction_order",
 			ID:          taker.ID,
-			ExpiresIn:   24 * time.Hour,
+			ExpiresIn:   reservationTTL(tif, market.CloseAt, now),
 		}
 	}
 
@@ -806,4 +806,29 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	})
 
 	return market, nil
+}
+
+// reservationTTL computes the wallet hold expiry for a placed order. Old
+// code hardcoded 24h, which was wrong for GTC limit orders that sit on
+// the book for days waiting to match — when a taker eventually crossed
+// the bot's resting bid 25h+ later, the maker's reservation had aged
+// past 24h and was already 'expired', so the capture path errored with
+// "reservation is not in held status" (ErrReservationNotHeld). Demo
+// seed Phase 4 hit this on bot orders left over from the prior day's
+// run.
+//
+// Policy: a GTC reservation must outlive the market it's posted in.
+// Market.CloseAt is the latest moment a fill is possible; padding 1h
+// past close covers the auto-closer + reconciler tick window where a
+// late-arriving match could still hit (defense in depth — the closer
+// usually moves the market to 'closed' before then). IOC/FOK + the
+// fallback for closed-or-missing CloseAt keep the original 24h default.
+//
+// Tested in service_reservation_ttl_test.go.
+func reservationTTL(tif TimeInForce, marketCloseAt, now time.Time) time.Duration {
+	const fallback = 24 * time.Hour
+	if tif == TIFGTC && marketCloseAt.After(now) {
+		return marketCloseAt.Sub(now) + time.Hour
+	}
+	return fallback
 }
