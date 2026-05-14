@@ -63,12 +63,37 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	}
 	r.StalePendingCancelled, _ = res.RowsAffected()
 
-	// Step 2a: delete demo-keyed ledger entries first (FK target).
+	// Step 2a: delete demo-keyed ledger entries first (FK target). A ledger
+	// row qualifies as 'demo' if it carries demo provenance on any of the
+	// three pointers it can have:
+	//   - reason LIKE 'demo:%'  — direct top-up entries
+	//   - order_id ∈ demo orders — order-related collateral movements
+	//   - trade_id ∈ demo trades — issuance/match collateral movements
+	//
+	// The third clause is the broadest: any trade either marked demo
+	// history OR matched against an order we know is demo (whether the
+	// trade is on the taker or maker side of the match). Without this
+	// clause the FK constraint on prediction_collateral_ledger.trade_id
+	// prevents deleting the trade in step 2b.
 	res, err = db.Exec(`
+		WITH demo_orders AS (
+		  SELECT id FROM prediction_orders WHERE idempotency_key LIKE 'demo:%'
+		),
+		demo_trades AS (
+		  SELECT id FROM prediction_trades
+		  WHERE trade_kind = 'demo_history'
+		     OR buy_order_id  IN (SELECT id FROM demo_orders)
+		     OR sell_order_id IN (SELECT id FROM demo_orders)
+		     OR match_id IN (
+		       SELECT match_id FROM prediction_trades
+		       WHERE buy_order_id  IN (SELECT id FROM demo_orders)
+		          OR sell_order_id IN (SELECT id FROM demo_orders)
+		     )
+		)
 		DELETE FROM prediction_collateral_ledger
 		WHERE reason LIKE 'demo:%'
-		   OR trade_id IN (SELECT id FROM prediction_trades WHERE trade_kind='demo_history')
-		   OR order_id IN (SELECT id FROM prediction_orders WHERE idempotency_key LIKE 'demo:%')
+		   OR trade_id IN (SELECT id FROM demo_trades)
+		   OR order_id IN (SELECT id FROM demo_orders)
 	`)
 	if err != nil {
 		return r, fmt.Errorf("delete demo ledger entries: %w", err)
@@ -76,12 +101,24 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	r.DemoLedgerDeleted, _ = res.RowsAffected()
 
 	// Step 2b: delete demo-history synthetic trade rows (Phase 3 plant)
-	// plus trades pointed at by demo orders.
+	// plus trades pointed at by demo orders, plus their match-paired
+	// complementary trade rows. The match_id sub-clause catches the
+	// maker side of issuance trades whose buy_order_id is the bot's
+	// resting order (also demo, but the FK in 2a needs both sides
+	// already cleared from the ledger).
 	res, err = db.Exec(`
+		WITH demo_orders AS (
+		  SELECT id FROM prediction_orders WHERE idempotency_key LIKE 'demo:%'
+		)
 		DELETE FROM prediction_trades
 		WHERE trade_kind = 'demo_history'
-		   OR buy_order_id IN (SELECT id FROM prediction_orders WHERE idempotency_key LIKE 'demo:%')
-		   OR sell_order_id IN (SELECT id FROM prediction_orders WHERE idempotency_key LIKE 'demo:%')
+		   OR buy_order_id  IN (SELECT id FROM demo_orders)
+		   OR sell_order_id IN (SELECT id FROM demo_orders)
+		   OR match_id IN (
+		     SELECT match_id FROM prediction_trades
+		     WHERE buy_order_id  IN (SELECT id FROM demo_orders)
+		        OR sell_order_id IN (SELECT id FROM demo_orders)
+		   )
 	`)
 	if err != nil {
 		return r, fmt.Errorf("delete demo trades: %w", err)

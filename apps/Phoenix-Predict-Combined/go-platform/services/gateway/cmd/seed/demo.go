@@ -42,6 +42,11 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 		}
 	}()
 
+	fmt.Println("\n--- Demo Seed: Wallet Top-Up ---")
+	if err := runWalletTopUp(harness.Wallet); err != nil {
+		return fmt.Errorf("wallet topup: %w", err)
+	}
+
 	fmt.Println("\n--- Demo Seed: Phase 1 (market-maker book) ---")
 	p1, err := RunPhase1MarketMaker(ctx, harness)
 	if err != nil {
@@ -50,8 +55,15 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	fmt.Printf("  markets touched: %d  |  orders placed: %d  |  errors: %d\n",
 		p1.MarketsTouched, p1.OrdersPlaced, p1.Errors)
 
-	fmt.Println("\n--- Demo Seed: Phases 2-5 (pending in future commits) ---")
-	fmt.Println("  Phase 2 (synthetic taker volume) — TODO")
+	fmt.Println("\n--- Demo Seed: Phase 2 (synthetic taker volume) ---")
+	p2, err := RunPhase2Volume(ctx, harness, db)
+	if err != nil {
+		return fmt.Errorf("phase 2: %w", err)
+	}
+	fmt.Printf("  markets touched: %d  |  orders placed: %d  |  errors: %d\n",
+		p2.MarketsTouched, p2.OrdersPlaced, p2.Errors)
+
+	fmt.Println("\n--- Demo Seed: Phases 3-5 (pending in future commits) ---")
 	fmt.Println("  Phase 3 (price history backfill) — TODO")
 	fmt.Println("  Phase 4 (demo user portfolio) — TODO")
 	fmt.Println("  Phase 5 (settlements + leaderboard data) — TODO")
