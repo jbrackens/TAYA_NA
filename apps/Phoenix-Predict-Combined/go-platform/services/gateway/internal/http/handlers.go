@@ -175,7 +175,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// --- Feed Adapters & Background Workers ---
 	if predRepo != nil {
 		feedRegistry := feed.NewRegistry()
-		feedRegistry.Register(&feed.ManualAdapter{})
+		// Register both 'admin-manual' (canonical) and 'manual' (legacy
+		// seed-data key) so auto-settler doesn't WARN every tick on
+		// either set. Both route to the same CanSettle=false behavior.
+		feedRegistry.Register(feed.NewManualAdapter("admin-manual"))
+		feedRegistry.Register(feed.NewManualAdapter("manual"))
 		feedRegistry.Register(feed.NewCryptoFeedAdapter())
 
 		// Market closer: check every 30 seconds for markets past close_at

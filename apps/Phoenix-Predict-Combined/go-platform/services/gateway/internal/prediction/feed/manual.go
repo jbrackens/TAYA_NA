@@ -9,9 +9,36 @@ import (
 // ManualAdapter handles markets that require admin-attested resolution.
 // It does not auto-settle — it only validates params and signals that
 // settlement must be done via the admin API.
-type ManualAdapter struct{}
+//
+// Two source keys point at the same behavior: 'admin-manual' is the
+// canonical name today, and 'manual' is the historical key still
+// present on 137 base-seed markets. Both routes are non-auto by design
+// (CanSettle=false), so wiring both to this adapter silences the
+// every-tick "auto-settler: no adapter for source" WARN spam that
+// would otherwise fire for every legacy market on every settler tick.
+//
+// Register both names via separate New() calls in handlers.go; the
+// Registry deduplicates by Name(), not by adapter identity.
+type ManualAdapter struct {
+	name string
+}
 
-func (a *ManualAdapter) Name() string { return "admin-manual" }
+// NewManualAdapter constructs a ManualAdapter under the given source key.
+// Use this to register both 'manual' and 'admin-manual' against the same
+// behavior.
+func NewManualAdapter(name string) *ManualAdapter {
+	if name == "" {
+		name = "admin-manual"
+	}
+	return &ManualAdapter{name: name}
+}
+
+func (a *ManualAdapter) Name() string {
+	if a.name == "" {
+		return "admin-manual"
+	}
+	return a.name
+}
 
 func (a *ManualAdapter) CanSettle(rule string, params json.RawMessage) bool {
 	// Manual adapter doesn't auto-settle — resolution comes from admin API

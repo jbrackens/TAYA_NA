@@ -64,16 +64,6 @@ Design and product debt tracked across planning cycles. Items here are intention
 - **Depends on / blocked by:** Product decision on whether to ship demo with fake charts (current state) or pause demo until real charts ship.
 - **Revisit when:** Next backend feature pass, or when product wants more realistic chart UX.
 
-### Backend — reconciler logs `collateral drift detected` at ERROR level
-
-- **What:** Every reconciler cycle, the gateway logs `level=ERROR msg="reconciler: collateral drift detected"` for several markets (APPLE-LLM-2026, SENATE-DEM-2026, GPT5-JUL26) with `yes_no_mismatch=true` and asymmetric `position_yes_pool` / `position_no_pool`. `adjustment_written=true` so the reconciler patches it, but the underlying imbalance keeps reappearing.
-- **Why:** Strongly suggests an order or settlement path is creating YES positions without corresponding NO positions (or vice versa). Could be a data-integrity time bomb at settlement.
-- **Pros of fixing:** Removes a class of error-log noise that masks real problems. Closes a possible settlement-payout bug before it costs real money.
-- **Cons:** Backend investigation; needs to trace the order-placement → ledger → position flow in `internal/prediction/`.
-- **Context:** Surfaced during gstack `/qa` of the player app on 2026-05-14. Report: `.gstack/qa-reports/qa-report-player-app-2026-05-14.md` (ISSUE-004).
-- **Depends on / blocked by:** None — actionable now with `/investigate`.
-- **Revisit when:** Before any production traffic, or next backend stability sweep.
-
 ### Backend — `auto-settler: no adapter for source` WARN spam every 60s
 
 - **What:** Gateway logs 18+ `WARN auto-settler: no adapter for source` lines per cycle for `source=manual` markets that have no settlement adapter wired up.
