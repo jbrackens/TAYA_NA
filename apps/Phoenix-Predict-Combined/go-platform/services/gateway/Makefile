@@ -76,6 +76,24 @@ seed: ## Load development seed data
 	psql $(GATEWAY_DB_DSN) -f migrations/seed.sql
 	@echo "$(GREEN)✓ Seed data loaded$(RESET)"
 
+demo-data: ## Load base seed + demo state (orderbooks, volume, demo user portfolio, settlements)
+	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \
+		echo "$(BLUE)Error: GATEWAY_DB_DSN environment variable not set$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Loading demo seed (base + phases 0-5)...$(RESET)"
+	WALLET_DB_DSN=$(GATEWAY_DB_DSN) WALLET_STORE_MODE=db go run ./cmd/seed -mode demo
+	@echo "$(GREEN)✓ Demo seed loaded$(RESET)"
+
+wipe-demo: ## Remove rows the demo seed added; leaves base seed intact
+	@if [ -z "$(GATEWAY_DB_DSN)" ]; then \
+		echo "$(BLUE)Error: GATEWAY_DB_DSN environment variable not set$(RESET)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Wiping demo additions...$(RESET)"
+	WALLET_DB_DSN=$(GATEWAY_DB_DSN) WALLET_STORE_MODE=db go run ./cmd/seed -mode wipe
+	@echo "$(GREEN)✓ Demo wiped$(RESET)"
+
 dev-setup: createdb migrate-up seed ## Complete development setup (create DB, migrate, seed)
 	@echo "$(GREEN)✓ Development database setup complete!$(RESET)"
 	@echo ""

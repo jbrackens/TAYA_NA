@@ -170,9 +170,24 @@ export GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmod
 export MIGRATIONS_DIR="$(pwd)/migrations"
 go run ./cmd/migrate up
 
-# Seed test data (6 categories, 11 events, 15 markets, 4 test users)
+# Seed test data (7 categories, 18 events, 152 markets, 4 test users)
 go run ./cmd/seed
 ```
+
+Three seed modes:
+
+- `go run ./cmd/seed` (default `-mode base`) — categories, events, markets, users, wallets only. Empty order books on `execution_mode=order_book` markets.
+- `make demo-data` (`-mode demo`) — base seed + Phase 0-5 demo state for clickable demos. Phases:
+  1. **Phase 0** — cancels stale `pending` orders, removes any prior demo rows
+  2. **Wallet top-up** — u-1 / alice / bob / charlie to $5,000 each, bot to $50,000
+  3. **Phase 1** — market-maker book: 5-level YES + NO bids on every order_book market via `user-bot`. Fixes "no matching liquidity" for taker market orders.
+  4. **Phase 2** — synthetic taker volume: ~870 market BUYs from alice/bob/charlie across 30 markets, backdated 30 days
+  5. **Phase 3** — skipped (charts are client-side synthetic walks, no backend history needed)
+  6. **Phase 4** — demo user (u-1) opens 12 positions across categories with varied PnL
+  7. **Phase 5** — settles 3 markets (SENATE-DEM-2026 YES, GPT5-JUL26 NO, UCL-CITY-2526 NO) so History + Leaderboards are populated
+- `make wipe-demo` (`-mode wipe`) — removes only the rows demo phases wrote (idempotency_key LIKE 'demo:%', attestation_source='demo', trade_kind='demo_history'). Base seed rows untouched. Re-runnable.
+
+All demo writes go through `Service.PlaceOrder` and `Service.ResolveMarket` — same path as live HTTP requests — so the ledger stays consistent and the reconciler reads clean.
 
 ### Running services
 
