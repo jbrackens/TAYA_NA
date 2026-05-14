@@ -132,7 +132,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	} else {
 		slog.Warn("prediction: no DB available, prediction service will not function")
 	}
-	predWallet := newPredictionWalletAdapter(walletService)
+	predWallet := NewPredictionWalletAdapter(walletService)
 	predictionService := prediction.NewService(predRepo, predWallet)
 	// Prediction-domain counters: orders placed (by status + side + action +
 	// type), trades produced, reconciler runs (clean/drift/error), drift

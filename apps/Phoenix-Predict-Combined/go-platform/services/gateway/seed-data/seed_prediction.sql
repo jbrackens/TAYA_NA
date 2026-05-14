@@ -364,13 +364,17 @@ INSERT INTO prediction_orders (id, user_id, market_id, side, action, order_type,
   (md5('ord-006')::uuid, 'user-003', md5('mkt-apple-llm')::uuid, 'yes', 'buy', 'market', 68, 25, 25, 0, 1700, 'filled', NOW() - INTERVAL '15 minutes', NOW() - INTERVAL '15 minutes', NOW() - INTERVAL '15 minutes')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, price_cents, quantity, fee_cents, is_amm_trade, traded_at) VALUES
-  (md5('trd-001')::uuid, md5('mkt-btc-100k-yes')::uuid, md5('ord-001')::uuid, 'user-001', 'yes', 60, 20, 0, true, NOW() - INTERVAL '2 hours'),
-  (md5('trd-002')::uuid, md5('mkt-btc-100k-yes')::uuid, md5('ord-002')::uuid, 'user-002', 'no', 40, 15, 0, true, NOW() - INTERVAL '90 minutes'),
-  (md5('trd-003')::uuid, md5('mkt-fed-cut-may')::uuid, md5('ord-003')::uuid, 'user-001', 'yes', 45, 50, 0, true, NOW() - INTERVAL '1 hour'),
-  (md5('trd-004')::uuid, md5('mkt-senate-dem')::uuid, md5('ord-004')::uuid, 'user-003', 'yes', 41, 100, 0, true, NOW() - INTERVAL '45 minutes'),
-  (md5('trd-005')::uuid, md5('mkt-gpt5-jul')::uuid, md5('ord-005')::uuid, 'user-002', 'no', 65, 30, 0, true, NOW() - INTERVAL '30 minutes'),
-  (md5('trd-006')::uuid, md5('mkt-apple-llm')::uuid, md5('ord-006')::uuid, 'user-003', 'yes', 68, 25, 0, true, NOW() - INTERVAL '15 minutes')
+-- match_id/trade_kind/engine_kind are NOT NULL with no schema default since
+-- a tightening migration. Existing dev DB rows have match_id=id,
+-- trade_kind='secondary', engine_kind='amm' — match that convention so a
+-- fresh DB can run this seed too.
+INSERT INTO prediction_trades (id, market_id, buy_order_id, buyer_id, side, price_cents, quantity, fee_cents, is_amm_trade, traded_at, match_id, trade_kind, engine_kind) VALUES
+  (md5('trd-001')::uuid, md5('mkt-btc-100k-yes')::uuid, md5('ord-001')::uuid, 'user-001', 'yes', 60, 20, 0, true, NOW() - INTERVAL '2 hours',     md5('trd-001')::uuid, 'secondary', 'amm'),
+  (md5('trd-002')::uuid, md5('mkt-btc-100k-yes')::uuid, md5('ord-002')::uuid, 'user-002', 'no',  40, 15, 0, true, NOW() - INTERVAL '90 minutes', md5('trd-002')::uuid, 'secondary', 'amm'),
+  (md5('trd-003')::uuid, md5('mkt-fed-cut-may')::uuid,  md5('ord-003')::uuid, 'user-001', 'yes', 45, 50, 0, true, NOW() - INTERVAL '1 hour',     md5('trd-003')::uuid, 'secondary', 'amm'),
+  (md5('trd-004')::uuid, md5('mkt-senate-dem')::uuid,   md5('ord-004')::uuid, 'user-003', 'yes', 41, 100, 0, true, NOW() - INTERVAL '45 minutes', md5('trd-004')::uuid, 'secondary', 'amm'),
+  (md5('trd-005')::uuid, md5('mkt-gpt5-jul')::uuid,     md5('ord-005')::uuid, 'user-002', 'no',  65, 30, 0, true, NOW() - INTERVAL '30 minutes', md5('trd-005')::uuid, 'secondary', 'amm'),
+  (md5('trd-006')::uuid, md5('mkt-apple-llm')::uuid,    md5('ord-006')::uuid, 'user-003', 'yes', 68, 25, 0, true, NOW() - INTERVAL '15 minutes', md5('trd-006')::uuid, 'secondary', 'amm')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_cents, total_cost_cents) VALUES
