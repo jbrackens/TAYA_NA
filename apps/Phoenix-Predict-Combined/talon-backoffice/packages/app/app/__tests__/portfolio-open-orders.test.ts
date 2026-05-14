@@ -33,14 +33,17 @@ describe("portfolio open orders tab", () => {
       /orders:\s*activeOrders\.length/,
       "Open orders badge should count only active orders",
     );
+    // OrdersTable JSX may carry additional props (e.g. onCancelled for
+    // the per-row Cancel button added in ISSUE-002), but it MUST be
+    // wired to activeOrders, never to the unfiltered orders list.
     assert.match(
       source,
-      /<OrdersTable\s+orders=\{activeOrders\}\s+marketsById=\{marketsById\}\s*\/>/,
+      /<OrdersTable[\s\S]*?orders=\{activeOrders\}/,
       "Open orders table should render only active orders",
     );
     assert.doesNotMatch(
       source,
-      /<OrdersTable\s+orders=\{orders\}/,
+      /<OrdersTable[\s\S]*?orders=\{orders\}/,
       "Open orders table must not receive the unfiltered order history",
     );
   });

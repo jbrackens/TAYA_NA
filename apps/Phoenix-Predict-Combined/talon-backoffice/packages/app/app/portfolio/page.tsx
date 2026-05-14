@@ -34,6 +34,7 @@ import {
   getUserStanding,
   type LeaderboardEntry,
 } from "../lib/api/leaderboards-client";
+import { useToast } from "../components/ToastProvider";
 
 const api = createPredictionClient();
 
@@ -197,7 +198,19 @@ export default function PortfolioPage() {
         <PositionsTable positions={positions} marketsById={marketsById} />
       )}
       {tab === "orders" && (
-        <OrdersTable orders={activeOrders} marketsById={marketsById} />
+        <OrdersTable
+          orders={activeOrders}
+          marketsById={marketsById}
+          onCancelled={(orderID) =>
+            setOrders((prev) =>
+              prev.map((o) =>
+                o.id === orderID
+                  ? { ...o, status: "cancelled" as OrderStatus }
+                  : o,
+              ),
+            )
+          }
+        />
       )}
       {tab === "history" && (
         <HistoryTable
@@ -471,25 +484,52 @@ function PositionsTable({
 function OrdersTable({
   orders,
   marketsById,
+  onCancelled,
 }: {
   orders: PredictionOrder[];
   marketsById: Map<string, PredictionMarket>;
+  onCancelled: (orderID: string) => void;
 }) {
+  const toast = useToast();
+  const [pendingCancel, setPendingCancel] = useState<string | null>(null);
+
   if (orders.length === 0) {
     return <EmptyState line="No open orders." />;
   }
+
+  const handleCancel = async (orderID: string, marketTicker: string) => {
+    setPendingCancel(orderID);
+    try {
+      await api.cancelOrder(orderID);
+      onCancelled(orderID);
+      toast.success(
+        "Order cancelled",
+        `Reserved cash released on ${marketTicker}`,
+      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Cancel failed";
+      logger.warn("Portfolio", "cancel order failed", message);
+      toast.error("Cancel failed", message);
+    } finally {
+      setPendingCancel(null);
+    }
+  };
+
   return (
     <DataTable
       columns={[
-        { label: "Market", width: "minmax(200px, 2fr)" },
+        { label: "Market", width: "minmax(180px, 2fr)" },
         { label: "Side", width: "60px", align: "center" },
         { label: "Qty", width: "60px", align: "right" },
         { label: "Cost", width: "90px", align: "right" },
         { label: "Status", width: "100px", align: "center" },
         { label: "Placed", width: "100px", align: "right" },
+        { label: "", width: "90px", align: "right" },
       ]}
       rows={orders.map((o) => {
         const m = marketsById.get(o.marketId);
+        const isCancelling = pendingCancel === o.id;
+        const ticker = m?.ticker ?? o.marketId;
         return {
           key: o.id,
           href: m ? `/market/${m.ticker}` : undefined,
@@ -510,6 +550,24 @@ function OrdersTable({
             <span key="d" className="mono pf-dim">
               {formatDate(o.createdAt)}
             </span>,
+            // Per-row Cancel. e.stopPropagation + preventDefault keep the
+            // click from triggering the row-level navigation `href`. The
+            // server's cancelOrder is idempotent on already-cancelled
+            // orders, but the button hides itself optimistically via
+            // onCancelled so users don't double-tap.
+            <button
+              key="cx"
+              type="button"
+              className="pf-cancel-btn"
+              disabled={isCancelling}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                void handleCancel(o.id, ticker);
+              }}
+            >
+              {isCancelling ? "…" : "Cancel"}
+            </button>,
           ],
         };
       })}
@@ -1038,6 +1096,32 @@ function Styles() {
       .pf-gain { color: var(--accent); font-weight: 700; text-shadow: 0 0 6px var(--accent-glow-color); }
       .pf-loss { color: var(--no-text); font-weight: 700; }
       .pf-dim  { color: var(--t3); }
+
+      /* Inline Cancel button on Open orders rows. Quiet by default —
+         it's a destructive action, but a low-stakes one (limit order
+         releases reserved cash). Red on hover to match destructive
+         convention without screaming red at rest. */
+      .pf-cancel-btn {
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--t2);
+        background: transparent;
+        border: 1px solid var(--border-1, rgba(0,0,0,0.12));
+        border-radius: var(--r-sm);
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s, background 0.15s;
+      }
+      .pf-cancel-btn:hover:not(:disabled) {
+        color: var(--no-text);
+        border-color: var(--no-text);
+        background: var(--no-soft);
+      }
+      .pf-cancel-btn:disabled {
+        cursor: default;
+        opacity: 0.5;
+      }
 
       .pf-inline-link {
         color: var(--accent);

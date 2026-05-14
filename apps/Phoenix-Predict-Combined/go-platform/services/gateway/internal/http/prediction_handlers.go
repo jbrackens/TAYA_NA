@@ -506,6 +506,48 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 		return httpx.WriteJSON(w, stdhttp.StatusOK, preview)
 	}))
 
+	// POST /api/v1/orders/{id}/cancel — release reservation + mark cancelled.
+	// The api-client's cancelOrder() has been calling this path since the
+	// client was first written, but the server route was missing — calls
+	// 404'd. Service.CancelOrder is fully implemented (releases the
+	// wallet reservation in a tx for exchange orders); we just needed to
+	// expose it. The catch-all on /api/v1/orders/ dispatches to this
+	// handler when the path matches.
+	mux.Handle("/api/v1/orders/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		// Path shape: /api/v1/orders/{id}/cancel
+		const prefix = "/api/v1/orders/"
+		const suffix = "/cancel"
+		path := r.URL.Path
+		if !strings.HasPrefix(path, prefix) || !strings.HasSuffix(path, suffix) {
+			return httpx.NotFound("unknown orders subpath")
+		}
+		orderID := strings.TrimSuffix(strings.TrimPrefix(path, prefix), suffix)
+		if orderID == "" || strings.Contains(orderID, "/") {
+			return httpx.BadRequest("invalid order id", nil)
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		userID := userIDFromRequest(r)
+		if userID == "" {
+			return httpx.Unauthorized("authentication required")
+		}
+		if err := svc.CancelOrder(r.Context(), orderID, userID); err != nil {
+			// Distinguish ownership / not-found / state-transition errors so
+			// the frontend can surface a useful message.
+			msg := err.Error()
+			switch {
+			case strings.Contains(msg, "not found"):
+				return httpx.NotFound(msg)
+			case strings.Contains(msg, "does not belong"):
+				return httpx.Forbidden(msg)
+			default:
+				return httpx.BadRequest(msg, nil)
+			}
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]string{"status": "cancelled"})
+	}))
+
 	slog.Info("order routes registered")
 }
 
