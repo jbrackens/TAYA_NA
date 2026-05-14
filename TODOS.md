@@ -64,15 +64,6 @@ Design and product debt tracked across planning cycles. Items here are intention
 - **Depends on / blocked by:** Product decision on whether to ship demo with fake charts (current state) or pause demo until real charts ship.
 - **Revisit when:** Next backend feature pass, or when product wants more realistic chart UX.
 
-### Backend — `auto-settler: no adapter for source` WARN spam every 60s
-
-- **What:** Gateway logs 18+ `WARN auto-settler: no adapter for source` lines per cycle for `source=manual` markets that have no settlement adapter wired up.
-- **Why:** Log noise hides real warnings. Operationally annoying when tailing gateway logs during dev.
-- **Pros of fixing:** Quiet, signal-only logs.
-- **Cons:** Trivial.
-- **Context:** Surfaced during gstack `/qa` on 2026-05-14. ISSUE-005.
-- **Revisit when:** Next gateway pass — auto-settler should skip `source=manual` markets silently or downgrade to DEBUG.
-
 ### Player app — antd 4 leaks into player-app compile, emits React-DOM API removal warnings
 
 - **What:** Every page compile in `packages/app` emits `Attempted import error: 'render' is not exported from 'react-dom'` and `unmountComponentAtNode' is not exported` from `antd/es/modal/confirm.js` and `antd/es/typography/util.js`. Per `packages/app/CLAUDE.md` antd is not supposed to be imported into `app/` — it's leaking through a transitive workspace dep.
@@ -91,6 +82,12 @@ Design and product debt tracked across planning cycles. Items here are intention
 - `make demo-data` and `make wipe-demo` for ergonomics; both idempotent and re-runnable.
 - Drives every write through `Service.PlaceOrder` / `Service.ResolveMarket` so the ledger stays consistent. Reconciler reads clean after each run (no drift events).
 - Final demo state: 152 markets, 6,200+ orders, 1,500+ trades, 370+ positions, 3 settled markets, demo user u-1 with 4 open positions + 2 settled payouts + $5,169 wallet.
+
+### Backend — auto-settler WARN spam silenced for manual-source markets — fixed 2026-05-14
+
+- Commit silences ~17 `auto-settler: no adapter for source` WARN lines per minute by registering `ManualAdapter` under both `admin-manual` (canonical) and `manual` (legacy seed-data key). 137 base-seed markets carry `source=manual` and now route to the same non-auto skip path the 12 `admin-manual` markets already used.
+- Live-verified: 0 WARNs over 5-minute window (was ~85). Auto-settler still ticks on 1m interval.
+- ISSUE-005 from `.gstack/qa-reports/qa-report-player-app-2026-05-14.md`.
 
 ### Player app — reconciler false-positive on AMM-legacy markets — fixed 2026-05-14
 
