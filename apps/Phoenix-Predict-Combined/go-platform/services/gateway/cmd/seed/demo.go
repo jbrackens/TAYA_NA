@@ -63,10 +63,29 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	fmt.Printf("  markets touched: %d  |  orders placed: %d  |  errors: %d\n",
 		p2.MarketsTouched, p2.OrdersPlaced, p2.Errors)
 
-	fmt.Println("\n--- Demo Seed: Phases 3-5 (pending in future commits) ---")
-	fmt.Println("  Phase 3 (price history backfill) — TODO")
-	fmt.Println("  Phase 4 (demo user portfolio) — TODO")
-	fmt.Println("  Phase 5 (settlements + leaderboard data) — TODO")
+	// Phase 3 (price history backfill) intentionally skipped: the player
+	// app's charts (heroChartPath in components/prediction/utils/spark.ts,
+	// MarketChart.tsx) are client-side synthetic walks seeded by ticker
+	// name. They do not read from prediction_trades, so writing 100k
+	// synthetic backdated trade rows would bloat the DB without changing
+	// any visible chart. Leaving this slot to make the phase numbers
+	// match PLAN-demo-seed-data.md where the decision is recorded.
+
+	fmt.Println("\n--- Demo Seed: Phase 4 (demo user portfolio) ---")
+	p4, err := RunPhase4DemoUser(ctx, harness)
+	if err != nil {
+		return fmt.Errorf("phase 4: %w", err)
+	}
+	fmt.Printf("  markets touched: %d  |  orders placed: %d  |  skipped: %d  |  errors: %d\n",
+		p4.MarketsTouched, p4.OrdersPlaced, p4.OrdersSkipped, p4.Errors)
+
+	fmt.Println("\n--- Demo Seed: Phase 5 (settlements) ---")
+	p5, err := RunPhase5Settle(ctx, harness)
+	if err != nil {
+		return fmt.Errorf("phase 5: %w", err)
+	}
+	fmt.Printf("  markets settled: %d  |  payouts created: %d  |  errors: %d\n",
+		p5.MarketsTouched, p5.OrdersPlaced, p5.Errors)
 
 	return nil
 }
