@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,7 +12,39 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Modes for cmd/seed:
+//
+//	base — run the SQL seed (categories, events, markets, users, wallets).
+//	       Default. Behavior preserved from before the demo extension.
+//	demo — run base, then layer on demo-ready state: cleanup stuck orders,
+//	       seed an order book on every order_book market via the bot user,
+//	       generate historical trade volume + price history, give the demo
+//	       user a real portfolio, settle a few markets so leaderboards and
+//	       rewards have data.
+//	wipe — remove only the rows the demo phases wrote. Identified by
+//	       idempotency keys with the 'demo:' prefix and synthetic trade
+//	       rows with trade_kind='demo_history'. Base seed rows are
+//	       untouched.
+//
+// The mode flag is the contract used by `make demo-data` and `make wipe-demo`
+// in services/gateway/Makefile. Keep the names stable.
+const (
+	modeBase = "base"
+	modeDemo = "demo"
+	modeWipe = "wipe"
+)
+
 func main() {
+	mode := flag.String("mode", modeBase, "seed mode: base | demo | wipe")
+	flag.Parse()
+
+	switch *mode {
+	case modeBase, modeDemo, modeWipe:
+		// ok
+	default:
+		log.Fatalf("error: unknown -mode %q (want base, demo, or wipe)", *mode)
+	}
+
 	driver := os.Getenv("GATEWAY_DB_DRIVER")
 	if strings.TrimSpace(driver) == "" {
 		driver = "postgres"
@@ -19,26 +52,9 @@ func main() {
 
 	dsn := os.Getenv("GATEWAY_DB_DSN")
 	if strings.TrimSpace(dsn) == "" {
-		log.Fatal("error: GATEWAY_DB_DSN environment variable not set\n\nUsage:\n  GATEWAY_DB_DSN='postgres://user:pass@localhost:5432/predict?sslmode=disable' go run ./cmd/seed")
+		log.Fatal("error: GATEWAY_DB_DSN environment variable not set\n\nUsage:\n  GATEWAY_DB_DSN='postgres://user:pass@localhost:5432/predict?sslmode=disable' go run ./cmd/seed [-mode demo|wipe]")
 	}
 
-	// Find seed file
-	seedFile := os.Getenv("SEED_FILE")
-	if seedFile == "" {
-		seedFile = findSeedFile()
-	}
-
-	if seedFile == "" {
-		log.Fatal("error: seed file not found. Set SEED_FILE env or run from the gateway directory.")
-	}
-
-	// Read seed SQL
-	seedSQL, err := os.ReadFile(seedFile)
-	if err != nil {
-		log.Fatalf("error: could not read seed file %s: %v", seedFile, err)
-	}
-
-	// Connect to database
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		log.Fatalf("error: could not open database: %v", err)
@@ -49,18 +65,41 @@ func main() {
 		log.Fatalf("error: could not connect to database: %v", err)
 	}
 
-	fmt.Printf("Connected to database. Running seed from %s...\n", seedFile)
+	// Base SQL seed runs in base and demo modes. Wipe mode skips it — the
+	// goal is to remove demo additions, not reset the world.
+	if *mode == modeBase || *mode == modeDemo {
+		seedFile := os.Getenv("SEED_FILE")
+		if seedFile == "" {
+			seedFile = findSeedFile()
+		}
+		if seedFile == "" {
+			log.Fatal("error: seed file not found. Set SEED_FILE env or run from the gateway directory.")
+		}
+		seedSQL, err := os.ReadFile(seedFile)
+		if err != nil {
+			log.Fatalf("error: could not read seed file %s: %v", seedFile, err)
+		}
 
-	// Execute seed SQL
-	result, err := db.Exec(string(seedSQL))
-	if err != nil {
-		log.Fatalf("error: seed failed: %v", err)
+		fmt.Printf("Connected to database. Running base seed from %s...\n", seedFile)
+		result, err := db.Exec(string(seedSQL))
+		if err != nil {
+			log.Fatalf("error: seed failed: %v", err)
+		}
+		rows, _ := result.RowsAffected()
+		fmt.Printf("Base seed completed. Rows affected: %d\n", rows)
 	}
 
-	rows, _ := result.RowsAffected()
-	fmt.Printf("Seed completed successfully. Rows affected: %d\n", rows)
+	switch *mode {
+	case modeDemo:
+		if err := RunDemo(db, driver, dsn); err != nil {
+			log.Fatalf("error: demo seed failed: %v", err)
+		}
+	case modeWipe:
+		if err := RunWipe(db); err != nil {
+			log.Fatalf("error: wipe failed: %v", err)
+		}
+	}
 
-	// Print summary
 	printSummary(db)
 }
 
