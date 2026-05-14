@@ -47,33 +47,54 @@ const icons: Record<ToastType, React.ReactNode> = {
   warning: <AlertTriangle size={14} strokeWidth={2} />,
 };
 
+// Colors target the P8 cream theme (--bg-deep #f8f9fa). The prior values
+// were inherited from the dark sportsbook theme and rendered white-on-faint
+// on the prediction app's light backdrop — toasts fired but were invisible
+// (caught when QA placed a trade and saw no feedback despite the toast
+// existing in the DOM). Backgrounds use the existing *-soft tokens; titles
+// and messages now sit on AA-contrast text tokens.
 const colors: Record<
   ToastType,
-  { bg: string; border: string; icon: string; iconBg: string }
+  {
+    bg: string;
+    border: string;
+    icon: string;
+    iconBg: string;
+    titleColor: string;
+    messageColor: string;
+  }
 > = {
   success: {
-    bg: "rgba(43, 228, 128, 0.1)",
-    border: "rgba(43, 228, 128, 0.3)",
-    icon: "var(--accent)",
-    iconBg: "rgba(43, 228, 128, 0.15)",
+    bg: "var(--yes-soft)",
+    border: "var(--yes-text)",
+    icon: "var(--yes-text)",
+    iconBg: "var(--yes-soft)",
+    titleColor: "var(--yes-text)",
+    messageColor: "var(--t2)",
   },
   error: {
-    bg: "rgba(255, 155, 107, 0.1)",
-    border: "rgba(255, 155, 107, 0.3)",
-    icon: "var(--no)",
-    iconBg: "rgba(255, 155, 107, 0.15)",
+    bg: "var(--no-soft)",
+    border: "var(--no-text)",
+    icon: "var(--no-text)",
+    iconBg: "var(--no-soft)",
+    titleColor: "var(--no-text)",
+    messageColor: "var(--t2)",
   },
   info: {
-    bg: "rgba(127, 200, 255, 0.1)",
-    border: "rgba(127, 200, 255, 0.3)",
-    icon: "var(--yes)",
-    iconBg: "rgba(127, 200, 255, 0.15)",
+    bg: "var(--accent-soft)",
+    border: "var(--focus-ring)",
+    icon: "var(--focus-ring)",
+    iconBg: "var(--accent-soft)",
+    titleColor: "var(--t1)",
+    messageColor: "var(--t2)",
   },
   warning: {
-    bg: "rgba(251, 191, 36, 0.1)",
-    border: "rgba(251, 191, 36, 0.3)",
-    icon: "#fbbf24",
-    iconBg: "rgba(251, 191, 36, 0.15)",
+    bg: "rgba(251, 191, 36, 0.18)",
+    border: "#b45309",
+    icon: "#b45309",
+    iconBg: "rgba(251, 191, 36, 0.22)",
+    titleColor: "#b45309",
+    messageColor: "var(--t2)",
   },
 };
 
@@ -115,7 +136,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
         borderRadius: 10,
         background: c.bg,
         border: `1px solid ${c.border}`,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
         minWidth: 300,
         maxWidth: 400,
         animation: exiting
@@ -149,7 +170,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: "#f8fafc",
+            color: c.titleColor,
             lineHeight: 1.4,
           }}
         >
@@ -159,7 +180,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           <div
             style={{
               fontSize: 12,
-              color: "#D3D3D3",
+              color: c.messageColor,
               marginTop: 2,
               lineHeight: 1.5,
             }}
@@ -175,7 +196,7 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
         style={{
           background: "none",
           border: "none",
-          color: "#4a5580",
+          color: "var(--t3)",
           cursor: "pointer",
           fontSize: 16,
           padding: 2,
@@ -184,10 +205,10 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
           transition: "color 0.15s",
         }}
         onMouseEnter={(e) => {
-          (e.target as HTMLElement).style.color = "#D3D3D3";
+          (e.target as HTMLElement).style.color = "var(--t1)";
         }}
         onMouseLeave={(e) => {
-          (e.target as HTMLElement).style.color = "#4a5580";
+          (e.target as HTMLElement).style.color = "var(--t3)";
         }}
       >
         ×
