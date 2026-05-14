@@ -19,14 +19,29 @@ import (
 // when ledger and positions disagree, both numbers help bisect which
 // table was last touched.
 type CollateralDriftReport struct {
-	MarketID         string
-	ExpectedYesPool  int64 // sum of YES position qty × 100 (forensic only)
-	ExpectedNoPool   int64 // sum of NO position qty × 100 (forensic only)
-	LedgerSumCents   int64 // sum of non-adjustment ledger rows; the truth
-	ActualPoolCents  int64 // market.collateral_pool_cents
-	DriftCents       int64 // 0 if invariants hold
-	YesNoMismatch    bool  // YES sum != NO sum (per-share invariant, still useful)
-	AdjustmentWritten bool // true if Phase 2 wrote a ledger row
+	MarketID          string
+	ExpectedYesPool   int64 // sum of YES position qty × 100 (forensic only)
+	ExpectedNoPool    int64 // sum of NO position qty × 100 (forensic only)
+	LedgerSumCents    int64 // sum of non-adjustment ledger rows; the truth
+	ActualPoolCents   int64 // market.collateral_pool_cents
+	DriftCents        int64 // 0 if invariants hold
+	HasBookTrades     bool  // market has at least one non-AMM trade
+	YesNoMismatch     bool  // YES sum != NO sum on a market with book trades
+	AdjustmentWritten bool  // true if Phase 2 wrote a ledger row
+}
+
+// computeYesNoMismatch reports whether a position-pool asymmetry is a real
+// bug. AMM-era markets have one-sided positions by design — the LMSR cost
+// function holds collateral, not paired YES/NO position rows. Markets
+// migrated from amm to order_book retain those positions but should not
+// fire the invariant. Order-book issuance fills always create equal
+// YES + NO positions, so asymmetry on a market with at least one
+// non-AMM trade is a real bug worth surfacing.
+func computeYesNoMismatch(hasBookTrades bool, yesPool, noPool int64) bool {
+	if !hasBookTrades {
+		return false
+	}
+	return yesPool != noPool
 }
 
 // ReconcileMarket runs the two-phase collateral check for one market.
@@ -123,7 +138,9 @@ func (r *SQLRepository) ReconcileMarket(ctx context.Context, marketID string) (*
 // YesNoMismatch is retained as a separate signal because for a pure
 // order-book market issuance fills always create equal YES+NO, so an
 // imbalance there is its own bug worth surfacing — independent of pool
-// drift.
+// drift. It is gated by HasBookTrades so AMM-only markets (and markets
+// migrated from amm to order_book with no subsequent book activity) do
+// not trip the signal on their legacy one-sided positions.
 func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, marketID string) (*CollateralDriftReport, error) {
 	var report CollateralDriftReport
 	report.MarketID = marketID
@@ -171,7 +188,23 @@ func (r *SQLRepository) readDriftSnapshot(ctx context.Context, q sqlReader, mark
 		return nil, err
 	}
 
-	report.YesNoMismatch = report.ExpectedYesPool != report.ExpectedNoPool
+	// HasBookTrades gates the YesNoMismatch signal. Markets whose only
+	// trades came through the AMM (is_amm_trade=true) have one-sided
+	// positions by design — the LMSR collateral lives in the market's
+	// reserve, not in paired position rows. Once a market gets any
+	// order-book issuance, the YES+NO parity invariant applies and an
+	// asymmetry is a real bug.
+	if err := q.QueryRowContext(ctx,
+		`SELECT EXISTS (
+		   SELECT 1 FROM prediction_trades
+		   WHERE market_id = $1 AND is_amm_trade = false
+		 )`,
+		marketID,
+	).Scan(&report.HasBookTrades); err != nil {
+		return nil, err
+	}
+
+	report.YesNoMismatch = computeYesNoMismatch(report.HasBookTrades, report.ExpectedYesPool, report.ExpectedNoPool)
 	report.DriftCents = report.LedgerSumCents - report.ActualPoolCents
 	return &report, nil
 }
