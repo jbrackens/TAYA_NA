@@ -52,7 +52,12 @@ function formatHeroCloseLeft(iso: string): string {
   return `${Math.max(1, Math.floor(mins))}m`;
 }
 
-const HERO_PERIODS = ["1H", "1D", "1W", "1M", "3M", "ALL"] as const;
+// HERO_PERIODS was the placeholder timeframe tab bar. The backend price-
+// history endpoint isn't wired yet (see MarketChart.tsx:9 and TODOS.md
+// "backend price-history endpoint + wire real charts"), so the tabs sat
+// permanently disabled — a "this looks broken" tell on the home page.
+// Hidden until real history lands. Restore the bar when the endpoint
+// exists.
 
 function DiscoveryHero({
   market,
@@ -288,30 +293,6 @@ function DiscoveryHero({
               fill="none"
             />
           </svg>
-          <div
-            className="rh-periods"
-            role="tablist"
-            aria-label="Chart range"
-            aria-describedby="rh-periods-note"
-          >
-            <span id="rh-periods-note" className="sr-only">
-              Chart time range selection is unavailable until backend price
-              history is connected.
-            </span>
-            {HERO_PERIODS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                role="tab"
-                className={`rh-period ${p === "1D" ? "is-active" : ""}`}
-                aria-selected={p === "1D"}
-                aria-disabled="true"
-                disabled
-              >
-                {p}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="rh-actions">
