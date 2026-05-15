@@ -1,5 +1,6 @@
-# Built gateway/seed binaries from `go build ./cmd/...`
-seed
-gateway
-migrate
-bin/
+# Built binaries from `go build ./cmd/...` — pin to the gateway directory
+# (top-level) so we don't accidentally ignore cmd/seed/ source files.
+/seed
+/gateway
+/migrate
+/bin/
