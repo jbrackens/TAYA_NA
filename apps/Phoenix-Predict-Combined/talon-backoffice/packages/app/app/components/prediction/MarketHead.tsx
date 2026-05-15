@@ -68,6 +68,18 @@ export default function MarketHead({
 
   const countdown = formatCountdown(closeAtMs - now);
   const isLive = market.status === "open";
+  const isSettled = market.status === "settled";
+  // Settled markets surface the resolved outcome instead of a live countdown.
+  // Without this, the hero kept saying "Closes in 172d" for a market that
+  // resolved weeks ago, contradicting the "Trading is paused" banner in the
+  // ticket and confusing investors during walkthroughs.
+  const settledLabel = isSettled
+    ? market.result === "yes"
+      ? "YES wins"
+      : market.result === "no"
+        ? "NO wins"
+        : "Settled"
+    : null;
 
   return (
     <>
@@ -112,6 +124,24 @@ export default function MarketHead({
           animation: mh-pulse 2s ease-in-out infinite;
         }
         @keyframes mh-pulse { 50% { opacity: 0.55; } }
+        .mh-settled {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: var(--t2);
+          background: rgba(0, 0, 0, 0.05);
+          border: 1px solid var(--border-1);
+          padding: 4px 10px;
+          border-radius: var(--r-pill);
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.16em;
+        }
+        .mh-settled-outcome {
+          color: var(--t1);
+          letter-spacing: 0.04em;
+        }
         .mh-pill {
           color: var(--t3);
           font-size: 11px;
@@ -165,6 +195,12 @@ export default function MarketHead({
                 LIVE
               </span>
             )}
+            {isSettled && settledLabel && (
+              <span className="mh-settled">
+                SETTLED
+                <span className="mh-settled-outcome">· {settledLabel}</span>
+              </span>
+            )}
             {categoryName && (
               <span className="mh-pill cat">{categoryName}</span>
             )}
@@ -175,7 +211,7 @@ export default function MarketHead({
             <span className="mh-pill">{market.ticker}</span>
           </div>
           <span className="mh-countdown">
-            {countdown}
+            {isSettled ? "Closed" : countdown}
             <span className="sep">·</span>
             {formatCloseDate(market.closeAt)}
           </span>

@@ -89,6 +89,38 @@ const QUICK_AMOUNTS = [5, 25, 100] as const;
 
 type TicketMode = "market" | "limit";
 
+/**
+ * Replacement body for non-open markets (settled, halted, closed, voided).
+ * Previously the full ticket rendered with a pre-filled $25 amount and a
+ * "buy 38 shares · payout $38.46" projection on SETTLED markets, while a
+ * "Trading is paused" banner sat at the bottom — investors read the
+ * projection as a tradeable quote. The dedicated body shows only the
+ * outcome and a one-line explanation.
+ */
+function renderSettledTicket(market: PredictionMarket) {
+  const isSettled = market.status === "settled";
+  const outcomeLabel = isSettled
+    ? market.result === "yes"
+      ? "Settled · YES wins"
+      : market.result === "no"
+        ? "Settled · NO wins"
+        : "Settled"
+    : `Market ${market.status}`;
+  const explainer = isSettled
+    ? market.result
+      ? `This market resolved ${market.result.toUpperCase()}. Winners paid 100¢ per share; losers 0¢.`
+      : "This market is settled. Trading is closed."
+    : `This market is ${market.status}. Trading is paused.`;
+  return (
+    <>
+      <div className="tt-head">
+        <span className="tt-title">{outcomeLabel}</span>
+      </div>
+      <div className="tt-closed">{explainer}</div>
+    </>
+  );
+}
+
 export function TradeTicket({
   market,
   balance,
@@ -578,287 +610,291 @@ export function TradeTicket({
       `}</style>
 
       <section className="tt" aria-label="Trade ticket">
-        <div className="tt-head">
-          <span className="tt-title">Trade</span>
-          <div className="tt-mode" role="tablist" aria-label="Order type">
-            <button
-              role="tab"
-              aria-selected={mode === "market"}
-              className={mode === "market" ? "is-active" : ""}
-              onClick={() => setMode("market")}
-            >
-              Market
-            </button>
-            <button
-              role="tab"
-              aria-selected={mode === "limit"}
-              className={mode === "limit" ? "is-active" : ""}
-              onClick={() => isExchange && setMode("limit")}
-              disabled={!isExchange}
-              title={
-                isExchange
-                  ? "Limit order — set your max buy / min sell price"
-                  : "Limit orders require an exchange-mode market"
-              }
-            >
-              Limit
-            </button>
-          </div>
-        </div>
+        {!isOpen && renderSettledTicket(market)}
+        {isOpen && (
+          <>
+            <div className="tt-head">
+              <span className="tt-title">Trade</span>
+              <div className="tt-mode" role="tablist" aria-label="Order type">
+                <button
+                  role="tab"
+                  aria-selected={mode === "market"}
+                  className={mode === "market" ? "is-active" : ""}
+                  onClick={() => setMode("market")}
+                >
+                  Market
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={mode === "limit"}
+                  className={mode === "limit" ? "is-active" : ""}
+                  onClick={() => isExchange && setMode("limit")}
+                  disabled={!isExchange}
+                  title={
+                    isExchange
+                      ? "Limit order — set your max buy / min sell price"
+                      : "Limit orders require an exchange-mode market"
+                  }
+                >
+                  Limit
+                </button>
+              </div>
+            </div>
 
-        {/* Buy/Sell toggle — only meaningful for exchange markets. AMM stays
+            {/* Buy/Sell toggle — only meaningful for exchange markets. AMM stays
             buy-only because the curve only mints; sell support is the
             order-book book's job. */}
-        {isExchange && (
-          <div
-            className="tt-mode"
-            role="tablist"
-            aria-label="Action"
-            style={{ marginBottom: 14, alignSelf: "flex-start" }}
-          >
-            <button
-              role="tab"
-              aria-selected={action === "buy"}
-              className={action === "buy" ? "is-active" : ""}
-              onClick={() => setAction("buy")}
-            >
-              Buy
-            </button>
-            <button
-              role="tab"
-              aria-selected={action === "sell"}
-              className={action === "sell" ? "is-active" : ""}
-              onClick={() => setAction("sell")}
-              disabled={availableShares === 0}
-              title={
-                availableShares === 0
-                  ? "You don't have shares on this side to sell"
-                  : `Sell up to ${availableShares} ${side.toUpperCase()} shares`
-              }
-            >
-              Sell
-            </button>
-          </div>
-        )}
+            {isExchange && (
+              <div
+                className="tt-mode"
+                role="tablist"
+                aria-label="Action"
+                style={{ marginBottom: 14, alignSelf: "flex-start" }}
+              >
+                <button
+                  role="tab"
+                  aria-selected={action === "buy"}
+                  className={action === "buy" ? "is-active" : ""}
+                  onClick={() => setAction("buy")}
+                >
+                  Buy
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={action === "sell"}
+                  className={action === "sell" ? "is-active" : ""}
+                  onClick={() => setAction("sell")}
+                  disabled={availableShares === 0}
+                  title={
+                    availableShares === 0
+                      ? "You don't have shares on this side to sell"
+                      : `Sell up to ${availableShares} ${side.toUpperCase()} shares`
+                  }
+                >
+                  Sell
+                </button>
+              </div>
+            )}
 
-        <div className="tt-sides" role="tablist" aria-label="Side">
-          <button
-            role="tab"
-            aria-selected={side === "yes"}
-            onClick={() => setSideAndReset("yes")}
-            className={`tt-side yes ${side === "yes" ? "is-selected" : ""}`}
-          >
-            <span className="tt-side-label">YES</span>
-            <span className="tt-side-price">{market.yesPriceCents}¢</span>
-            <span className="tt-side-sub">
-              {market.yesPriceCents >= 50 ? "+" : "−"}
-              {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}%
-              prob
-            </span>
-          </button>
-          <button
-            role="tab"
-            aria-selected={side === "no"}
-            onClick={() => setSideAndReset("no")}
-            className={`tt-side no ${side === "no" ? "is-selected" : ""}`}
-          >
-            <span className="tt-side-label">NO</span>
-            <span className="tt-side-price">{market.noPriceCents}¢</span>
-            <span className="tt-side-sub">
-              {market.noPriceCents >= 50 ? "+" : "−"}
-              {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}% prob
-            </span>
-          </button>
-        </div>
+            <div className="tt-sides" role="tablist" aria-label="Side">
+              <button
+                role="tab"
+                aria-selected={side === "yes"}
+                onClick={() => setSideAndReset("yes")}
+                className={`tt-side yes ${side === "yes" ? "is-selected" : ""}`}
+              >
+                <span className="tt-side-label">YES</span>
+                <span className="tt-side-price">{market.yesPriceCents}¢</span>
+                <span className="tt-side-sub">
+                  {market.yesPriceCents >= 50 ? "+" : "−"}
+                  {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}
+                  % prob
+                </span>
+              </button>
+              <button
+                role="tab"
+                aria-selected={side === "no"}
+                onClick={() => setSideAndReset("no")}
+                className={`tt-side no ${side === "no" ? "is-selected" : ""}`}
+              >
+                <span className="tt-side-label">NO</span>
+                <span className="tt-side-price">{market.noPriceCents}¢</span>
+                <span className="tt-side-sub">
+                  {market.noPriceCents >= 50 ? "+" : "−"}
+                  {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}%
+                  prob
+                </span>
+              </button>
+            </div>
 
-        {/* Limit price input — appears in exchange + limit mode. Bounded
+            {/* Limit price input — appears in exchange + limit mode. Bounded
             [1, 99] cents per the engine's price bounds (out-of-range prices
             are rejected at the API). Step is 1¢ to match tick size. */}
-        {isExchange && mode === "limit" && (
-          <div
-            className="tt-amount"
-            style={{ marginBottom: 14 }}
-            aria-label="Limit price"
-          >
-            <div className="tt-amt-head">
-              <span className="tt-amt-label">
-                Limit price ({side.toUpperCase()})
-              </span>
-              <span className="tt-amt-balance">Mid {marketPrice}¢</span>
-            </div>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              step={1}
-              value={limitPriceCents}
-              onChange={(e) => {
-                const v = parseInt(e.target.value, 10);
-                if (Number.isFinite(v)) {
-                  setLimitPriceCents(Math.max(1, Math.min(99, v)));
-                }
-              }}
-              style={{
-                width: "100%",
-                background: "var(--surface-2)",
-                border: "1px solid var(--border-1)",
-                color: "var(--t1)",
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontSize: 22,
-                fontVariantNumeric: "tabular-nums",
-                padding: "10px 12px",
-                borderRadius: "var(--r-rh-md)",
-                outline: "none",
-              }}
-            />
-            <p
-              style={{
-                fontSize: 11,
-                color: "var(--t3)",
-                marginTop: 6,
-                fontFamily: "'IBM Plex Mono', monospace",
-              }}
-            >
-              {action === "buy"
-                ? `Pays up to ${limitPriceCents}¢/share. Rest unfilled at limit.`
-                : `Sells at ${limitPriceCents}¢/share or better.`}
-            </p>
-          </div>
-        )}
-
-        <div className="tt-amount">
-          <div className="tt-amt-head">
-            <span className="tt-amt-label">
-              {action === "sell" ? "Shares to sell" : "Amount"}
-            </span>
-            <span className="tt-amt-balance">
-              {action === "sell"
-                ? `Available ${availableShares}`
-                : `Balance $${typeof balance === "number" ? balance.toFixed(2) : "—"}`}
-            </span>
-          </div>
-          <div className="tt-amt-display">
-            <div
-              style={{
-                fontFamily: "IBM Plex Mono, monospace",
-                fontSize: 28,
-                fontWeight: 500,
-                lineHeight: 1,
-                letterSpacing: "-0.02em",
-                color: "var(--t1)",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              <span className="tt-amt-affix">$</span>
-              {dollars}
-              <span className="tt-amt-affix">.{centsStr}</span>
-            </div>
-            <div className="tt-amt-sub">
-              {Math.floor(shares)} shares
-              <br />
-              Payout <span className="win">${payout.toFixed(2)}</span>
-            </div>
-          </div>
-          <div className="tt-chips" role="group" aria-label="Quick amount">
-            {QUICK_AMOUNTS.map((a) => {
-              const isActive = Math.floor(amount) === a;
-              return (
-                <button
-                  key={a}
-                  type="button"
-                  // No-op when the chip is already active. Without this guard
-                  // every click on the active chip still calls setAmount with
-                  // the same value, which React treats as an update and
-                  // triggers a re-render of the ticket. Cheap individually,
-                  // but combined with a parent that prefetches a returnUrl
-                  // bound to amount it can feel like the page hangs in dev
-                  // mode while chunks recompile. Cheap defensive change.
-                  onClick={() => {
-                    if (!isActive) setAmount(a);
+            {isExchange && mode === "limit" && (
+              <div
+                className="tt-amount"
+                style={{ marginBottom: 14 }}
+                aria-label="Limit price"
+              >
+                <div className="tt-amt-head">
+                  <span className="tt-amt-label">
+                    Limit price ({side.toUpperCase()})
+                  </span>
+                  <span className="tt-amt-balance">Mid {marketPrice}¢</span>
+                </div>
+                <input
+                  type="number"
+                  min={1}
+                  max={99}
+                  step={1}
+                  value={limitPriceCents}
+                  onChange={(e) => {
+                    const v = parseInt(e.target.value, 10);
+                    if (Number.isFinite(v)) {
+                      setLimitPriceCents(Math.max(1, Math.min(99, v)));
+                    }
                   }}
-                  aria-pressed={isActive}
-                  className={`tt-chip ${isActive ? "is-active" : ""}`}
+                  style={{
+                    width: "100%",
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--border-1)",
+                    color: "var(--t1)",
+                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontSize: 22,
+                    fontVariantNumeric: "tabular-nums",
+                    padding: "10px 12px",
+                    borderRadius: "var(--r-rh-md)",
+                    outline: "none",
+                  }}
+                />
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: "var(--t3)",
+                    marginTop: 6,
+                    fontFamily: "'IBM Plex Mono', monospace",
+                  }}
                 >
-                  ${a}
+                  {action === "buy"
+                    ? `Pays up to ${limitPriceCents}¢/share. Rest unfilled at limit.`
+                    : `Sells at ${limitPriceCents}¢/share or better.`}
+                </p>
+              </div>
+            )}
+
+            <div className="tt-amount">
+              <div className="tt-amt-head">
+                <span className="tt-amt-label">
+                  {action === "sell" ? "Shares to sell" : "Amount"}
+                </span>
+                <span className="tt-amt-balance">
+                  {action === "sell"
+                    ? `Available ${availableShares}`
+                    : `Balance $${typeof balance === "number" ? balance.toFixed(2) : "—"}`}
+                </span>
+              </div>
+              <div className="tt-amt-display">
+                <div
+                  style={{
+                    fontFamily: "IBM Plex Mono, monospace",
+                    fontSize: 28,
+                    fontWeight: 500,
+                    lineHeight: 1,
+                    letterSpacing: "-0.02em",
+                    color: "var(--t1)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  <span className="tt-amt-affix">$</span>
+                  {dollars}
+                  <span className="tt-amt-affix">.{centsStr}</span>
+                </div>
+                <div className="tt-amt-sub">
+                  {Math.floor(shares)} shares
+                  <br />
+                  Payout <span className="win">${payout.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="tt-chips" role="group" aria-label="Quick amount">
+                {QUICK_AMOUNTS.map((a) => {
+                  const isActive = Math.floor(amount) === a;
+                  return (
+                    <button
+                      key={a}
+                      type="button"
+                      // No-op when the chip is already active. Without this guard
+                      // every click on the active chip still calls setAmount with
+                      // the same value, which React treats as an update and
+                      // triggers a re-render of the ticket. Cheap individually,
+                      // but combined with a parent that prefetches a returnUrl
+                      // bound to amount it can feel like the page hangs in dev
+                      // mode while chunks recompile. Cheap defensive change.
+                      onClick={() => {
+                        if (!isActive) setAmount(a);
+                      }}
+                      aria-pressed={isActive}
+                      className={`tt-chip ${isActive ? "is-active" : ""}`}
+                    >
+                      ${a}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof balance !== "number" || balance <= 0) return;
+                    const next = Math.floor(balance);
+                    if (Math.floor(amount) !== next) setAmount(next);
+                  }}
+                  className="tt-chip"
+                  disabled={typeof balance !== "number" || balance <= 0}
+                >
+                  MAX
                 </button>
-              );
-            })}
-            <button
-              type="button"
-              onClick={() => {
-                if (typeof balance !== "number" || balance <= 0) return;
-                const next = Math.floor(balance);
-                if (Math.floor(amount) !== next) setAmount(next);
-              }}
-              className="tt-chip"
-              disabled={typeof balance !== "number" || balance <= 0}
-            >
-              MAX
-            </button>
-          </div>
-        </div>
+              </div>
+            </div>
 
-        <div className="tt-summary">
-          <div className="tt-summary-row">
-            <span className="k">Avg. fill price</span>
-            <span className="v">{price}¢</span>
-          </div>
-          <div className="tt-summary-row">
-            <span className="k">Implied prob</span>
-            <span className="v">{impliedProb}%</span>
-          </div>
-          <div className="tt-summary-row">
-            <span className="k">Shares</span>
-            <span className="v">{shares.toFixed(2)}</span>
-          </div>
-          <div className="tt-summary-row">
-            <span className="k">Payout if {side.toUpperCase()}</span>
-            <span className="v accent">${payout.toFixed(2)}</span>
-          </div>
-        </div>
+            <div className="tt-summary">
+              <div className="tt-summary-row">
+                <span className="k">Avg. fill price</span>
+                <span className="v">{price}¢</span>
+              </div>
+              <div className="tt-summary-row">
+                <span className="k">Implied prob</span>
+                <span className="v">{impliedProb}%</span>
+              </div>
+              <div className="tt-summary-row">
+                <span className="k">Shares</span>
+                <span className="v">{shares.toFixed(2)}</span>
+              </div>
+              <div className="tt-summary-row">
+                <span className="k">Payout if {side.toUpperCase()}</span>
+                <span className="v accent">${payout.toFixed(2)}</span>
+              </div>
+            </div>
 
-        {isOpen ? (
-          authLoading ? (
-            <button type="button" className="tt-cta" disabled>
-              Checking session…
-            </button>
-          ) : !isAuthenticated ? (
-            <>
-              <Link href={loginHref} className="tt-cta">
-                Log in to trade
-              </Link>
-              <p className="tt-state-note">
-                Prices are public. Sign in to place this {side.toUpperCase()}{" "}
-                order.
-              </p>
-            </>
-          ) : insufficientFunds ? (
-            <>
-              <Link href="/cashier" className="tt-cta">
-                Add funds
-              </Link>
-              <p className="tt-state-note" role="alert">
-                Your available balance is below this ${amount.toFixed(2)} order.
-              </p>
-            </>
-          ) : insufficientShares ? (
-            <>
+            {authLoading ? (
               <button type="button" className="tt-cta" disabled>
-                Not enough shares
+                Checking session…
               </button>
-              <p className="tt-state-note" role="alert">
-                You have {availableShares} {side.toUpperCase()} shares
-                available; this sell is for {Math.floor(quantity)}.
-              </p>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="tt-cta"
-              disabled={submitting || quantity < 1}
-            >
-              {/*
+            ) : !isAuthenticated ? (
+              <>
+                <Link href={loginHref} className="tt-cta">
+                  Log in to trade
+                </Link>
+                <p className="tt-state-note">
+                  Prices are public. Sign in to place this {side.toUpperCase()}{" "}
+                  order.
+                </p>
+              </>
+            ) : insufficientFunds ? (
+              <>
+                <Link href="/cashier" className="tt-cta">
+                  Add funds
+                </Link>
+                <p className="tt-state-note" role="alert">
+                  Your available balance is below this ${amount.toFixed(2)}{" "}
+                  order.
+                </p>
+              </>
+            ) : insufficientShares ? (
+              <>
+                <button type="button" className="tt-cta" disabled>
+                  Not enough shares
+                </button>
+                <p className="tt-state-note" role="alert">
+                  You have {availableShares} {side.toUpperCase()} shares
+                  available; this sell is for {Math.floor(quantity)}.
+                </p>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="tt-cta"
+                disabled={submitting || quantity < 1}
+              >
+                {/*
                 Label says "Place trade", not "Review trade", because
                 clicking this button submits the order immediately. The
                 quote panel above already shows fill price, shares, and
@@ -866,28 +902,23 @@ export function TradeTicket({
                 would imply a confirm modal that does not exist and was
                 a stage gotcha during the 2026-05-03 demo dry-run.
               */}
-              {submitting
-                ? "Placing…"
-                : `${action === "sell" ? "Sell" : "Place trade"} · $${amount.toFixed(2)}`}
-            </button>
-          )
-        ) : (
-          <div className="tt-closed">
-            This market is {market.status}. Trading is paused.
-          </div>
+                {submitting
+                  ? "Placing…"
+                  : `${action === "sell" ? "Sell" : "Place trade"} · $${amount.toFixed(2)}`}
+              </button>
+            )}
+
+            <p className="tt-trust">
+              {price}¢ means a {impliedProb}% implied probability. Winning
+              contracts pay $1 each.
+            </p>
+
+            {/* Suppress unused-warning: API surface preserved for Phase 4 */}
+            <input type="hidden" value={otherPrice} readOnly />
+
+            {error && <div className="tt-error">{error}</div>}
+          </>
         )}
-
-        {isOpen && (
-          <p className="tt-trust">
-            {price}¢ means a {impliedProb}% implied probability. Winning
-            contracts pay $1 each.
-          </p>
-        )}
-
-        {/* Suppress unused-warning: API surface preserved for Phase 4 */}
-        <input type="hidden" value={otherPrice} readOnly />
-
-        {error && <div className="tt-error">{error}</div>}
       </section>
     </>
   );
