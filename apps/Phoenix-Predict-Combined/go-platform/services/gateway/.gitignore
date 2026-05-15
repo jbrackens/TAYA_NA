@@ -1,0 +1,5 @@
+# Built gateway/seed binaries from `go build ./cmd/...`
+seed
+gateway
+migrate
+bin/
