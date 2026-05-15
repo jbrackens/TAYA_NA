@@ -46,6 +46,32 @@ var phase5Plan = []struct {
 	{"ETH-5K-MAY26", prediction.MarketResultNo, "demo: ETH stayed under $5K"},
 	// Demo user bought AVATAR3-200M YES → wins.
 	{"AVATAR3-200M", prediction.MarketResultYes, "demo: Avatar 3 cleared $200M"},
+
+	// IMP-* markets — extras that don't appear in Phase 4's u-1 portfolio
+	// but are heavily in Phase 2's synthetic-volume universe (33-40
+	// orders each from alice/bob/charlie). Settling these is what gets
+	// the Phase 2 traders above MinSettled=10 for the Accuracy and
+	// Sharpness leaderboards. Without them the boards read "Nobody has
+	// qualified" — the morning's populated state was only because of
+	// stale leftover settlements that wipe-demo now cleans up correctly.
+	//
+	// Outcomes split roughly 50/50 so the resulting Accuracy column has
+	// believable variance across traders, not a 100%-or-0% blowout.
+	{"IMP-BA07C103", prediction.MarketResultYes, "demo: IMP-BA07C103 resolved YES"},
+	{"IMP-8F36FDF0", prediction.MarketResultNo, "demo: IMP-8F36FDF0 resolved NO"},
+	{"IMP-C018931F", prediction.MarketResultYes, "demo: IMP-C018931F resolved YES"},
+	{"IMP-596EDE83", prediction.MarketResultNo, "demo: IMP-596EDE83 resolved NO"},
+	{"IMP-379D8671", prediction.MarketResultYes, "demo: IMP-379D8671 resolved YES"},
+	{"IMP-6C474A7E", prediction.MarketResultNo, "demo: IMP-6C474A7E resolved NO"},
+	{"IMP-35380ECD", prediction.MarketResultYes, "demo: IMP-35380ECD resolved YES"},
+	{"IMP-2E46461B", prediction.MarketResultNo, "demo: IMP-2E46461B resolved NO"},
+	{"IMP-CE2B8EA0", prediction.MarketResultYes, "demo: IMP-CE2B8EA0 resolved YES"},
+	{"IMP-DA701547", prediction.MarketResultNo, "demo: IMP-DA701547 resolved NO"},
+	{"IMP-77BDFBFB", prediction.MarketResultYes, "demo: IMP-77BDFBFB resolved YES"},
+	{"IMP-309AB782", prediction.MarketResultNo, "demo: IMP-309AB782 resolved NO"},
+	{"IMP-4A0D4DD7", prediction.MarketResultYes, "demo: IMP-4A0D4DD7 resolved YES"},
+	{"IMP-4C7B651D", prediction.MarketResultNo, "demo: IMP-4C7B651D resolved NO"},
+	{"IMP-14D1C287", prediction.MarketResultYes, "demo: IMP-14D1C287 resolved YES"},
 }
 
 // RunPhase5Settle resolves the planned markets. Each market is
