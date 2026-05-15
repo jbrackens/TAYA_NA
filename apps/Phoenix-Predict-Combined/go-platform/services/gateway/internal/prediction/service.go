@@ -486,7 +486,24 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 	}
 
 	if err := exchangeRepo.PersistMatchAtomic(ctx, exchangeWallet, plan); err != nil {
-		return nil, nil, fmt.Errorf("persist match: %w", err)
+		// The pending order row is already committed (the INSERT at the
+		// top of this function happens outside the match tx so the trade
+		// FKs can resolve). PersistMatchAtomic's tx rolls back its own
+		// inserts on error, but the pending order survives. Without
+		// cleanup it sits as a status='pending' orphan with no fills,
+		// no reservations, and no cancelled_at — users see "Order failed"
+		// in the toast but /portfolio/ keeps showing it as pending until
+		// the next demo-seed Phase 0 sweep cancels stale-pendings >1h.
+		// Mirror the engine-error path (line ~470 above): mark the order
+		// rejected with the rollback reason. The taker pointer is still
+		// the latest in-memory state, so failed-fill counters / failure
+		// reasons propagate to the response.
+		reason := err.Error()
+		taker.Status = OrderStatusRejected
+		taker.FailureReason = &reason
+		_ = s.repo.UpdateOrder(ctx, taker)
+		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
+		return taker, nil, fmt.Errorf("persist match: %w", err)
 	}
 
 	// Domain metrics: one order observation by final status, one trade
