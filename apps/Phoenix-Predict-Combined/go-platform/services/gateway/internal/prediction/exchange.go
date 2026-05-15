@@ -211,6 +211,7 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 				return nil, ErrPostOnlyWouldTake
 			}
 			fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
+			fillQty = capFillQtyByNotionalCap(&taker, fillQty, *maker.PriceCents)
 			if fillQty <= 0 {
 				continue
 			}
@@ -257,6 +258,11 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 					return nil, ErrPostOnlyWouldTake
 				}
 				fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
+				// Issuance fills cost the taker (100 - maker_limit) per share,
+				// not the maker's limit price. Cap-check at the actual taker
+				// cost so a market BUY with notionalCapCents=N can't overshoot
+				// the reservation.
+				fillQty = capFillQtyByNotionalCap(&taker, fillQty, ComplementaryTakerPriceCents(*maker.PriceCents))
 				if fillQty <= 0 {
 					continue
 				}
@@ -606,4 +612,36 @@ func minInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// capFillQtyByNotionalCap clamps a proposed fillQty so the resulting
+// capture stays within the taker's remaining cash budget. Market BUYs
+// reserve `notionalCapCents` up front; if the matching loop tries to
+// fill more than that budget allows, the wallet's CaptureReservation
+// rejects with "capture N exceeds remaining M".
+//
+// The cap is the floor of `remainingBudget / takerPriceCents`. Integer
+// division rounds down which is the safe direction — fillQty never
+// causes a budget overshoot. Orders without a notional cap (regular
+// limit BUYs, sells) pass through unchanged.
+//
+// Captures already applied in this match plan are tracked in
+// taker.CapturedCashCents (mutated by each fillSecondary / fillIssuance
+// call), so consecutive fills correctly consume the budget.
+func capFillQtyByNotionalCap(taker *Order, proposedQty, takerPriceCents int) int {
+	if taker.NotionalCapCents == nil || *taker.NotionalCapCents <= 0 {
+		return proposedQty
+	}
+	if takerPriceCents <= 0 {
+		return proposedQty
+	}
+	remaining := *taker.NotionalCapCents - taker.CapturedCashCents
+	if remaining <= 0 {
+		return 0
+	}
+	maxByBudget := int(remaining / int64(takerPriceCents))
+	if maxByBudget < proposedQty {
+		return maxByBudget
+	}
+	return proposedQty
 }
