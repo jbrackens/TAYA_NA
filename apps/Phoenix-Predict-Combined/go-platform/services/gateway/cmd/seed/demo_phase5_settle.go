@@ -7,18 +7,20 @@ import (
 	"phoenix-revival/gateway/internal/prediction"
 )
 
-// Phase 5 settles a small set of markets so the demo has filled
-// History tab + non-empty Leaderboards + Rewards. Each market goes
-// open → closed → settled via Service.TransitionMarketStatus and
-// Service.ResolveMarket. attestation_source='demo' is the key the
-// Phase 0 cleanup uses to find and remove demo settlements on re-run.
+// Phase 5 settles a sample of markets so the demo has filled History +
+// non-empty Leaderboards. Each market goes open → closed → settled via
+// Service.TransitionMarketStatus and Service.ResolveMarket.
+// attestation_source='demo' is the key the Phase 0 cleanup uses to
+// find and remove demo settlements (and revert the markets' status
+// to 'open') on re-run.
 //
-// Three settlements: 1 YES (demo user wins on a YES bet), 1 NO (demo
-// user loses on a YES bet, demo user wins on a NO bet), 1 neutral
-// (settles in a direction demo user has no position on, just for
-// leaderboard variety). All are markets where Phase 4 placed demo
-// user positions; the wallet credits via Service.settlement land
-// in u-1's balance.
+// Why ten markets, not three: the Accuracy leaderboard requires
+// MinSettled=10 in the last 30 days to qualify any trader. With three
+// settlements the board read "Nobody has qualified" during the demo
+// walkthrough. Ten gets alice/bob/charlie (each has positions in many
+// of the markets Phase 2 generated) above the threshold so the board
+// populates. The mix also gives u-1 a 70% accuracy (7W / 3L) — a
+// believable demo trader, not a clairvoyant.
 var phase5Plan = []struct {
 	tickerPrefix string
 	result       prediction.MarketResult
@@ -28,8 +30,22 @@ var phase5Plan = []struct {
 	{"SENATE-DEM-2026", prediction.MarketResultYes, "demo: 2026 midterms settled"},
 	// Demo user bought GPT5-JUL26 YES in Phase 4 → loses (resolves NO).
 	{"GPT5-JUL26", prediction.MarketResultNo, "demo: GPT-5 not released by July"},
-	// Demo user has no position on UCL-CITY (bought NO) — wins their NO bet.
+	// Demo user bought UCL-CITY NO → wins their NO bet (City didn't win).
 	{"UCL-CITY", prediction.MarketResultNo, "demo: City didn't win UCL"},
+	// Demo user bought SENATE-GOP NO → wins (Dems hold).
+	{"SENATE-GOP-2026", prediction.MarketResultNo, "demo: GOP fell short in 2026"},
+	// Demo user bought HOUSE-DEM YES → wins.
+	{"HOUSE-DEM-2026", prediction.MarketResultYes, "demo: Dems won the House"},
+	// Demo user bought APPLE-LLM YES → loses (Apple ships late).
+	{"APPLE-LLM-2026", prediction.MarketResultNo, "demo: Apple LLM slipped to 2027"},
+	// Demo user bought US-RECESSION NO → wins (no recession declared).
+	{"US-RECESSION-2026", prediction.MarketResultNo, "demo: no recession in 2026"},
+	// Demo user bought UCL-REAL YES → loses (Real didn't win).
+	{"UCL-REAL", prediction.MarketResultNo, "demo: Real didn't win UCL"},
+	// Demo user bought ETH-5K NO → wins (ETH stayed below).
+	{"ETH-5K-MAY26", prediction.MarketResultNo, "demo: ETH stayed under $5K"},
+	// Demo user bought AVATAR3-200M YES → wins.
+	{"AVATAR3-200M", prediction.MarketResultYes, "demo: Avatar 3 cleared $200M"},
 }
 
 // RunPhase5Settle resolves the planned markets. Each market is

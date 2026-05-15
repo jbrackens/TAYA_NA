@@ -173,6 +173,88 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 		return r, fmt.Errorf("delete demo payouts: %w", err)
 	}
 
+	// Step 2c.0: purge wallet_ledger payout entries for demo-settled markets.
+	// The settlement service uses the idempotency key
+	// `prediction_payout:<marketID>:<positionID>`, where both ids are
+	// stable across demo re-runs (market_id is md5(slug), position_id is
+	// per (user, market)). After a wipe, re-settling the same market
+	// would replay the same key — the wallet's unique constraint on
+	// (entry_type, user_id, idempotency_key) then rejects with
+	// "idempotency key replay payload conflict" and the settlement
+	// errors out with the market stuck in 'closed'. Clear the wallet
+	// entries here so the next ResolveMarket can write fresh credits.
+	// Scope is the same markets the revert below touches.
+	_, err = db.Exec(`
+		DELETE FROM wallet_ledger
+		WHERE idempotency_key LIKE 'prediction_payout:%'
+		  AND idempotency_key LIKE ANY (
+		    SELECT 'prediction_payout:' || m.id::text || ':%'
+		    FROM prediction_markets m
+		    WHERE
+		      (
+		        m.status = 'settled'
+		        AND (
+		          m.id IN (SELECT DISTINCT market_id FROM prediction_settlements WHERE attestation_source = 'demo')
+		          OR NOT EXISTS (SELECT 1 FROM prediction_settlements s WHERE s.market_id = m.id)
+		        )
+		      )
+		      OR (m.status = 'closed' AND m.close_at > NOW())
+		  )
+	`)
+	if err != nil {
+		return r, fmt.Errorf("purge demo payout wallet entries: %w", err)
+	}
+
+	// Step 2c.1: revert markets that were settled by a demo settlement
+	// back to 'open' (clear result, reset payout pool). Without this,
+	// after the first demo run those market rows stay in status='settled'
+	// permanently — Phase 4 then can't re-place u-1 positions in them
+	// (it filters status='open') and Phase 5 can't re-settle them
+	// (the open→closed transition refuses on already-settled markets).
+	// Re-runs ended up with an empty History tab and an empty
+	// Leaderboards page even though both phases reported success.
+	//
+	// Three cases to revert:
+	//   (a) market has a current demo-attested settlement row
+	//   (b) market is 'settled' but has NO settlement row at all —
+	//       this happens when an older wipe-demo deleted the settlement
+	//       row without reverting the market status. The only way a
+	//       real (non-demo) settled market reaches us is via the
+	//       auto-settler or manual resolve, both of which write a
+	//       settlement row; so a settled-with-no-row market is by
+	//       construction a stale-demo orphan we should unstick.
+	//   (c) market is 'closed' with close_at in the future — Phase 5
+	//       force-transitioned it open→closed and then the resolve
+	//       errored, leaving it stuck. The auto-closer only transitions
+	//       markets past their close_at, so a future-close_at + closed
+	//       state is by construction a demo-stuck orphan.
+	// Must run BEFORE the settlement DELETE below so case (a) still
+	// matches.
+	_, err = db.Exec(`
+		UPDATE prediction_markets m
+		SET status = 'open',
+		    result = NULL,
+		    settled_payout_pool_cents = 0,
+		    updated_at = NOW()
+		WHERE
+		  (
+		    m.status = 'settled'
+		    AND (
+		      m.id IN (
+		        SELECT DISTINCT market_id FROM prediction_settlements
+		        WHERE attestation_source = 'demo'
+		      )
+		      OR NOT EXISTS (
+		        SELECT 1 FROM prediction_settlements s WHERE s.market_id = m.id
+		      )
+		    )
+		  )
+		  OR (m.status = 'closed' AND m.close_at > NOW())
+	`)
+	if err != nil {
+		return r, fmt.Errorf("revert demo-settled markets: %w", err)
+	}
+
 	res, err = db.Exec(`
 		DELETE FROM prediction_settlements
 		WHERE attestation_source = 'demo'
