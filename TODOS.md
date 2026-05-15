@@ -4,25 +4,31 @@ Design and product debt tracked across planning cycles. Items here are intention
 
 ## Open
 
-### Backoffice Ant Design 4 / React 19 compatibility warnings
+### Backoffice Ant Design 4 / React 19 compatibility — needs product decision
 
-- **What:** `/prediction-admin/markets` and `/prediction-admin/settlements` still emit development console warnings/errors from Ant Design 4 internals under React 19, including `render` / `unmountComponentAtNode` import warnings and `element.ref` access errors.
-- **Why:** gstack QA on 2026-05-06 restored the broken Create Market and Settle modals by switching the affected AntD 4 modal props from `open` to `visible`, but the broader dependency compatibility issue remains.
-- **Pros of deciding now:** Removing the warnings would improve console health and reduce risk that other AntD modal/table/typography interactions break as React tightens compatibility.
-- **Cons:** The durable fix likely requires a scoped AntD compatibility pass or dependency upgrade, not a one-line admin workflow fix.
-- **Context:** Deferred from gstack QA of the player app and backoffice on branch `chore/rebrand-player-hula-na`. Evidence lives in `.gstack/qa-reports/qa-report-localhost-2026-05-06.md`.
-- **Depends on / blocked by:** Decision on whether to keep the legacy Pages Router AntD admin surface or migrate those pages onto the newer backoffice app shell/components.
-- **Revisit when:** Before shipping React 19 backoffice admin changes, or when touching the prediction admin markets/settlements pages again.
+- **What:** Office app (`packages/office`) imports antd 4.16.12 across 115 call sites (top usage: Button ×33, Form ×24, Input ×18, Row ×13, Tag ×12, Modal ×11). React 19 removed `ReactDOM.render` and `unmountComponentAtNode` which antd 4 internals still reference, emitting "Attempted import error" warnings on `/prediction-admin/markets` and `/prediction-admin/settlements`.
+- **Investigation done 2026-05-15:** The compat warnings are antd-4-internal, not a workspace leak. The matching player-app concern (ISSUE-006) turned out to be a dead `antd` line in `packages/app/package.json` that was already removed in that issue's fix; the office is the genuine consumer.
+- **Three paths, each requires the user's call:**
+  - **A) Upgrade office to antd 5.** Antd 5 supports React 19 natively. ~100 files touched. Breaking changes are mostly cosmetic (popupClassName rename, DatePicker→dayjs, CSS-in-JS theming replaces less variables, Form.Item subtle semantics). 1-2 day refactor with CC+gstack assistance.
+  - **B) Pin office to React 18.** Smaller change, but the player app uses React 19 features and they share `react-dom` via workspaces. Would require de-hoisting or full pin-down across the monorepo. Probably more painful than it sounds.
+  - **C) Suppress warnings, accept the risk.** Wraps the offending antd imports with shims that ignore the missing exports. Cosmetic only; doesn't address the underlying breakage risk if React 19.x tightens further. Buy time for option A.
+- **Recommendation:** A. The office app is the prediction-admin surface, growing not shrinking; locking in antd 4 is technical debt that compounds. The migration touches a lot of files but each one is straightforward.
+- **Depends on / blocked by:** User decision on which path to take.
+- **Revisit when:** Before any new prediction-admin feature work, or when React 19.x drops a release that breaks antd 4 hard.
 
-### Predict fee model decision
+### Predict fee model decision — signals conflict, needs reconciliation
 
-- **What:** Decide how Predict handles trading fees. Current state: `fee_rate_bps` column defaults to 0, no market sets it, no user-tier mechanism. Industry precedent: Kalshi uses a price-curve formula (`0.07 × P × (1−P)`, peaks at 50¢), Polymarket uses market-category tiers with maker rebates (2026 update); neither uses user-loyalty-tier fees.
-- **Why:** Future loyalty iterations may want fee-based benefits (plan v1 explicitly dropped them), but the underlying fee model itself is undecided. Can't add tier-fee benefits on a zero-fee baseline. The decision affects revenue, competitor comparison, and the shape of any future loyalty work.
-- **Pros of deciding now:** Unblocks tier-fee benefits as a future loyalty iteration. Aligns Predict with industry pricing norms users will expect. Creates a revenue lever.
-- **Cons:** Introducing fees where users currently have none is a user-visible change. Needs product owner signoff + user communication strategy.
-- **Context:** Surfaced during `/plan-eng-review` of the loyalty+leaderboards plan on 2026-04-23. Codex outside-voice review flagged that the plan's "0.5% → 0.1% fee tiers" were fictional because the baseline fee is 0. Three candidate approaches: (a) Kalshi-style price curve, (b) Polymarket-style category tiers + maker rebates, (c) flat percentage + tier discount. Each has different revenue, fairness, and competitive-positioning implications.
-- **Depends on / blocked by:** Product owner decision on whether Predict charges fees at all in v1.
-- **Revisit when:** Before any fee-based loyalty benefit is designed, OR when the revenue model gets a dedicated product review.
+- **What:** Decide how Predict handles trading fees. The fee infrastructure exists (`prediction.CalculateTakerFeeCents` computes a price-curve fee `bps × P × (100-P) × qty / 1e6`, peaks at p=50), but no market actually uses it.
+- **Investigation done 2026-05-15:**
+  - `accounting.go:33` docstring says "Default in Hula Na is 500 (5%)" — but this is just doc, not a default in code.
+  - `prediction_markets.fee_rate_bps` column has SQL default `0`. All 152 markets are at 0.
+  - Service.CreateMarket passes `req.FeeRateBps` through unchanged — no default applied at the Go layer.
+  - Memory from a 2026-04-24 design session: "User agreed to ship minimal flat 100 bps fee + instrument retention-vs-fees rather than commit to Kalshi/Polymarket/flat+tier model before growth mechanic is known. Week-6 decision gate with sample-size threshold."
+  - That decision **never landed** — no commit changed the default. Sample-size threshold can't trigger because there's nothing to measure.
+- **Three numbers in play:** 500 bps (docstring), 100 bps (decision memory), 0 bps (actual data). One of these is wrong; the user knows which.
+- **Recommendation:** Confirm the 100 bps decision is still live, then ship it: add `DefaultMarketFeeBps = 100` constant in accounting.go, fall back to default when `req.FeeRateBps == 0` in Service.CreateMarket. Update the docstring to match. Optionally migrate existing markets via a SQL update — though if the demo's running now, charging fees retroactively may surprise testers.
+- **Depends on / blocked by:** User confirmation of the 100 bps decision.
+- **Revisit when:** User confirms, OR Week-6 review happens, OR a new revenue/loyalty initiative needs fees as a foundation.
 
 ### Player app — no UI to cancel an open limit order
 
