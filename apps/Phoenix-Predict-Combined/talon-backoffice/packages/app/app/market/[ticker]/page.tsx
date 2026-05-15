@@ -34,8 +34,12 @@ import {
 import { logger } from "../../lib/logger";
 import { subscribePredictWs } from "../../lib/websocket/predict-ws";
 import { useAuth } from "../../hooks/useAuth";
-import { useAppSelector } from "../../lib/store/hooks";
-import { selectCurrentBalance } from "../../lib/store/cashierSlice";
+import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
+import {
+  selectCurrentBalance,
+  setCurrentBalance,
+} from "../../lib/store/cashierSlice";
+import { getBalance } from "../../lib/api/wallet-client";
 import type {
   PredictionMarket,
   PredictionEvent,
@@ -141,7 +145,8 @@ export default function MarketDetailPage() {
   // permanently disabled even for users holding hundreds of contracts.
   const [positions, setPositions] = useState<Position[]>([]);
   const balance = useAppSelector(selectCurrentBalance);
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, isLoading: authLoading, user } = useAuth();
 
   const loadMarket = useCallback(async () => {
     const m = await api.getMarket(ticker);
@@ -372,12 +377,28 @@ export default function MarketDetailPage() {
         // limit order). Without this the count is stale until the next
         // navigation.
         await loadPositions();
+        // Refresh the cashier slice's currentBalance so the top-nav BAL
+        // pill matches the post-trade wallet. Without this, the pill is
+        // stale until the next page navigation triggers TopBar's onMount
+        // fetch.
+        if (user?.id) {
+          try {
+            const bal = await getBalance(user.id);
+            dispatch(setCurrentBalance(bal.availableBalance));
+          } catch (err: unknown) {
+            logger.warn(
+              "MarketDetail",
+              "post-trade balance refresh failed",
+              err,
+            );
+          }
+        }
       } catch (err: unknown) {
         logger.error("MarketDetail", "post-trade market refresh failed", err);
       }
       return response;
     },
-    [market, loadMarket, loadPositions],
+    [market, loadMarket, loadPositions, user?.id, dispatch],
   );
 
   const category = useMemo(() => {
