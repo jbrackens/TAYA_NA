@@ -380,7 +380,11 @@ export function TopBar() {
           font-size: 13px;
           font-weight: 600;
           font-variant-numeric: tabular-nums;
-          color: var(--accent);
+          /* --yes-text is the design system's AA-compliant green for text
+             on light surfaces (6.1:1 on cream per globals.css). Was using
+             --accent (#2be480) which only hit 1.47:1 against the mint-soft
+             pill bg — failed WCAG AA at the 13px size used here. */
+          color: var(--yes-text);
         }
         .tb-balance .lbl {
           color: var(--t3);
