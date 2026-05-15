@@ -112,6 +112,11 @@ interface WithdrawResponseRaw {
 interface WalletBalanceRaw {
   userId: string;
   balanceCents: number;
+  // Added with F-3: available = balance - held reservations, reserved =
+  // the held delta (e.g. a pending withdrawal). Optional so older
+  // gateway builds that only send balanceCents still work.
+  availableCents?: number;
+  reservedCents?: number;
 }
 
 interface WalletLedgerEntryRaw {
@@ -251,6 +256,14 @@ function isFresh<T>(
   return !!entry && Date.now() - entry.ts < ttlMs;
 }
 
+// Drop the cached balance so the next getBalance() refetches. Must run
+// after any mutation that changes funds (deposit/withdraw) — otherwise
+// the post-action getBalance is served the 15s-stale cached value and
+// the BAL pill never moves (F-3).
+function invalidateBalance(userId: string): void {
+  balanceCache.delete(userId);
+}
+
 // Utility function to normalize snake_case to camelCase
 function normalizeSnakeCase<T extends object>(obj: T): unknown {
   if (Array.isArray(obj)) {
@@ -291,12 +304,19 @@ export async function getBalance(userId: string): Promise<Balance> {
       const raw = await apiClient.get<WalletBalanceRaw>(
         `/api/v1/wallet/${userId}`,
       );
-      const availableBalance = centsToDollars(raw.balanceCents);
+      // availableBalance must reflect held reservations (e.g. a pending
+      // withdrawal) — previously hardcoded to balanceCents with
+      // reservedBalance:0, which made withdrawals invisible (F-3). Fall
+      // back to balanceCents when the gateway doesn't send the new
+      // fields (back-compat).
+      const availableBalance = centsToDollars(
+        raw.availableCents ?? raw.balanceCents,
+      );
       const result: Balance = {
         userId: raw.userId,
         availableBalance,
-        reservedBalance: 0,
-        totalBalance: availableBalance,
+        reservedBalance: centsToDollars(raw.reservedCents ?? 0),
+        totalBalance: centsToDollars(raw.balanceCents),
         currency: "USD",
       };
       balanceCache.set(userId, {
@@ -339,6 +359,7 @@ export async function deposit(
       currency: request.currency,
     },
   );
+  invalidateBalance(userId);
   const transaction = (raw.transaction || raw) as PaymentTxFields;
   return {
     transactionId: transaction.transactionId || raw.transaction_id || "",
@@ -381,6 +402,7 @@ export async function withdraw(
       currency: request.currency,
     },
   );
+  invalidateBalance(userId);
   const transaction = (raw.transaction || raw) as PaymentTxFields;
   return {
     transactionId: transaction.transactionId || raw.transaction_id || "",

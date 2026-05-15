@@ -123,9 +123,18 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 
 		if len(parts) == 1 {
 			balance := service.Balance(userID)
+			// Available = balance - held reservations. A pending
+			// withdrawal places a hold, not a raw-balance debit, so
+			// returning only balanceCents made withdrawals invisible to
+			// the client and the BAL pill never moved (F-3).
+			// AvailableBalance already exists on the service; expose it
+			// plus the reserved delta. balanceCents kept for back-compat.
+			available := service.AvailableBalance(userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"userId":       userID,
-				"balanceCents": balance,
+				"userId":         userID,
+				"balanceCents":   balance,
+				"availableCents": available,
+				"reservedCents":  balance - available,
 			})
 		}
 
