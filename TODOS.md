@@ -4,33 +4,22 @@ Design and product debt tracked across planning cycles. Items here are intention
 
 ## Open
 
-### Backoffice Ant Design 4 / React 19 compatibility — needs product decision
-
-- **What:** Office app (`packages/office`) imports antd 4.16.12 across 115 call sites (top usage: Button ×33, Form ×24, Input ×18, Row ×13, Tag ×12, Modal ×11). React 19 removed `ReactDOM.render` and `unmountComponentAtNode` which antd 4 internals still reference, emitting "Attempted import error" warnings on `/prediction-admin/markets` and `/prediction-admin/settlements`.
-- **Investigation done 2026-05-15:** The compat warnings are antd-4-internal, not a workspace leak. The matching player-app concern (ISSUE-006) turned out to be a dead `antd` line in `packages/app/package.json` that was already removed in that issue's fix; the office is the genuine consumer.
-- **Three paths, each requires the user's call:**
-  - **A) Upgrade office to antd 5.** Antd 5 supports React 19 natively. ~100 files touched. Breaking changes are mostly cosmetic (popupClassName rename, DatePicker→dayjs, CSS-in-JS theming replaces less variables, Form.Item subtle semantics). 1-2 day refactor with CC+gstack assistance.
-  - **B) Pin office to React 18.** Smaller change, but the player app uses React 19 features and they share `react-dom` via workspaces. Would require de-hoisting or full pin-down across the monorepo. Probably more painful than it sounds.
-  - **C) Suppress warnings, accept the risk.** Wraps the offending antd imports with shims that ignore the missing exports. Cosmetic only; doesn't address the underlying breakage risk if React 19.x tightens further. Buy time for option A.
-- **Recommendation:** A. The office app is the prediction-admin surface, growing not shrinking; locking in antd 4 is technical debt that compounds. The migration touches a lot of files but each one is straightforward.
-- **Depends on / blocked by:** User decision on which path to take.
-- **Revisit when:** Before any new prediction-admin feature work, or when React 19.x drops a release that breaks antd 4 hard.
-
-### Predict fee model decision — signals conflict, needs reconciliation
-
-- **What:** Decide how Predict handles trading fees. The fee infrastructure exists (`prediction.CalculateTakerFeeCents` computes a price-curve fee `bps × P × (100-P) × qty / 1e6`, peaks at p=50), but no market actually uses it.
-- **Investigation done 2026-05-15:**
-  - `accounting.go:33` docstring says "Default in Hula Na is 500 (5%)" — but this is just doc, not a default in code.
-  - `prediction_markets.fee_rate_bps` column has SQL default `0`. All 152 markets are at 0.
-  - Service.CreateMarket passes `req.FeeRateBps` through unchanged — no default applied at the Go layer.
-  - Memory from a 2026-04-24 design session: "User agreed to ship minimal flat 100 bps fee + instrument retention-vs-fees rather than commit to Kalshi/Polymarket/flat+tier model before growth mechanic is known. Week-6 decision gate with sample-size threshold."
-  - That decision **never landed** — no commit changed the default. Sample-size threshold can't trigger because there's nothing to measure.
-- **Three numbers in play:** 500 bps (docstring), 100 bps (decision memory), 0 bps (actual data). One of these is wrong; the user knows which.
-- **Recommendation:** Confirm the 100 bps decision is still live, then ship it: add `DefaultMarketFeeBps = 100` constant in accounting.go, fall back to default when `req.FeeRateBps == 0` in Service.CreateMarket. Update the docstring to match. Optionally migrate existing markets via a SQL update — though if the demo's running now, charging fees retroactively may surprise testers.
-- **Depends on / blocked by:** User confirmation of the 100 bps decision.
-- **Revisit when:** User confirms, OR Week-6 review happens, OR a new revenue/loyalty initiative needs fees as a foundation.
+_(No open TODOs as of 2026-05-15. The two product-decision TODOs that were the last remaining items have either shipped or moved to a planning document — see "Shipped" below.)_
 
 ## Shipped
+
+### Predict fee model — 100 bps default shipped per 2026-04-24 decision — shipped 2026-05-15
+
+- The fee-model design call settled on a flat 100 bps taker fee + retention-vs-fees instrumentation rather than committing to a Kalshi-style price curve or Polymarket-style category tiers before the growth mechanic was understood. That decision was recorded in design memory but never landed in code.
+- New `DefaultTakerFeeBps = 100` constant in `accounting.go`. `Service.CreateMarket` now applies the default when `req.FeeRateBps == 0`; negative values clamp to 0 as the explicit fee-free escape hatch. Docstring on `CalculateTakerFeeCents` corrected (was claiming 500 bps default).
+- Existing 152 markets keep `fee_rate_bps=0` to avoid mid-demo surprise; new markets get the default. Backfill SQL is a follow-up if needed.
+- Contract test `TestDefaultTakerFeeBps` locks the value so future changes go through the runbook + metrics gate.
+
+### Backoffice antd 4 → 5 migration — executable plan ready — planned 2026-05-15
+
+- Not a code commit; a `PLAN-antd-5-office-upgrade.md` document. The investigation surfaced that the migration is much smaller than the 115 call sites suggested: 0 `dropdownClassName` usages, 0 `Form.Item noStyle`, 0 LESS theme imports — the main breaking-change surface is one PageHeader wrapper, 6 DatePicker/TimePicker sites (moment → dayjs), 10 `antd/lib/*` subpath imports.
+- Plan is 4 phases (~3-5 h total): yarn bump → mechanical rewrites (sed-scriptable for most) → manual click-through on prediction-admin pages → optional theme polish.
+- Ready to execute when product OKs starting; risk surface bounded and verification gate defined.
 
 ### Player app — backend price-history endpoint + real charts wired — shipped 2026-05-15
 
