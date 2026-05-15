@@ -2,6 +2,18 @@ package prediction
 
 import "testing"
 
+// TestDefaultTakerFeeBps locks the 2026-04-24 fee-model decision into
+// the code: 100 bps flat as the v1 default. Treat this as a contract
+// test — if anyone bumps it, they're also updating the runbook + the
+// retention/fees instrumentation thresholds described in the design
+// doc memory. Tests should not be the place that decision is
+// quietly reversed.
+func TestDefaultTakerFeeBps(t *testing.T) {
+	if DefaultTakerFeeBps != 100 {
+		t.Errorf("DefaultTakerFeeBps = %d, want 100 (2026-04-24 decision)", DefaultTakerFeeBps)
+	}
+}
+
 func TestPriceWithinBounds(t *testing.T) {
 	cases := []struct {
 		in   int

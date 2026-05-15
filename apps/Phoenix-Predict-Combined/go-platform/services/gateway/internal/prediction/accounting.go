@@ -21,6 +21,20 @@ const (
 	ParPriceCents     = 100 // YES + NO must always sum to par
 )
 
+// DefaultTakerFeeBps is the v1 flat-rate taker fee applied to every new
+// market created via Service.CreateMarket when the caller doesn't set
+// fee_rate_bps explicitly. The 2026-04-24 fee-model design call settled
+// on a minimal flat 100 bps + instrument retention-vs-fees metrics
+// rather than committing to a Kalshi-style price curve or Polymarket-
+// style category tiers before the growth mechanic was understood. The
+// Week-6 decision gate revisits this with sample-size data; until
+// then, 100 bps is the policy.
+//
+// Existing markets keep whatever fee_rate_bps they were created with.
+// The migration that backfills the default for already-zero markets is
+// captured separately so the demo-state numbers stay predictable.
+const DefaultTakerFeeBps = 100
+
 // PriceWithinBounds returns true when priceCents is in [1, 99].
 func PriceWithinBounds(priceCents int) bool {
 	return priceCents >= MinTickPriceCents && priceCents <= MaxTickPriceCents
@@ -30,9 +44,10 @@ func PriceWithinBounds(priceCents int) bool {
 //
 //	floor(takerFeeBps × priceCents × (100 - priceCents) × quantity / 1_000_000)
 //
-// Bps are basis points (1bp = 0.01%). Default in Hula Na is 500 (5%), which
-// peaks at 1¢/contract at p=50 and tapers toward 0 at the price extremes.
-// Maker fees are always 0 in v1.
+// Bps are basis points (1bp = 0.01%). Default in Hula Na is DefaultTakerFeeBps
+// (100 = 1%), applied per the 2026-04-24 fee-model decision and peaking at
+// 0.25¢/contract at p=50, tapering toward 0 at the price extremes. Maker
+// fees are always 0 in v1.
 //
 // Returns 0 for non-positive inputs and for prices at the par extremes.
 func CalculateTakerFeeCents(takerFeeBps, priceCents, quantity int) int64 {

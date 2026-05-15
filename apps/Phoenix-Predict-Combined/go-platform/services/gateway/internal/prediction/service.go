@@ -770,6 +770,19 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 		b = 100
 	}
 
+	// Fee policy: req.FeeRateBps == 0 means "use the platform default"
+	// rather than "this market is fee-free." The 2026-04-24 fee-model
+	// design call settled on DefaultTakerFeeBps (100 bps). To set a
+	// market to true zero fees, callers can pass a negative value and
+	// we clamp to zero — keeps the explicit-fee-free path available
+	// without making it the silent default.
+	feeBps := req.FeeRateBps
+	if feeBps == 0 {
+		feeBps = DefaultTakerFeeBps
+	} else if feeBps < 0 {
+		feeBps = 0
+	}
+
 	market := &Market{
 		EventID:             req.EventID,
 		Ticker:              req.Ticker,
@@ -784,7 +797,7 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 		SettlementRule:      req.SettlementRule,
 		SettlementParams:    defaultJSONObject(req.SettlementParams),
 		SettlementCutoffAt:  req.SettlementCutoffAt,
-		FeeRateBps:          req.FeeRateBps,
+		FeeRateBps:          feeBps,
 		CloseAt:             req.CloseAt,
 		CreatedAt:           time.Now().UTC(),
 		UpdatedAt:           time.Now().UTC(),
