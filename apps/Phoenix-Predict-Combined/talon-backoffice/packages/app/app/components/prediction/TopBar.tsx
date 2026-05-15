@@ -202,7 +202,15 @@ export function TopBar() {
   const isActive = (href: string): boolean => {
     if (!pathname) return false;
     if (href === "/predict") {
-      return pathname === "/predict" || pathname.startsWith("/category/");
+      // Next.js routes /predict to /predict/ with the project's trailingSlash
+      // config. Strict equality missed that, so the Markets pill stayed
+      // gray on its own page while every other tab lit up. Accept either
+      // form plus the /category/* subroutes that belong under Markets.
+      return (
+        pathname === "/predict" ||
+        pathname.startsWith("/predict/") ||
+        pathname.startsWith("/category/")
+      );
     }
     return pathname === href || pathname.startsWith(`${href}/`);
   };
