@@ -1,14 +1,19 @@
 /**
- * Shared deterministic price-history helpers for the Robinhood-direction
- * components (DiscoveryHero, TrendingSidebar/TopMovers, MarketCard).
+ * Shared price-history helpers for the Robinhood-direction components
+ * (DiscoveryHero, TrendingSidebar/TopMovers, MarketCard).
  *
- * Real backend price history is not yet wired (no GET /markets/:id/prices
- * endpoint). Each helper is seeded by the ticker so the same market
- * always renders the same fake history across surfaces — Top Movers row
- * and homepage Hero stay visually consistent for the same ticker.
+ * heroChartPath now accepts an optional `points` array — when the
+ * caller has fetched real history from GET /markets/:id/prices, it
+ * builds the SVG from that. Without points it falls back to the
+ * deterministic walk so the chart still renders during the fetch
+ * window or in test mode. sparklinePath remains synthetic-only:
+ * sparklines are 60×28 px decorative thumbs and the per-sparkline
+ * fetch cost on a page with 30+ market cards isn't worth the visual
+ * improvement.
  *
- * Replace these with backend-fetched series when the prices endpoint
- * ships (see DESIGN.md §11 Decisions Log).
+ * useHeroPriceHistory (in this file) is the small hook hero consumers
+ * call to fetch the real series. Returns null while loading or on
+ * failure; pass through to heroChartPath which gracefully falls back.
  */
 
 export function tickerSeed(ticker: string): number {
@@ -53,18 +58,31 @@ function walk(
   return points;
 }
 
-/** Hero chart: 24-point walk, returns an SVG line path and a fill path. */
+/**
+ * Hero chart: builds the SVG line + fill paths. When `points` is
+ * supplied (from the backend prices endpoint), the chart uses the real
+ * volume-weighted history. Otherwise it falls back to a 24-point
+ * deterministic walk anchored at currentCents so the SVG still renders
+ * during the fetch or if the API fails.
+ */
 export function heroChartPath(
   ticker: string,
   currentCents: number,
   width = 800,
   height = 220,
+  points?: number[],
 ): { line: string; fill: string } {
-  const N = 24;
-  const pts = walk(ticker, currentCents, N);
-  const line = pts
-    .map(([i, v], idx) => {
-      const x = (i / (N - 1)) * width;
+  let values: number[];
+  if (points && points.length >= 2) {
+    values = points;
+  } else {
+    const pts = walk(ticker, currentCents, 24);
+    values = pts.map(([, v]) => v);
+  }
+  const N = values.length;
+  const line = values
+    .map((v, idx) => {
+      const x = (idx / (N - 1)) * width;
       const y = height - (v / 100) * height;
       return `${idx === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
     })

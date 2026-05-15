@@ -31,6 +31,7 @@ import {
   deterministicDelta,
   heroChartPath,
 } from "../components/prediction/utils/spark";
+import { useHeroPriceHistory } from "../components/prediction/utils/useHeroPriceHistory";
 
 const api = createPredictionClient();
 
@@ -87,7 +88,17 @@ function DiscoveryHero({
   const no = market.noPriceCents;
   const { delta, pct } = deterministicDelta(market.ticker, yes);
   const isUp = delta >= 0;
-  const chart = heroChartPath(market.ticker, yes);
+  // Real backend-fetched series when available; falls back to the
+  // deterministic walk during the fetch window or on failure (the
+  // hook returns null in those cases and heroChartPath handles that).
+  const heroPoints = useHeroPriceHistory(market.ticker);
+  const chart = heroChartPath(
+    market.ticker,
+    yes,
+    800,
+    220,
+    heroPoints ?? undefined,
+  );
   const volumeLabel = formatHeroVolume(market.volumeCents);
   const oiLabel =
     market.openInterestCents != null

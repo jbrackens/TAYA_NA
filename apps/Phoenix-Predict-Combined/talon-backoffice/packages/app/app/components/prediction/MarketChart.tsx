@@ -3,17 +3,33 @@
 /**
  * MarketChart — SVG line chart with glow + current-price marker.
  *
- * Renders inside a .glass card. Real historical data isn't wired yet,
- * so the line is a deterministic walk derived from the market ticker
- * (matches the prior MarketCard approach) that nudges toward
- * currentYesPrice at the right edge. When the backend exposes a
- * /market/:id/prices?range=… endpoint, swap `samplePath` for the fetched
- * series.
+ * Renders inside a .glass card. Pulls volume-weighted YES price
+ * buckets from /api/v1/markets/{id}/prices for the selected range,
+ * with carry-forward applied to empty buckets server-side. Falls
+ * back to a deterministic walk on fetch failure so the chart never
+ * renders blank — useful when the gateway is unreachable in dev.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import type { MarketPriceHistory } from "@phoenix-ui/api-client/src/prediction-types";
+import { logger } from "../../lib/logger";
 
 type TimeRange = "1H" | "6H" | "1D" | "1W" | "ALL";
+
+const api = createPredictionClient();
+
+// Map the chart's UI range labels to the backend's /prices?range= values.
+// 6H is the odd one out — the backend doesn't ship 6h buckets (the demo
+// has too little volume to make them meaningful); map to 1d so the chart
+// still loads and the granularity is the same hourly bucket size.
+const RANGE_TO_API: Record<TimeRange, "1h" | "1d" | "1w" | "1m" | "all"> = {
+  "1H": "1h",
+  "6H": "1d",
+  "1D": "1d",
+  "1W": "1w",
+  ALL: "all",
+};
 
 interface MarketChartProps {
   ticker: string;
@@ -82,11 +98,38 @@ export default function MarketChart({
   openInterestShares,
 }: MarketChartProps) {
   const [range, setRange] = useState<TimeRange>("1D");
+  const [history, setHistory] = useState<MarketPriceHistory | null>(null);
 
-  const values = useMemo(
-    () => samplePath(ticker, range, yesPriceCents),
-    [ticker, range, yesPriceCents],
-  );
+  // Fetch real price history from /api/v1/markets/:ticker/prices?range=N
+  // whenever the ticker or range changes. Falls back to the deterministic
+  // walk on error so the chart still renders if the gateway is down or
+  // the market has no trades yet. The current-price marker still anchors
+  // at the right edge of the chart so the line+marker stay coherent
+  // even when the API returns a sparse series.
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getMarketPriceHistory(ticker, RANGE_TO_API[range])
+      .then((h) => {
+        if (!cancelled) setHistory(h);
+      })
+      .catch((err: unknown) => {
+        logger.warn("MarketChart", "price history fetch failed", err);
+        if (!cancelled) setHistory(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ticker, range]);
+
+  const values = useMemo(() => {
+    if (history && history.points.length > 0) {
+      return history.points.map((p) => p.yesPriceCents);
+    }
+    // Fallback: deterministic synthetic walk while the fetch is in
+    // flight, or if it failed, or if the market has no history yet.
+    return samplePath(ticker, range, yesPriceCents);
+  }, [history, ticker, range, yesPriceCents]);
   const width = 800;
   const height = 320;
   const line = buildPath(values, width, height);

@@ -24,6 +24,7 @@ import type {
   DashboardVolumeStats,
   OrderBook,
   DriftAlertsResponse,
+  MarketPriceHistory,
 } from "./prediction-types";
 
 export class PredictionApiClient {
@@ -148,6 +149,24 @@ export class PredictionApiClient {
   async getOrderBook(marketIdOrTicker: string, depth = 20): Promise<OrderBook> {
     return this.request(
       `/api/v1/markets/${marketIdOrTicker}/orderbook?depth=${depth}`,
+    );
+  }
+
+  /**
+   * Fetch the volume-weighted YES price-history series for a market.
+   * Returns equally-spaced buckets across the requested window with
+   * carry-forward applied to empty buckets — chart consumers can plot
+   * the `points` array directly.
+   *
+   * Ranges: "1h" | "1d" | "1w" | "1m" | "all". Default ("1d") matches
+   * the prior synthetic hero-chart shape (24 hourly points).
+   */
+  async getMarketPriceHistory(
+    marketIdOrTicker: string,
+    range: "1h" | "1d" | "1w" | "1m" | "all" = "1d",
+  ): Promise<MarketPriceHistory> {
+    return this.request(
+      `/api/v1/markets/${marketIdOrTicker}/prices?range=${range}`,
     );
   }
 

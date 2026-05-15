@@ -426,3 +426,21 @@ export interface DashboardVolumeStats {
   tradeCount: number;
   topMovers: DashboardMover[];
 }
+
+// --- Market price history (charts) ---
+
+export interface PricePoint {
+  bucketStart: string;
+  yesPriceCents: number;
+  tradeCount: number;
+  volumeCents: number;
+}
+
+export interface MarketPriceHistory {
+  marketId: string;
+  range: string;
+  since: string;
+  until: string;
+  bucketSec: number;
+  points: PricePoint[];
+}
