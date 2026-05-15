@@ -90,12 +90,29 @@ If the next session is **further header polish:** TODOS.md has H05 (lockup) and 
 ## Demo creds + dev refresh commands
 
 ```bash
-# Re-seed (5 min before demo)
+# Re-seed (5-7 min before demo)
 cd apps/Phoenix-Predict-Combined/go-platform/services/gateway
 export GATEWAY_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable"
 export WALLET_DB_DSN="$GATEWAY_DB_DSN" WALLET_STORE_MODE=db
 make wipe-demo && make demo-data
 
+# CRITICAL: restart the gateway after every re-seed. The leaderboard
+# recomputer ticks every 5 min; its first tick fires at startup. Skip
+# this and /leaderboards shows stale/empty boards for up to 5 minutes
+# even though Phase 5 settled 25 markets correctly.
+cd ../../.. && docker compose restart gateway   # ~8s
+
 # Demo login
-# demo@phoenix.local / demo123  →  user u-1, $5,073 wallet after this session
+# demo@phoenix.local / demo123  →  user u-1, ~$5,090 wallet after re-seed
 ```
+
+## Dress-rehearsal result (2026-05-15 evening)
+
+Walked the full investor path on a clean re-seed. All green:
+- Header: Markets active on /predict/, BAL legible, avatar 44px (all 4 design fixes hold)
+- Live trade on UCL-BARCA-2526: BAL pill refreshed $5071.46 → $5067.78 in-tab
+- Settled market SENATE-DEM-2026: SETTLED badge + outcome explainer, no fake countdown
+- Portfolio: 3 open, 3 history, accuracy + weekly-pnl populate
+- Leaderboards: **was empty, now fixed** — Phase 5 expanded 10 → 25 settlements (commit `3035f240`), all 4 boards populate after the gateway restart above
+
+One gotcha codified: thin-book markets (most IMP-* and any market hammered by prior testing) reject market orders with 0 fills. For the live-trade demo beat, use a high-volume open market — **UCL-BARCA-2526** is the safe pick (5K+ vol, deep book). Don't trade on IMP-9C2875EF; it's been eaten by prior tests.
