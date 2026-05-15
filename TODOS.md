@@ -30,56 +30,38 @@ Design and product debt tracked across planning cycles. Items here are intention
 - **Depends on / blocked by:** User confirmation of the 100 bps decision.
 - **Revisit when:** User confirms, OR Week-6 review happens, OR a new revenue/loyalty initiative needs fees as a foundation.
 
-### Player app — no UI to cancel an open limit order
-
-- **What:** `/portfolio/` → Open orders tab lists every open limit order but has no cancel control. Clicking a row navigates to the market detail, which also has no per-order action. The backend already supports cancellation (`api-client/src/prediction-client.ts:170` defines `cancelOrder(orderId)` → `POST /api/v1/orders/:id/cancel`); the UI just never calls it.
-- **Why:** Any limit order that doesn't immediately cross becomes permanently stuck on the user. On the test account this had accumulated 27 stuck $0.01 YES orders with reserved cash locked indefinitely. Every comparable exchange (Polymarket, Kalshi, IBKR) has per-order cancel as a first-class control.
-- **Pros of fixing:** Restores user agency over their open orders. Unlocks reserved cash. Brings the player app in line with prediction-market UX norms.
-- **Cons:** Adds one Cancel button per row in `PortfolioOpenOrders` plus a per-market cancel chip on market-detail when the user has open orders there. Needs an optimistic-update + toast pattern and a "Cancel all" bulk action to scale to the test user's 27-order pile.
-- **Context:** Surfaced during gstack `/qa` of the player app on 2026-05-14 (branch `feat/binary-exchange-engine`). Report: `.gstack/qa-reports/qa-report-player-app-2026-05-14.md` (ISSUE-002).
-- **Depends on / blocked by:** Nothing — `cancelOrder` API already exists.
-- **Revisit when:** Next player-app feature pass, or sooner if a real user tries to place a limit order that doesn't fill.
-
-### Player app — hero chart timeframe tabs permanently disabled on /predict/
-
-- **What:** All six tabs (1H, 1D, 1W, 1M, 3M, ALL) on the home-page hero chart render with `aria-disabled`. 1D simultaneously claims `[disabled] [selected]`. The same chart on `/market/[ticker]/` has working tabs.
-- **Why:** The most-visited page in the app looks broken at a glance. Either the home variant of the chart needs to be wired to the same `/markets/:id/history` endpoint the market-detail chart uses, or the tab bar should be hidden entirely on the home variant.
-- **Pros of fixing:** Removes a "this looks unfinished" tell from the landing page. Either makes the timeframes work or makes the tab bar disappear cleanly.
-- **Cons:** Small frontend fix; needs to either wire data or delete code.
-- **Context:** Surfaced during gstack `/qa` of the player app on 2026-05-14 (branch `feat/binary-exchange-engine`). Report: `.gstack/qa-reports/qa-report-player-app-2026-05-14.md` (ISSUE-003).
-- **Depends on / blocked by:** None.
-- **Revisit when:** Next visual polish pass on `/predict/`, or alongside any other home-page work.
-
-### Backend — wallet edge case "reservation is not in held status" on issuance fills
-
-- **What:** `wallet.Service.CaptureReservationWithTx` returns `"reservation is not in held status"` for a small fraction of issuance match captures during the prediction engine's match path. Observed on 3 of 12 demo user orders during PLAN-demo-seed-data.md Phase 4 (`ETH-5K-MAY26 NO`, `UCL-REAL-2526 YES`, `UCL-CITY-2526 NO`) — all under high concurrency / same-market re-entry.
-- **Why:** The capture path expects the prior `HoldWithTx` row to be in `status='held'`, but on these failures the reservation was already in `captured` or had been released. Suggests a race in the issuance-pair flow where one side's capture runs twice, or the maker side already captured/released before the taker's capture got there.
-- **Pros of fixing:** Removes a class of demo-state errors. Real users hitting the same edge case today would see "Order placement failed" with no clear recovery.
-- **Cons:** Backend investigation needed in `internal/wallet/` + `internal/prediction/exchange.go` issuance path. Likely 3-5h.
-- **Context:** Surfaced during demo seed Phase 4 implementation on 2026-05-14 (branch `feat/binary-exchange-engine`). Wallet adapter is at `internal/http/prediction_wallet_adapter.go`. Capture path: `wallet.Service.CaptureReservationWithTx`.
-- **Depends on / blocked by:** None.
-- **Revisit when:** Next backend stability sweep, or sooner if real users report "Order placement failed" with no toast detail.
-
-### Player app — backend price-history endpoint + wire real charts
-
-- **What:** Both `heroChartPath` (`components/prediction/utils/spark.ts`) and `MarketChart.tsx` render client-side deterministic random walks seeded by ticker name. There is no backend price history. The "Real historical data isn't wired yet" comment in `MarketChart.tsx:9` is the authoritative source-of-truth.
-- **Why:** Demo + future production both want actual price movement on charts. Currently a savvy user could tell the chart is fake because clicking different timeframe tabs shows the same shape (and on `/predict/` the tabs are disabled entirely — [ISSUE-003](.gstack/qa-reports/qa-report-player-app-2026-05-14.md)).
-- **Pros of fixing:** Real chart history. Closes both the "fake walk" and the "disabled tabs" findings. Enables proper Top Movers, sparklines, and movement % deltas.
-- **Cons:** Either (a) build a `prediction_price_history` table with a denormalized aggregate of trade prices per minute/hour/day, plus an indexer that writes to it on every fill, plus an HTTP endpoint at `/api/v1/markets/:id/prices?range=…` — or (b) compute on-the-fly from `prediction_trades` with appropriate aggregation. (b) is faster to ship; (a) scales better.
-- **Context:** Discovered during PLAN-demo-seed-data.md implementation on 2026-05-14 — Phase 3 (price history backfill) was originally scoped to write 109k synthetic trade rows but the frontend doesn't read them. Plan amended to skip Phase 3.
-- **Depends on / blocked by:** Product decision on whether to ship demo with fake charts (current state) or pause demo until real charts ship.
-- **Revisit when:** Next backend feature pass, or when product wants more realistic chart UX.
-
-### Player app — antd 4 leaks into player-app compile, emits React-DOM API removal warnings
-
-- **What:** Every page compile in `packages/app` emits `Attempted import error: 'render' is not exported from 'react-dom'` and `unmountComponentAtNode' is not exported` from `antd/es/modal/confirm.js` and `antd/es/typography/util.js`. Per `packages/app/CLAUDE.md` antd is not supposed to be imported into `app/` — it's leaking through a transitive workspace dep.
-- **Why:** Will become a hard error when React 19 fully removes the legacy ReactDOM exports. Currently dev-console noise.
-- **Pros of fixing:** Aligns with the project's stated "antd-free player app" rule. Removes a future-break risk.
-- **Cons:** Investigation: `cd packages/app && yarn why antd` to trace the chain — likely `@phoenix-ui/utils` or similar shared package that the office app pulls antd through and the player app pulls along by transitive dep.
-- **Context:** Surfaced during gstack `/qa` on 2026-05-14. ISSUE-006.
-- **Revisit when:** Next React/antd-related task, or proactively before any React 19 minor bump.
-
 ## Shipped
+
+### Player app — backend price-history endpoint + real charts wired — shipped 2026-05-15
+
+- New `GET /api/v1/markets/{id}/prices?range=1h|1d|1w|1m|all` aggregates `prediction_trades` into volume-weighted YES price buckets with server-side carry-forward (`internal/prediction/pricehistory.go`).
+- Frontend wired: `MarketChart.tsx` fetches on mount + range change with synthetic fallback. New `useHeroPriceHistory` hook feeds real history into `heroChartPath` on `/predict/`. Sparklines (60×28 decorative thumbs) intentionally remain synthetic — documented in `spark.ts`.
+- API client + types: `getMarketPriceHistory`, `MarketPriceHistory`, `PricePoint` in `@phoenix-ui/api-client`.
+- 11 unit tests cover window sizing, carry-forward fill behavior, and bucket alignment.
+
+### Backend — wallet hold TTL must outlive the market for GTC orders — fixed 2026-05-15
+
+- Service.PlaceOrder used to hardcode 24h on `HoldReservation.ExpiresIn`. GTC limit orders resting on the book for >24h had reservations transition to `expired` while the order was still live, breaking `CaptureReservationWithTx` with `ErrReservationNotHeld` on the next match.
+- Fix: new `reservationTTL(tif, marketCloseAt, now)` helper; GTC uses `market.CloseAt + 1h pad`, IOC/FOK stay at 24h.
+- Demo-seed Phase 0 healed 2,743 stale `expired` reservations on still-open orders. Phase 2 errors dropped from 117 → 0; Phase 4 errors 3 → 0.
+- 7 unit cases lock the policy.
+
+### Player app — per-row Cancel for open limit orders + missing server route — shipped 2026-05-15
+
+- New `POST /api/v1/orders/{id}/cancel` route delegates to existing `Service.CancelOrder` (ownership check + ledger-aware reservation release in a tx). The api-client had `cancelOrder` defined but the server route was missing — calls 404'd.
+- Frontend: per-row Cancel column on `/portfolio/` Open orders tab with optimistic update + toast.
+- Closes ISSUE-002.
+
+### Player app — hero chart timeframe tabs hidden until backend history wired — shipped 2026-05-15
+
+- The 1H/1D/1W/1M/3M/ALL bar sat permanently disabled on `/predict/`. Hidden it; the hero chart now renders a clean single line. The price-history endpoint (above) is the backbone for restoring the bar properly later.
+- Closes ISSUE-003.
+
+### Player app — dropped dead `antd` dependency — shipped 2026-05-15
+
+- ISSUE-006 investigation: `antd` was declared in `packages/app/package.json` but never imported anywhere. The compile warnings I'd attributed to a transitive leak were actually from a concurrent office-app HMR build polluting the shared dev console.
+- Removed the line + regenerated yarn.lock. 48 fewer transitive deps; ~155 MB off the install footprint. Matches CLAUDE.md's "no antd in app/" rule.
+- Closes ISSUE-006.
 
 ### Demo-ready seed data (PLAN-demo-seed-data.md) — shipped 2026-05-14
 
