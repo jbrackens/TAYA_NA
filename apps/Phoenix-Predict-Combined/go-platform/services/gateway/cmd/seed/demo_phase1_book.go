@@ -42,9 +42,9 @@ const (
 // other side of the book gets populated naturally in Phase 2 when
 // alice/bob/charlie take the bot's bids.
 const (
-	bookLevels      = 5  // 5 prices each side
-	bookLevelQty    = 10 // 10 contracts per level
-	bookSpreadTicks = 5  // anchor ± 5 cents
+	bookLevels      = 5   // 5 prices each side
+	bookLevelQty    = 100 // 100 contracts per level (500/side; covers ~$100 stakes 3x over)
+	bookSpreadTicks = 5   // anchor ± 5 cents
 )
 
 // PhaseStats summarizes a phase run for the seed log.

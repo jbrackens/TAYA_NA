@@ -24,8 +24,10 @@ type topupTarget struct {
 
 // demoTopupTargets is the set of starting balances Phase 2/4 expect.
 // Numbers chosen so:
-//   - bot can absorb up to ~$3k of issuance matches in Phase 2 + still
-//     have headroom for whatever Phase 4 routes through it.
+//   - bot can absorb 116 markets × 5 levels × 100 shares × ~50¢ avg
+//     × 2 sides = ~$58k of bid-reservations from Phase 1, plus
+//     ~$3k of issuance matches in Phase 2, plus Phase 4 demo flow.
+//     The $200k target leaves comfortable headroom for re-runs.
 //   - takers can place 30-40 small trades each before going broke.
 //   - the demo user (u-1) lands at $5,000 visible balance per the plan's
 //     resolved decision (5k > 1k seed default).
@@ -34,7 +36,7 @@ var demoTopupTargets = []topupTarget{
 	{UserID: demoTakerUserID1, Cents: 500_000},  // $5,000
 	{UserID: demoTakerUserID2, Cents: 500_000},  // $5,000
 	{UserID: demoTakerUserID3, Cents: 500_000},  // $5,000
-	{UserID: demoBotUserID, Cents: 5_000_000},   // $50,000
+	{UserID: demoBotUserID, Cents: 20_000_000},  // $200,000
 }
 
 func runWalletTopUp(walletSvc *wallet.Service) error {
