@@ -17,11 +17,12 @@ Design and product debt tracked across planning cycles. Items here are intention
 - At 375px viewport the BAL pill renders "$5.2K" instead of the full "$5068.81". The abbreviation loses precision and may make users second-guess their balance ("am I missing money?").
 - Not an a11y issue — the value is readable, just rounded. Revisit if usability testing surfaces concern.
 
-### Header — no mobile hamburger nav (MEDIUM, navigation) — deferred 2026-05-15
+### ~~Header — no mobile hamburger nav (MEDIUM, navigation)~~ — INVALID, closed 2026-05-16
 
-- Source: /design-review header audit, finding H07.
-- The `@media (max-width: 900px)` rule hides .tb-nav and .tb-search-wrap entirely on phones. There's no hamburger or alternate route to Portfolio / Leaderboards / Rewards — users would have to type URLs.
-- Acceptable for the desktop-only investor walkthrough; will block any real mobile pilot. Add a slide-down or bottom-sheet nav when scope allows.
+- Source: /design-review header audit, finding H07. **This finding was wrong.**
+- The audit saw `@media (max-width: 900px)` hide `.tb-nav` and concluded Portfolio/Leaderboards/Rewards were unreachable on mobile. It missed a separate mobile bottom tab-bar component (`.mtb-item`) that renders below the breakpoint.
+- UAT smoke (F-2) verified on a 375×812 viewport: a 5-item bottom nav renders with real links — Markets→/predict/, Portfolio→/portfolio/, Boards→/leaderboards/, Rewards→/rewards/, Account→/account/. Tapping "Portfolio" navigated to /portfolio/ and rendered correctly. Mobile nav is present and functional; nothing to fix.
+- Lesson: design-review mobile checks must look for any mobile nav component, not only assert the desktop nav is hidden.
 
 ## Shipped
 
