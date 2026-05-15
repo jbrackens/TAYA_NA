@@ -77,11 +77,20 @@ class ApiClient {
   // A single in-flight promise serves all concurrent retries.
   private refreshLock: Promise<boolean> | null = null;
 
-  // tryRefresh attempts one refresh roundtrip. Returns true on success, false
-  // on failure (refresh token also expired). Failure is the trigger for the
-  // calling page to redirect to /auth/login — AuthProvider listens for the
-  // ApiError(401) that follows.
-  private async tryRefresh(): Promise<boolean> {
+  // refreshSession attempts one refresh roundtrip. Returns true on success,
+  // false on failure (refresh token also expired). Failure is the trigger for
+  // the calling page to redirect to /auth/login — AuthProvider listens for
+  // the ApiError(401) that follows.
+  //
+  // Public so AuthProvider.refreshTokenFn (called by IdleActivityMonitor's
+  // scheduled timer) shares the same refreshLock as fetchWithRetry's
+  // post-401 path. Without the shared lock, the idle timer and an in-flight
+  // 401-retry can both fire concurrent /refresh calls — the auth service
+  // rotates the refresh-token cookie on every successful refresh, so the
+  // second call arrives with the now-stale token and 401s. The IdleMonitor
+  // path's failure then bubbles up as "refresh token is invalid or expired"
+  // even though the user's session was valid moments ago.
+  async refreshSession(): Promise<boolean> {
     if (typeof window === "undefined") return false;
     if (this.refreshLock) return this.refreshLock;
     this.refreshLock = (async () => {
@@ -120,7 +129,7 @@ class ApiClient {
   ): Promise<Response> {
     const res = await fetch(input, init);
     if (res.status !== 401 || init._retried) return res;
-    const refreshed = await this.tryRefresh();
+    const refreshed = await this.refreshSession();
     if (!refreshed) return res;
     // Rebuild headers — the Authorization header may have changed if the
     // refresh issued a new access token to localStorage. CSRF cookie may

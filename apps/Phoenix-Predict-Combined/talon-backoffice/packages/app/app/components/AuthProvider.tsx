@@ -8,11 +8,7 @@ import React, {
   useMemo,
 } from "react";
 import { apiClient } from "../lib/api/client";
-import {
-  login as authLogin,
-  refresh as authRefresh,
-  getSession,
-} from "../lib/api/auth-client";
+import { login as authLogin, getSession } from "../lib/api/auth-client";
 import { getCoolOffStatus } from "../lib/api/compliance-client";
 import { IdleActivityMonitor } from "./IdleActivityMonitor";
 import { useToast } from "./ToastProvider";
@@ -139,9 +135,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
           }
 
-          // Auth failure, try refresh (cookie-based, no token param needed)
+          // Auth failure, try refresh (cookie-based, no token param needed).
+          // Route through apiClient.refreshSession so this mount-time
+          // path also shares the refreshLock — see refreshTokenFn for
+          // the full rationale on the rotation-race that surfaces as
+          // "refresh token is invalid or expired" without the shared
+          // lock.
           try {
-            await authRefresh();
+            const ok = await apiClient.refreshSession();
+            if (!ok) throw new Error("refresh failed");
             const session = await getSession();
             if (!mounted || !session.authenticated) return;
             const restoredUser = {
@@ -255,8 +257,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshTokenFn = useCallback(async () => {
     setError(null);
     try {
-      // Refresh uses HttpOnly cookie, no client token needed
-      await authRefresh();
+      // Route through apiClient.refreshSession so this path shares the
+      // refreshLock with fetchWithRetry's post-401 retry path. Without
+      // the shared lock, the IdleActivityMonitor's scheduled timer and
+      // an in-flight 401-retry could both fire /refresh concurrently
+      // with the same token. The auth service rotates refresh tokens on
+      // success, so the second call lands with a stale token and 401s
+      // — surfacing as "refresh token is invalid or expired" in the
+      // console and force-logging the user out. The shared lock
+      // serializes both paths through a single in-flight refresh.
+      const ok = await apiClient.refreshSession();
+      if (!ok) {
+        throw new Error("refresh token is invalid or expired");
+      }
       const session = await getSession();
       const refreshedUser = { id: session.userId, username: session.username };
       persistStoredUser(refreshedUser);
