@@ -13,6 +13,7 @@
  */
 
 import Link from "next/link";
+import BrandMark from "../BrandMark";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -33,7 +34,6 @@ import {
 } from "../../lib/store/cashierSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
-import BrandMark from "../BrandMark";
 
 const api = createPredictionClient();
 
@@ -214,14 +214,23 @@ export function TopBar() {
           position: sticky;
           top: 0;
           z-index: 100;
-          height: 64px;
+          background: var(--bg-deep);
+          border-bottom: 1px solid var(--border-1);
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .tb-inner {
+          /* Match page main's 1280px max-width so the header brand /
+             nav / search line up with the page content at wide
+             viewports. Previously .tb used full-bleed padding: 0 32px
+             which left the brand floating ~80px to the left of the
+             page content on 1440+ screens. */
+          max-width: 1280px;
+          margin: 0 auto;
+          height: 76px;
           display: flex;
           align-items: center;
           gap: 24px;
           padding: 0 32px;
-          background: var(--bg-deep);
-          border-bottom: 1px solid var(--border-1);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .tb-brand {
           display: inline-flex;
@@ -260,7 +269,7 @@ export function TopBar() {
           min-height: 44px;
           padding: 0 14px;
           border-radius: var(--r-pill);
-          font-size: 13px;
+          font-size: 15px;
           font-weight: 500;
           color: var(--t2);
           text-decoration: none;
@@ -447,7 +456,7 @@ export function TopBar() {
 
         /* Mobile: hide nav links + search, keep brand + balance + avatar */
         @media (max-width: 900px) {
-          .tb { gap: 12px; padding: 0 16px; }
+          .tb-inner { gap: 12px; padding: 0 16px; height: 64px; }
           .tb-brand { font-size: 24px; gap: 7px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
@@ -455,106 +464,115 @@ export function TopBar() {
       `}</style>
 
       <header className="tb">
-        <Link href="/predict" className="tb-brand" aria-label="Hula Na! — home">
-          <BrandMark />
-          <span className="tb-brand-txt">
-            Hula<span className="accent">Na!</span>
-          </span>
-        </Link>
-
-        {isDesktop && (
-          <nav className="tb-nav" aria-label="Primary">
-            {NAV_LINKS.filter((l) => !l.requiresAuth || isAuthenticated).map(
-              (l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
-                >
-                  {l.label}
-                </Link>
-              ),
-            )}
-          </nav>
-        )}
-
-        <div className="tb-right">
-          <div
-            className="tb-search-wrap"
-            ref={searchRef}
-            role="combobox"
-            aria-haspopup="listbox"
-            aria-expanded={searchOpen && searchResults.length > 0}
-            aria-owns="tb-search-listbox"
-            aria-activedescendant={
-              searchOpen && searchResults[cursor]
-                ? `tb-search-option-${searchResults[cursor].id}`
-                : undefined
-            }
+        <div className="tb-inner">
+          <Link
+            href="/predict"
+            className="tb-brand"
+            aria-label="Hula Na! — home"
           >
-            <label className="tb-search-label">
-              <Search size={14} className="tb-search-icon" />
-              <input
-                ref={searchInputRef}
-                type="search"
-                className="tb-search"
-                placeholder="Search markets, candidates, teams…"
-                aria-label="Search markets"
-                aria-autocomplete="list"
-                aria-controls="tb-search-listbox"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setSearchOpen(true);
-                }}
-                onFocus={() => {
-                  setSearchOpen(true);
-                  void loadMarketsIfNeeded();
-                }}
-                onKeyDown={handleSearchKey}
-              />
-            </label>
-            {searchOpen && query.trim() !== "" && (
-              <ul
-                id="tb-search-listbox"
-                role="listbox"
-                className="tb-search-results"
-              >
-                {searchResults.length === 0 ? (
-                  <li className="tb-search-empty" aria-live="polite">
-                    No markets match “{query.trim()}”
-                  </li>
-                ) : (
-                  searchResults.map((m, i) => (
-                    <li
-                      key={m.id}
-                      id={`tb-search-option-${m.id}`}
-                      role="option"
-                      aria-selected={i === cursor}
-                      className={`tb-search-hit ${i === cursor ? "active" : ""}`}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        navigateToMarket(m.ticker);
-                      }}
-                      onMouseEnter={() => setCursor(i)}
-                    >
-                      <span className="tb-search-hit-title">{m.title}</span>
-                      <span className="tb-search-hit-meta mono">
-                        {m.ticker} · {m.yesPriceCents}¢ YES
-                      </span>
-                    </li>
-                  ))
-                )}
-              </ul>
-            )}
-          </div>
+            <BrandMark size={56} />
+            <img
+              src="/brand/wordmark.png"
+              alt="Hula Na!"
+              width={140}
+              height={34}
+              style={{ display: "block", height: 34, width: "auto" }}
+            />
+          </Link>
 
-          {isAuthenticated && <TierPill />}
-          {isAuthenticated && (
-            <div className="tb-balance">
-              <span className="lbl">BAL</span>
-              <span>
-                {/*
+          {isDesktop && (
+            <nav className="tb-nav" aria-label="Primary">
+              {NAV_LINKS.filter((l) => !l.requiresAuth || isAuthenticated).map(
+                (l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
+                  >
+                    {l.label}
+                  </Link>
+                ),
+              )}
+            </nav>
+          )}
+
+          <div className="tb-right">
+            <div
+              className="tb-search-wrap"
+              ref={searchRef}
+              role="combobox"
+              aria-haspopup="listbox"
+              aria-expanded={searchOpen && searchResults.length > 0}
+              aria-owns="tb-search-listbox"
+              aria-activedescendant={
+                searchOpen && searchResults[cursor]
+                  ? `tb-search-option-${searchResults[cursor].id}`
+                  : undefined
+              }
+            >
+              <label className="tb-search-label">
+                <Search size={14} className="tb-search-icon" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  className="tb-search"
+                  placeholder="Search markets, candidates, teams…"
+                  aria-label="Search markets"
+                  aria-autocomplete="list"
+                  aria-controls="tb-search-listbox"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setSearchOpen(true);
+                  }}
+                  onFocus={() => {
+                    setSearchOpen(true);
+                    void loadMarketsIfNeeded();
+                  }}
+                  onKeyDown={handleSearchKey}
+                />
+              </label>
+              {searchOpen && query.trim() !== "" && (
+                <ul
+                  id="tb-search-listbox"
+                  role="listbox"
+                  className="tb-search-results"
+                >
+                  {searchResults.length === 0 ? (
+                    <li className="tb-search-empty" aria-live="polite">
+                      No markets match “{query.trim()}”
+                    </li>
+                  ) : (
+                    searchResults.map((m, i) => (
+                      <li
+                        key={m.id}
+                        id={`tb-search-option-${m.id}`}
+                        role="option"
+                        aria-selected={i === cursor}
+                        className={`tb-search-hit ${i === cursor ? "active" : ""}`}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          navigateToMarket(m.ticker);
+                        }}
+                        onMouseEnter={() => setCursor(i)}
+                      >
+                        <span className="tb-search-hit-title">{m.title}</span>
+                        <span className="tb-search-hit-meta mono">
+                          {m.ticker} · {m.yesPriceCents}¢ YES
+                        </span>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              )}
+            </div>
+
+            {isAuthenticated && <TierPill />}
+            {isAuthenticated && (
+              <div className="tb-balance">
+                <span className="lbl">BAL</span>
+                <span>
+                  {/*
                   Render a placeholder when the balance is undefined
                   (still loading) instead of "$0.00". The literal $0
                   was misleading: on every page navigation, between the
@@ -563,67 +581,73 @@ export function TopBar() {
                   "your account is empty" and panic. A neutral "—"
                   reads as "loading" without claiming a value.
                 */}
-                {typeof balance === "number" ? `$${balance.toFixed(2)}` : "$—"}
-              </span>
-            </div>
-          )}
+                  {typeof balance === "number"
+                    ? `$${balance.toFixed(2)}`
+                    : "$—"}
+                </span>
+              </div>
+            )}
 
-          {isLoading ? null : isAuthenticated ? (
-            <div style={{ position: "relative" }} ref={menuRef}>
-              <button
-                type="button"
-                className="tb-avatar"
-                onClick={() => setUserMenuOpen((o) => !o)}
-                aria-haspopup="menu"
-                aria-expanded={userMenuOpen}
-                aria-label="User menu"
-              >
-                {initial}
-              </button>
-              {userMenuOpen && (
-                <div className="tb-menu" role="menu">
-                  <Link href="/account" onClick={() => setUserMenuOpen(false)}>
-                    <UserIcon size={14} /> Account
-                  </Link>
-                  <Link
-                    href="/portfolio"
-                    onClick={() => setUserMenuOpen(false)}
-                  >
-                    <Wallet size={14} /> Portfolio
-                  </Link>
-                  <Link
-                    href="/account/settings"
-                    onClick={() => setUserMenuOpen(false)}
-                  >
-                    <Settings size={14} /> Settings
-                  </Link>
-                  <div
-                    style={{
-                      height: 1,
-                      background: "var(--surface-2)",
-                      margin: "4px 0",
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    style={{ color: "var(--no)" }}
-                  >
-                    <LogOut size={14} /> Log out
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <Link href="/auth/login" className="tb-btn tb-btn-ghost">
-                Log in
-              </Link>
-              <Link href="/auth/register" className="tb-btn tb-btn-accent">
-                Sign up
-              </Link>
-            </>
-          )}
+            {isLoading ? null : isAuthenticated ? (
+              <div style={{ position: "relative" }} ref={menuRef}>
+                <button
+                  type="button"
+                  className="tb-avatar"
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                  aria-haspopup="menu"
+                  aria-expanded={userMenuOpen}
+                  aria-label="User menu"
+                >
+                  {initial}
+                </button>
+                {userMenuOpen && (
+                  <div className="tb-menu" role="menu">
+                    <Link
+                      href="/account"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <UserIcon size={14} /> Account
+                    </Link>
+                    <Link
+                      href="/portfolio"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Wallet size={14} /> Portfolio
+                    </Link>
+                    <Link
+                      href="/account/settings"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Settings size={14} /> Settings
+                    </Link>
+                    <div
+                      style={{
+                        height: 1,
+                        background: "var(--surface-2)",
+                        margin: "4px 0",
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      style={{ color: "var(--no)" }}
+                    >
+                      <LogOut size={14} /> Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link href="/auth/login" className="tb-btn tb-btn-ghost">
+                  Log in
+                </Link>
+                <Link href="/auth/register" className="tb-btn tb-btn-accent">
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </header>
     </>
