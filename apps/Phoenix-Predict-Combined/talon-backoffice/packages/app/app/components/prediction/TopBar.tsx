@@ -394,8 +394,13 @@ export function TopBar() {
         }
 
         .tb-avatar {
-          width: 36px;
-          height: 36px;
+          /* WCAG / Apple HIG / Material recommend >=44px for touch
+             targets. Bumped from 36x36 -> 44x44 so mobile users don't
+             miss-tap. Font size and shadow scale proportionally; the
+             slightly larger avatar also reads as "this is YOU" more
+             clearly in the header chrome. */
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           background:
             radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25), transparent 60%),
@@ -407,7 +412,7 @@ export function TopBar() {
           display: grid;
           place-items: center;
           font-weight: 700;
-          font-size: 13px;
+          font-size: 15px;
           color: #fff;
           cursor: pointer;
         }
