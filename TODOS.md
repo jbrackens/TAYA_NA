@@ -4,7 +4,24 @@ Design and product debt tracked across planning cycles. Items here are intention
 
 ## Open
 
-_(No open TODOs as of 2026-05-15. The two product-decision TODOs that were the last remaining items have either shipped or moved to a planning document — see "Shipped" below.)_
+### Header — mark vs. wordmark optical balance (POLISH, design) — deferred 2026-05-15
+
+- Source: /design-review header audit, finding H05.
+- Mark renders 56×58 in soft mint gradient; wordmark renders 143×34 in solid black bold. Wordmark visually dominates the brand zone; mark reads as ornament rather than the primary identifier.
+- Two paths when revisited: (1) export a designed lockup (mark + wordmark as one SVG/PNG with the spacing baked in by the designer) and render that; (2) cheap interim — bump mark to 64-68px + drop wordmark to 28-30px so optical weights even out.
+- Not blocking the investor demo; treat as design-direction call rather than a bug.
+
+### Header — BAL pill abbreviated to "$5.2K" on mobile (POLISH, content) — deferred 2026-05-15
+
+- Source: /design-review header audit, finding H06.
+- At 375px viewport the BAL pill renders "$5.2K" instead of the full "$5068.81". The abbreviation loses precision and may make users second-guess their balance ("am I missing money?").
+- Not an a11y issue — the value is readable, just rounded. Revisit if usability testing surfaces concern.
+
+### Header — no mobile hamburger nav (MEDIUM, navigation) — deferred 2026-05-15
+
+- Source: /design-review header audit, finding H07.
+- The `@media (max-width: 900px)` rule hides .tb-nav and .tb-search-wrap entirely on phones. There's no hamburger or alternate route to Portfolio / Leaderboards / Rewards — users would have to type URLs.
+- Acceptable for the desktop-only investor walkthrough; will block any real mobile pilot. Add a slide-down or bottom-sheet nav when scope allows.
 
 ## Shipped
 
