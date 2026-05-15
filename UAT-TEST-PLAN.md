@@ -560,7 +560,7 @@ Multi-step flows that chain workflows the way a real person does (derived from P
 | ID | Journey | Behavior (steps) | Pass |
 |---|---|---|---|
 | BX-01 | J36 impulse visitor | logged-out deep-link to a market → full context renders in <3s, no auth wall | self-contained market page, Log in visible |
-| BX-02 | J2 sportsbook crossover | search "senate" → open a result → ¢ price + implied-prob legible | result opens, price/prob shown |
+| BX-02 | J2 sportsbook crossover | focus search → query a term matching an **open** market (e.g. "barcelona"; NOT a term whose markets are all settled — search indexes open markets only) → relevant result(s) render → open one → ¢ price + implied-prob legible | ≥1 relevant hit; price/prob shown on the opened market |
 | BX-03 | J3 macro tourist | deep-link a market → resolution criteria + source present before betting | resolution text visible pre-trade |
 | BX-04 | J4 news-reactor | /predict → open a Top-mover → market loads fast with live price | mover opens, price present |
 | BX-05 | J9 longshot | scan discovery for a ≤5¢ YES market → it exists & is openable | a cheap-YES market found+opens |
@@ -582,5 +582,5 @@ Multi-step flows that chain workflows the way a real person does (derived from P
 | BX-21 | J45 one-event tourist | view a settled market held by u-1 → it shows in History with P&L | settled row present |
 | BX-22 | J49 withdrawal-tester | cashier: deposit $X then withdraw $Y → balance/reserved move both ways | both deltas correct |
 | BX-23 | J46 lapsed returner | logout → re-login → balance + positions intact | state preserved post re-auth |
-| BX-24 | J39 funding bouncer | set trade amount > balance → "Add funds" path, no silent fail | add-funds CTA shown |
+| BX-24 | J39 funding bouncer | deep-link a market with `?amount=<huge>` (e.g. `/market/UCL-BARCA-2526/?side=yes&amount=999999`) — the ticket has no free-text amount field by design (chips/MAX/`?amount=` only), so this is the real over-balance path → ticket shows "Add funds", no "Place trade", no silent fail | "Add funds" CTA + "balance below" msg; "Place trade" absent |
 | BX-25 | J40 mobile casual | 375px → bottom nav reaches Portfolio → market ticket usable one-hand | nav works, ticket renders |
