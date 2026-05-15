@@ -550,3 +550,37 @@ Repro: always | intermittent (N/M)
 Evidence: <screenshot/console/network ref>
 Known-issue?: yes(ref) | no
 ```
+
+---
+
+## 14. Behavioral smoke (BX-01..25) — real-user journey simulations
+
+Multi-step flows that chain workflows the way a real person does (derived from PRODUCT-USER-JOURNEYS.md). Distinct from §2–§10 (which test one workflow in isolation). Run after §1.1 preconditions, logged in as `demo@phoenix.local` unless noted.
+
+| ID | Journey | Behavior (steps) | Pass |
+|---|---|---|---|
+| BX-01 | J36 impulse visitor | logged-out deep-link to a market → full context renders in <3s, no auth wall | self-contained market page, Log in visible |
+| BX-02 | J2 sportsbook crossover | search "senate" → open a result → ¢ price + implied-prob legible | result opens, price/prob shown |
+| BX-03 | J3 macro tourist | deep-link a market → resolution criteria + source present before betting | resolution text visible pre-trade |
+| BX-04 | J4 news-reactor | /predict → open a Top-mover → market loads fast with live price | mover opens, price present |
+| BX-05 | J9 longshot | scan discovery for a ≤5¢ YES market → it exists & is openable | a cheap-YES market found+opens |
+| BX-06 | J10 favorite-grinder | scan for a ≥85¢ YES market → exists & openable | a high-prob market found+opens |
+| BX-07 | J13 election hedger | open a politics market → buy the side they fear → position appears in portfolio | new position in /portfolio |
+| BX-08 | J15 fan hedger | open a sports market → bet against → portfolio reflects | position recorded |
+| BX-09 | J24 watch-party | open market → place trade → recent-trades/price update post-fill | trades list or price changes |
+| BX-10 | J27 leaderboard climber | /leaderboards → note own rank chip → matches /portfolio rank chip | ranks consistent |
+| BX-11 | J11 copy-trader | /leaderboards → open Accuracy board → ranked traders visible to follow | ≥3 named entries |
+| BX-12 | J19 reputation forecaster | Accuracy board shows % + settled count per trader | %/settled columns populated |
+| BX-13 | J20 crowd-poller | open a market, read implied probability, do NOT trade, leave | prob read, no order placed |
+| BX-14 | J21 skeptic | small contrarian market BUY on a lopsided market → truthful toast/outcome | order resolves truthfully |
+| BX-15 | J37 category browser | /predict → filter Politics→Crypto→Sports → grid changes each time | grid set changes per filter |
+| BX-16 | J6 closing-soon hunter | apply 1D then 1W closing-window filter → set narrows | filtered set differs from All |
+| BX-17 | J43 portfolio manager | place trades on 2 different markets → both in Positions | 2 new positions |
+| BX-18 | J7/44 take-profit seller | open a held-position market → Sell tab shows available shares → partial sell | sell fills, qty drops |
+| BX-19 | J8 limit-order canceller | place a far limit (rests) → /portfolio Open orders → cancel it | order gone, cash returned |
+| BX-20 | J44 tax-aware closer | /portfolio → History realized P&L + summary tiles internally consistent | accuracy denom = settled count |
+| BX-21 | J45 one-event tourist | view a settled market held by u-1 → it shows in History with P&L | settled row present |
+| BX-22 | J49 withdrawal-tester | cashier: deposit $X then withdraw $Y → balance/reserved move both ways | both deltas correct |
+| BX-23 | J46 lapsed returner | logout → re-login → balance + positions intact | state preserved post re-auth |
+| BX-24 | J39 funding bouncer | set trade amount > balance → "Add funds" path, no silent fail | add-funds CTA shown |
+| BX-25 | J40 mobile casual | 375px → bottom nav reaches Portfolio → market ticket usable one-hand | nav works, ticket renders |
