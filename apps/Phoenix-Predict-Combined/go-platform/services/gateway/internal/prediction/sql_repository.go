@@ -832,14 +832,23 @@ func (r *SQLRepository) createPayoutWithExec(ctx context.Context, execer sqlRowE
 	).Scan(&p.ID, &p.PaidAt)
 }
 
-// closeSettledPositionWithExec zeroes a position's quantity and writes the
-// realized pnl from its payout. Required because the portfolio summary query
-// filters open positions on `quantity > 0`; without this the INVESTED and
-// OPEN POSITIONS stats keep counting already-settled holdings.
+// closeSettledPositionWithExec zeroes a settled position's quantity AND its
+// cost basis, and writes the realized pnl from its payout. Quantity is zeroed
+// so the portfolio summary (filters `quantity > 0`) stops counting settled
+// holdings. Cost basis (total_cost_cents, avg_price_cents) must ALSO reset:
+// the contracts are gone, so the next buy into this market is a fresh basis.
+// Leaving them caused F-4 — a re-buy ran avg = (stale_total + new_cost) / qty
+// in service.go, producing >100¢ avg prices (577¢, 1229¢) that settlement
+// then copied verbatim into prediction_payouts.entry_price_cents and the
+// portfolio History "Entry" column. The Payout row for THIS settlement is
+// built before this call (settlement.go), so its recorded entry price / pnl
+// are unaffected. realized_pnl_cents accumulates and is preserved.
 func (r *SQLRepository) closeSettledPositionWithExec(ctx context.Context, execer sqlRowExecer, positionID string, pnlCents int64) error {
 	_, err := execer.ExecContext(ctx,
 		`UPDATE prediction_positions
 		   SET quantity = 0,
+		       total_cost_cents = 0,
+		       avg_price_cents = 0,
 		       realized_pnl_cents = realized_pnl_cents + $2,
 		       updated_at = NOW()
 		 WHERE id = $1`,

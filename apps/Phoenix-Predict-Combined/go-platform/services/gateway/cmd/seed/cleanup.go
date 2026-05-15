@@ -275,13 +275,25 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 	}
 	r.DemoOrdersDeleted, _ = res.RowsAffected()
 
-	// Step 2e: positions touched by demo orders. We zero them via DELETE
-	// for users user-bot and u-1 where there is no surviving non-demo
-	// trade evidence. This keeps base-seed positions for alice/bob/charlie
-	// intact while clearing whatever the demo flow plumped onto bot+demo.
+	// Step 2e: positions touched by demo orders. DELETE for every
+	// demo-touched user (bot, u-1, and the Phase 2 synthetic-volume
+	// users user-001/002/003) where there is no surviving non-demo
+	// trade backing. The NOT EXISTS guard still preserves any genuine
+	// base-seed position (those have a non-demo trade); only demo-built
+	// positions are cleared.
+	//
+	// user-001/002/003 were previously excluded on the assumption their
+	// positions were all base-seed. They are not: Phase 2 attributes its
+	// synthetic taker volume to them, so their positions survived every
+	// wipe and Phase 2 re-stacked total_cost_cents each reseed. service.go
+	// then computed avg = (stale_total + new_cost) / qty, inflating
+	// avg_price_cents to 561-663¢, which settlement copied verbatim into
+	// prediction_payouts.entry_price_cents → the >100¢ "Entry" values in
+	// portfolio History (F-4). Including them here makes each reseed start
+	// their positions clean.
 	res, err = db.Exec(`
 		DELETE FROM prediction_positions p
-		WHERE p.user_id IN ('user-bot', 'u-1')
+		WHERE p.user_id IN ('user-bot', 'u-1', 'user-001', 'user-002', 'user-003')
 		  AND NOT EXISTS (
 		    SELECT 1 FROM prediction_trades t
 		    WHERE t.market_id = p.market_id
