@@ -1472,3 +1472,55 @@ func (r *SQLRepository) ensurePunterExistsWithExec(ctx context.Context, execer s
 	)
 	return err
 }
+
+// ListPriceBuckets aggregates prediction_trades into volume-weighted YES
+// price buckets of bucketSec width over [since, until]. Returns only
+// buckets that have at least one trade; the caller (Service) fills the
+// empty buckets via carry-forward.
+//
+// Notes on the SQL:
+//   - YES price is the YES-side price of every trade (issuance pairs
+//     write one YES-side row and one NO-side row; we read the YES rows
+//     to keep the chart Y-axis consistent).
+//   - Volume-weighted mean uses SUM(price × qty) / SUM(qty) so big
+//     fills move the bucket price more than tiny ones.
+//   - Bucket key is `to_timestamp(floor(epoch / N) * N)` so buckets
+//     align with the Go-side bucketAlign helper.
+func (r *SQLRepository) ListPriceBuckets(ctx context.Context, marketID string, since, until time.Time, bucketSec int) ([]PricePoint, error) {
+	if bucketSec <= 0 {
+		return nil, fmt.Errorf("bucketSec must be > 0")
+	}
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT
+		  to_timestamp(floor(extract(epoch from traded_at) / $4) * $4) AS bucket_start,
+		  (SUM(price_cents::bigint * quantity) / NULLIF(SUM(quantity), 0))::int AS vwap_yes,
+		  COUNT(*) AS trade_count,
+		  SUM(price_cents::bigint * quantity) AS volume_cents
+		FROM prediction_trades
+		WHERE market_id = $1
+		  AND traded_at >= $2
+		  AND traded_at <  $3
+		  AND side = 'yes'
+		GROUP BY bucket_start
+		ORDER BY bucket_start ASC
+	`, marketID, since, until, bucketSec)
+	if err != nil {
+		return nil, fmt.Errorf("query price buckets: %w", err)
+	}
+	defer rows.Close()
+
+	var out []PricePoint
+	for rows.Next() {
+		var p PricePoint
+		var bucketStart time.Time
+		if err := rows.Scan(&bucketStart, &p.YesPriceCents, &p.TradeCount, &p.VolumeCents); err != nil {
+			return nil, fmt.Errorf("scan price bucket: %w", err)
+		}
+		p.BucketStart = bucketStart.UTC()
+		out = append(out, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate price buckets: %w", err)
+	}
+	return out, nil
+}

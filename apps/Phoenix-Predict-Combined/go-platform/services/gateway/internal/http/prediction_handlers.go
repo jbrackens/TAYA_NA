@@ -204,6 +204,19 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 				return httpx.Internal("failed to fetch orderbook", err)
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, book)
+		case "prices":
+			// GET /api/v1/markets/{id}/prices?range=1h|1d|1w|1m|all
+			// Returns volume-weighted YES price buckets over the
+			// requested window. Buckets without trades carry forward
+			// the prior price so the line is continuous. Frontend
+			// hero + market-detail charts read from here instead of
+			// synthesizing a fake walk.
+			rng := prediction.PriceHistoryRange(r.URL.Query().Get("range"))
+			history, err := svc.GetPriceHistory(r.Context(), market.ID, rng)
+			if err != nil {
+				return httpx.Internal("failed to fetch price history", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, history)
 		default:
 			return httpx.NotFound("market subresource not found")
 		}

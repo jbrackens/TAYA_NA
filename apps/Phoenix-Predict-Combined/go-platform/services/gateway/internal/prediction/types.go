@@ -535,3 +535,40 @@ type DashboardVolumeStats struct {
 	TradeCount       int              `json:"tradeCount"`
 	TopMovers        []DashboardMover `json:"topMovers"`
 }
+
+// PricePoint is a single bucket in a market's price-history series.
+// YesPriceCents is the volume-weighted mean YES price across all trades
+// in the bucket; bucket boundaries are aligned to the requested
+// resolution. Buckets with zero trades are carried forward from the
+// previous known price so charts render a continuous line.
+type PricePoint struct {
+	BucketStart   time.Time `json:"bucketStart"`
+	YesPriceCents int       `json:"yesPriceCents"`
+	TradeCount    int       `json:"tradeCount"`
+	VolumeCents   int64     `json:"volumeCents"`
+}
+
+// PriceHistoryRange is the set of time windows the
+// /api/v1/markets/{id}/prices?range= query accepts. Each constant pairs
+// the window with the bucket resolution we aggregate at — see
+// PriceHistoryWindow for the (since, bucketSec) mapping.
+type PriceHistoryRange string
+
+const (
+	PriceHistoryRange1H  PriceHistoryRange = "1h"
+	PriceHistoryRange1D  PriceHistoryRange = "1d"
+	PriceHistoryRange1W  PriceHistoryRange = "1w"
+	PriceHistoryRange1M  PriceHistoryRange = "1m"
+	PriceHistoryRangeAll PriceHistoryRange = "all"
+)
+
+// PriceHistoryResponse wraps the points + metadata so clients can render
+// axes / labels without re-deriving the window.
+type PriceHistoryResponse struct {
+	MarketID  string       `json:"marketId"`
+	Range     string       `json:"range"`
+	Since     time.Time    `json:"since"`
+	Until     time.Time    `json:"until"`
+	BucketSec int          `json:"bucketSec"`
+	Points    []PricePoint `json:"points"`
+}
