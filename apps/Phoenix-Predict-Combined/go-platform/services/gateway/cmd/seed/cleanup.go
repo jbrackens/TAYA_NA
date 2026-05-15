@@ -17,6 +17,7 @@ type CleanupResult struct {
 	DemoLedgerDeleted      int64
 	DemoSettlementsDeleted int64
 	DemoPositionsDeleted   int64
+	OrphanOrderReservationsDeleted int64
 }
 
 // stalePendingCutoff is the age at which a 'pending' order is considered
@@ -292,6 +293,30 @@ func RunPhase0Cleanup(db *sql.DB) (*CleanupResult, error) {
 		return r, fmt.Errorf("delete demo positions: %w", err)
 	}
 	r.DemoPositionsDeleted, _ = res.RowsAffected()
+
+	// Step 2f: delete orphaned prediction_order reservations. Step 2d
+	// deletes demo orders but the wallet_reservations they created are
+	// left behind as status='held' orphans. AvailableBalance is
+	// balance - SUM(held) computed live (wallet/service.go), so every
+	// reseed within one gateway lifetime stacks another ~$200k of dead
+	// holds on user-bot until Phase 1 can no longer reserve and fails
+	// with "hold reservation: insufficient funds". That made the demo
+	// nondeterministic (101 payouts on a fresh DB, 26 after several
+	// reseeds). Scoped to reference_type='prediction_order'; only
+	// removes reservations whose backing order no longer exists, so it
+	// both heals accumulated cruft and stops future accumulation.
+	res, err = db.Exec(`
+		DELETE FROM wallet_reservations r
+		WHERE r.reference_type = 'prediction_order'
+		  AND NOT EXISTS (
+		    SELECT 1 FROM prediction_orders o
+		    WHERE o.id::text = r.reference_id::text
+		  )
+	`)
+	if err != nil {
+		return r, fmt.Errorf("delete orphan order reservations: %w", err)
+	}
+	r.OrphanOrderReservationsDeleted, _ = res.RowsAffected()
 
 	return r, nil
 }

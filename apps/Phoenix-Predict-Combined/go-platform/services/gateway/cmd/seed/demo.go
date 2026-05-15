@@ -30,6 +30,7 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	fmt.Printf("  demo ledger deleted:     %d\n", cleanup.DemoLedgerDeleted)
 	fmt.Printf("  demo settlements deleted: %d\n", cleanup.DemoSettlementsDeleted)
 	fmt.Printf("  demo positions deleted:  %d\n", cleanup.DemoPositionsDeleted)
+	fmt.Printf("  orphan order reservations deleted: %d\n", cleanup.OrphanOrderReservationsDeleted)
 
 	// Harness construction is deferred to the first phase that actually
 	// needs Service. Phase 0 is pure SQL; phases 1+ go through Service.
@@ -108,5 +109,6 @@ func RunWipe(db *sql.DB) error {
 	fmt.Printf("  demo ledger deleted:     %d\n", cleanup.DemoLedgerDeleted)
 	fmt.Printf("  demo settlements deleted: %d\n", cleanup.DemoSettlementsDeleted)
 	fmt.Printf("  demo positions deleted:  %d\n", cleanup.DemoPositionsDeleted)
+	fmt.Printf("  orphan order reservations deleted: %d\n", cleanup.OrphanOrderReservationsDeleted)
 	return nil
 }
