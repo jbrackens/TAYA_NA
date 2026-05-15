@@ -466,6 +466,12 @@ export function TopBar() {
         @media (max-width: 900px) {
           .tb-inner { gap: 12px; padding: 0 16px; height: 64px; }
           .tb-brand { font-size: 24px; gap: 7px; }
+          /* Cap brand-asset height so the 56px mark + 34px wordmark don't
+             swallow the right rail at 375px. The old text-wordmark sized
+             via font-size; the new <img> wordmark needs its own size
+             rule. Without this BAL gets compressed to "$5.2K" and the
+             header looks cramped. */
+          .tb-brand img { max-height: 32px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
         }
