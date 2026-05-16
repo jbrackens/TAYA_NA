@@ -25,6 +25,10 @@ type PredictEntry struct {
 	MetricValue float64   `json:"metricValue"`
 	WindowStart time.Time `json:"windowStart"`
 	WindowEnd   time.Time `json:"windowEnd"`
+	// SettledCount is the number of settled markets behind the metric. Only
+	// populated for the accuracy board (it is that metric's denominator);
+	// nil for boards where a settled count is not meaningful.
+	SettledCount *int `json:"settledCount,omitempty"`
 }
 
 // PredictLBRepo is the Predict-native leaderboards persistence interface.
@@ -98,7 +102,53 @@ func (r *PredictSQLRepo) ListEntries(ctx context.Context, boardID string, limit 
 		}
 		out = append(out, e)
 	}
-	return out, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if boardID == string(PredictBoardAccuracy) && len(out) > 0 {
+		if err := r.enrichAccuracySettledCount(ctx, out); err != nil {
+			return nil, err
+		}
+	}
+	return out, nil
+}
+
+// enrichAccuracySettledCount sets SettledCount on accuracy entries to the
+// number of settled markets behind each trader's accuracy %, mirroring the
+// denominator RecomputeAccuracy used (COUNT(*) of prediction_payouts in the
+// snapshot window). Read-only enrichment so the shared ListEntries query
+// stays unchanged for the other boards.
+func (r *PredictSQLRepo) enrichAccuracySettledCount(ctx context.Context, entries []PredictEntry) error {
+	winStart := entries[0].WindowStart
+	winEnd := entries[0].WindowEnd
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT user_id, COUNT(*)
+		FROM prediction_payouts
+		WHERE paid_at >= $1 AND paid_at < $2
+		GROUP BY user_id`, winStart, winEnd)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	counts := make(map[string]int)
+	for rows.Next() {
+		var uid string
+		var n int
+		if err := rows.Scan(&uid, &n); err != nil {
+			return err
+		}
+		counts[uid] = n
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	for i := range entries {
+		if n, ok := counts[entries[i].UserID]; ok {
+			c := n
+			entries[i].SettledCount = &c
+		}
+	}
+	return nil
 }
 
 // GetEntry returns the user's current rank on one board, or nil if they

@@ -150,7 +150,7 @@ func leaderboardViewerRank(r *stdhttp.Request, service *leaderboards.PredictServ
 }
 
 func predictEntryPayload(e leaderboards.PredictEntry) map[string]any {
-	return map[string]any{
+	p := map[string]any{
 		"boardId":     e.BoardID,
 		"rank":        e.Rank,
 		"userId":      e.UserID,
@@ -159,4 +159,8 @@ func predictEntryPayload(e leaderboards.PredictEntry) map[string]any {
 		"windowStart": e.WindowStart.UTC(),
 		"windowEnd":   e.WindowEnd.UTC(),
 	}
+	if e.SettledCount != nil {
+		p["settledCount"] = *e.SettledCount
+	}
+	return p
 }

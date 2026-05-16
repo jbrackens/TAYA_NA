@@ -369,7 +369,11 @@ function DetailPanel({
                     {formatMetric(board, e.metricValue)}
                   </td>
                   <td className="lb-num lb-hide-sm mono">
-                    <span className="lb-subtle">—</span>
+                    {typeof e.settledCount === "number" ? (
+                      e.settledCount
+                    ) : (
+                      <span className="lb-subtle">—</span>
+                    )}
                   </td>
                 </tr>
               );

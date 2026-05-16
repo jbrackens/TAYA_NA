@@ -26,6 +26,7 @@ export interface LeaderboardEntry {
   metricValue: number;
   windowStart: string;
   windowEnd: string;
+  settledCount?: number;
 }
 
 interface BoardsResponse {

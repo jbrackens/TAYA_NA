@@ -131,6 +131,46 @@ func TestPredictLeaderboardEntries_ReturnsBoardRows(t *testing.T) {
 	}
 }
 
+// Regression (UAT 2026-05-16 D-2): the accuracy board must expose a
+// per-trader settled count so the UI SETTLED column shows a number, not
+// "—". Entries without a count (other boards) must omit the field so the
+// UI keeps its "—" fallback.
+func TestPredictLeaderboardEntries_AccuracyExposesSettledCount(t *testing.T) {
+	n := 12
+	entries := []leaderboards.PredictEntry{
+		{BoardID: "accuracy", Rank: 1, UserID: "u-alice", DisplayName: "alice", MetricValue: 70.0, SettledCount: &n},
+		{BoardID: "accuracy", Rank: 2, UserID: "u-bob", DisplayName: "bob", MetricValue: 50.0},
+	}
+	h := buildPredictLBHandler(t, &fakeLBRepo{entries: entries}, nil)
+
+	req := httptest.NewRequest(stdhttp.MethodGet, "/api/v1/leaderboards/accuracy/entries", nil)
+	res := httptest.NewRecorder()
+	h.ServeHTTP(res, req)
+
+	if res.Code != stdhttp.StatusOK {
+		t.Fatalf("entries: want 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var p struct {
+		Items []map[string]any `json:"items"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &p); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if len(p.Items) != 2 {
+		t.Fatalf("want 2 items, got %d", len(p.Items))
+	}
+	sc, ok := p.Items[0]["settledCount"]
+	if !ok {
+		t.Fatalf("entry 0 must include settledCount")
+	}
+	if int(sc.(float64)) != 12 {
+		t.Errorf("settledCount: want 12, got %v", sc)
+	}
+	if _, present := p.Items[1]["settledCount"]; present {
+		t.Errorf("entry 1 (no count) must omit settledCount, got %v", p.Items[1]["settledCount"])
+	}
+}
+
 func TestPredictLeaderboardEntries_IncludesViewerRankForSelf(t *testing.T) {
 	entries := []leaderboards.PredictEntry{
 		{BoardID: "accuracy", Rank: 1, UserID: "u-alice", MetricValue: 1.0},
