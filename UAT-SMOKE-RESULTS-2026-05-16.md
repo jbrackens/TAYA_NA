@@ -890,3 +890,52 @@ Correct fix: serialize the gate+withdrawal per user — e.g. a pg advisory
 Status: OPEN — awaiting scope decision (fix now under no-shortcuts vs.
       track like the RG-gate TOCTOU).
 ```
+
+## §26 — D-9 FIXED (no-shortcuts)
+
+User chose to fix D-9 now. **Status: FIXED — commit `725c37e5`; D-9 above
+is RESOLVED** (recorded here per the append-only rule; §25's "OPEN" left
+intact).
+
+**Root cause:** the withdraw handler did `CumulativeWithdrawnCents` →
+threshold compare → `InitiateWithdrawal` as three separate, unsynchronized
+calls. Concurrent unverified withdrawals each read the same prior
+cumulative, each passed the threshold check, then all inserted.
+
+**Fix:** new `PaymentService.InitiateGatedWithdrawal` performs
+(cumulative → gate decision → wallet hold → withdrawal record) **atomically
+per user**. The KYC policy stays in the handler — it is injected as a gate
+callback invoked with the *locked* cumulative — so the payments package
+remains decoupled from KYC.
+- **DBPaymentService:** one tx holding
+  `pg_advisory_xact_lock(hashtext(userID))` across the on-tx cumulative
+  SELECT, the gate callback, and the on-tx withdrawal INSERT. Cluster-wide
+  correct (multi-instance safe); auto-releases on commit/rollback. Wallet
+  hold is released on insert/commit failure (no leak, no new TOCTOU).
+- **MockPaymentService:** a per-user `sync.Mutex` (single-process
+  analogue). No lock-order inversion (verified).
+- **Handler:** the gate's `httpx` error is captured in per-request closure
+  state and surfaced verbatim, distinct from payment-domain errors; the
+  withdraw route now also requires the auth session (no body-userId
+  fallback — codex LC-22 P2, fixed in `e4d18a80`).
+
+**Verification (full no-shortcuts):**
+- Unit: `TestInitiateGatedWithdrawal_SerializesPerUser_NoTOCTOU` asserts
+  the per-user gate never overlaps (deterministic via an in-gate delay) —
+  **fails-without** (gate ran 6-way concurrent for one user) /
+  **passes-with** (1-way); `-race` clean. The 9
+  `TestWithdraw_KYCJustInTimeGate` subtests still green. Full gateway
+  suite **24/24**.
+- Independent **codex** re-review of the fix: **VERDICT: CLEAN — FIXED,
+  no P1/P2** (atomic DB critical section confirmed, hold-release safe,
+  hashtext over-serializes-only, no mock deadlock, per-request gateErr,
+  handler fully switched). Raw: `.codex-reviews/d9-review-raw.txt`.
+
+**Net LC-22 / D-8 outcome:** the KYC just-in-time gate is BUILT,
+codex-confirmed, and live-verified — withdrawal threshold gate
+(check-then-act-safe), real profile KYC status, functional verify flow
+(incl. a CSRF client bug found in-browser and fixed), KYC mutations
+session-bound, D-9 TOCTOU closed. Tracked residual: the pre-existing
+`uploadKycDocument` multipart/camelCase mismatch vs `kyc/submit-document`
+(separate defect, not in LC-22 scope; the wired verify flow uses
+`kyc/verify`).
