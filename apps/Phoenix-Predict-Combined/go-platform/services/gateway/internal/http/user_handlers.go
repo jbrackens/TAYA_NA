@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,8 +12,16 @@ import (
 	"sync"
 	"time"
 
+	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/platform/transport/httpx"
 )
+
+// profileKYCProvider supplies the real KYC status for the user profile.
+// Set in RegisterRoutes alongside the compliance wiring. When nil or on
+// error the profile reports "unverified" — it must never claim "verified"
+// without the compliance service confirming it (UAT D-8: the profile used
+// to hardcode "verified", masking real state and breaking the JIT surface).
+var profileKYCProvider compliance.KYCService
 
 type userProfileResponse struct {
 	UserID    string `json:"user_id"`
@@ -148,12 +157,27 @@ func registerUserRoutes(mux *stdhttp.ServeMux) {
 			displayUsername = email[:atIdx]
 		}
 
+		// Real KYC status from the compliance service — never hardcode
+		// "verified" (UAT D-8). Fail safe to "unverified" so the profile
+		// can't claim a verification the compliance service hasn't made.
+		kycStatus := "unverified"
+		if profileKYCProvider != nil {
+			kctx, kcancel := context.WithTimeout(r.Context(), 3*time.Second)
+			st, kerr := profileKYCProvider.GetVerificationStatus(kctx, session.UserID)
+			kcancel()
+			if kerr != nil {
+				slog.Warn("user profile: KYC status lookup failed; reporting unverified", "user_id", session.UserID, "error", kerr)
+			} else if st != nil && st.Status != "" {
+				kycStatus = st.Status
+			}
+		}
+
 		now := time.Now().UTC().Format(time.RFC3339)
 		profile := userProfileResponse{
 			UserID:    session.UserID,
 			Username:  displayUsername,
 			Email:     email,
-			KYCStatus: "verified",
+			KYCStatus: kycStatus,
 			CreatedAt: now,
 			UpdatedAt: now,
 		}

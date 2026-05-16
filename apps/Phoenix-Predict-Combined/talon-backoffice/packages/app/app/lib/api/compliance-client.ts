@@ -279,6 +279,43 @@ export async function uploadKycDocument(
 }
 
 /**
+ * Submit identity documents for KYC verification (LC-22 / D-8). The gateway
+ * binds this to the authenticated session, so the userId is the caller's.
+ * Returns the resulting KYC result (status: pending | approved | declined).
+ */
+export async function verifyIdentity(
+  userId: string,
+  documentType: string = "passport",
+): Promise<{ status: string }> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:18080";
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("phoenix_access_token")
+      : null;
+
+  const res = await fetch(`${apiUrl}/api/v1/compliance/kyc/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      userId,
+      documents: [{ type: documentType }],
+    }),
+  });
+
+  if (!res.ok) {
+    const errorBody = await res.text().catch(() => "Verification failed");
+    throw new Error(errorBody || "Failed to verify identity");
+  }
+
+  const body = (await res.json()) as { result?: { status?: string } };
+  return { status: body.result?.status ?? "pending" };
+}
+
+/**
  * Get current month's cumulative deposit total for threshold checking.
  * Uses wallet transactions to sum deposits in the current calendar month.
  */

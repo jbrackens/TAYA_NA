@@ -4,7 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { getProfile, updateProfile } from "../lib/api/user-client";
 import { UserProfile, UpdateProfileRequest } from "../lib/api/user-client";
-import { setDepositLimits, setStakeLimits } from "../lib/api/compliance-client";
+import {
+  setDepositLimits,
+  setStakeLimits,
+  verifyIdentity,
+} from "../lib/api/compliance-client";
 import {
   SetDepositLimitsRequest,
   SetStakeLimitsRequest,
@@ -23,12 +27,13 @@ const tabValues: TabType[] = (
 function StatusBadge({
   status,
 }: {
-  status?: "verified" | "pending" | "failed";
+  status?: "verified" | "pending" | "failed" | "unverified";
 }) {
   const statusColors: Record<string, { bg: string; color: string }> = {
     verified: { bg: "#1e7e34", color: "#22c55e" },
     pending: { bg: "#665700", color: "#fbbf24" },
     failed: { bg: "#7f1d1d", color: "var(--no)" },
+    unverified: { bg: "#3a3a3a", color: "var(--t3)" },
     default: { bg: "#0f3460", color: "#4a7eff" },
   };
 
@@ -49,6 +54,7 @@ function StatusBadge({
       {status === "verified" && "Verified"}
       {status === "pending" && "Pending"}
       {status === "failed" && "Failed"}
+      {status === "unverified" && "Not Verified"}
     </span>
   );
 }
@@ -202,6 +208,9 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // KYC verification (LC-22 / D-8)
+  const [verifying, setVerifying] = useState(false);
+
   // Load profile on mount
   useEffect(() => {
     if (!user?.id) return;
@@ -349,6 +358,43 @@ export default function ProfilePage() {
     setNewPassword("");
     setConfirmPassword("");
   }, [currentPassword, newPassword, confirmPassword, toast]);
+
+  // Start KYC verification (LC-22 / D-8): submit identity for verification,
+  // then refresh the profile so the badge reflects the new real status.
+  const handleStartVerification = useCallback(async () => {
+    if (!user?.id) return;
+    setVerifying(true);
+    try {
+      const { status } = await verifyIdentity(user.id);
+      try {
+        const p = await getProfile(user.id);
+        setProfile(p);
+      } catch (refreshErr: unknown) {
+        logger.error(
+          "Profile",
+          "KYC status refresh after verification failed",
+          refreshErr instanceof Error ? refreshErr.message : String(refreshErr),
+        );
+      }
+      if (status === "approved") {
+        toast.success("Identity Verified", "Your identity has been verified.");
+      } else {
+        toast.success(
+          "Verification Submitted",
+          "Your identity verification is being processed.",
+        );
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error("Profile", "KYC verification failed", message);
+      toast.error(
+        "Verification Failed",
+        "Could not start identity verification.",
+      );
+    } finally {
+      setVerifying(false);
+    }
+  }, [user?.id, toast]);
 
   if (profileLoading) {
     return (
@@ -688,7 +734,10 @@ export default function ProfilePage() {
                           ? "verified"
                           : profile?.kycStatus === "pending"
                             ? "pending"
-                            : "failed"
+                            : profile?.kycStatus === "declined" ||
+                                profile?.kycStatus === "blocked"
+                              ? "failed"
+                              : "unverified"
                       }
                     />
                   </div>
@@ -718,7 +767,17 @@ export default function ProfilePage() {
                   Verify your identity to unlock higher limits and improved
                   features.
                 </p>
-                <button style={btnStyle}>Start Verification</button>
+                <button
+                  style={{
+                    ...btnStyle,
+                    opacity: verifying ? 0.6 : 1,
+                    cursor: verifying ? "not-allowed" : "pointer",
+                  }}
+                  onClick={handleStartVerification}
+                  disabled={verifying}
+                >
+                  {verifying ? "Verifying…" : "Start Verification"}
+                </button>
               </div>
             )}
           </>

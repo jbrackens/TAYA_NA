@@ -114,7 +114,12 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 			return httpx.BadRequest("at least one document is required", map[string]any{"field": "documents"})
 		}
 
-		result, err := service.VerifyIdentity(r.Context(), req.UserID, req.Documents)
+		uid, err := sessionBoundUserID(r, req.UserID)
+		if err != nil {
+			return err
+		}
+
+		result, err := service.VerifyIdentity(r.Context(), uid, req.Documents)
 		if err != nil {
 			return mapComplianceError(err)
 		}
@@ -164,15 +169,20 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 			return httpx.BadRequest("userId and type are required", map[string]any{"field": "body"})
 		}
 
+		uid, err := sessionBoundUserID(r, req.UserID)
+		if err != nil {
+			return err
+		}
+
 		doc := VerificationDocument{
-			UserID:         req.UserID,
+			UserID:         uid,
 			Type:           req.Type,
 			DocumentID:     req.DocumentID,
 			IssuingCountry: req.IssuingCountry,
 			ExpiryDate:     req.ExpiryDate,
 		}
 
-		result, err := service.SubmitDocument(r.Context(), req.UserID, doc)
+		result, err := service.SubmitDocument(r.Context(), uid, doc)
 		if err != nil {
 			return mapComplianceError(err)
 		}

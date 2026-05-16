@@ -238,6 +238,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// --- Compliance Routes ---
 	geoComplianceService := compliance.NewMockGeoComplianceServiceFromEnv()
 	kycService := compliance.NewMockKYCService()
+	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status
 	rgService := compliance.NewMockResponsibleGamblingService()
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
 	// Gate prediction order placement through the same RG service instance the

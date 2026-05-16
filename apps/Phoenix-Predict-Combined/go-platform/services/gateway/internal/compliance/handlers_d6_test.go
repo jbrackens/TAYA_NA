@@ -103,3 +103,79 @@ func TestRGMutations_SessionBound(t *testing.T) {
 		}
 	})
 }
+
+// LC-22 / D-6 parity: the KYC verify + submit-document mutations also took a
+// body userId. Now that the player UI drives a real verification flow, an
+// attacker must not be able to verify/submit on another user's behalf.
+func TestKYCMutations_SessionBound(t *testing.T) {
+	newStack := func() *http.ServeMux {
+		mux := http.NewServeMux()
+		registerKYCRoutes(mux, NewMockKYCService())
+		return mux
+	}
+	post := func(mux *http.ServeMux, path, body, sessionUID string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		if sessionUID != "" {
+			req = req.WithContext(httpx.WithTestUser(context.Background(), sessionUID, sessionUID, "player"))
+		}
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		return rec
+	}
+	status := func(mux *http.ServeMux, uid string) string {
+		req := httptest.NewRequest(http.MethodGet, "/api/v1/compliance/kyc/status?userId="+uid, nil)
+		req = req.WithContext(httpx.WithTestUser(context.Background(), uid, uid, "player"))
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		var out struct {
+			Status struct {
+				Status string `json:"status"`
+			} `json:"status"`
+		}
+		_ = json.Unmarshal(rec.Body.Bytes(), &out)
+		return out.Status.Status
+	}
+
+	t.Run("cross-user verify is forbidden, victim stays unverified", func(t *testing.T) {
+		mux := newStack()
+		rec := post(mux, "/api/v1/compliance/kyc/verify",
+			`{"userId":"u-victim","documents":[{"type":"passport"}]}`, "u-attacker")
+		if rec.Code != http.StatusForbidden {
+			t.Fatalf("cross-user kyc/verify must be 403, got %d (%s)", rec.Code, rec.Body.String())
+		}
+		if s := status(mux, "u-victim"); s != "unverified" {
+			t.Fatalf("victim must remain unverified, got %q", s)
+		}
+	})
+
+	t.Run("self verify succeeds", func(t *testing.T) {
+		mux := newStack()
+		rec := post(mux, "/api/v1/compliance/kyc/verify",
+			`{"userId":"u-self","documents":[{"type":"passport"}]}`, "u-self")
+		if rec.Code != http.StatusOK {
+			t.Fatalf("self kyc/verify must be 200, got %d (%s)", rec.Code, rec.Body.String())
+		}
+		if s := status(mux, "u-self"); s != "approved" {
+			t.Fatalf("self verify must approve (mock), got %q", s)
+		}
+	})
+
+	t.Run("cross-user submit-document is forbidden", func(t *testing.T) {
+		mux := newStack()
+		rec := post(mux, "/api/v1/compliance/kyc/submit-document",
+			`{"userId":"u-victim","type":"passport"}`, "u-attacker")
+		if rec.Code != http.StatusForbidden {
+			t.Fatalf("cross-user submit-document must be 403, got %d (%s)", rec.Code, rec.Body.String())
+		}
+	})
+
+	t.Run("unauthenticated verify is forbidden", func(t *testing.T) {
+		mux := newStack()
+		rec := post(mux, "/api/v1/compliance/kyc/verify",
+			`{"userId":"u-x","documents":[{"type":"passport"}]}`, "")
+		if rec.Code != http.StatusForbidden {
+			t.Fatalf("no-session kyc/verify must be 403, got %d (%s)", rec.Code, rec.Body.String())
+		}
+	})
+}
