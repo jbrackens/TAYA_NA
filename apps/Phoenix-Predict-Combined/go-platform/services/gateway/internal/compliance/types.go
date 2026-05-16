@@ -50,6 +50,13 @@ type DepositLimit struct {
 	UsedCents int64  `json:"usedCents"`
 	ResetsAt  string `json:"resetsAt"`
 	CreatedAt string `json:"createdAt"`
+	// LC-19/D-11 loosen-limit cooldown: a requested *increase* does not
+	// take effect immediately. The effective (tighter) LimitCents stays
+	// enforced until PendingActivatesAt; only then does PendingLimitCents
+	// become LimitCents. Zero/empty = no pending change. A decrease
+	// applies immediately and clears any pending increase.
+	PendingLimitCents  int64  `json:"pendingLimitCents,omitempty"`
+	PendingActivatesAt string `json:"pendingActivatesAt,omitempty"`
 }
 
 // BetLimit represents a bet stake limit
@@ -61,6 +68,9 @@ type BetLimit struct {
 	UsedCents int64  `json:"usedCents"`
 	ResetsAt  string `json:"resetsAt"`
 	CreatedAt string `json:"createdAt"`
+	// LC-19/D-11 loosen-limit cooldown — see DepositLimit.
+	PendingLimitCents  int64  `json:"pendingLimitCents,omitempty"`
+	PendingActivatesAt string `json:"pendingActivatesAt,omitempty"`
 }
 
 // PlayerRestrictions represents all restrictions on a player

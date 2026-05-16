@@ -191,24 +191,34 @@ func TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
 		t.Fatal("a 900 bet must still be blocked after a same-limit re-POST (reset bypass)")
 	}
 
-	// Raising the limit keeps usage; the user only gains the delta.
+	// Raising the limit is DEFERRED (LC-19/D-11): the effective limit,
+	// usage and remaining stay exactly as they are; the increase is queued.
 	if err := service.SetBetLimit(ctx, "u-1", "daily", 1500); err != nil {
 		t.Fatalf("SetBetLimit (raise): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].UsedCents != 800 || limits[0].RemainingCents != 700 {
-		t.Fatalf("raise must keep used=800 and grant only the delta (remaining 700), got used=%d remaining=%d",
-			limits[0].UsedCents, limits[0].RemainingCents)
+	if limits[0].LimitCents != 1000 || limits[0].UsedCents != 800 || limits[0].RemainingCents != 200 {
+		t.Fatalf("raise must be deferred (effective limit 1000 / used 800 / remaining 200), got limit=%d used=%d remaining=%d",
+			limits[0].LimitCents, limits[0].UsedCents, limits[0].RemainingCents)
+	}
+	if limits[0].PendingLimitCents != 1500 || limits[0].PendingActivatesAt == "" {
+		t.Fatalf("raise must queue a pending increase, got pending=%d activatesAt=%q",
+			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
 	}
 
-	// Lowering below accumulated usage → no remaining (RG restricts; never negative).
+	// Lowering below accumulated usage → immediate, no remaining, AND it
+	// cancels the pending increase (the user chose to be more restrictive).
 	if err := service.SetBetLimit(ctx, "u-1", "daily", 500); err != nil {
 		t.Fatalf("SetBetLimit (lower): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
-	if limits[0].UsedCents != 800 || limits[0].RemainingCents != 0 {
-		t.Fatalf("lower below usage → used=800 remaining=0, got used=%d remaining=%d",
-			limits[0].UsedCents, limits[0].RemainingCents)
+	if limits[0].LimitCents != 500 || limits[0].UsedCents != 800 || limits[0].RemainingCents != 0 {
+		t.Fatalf("lower below usage → limit=500 used=800 remaining=0, got limit=%d used=%d remaining=%d",
+			limits[0].LimitCents, limits[0].UsedCents, limits[0].RemainingCents)
+	}
+	if limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
+		t.Fatalf("lowering must cancel the pending increase, got pending=%d activatesAt=%q",
+			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
 	}
 }
 
@@ -238,6 +248,116 @@ func TestMockSetDepositLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
 	}
 	if allowed, _, _ := service.CheckDepositAllowed(ctx, "u-1", 500); allowed {
 		t.Fatal("a 500 deposit must still be blocked after a same-limit re-POST")
+	}
+}
+
+// LC-19 / D-11: a requested *increase* to a self-set RG limit must NOT take
+// effect immediately — it is deferred behind a cooldown while the tighter
+// limit stays enforced; a *decrease* is immediate and cancels any pending
+// increase. Pre-fix the raise applied instantly (the LC-19 defect).
+func TestMockSetBetLimit_LoosenDeferred_TightenImmediate_D11(t *testing.T) {
+	service := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetBetLimit (initial): %v", err)
+	}
+	// Loosen 1000 -> 5000: must be DEFERRED.
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 5000); err != nil {
+		t.Fatalf("SetBetLimit (raise): %v", err)
+	}
+	limits, _ := service.GetBetLimits(ctx, "u-1")
+	if limits[0].LimitCents != 1000 {
+		t.Fatalf("loosen must NOT apply immediately: effective limit want 1000, got %d (LC-19 defect)", limits[0].LimitCents)
+	}
+	if limits[0].PendingLimitCents != 5000 || limits[0].PendingActivatesAt == "" {
+		t.Fatalf("loosen must queue pending 5000 with an activation time, got pending=%d at=%q",
+			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+	}
+	// The looser limit is not usable yet: a 2000 bet exceeds the effective
+	// 1000 and must be blocked.
+	if allowed, _, _ := service.CheckBetAllowed(ctx, "u-1", 2000); allowed {
+		t.Fatal("a 2000 bet must be blocked before the loosen cooldown elapses (LC-19 defect if allowed)")
+	}
+	// Activation time is ~24h out (give a wide tolerance).
+	at, perr := time.Parse(time.RFC3339, limits[0].PendingActivatesAt)
+	if perr != nil {
+		t.Fatalf("bad PendingActivatesAt: %v", perr)
+	}
+	if d := time.Until(at); d < 23*time.Hour || d > 25*time.Hour {
+		t.Fatalf("pending activation should be ~24h out, got %s", d)
+	}
+
+	// Simulate the cooldown elapsing by backdating the stored activation
+	// time, then the next read/enforcement lazily activates it.
+	for i := range service.betLimits["u-1"] {
+		if service.betLimits["u-1"][i].Period == "daily" {
+			service.betLimits["u-1"][i].PendingActivatesAt = time.Now().UTC().Add(-time.Minute).Format(time.RFC3339)
+		}
+	}
+	if allowed, _, _ := service.CheckBetAllowed(ctx, "u-1", 2000); !allowed {
+		t.Fatal("after the cooldown elapses the 5000 limit must be effective (2000 bet allowed)")
+	}
+	limits, _ = service.GetBetLimits(ctx, "u-1")
+	if limits[0].LimitCents != 5000 || limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
+		t.Fatalf("post-cooldown: want effective 5000 and pending cleared, got limit=%d pending=%d at=%q",
+			limits[0].LimitCents, limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+	}
+
+	// Now queue another loosen 5000 -> 9000 (deferred), then tighten to
+	// 2000: the tighten is immediate AND cancels the pending increase.
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 9000); err != nil {
+		t.Fatalf("SetBetLimit (raise 2): %v", err)
+	}
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 2000); err != nil {
+		t.Fatalf("SetBetLimit (tighten): %v", err)
+	}
+	limits, _ = service.GetBetLimits(ctx, "u-1")
+	if limits[0].LimitCents != 2000 {
+		t.Fatalf("tighten must apply immediately: want effective 2000, got %d", limits[0].LimitCents)
+	}
+	if limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
+		t.Fatalf("tighten must cancel the pending increase, got pending=%d at=%q",
+			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
+	}
+}
+
+// D-11 codex P2: /rg/restrictions (GetPlayerRestrictions) must reflect a
+// matured pending increase consistently with the enforce path — not report
+// it as still pending until some other read refreshes it.
+func TestMockGetPlayerRestrictions_RefreshesMaturedPending_D11(t *testing.T) {
+	service := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetBetLimit: %v", err)
+	}
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 5000); err != nil { // loosen → deferred
+		t.Fatalf("SetBetLimit (raise): %v", err)
+	}
+
+	r, err := service.GetPlayerRestrictions(ctx, "u-1")
+	if err != nil {
+		t.Fatalf("GetPlayerRestrictions: %v", err)
+	}
+	if len(r.BetLimits) != 1 || r.BetLimits[0].LimitCents != 1000 || r.BetLimits[0].PendingLimitCents != 5000 {
+		t.Fatalf("pre-cooldown: want effective 1000 + pending 5000, got %+v", r.BetLimits)
+	}
+
+	// Backdate the pending activation; /rg/restrictions must now show the
+	// activated limit (5000) with pending cleared — without needing any
+	// other read/enforce call to refresh it first.
+	for i := range service.betLimits["u-1"] {
+		if service.betLimits["u-1"][i].Period == "daily" {
+			service.betLimits["u-1"][i].PendingActivatesAt = time.Now().UTC().Add(-time.Minute).Format(time.RFC3339)
+		}
+	}
+	r, err = service.GetPlayerRestrictions(ctx, "u-1")
+	if err != nil {
+		t.Fatalf("GetPlayerRestrictions (post): %v", err)
+	}
+	if r.BetLimits[0].LimitCents != 5000 || r.BetLimits[0].PendingLimitCents != 0 || r.BetLimits[0].PendingActivatesAt != "" {
+		t.Fatalf("post-cooldown /rg/restrictions must show activated 5000 / no pending, got %+v", r.BetLimits[0])
 	}
 }
 

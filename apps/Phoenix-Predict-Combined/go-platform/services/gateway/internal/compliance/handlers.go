@@ -264,11 +264,29 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
-		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":      uid,
-			"period":      req.Period,
-			"amountCents": req.AmountCents,
-		})
+		// Honest response (LC-19/D-11): confirmed effective + pending; never
+		// optimistically echo the requested amount as effective (codex
+		// D-11 P2).
+		resp := map[string]any{"userId": uid, "period": req.Period, "requestedAmountCents": req.AmountCents}
+		confirmed := false
+		if limits, gerr := service.GetDepositLimits(r.Context(), uid); gerr == nil {
+			for _, l := range limits {
+				if l.Period == req.Period {
+					confirmed = true
+					resp["amountCents"] = l.LimitCents
+					resp["deferred"] = l.PendingLimitCents > 0
+					if l.PendingLimitCents > 0 {
+						resp["pendingAmountCents"] = l.PendingLimitCents
+						resp["pendingActivatesAt"] = l.PendingActivatesAt
+					}
+					break
+				}
+			}
+		}
+		if !confirmed {
+			resp["effectiveState"] = "unknown — re-query /api/v1/compliance/rg/deposit-limits"
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, resp)
 	}))
 
 	mux.Handle("/api/v1/compliance/rg/deposit-limits", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -320,11 +338,31 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return mapComplianceError(err)
 		}
 
-		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":      uid,
-			"period":      req.Period,
-			"amountCents": req.AmountCents,
-		})
+		// Honest response (LC-19/D-11): a loosening is deferred behind a
+		// cooldown, so report the *confirmed effective* limit + any pending
+		// change. Never optimistically echo the requested amount as
+		// effective — if the read-back can't confirm it, say so (codex
+		// D-11 P2) rather than implying the looser limit is live.
+		resp := map[string]any{"userId": uid, "period": req.Period, "requestedAmountCents": req.AmountCents}
+		confirmed := false
+		if limits, gerr := service.GetBetLimits(r.Context(), uid); gerr == nil {
+			for _, l := range limits {
+				if l.Period == req.Period {
+					confirmed = true
+					resp["amountCents"] = l.LimitCents
+					resp["deferred"] = l.PendingLimitCents > 0
+					if l.PendingLimitCents > 0 {
+						resp["pendingAmountCents"] = l.PendingLimitCents
+						resp["pendingActivatesAt"] = l.PendingActivatesAt
+					}
+					break
+				}
+			}
+		}
+		if !confirmed {
+			resp["effectiveState"] = "unknown — re-query /api/v1/compliance/rg/bet-limits"
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, resp)
 	}))
 
 	mux.Handle("/api/v1/compliance/rg/bet-limits", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {

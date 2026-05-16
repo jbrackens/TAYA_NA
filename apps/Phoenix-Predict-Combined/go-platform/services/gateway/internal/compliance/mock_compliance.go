@@ -370,26 +370,39 @@ func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, us
 
 	now := time.Now().UTC()
 
-	limit := DepositLimit{
-		UserID:     userID,
-		Period:     period,
-		LimitCents: amountCents,
-		CreatedAt:  now.Format(time.RFC3339),
+	existing := findDepositLimit(m.depositLimits[userID], period)
+	if existing == nil {
+		// First-ever limit: immediate + prospective (not a loosening).
+		limit := DepositLimit{
+			UserID:         userID,
+			Period:         period,
+			LimitCents:     amountCents,
+			RemainingCents: amountCents,
+			UsedCents:      0,
+			ResetsAt:       getResetTime(now, period).Format(time.RFC3339),
+			CreatedAt:      now.Format(time.RFC3339),
+		}
+		m.depositLimits[userID] = upsertDepositLimit(m.depositLimits[userID], limit)
+		return nil
 	}
-	// D-7: see SetBetLimit — changing a deposit limit must not reset the
-	// in-progress period's accumulated usage (self-service reset bypass).
-	if existing := findDepositLimit(m.depositLimits[userID], period); existing != nil {
-		refreshDepositLimitState(existing, now)
-		limit.UsedCents = existing.UsedCents
-		limit.ResetsAt = existing.ResetsAt
-		limit.CreatedAt = existing.CreatedAt
+
+	refreshDepositLimitState(existing, now)
+	limit := *existing // carry effective state (D-7: preserve accumulated usage)
+
+	if amountCents <= existing.LimitCents {
+		// Tightening: immediate; cancels any pending increase.
+		limit.LimitCents = amountCents
+		limit.RemainingCents = amountCents - limit.UsedCents
+		if limit.RemainingCents < 0 {
+			limit.RemainingCents = 0
+		}
+		limit.PendingLimitCents = 0
+		limit.PendingActivatesAt = ""
 	} else {
-		limit.UsedCents = 0
-		limit.ResetsAt = getResetTime(now, period).Format(time.RFC3339)
-	}
-	limit.RemainingCents = limit.LimitCents - limit.UsedCents
-	if limit.RemainingCents < 0 {
-		limit.RemainingCents = 0
+		// Loosening (LC-19/D-11): defer behind the cooldown; the tighter
+		// limit stays enforced until it activates.
+		limit.PendingLimitCents = amountCents
+		limit.PendingActivatesAt = now.Add(limitLoosenCooldown).Format(time.RFC3339)
 	}
 
 	m.depositLimits[userID] = upsertDepositLimit(m.depositLimits[userID], limit)
@@ -435,30 +448,47 @@ func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID
 
 	now := time.Now().UTC()
 
-	limit := BetLimit{
-		UserID:     userID,
-		Period:     period,
-		LimitCents: amountCents,
-		CreatedAt:  now.Format(time.RFC3339),
+	existing := findBetLimit(m.betLimits[userID], period)
+	if existing == nil {
+		// First-ever limit: applies immediately and prospectively (there is
+		// no prior constraint, so this is not a "loosening").
+		limit := BetLimit{
+			UserID:         userID,
+			Period:         period,
+			LimitCents:     amountCents,
+			RemainingCents: amountCents,
+			UsedCents:      0,
+			ResetsAt:       getResetTime(now, period).Format(time.RFC3339),
+			CreatedAt:      now.Format(time.RFC3339),
+		}
+		m.betLimits[userID] = upsertBetLimit(m.betLimits[userID], limit)
+		return nil
 	}
-	// D-7: changing a self-set limit must NOT clear already-accumulated
-	// usage for the in-progress period. Otherwise a user can consume the
-	// limit, re-POST the same limit, and reset their own usage to 0 for
-	// fresh headroom indefinitely. Carry the existing period's UsedCents
-	// and window forward (after applying any legitimate period rollover);
-	// only a brand-new limit starts at 0 (it applies prospectively).
-	if existing := findBetLimit(m.betLimits[userID], period); existing != nil {
-		refreshBetLimitState(existing, now) // zeroes only on a genuine period elapse
-		limit.UsedCents = existing.UsedCents
-		limit.ResetsAt = existing.ResetsAt
-		limit.CreatedAt = existing.CreatedAt
+
+	// Apply any legitimate period rollover AND any matured pending increase
+	// before deciding raise vs. lower against the *effective* limit.
+	refreshBetLimitState(existing, now)
+	limit := *existing // carry effective LimitCents/Used/Remaining/Resets/Created (D-7)
+
+	if amountCents <= existing.LimitCents {
+		// Tightening (or no-op): immediate, and it cancels any pending
+		// increase — the user has chosen to be more restrictive now.
+		limit.LimitCents = amountCents
+		limit.RemainingCents = amountCents - limit.UsedCents
+		if limit.RemainingCents < 0 {
+			limit.RemainingCents = 0
+		}
+		limit.PendingLimitCents = 0
+		limit.PendingActivatesAt = ""
 	} else {
-		limit.UsedCents = 0
-		limit.ResetsAt = getResetTime(now, period).Format(time.RFC3339)
-	}
-	limit.RemainingCents = limit.LimitCents - limit.UsedCents
-	if limit.RemainingCents < 0 {
-		limit.RemainingCents = 0
+		// Loosening (LC-19/D-11): the increase is DEFERRED. The effective
+		// (tighter) limit, usage and remaining stay exactly as they are;
+		// the requested higher limit is queued and only becomes effective
+		// after the cooldown (lazily activated in refreshBetLimitState). A
+		// later loosening request replaces the pending one with a fresh
+		// cooldown (latest intent governs).
+		limit.PendingLimitCents = amountCents
+		limit.PendingActivatesAt = now.Add(limitLoosenCooldown).Format(time.RFC3339)
 	}
 
 	m.betLimits[userID] = upsertBetLimit(m.betLimits[userID], limit)
@@ -646,12 +676,29 @@ func (m *MockResponsibleGamblingService) GetPlayerRestrictions(ctx context.Conte
 		}
 	}
 
-	// Add limits
+	// Add limits — return refreshed *copies* so /rg/restrictions reflects a
+	// matured pending increase / period rollover consistently with the
+	// enforce path, without mutating shared state under the read lock
+	// (codex D-11 P2). Persisting the refresh stays the job of the
+	// write-locked GetBetLimits / CheckBetAllowed seams.
+	nowUTC := now.UTC()
 	if limits, found := m.depositLimits[userID]; found {
-		restrictions.DepositLimits = limits
+		out := make([]DepositLimit, len(limits))
+		for i := range limits {
+			c := limits[i]
+			refreshDepositLimitState(&c, nowUTC)
+			out[i] = c
+		}
+		restrictions.DepositLimits = out
 	}
 	if limits, found := m.betLimits[userID]; found {
-		restrictions.BetLimits = limits
+		out := make([]BetLimit, len(limits))
+		for i := range limits {
+			c := limits[i]
+			refreshBetLimitState(&c, nowUTC)
+			out[i] = c
+		}
+		restrictions.BetLimits = out
 	}
 
 	return restrictions, nil
@@ -830,7 +877,25 @@ func upsertBetLimit(existing []BetLimit, next BetLimit) []BetLimit {
 	return append(existing, next)
 }
 
+// limitLoosenCooldown is the regulatory delay before a *requested increase*
+// to a self-set RG limit takes effect (LC-19/D-11). Decreases are immediate.
+const limitLoosenCooldown = 24 * time.Hour
+
 func refreshDepositLimitState(limit *DepositLimit, now time.Time) {
+	// D-11: activate a matured pending increase first, so every read /
+	// enforcement seam (GetDepositLimits, CheckDepositAllowed, RecordDeposit,
+	// ReleaseBet) honors the cooldown without a separate worker.
+	if limit.PendingLimitCents > 0 && limit.PendingActivatesAt != "" {
+		if act, perr := time.Parse(time.RFC3339, limit.PendingActivatesAt); perr == nil && !now.Before(act) {
+			limit.LimitCents = limit.PendingLimitCents
+			limit.RemainingCents = limit.LimitCents - limit.UsedCents
+			if limit.RemainingCents < 0 {
+				limit.RemainingCents = 0
+			}
+			limit.PendingLimitCents = 0
+			limit.PendingActivatesAt = ""
+		}
+	}
 	resetAt, err := time.Parse(time.RFC3339, limit.ResetsAt)
 	if err != nil || !now.Before(resetAt) {
 		limit.UsedCents = 0
@@ -843,6 +908,19 @@ func refreshDepositLimitState(limit *DepositLimit, now time.Time) {
 }
 
 func refreshBetLimitState(limit *BetLimit, now time.Time) {
+	// D-11: activate a matured pending increase first (see refreshDeposit
+	// LimitState) so every read/enforcement seam honors the cooldown.
+	if limit.PendingLimitCents > 0 && limit.PendingActivatesAt != "" {
+		if act, perr := time.Parse(time.RFC3339, limit.PendingActivatesAt); perr == nil && !now.Before(act) {
+			limit.LimitCents = limit.PendingLimitCents
+			limit.RemainingCents = limit.LimitCents - limit.UsedCents
+			if limit.RemainingCents < 0 {
+				limit.RemainingCents = 0
+			}
+			limit.PendingLimitCents = 0
+			limit.PendingActivatesAt = ""
+		}
+	}
 	resetAt, err := time.Parse(time.RFC3339, limit.ResetsAt)
 	if err != nil || !now.Before(resetAt) {
 		limit.UsedCents = 0
