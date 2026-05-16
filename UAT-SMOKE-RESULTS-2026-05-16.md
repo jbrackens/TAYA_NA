@@ -251,3 +251,56 @@ market list + settlement queue with live data).
 defects: D-1 (S2, fixed), D-2 (S3, fixed), D-3 (S2, fixed). D-4 (S3) noted
 for separate triage. Remaining caveats are documented seed/threshold/
 known-issue, not defects.
+
+---
+
+## §18 — D-1 money-path hardening (no-shortcuts pass + independent review)
+
+D-1 moves money and had been verified only by its author. Hardened it before
+any merge:
+
+**Idempotency (proven + locked):** `applyMutationTx` dedupes wallet mutations
+on `(kind,userID,idempotencyKey)` with a UNIQUE constraint — a retried/
+duplicated `PersistMatchAtomic` returns the existing credit, never re-credits;
+amount/reason mismatch errors. Seller key is `prediction_fill_proceeds:<tradeID>`
+(deterministic, per-trade, unique). New test `TestBuildPlan_SellerCreditKey
+IsPerTradeAndConservesCash` (`b96d01f9`) locks: per-trade key binding, key
+uniqueness across fills, and cash conservation (seller credit == buyer capture
+per fill).
+
+**Reconciliation (empirically orthogonal):** the collateral reconciler checks
+`prediction_collateral_ledger` sum vs `collateral_pool_cents`. The seller credit
+writes only `wallet_*` and adds zero collateral rows, so it cannot move drift.
+Confirmed: untraded control markets show the same large pre-existing seed-wide
+drift (99/119 order_book markets), 0 collateral rows with a proceeds reason.
+Pre-existing seed data smell, **separate from D-1** — logged as a candidate
+follow-up (not chased).
+
+**Independent cross-model review (codex):**
+- Pass 1 → **GATE FAIL [P1]:** D-1 making sells execute exposed a latent
+  oversell race — pre-tx-only sell validation, no in-tx recheck,
+  `ApplyPositionMutation` clamps over-sold to zero instead of erroring. Two
+  near-simultaneous market sells of one position both credited
+  (phantom-share double-payout). Author verification had missed it.
+- Fix `e8de72c4`: authoritative in-tx guard in `PersistMatchAtomic` — for a
+  SELL taker with fills, re-read the seller position `FOR UPDATE` under the
+  per-market advisory lock and reject (`ErrInsufficientPosition`, full
+  rollback, before any capture/credit/position write) when
+  `SellExceedsOwned`. Plus `GetPosition` now selects `reserved_quantity`
+  (pre-tx defense-in-depth). Pure predicate unit-tested
+  (`TestSellExceedsOwned`, boundary cases).
+- Pass 2 → **GATE PASS, no remaining [P1]/[P2]:** advisory lock serializes
+  concurrent same-market persists so the second sell sees the first's
+  committed decrement and is rejected; guard correctly placed before money
+  movement; no regression (exact-fit allowed, only SELL takers affected,
+  buy/maker-seller paths unchanged); idempotency/conservation/atomicity/
+  no-naked-issuance/self-match all still intact.
+
+Full gateway suite green (24 pkgs) at every step.
+
+**D-1 verdict:** money path now hardened and independently cleared —
+idempotent, cash-conserving, atomic, and oversell-safe under concurrency.
+Commits: `2301aeea` (fix) → `b96d01f9` (idempotency test) → `e8de72c4`
+([P1] oversell guard). Outstanding: pre-existing seed-wide collateral drift
+(separate, logged) and the office dev-error-overlay suppression (recommended
+removal, not yet done).
