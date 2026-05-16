@@ -51,6 +51,11 @@ import type {
   Position,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import {
+  orderSignature,
+  resolveIdempotencyKey,
+  type PendingIdempotency,
+} from "../../lib/orderIdempotency";
 
 const api = createPredictionClient();
 
@@ -248,6 +253,10 @@ export default function MarketDetailPage() {
   // overwrite newer state. We compare timestamps and skip older payloads.
   // If the WS drops, predict-ws.ts handles reconnect + re-subscribe.
   const latestTsRef = useRef<string>("");
+  // LC-38: holds the idempotency key + order signature of an order whose
+  // outcome is not yet confirmed, so a manual re-submit after a dropped
+  // response reuses the key (gateway dedupes) instead of double-executing.
+  const pendingIdemRef = useRef<PendingIdempotency | null>(null);
   useEffect(() => {
     const id = market?.id;
     if (!id || authLoading || !isAuthenticated) return;
@@ -343,7 +352,7 @@ export default function MarketDetailPage() {
       // cap. Forward straight through to the gateway. Return the response
       // so TradeTicket can show a truthful toast (filled vs. rested vs.
       // cancelled) instead of guessing from the requested quantity.
-      const response = await api.placeOrder({
+      const orderReq = {
         marketId: market.id,
         side,
         action: opts?.action ?? "buy",
@@ -353,7 +362,28 @@ export default function MarketDetailPage() {
         timeInForce: opts?.timeInForce,
         postOnly: opts?.postOnly,
         notionalCapCents: opts?.notionalCapCents,
+      };
+      // LC-38: attach a stable idempotency key. A manual re-submit after a
+      // dropped network response (same order params, outcome unconfirmed)
+      // reuses the key so the gateway replays the original order and the
+      // wallet is debited once — instead of the gateway minting a fresh
+      // per-request key and double-executing.
+      const sig = orderSignature(orderReq);
+      const { key, pending } = resolveIdempotencyKey(
+        pendingIdemRef.current,
+        sig,
+        () => crypto.randomUUID(),
+      );
+      pendingIdemRef.current = pending;
+      const response = await api.placeOrder({
+        ...orderReq,
+        idempotencyKey: key,
       });
+      // The gateway accepted the order here (placeOrder resolved). Clear the
+      // pending key so a later identical order is a NEW order, not a replay.
+      // A throw above leaves the ref set, so the next manual retry of the
+      // same order reuses the key and is deduped.
+      pendingIdemRef.current = null;
       try {
         const updated = await loadMarket();
         try {
