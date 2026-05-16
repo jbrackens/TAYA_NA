@@ -939,3 +939,69 @@ session-bound, D-9 TOCTOU closed. Tracked residual: the pre-existing
 `uploadKycDocument` multipart/camelCase mismatch vs `kyc/submit-document`
 (separate defect, not in LC-22 scope; the wired verify flow uses
 `kyc/verify`).
+
+## §27 — LC-18 / LC-19: reality-check timer & loosen-limit cooldown (investigation)
+
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-18 reality-check timer | ❌ FAIL | Not implemented — no in-session reminder anywhere; `rg/session-limit` is a stub. See D-10. |
+| LC-19 loosen-limit cooldown | ❌ FAIL | Loosening an RG limit takes effect immediately (live-confirmed) — no regulatory cooldown. See D-11. |
+
+Investigated to the LC-22 depth (code map + rigorous negative verification +
+live e2e). Both are **unbuilt regulatory RG controls**, not regressions —
+resolution is a product/compliance feature build, surfaced for scoping
+rather than unilaterally built.
+
+### D-10 — Reality-check timer not implemented (S2, OPEN)
+
+```
+[LC-18] No periodic in-session "reality check" reminder exists
+Severity: S2   Priority: P2 (regulatory RG control; FEATURE_RG-class)
+Env: rebuilt gateway + player preview, 2026-05-16
+```
+**Findings:** exhaustive search of the player app and gateway finds no
+reality-check / session-reminder timer, no "you have been playing N
+minutes" modal, no interval-driven RG reminder. The only session-related
+surface is `POST /api/v1/compliance/rg/session-limit`
+(`internal/compliance/handlers.go` ~L411) which is a **pure stub** — it
+echoes `{user_id, session_duration_minutes, effective_date, created_at}`
+with no service call, no persistence, no enforcement, and no timer.
+*Live:* `POST /rg/session-limit` → 201 echo; `GET /rg/restrictions` has no
+session/reality field (`userId, isBlocked, isOnCoolOff, isExcluded,
+depositLimits, betLimits, lastUpdated`). The "Limits"/"Verification" UI has
+no reality-check element.
+**Resolution = feature build:** define the reminder cadence (e.g. every N
+minutes of active play, configurable), the acknowledge-to-continue UX, and
+whether it pauses play; back it with real session tracking (replace the
+stub). Product/compliance design decisions required.
+
+### D-11 — Loosening an RG limit takes effect immediately; no cooldown (S2, OPEN)
+
+```
+[LC-19] Raising a self-set RG limit applies instantly (no deferral)
+Severity: S2   Priority: P1 (regulatory: limit increases MUST be delayed;
+          decreases immediate — UKGC/MGA/regulated-US standard)
+Env: rebuilt gateway + demo u-1, 2026-05-16
+Repro: set daily bet-limit 300c → raise to 50000c → GET bet-limits
+Actual: immediately limit=50000 remaining=50000 (instant loosening)
+Expected: the increase is deferred (cooldown — typically 24h or until the
+          next period); the tighter 300c stays in force until activation;
+          a decrease would apply immediately.
+```
+**Relationship to D-7:** D-7 (RESOLVED) fixed the *usage-reset* bypass
+(re-POSTing a limit no longer zeroes accumulated usage; raising keeps
+usage and grants only the delta). D-11 is a **distinct** control: that
+granted delta must not be available *immediately* on a loosen — it must be
+held behind a cooldown. D-7's "grant the delta now" is exactly the surface
+LC-19 flags. Fixing D-11 changes that path: a raise should schedule a
+*pending* limit that activates after the cooldown while the current
+(tighter) limit stays enforced; a lower stays immediate. Needs pending-
+limit state + activation time + lazy/worker activation across the mock
+(wired) and `rg_postgres` (dormant).
+**Resolution = feature build:** cooldown duration + semantics
+(per-period vs fixed 24h; what happens to in-flight pending changes;
+interaction with period rollover) are product/compliance decisions.
+
+**Status: both OPEN — investigated & recorded; awaiting scope decision**
+(consistent with the LC-22/D-8 handling: regulatory feature builds with
+design choices, not mechanical fixes).
