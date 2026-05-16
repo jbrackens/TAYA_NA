@@ -128,4 +128,46 @@ Known-issue?: no
 | — | **NEW D-1 (S2)** market SELL 0-fill — not previously exercised this way |
 | — | **NEW D-2 (S3)** accuracy SETTLED column "—" |
 
+---
+
+## §15 — Extended smoke (SX-01..20)
+
+Second pass, same date. Reseed + gateway restart + fresh login. None duplicate §11/§14.
+Weighted toward regression-guarding the D-1 sell + seller-credit fix (commit `2301aeea`),
+plus untested areas (settlement, portfolio/wallet reconciliation, auth gating, backoffice).
+
+**Verdict: 18 PASS · 2 PARTIAL (harness origin-lock, no defect) · 0 new defects.**
+D-1 independently re-verified end-to-end through SX-01/02/15 (sell fills, position
+decrements, wallet credited the exact proceeds, ledger "secondary fill proceeds"
+entries reconcile to balance).
+
+| ID | Scenario | Result | Evidence |
+|---|---|---|---|
+| SX-01 | Sell held position via UI (D-1 regression) | ✅ PASS | "Available 587", order filled 35/35, pos 587→552, wallet $5294.52→$5299.07 (+$4.55 = 35×13¢ exact), trade recorded |
+| SX-02 | Large sell within holdings, exact accounting | ✅ PASS | $25 sell filled 178/178 multi-level, pos 552→374 (−178 exact, ≥0), wallet +$22.01 = exact proceeds |
+| SX-03 | Oversell guard (qty > held) | ✅ PASS | $100 (~770 sh > 552 held) → CTA disabled "Not enough shares", "Available 552" shown, no order |
+| SX-04 | Market BUY NO fills | ✅ PASS | order `no filled` 5, NO pos qty=5 cost $4.40, wallet −$4.40 exact (symmetric to YES) |
+| SX-05 | Thin-book reject truthfulness | ✅ PASS\* | IMP-9C2875EF partial-filled 101/108 via issuance; status=cancelled, pos +101 exact, wallet −$24.85 exact. *No false success / phantom / corruption (S1 invariant holds). Note: "thin/0-fill" market designation is stale post issuance-fix* |
+| SX-06 | Oversized partial accounting | ✅ PASS | Evidenced by SX-05: debited only for filled (101), IOC remainder cancelled, exact |
+| SX-07 | Quick-amount chips recompute quote | ✅ PASS | $5→Shares 35.71/Payout $35.71; $100→Shares 714.29/Payout $714.29 (exact 20× scaling) |
+| SX-08 | MAX button (known issue) | ✅ PASS\* | MAX→"Not enough shares" disabled, no order/corruption/false-success. *TC-D08 KNOWN — handled safely* |
+| SX-09 | Truthful outcome matrix | ✅ PASS | Order status always matched actual fill: SX-01 full, SX-05 partial+IOC, BX-19 limit-rest, D-1 0-fill — no false "filled" |
+| SX-10 | Winning position pays out | ✅ PASS | History exit=100¢ +pnl (+396, +648); UCL-CITY-2526 result=NO, payout $25 `paid=true`; total u-1 payouts $147 / 10 settled |
+| SX-11 | Losing position settles to zero | ✅ PASS | u-1 held losing side on GPT5-JUL26 → exit 0¢, pnl −552, payout $0 |
+| SX-12 | Resolution criteria + source (settled) | ✅ PASS | UCL-CITY-2526 settled: "NO wins", "Resolves YES if Manchester City wins…", source present |
+| SX-13 | Positions tab accuracy | ✅ PASS | 3 positions exactly match session trades: NO/5/$4.40, YES/659 (IMP), YES/374 (UCL); fields present |
+| SX-14 | Summary tiles consistency | ✅ PASS | accuracy 7/10=70% (denom = settled count 10), openPositions=3, rank matches boards |
+| SX-15 | Wallet ledger reconciliation | ✅ PASS | wallet_ledger latest balance $5291.83 **MATCH** wallet_balances; recent `credit … secondary fill proceeds` $4.55/$13.56/$8.45 (independently confirms D-1 seller-credit writes ledger entries) |
+| SX-16 | Logout gating | ✅ PASS | Logout (401) → `/portfolio/` → redirect `/auth/login/?returnUrl=%2Fportfolio%2F`, login form, not blank authed page |
+| SX-17 | Deep-link → login → returnUrl | ✅ PASS | Logged-out `?side=no` renders public read-only + "Log in to trade"; post-login returns to exact `/market/UCL-BARCA-2526/?side=no`, NO side preserved |
+| SX-18 | Sharpness + Category Champions | ✅ PASS\* | Category Champions selector recomputes (politics=5, crypto/sports=0 cleanly). *Sharpness functional but 1 qualifier vs ≥2 expected — MinSettled+volume-floor vs seed, not a code defect* |
+| SX-19 | Admin login (:3001) | ⚠️ PARTIAL | Admin auth verified: auth service `POST /login` admin@phoenix.local → HTTP 200 + valid Bearer/refresh. Backoffice up (307/308, no errors). UI render not browser-verifiable — Claude Preview origin-locked to :3010, no defect observed |
+| SX-20 | Backoffice market list + queue | ⚠️ PARTIAL | Data layer sound: gateway serves 152 markets (95 open/29 settled) + 29 settlements-with-attestation, all 200. UI render not browser-verifiable (same origin-lock), no defect observed |
+
+**Notes:** SX-05/08/18 carry documented seed/threshold/known-issue caveats (not new
+defects). SX-19/20 PARTIAL is a preview-harness origin limitation (the preview server
+is bound to the player app :3010 and cannot cross-navigate to the backoffice :3001) —
+to fully cover backoffice UI, run a dedicated preview/launch config for `office/` on
+:3001. No D-1/D-2 regressions; D-1 re-verified fixed via SX-01/02/15.
+
 **Bottom line:** §11 ship-clean (12/12, all guarded fixes held). §14 surfaces one real S2 (sell-side market-order matching) and one S3 (leaderboard settled column). Neither is a regression of this cycle's fixes; D-1 is the highest-value follow-up.
