@@ -79,4 +79,11 @@ type ResponsibleGamblingService interface {
 
 	// RecordBet records a bet for limit tracking
 	RecordBet(ctx context.Context, userID string, stakeCents int64) error
+
+	// ReleaseBet reverses previously-recorded committed stake when a
+	// reservation is freed without being spent (cancel / expire / the
+	// unfilled remainder of a partial or market order). Symmetric inverse
+	// of RecordBet; implementations must not drive cumulative usage below
+	// zero.
+	ReleaseBet(ctx context.Context, userID string, amountCents int64) error
 }

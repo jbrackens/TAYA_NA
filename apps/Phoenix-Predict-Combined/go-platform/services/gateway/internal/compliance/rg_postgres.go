@@ -399,6 +399,16 @@ func (s *PostgresResponsibleGamblingService) RecordBet(ctx context.Context, user
 	return s.recordActivity(ctx, userID, "bet", stakeCents)
 }
 
+// ReleaseBet reverses committed stake by writing a compensating negative
+// "bet" activity row so usageInPeriod (a SUM over the period) nets down to
+// the cash actually captured. Symmetric inverse of RecordBet.
+func (s *PostgresResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64) error {
+	if amountCents <= 0 {
+		return nil
+	}
+	return s.recordActivity(ctx, userID, "bet", -amountCents)
+}
+
 func (s *PostgresResponsibleGamblingService) RecordDeposit(ctx context.Context, userID string, amountCents int64) error {
 	return s.recordActivity(ctx, userID, "deposit", amountCents)
 }

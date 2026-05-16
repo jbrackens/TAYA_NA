@@ -709,6 +709,50 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 	return nil
 }
 
+// ReleaseBet is the symmetric inverse of RecordBet: it reverses committed
+// stake when a reservation is freed unspent (cancel / expire / unfilled
+// remainder). Cumulative tracking and per-period UsedCents are clamped at
+// zero so a release without a matching prior record (e.g. an order placed
+// before this accounting existed) cannot drive usage negative.
+func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64) error {
+	if userID == "" {
+		return ErrInvalidUserID
+	}
+	if amountCents <= 0 {
+		return nil
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	now := time.Now().UTC()
+
+	if tracking, found := m.betTracking[userID]; found && tracking.ResetAt.After(now) {
+		tracking.Amount -= amountCents
+		if tracking.Amount < 0 {
+			tracking.Amount = 0
+		}
+		m.betTracking[userID] = tracking
+	}
+
+	if limits, found := m.betLimits[userID]; found {
+		for i := range limits {
+			refreshBetLimitState(&limits[i], now)
+			limits[i].UsedCents -= amountCents
+			if limits[i].UsedCents < 0 {
+				limits[i].UsedCents = 0
+			}
+			limits[i].RemainingCents = limits[i].LimitCents - limits[i].UsedCents
+			if limits[i].RemainingCents < 0 {
+				limits[i].RemainingCents = 0
+			}
+		}
+		m.betLimits[userID] = limits
+	}
+
+	return nil
+}
+
 func upsertDepositLimit(existing []DepositLimit, next DepositLimit) []DepositLimit {
 	for i := range existing {
 		if existing[i].Period == next.Period {

@@ -17,9 +17,11 @@ type fakeCompliance struct {
 	reason      string
 	denyErr     error // returned alongside allowed=false on a deliberate deny
 	infraErr    error // returned alongside allowed=true (could not evaluate)
-	checkCalls  []int64
-	recordErr   error
-	recordCalls []int64
+	checkCalls   []int64
+	recordErr    error
+	recordCalls  []int64
+	releaseErr   error
+	releaseCalls []int64
 }
 
 func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents int64) (bool, string, error) {
@@ -36,6 +38,11 @@ func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents
 func (f *fakeCompliance) RecordBet(_ context.Context, _ string, stakeCents int64) error {
 	f.recordCalls = append(f.recordCalls, stakeCents)
 	return f.recordErr
+}
+
+func (f *fakeCompliance) ReleaseBet(_ context.Context, _ string, amountCents int64) error {
+	f.releaseCalls = append(f.releaseCalls, amountCents)
+	return f.releaseErr
 }
 
 // A denied gate must stop the order before any wallet debit or persistence.
@@ -286,6 +293,63 @@ func TestPlaceOrder_AMMMarketBuy_WithinNotionalCap_StillFills(t *testing.T) {
 	}
 	if order.TotalCostCents > bigCap {
 		t.Fatalf("filled cost %d must not exceed cap %d", order.TotalCostCents, bigCap)
+	}
+}
+
+// D-5 codex review P1 #2: the reserve+reconcile decision. The bypass was that
+// recording only realizedStakeCents let a resting limit order (realized 0)
+// pass the gate without ever counting toward the period, and a maker fill was
+// never recorded. The fix records the committed worst-case at placement and
+// reconciles terminal orders to realized. The "resting order" rows below are
+// the regression: pre-fix record was realizedStakeCents(o) == 0; post-fix it
+// is the full committed.
+func TestRGPlacementAccounting(t *testing.T) {
+	cases := []struct {
+		name        string
+		committed   int64
+		o           *Order
+		wantRecord  int64
+		wantRelease int64
+	}{
+		{"nil order", 5000, nil, 0, 0},
+		{"zero committed", 0, &Order{Status: OrderStatusOpen}, 0, 0},
+		{"never-reserved reject records nothing", 5000,
+			&Order{Status: OrderStatusRejected}, 0, 0},
+
+		// THE bypass-closure case: a resting limit order now counts its full
+		// committed stake immediately and releases nothing (pre-fix: 0 / 0).
+		{"resting open limit counts committed, releases nothing", 5000,
+			&Order{Status: OrderStatusOpen, FilledQuantity: 0}, 5000, 0},
+		{"resting partial limit counts full committed, releases nothing", 5000,
+			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashCents: 1500}, 5000, 0},
+
+		// Terminal taker: record committed, release the uncaptured remainder
+		// so the net equals realized captured cash.
+		{"filled taker nets to realized (5000 committed, 4994 captured)", 5000,
+			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashCents: 4994}, 5000, 6},
+		{"market IOC cancelled remainder nets to realized (2500 cap, 190 captured)", 2500,
+			&Order{Status: OrderStatusCancelled, FilledQuantity: 1, CapturedCashCents: 190}, 2500, 2310},
+		{"expired unfilled releases the whole committed (net 0)", 2500,
+			&Order{Status: OrderStatusExpired, FilledQuantity: 0}, 2500, 2500},
+		{"fully captured terminal releases nothing", 1900,
+			&Order{Status: OrderStatusFilled, FilledQuantity: 10, CapturedCashCents: 1900}, 1900, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			rec, rel := rgPlacementAccounting(c.committed, c.o)
+			if rec != c.wantRecord || rel != c.wantRelease {
+				t.Fatalf("rgPlacementAccounting(%d, %+v) = (record %d, release %d), want (%d, %d)",
+					c.committed, c.o, rec, rel, c.wantRecord, c.wantRelease)
+			}
+			// Regression guard: a resting order under the OLD model recorded
+			// realizedStakeCents (0 here) — i.e. the bypass. The new model
+			// must record the full committed for a non-terminal order.
+			if c.o != nil && c.committed > 0 && c.o.Status == OrderStatusOpen {
+				if rec == realizedStakeCents(c.o) {
+					t.Fatalf("resting order still records realized (%d) — bypass not closed", rec)
+				}
+			}
+		})
 	}
 }
 

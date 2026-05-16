@@ -113,3 +113,47 @@ func TestMockResponsibleGamblingServiceBetLimitTracksUsage(t *testing.T) {
 		t.Fatalf("expected ErrBetLimitExceeded, got %v", err)
 	}
 }
+
+// ReleaseBet must be the exact inverse of RecordBet (the reserve+reconcile
+// model in D-5 codex P1 #2 depends on this), and must never drive usage
+// negative even when a release has no matching prior record (e.g. an order
+// placed before this accounting existed).
+func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
+	service := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 5000); err != nil {
+		t.Fatalf("SetBetLimit: %v", err)
+	}
+	// Commit 5000 at placement, then release the uncaptured remainder
+	// (5000 committed − 190 captured = 4810). Net used must be 190.
+	if err := service.RecordBet(ctx, "u-1", 5000); err != nil {
+		t.Fatalf("RecordBet: %v", err)
+	}
+	if err := service.ReleaseBet(ctx, "u-1", 4810); err != nil {
+		t.Fatalf("ReleaseBet: %v", err)
+	}
+	limits, err := service.GetBetLimits(ctx, "u-1")
+	if err != nil {
+		t.Fatalf("GetBetLimits: %v", err)
+	}
+	if limits[0].UsedCents != 190 {
+		t.Fatalf("net used after reserve+release: want 190, got %d", limits[0].UsedCents)
+	}
+	if limits[0].RemainingCents != 4810 {
+		t.Fatalf("remaining after reserve+release: want 4810, got %d", limits[0].RemainingCents)
+	}
+
+	// Over-release / orphan release must clamp at zero, not go negative
+	// (would otherwise hand the user free limit headroom).
+	if err := service.ReleaseBet(ctx, "u-1", 99999); err != nil {
+		t.Fatalf("ReleaseBet (over): %v", err)
+	}
+	limits, _ = service.GetBetLimits(ctx, "u-1")
+	if limits[0].UsedCents != 0 {
+		t.Fatalf("used must clamp at 0 after over-release, got %d", limits[0].UsedCents)
+	}
+	if limits[0].RemainingCents != 5000 {
+		t.Fatalf("remaining must clamp at the limit after over-release, got %d", limits[0].RemainingCents)
+	}
+}

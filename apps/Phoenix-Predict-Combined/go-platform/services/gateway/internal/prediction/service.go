@@ -37,6 +37,12 @@ type ComplianceChecker interface {
 	CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (allowed bool, reason string, err error)
 	// RecordBet records committed stake for cumulative period-limit tracking.
 	RecordBet(ctx context.Context, userID string, stakeCents int64) error
+	// ReleaseBet reverses previously-recorded committed stake when a
+	// reservation is freed without being spent (cancel / expire / the
+	// unfilled remainder of a partial or market order). Symmetric inverse
+	// of RecordBet; implementations must not let cumulative usage go
+	// negative. Best-effort, like RecordBet.
+	ReleaseBet(ctx context.Context, userID string, amountCents int64) error
 }
 
 // SetComplianceChecker wires the responsible-gambling gate. Optional — pass
@@ -115,6 +121,53 @@ func (s *Service) recordComplianceOrder(ctx context.Context, userID string, stak
 	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 	_ = s.compliance.RecordBet(cctx, userID, stakeCents)
+}
+
+// releaseComplianceOrder reverses committed stake when a reservation is freed
+// without being spent (cancel / expire / unfilled remainder). Best-effort and
+// symmetric with recordComplianceOrder: skipped for zero/negative amounts and
+// a nil checker; a tracking-write failure must not unwind a committed cancel.
+func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amountCents int64) {
+	if s.compliance == nil || amountCents <= 0 {
+		return
+	}
+	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	_ = s.compliance.ReleaseBet(cctx, userID, amountCents)
+}
+
+// isTerminalReservedStatus reports whether an order-book order has reached a
+// state where its wallet reservation's unfilled remainder is freed in the
+// same flow (so RG can reconcile committed→realized immediately). A resting
+// order (open/partial) is NOT terminal: its committed stake stays counted
+// until cancel/expire releases it. 'rejected' is handled by the caller (no
+// reservation was ever taken) and deliberately excluded here.
+func isTerminalReservedStatus(st OrderStatus) bool {
+	return st == OrderStatusFilled || st == OrderStatusCancelled || st == OrderStatusExpired
+}
+
+// rgPlacementAccounting is the reserve+reconcile decision for an order-book
+// placement (D-5 codex P1 #2). It always records the committed worst-case
+// stake — the value the gate evaluated and the wallet reserved — so a
+// resting limit order or a future maker fill cannot bypass the period limit
+// (the pre-fix code recorded only realizedStakeCents, which is 0 for a
+// resting order). If the order is already terminal (market/IOC taker,
+// immediate fill) its unfilled remainder is freed in the same flow, so it
+// also releases committed−realized: the net equals realized. A resting
+// order (open/partial) releases nothing here — its committed stays counted
+// until cancel/expire releases the remainder. A never-reserved reject (or a
+// zero committed) records nothing.
+func rgPlacementAccounting(committed int64, o *Order) (record, release int64) {
+	if o == nil || committed <= 0 || o.Status == OrderStatusRejected {
+		return 0, 0
+	}
+	record = committed
+	if isTerminalReservedStatus(o.Status) {
+		if rel := committed - realizedStakeCents(o); rel > 0 {
+			release = rel
+		}
+	}
+	return record, release
 }
 
 // SetMetrics enables domain-level Prometheus counter emission. Wire after
@@ -315,11 +368,25 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 	// from existing positions; the AMM path stays buy-only for back-compat.
 	if market.ExecutionMode == ExecutionModeOrderBook {
 		o, t, replayed, perr := s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
-		// Skip RG recording on a concurrent idempotent replay: the original
-		// request already recorded this order's stake; re-recording here would
-		// double-count the user toward their period limit (D-5 codex P1 #3).
+		// Reserve+reconcile RG accounting (D-5 codex P1 #2). Recording only
+		// the realized taker fill let a user bypass the period limit two ways:
+		// (a) many resting limit orders each passed the gate independently
+		// because nothing was recorded until fill, and (b) a maker fill was
+		// never recorded at all. Instead, record the *committed* worst-case
+		// stake at placement — the same value the gate evaluated and the
+		// wallet reserved — so it counts immediately while the order rests.
+		// An order that is already terminal (market/IOC taker, immediate
+		// fill) has its unfilled remainder freed in the same match, so
+		// release committed−realized now: the net equals realized. A resting
+		// order keeps the full committed counted until cancel/expire releases
+		// the remainder (see cancelExchangeOrder). A maker fill needs no
+		// extra record — it draws down an envelope already counted at the
+		// maker's own placement. Skipped on a concurrent idempotent replay
+		// (#3) and for never-reserved rejects.
 		if perr == nil && !replayed {
-			s.recordComplianceOrder(ctx, userID, realizedStakeCents(o))
+			rec, rel := rgPlacementAccounting(worstCaseSpend(req), o)
+			s.recordComplianceOrder(ctx, userID, rec)
+			s.releaseComplianceOrder(ctx, userID, rel)
 		}
 		return o, t, perr
 	}
@@ -811,15 +878,20 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 
 	// Update order row inside the same tx via direct SQL — we don't have a
 	// "withTx" repo method for this, so we run it here. SQL kept narrow.
+	// RETURNING the reservation columns (GetOrder's narrower scan does not
+	// load them) gives the exact committed-vs-captured split for the RG
+	// release below, without widening the shared order scan path.
 	now := time.Now().UTC()
-	if _, err := tx.ExecContext(ctx,
+	var reservedCents, capturedCents int64
+	if err := tx.QueryRowContext(ctx,
 		`UPDATE prediction_orders
 		   SET status = 'cancelled',
 		       cancelled_at = $2,
 		       updated_at = NOW()
-		 WHERE id = $1`,
+		 WHERE id = $1
+		 RETURNING reserved_cash_cents, captured_cash_cents`,
 		order.ID, now,
-	); err != nil {
+	).Scan(&reservedCents, &capturedCents); err != nil {
 		return fmt.Errorf("update order to cancelled: %w", err)
 	}
 
@@ -829,6 +901,12 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 	order.Status = OrderStatusCancelled
 	order.CancelledAt = &now
 	order.UpdatedAt = now
+
+	// Reserve+reconcile (D-5 codex P1 #2): the committed stake was recorded
+	// toward the RG period at placement. Cancelling frees the uncaptured
+	// remainder, so release exactly that — leaving net RG usage equal to the
+	// cash actually captured. Best-effort, post-commit (mirrors RecordBet).
+	s.releaseComplianceOrder(ctx, order.UserID, reservedCents-capturedCents)
 	return nil
 }
 
