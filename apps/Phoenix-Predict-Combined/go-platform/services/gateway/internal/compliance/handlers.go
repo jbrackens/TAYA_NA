@@ -205,6 +205,26 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 	}))
 }
 
+// sessionBoundUserID enforces that a responsible-gambling self-service
+// mutation targets the authenticated caller's own account. It returns the
+// session userID — which callers MUST use as the mutation target instead of
+// the request body. The handlers historically trusted a body `userId`, so
+// any authenticated user could set another user's limits / cool-off /
+// (irreversible) self-exclusion by guessing their userID (deterministic from
+// username). A non-empty body userID that doesn't match the session is
+// rejected (defense in depth + surfaces client/integration bugs); an
+// unauthenticated context is rejected. (UAT 2026-05-16 D-6.)
+func sessionBoundUserID(r *stdhttp.Request, bodyUserID string) (string, error) {
+	sessionUID := httpx.UserIDFromContext(r.Context())
+	if sessionUID == "" {
+		return "", httpx.Forbidden("authentication required")
+	}
+	if bodyUserID != "" && bodyUserID != sessionUID {
+		return "", httpx.Forbidden("cannot modify another user's responsible-gambling settings")
+	}
+	return sessionUID, nil
+}
+
 // Responsible Gambling handlers
 func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service ResponsibleGamblingService) {
 	mux.Handle("/api/v1/compliance/rg/deposit-limit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
@@ -225,13 +245,17 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.BadRequest("userId, period, and amountCents are required", map[string]any{"field": "body"})
 		}
 
-		err := service.SetDepositLimit(r.Context(), req.UserID, req.Period, req.AmountCents)
+		uid, err := sessionBoundUserID(r, req.UserID)
 		if err != nil {
+			return err
+		}
+
+		if err := service.SetDepositLimit(r.Context(), uid, req.Period, req.AmountCents); err != nil {
 			return mapComplianceError(err)
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":      req.UserID,
+			"userId":      uid,
 			"period":      req.Period,
 			"amountCents": req.AmountCents,
 		})
@@ -277,13 +301,17 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.BadRequest("userId, period, and amountCents are required", map[string]any{"field": "body"})
 		}
 
-		err := service.SetBetLimit(r.Context(), req.UserID, req.Period, req.AmountCents)
+		uid, err := sessionBoundUserID(r, req.UserID)
 		if err != nil {
+			return err
+		}
+
+		if err := service.SetBetLimit(r.Context(), uid, req.Period, req.AmountCents); err != nil {
 			return mapComplianceError(err)
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":      req.UserID,
+			"userId":      uid,
 			"period":      req.Period,
 			"amountCents": req.AmountCents,
 		})
@@ -386,8 +414,13 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.BadRequest("user_id and session_duration_minutes are required", nil)
 		}
 
+		uid, err := sessionBoundUserID(r, req.UserID)
+		if err != nil {
+			return err
+		}
+
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"user_id":                  req.UserID,
+			"user_id":                  uid,
 			"session_duration_minutes": req.SessionDurationMinutes,
 			"effective_date":           time.Now().UTC().Format(time.RFC3339),
 			"created_at":               time.Now().UTC().Format(time.RFC3339),
@@ -415,14 +448,18 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.BadRequest("userId and durationHours are required", map[string]any{"field": "body"})
 		}
 
-		err := service.SetCoolOff(r.Context(), req.UserID, req.DurationHours)
+		uid, err := sessionBoundUserID(r, req.UserID)
 		if err != nil {
+			return err
+		}
+
+		if err := service.SetCoolOff(r.Context(), uid, req.DurationHours); err != nil {
 			return mapComplianceError(err)
 		}
 
 		now := time.Now().UTC()
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":       req.UserID,
+			"userId":       uid,
 			"status":       "active",
 			"coolOffUntil": now.Add(time.Duration(req.DurationHours) * time.Hour).Format(time.RFC3339),
 			"createdAt":    now.Format(time.RFC3339),
@@ -450,8 +487,12 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.BadRequest("userId is required", map[string]any{"field": "userId"})
 		}
 
-		err := service.SetSelfExclusion(r.Context(), req.UserID, req.Permanent)
+		uid, err := sessionBoundUserID(r, req.UserID)
 		if err != nil {
+			return err
+		}
+
+		if err := service.SetSelfExclusion(r.Context(), uid, req.Permanent); err != nil {
 			return mapComplianceError(err)
 		}
 
@@ -464,7 +505,7 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{
-			"userId":        req.UserID,
+			"userId":        uid,
 			"status":        status,
 			"excludedUntil": excludedUntil,
 			"createdAt":     now.Format(time.RFC3339),
