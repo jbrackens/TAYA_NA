@@ -58,9 +58,13 @@ export default function NotificationsPage() {
     setSaveLoading(true);
     try {
       await updatePreferences(user.id, prefs);
-      toast.success(
-        "Preferences saved",
-        "Your notification preferences have been updated",
+      // LC-13: do NOT claim success. The backend does not persist these yet
+      // (the write goes to an in-process map that is never read), so a
+      // "Preferences saved" toast would be a false success / silent data
+      // loss. Be honest until the persistence build lands.
+      toast.info(
+        "Not saved yet",
+        "Notification preferences aren't stored yet — this feature is still being built. Your selections won't persist after you leave this page.",
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -91,6 +95,17 @@ export default function NotificationsPage() {
           <p className="notif-desc">
             Select which channels you want to receive notifications on
           </p>
+
+          <div className="notif-notice" role="status">
+            <span className="notif-notice-icon" aria-hidden="true">
+              ⚠️
+            </span>
+            <span>
+              Heads up — notification preferences aren&apos;t saved yet.
+              We&apos;re still building this, so your selections won&apos;t
+              persist after you leave this page.
+            </span>
+          </div>
 
           <div className="notif-settings">
             {/* Email Notifications */}
@@ -380,6 +395,15 @@ const notificationsStyles = `
   .notif-desc {
     font-size: 13px; color: var(--t2); margin-bottom: 24px;
   }
+
+  .notif-notice {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 12px 14px; margin-bottom: 24px;
+    background: var(--surface-2); border: 1px solid var(--border-1);
+    border-left: 3px solid var(--accent); border-radius: var(--r-rh-md);
+    font-size: 13px; color: var(--t2); line-height: 1.45;
+  }
+  .notif-notice-icon { flex-shrink: 0; }
 
   .notif-settings {
     display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
