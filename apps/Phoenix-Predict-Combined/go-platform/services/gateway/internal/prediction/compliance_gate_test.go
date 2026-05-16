@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 )
 
 // fakeCompliance is a controllable ComplianceChecker for gate tests. It models
@@ -44,7 +45,7 @@ func (f *fakeCompliance) RecordBet(_ context.Context, _ string, stakeCents int64
 	return f.recordErr
 }
 
-func (f *fakeCompliance) ReleaseBet(_ context.Context, _ string, amountCents int64) error {
+func (f *fakeCompliance) ReleaseBet(_ context.Context, _ string, amountCents int64, _ time.Time) error {
 	f.releaseCalls = append(f.releaseCalls, amountCents)
 	return f.releaseErr
 }

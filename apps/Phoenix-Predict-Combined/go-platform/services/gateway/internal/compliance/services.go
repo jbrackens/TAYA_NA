@@ -3,6 +3,7 @@ package compliance
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 var (
@@ -82,8 +83,10 @@ type ResponsibleGamblingService interface {
 
 	// ReleaseBet reverses previously-recorded committed stake when a
 	// reservation is freed without being spent (cancel / expire / the
-	// unfilled remainder of a partial or market order). Symmetric inverse
-	// of RecordBet; implementations must not drive cumulative usage below
-	// zero.
-	ReleaseBet(ctx context.Context, userID string, amountCents int64) error
+	// unfilled remainder of a partial or market order). committedAt is when
+	// the original RecordBet was made; the reversal MUST be confined to the
+	// period that commit was counted in, so a cross-period cancel cannot
+	// offset unrelated bets in a later period. Symmetric inverse of
+	// RecordBet; implementations must not drive cumulative usage below zero.
+	ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error
 }

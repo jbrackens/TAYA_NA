@@ -3,6 +3,7 @@ package compliance
 import (
 	"context"
 	"testing"
+	"time"
 )
 
 func TestMockGeoComplianceServiceUsesConfiguredApprovedCountries(t *testing.T) {
@@ -127,10 +128,11 @@ func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
 	}
 	// Commit 5000 at placement, then release the uncaptured remainder
 	// (5000 committed − 190 captured = 4810). Net used must be 190.
+	nowCommit := time.Now().UTC()
 	if err := service.RecordBet(ctx, "u-1", 5000); err != nil {
 		t.Fatalf("RecordBet: %v", err)
 	}
-	if err := service.ReleaseBet(ctx, "u-1", 4810); err != nil {
+	if err := service.ReleaseBet(ctx, "u-1", 4810, nowCommit); err != nil {
 		t.Fatalf("ReleaseBet: %v", err)
 	}
 	limits, err := service.GetBetLimits(ctx, "u-1")
@@ -146,7 +148,7 @@ func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
 
 	// Over-release / orphan release must clamp at zero, not go negative
 	// (would otherwise hand the user free limit headroom).
-	if err := service.ReleaseBet(ctx, "u-1", 99999); err != nil {
+	if err := service.ReleaseBet(ctx, "u-1", 99999, nowCommit); err != nil {
 		t.Fatalf("ReleaseBet (over): %v", err)
 	}
 	limits, _ = service.GetBetLimits(ctx, "u-1")
@@ -155,5 +157,48 @@ func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
 	}
 	if limits[0].RemainingCents != 5000 {
 		t.Fatalf("remaining must clamp at the limit after over-release, got %d", limits[0].RemainingCents)
+	}
+}
+
+// D-5 codex re-review round 3 (P1): a release from a cross-period cancel must
+// NOT offset the current period's usage. A resting order placed in a prior
+// period then cancelled today: its committed stake already aged out at the
+// period reset, so reversing it now would wrongly free headroom for an
+// unrelated bet placed today. committedAt < current period start ⇒ no-op.
+func TestMockResponsibleGamblingServiceReleaseBet_CrossPeriodIsNoOp(t *testing.T) {
+	service := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetBetLimit: %v", err)
+	}
+	// Today's real bet: 1000 (the user has now used their whole daily limit).
+	if err := service.RecordBet(ctx, "u-1", 1000); err != nil {
+		t.Fatalf("RecordBet: %v", err)
+	}
+	// Cancel a resting order that was committed two days ago (prior period).
+	priorPeriodCommit := time.Now().UTC().AddDate(0, 0, -2)
+	if err := service.ReleaseBet(ctx, "u-1", 1000, priorPeriodCommit); err != nil {
+		t.Fatalf("ReleaseBet: %v", err)
+	}
+	limits, err := service.GetBetLimits(ctx, "u-1")
+	if err != nil {
+		t.Fatalf("GetBetLimits: %v", err)
+	}
+	// Must STILL be fully used — the cross-period release is a no-op. Pre-fix
+	// it subtracted 1000, dropping used to 0 and handing free headroom.
+	if limits[0].UsedCents != 1000 {
+		t.Fatalf("cross-period release must not offset current usage: want used 1000, got %d", limits[0].UsedCents)
+	}
+	if limits[0].RemainingCents != 0 {
+		t.Fatalf("want remaining 0 (limit fully used), got %d", limits[0].RemainingCents)
+	}
+	// Sanity: a same-period release still nets correctly.
+	if err := service.ReleaseBet(ctx, "u-1", 400, time.Now().UTC()); err != nil {
+		t.Fatalf("ReleaseBet (same period): %v", err)
+	}
+	limits, _ = service.GetBetLimits(ctx, "u-1")
+	if limits[0].UsedCents != 600 {
+		t.Fatalf("same-period release must net: want used 600, got %d", limits[0].UsedCents)
 	}
 }

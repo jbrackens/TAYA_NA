@@ -39,10 +39,13 @@ type ComplianceChecker interface {
 	RecordBet(ctx context.Context, userID string, stakeCents int64) error
 	// ReleaseBet reverses previously-recorded committed stake when a
 	// reservation is freed without being spent (cancel / expire / the
-	// unfilled remainder of a partial or market order). Symmetric inverse
-	// of RecordBet; implementations must not let cumulative usage go
-	// negative. Best-effort, like RecordBet.
-	ReleaseBet(ctx context.Context, userID string, amountCents int64) error
+	// unfilled remainder of a partial or market order). committedAt is when
+	// the original RecordBet was made: a release MUST only reduce usage in
+	// the period that commit was counted in — a cross-period cancel must not
+	// offset unrelated bets in a later period (D-5 codex re-review round 3).
+	// Symmetric inverse of RecordBet; implementations must not let cumulative
+	// usage go negative. Best-effort, like RecordBet.
+	ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error
 }
 
 // SetComplianceChecker wires the responsible-gambling gate. Optional — pass
@@ -127,13 +130,13 @@ func (s *Service) recordComplianceOrder(ctx context.Context, userID string, stak
 // without being spent (cancel / expire / unfilled remainder). Best-effort and
 // symmetric with recordComplianceOrder: skipped for zero/negative amounts and
 // a nil checker; a tracking-write failure must not unwind a committed cancel.
-func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amountCents int64) {
+func (s *Service) releaseComplianceOrder(ctx context.Context, userID string, amountCents int64, committedAt time.Time) {
 	if s.compliance == nil || amountCents <= 0 {
 		return
 	}
 	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
-	_ = s.compliance.ReleaseBet(cctx, userID, amountCents)
+	_ = s.compliance.ReleaseBet(cctx, userID, amountCents, committedAt)
 }
 
 // isTerminalReservedStatus reports whether an order-book order has reached a
@@ -386,7 +389,9 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		if perr == nil && !replayed {
 			rec, rel := rgPlacementAccounting(worstCaseSpend(req), o)
 			s.recordComplianceOrder(ctx, userID, rec)
-			s.releaseComplianceOrder(ctx, userID, rel)
+			// committedAt = now: the record and this terminal release happen
+			// in the same call, so they are always the same RG period.
+			s.releaseComplianceOrder(ctx, userID, rel, time.Now().UTC())
 		}
 		return o, t, perr
 	}
@@ -902,15 +907,16 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 	// release below, without widening the shared order scan path.
 	now := time.Now().UTC()
 	var reservedCents, capturedCents int64
+	var placedAt time.Time
 	if err := tx.QueryRowContext(ctx,
 		`UPDATE prediction_orders
 		   SET status = 'cancelled',
 		       cancelled_at = $2,
 		       updated_at = NOW()
 		 WHERE id = $1
-		 RETURNING reserved_cash_cents, captured_cash_cents`,
+		 RETURNING reserved_cash_cents, captured_cash_cents, created_at`,
 		order.ID, now,
-	).Scan(&reservedCents, &capturedCents); err != nil {
+	).Scan(&reservedCents, &capturedCents, &placedAt); err != nil {
 		return fmt.Errorf("update order to cancelled: %w", err)
 	}
 
@@ -925,7 +931,12 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 	// toward the RG period at placement. Cancelling frees the uncaptured
 	// remainder, so release exactly that — leaving net RG usage equal to the
 	// cash actually captured. Best-effort, post-commit (mirrors RecordBet).
-	s.releaseComplianceOrder(ctx, order.UserID, reservedCents-capturedCents)
+	// committedAt = the order's placement time: if the order has rested past
+	// a period boundary the RG service no-ops the release (the original
+	// commit already aged out of the current period, so reversing it now
+	// would wrongly free headroom for unrelated current-period bets —
+	// D-5 codex re-review round 3).
+	s.releaseComplianceOrder(ctx, order.UserID, reservedCents-capturedCents, placedAt)
 	return nil
 }
 

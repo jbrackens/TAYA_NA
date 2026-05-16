@@ -400,13 +400,17 @@ func (s *PostgresResponsibleGamblingService) RecordBet(ctx context.Context, user
 }
 
 // ReleaseBet reverses committed stake by writing a compensating negative
-// "bet" activity row so usageInPeriod (a SUM over the period) nets down to
-// the cash actually captured. Symmetric inverse of RecordBet.
-func (s *PostgresResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64) error {
+// "bet" activity row dated at committedAt (when the original RecordBet was
+// made) — NOT now. usageInPeriod filters on created_at >= periodStart, so
+// dating the reversal at the commit time confines its effect to the same
+// period(s) the original positive row fell into: a cross-period cancel
+// cannot offset unrelated bets in a later period (D-5 codex re-review round
+// 3). Symmetric inverse of RecordBet.
+func (s *PostgresResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error {
 	if amountCents <= 0 {
 		return nil
 	}
-	return s.recordActivity(ctx, userID, "bet", -amountCents)
+	return s.recordActivityAt(ctx, userID, "bet", -amountCents, committedAt)
 }
 
 func (s *PostgresResponsibleGamblingService) RecordDeposit(ctx context.Context, userID string, amountCents int64) error {
@@ -420,6 +424,19 @@ func (s *PostgresResponsibleGamblingService) recordActivity(ctx context.Context,
 	_, err := s.db.ExecContext(ctx, `
 INSERT INTO player_activity_log (user_id, activity_type, amount_cents)
 VALUES ($1, $2, $3)`, userID, activityType, amountCents)
+	return err
+}
+
+// recordActivityAt writes an activity row with an explicit created_at. Used
+// by ReleaseBet so a compensating reversal is attributed to the period the
+// original commit was counted in, not the period the cancel happens in.
+func (s *PostgresResponsibleGamblingService) recordActivityAt(ctx context.Context, userID string, activityType string, amountCents int64, at time.Time) error {
+	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+
+	_, err := s.db.ExecContext(ctx, `
+INSERT INTO player_activity_log (user_id, activity_type, amount_cents, created_at)
+VALUES ($1, $2, $3, $4)`, userID, activityType, amountCents, at.UTC())
 	return err
 }
 

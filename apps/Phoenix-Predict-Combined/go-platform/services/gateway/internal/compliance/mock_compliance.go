@@ -711,10 +711,13 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 
 // ReleaseBet is the symmetric inverse of RecordBet: it reverses committed
 // stake when a reservation is freed unspent (cancel / expire / unfilled
-// remainder). Cumulative tracking and per-period UsedCents are clamped at
-// zero so a release without a matching prior record (e.g. an order placed
-// before this accounting existed) cannot drive usage negative.
-func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64) error {
+// remainder). The reversal is confined to the period the original commit was
+// counted in: if committedAt is before a limit's current period start, that
+// commit already aged out (the period reset zeroed it), so reversing it now
+// would wrongly free headroom for unrelated bets placed in the new period
+// (D-5 codex re-review round 3). Cumulative tracking and per-period UsedCents
+// are clamped at zero so an orphan release cannot drive usage negative.
+func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error {
 	if userID == "" {
 		return ErrInvalidUserID
 	}
@@ -727,7 +730,9 @@ func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID 
 
 	now := time.Now().UTC()
 
-	if tracking, found := m.betTracking[userID]; found && tracking.ResetAt.After(now) {
+	// Only reverse if the commit still counts in the current period.
+	if tracking, found := m.betTracking[userID]; found &&
+		tracking.ResetAt.After(now) && !committedAt.Before(periodStart(tracking.Period)) {
 		tracking.Amount -= amountCents
 		if tracking.Amount < 0 {
 			tracking.Amount = 0
@@ -738,6 +743,12 @@ func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID 
 	if limits, found := m.betLimits[userID]; found {
 		for i := range limits {
 			refreshBetLimitState(&limits[i], now)
+			// Skip a cross-period release: the commit is no longer part of
+			// this period's usage, so subtracting it would offset unrelated
+			// current-period bets.
+			if committedAt.Before(periodStart(limits[i].Period)) {
+				continue
+			}
 			limits[i].UsedCents -= amountCents
 			if limits[i].UsedCents < 0 {
 				limits[i].UsedCents = 0
