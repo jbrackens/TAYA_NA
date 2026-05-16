@@ -736,3 +736,72 @@ all FIXED, independently codex-confirmed, and live-verified. Remaining
 tracked residuals unchanged (codex-#4 TOCTOU; expired-order-lifecycle RG
 release; GET disclosure endpoints; `rg_postgres` dormant/owed §20 item #2;
 mock monthly-reset boundary P2).
+
+## §24 — LC-22: KYC just-in-time gate (investigation, no fix yet)
+
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-22 KYC just-in-time gate (/profile/ Verification tab) | ❌ FAIL | The JIT gate is **not implemented** — UI stub + no enforcement + hardcoded profile status. See D-8. |
+
+Investigated to the same depth as LC-17/D-5 (code map + rigorous negative
+verification + live e2e on the rebuilt gateway). Not fixed: unlike D-5 (a
+built control with a wiring gap), LC-22 is an **unbuilt feature** whose
+resolution is a product/compliance design+build, not a mechanical
+root-cause fix — surfaced for scoping rather than unilaterally built.
+
+### D-8 — KYC just-in-time gate not implemented; profile hardcodes "verified" (S2, OPEN)
+
+```
+[LC-22] KYC JIT gate absent on every regulated/money path; profile lies
+Severity: S2          Priority: P1 (regulatorily significant; FEATURE_KYC
+          is documented as "for jurisdictional deploys that legally
+          require KYC e.g. regulated US")
+Env: rebuilt gateway docker (all D-5/6/7 fixes in) + demo u-1, 2026-05-16
+```
+**Findings (code + live):**
+1. **No JIT gate on any money/regulated path.** `KYCService.GetVerification
+   Status` is never consulted by any gating code — grep across
+   `internal/payments`, `internal/prediction`, `internal/http`,
+   `internal/wallet`, `cmd/`, middleware = zero KYC enforcement. No
+   "just-in-time"/JIT concept exists anywhere in the Go codebase.
+   *Live:* demo `u-1`, whose **real** compliance KYC status is
+   `unverified` (`GET /api/v1/compliance/kyc/status` → `"unverified"`),
+   placed a prediction order successfully — **HTTP 201, status open**
+   (probe order cancelled after). No gate.
+2. **Profile endpoint hardcodes `kyc_status:"verified"`.**
+   `internal/http/user_handlers.go:156` returns a constant `"verified"`
+   for every user, ignoring the compliance KYC service entirely.
+   *Live:* `GET /api/v1/users/u-1/profile` → `kyc_status:"verified"`
+   while the truth source says `unverified` — the profile actively
+   masks real KYC state.
+3. **/profile Verification tab is a static stub.** `app/profile/page.tsx`
+   renders an "Identity Verification (KYC)" badge + a "Complete
+   Verification" section whose **"Start Verification" button has no
+   onClick handler** — it does nothing; there is no verification /
+   document-submission flow wired from the player UI. The
+   `/api/v1/compliance/kyc/{verify,submit-document,...}` routes exist
+   but nothing in the player app drives them.
+4. **Display enum mismatch (consequence of #2).** The UI badge keys off
+   `profile.kycStatus === "approved" | "pending"`; the hardcoded backend
+   value is `"verified"` (never "approved"/"pending"), so the KYC badge
+   renders the `else` branch ("failed") for everyone even though the
+   field claims verified — the surface is internally inconsistent.
+
+**Why not fixed here:** "Resolving" D-8 = *building* KYC JIT gating, a
+feature with product/compliance design decisions (which actions to gate —
+withdrawal? deposit/trade thresholds? first trade?; jurisdiction logic;
+what state counts as "verified"; the document-submission UX) plus wiring
+the compliance KYC status into the deposit/withdraw/order paths and
+replacing the hardcoded profile field. That is a feature project, not a
+root-cause bug fix; the no-shortcuts protocol applies once scope/design is
+chosen. CLAUDE.md rule honored: not declaring KYC "done" while it is
+mock/stub/hardcoded.
+
+**Surgical interim candidate (analogous to the §19 LC-12 honest-notice
+precedent):** stop the profile endpoint lying — either proxy the real
+compliance KYC status into `kyc_status` (also fixing the enum to the
+UI-expected values) or remove the hardcoded field. Small and honest, but
+it changes observable /profile behavior and is entangled with the larger
+build, so deferred to the scope decision.
+
+**Status: OPEN — investigated & recorded; awaiting scope decision.**
