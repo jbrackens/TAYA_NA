@@ -263,6 +263,63 @@ func TestBuildPlan_SellYesPartialFillThenIOCCancel(t *testing.T) {
 	}
 }
 
+// Hardening (UAT D-1 money-path): the seller credit must be safe to
+// re-apply. Wallet idempotency is keyed on (kind, userID, idempotencyKey)
+// — see wallet TestCreditIsIdempotentByKey — so a duplicated
+// PersistMatchAtomic only re-credits if the SellerCredit.CreditKey is
+// (a) deterministically bound to the trade (so a re-persist of the SAME
+// plan reuses the SAME key → wallet dedupes) and (b) unique across
+// distinct fills (so two legitimate fills are NOT collapsed into one).
+// Also assert cash conservation: each seller credit equals the buyer's
+// capture for that fill (no money minted on a same-side transfer).
+func TestBuildPlan_SellerCreditKeyIsPerTradeAndConservesCash(t *testing.T) {
+	e := NewExchangeEngine()
+	market := makeMarket()
+	taker := makeOrder("t", "alice", OrderSideYes, OrderActionSell, OrderTypeMarket, nil, 20)
+	m1 := makeOrder("m1", "bob", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(55), 10)
+	m2 := makeOrder("m2", "carol", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(54), 10)
+
+	plan, err := e.BuildPlan(MatchInput{
+		Market: market, Taker: taker,
+		MakersSecondary: []Order{m1, m2},
+		Now:             time.Now(), IDFactory: counterIDs(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(plan.Trades) != 2 || len(plan.SellerCredits) != 2 || len(plan.CaptureReservations) != 2 {
+		t.Fatalf("expected 2 trades/credits/captures, got %d/%d/%d",
+			len(plan.Trades), len(plan.SellerCredits), len(plan.CaptureReservations))
+	}
+	seen := map[string]bool{}
+	for i, sc := range plan.SellerCredits {
+		// (a) deterministic per-trade binding
+		want := "prediction_fill_proceeds:" + plan.Trades[i].ID
+		if sc.CreditKey != want {
+			t.Errorf("credit[%d] key = %q, want %q (must bind to trade id)", i, sc.CreditKey, want)
+		}
+		// (b) uniqueness across fills
+		if seen[sc.CreditKey] {
+			t.Errorf("duplicate credit key %q across fills — would wrongly dedupe a real credit", sc.CreditKey)
+		}
+		seen[sc.CreditKey] = true
+		// seller is the taker
+		if sc.UserID != "alice" {
+			t.Errorf("credit[%d] user = %q, want alice (taker is the seller)", i, sc.UserID)
+		}
+		// cash conservation: seller credit == buyer capture for the same fill
+		if sc.AmountCents != plan.CaptureReservations[i].AmountCents {
+			t.Errorf("fill %d: seller credit %d != buyer capture %d (cash not conserved)",
+				i, sc.AmountCents, plan.CaptureReservations[i].AmountCents)
+		}
+	}
+	// Exact amounts: 10×55 + 10×54.
+	if plan.SellerCredits[0].AmountCents != 550 || plan.SellerCredits[1].AmountCents != 540 {
+		t.Errorf("amounts = %d,%d want 550,540",
+			plan.SellerCredits[0].AmountCents, plan.SellerCredits[1].AmountCents)
+	}
+}
+
 func TestBuildPlan_BuyYesMatchesBuyNoIssuance(t *testing.T) {
 	e := NewExchangeEngine()
 	market := makeMarket()
