@@ -695,3 +695,44 @@ should keep usage; an unchanged re-POST must be a no-op for usage.
 Status: OPEN — distinct new defect, outside the D-5/D-6 scope that was
 authorized; surfaced for scoping.
 ```
+
+## §23 — D-7 FIXED (no-shortcuts)
+
+User authorized fixing D-7 in full. **Status: FIXED — commit `54097169`;
+D-7 above is RESOLVED** (recorded here per the append-only rule; §22's
+"OPEN" left intact).
+
+**Root cause:** `MockResponsibleGamblingService.SetBetLimit` /
+`SetDepositLimit` rebuilt the period row with `UsedCents:0` and `upsert*`
+replaced it, discarding accumulated period usage on every set.
+
+**Fix:** on set, if a same-period limit already exists, apply
+`refreshBetLimitState`/`refreshDepositLimitState` (so a *genuine* period
+elapse still legitimately zeroes), then carry the existing `UsedCents`,
+`ResetsAt` and `CreatedAt` forward and recompute
+`RemainingCents = max(0, LimitCents − UsedCents)`. Raising a limit keeps
+usage and grants only the delta; lowering below accumulated usage clamps
+remaining to 0 (RG restricts, never negative); a brand-new limit starts at
+0 and applies prospectively (codex classified the "bet before any limit
+then set one" case as accepted prospective behavior, not a residual D-7
+bypass). Added `findBetLimit`/`findDepositLimit`.
+
+**Verification (full no-shortcuts):**
+- Unit: `TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage` (+ deposit
+  variant) — fails-without/passes-with (pre-fix re-POST → used 0; post-fix
+  → used preserved, raise grants delta, lower clamps, post-exploit bet
+  blocked). Full gateway suite **24/24**.
+- Live (rebuilt gateway, demo u-1): set 300¢ daily → consumed to
+  `used=300 remaining=0` → re-POST same 300¢ limit → **`used=300
+  remaining=0`** (pre-fix would reset to 0) → next order **HTTP 400 "Bet
+  limit exceeded"**. Demo limit restored after.
+- Independent **codex** review of the fix: **VERDICT: CLEAN — FIXED** (no
+  P1/P2; re-POST/raise/lower preserve usage, legit rollover correct,
+  ResetsAt carry doesn't extend the window, no D-5 round-3 regression,
+  `findBetLimit` aliasing safe). Raw: `.codex-reviews/d7-review-raw.txt`.
+
+**Net RG state after this session:** D-5/LC-17 P1 #1/#2/#3, D-6, and D-7 are
+all FIXED, independently codex-confirmed, and live-verified. Remaining
+tracked residuals unchanged (codex-#4 TOCTOU; expired-order-lifecycle RG
+release; GET disclosure endpoints; `rg_postgres` dormant/owed §20 item #2;
+mock monthly-reset boundary P2).

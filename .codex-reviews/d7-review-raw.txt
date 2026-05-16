@@ -1,0 +1,40 @@
+ M ../../../../../.claude/launch.json
+ M internal/compliance/mock_compliance.go
+ M internal/compliance/mock_compliance_test.go
+?? ../../../../../PRIMER-2026-05-16-lc17-done-continue.md
+
+codex
+There is no service/API delete path for RG limits in this interface, so “delete+recreate” is not a reachable user sequence here. I’m also checking the targeted tests so the verdict is grounded in executable coverage, not just inspection.
+exec
+/bin/zsh -lc "go test ./internal/compliance -run 'TestMock(SetBetLimit_RePostDoesNotResetAccumulatedUsage|SetDepositLimit_RePostDoesNotResetAccumulatedUsage)|TestMockResponsibleGamblingServiceReleaseBet_(CrossPeriodIsNoOp)|TestMockResponsibleGamblingServiceReleaseBetReversesUsage|TestMockResponsibleGamblingServiceBetLimitTracksUsage|TestMockResponsibleGamblingServiceDepositLimitTracksUsage' -count=1" in /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway
+ succeeded in 1264ms:
+ok  	phoenix-revival/gateway/internal/compliance	0.403s
+
+codex
+VERDICT: CLEAN — FIXED
+
+Findings: none.
+
+1. Re-POST same/raised/lowered preserves usage: `internal/compliance/mock_compliance.go:450` copies refreshed `UsedCents/ResetsAt/CreatedAt`, then recomputes remaining at `:459`. Deposit mirrors this at `:381`.
+2. Legit rollover is correct: `refreshBetLimitState` only zeroes when `now >= ResetsAt` at `:846-851`; in-period re-POST does not reset.
+3. Carrying `ResetsAt` does not extend the active window; it preserves the existing window until rollover, then recomputes via `getResetTime` at `:850`. Existing monthly reset semantics are pre-existing, not introduced here.
+4. No D-5 regression: `RecordBet` still refreshes then increments at `:724-727`; `ReleaseBet` still period-scopes by `committedAt` and clamps at `:771-785`.
+5. Aliasing is safe here: `findBetLimit` returns the same backing-array row at `:795-799`; refresh mutates it once, then `upsertBetLimit` overwrites that row with the value-copy at `:823-827`.
+6. First-ever limit after prior `betTracking` usage still starts at 0 at `:455-458`. Classified as accepted prospective behavior per the stated fix, not a residual D-7 bypass.
+
+No reachable delete+recreate reset path found in the RG interface/routes (`services.go:50-91`, `handlers.go:229-340`). Targeted compliance tests pass.
+2026-05-16T20:53:22.079242Z ERROR codex_core::session: failed to record rollout items: thread 019e328f-0b6d-7520-9402-b1f3184fe83e not found
+tokens used
+72,101
+VERDICT: CLEAN — FIXED
+
+Findings: none.
+
+1. Re-POST same/raised/lowered preserves usage: `internal/compliance/mock_compliance.go:450` copies refreshed `UsedCents/ResetsAt/CreatedAt`, then recomputes remaining at `:459`. Deposit mirrors this at `:381`.
+2. Legit rollover is correct: `refreshBetLimitState` only zeroes when `now >= ResetsAt` at `:846-851`; in-period re-POST does not reset.
+3. Carrying `ResetsAt` does not extend the active window; it preserves the existing window until rollover, then recomputes via `getResetTime` at `:850`. Existing monthly reset semantics are pre-existing, not introduced here.
+4. No D-5 regression: `RecordBet` still refreshes then increments at `:724-727`; `ReleaseBet` still period-scopes by `committedAt` and clamps at `:771-785`.
+5. Aliasing is safe here: `findBetLimit` returns the same backing-array row at `:795-799`; refresh mutates it once, then `upsertBetLimit` overwrites that row with the value-copy at `:823-827`.
+6. First-ever limit after prior `betTracking` usage still starts at 0 at `:455-458`. Classified as accepted prospective behavior per the stated fix, not a residual D-7 bypass.
+
+No reachable delete+recreate reset path found in the RG interface/routes (`services.go:50-91`, `handlers.go:229-340`). Targeted compliance tests pass.
