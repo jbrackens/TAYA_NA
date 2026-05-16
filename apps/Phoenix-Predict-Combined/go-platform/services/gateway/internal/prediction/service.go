@@ -314,8 +314,11 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 	// limit + market orders, partial fills, complementary issuance, and sells
 	// from existing positions; the AMM path stays buy-only for back-compat.
 	if market.ExecutionMode == ExecutionModeOrderBook {
-		o, t, perr := s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
-		if perr == nil {
+		o, t, replayed, perr := s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
+		// Skip RG recording on a concurrent idempotent replay: the original
+		// request already recorded this order's stake; re-recording here would
+		// double-count the user toward their period limit (D-5 codex P1 #3).
+		if perr == nil && !replayed {
 			s.recordComplianceOrder(ctx, userID, realizedStakeCents(o))
 		}
 		return o, t, perr
@@ -469,11 +472,19 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 // Concurrency model: the prediction order INSERT happens in a separate
 // pre-match step so that maker/trade FK references resolve. The match itself
 // runs under pg_advisory_xact_lock per market — see SQLRepository.PersistMatchAtomic.
-func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest, userID string, market *Market, idempotencyKey *string) (*Order, *Trade, error) {
+// placeExchangeOrder returns replayed=true only when an idempotency-key
+// collision (a concurrent duplicate that lost the CreateOrder insert race)
+// caused it to return a pre-existing order. The caller MUST NOT re-run the
+// RG RecordBet for a replayed order — the original request already recorded
+// it, and re-recording double-counts the user toward their period limit
+// (D-5 codex review P1 #3). The sequential replay is caught earlier in
+// PlaceOrder (GetOrderByIdempotencyKey before the gate); this covers the
+// concurrent race that falls through to here.
+func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest, userID string, market *Market, idempotencyKey *string) (*Order, *Trade, bool, error) {
 	exchangeRepo, repoOK := s.repo.(ExchangeRepository)
 	exchangeWallet, walletOK := s.wallet.(ExchangeWalletAdapter)
 	if !repoOK || !walletOK {
-		return nil, nil, fmt.Errorf("exchange engine requires SQL repository and wallet adapter (memory mode not supported for order-book markets)")
+		return nil, nil, false, fmt.Errorf("exchange engine requires SQL repository and wallet adapter (memory mode not supported for order-book markets)")
 	}
 
 	// Sell validation: load existing position, compute available shares.
@@ -486,7 +497,8 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 	}
 
 	if err := ValidatePlaceOrderRequest(req, market, position); err != nil {
-		return s.persistRejectedExchangeOrder(ctx, req, userID, market, idempotencyKey, err.Error())
+		o, t, e := s.persistRejectedExchangeOrder(ctx, req, userID, market, idempotencyKey, err.Error())
+		return o, t, false, e
 	}
 
 	// Defaults for unset exchange fields.
@@ -534,17 +546,17 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 	if err := s.repo.CreateOrder(ctx, taker); err != nil {
 		if idempotencyKey != nil {
 			if existing, lookupErr := s.repo.GetOrderByIdempotencyKey(ctx, *idempotencyKey); lookupErr == nil && existing != nil {
-				return existing, nil, nil
+				return existing, nil, true, nil
 			}
 		}
-		return nil, nil, fmt.Errorf("create pending order: %w", err)
+		return nil, nil, false, fmt.Errorf("create pending order: %w", err)
 	}
 
 	// Load candidate makers for both match modes. The engine will pick which
 	// fills to execute based on price-time priority and feasibility.
 	makersSec, err := exchangeRepo.LoadMakersForSecondary(ctx, market.ID, req.Side, req.Action, req.PriceCents, MaxOrderBookDepth)
 	if err != nil {
-		return nil, nil, fmt.Errorf("load secondary makers: %w", err)
+		return nil, nil, false, fmt.Errorf("load secondary makers: %w", err)
 	}
 	var makersIss []Order
 	if req.Action == OrderActionBuy {
@@ -571,7 +583,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		}
 		makersIss, err = exchangeRepo.LoadMakersForIssuance(ctx, market.ID, otherSide, takerLimit, MaxOrderBookDepth)
 		if err != nil {
-			return nil, nil, fmt.Errorf("load issuance makers: %w", err)
+			return nil, nil, false, fmt.Errorf("load issuance makers: %w", err)
 		}
 	}
 
@@ -593,7 +605,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		taker.FailureReason = &reason
 		_ = s.repo.UpdateOrder(ctx, taker)
 		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
-		return taker, nil, nil
+		return taker, nil, false, nil
 	}
 
 	// Wallet hold for buys: reserve worst-case spend up front. The match
@@ -627,7 +639,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		taker.FailureReason = &reason
 		_ = s.repo.UpdateOrder(ctx, taker)
 		s.metrics.RecordOrder(market.ID, req.Side, req.Action, req.OrderType, OrderStatusRejected)
-		return taker, nil, fmt.Errorf("persist match: %w", err)
+		return taker, nil, false, fmt.Errorf("persist match: %w", err)
 	}
 
 	// Domain metrics: one order observation by final status, one trade
@@ -653,7 +665,7 @@ func (s *Service) placeExchangeOrder(ctx context.Context, req PlaceOrderRequest,
 		t := plan.Trades[0]
 		firstTrade = &t
 	}
-	return &plan.Taker, firstTrade, nil
+	return &plan.Taker, firstTrade, false, nil
 }
 
 // worstCaseSpend computes the maximum cents a buy order could spend. For
