@@ -240,6 +240,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	kycService := compliance.NewMockKYCService()
 	rgService := compliance.NewMockResponsibleGamblingService()
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
+	// Gate prediction order placement through the same RG service instance the
+	// /api/v1/compliance/rg/* routes write to, so a user-set bet limit /
+	// self-exclusion / cool-off actually blocks trades (UAT 2026-05-16 LC-17:
+	// the prediction path previously had no compliance dependency at all).
+	predictionService.SetComplianceChecker(rgService)
 
 	// --- Payments Routes ---
 	var paymentService payments.PaymentService

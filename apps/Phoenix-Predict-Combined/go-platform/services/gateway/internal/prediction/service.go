@@ -3,6 +3,7 @@ package prediction
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -20,6 +21,100 @@ type Service struct {
 	// methods no-op when the receiver is nil. Wired in main.go alongside
 	// the platform-level httpx.MetricsRegistry.
 	metrics *Metrics
+	// Optional responsible-gambling gate. nil disables the check (tests and
+	// any deployment that has not wired RG). Wired in internal/http.
+	compliance ComplianceChecker
+}
+
+// ComplianceChecker gates order placement against responsible-gambling
+// controls (self-exclusion, cool-off, deposit/bet stake limits). It is an
+// interface so the prediction package stays decoupled from internal/compliance
+// — same rationale as WalletAdapter (see CLAUDE.md "Keep the prediction Go
+// package decoupled from wallet"). A nil checker is a no-op.
+type ComplianceChecker interface {
+	// CheckBetAllowed reports whether userID may commit stakeCents on a new
+	// order. reason is a human-readable rejection message when allowed is false.
+	CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (allowed bool, reason string, err error)
+	// RecordBet records committed stake for cumulative period-limit tracking.
+	RecordBet(ctx context.Context, userID string, stakeCents int64) error
+}
+
+// SetComplianceChecker wires the responsible-gambling gate. Optional — pass
+// nil (or never call) to leave order placement ungated. Mirrors SetMetrics /
+// SetLoyaltyAdapter: wire after construction so tests can omit it.
+func (s *Service) SetComplianceChecker(c ComplianceChecker) {
+	s.compliance = c
+}
+
+// checkComplianceForOrder blocks an order before any market-state mutation or
+// wallet debit if responsible-gambling controls disallow it. Mirrors the
+// legacy bets.Service.checkComplianceForPlacement contract: fail-closed in
+// production/staging when the RG service errors, fail-open in development so
+// local testing isn't blocked by a misconfigured checker. nil checker = no-op.
+func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, stakeCents int64) error {
+	if s.compliance == nil {
+		return nil
+	}
+	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+	allowed, reason, err := s.compliance.CheckBetAllowed(cctx, userID, stakeCents)
+	// `allowed == false` is an authoritative RG denial (bet limit /
+	// self-exclusion / cool-off). The wired RG service returns a sentinel
+	// error *alongside* allowed=false on a deliberate block — that is a
+	// decision, not an outage, so it MUST block regardless of environment.
+	// Treating that sentinel as an infra error and failing open in dev is
+	// exactly what let an over-limit order through (UAT 2026-05-16 LC-17).
+	if !allowed {
+		if strings.TrimSpace(reason) == "" {
+			reason = "order blocked by responsible-gambling controls"
+		}
+		return fmt.Errorf("%s", reason)
+	}
+	// allowed == true but the checker still errored → it could not evaluate
+	// (genuine infra ambiguity). Fail closed in production/staging so an
+	// outage cannot silently disable the control; fail open in development
+	// so a locally-misconfigured RG backend doesn't block testing.
+	if err != nil {
+		env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+		if env == "production" || env == "staging" {
+			return fmt.Errorf("responsible-gambling check unavailable")
+		}
+		return nil // fail-open in development only
+	}
+	return nil
+}
+
+// realizedStakeCents is the cash actually staked by a placed order, for
+// cumulative RG period-limit tracking. It must be the amount that really left
+// the wallet — never the reserved notional — or a thin/partial fill would
+// over-count and wrongly lock the user out for the rest of the period.
+//   - Nothing filled (rejected / cancelled-zero-fill / still-resting limit):
+//     0 — no stake consumed yet.
+//   - Order-book fill: CapturedCashCents (realized; TotalCostCents on this
+//     path is the reserved cap, not what was spent — UAT 2026-05-16 LC-17).
+//   - AMM fill: TotalCostCents (the AMM path's realized executed cost;
+//     CapturedCashCents is an exchange-engine-only field, 0 here).
+func realizedStakeCents(o *Order) int64 {
+	if o == nil || o.FilledQuantity <= 0 {
+		return 0
+	}
+	if o.CapturedCashCents > 0 {
+		return o.CapturedCashCents
+	}
+	return o.TotalCostCents
+}
+
+// recordComplianceOrder records realized committed stake for cumulative
+// period-limit tracking. Best-effort: a tracking-write failure must not unwind
+// a committed order (the funds already moved), so the error is swallowed.
+// Skipped for zero/negative stake (sells reserve no cash) and nil checker.
+func (s *Service) recordComplianceOrder(ctx context.Context, userID string, stakeCents int64) {
+	if s.compliance == nil || stakeCents <= 0 {
+		return
+	}
+	cctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	_ = s.compliance.RecordBet(cctx, userID, stakeCents)
 }
 
 // SetMetrics enables domain-level Prometheus counter emission. Wire after
@@ -204,12 +299,26 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("market %s is not open for trading", market.Ticker)
 	}
 
+	// Responsible-gambling gate — runs before any market-state mutation or
+	// wallet debit so a self-excluded / cool-off / over-limit user is stopped
+	// before money moves. worstCaseSpend is the cash committed (price×qty for
+	// limit buys, notional cap for market buys, 0 for sells). Sells still hit
+	// the gate (stake 0) so self-exclusion / cool-off block them too, while
+	// per-bet stake limits don't apply to position-closing sells.
+	if err := s.checkComplianceForOrder(ctx, userID, worstCaseSpend(req)); err != nil {
+		return nil, nil, err
+	}
+
 	// Branch on execution mode. Markets created before migration 019 default to
 	// 'amm'; new markets default to 'order_book'. The exchange path supports
 	// limit + market orders, partial fills, complementary issuance, and sells
 	// from existing positions; the AMM path stays buy-only for back-compat.
 	if market.ExecutionMode == ExecutionModeOrderBook {
-		return s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
+		o, t, perr := s.placeExchangeOrder(ctx, req, userID, market, idempotencyKey)
+		if perr == nil {
+			s.recordComplianceOrder(ctx, userID, realizedStakeCents(o))
+		}
+		return o, t, perr
 	}
 
 	if req.Action == OrderActionSell {
@@ -318,6 +427,7 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 			); err != nil {
 				return nil, nil, fmt.Errorf("persist filled order atomically: %w", err)
 			}
+			s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
 			return order, trade, nil
 		}
 	}
@@ -334,6 +444,7 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("persist filled order: %w", err)
 	}
 
+	s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
 	return order, trade, nil
 }
 
