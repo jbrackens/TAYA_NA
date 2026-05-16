@@ -173,3 +173,30 @@ to fully cover backoffice UI, run a dedicated preview/launch config for `office/
 :3001. No D-1/D-2 regressions; D-1 re-verified fixed via SX-01/02/15.
 
 **Bottom line:** §11 ship-clean (12/12, all guarded fixes held). §14 surfaces one real S2 (sell-side market-order matching) and one S3 (leaderboard settled column). Neither is a regression of this cycle's fixes; D-1 is the highest-value follow-up.
+
+---
+
+## §16 — Full-corpus rerun (post D-1 + D-2 fixes)
+
+Re-ran the **entire** suite (§11 + §14 + §15 = 57 scenarios) on a fresh stack
+(dev server restarted + `.next/cache` cleared, reseed + gateway restart with
+both fixes built in, fresh login, clean console). Purpose: confirm D-1
+(`2301aeea`) and D-2 (`8e789950`) hold and nothing regressed.
+
+**Verdict: 55 PASS · 2 PARTIAL (SX-19/20 backoffice — preview origin-lock, no defect) · 0 failures · 0 new defects.**
+
+| Suite | This rerun | vs prior |
+|---|---|---|
+| §11 (12 P0) | **12/12 PASS**, console clean | unchanged (clean) |
+| §14 (BX-01..25) | **25/25 PASS** | **BX-18 FAIL→PASS**, **BX-12 FAIL→PASS** |
+| §15 (SX-01..20) | **18 PASS / 2 PARTIAL / 0 defects** | unchanged |
+
+**Headline regressions-now-fixed, re-verified live this run:**
+- **BX-18 / D-1** (sell-side matching + seller proceeds): `Available 536` → market sell **filled 35**, position 536→501, wallet **+$4.55** (35×13¢), wallet_ledger `credit $4.55 secondary fill proceeds`. Was 0-fill/cancelled. **PASS.**
+- **BX-12 / D-2** (accuracy SETTLED column): accuracy entries API now returns `settledCount` (u-1 70%/**10**, user-001 53.8%/26, …); UI renders the number. Was "—" for all rows. **PASS.**
+
+**D-1 independently re-confirmed 3× more** this run: SX-02 ($25 sell filled 178, pos 501→323 no-negative, +$22.01 exact), SX-15 (wallet_ledger reconciles to balance — the apparent $1 delta was a same-timestamp `ORDER BY … LIMIT 1` tie in my probe, not a product gap; the true final ledger row = wallet_balances exactly; `secondary fill proceeds` credits present), BX-14 (contrarian sell-side mechanics truthful).
+
+**Documented caveats (unchanged, not defects):** BX-06 (max open YES 81¢, no ≥85¢ — seed settles near-certain markets), BX-07 (politics canonical markets settled — gotcha-#1 class), SX-05 (IMP "thin" market partial-fills via issuance — truthful, S1 invariant holds), SX-08 (MAX known-issue, safely disabled), SX-18 (Sharpness 1 qualifier — MinSettled+volume-floor vs seed), SX-19/20 (preview can't reach backoffice :3001; admin auth + data layer verified via HTTP, no defect).
+
+**Conclusion:** Both defects found this session are fixed and stay fixed across a full re-run; no regressions anywhere in the 57-scenario corpus. Suite is green modulo the documented seed/threshold/known-issue/harness caveats.
