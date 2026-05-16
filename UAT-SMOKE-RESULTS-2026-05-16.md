@@ -90,6 +90,7 @@ Known-issue?: no — distinct from TC-D03 thin-book (there the book is empty; he
 ```
 **Impact:** Journeys 7 (cross-platform arbitrageur), 43 (portfolio manager), 44 (tax-aware closer) — a user cannot exit a position via market sell. Truthful failure (0-fill correctly reported as cancelled, no false "Sold" toast, no balance/position corruption → **not S1**), but the position-exit path is non-functional. Buy-side market matching works (TC-D01 filled 162/178), so the defect is asymmetric to the SELL path.
 **Fix direction:** investigate the IOC market-sell matching path — the sell of YES is not crossing into resting YES bids (engine may be matching sell-YES against YES *asks* (empty) instead of YES *bids*, or a marketable-sell slippage guard is rejecting at the best bid). Add an integration test: seed a YES bid, hold a YES position, market-sell, assert fill + position decrement + wallet credit.
+**Status: FIXED — commit `2301aeea`.** Root cause was deeper than the matching gate: `BuildPlan` gated the secondary loop Buy-only, AND the exchange settlement path never credited sellers at all. Both fixed (ungate secondary for sells; add `plan.SellerCredits` consumed in `PersistMatchAtomic`). Re-verified live + 3× in §15 (SX-01/02/15).
 
 ### D-2 — Accuracy leaderboard SETTLED column unpopulated (S3)
 
@@ -108,6 +109,7 @@ Known-issue?: no
 ```
 **Impact:** Journeys 11 (copy-trader), 19 (reputation forecaster) — the accuracy % and rank (the primary signals) are present and correct, so the workflow still functions; the per-trader sample-size context is missing. Cosmetic/informational. The viewer's *own* accuracy denominator IS shown elsewhere ("7/10" on /portfolio and /account).
 **Fix direction:** include `settledCount` in the leaderboard entries projection and render it in the SETTLED column (the value exists server-side — it's the accuracy denominator).
+**Status: FIXED — commit `8e789950`.** ListEntries enriches accuracy entries with a grouped `COUNT` over `prediction_payouts` in the snapshot window (mirrors the RecomputeAccuracy denominator); read-only, scoped to the accuracy board, no migration. HTTP regression test added; gateway suite 24/24, app gate 8/8. Verified live: SETTLED column shows 10/20/18/19/25 (u-1=10 matches portfolio "7/10"), no "—".
 
 ---
 
@@ -125,8 +127,8 @@ Known-issue?: no
 | F-3 withdrawal BAL invisible / no timing | **Closed** — TC-G03 PASS, header BAL + cashier RESERVED move in-tab |
 | F-4 History >100¢ | **Closed** — u-1 History clean (0–99¢), 10 rows |
 | F-2 mobile nav | **Closed** — BX-25 bottom nav works at 375px |
-| — | **NEW D-1 (S2)** market SELL 0-fill — not previously exercised this way |
-| — | **NEW D-2 (S3)** accuracy SETTLED column "—" |
+| — | **D-1 (S2)** market SELL 0-fill — found & **FIXED** (`2301aeea`); exposed+fixed missing seller-proceeds settlement |
+| — | **D-2 (S3)** accuracy SETTLED column "—" — found & **FIXED** (`8e789950`) |
 
 ---
 
