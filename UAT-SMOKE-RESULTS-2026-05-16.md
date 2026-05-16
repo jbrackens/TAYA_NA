@@ -1067,3 +1067,166 @@ wired) `SetBetLimit`/`SetDepositLimit` still apply increases immediately —
 needs the same deferral when wired; folds into the existing
 "`rg_postgres` dormant/owed §20 item #2" residual, consistent with how
 D-5/D-7/D-11's rg_postgres parity has been handled.
+
+## §29 — Parallel triage of remaining smoke backlog (LC-20/36/38/05/13/D-4)
+
+Approach (user asked to parallelize): investigation/triage fanned out to
+**5 read-only Agent subagents** (one per independent item; no edits, no
+commits, each instructed to rigorously verify the *negative* per the
+LC-17/LC-22 pattern — a control may be surfaced in UI but not enforced
+on the money path). Remediation then ran **serial**, one atomic commit
+each, no-shortcuts (root-cause → fails-without/passes-with test → full
+suite → gate.sh → live-verify → codex for the money item → commit).
+
+### Triage verdicts
+
+| Item | Verdict | Evidence (file:line) |
+|---|---|---|
+| **LC-20** cool-off enforcement | ✅ **PASS** | Blocks the real order path via the same authoritative gate as self-exclusion (LC-21): `checkComplianceForOrder` at `internal/prediction/service.go:364` runs **before** the exec-mode branch and any wallet debit; `MockResponsibleGamblingService.CheckBetAllowed` consults `m.coolOffs` (`internal/compliance/mock_compliance.go:578-582`) returning `allowed=false`+`ErrUserBlocked` (authoritative, no dev fail-open — that branch only fires on `allowed==true && err!=nil`). Same wired instance the `/rg/cool-off` route writes (`internal/http/handlers.go:242-248`). D-6-safe: setter is `sessionBoundUserID` (`handlers.go:499`, covered by `TestRGMutations_SessionBound`). Irreversible: no user-facing cool-off clear/DELETE endpoint and no `delete(m.coolOffs,…)` anywhere — only lapses by time. |
+| **LC-36** double-submit guard | ✅ **PASS** | Client in-flight guard: `TradeTicket.tsx` `submitting` state, CTA `disabled={submitting||quantity<1}`, `handleSubmit` early-returns. Server closes the concurrent same-key race via DB UNIQUE (`prediction_orders.idempotency_key` `migrations/014_prediction_schema.sql:108`; `wallet_ledger UNIQUE(entry_type,user_id,idempotency_key)` `wallet/service.go:1642`) — racy SELECT loser's INSERT rolls back, returns existing, no double debit. |
+| **LC-38** network-drop idempotency | ❌→✅ **DEFECT S2 → FIXED** (D-12, commit `a4c8974e`) | Player app sent no `idempotencyKey`; server fabricated `auto:<…>:UnixNano()` per request. See D-12. |
+| **LC-05** deep-link→signup→returnUrl | ❌→✅ **DEFECT S3 → FIXED** (D-14, commit `cf488509`) | Confirmed still open: `login/page.tsx` register link static; `register/page.tsx` post-register hard-redirect to bare `/auth/login`, never read searchParams. See D-14. |
+| **LC-13** notification prefs persist | ❌→⚠️ **DEFECT S2 → interim shipped + full build tracked** (D-13, commit `aad654a9`) | Backend PUT writes an in-process map never read; load path stubbed; false "Preferences saved" toast = silent data loss. See D-13. |
+| **D-4** legacy `/prediction-admin/markets` empty | ✅ **PASS (not reproducible in code)** + **disposition corrected** | `containers/prediction-markets/index.tsx:58-69` DOES fetch via the same client as `/dashboard` — no wiring gap, no hardcoded `[]`, errors surfaced. **§17's "superseded surface" framing is REFUTED**: `pages/index.tsx:21-24` sends admins to `/dashboard`, but `/prediction-admin/markets` is a *live, linked, canonical* admin destination (`app/(dashboard)/dashboard/page.tsx:206` routes operators into it; lifecycle open/halt/close lives only there) — not redirected away (`next.config.js` only rewrites `/risk-management/*`). If the table is empty at runtime it is a **gateway/seed env condition**, to be re-filed against the gateway/seed, not this frontend. D-4 closed as not-reproducible-in-code (no frontend fix).
+
+### Scope decisions (AskUserQuestion, 2026-05-17)
+
+- **LC-38**: fix now, no-shortcuts, **client-side only** (server `UnixNano`
+  fallback intentionally left unchanged — see residual).
+- **LC-13**: **interim honest fix + track the full build**. Additionally,
+  `FEATURE_MANIFEST.json` notifications entry **stays `REAL`** per user
+  decision: flipping it to the honest `STUBBED` hard-fails GATE 5
+  (binary: any STUBBED/MISSING → fail; `gate.sh:205-209`). The manifest's
+  false-REAL is a *pre-existing* integrity issue, not weakened further as
+  an interim side-effect — recorded as a residual.
+- **LC-05**: fix now (small, frontend-only, no design choice).
+
+### D-12 — LC-38 network-drop idempotency: no stable client key (S2) — FIXED
+
+```
+[LC-38] Manual order re-submit after a dropped response double-executes
+Severity: S2   Priority: P1 (money path: double debit + double position)
+Env: code-traced + live-verified on rebuilt-not-needed gateway, 2026-05-17
+Repro: place order → response dropped → user clicks Buy again
+Actual: app omits idempotencyKey → server mints auto:<…>:UnixNano() per
+        request → second execution (second debit + second position)
+Expected: a retry of the same unconfirmed order is deduped (single debit)
+```
+**Root cause:** `PlaceOrderRequest.idempotencyKey` is optional
+(`api-client/src/prediction-types.ts:247`); `app/market/[ticker]/page.tsx`
+`handleSubmit` never set it; `prediction-client.ts:182` just serialized
+the body; server `ensureOrderIdempotencyKey` (`service.go:828-836`)
+fabricated a per-request `UnixNano` key. All D-1/D-5 server idempotency
+hardening was dead code for the real client.
+**Fix (`a4c8974e`):** new pure helper `app/lib/orderIdempotency.ts`
+(`orderSignature` over all order-defining fields + `resolveIdempotencyKey`
+reuse-on-matching-sig-while-pending). `handleSubmit` derives a stable key
+via `crypto.randomUUID`, holds it in `pendingIdemRef`, clears it
+**after** `placeOrder` resolves (success) and leaves it on throw so a
+manual retry of the same unconfirmed order reuses the key; a changed
+order or a post-success identical order gets a fresh key (no stale
+replay).
+**Verification (full no-shortcuts):** unit test imports the *real*
+helper (`app/__tests__/order-idempotency.test.ts`), fails-without/
+passes-with demonstrated (neutralized reuse branch → exactly the 2
+LC-38 dedupe tests fail, 5 pass; restored → 7/7). Full app suite
+127/127; gateway Go suite green (no Go change); gate.sh 8/8. **Live e2e
+on the real order path** (demo u-1, order_book market): placed a resting
+limit order with a fixed key, replayed the **same** key → identical
+order id, replay `reservedCashCents:0` (no second reservation), exactly
+**one** order with that key; probe cancelled (200), demo state clean.
+Independent **codex** review: **VERDICT CLEAN** (0 P1/0 P2 — examined
+the pending-ref lifecycle, single-slot edge, success-clear placement,
+signature completeness, crypto.randomUUID safety). Raw:
+`.codex-reviews/lc38-review-raw.txt`. **Status: RESOLVED.**
+
+### D-13 — LC-13 notification prefs not persisted; false success (S2) — INTERIM SHIPPED; full build TRACKED
+
+```
+[LC-13] "Preferences saved" toast shown while backend discards the data
+Severity: S2   Priority: P2 (silent data loss + false success claim)
+Env: player preview, 2026-05-17
+Repro: toggle a channel → Save → reload
+Actual: green "Preferences saved" toast; reload reverts (never persisted)
+Expected: either persist, or do not claim success
+```
+**Findings (code-confirmed, NOT a harness artifact):** Save →
+`updatePreferences` (`app/lib/api/user-client.ts:173-182`) → PUT
+`user_handlers.go:73-98` writes an in-process `sync.Map` (`profileStore`)
+that is **never read by anything** and dies on restart; no DB, no
+migration. The mount effect (`app/account/notifications/page.tsx:43-46`)
+is an explicit no-op (`// In a real app, we'd fetch this from the API`),
+so the page always re-seeds from hardcoded defaults. The 200 response
+drove a green "Preferences saved" success toast → silent data loss with
+a false success claim (S2).
+**Interim (`aad654a9`, per the LC-12 forgot-password precedent):** a
+persistent honest notice above the channels ("…aren't saved yet…won't
+persist…") and an honest `toast.info("Not saved yet", …)` on Save (no
+success claim; error path unchanged). No backend change.
+**Verification:** gate.sh 8/8; player preview — notice renders above the
+toggles; Save shows "Not saved yet"; the false "Preferences saved" /
+"have been updated" toast no longer appears (`bodyHasFalse:false`,
+`bodyHasHonest:true`).
+**Status: interim RESOLVED (false-success harm removed); real
+persistence UNBUILT — tracked** (see residuals).
+
+### D-14 — LC-05 signup drops deep-link returnUrl (S3) — FIXED
+
+```
+[LC-05] Signup path loses the deep-link destination (login path keeps it)
+Severity: S3   Priority: P3 (UX; not security/data — but the fix touches
+          the same-origin redirect guard, hardened below)
+Env: player preview, 2026-05-17
+Repro: deep-link a gated page → choose "Sign up" → register
+Actual: register link carried no returnUrl; post-register hard-redirect
+        to bare /auth/login → destination lost
+Expected: returnUrl threads through signup like it does through login
+```
+**Root cause:** `login/page.tsx` register `<Link>` was static;
+`register/page.tsx` post-register `window.location.href="/auth/login"`
+and never read `useSearchParams` (two compounding sub-bugs).
+**Fix (`cf488509`):** `safeReturnPath` extracted to a shared util
+`app/lib/safeReturnPath.ts` (so the same-origin / open-redirect guard
+cannot diverge between the two pages) + a `returnUrlSuffix` that forwards
+**only** a validated same-origin path. login threads it onto the
+register link; register threads it onto the post-register redirect and
+the sign-in link. The final honor site (`login` line ~52) still
+re-validates via `safeReturnPath` → an unsafe value is never forwarded
+or honored.
+**Verification:** unit test of the shared validator
+(`app/__tests__/safe-return-path.test.ts`, 7/7 — `//`, `https://`,
+backslash, relative → rejected; safe path round-trips); full app suite
+**134/134**; gate.sh 8/8; player preview — login→register and
+register→login links carry `?returnUrl=%2Fmarket%2F…` for a safe path
+and **drop it entirely** for `//evil.com` (open-redirect guard live-
+confirmed). **Status: RESOLVED.**
+
+### New tracked residuals (recorded, NOT fixed — by scope decision)
+
+8. **LC-13 notification-preferences persistence (full build)** — needs a
+   goose migration (`015_*`) + `Repository` persist/read +
+   real GET/PUT handlers (replace the dead `profileStore`) + a client
+   `getPreferences` + a real mount fetch. Also `emailFrequency` /
+   `categories` (local-only state, never sent) and the
+   `UpdatePreferencesRequest` shape. Interim honest notice ships in the
+   meantime (D-13).
+9. **`FEATURE_MANIFEST.json` false-REAL + GATE 5 incentive** — the
+   notifications entry is marked `REAL` but is a non-persisting stub; it
+   stays `REAL` only because GATE 5 binary-fails on any `STUBBED`
+   (`gate.sh:205-209`), which structurally rewards mismarking stubs as
+   REAL (other entries may be similarly inaccurate). Resolution options:
+   the full LC-13 build (makes it legitimately REAL) or teaching GATE 5
+   to honor an explicit tracked-stub annotation. Quality-infra decision,
+   deferred per user.
+10. **LC-38 server `UnixNano` fallback unchanged** — `ensureOrderIdempotencyKey`
+    still mints `auto:<…>:UnixNano()` when a client omits the key. The
+    player app now always sends a stable key, but any other/future client
+    that omits it is unprotected. Left as defense-in-depth-not-changed
+    per the LC-38 scope decision (client-side root-cause fix only);
+    noted for a future server-side hardening pass.
+
+**Net §29:** 5 triage subagents → LC-20 PASS, LC-36 PASS, D-4 PASS
+(disposition corrected — not a superseded surface), LC-38 FIXED (D-12,
+codex CLEAN, live-verified), LC-05 FIXED (D-14), LC-13 interim shipped
+(D-13) + full build tracked. 3 atomic commits (`a4c8974e`, `aad654a9`,
+`cf488509`). 3 new tracked residuals (#8–#10). No fabricated results.
