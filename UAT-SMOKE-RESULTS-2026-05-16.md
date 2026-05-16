@@ -386,3 +386,99 @@ padded. Recommended next: (1) enable RG/KYC/LIMITS flags + restart to run
 LC-16..22 (responsible-gaming is high-importance and currently unverifiable);
 (2) a focused pass for the 16 not-run (Groups D-rest/E/F), prioritizing
 money-path LC-36/38.
+
+---
+
+## §20 — RG flags ON: LC-16/17/23 run + LC-17 money-path fix (no-shortcuts pass)
+
+Enabled `NEXT_PUBLIC_FEATURE_RG/KYC/LIMITS=true` (player `.env.local`, gitignored
+local test artifact + `.claude/launch.json` env) and restarted the player
+preview so LC-16..23 are exercisable instead of flag-404'd.
+
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-23 RG surfaces render with flags on | ✅ PASS | `/account/self-exclude/` etc. render the real wizard, no 500 |
+| LC-16 deposit limit enforced | ✅ PASS | $10 daily deposit limit blocked a $50 deposit; balance unchanged (payments path already gated via `DepositComplianceChecker.CheckDepositAllowed`) |
+| LC-17 bet/stake limit enforced | ❌→✅ **FIXED** | was: $1 limit let a ~$25 order fill 148 shares (~$24.88 debited). See D-5. |
+
+### D-5 — Responsible-gambling bet limit not enforced on the prediction order path (S2)
+
+```
+[LC-17] User-set "Max Bet Amount" limit does not block prediction orders
+Severity: S2          Priority: P1
+Env: BASE=:3010 + gateway docker (rebuilt)  build=2d783d7f  seed-run=2026-05-16
+Step #: LC-17 — Limits tab → set Max Bet $1 → trade ~$25 on an open order_book market
+Expected: order rejected (bet limit exceeded), no debit, no position
+Actual (pre-fix): HTTP 201, order filled 148 shares, ~$24.88 debited — limit ignored
+Repro: always; reproduced live via API (login demo → set daily bet-limit 100c
+       → POST /api/v1/orders notionalCap 2500 → HTTP 201 filled)
+Evidence: bet-limits API showed usedCents climbing only AFTER fix wired RecordBet;
+          pre-fix CheckBetAllowed was never called by prediction.Service.PlaceOrder
+Known-issue?: no
+```
+**Impact:** Responsible-gambling control is regulatorily significant. Every
+journey that trades while a self-set limit (or self-exclusion / cool-off) is
+active — the limit/exclusion/cool-off was silently inert on the prediction
+money path. Deposits were gated (LC-16 PASS) but orders were not.
+
+**Root cause:** `prediction.Service` had **no compliance dependency at all**.
+`compliance.CheckBetAllowed` was only ever called by the legacy sportsbook
+`bets.Service`, which prediction orders never route through. The user-set
+limit was stored (the wired in-memory `MockResponsibleGamblingService`) but
+never consulted by `PlaceOrder` (either the AMM or order-book path).
+
+**Fix (no-shortcuts):**
+- Added decoupled `prediction.ComplianceChecker` interface (same pattern as
+  `WalletAdapter`; prediction does not import `compliance`).
+- `PlaceOrder` now gates through `checkComplianceForOrder` **before any wallet
+  debit or market mutation**, covering BOTH execution paths (inserted before
+  the execution-mode branch). Stake = `worstCaseSpend(req)` (price×qty for
+  limit buys, notional cap for market buys, 0 for sells so self-exclusion /
+  cool-off still block sells while per-bet stake limits don't).
+- `handlers.go` wires the **same** `rgService` instance the
+  `/api/v1/compliance/rg/*` routes write to, so a UI-set limit is the one the
+  order path reads.
+- **Self-review caught a real bug live** (codex independent review deferred —
+  see below): the wired RG service returns `(allowed=false, reason,
+  ErrBetLimitExceeded)` — a sentinel error *on a deliberate deny*. The first
+  cut treated any non-nil error as infra failure and **failed open in dev**,
+  so the live $25 order still went through. Corrected: `allowed==false` is
+  authoritative and blocks regardless of the error; env-based
+  fail-open(dev)/fail-closed(prod,staging) applies only to genuine infra
+  ambiguity (`allowed==true && err!=nil`).
+- **Second self-review finding, fixed:** `RecordBet` used
+  `order.TotalCostCents`, which on the order-book path is the *reserved
+  notional*, not realized spend (a 1-share fill had `totalCostCents:50` but
+  `capturedCashCents:19`). Over-counting would wrongly lock a user out for the
+  rest of the period after a thin/partial fill. Added `realizedStakeCents`
+  (captured cash for order-book fills; realized `TotalCostCents` for AMM;
+  0 when nothing filled) used at all 3 record sites. Idempotent re-POST
+  returns early before the gate/record, so no double-count.
+
+**Tests:** `compliance_gate_test.go` — gate blocks (incl. the sentinel-error
+deny that reproduced the live bug), records realized stake, nil checker = no-op,
+infra error fails open in dev / closed in prod+staging, and `realizedStakeCents`
+boundary table (the exact live 2500/2494 and 50/19 numbers). Full gateway suite
+**24/24**; pre-commit JS suite **120/0**.
+
+**Independent cross-model review: DEFERRED.** `codex exec` hit its usage limit
+(resets ~20:07 local). A rigorous skeptical **self-review** was done instead and
+found+fixed the two issues above. The codex pass on commit `2d783d7f` is still
+owed before this is considered fully cleared to the D-1 standard.
+
+**Live verification (rebuilt gateway container):**
+- ~$25 order vs $1 daily limit → **HTTP 400 "Bet limit exceeded for daily period"** (was: 201 filled).
+- $0.50 order under the $1 limit → **HTTP 201 filled** (gate is not blanket-blocking).
+- After fix, a filled order with cap 50¢ / captured 19¢ → `bet-limits used = 19c` (realized, not the 50c notional).
+- Demo (u-1) limit restored to effectively unlimited after the run.
+
+**Status: FIXED — commit `2d783d7f`.** Outstanding: (1) codex independent
+review (deferred, usage limit); (2) the wired RG service is the **in-memory
+mock** — limits do not persist across gateway restarts; production must wire
+`rg_postgres.go`, and that impl's infra-error return shape should be checked
+against the `allowed==false`-is-authoritative contract so a real DB outage
+fails *closed* as intended (not silently allowed).
+
+**Note:** `.env.local` (RG flags) is a gitignored local UAT artifact, not a
+committed config change; it was intentionally left out of commit `2d783d7f`
+(only `service.go`, `handlers.go`, `compliance_gate_test.go` staged).
