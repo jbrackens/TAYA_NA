@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	stdhttp "net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +19,50 @@ import (
 // DepositComplianceChecker is an optional interface for deposit limit checks.
 // If set, deposits are validated against responsible gaming limits before processing.
 var DepositComplianceChecker compliance.ResponsibleGamblingService
+
+// KYCGate is the optional KYC just-in-time gate for withdrawals (LC-22/D-8).
+// If set AND KYC_ENFORCEMENT is enabled, a withdrawal that would push the
+// user's cumulative cash-out past KYC_WITHDRAWAL_THRESHOLD_CENTS requires a
+// verified (or in-flight: pending) identity. Mirrors the DepositCompliance
+// Checker injection pattern; wired in internal/http/handlers.go.
+var KYCGate compliance.KYCService
+
+const defaultKYCWithdrawalThresholdCents int64 = 250000 // $2,500 cumulative
+
+// kycEnforcementEnabled reports whether the KYC JIT gate is active. Off by
+// default so non-KYC jurisdictions / local dev are unaffected.
+func kycEnforcementEnabled() bool {
+	v := strings.ToLower(strings.TrimSpace(os.Getenv("KYC_ENFORCEMENT")))
+	return v == "true" || v == "1" || v == "yes"
+}
+
+// kycWithdrawalThresholdCents is the cumulative cash-out above which KYC is
+// required. 0 (or unset-to-0) means every withdrawal requires KYC. A negative
+// or unparseable value falls back to the default.
+func kycWithdrawalThresholdCents() int64 {
+	raw := strings.TrimSpace(os.Getenv("KYC_WITHDRAWAL_THRESHOLD_CENTS"))
+	if raw == "" {
+		return defaultKYCWithdrawalThresholdCents
+	}
+	n, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || n < 0 {
+		return defaultKYCWithdrawalThresholdCents
+	}
+	return n
+}
+
+// kycStatusPasses returns true when the KYC status permits a gated
+// withdrawal. Per the LC-22 design decision, an in-flight (pending)
+// verification passes alongside a completed (approved) one; unverified /
+// declined / blocked / unknown all fail.
+func kycStatusPasses(status string) bool {
+	switch strings.ToLower(strings.TrimSpace(status)) {
+	case "approved", "pending":
+		return true
+	default:
+		return false
+	}
+}
 
 // RegisterPaymentRoutes registers all payment-related HTTP handlers
 func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
@@ -100,7 +145,46 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.BadRequest("paymentMethod is required", map[string]any{"field": "paymentMethod"})
 		}
 
-		result, err := service.InitiateWithdrawal(r.Context(), req.UserID, req.Amount, req.PaymentMethod)
+		// Bind to the authenticated session when present (this route is not
+		// public, so production always has one). The KYC gate must evaluate
+		// the real caller, and the withdrawal target must be the caller —
+		// not an arbitrary body userId.
+		userID := req.UserID
+		if sid := httpx.UserIDFromContext(r.Context()); sid != "" {
+			userID = sid
+		}
+
+		// KYC just-in-time gate (LC-22/D-8). Only when enforcement is enabled
+		// (off by default). A withdrawal that would push the user's
+		// cumulative cash-out past the threshold requires a verified or
+		// in-flight (pending) identity. KYC-service errors fail closed in
+		// production/staging, open in dev — mirrors the deposit RG check.
+		if KYCGate != nil && kycEnforcementEnabled() {
+			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+			defer cancel()
+			prior, perr := service.CumulativeWithdrawnCents(ctx, userID)
+			if perr != nil {
+				return httpx.Internal("withdrawal precheck failed", perr)
+			}
+			threshold := kycWithdrawalThresholdCents()
+			if prior+req.Amount > threshold {
+				st, kerr := KYCGate.GetVerificationStatus(ctx, userID)
+				if kerr != nil {
+					env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+					if env == "production" || env == "staging" {
+						slog.Error("kyc gate check failed", "user_id", userID, "env", env, "error", kerr)
+						return httpx.Forbidden("identity verification unavailable; withdrawal blocked")
+					}
+					slog.Warn("kyc gate check failed, allowing withdrawal in dev mode", "user_id", userID, "error", kerr)
+				} else if st == nil || !kycStatusPasses(st.Status) {
+					slog.Info("withdrawal blocked: KYC required above threshold",
+						"user_id", userID, "cumulative_cents", prior, "amount_cents", req.Amount, "threshold_cents", threshold)
+					return httpx.Forbidden("identity verification required to withdraw above this amount — complete verification under Profile → Verification")
+				}
+			}
+		}
+
+		result, err := service.InitiateWithdrawal(r.Context(), userID, req.Amount, req.PaymentMethod)
 		if err != nil {
 			return mapPaymentError(err)
 		}

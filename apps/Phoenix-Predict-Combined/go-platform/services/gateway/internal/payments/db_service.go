@@ -227,6 +227,28 @@ VALUES ($1, $2, 'withdrawal', $3, $4, 'pending', $5)`,
 	}, nil
 }
 
+// CumulativeWithdrawnCents sums the user's non-failed/non-cancelled
+// withdrawals for the KYC just-in-time threshold. A pending withdrawal still
+// counts — it represents committed cash-out intent for AML purposes.
+func (s *DBPaymentService) CumulativeWithdrawnCents(ctx context.Context, userID string) (int64, error) {
+	if userID == "" {
+		return 0, ErrInvalidUserID
+	}
+	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
+	defer cancel()
+
+	var total int64
+	err := s.db.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0)
+FROM payment_transactions
+WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','cancelled')`,
+		userID).Scan(&total)
+	if err != nil {
+		return 0, fmt.Errorf("sum cumulative withdrawals: %w", err)
+	}
+	return total, nil
+}
+
 func (s *DBPaymentService) GetPaymentMethods(ctx context.Context, userID string) ([]PaymentMethod, error) {
 	if userID == "" {
 		return nil, ErrInvalidUserID

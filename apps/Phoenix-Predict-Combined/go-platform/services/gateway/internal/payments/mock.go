@@ -168,6 +168,27 @@ func (m *MockPaymentService) InitiateWithdrawal(ctx context.Context, userID stri
 	return result, nil
 }
 
+// CumulativeWithdrawnCents sums the user's non-failed/non-cancelled
+// withdrawals for the KYC just-in-time threshold.
+func (m *MockPaymentService) CumulativeWithdrawnCents(ctx context.Context, userID string) (int64, error) {
+	if userID == "" {
+		return 0, ErrInvalidUserID
+	}
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var total int64
+	for _, wd := range m.withdrawals {
+		if wd.UserID != userID {
+			continue
+		}
+		if wd.Status == "failed" || wd.Status == "cancelled" {
+			continue
+		}
+		total += wd.Amount
+	}
+	return total, nil
+}
+
 // GetPaymentMethods returns mock payment methods
 func (m *MockPaymentService) GetPaymentMethods(ctx context.Context, userID string) ([]PaymentMethod, error) {
 	if userID == "" {

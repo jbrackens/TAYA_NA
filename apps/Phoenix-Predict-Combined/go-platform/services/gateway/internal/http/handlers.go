@@ -260,6 +260,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		paymentService = payments.NewMockPaymentService(walletService)
 	}
 	payments.DepositComplianceChecker = rgService
+	payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
 	payments.RegisterPaymentRoutes(mux, paymentService)
 
 	// --- Loyalty / Rewards ---

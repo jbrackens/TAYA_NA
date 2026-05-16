@@ -13,9 +13,11 @@ import (
 )
 
 type stubPaymentService struct {
-	depositCalls int
-	webhookCalls int
-	lastWebhook  WebhookPayload
+	depositCalls        int
+	webhookCalls        int
+	lastWebhook         WebhookPayload
+	cumulativeWithdrawn int64
+	withdrawalCalls     int
 }
 
 func (s *stubPaymentService) InitiateDeposit(ctx context.Context, userID string, amountCents int64, paymentMethod string) (*DepositResult, error) {
@@ -29,8 +31,13 @@ func (s *stubPaymentService) InitiateDeposit(ctx context.Context, userID string,
 	}, nil
 }
 
-func (s *stubPaymentService) InitiateWithdrawal(context.Context, string, int64, string) (*WithdrawalResult, error) {
-	return &WithdrawalResult{}, nil
+func (s *stubPaymentService) InitiateWithdrawal(_ context.Context, userID string, amountCents int64, _ string) (*WithdrawalResult, error) {
+	s.withdrawalCalls++
+	return &WithdrawalResult{UserID: userID, Amount: amountCents, Status: "pending"}, nil
+}
+
+func (s *stubPaymentService) CumulativeWithdrawnCents(context.Context, string) (int64, error) {
+	return s.cumulativeWithdrawn, nil
 }
 
 func (s *stubPaymentService) GetPaymentMethods(context.Context, string) ([]PaymentMethod, error) {

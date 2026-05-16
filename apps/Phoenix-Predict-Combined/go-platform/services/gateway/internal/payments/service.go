@@ -23,6 +23,12 @@ type PaymentService interface {
 	// InitiateWithdrawal initiates a withdrawal transaction
 	InitiateWithdrawal(ctx context.Context, userID string, amountCents int64, paymentMethod string) (*WithdrawalResult, error)
 
+	// CumulativeWithdrawnCents returns the user's total withdrawn amount
+	// (pending + completed, excluding failed/cancelled) across all time.
+	// Used by the KYC just-in-time gate to decide when cumulative cash-out
+	// crosses the verification threshold.
+	CumulativeWithdrawnCents(ctx context.Context, userID string) (int64, error)
+
 	// GetPaymentMethods returns available payment methods for a user
 	GetPaymentMethods(ctx context.Context, userID string) ([]PaymentMethod, error)
 
