@@ -1,0 +1,45 @@
+    35		// CheckBetAllowed reports whether userID may commit stakeCents on a new
+    36		// order. reason is a human-readable rejection message when allowed is false.
+    37		CheckBetAllowed(ctx context.Context, userID string, stakeCents int64) (allowed bool, reason string, err error)
+    38		// RecordBet records committed stake for cumulative period-limit tracking.
+    39		RecordBet(ctx context.Context, userID string, stakeCents int64) error
+    40		// ReleaseBet reverses previously-recorded committed stake when a
+    41		// reservation is freed without being spent (cancel / expire / the
+    42		// unfilled remainder of a partial or market order). committedAt is when
+
+codex
+VERDICT: 1 P1, 2 P2
+
+1. [P1] (confidence: 9/10) `internal/payments/handlers.go:165`, `:170`, `:187`; `internal/payments/db_service.go:207`, `:241` — TOCTOU threshold bypass. The gate does `sum -> compare -> insert` outside one transaction/lock. Two concurrent unverified withdrawals can both read the same prior total, each pass `prior+amount <= threshold`, then both insert pending withdrawals and push cumulative over threshold.
+
+2. [P2] (confidence: 9/10) `internal/payments/handlers.go:152` — no-session fallback still uses body `userId`. With normal gateway auth this is pre-blocked, and when session exists KYC check + withdrawal target use the same session identity. But if the handler runs without auth context, it falls back to attacker-controlled body `userId`, unlike `sessionBoundUserID`.
+
+3. [P2] (confidence: 8/10) `internal/compliance/handlers.go:157`, `:164`, `:168`; `talon-backoffice/.../compliance-client.ts:262` — `kyc/submit-document` is now session-bound once reached, but it only accepts JSON camelCase `userId`/`type`; existing upload code sends multipart snake_case `user_id`/`document_type`, so that path 400s before session binding.
+
+PASS checks:
+- Exact threshold uses `>` at `internal/payments/handlers.go:170`, matching “exceed”; zero threshold means every positive withdrawal gates.
+- Negative/zero amounts blocked at `internal/payments/handlers.go:141`.
+- Cumulative counts pending/processed/etc. and excludes failed/cancelled at `internal/payments/db_service.go:244`, mock equivalent at `internal/payments/mock.go:184`.
+- Sum error blocks at `internal/payments/handlers.go:166`; KYC error fails closed in production/staging and open in dev at `:173`.
+- Profile uses validated session, not requested user, and fails safe unverified: `internal/http/user_handlers.go:148`, `:163`, `:166`.
+- `kyc/verify` and `submit-document` mutation targets use `sessionBoundUserID`: `internal/compliance/handlers.go:117`, `:122`, `:172`, `:185`.
+- Architecture: payments already depended on compliance for deposit RG; prediction remains decoupled via interface. Review only; no tests run.
+2026-05-16T21:46:00.906534Z ERROR codex_core::session: failed to record rollout items: thread 019e32bd-d715-73f3-adb1-e245b29cf53a not found
+tokens used
+134,308
+VERDICT: 1 P1, 2 P2
+
+1. [P1] (confidence: 9/10) `internal/payments/handlers.go:165`, `:170`, `:187`; `internal/payments/db_service.go:207`, `:241` — TOCTOU threshold bypass. The gate does `sum -> compare -> insert` outside one transaction/lock. Two concurrent unverified withdrawals can both read the same prior total, each pass `prior+amount <= threshold`, then both insert pending withdrawals and push cumulative over threshold.
+
+2. [P2] (confidence: 9/10) `internal/payments/handlers.go:152` — no-session fallback still uses body `userId`. With normal gateway auth this is pre-blocked, and when session exists KYC check + withdrawal target use the same session identity. But if the handler runs without auth context, it falls back to attacker-controlled body `userId`, unlike `sessionBoundUserID`.
+
+3. [P2] (confidence: 8/10) `internal/compliance/handlers.go:157`, `:164`, `:168`; `talon-backoffice/.../compliance-client.ts:262` — `kyc/submit-document` is now session-bound once reached, but it only accepts JSON camelCase `userId`/`type`; existing upload code sends multipart snake_case `user_id`/`document_type`, so that path 400s before session binding.
+
+PASS checks:
+- Exact threshold uses `>` at `internal/payments/handlers.go:170`, matching “exceed”; zero threshold means every positive withdrawal gates.
+- Negative/zero amounts blocked at `internal/payments/handlers.go:141`.
+- Cumulative counts pending/processed/etc. and excludes failed/cancelled at `internal/payments/db_service.go:244`, mock equivalent at `internal/payments/mock.go:184`.
+- Sum error blocks at `internal/payments/handlers.go:166`; KYC error fails closed in production/staging and open in dev at `:173`.
+- Profile uses validated session, not requested user, and fails safe unverified: `internal/http/user_handlers.go:148`, `:163`, `:166`.
+- `kyc/verify` and `submit-document` mutation targets use `sessionBoundUserID`: `internal/compliance/handlers.go:117`, `:122`, `:172`, `:185`.
+- Architecture: payments already depended on compliance for deposit RG; prediction remains decoupled via interface. Review only; no tests run.

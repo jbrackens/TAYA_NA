@@ -805,3 +805,88 @@ it changes observable /profile behavior and is entangled with the larger
 build, so deferred to the scope decision.
 
 **Status: OPEN — investigated & recorded; awaiting scope decision.**
+
+## §25 — LC-22 / D-8: KYC just-in-time gate BUILT (no-shortcuts)
+
+User authorized building the full gate. Policy decisions (locked with the
+user): gated action = **withdrawals**; KYC required once cumulative
+non-failed/cancelled withdrawals + this amount exceed
+`KYC_WITHDRAWAL_THRESHOLD_CENTS` (default $2,500; 0 = always); pass states =
+**approved OR pending**; enable via `KYC_ENFORCEMENT` env (OFF by default);
+KYC-service error fails **closed** in prod/staging, open in dev; gate +
+withdrawal bind to the authenticated session; profile reports real status;
+"Start Verification" wired to the mock verify endpoint (real provider out
+of scope).
+
+**Commits:** `9ead7c60` (core withdrawal gate + `CumulativeWithdrawnCents`
++ `payments.KYCGate` + env flag/threshold + session-bind), `02d162a9`
+(profile real KYC status + UI badge enum + verify-flow wiring +
+`kyc/verify`/`submit-document` D-6 session-bind + `TestKYCMutations_
+SessionBound`), `e4d18a80` (verifyIdentity CSRF fix + withdraw
+no-session/​mismatch hardening).
+
+**Verification (full no-shortcuts):**
+- Unit: `TestWithdraw_KYCJustInTimeGate` 9 subtests (below/above threshold,
+  unverified/approved/pending, enforcement off, fail-closed-prod/open-dev,
+  no-session-403, body-mismatch-403) — fails-without/passes-with;
+  `TestKYCMutations_SessionBound`. Full gateway suite **24/24**. Player
+  `gate.sh` **8/8** (TS, next build, manifest, …) — run twice.
+- API live e2e (rebuilt gateway, `KYC_ENFORCEMENT=true`, threshold $10 via
+  a temporary, since-removed compose override): profile `kyc_status`
+  returns **real** `unverified` (was hardcoded "verified"); unverified $15
+  withdrawal (> $10) → **HTTP 403 "identity verification required…"**;
+  cross-user `kyc/verify` → **403** (D-6 parity); self-verify → 200;
+  profile then → `approved`; verified $15 withdrawal → **HTTP 201**.
+- Preview (player /profile Verification tab): renders the real status
+  badge; **live-verify caught a real bug** — `verifyIdentity` used a raw
+  fetch and dropped the CSRF double-submit header, so the wired button
+  always 403'd in-browser ("missing CSRF token header") despite the curl
+  e2e passing. Fixed (use `apiClient.post`) and re-verified in-page:
+  `POST /api/v1/compliance/kyc/verify` → **200 "approved"**. (Same class
+  of lesson as LC-17: unit/API green, real client path broken — live-verify
+  earned its keep.) The CDP tab-click deadzone (primer-documented) was
+  worked around via a native `.click()`.
+
+**Independent codex review (`.codex-reviews/lc22-review-raw.txt`): 1 P1, 2 P2.**
+- **P2 (fixed, `e4d18a80`):** withdraw no-session fallback to body userId.
+- **P2 (tracked, pre-existing, not introduced here):** `uploadKycDocument`
+  posts multipart snake_case `user_id`/`document_type` while
+  `kyc/submit-document` expects JSON camelCase, so that legacy upload path
+  400s before session binding. The verify flow wired here uses
+  `kyc/verify` (works); `submit-document` mismatch is a separate
+  pre-existing defect — tracked, not in LC-22 scope.
+- **P1 (OPEN — D-9):** TOCTOU threshold bypass — see below.
+
+**Status: D-8 RESOLVED for the gate, profile honesty, verify flow, and
+session-binding** (built, codex-confirmed for those, live-verified, all
+suites green). Remaining: the codex P1 TOCTOU (D-9) — same class as the
+codex round-1 #4 RG-gate TOCTOU that was scoped as a *tracked residual*;
+surfaced for a consistent scope decision rather than unilaterally deferred
+or refactored.
+
+### D-9 — KYC withdrawal-threshold gate is check-then-act (TOCTOU) (S2, OPEN)
+
+```
+[codex LC-22 P1, conf 9/10] sum → compare → insert not atomic
+Severity: S2   Priority: P1 (AML/compliance gate)
+Loci: internal/payments/handlers.go (gate: CumulativeWithdrawnCents →
+      compare → InitiateWithdrawal); db_service.go InitiateWithdrawal
+      INSERT. The cumulative read, threshold comparison, and the
+      pending-withdrawal insert are not under one tx / per-user lock.
+Exploit: N concurrent unverified withdrawals each read the same prior
+      cumulative, each individually pass prior+amount ≤ threshold, then
+      all insert — pushing realized cumulative cash-out past the KYC
+      threshold without verification. Bounded to ~one threshold-crossing
+      window (subsequent withdrawals see the recorded total and gate).
+Class: identical to codex round-1 RG-gate finding #4 (check-vs-record
+      TOCTOU), which the user scoped as a documented tracked residual.
+      KYC/AML weighting is higher than a soft RG limit, hence surfaced
+      explicitly rather than auto-deferred.
+Correct fix: serialize the gate+withdrawal per user — e.g. a pg advisory
+      xact lock keyed by userID around (sum → decide → insert), or move
+      the cumulative sum + gate decision + withdrawal insert into one
+      DBPaymentService transaction with appropriate row locking. Non-
+      trivial concurrency change to the payments flow.
+Status: OPEN — awaiting scope decision (fix now under no-shortcuts vs.
+      track like the RG-gate TOCTOU).
+```
