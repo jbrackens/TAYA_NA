@@ -1,0 +1,31 @@
+7f7397fe
+codex
+The UI call sites await success but do not read the mutation response fields, so the read-back miss path removing `amountCents`/`deferred` does not appear to break a local consumer. I’m running the focused compliance tests to catch compile/format regressions.
+exec
+/bin/zsh -lc 'go test ./internal/compliance' in /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway
+ succeeded in 259ms:
+ok  	phoenix-revival/gateway/internal/compliance	(cached)
+
+exec
+/bin/zsh -lc 'go test -race ./internal/compliance' in /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway
+ succeeded in 2510ms:
+ok  	phoenix-revival/gateway/internal/compliance	1.544s
+
+codex
+VERDICT: CLEAN
+
+P2(a) fixed: [mock_compliance.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/mock_compliance.go:638) copies each limit into local `c`, refreshes `&c`, and writes only into a new output slice. [types.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/types.go:44) limit structs are scalar-only, no shared pointer/slice/map alias.
+
+P2(b) fixed: [handlers.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/handlers.go:270) and [handlers.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/handlers.go:346) only set `amountCents`/`deferred` after confirmed read-back; fallback sets `effectiveState` and does not echo the requested looser amount as effective.
+
+No introduced regression found. `/rg/restrictions` remains consistent with the same refresh helpers; no nil/format issue seen; local UI callers await the POSTs but do not consume `amountCents`/`deferred` from the response. Verified with `go test ./internal/compliance` and `go test -race ./internal/compliance`.
+2026-05-16T22:42:55.559629Z ERROR codex_core::session: failed to record rollout items: thread 019e32f3-7568-74e2-a7aa-317d34ba6266 not found
+tokens used
+90,774
+VERDICT: CLEAN
+
+P2(a) fixed: [mock_compliance.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/mock_compliance.go:638) copies each limit into local `c`, refreshes `&c`, and writes only into a new output slice. [types.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/types.go:44) limit structs are scalar-only, no shared pointer/slice/map alias.
+
+P2(b) fixed: [handlers.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/handlers.go:270) and [handlers.go](/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/go-platform/services/gateway/internal/compliance/handlers.go:346) only set `amountCents`/`deferred` after confirmed read-back; fallback sets `effectiveState` and does not echo the requested looser amount as effective.
+
+No introduced regression found. `/rg/restrictions` remains consistent with the same refresh helpers; no nil/format issue seen; local UI callers await the POSTs but do not consume `amountCents`/`deferred` from the response. Verified with `go test ./internal/compliance` and `go test -race ./internal/compliance`.

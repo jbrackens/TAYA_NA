@@ -1005,3 +1005,65 @@ interaction with period rollover) are product/compliance decisions.
 **Status: both OPEN — investigated & recorded; awaiting scope decision**
 (consistent with the LC-22/D-8 handling: regulatory feature builds with
 design choices, not mechanical fixes).
+
+## §28 — D-11 FIXED (loosen-limit cooldown); D-10 tracked (no-shortcuts)
+
+User decisions: build D-11 now with a **fixed 24h activation**; track D-10
+(reality-check timer) as a residual (no build).
+
+**D-10 (LC-18 reality-check timer): TRACKED, not built** — recorded §27.
+Larger session-tracking + acknowledge-to-continue UX feature project;
+revisit as its own scoped work. (No code change.)
+
+**D-11 (LC-19 loosen-limit cooldown): FIXED — commit `7f7397fe`; §27's
+D-11 "OPEN" is RESOLVED** (recorded here per the append-only rule).
+
+**Root cause:** `SetBetLimit`/`SetDepositLimit` applied any new amount —
+including an *increase* — immediately, so a user could remove their own
+protection instantly (regulator requirement: increases delayed, decreases
+immediate).
+
+**Fix:** `BetLimit`/`DepositLimit` gain `PendingLimitCents` +
+`PendingActivatesAt`. On set: a **raise** queues the increase at
+`now + 24h` and keeps the tighter limit effective; a **lower/equal**
+applies immediately and cancels any pending increase; a **first-ever**
+limit applies immediately (prospective — not a loosening). The matured
+pending is **lazily activated** in `refresh{Bet,Deposit}LimitState`, which
+runs on every read/enforce seam (`GetLimits`, `CheckBet/DepositAllowed`,
+`RecordBet`, `ReleaseBet`) — so `CheckBet/CheckDepositAllowed` enforce the
+effective (tighter) limit until activation, with no worker. D-7's
+no-usage-reset invariant is preserved (the `<=` path stays the D-7 path).
+Honest `Set*` handler responses (confirmed effective + pending, never the
+optimistic requested echo). `GetPlayerRestrictions` returns refreshed
+copies so `/rg/restrictions` is consistent without mutating shared state
+under the read lock.
+
+**Verification (full no-shortcuts):**
+- Unit: the D-7 test updated to D-11 semantics (raise deferred / tighten
+  cancels pending) keeping its no-reset invariant; new fails-without/
+  passes-with `TestMockSetBetLimit_LoosenDeferred_TightenImmediate_D11`
+  (deferred-then-activates, ~24h activation window, tighten cancels
+  pending) and `TestMockGetPlayerRestrictions_RefreshesMaturedPending_D11`.
+  Full gateway suite **24/24**; `go test -race ./internal/compliance`
+  clean.
+- Live (rebuilt gateway, demo u-1): first-set 1000c → immediate; loosen
+  1000→50000 → **deferred** (honest response `deferred=true`, effective
+  1000, pending 50000, activatesAt ≈24h); an order needing the looser
+  limit (committed 2400 > 1000) → **HTTP 400 "Bet limit exceeded"** (the
+  looser limit is NOT usable pre-cooldown — proven on the real order
+  path); tighten 1000→300 → **immediate**, pending cancelled. The 24h
+  activation itself is deterministically unit-covered (backdated
+  `PendingActivatesAt`); a live 24h wait is impractical.
+- Independent **codex**: review `0 P1` (no bypass — raise deferred,
+  equal/lower cancels pending, D-7 usage preserved, Check* enforce
+  effective limits) + 2 P2; both P2 fixed in the same commit; **codex
+  confirm-only re-review: CLEAN** (P2(a)/(b) fixed, no introduced
+  regression, no data race — copies under RLock; verified with
+  `go test -race`). Raw: `.codex-reviews/d11-review-raw.txt`,
+  `.codex-reviews/d11-rereview-raw.txt`.
+
+**Tracked residual (unchanged class):** `rg_postgres` (dormant, not
+wired) `SetBetLimit`/`SetDepositLimit` still apply increases immediately —
+needs the same deferral when wired; folds into the existing
+"`rg_postgres` dormant/owed §20 item #2" residual, consistent with how
+D-5/D-7/D-11's rg_postgres parity has been handled.

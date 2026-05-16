@@ -1,0 +1,40 @@
++	}
++	if err := service.SetBetLimit(ctx, "u-1", "daily", 2000); err != nil {
++		t.Fatalf("SetBetLimit (tighten): %v", err)
++	}
++	limits, _ = service.GetBetLimits(ctx, "u-1")
++	if limits[0].LimitCents != 2000 {
++		t.Fatalf("tighten must apply immediately: want effective 2000, got %d", limits[0].LimitCents)
++	}
++	if limits[0].PendingLimitCents != 0 || limits[0].PendingActivatesAt != "" {
++		t.Fatalf("tighten must cancel the pending increase, got pending=%d at=%q",
++			limits[0].PendingLimitCents, limits[0].PendingActivatesAt)
++	}
++}
++
+ // D-5 codex re-review round 3 (P1): a release from a cross-period cancel must
+ // NOT offset the current period's usage. A resting order placed in a prior
+ // period then cancelled today: its committed stake already aged out at the
+
+codex
+VERDICT: 0 P1, 2 P2
+
+1. [P2] `internal/compliance/mock_compliance.go:680` - `GetPlayerRestrictions` returns stored bet/deposit limits without `refresh*`, so `/rg/restrictions` can report a matured pending increase as still pending until another read/enforce path refreshes it.
+
+2. [P2] `internal/compliance/handlers.go:270`, `internal/compliance/handlers.go:339` - POST responses ignore read-back failure/missing period and fall back to `amountCents=req.AmountCents`, `deferred=false`. For a deferred raise, that can falsely echo the looser requested limit as effective.
+
+No P1 bypass found in mock Set/Check paths: raise is deferred, equal/lower cancels pending, D-7 usage is preserved, and CheckBet/CheckDeposit enforce effective limits. `rg_postgres` parity item, not counted: `SetBetLimit`/`SetDepositLimit` still apply immediately at `rg_postgres.go:92` and `rg_postgres.go:199`.
+
+Verified: `go test ./internal/compliance`.
+2026-05-16T22:37:40.033145Z ERROR codex_core::session: failed to record rollout items: thread 019e32ee-1dcd-7473-b05a-53b33ff9479e not found
+tokens used
+129,721
+VERDICT: 0 P1, 2 P2
+
+1. [P2] `internal/compliance/mock_compliance.go:680` - `GetPlayerRestrictions` returns stored bet/deposit limits without `refresh*`, so `/rg/restrictions` can report a matured pending increase as still pending until another read/enforce path refreshes it.
+
+2. [P2] `internal/compliance/handlers.go:270`, `internal/compliance/handlers.go:339` - POST responses ignore read-back failure/missing period and fall back to `amountCents=req.AmountCents`, `deferred=false`. For a deferred raise, that can falsely echo the looser requested limit as effective.
+
+No P1 bypass found in mock Set/Check paths: raise is deferred, equal/lower cancels pending, D-7 usage is preserved, and CheckBet/CheckDeposit enforce effective limits. `rg_postgres` parity item, not counted: `SetBetLimit`/`SetDepositLimit` still apply immediately at `rg_postgres.go:92` and `rg_postgres.go:199`.
+
+Verified: `go test ./internal/compliance`.
