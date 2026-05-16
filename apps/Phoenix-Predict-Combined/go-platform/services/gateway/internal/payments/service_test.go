@@ -2,7 +2,11 @@ package payments
 
 import (
 	"context"
+	"errors"
+	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"phoenix-revival/gateway/internal/wallet"
 )
@@ -487,5 +491,81 @@ func TestWithdrawalWebhookProcessedSetsProcessedAt(t *testing.T) {
 	}
 	if txn.ProcessedAt == "" {
 		t.Fatal("expected non-empty processedAt after processed webhook")
+	}
+}
+
+// D-9 (codex LC-22 P1): the KYC withdrawal-threshold gate must be
+// check-then-act-safe. InitiateGatedWithdrawal serializes (cumulative →
+// gate → record) per user. This asserts the contract deterministically:
+// the gate callback for the same user must NEVER run concurrently with
+// itself — if it does, two requests can each read the same prior
+// cumulative, each pass a threshold check, then both record (the TOCTOU
+// bypass). The gate sleeps briefly so that, absent per-user
+// serialization, concurrent invocations provably overlap (maxInFlight >
+// 1). With the per-user lock, maxInFlight stays 1 and exactly one
+// withdrawal succeeds for amount 600 / threshold 1000.
+func TestInitiateGatedWithdrawal_SerializesPerUser_NoTOCTOU(t *testing.T) {
+	svc, ws := newTestService(t)
+	seedWallet(t, ws, "u-toctou", 1_000_000) // ample funds; the gate, not balance, is the limiter
+
+	const (
+		amount    = int64(600)
+		threshold = int64(1000)
+		attempts  = 6
+	)
+	errBlocked := errors.New("kyc required")
+
+	var mu sync.Mutex
+	cur, maxInFlight := 0, 0
+	gate := func(cumulative int64) error {
+		mu.Lock()
+		cur++
+		if cur > maxInFlight {
+			maxInFlight = cur
+		}
+		mu.Unlock()
+
+		time.Sleep(8 * time.Millisecond) // widen the window; overlap iff not serialized
+
+		mu.Lock()
+		cur--
+		mu.Unlock()
+
+		if cumulative+amount > threshold {
+			return errBlocked
+		}
+		return nil
+	}
+
+	var success int64
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	for i := 0; i < attempts; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start // maximize contention
+			if _, err := svc.InitiateGatedWithdrawal(context.Background(), "u-toctou", amount, "card", gate); err == nil {
+				atomic.AddInt64(&success, 1)
+			}
+		}()
+	}
+	close(start)
+	wg.Wait()
+
+	// Primary, deterministic invariant: the per-user gate never overlaps.
+	if maxInFlight != 1 {
+		t.Fatalf("per-user serialization broken (TOCTOU): gate ran %d-way concurrent for one user, want 1", maxInFlight)
+	}
+	// Consequences of correct serialization.
+	if success != 1 {
+		t.Fatalf("want exactly 1 successful withdrawal under the threshold, got %d", success)
+	}
+	cumulative, err := svc.CumulativeWithdrawnCents(context.Background(), "u-toctou")
+	if err != nil {
+		t.Fatalf("CumulativeWithdrawnCents: %v", err)
+	}
+	if cumulative != amount {
+		t.Fatalf("cumulative cash-out %d != single allowed withdrawal %d (TOCTOU bypass)", cumulative, amount)
 	}
 }

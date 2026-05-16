@@ -159,37 +159,50 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.Forbidden("cannot withdraw for another user")
 		}
 
-		// KYC just-in-time gate (LC-22/D-8). Only when enforcement is enabled
-		// (off by default). A withdrawal that would push the user's
-		// cumulative cash-out past the threshold requires a verified or
-		// in-flight (pending) identity. KYC-service errors fail closed in
-		// production/staging, open in dev — mirrors the deposit RG check.
-		if KYCGate != nil && kycEnforcementEnabled() {
-			ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
-			defer cancel()
-			prior, perr := service.CumulativeWithdrawnCents(ctx, userID)
-			if perr != nil {
-				return httpx.Internal("withdrawal precheck failed", perr)
+		// KYC just-in-time gate (LC-22/D-8), evaluated atomically with the
+		// withdrawal record under a per-user lock to close the D-9 TOCTOU.
+		// Only when enforcement is enabled (off by default). A withdrawal
+		// that would push the user's cumulative cash-out past the threshold
+		// requires a verified or in-flight (pending) identity. KYC-service
+		// errors fail closed in production/staging, open in dev — mirrors
+		// the deposit RG check. The gate decision runs while the per-user
+		// lock is held; its error is captured and surfaced verbatim (it is
+		// an httpx error), distinct from payment-domain errors.
+		var gateErr error
+		gate := func(cumulative int64) error {
+			if KYCGate == nil || !kycEnforcementEnabled() {
+				return nil
 			}
 			threshold := kycWithdrawalThresholdCents()
-			if prior+req.Amount > threshold {
-				st, kerr := KYCGate.GetVerificationStatus(ctx, userID)
-				if kerr != nil {
-					env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
-					if env == "production" || env == "staging" {
-						slog.Error("kyc gate check failed", "user_id", userID, "env", env, "error", kerr)
-						return httpx.Forbidden("identity verification unavailable; withdrawal blocked")
-					}
-					slog.Warn("kyc gate check failed, allowing withdrawal in dev mode", "user_id", userID, "error", kerr)
-				} else if st == nil || !kycStatusPasses(st.Status) {
-					slog.Info("withdrawal blocked: KYC required above threshold",
-						"user_id", userID, "cumulative_cents", prior, "amount_cents", req.Amount, "threshold_cents", threshold)
-					return httpx.Forbidden("identity verification required to withdraw above this amount — complete verification under Profile → Verification")
-				}
+			if cumulative+req.Amount <= threshold {
+				return nil
 			}
+			gctx, gcancel := context.WithTimeout(r.Context(), 3*time.Second)
+			defer gcancel()
+			st, kerr := KYCGate.GetVerificationStatus(gctx, userID)
+			if kerr != nil {
+				env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
+				if env == "production" || env == "staging" {
+					slog.Error("kyc gate check failed", "user_id", userID, "env", env, "error", kerr)
+					gateErr = httpx.Forbidden("identity verification unavailable; withdrawal blocked")
+					return gateErr
+				}
+				slog.Warn("kyc gate check failed, allowing withdrawal in dev mode", "user_id", userID, "error", kerr)
+				return nil
+			}
+			if st == nil || !kycStatusPasses(st.Status) {
+				slog.Info("withdrawal blocked: KYC required above threshold",
+					"user_id", userID, "cumulative_cents", cumulative, "amount_cents", req.Amount, "threshold_cents", threshold)
+				gateErr = httpx.Forbidden("identity verification required to withdraw above this amount — complete verification under Profile → Verification")
+				return gateErr
+			}
+			return nil
 		}
 
-		result, err := service.InitiateWithdrawal(r.Context(), userID, req.Amount, req.PaymentMethod)
+		result, err := service.InitiateGatedWithdrawal(r.Context(), userID, req.Amount, req.PaymentMethod, gate)
+		if gateErr != nil {
+			return gateErr // httpx error from the KYC gate — surface verbatim
+		}
 		if err != nil {
 			return mapPaymentError(err)
 		}

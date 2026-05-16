@@ -40,6 +40,16 @@ func (s *stubPaymentService) CumulativeWithdrawnCents(context.Context, string) (
 	return s.cumulativeWithdrawn, nil
 }
 
+func (s *stubPaymentService) InitiateGatedWithdrawal(_ context.Context, userID string, amountCents int64, _ string, gate func(int64) error) (*WithdrawalResult, error) {
+	if gate != nil {
+		if err := gate(s.cumulativeWithdrawn); err != nil {
+			return nil, err
+		}
+	}
+	s.withdrawalCalls++
+	return &WithdrawalResult{UserID: userID, Amount: amountCents, Status: "pending"}, nil
+}
+
 func (s *stubPaymentService) GetPaymentMethods(context.Context, string) ([]PaymentMethod, error) {
 	return nil, nil
 }

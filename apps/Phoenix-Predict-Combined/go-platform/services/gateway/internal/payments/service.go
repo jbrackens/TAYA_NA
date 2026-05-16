@@ -29,6 +29,16 @@ type PaymentService interface {
 	// crosses the verification threshold.
 	CumulativeWithdrawnCents(ctx context.Context, userID string) (int64, error)
 
+	// InitiateGatedWithdrawal performs the cumulative-cash-out gate decision
+	// and the withdrawal record atomically under a per-user lock, closing
+	// the D-9 TOCTOU: without serialization, N concurrent withdrawals could
+	// each read the same prior cumulative, each pass a threshold check, and
+	// then all insert — crossing the KYC threshold unverified. gate is
+	// invoked with the user's current cumulative non-failed/cancelled
+	// withdrawal total *while the per-user lock is held*; a non-nil return
+	// aborts the withdrawal with exactly that error (no record, no hold).
+	InitiateGatedWithdrawal(ctx context.Context, userID string, amountCents int64, paymentMethod string, gate func(cumulativeWithdrawnCents int64) error) (*WithdrawalResult, error)
+
 	// GetPaymentMethods returns available payment methods for a user
 	GetPaymentMethods(ctx context.Context, userID string) ([]PaymentMethod, error)
 

@@ -249,6 +249,104 @@ WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','canc
 	return total, nil
 }
 
+// InitiateGatedWithdrawal serializes (cumulative-sum → gate decision →
+// withdrawal record) per user via a Postgres transaction-scoped advisory
+// lock, so concurrent withdrawals cannot each pass a threshold check and
+// then all insert (D-9 TOCTOU). Correct across multiple gateway instances —
+// pg_advisory_xact_lock is cluster-wide and auto-releases on commit/rollback.
+func (s *DBPaymentService) InitiateGatedWithdrawal(ctx context.Context, userID string, amountCents int64, paymentMethod string, gate func(cumulativeWithdrawnCents int64) error) (*WithdrawalResult, error) {
+	if userID == "" {
+		return nil, ErrInvalidUserID
+	}
+	if amountCents <= 0 {
+		return nil, ErrInvalidAmount
+	}
+	if paymentMethod == "" {
+		return nil, ErrInvalidPaymentMethod
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("begin gated withdrawal tx: %w", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback()
+		}
+	}()
+
+	// Per-user lock for the tx duration: serializes the sum→decide→insert
+	// critical section against other concurrent withdrawals for this user.
+	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, userID); err != nil {
+		return nil, fmt.Errorf("acquire withdrawal lock: %w", err)
+	}
+
+	var cumulative int64
+	if err = tx.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0)
+FROM payment_transactions
+WHERE user_id = $1 AND txn_type = 'withdrawal' AND status NOT IN ('failed','cancelled')`,
+		userID).Scan(&cumulative); err != nil {
+		return nil, fmt.Errorf("sum cumulative withdrawals: %w", err)
+	}
+
+	// Gate decision under the lock. A non-nil error aborts with exactly
+	// that error — no wallet hold, no record.
+	if gate != nil {
+		if gerr := gate(cumulative); gerr != nil {
+			return nil, gerr
+		}
+	}
+
+	// Hold funds, then record the pending withdrawal on the tx so the row
+	// is covered by the advisory lock and visible to the next serialized
+	// caller once committed.
+	reservation, err := s.walletService.Hold(wallet.HoldRequest{
+		UserID:        userID,
+		AmountCents:   amountCents,
+		ReferenceType: "withdrawal",
+		ReferenceID:   fmt.Sprintf("wdr:%s:%d", userID, time.Now().UTC().UnixNano()),
+		ExpiresIn:     24 * time.Hour,
+	})
+	if err != nil {
+		if errors.Is(err, wallet.ErrInsufficientFunds) {
+			return nil, ErrInsufficientFunds
+		}
+		return nil, fmt.Errorf("failed to hold funds: %w", err)
+	}
+
+	now := time.Now().UTC()
+	txnID := fmt.Sprintf("wdr:db:%d", now.UnixNano())
+	if _, err = tx.ExecContext(ctx, `
+INSERT INTO payment_transactions (txn_id, user_id, txn_type, amount_cents, payment_method, status, idempotency_key)
+VALUES ($1, $2, 'withdrawal', $3, $4, 'pending', $5)`,
+		txnID, userID, amountCents, paymentMethod, reservation.ID); err != nil {
+		_ = s.walletService.Release(reservation.ReferenceType, reservation.ReferenceID)
+		return nil, fmt.Errorf("create withdrawal record: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		_ = s.walletService.Release(reservation.ReferenceType, reservation.ReferenceID)
+		return nil, fmt.Errorf("commit gated withdrawal: %w", err)
+	}
+	committed = true
+
+	slog.Info("gated withdrawal initiated", "txn_id", txnID, "user_id", userID, "amount_cents", amountCents, "reservation", reservation.ID)
+	return &WithdrawalResult{
+		TransactionID: txnID,
+		UserID:        userID,
+		Amount:        amountCents,
+		Status:        "pending",
+		PaymentMethod: paymentMethod,
+		CreatedAt:     now.Format(time.RFC3339),
+		EstimatedAt:   now.Add(2 * time.Hour).Format(time.RFC3339),
+	}, nil
+}
+
 func (s *DBPaymentService) GetPaymentMethods(ctx context.Context, userID string) ([]PaymentMethod, error) {
 	if userID == "" {
 		return nil, ErrInvalidUserID

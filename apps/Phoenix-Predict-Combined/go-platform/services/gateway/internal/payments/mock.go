@@ -21,6 +21,10 @@ type MockPaymentService struct {
 	depositSeq     int64
 	withdrawalSeq  int64
 	transactionSeq int64
+	// userGateLocks serializes InitiateGatedWithdrawal per user (D-9). Keyed
+	// by userID → *sync.Mutex; the single-process mock analogue of the DB
+	// path's per-user pg advisory lock.
+	userGateLocks sync.Map
 }
 
 // NewMockPaymentService creates a new in-memory payment service
@@ -187,6 +191,30 @@ func (m *MockPaymentService) CumulativeWithdrawnCents(ctx context.Context, userI
 		total += wd.Amount
 	}
 	return total, nil
+}
+
+// InitiateGatedWithdrawal serializes (cumulative → gate → record) per user
+// with a per-user mutex — the single-process mock analogue of the DB path's
+// pg advisory lock (D-9 TOCTOU).
+func (m *MockPaymentService) InitiateGatedWithdrawal(ctx context.Context, userID string, amountCents int64, paymentMethod string, gate func(cumulativeWithdrawnCents int64) error) (*WithdrawalResult, error) {
+	if userID == "" {
+		return nil, ErrInvalidUserID
+	}
+	lkAny, _ := m.userGateLocks.LoadOrStore(userID, &sync.Mutex{})
+	lk := lkAny.(*sync.Mutex)
+	lk.Lock()
+	defer lk.Unlock()
+
+	cumulative, err := m.CumulativeWithdrawnCents(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if gate != nil {
+		if gerr := gate(cumulative); gerr != nil {
+			return nil, gerr
+		}
+	}
+	return m.InitiateWithdrawal(ctx, userID, amountCents, paymentMethod)
 }
 
 // GetPaymentMethods returns mock payment methods
