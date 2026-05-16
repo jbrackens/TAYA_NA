@@ -20,8 +20,9 @@ var _ ExchangeRepository = (*SQLRepository)(nil)
 //  2. pg_advisory_xact_lock(hashtext(market_id))
 //  3. Re-lock and verify market is still open (defends against drift)
 //  4. Apply HoldReservation (taker's cash hold) if present
-//  5. Apply CaptureReservations (per-fill partial debits)
+//  5. Apply CaptureReservations (per-fill partial debits — buyer)
 //  6. Apply ReleaseReservations (free uncaptured remainder)
+//  6b. Apply SellerCredits (secondary-fill proceeds — seller)
 //  7. INSERT trades
 //  8. UPDATE maker orders + taker order (fill state)
 //  9. Apply position mutations (group, load, mutate, upsert)
@@ -76,6 +77,15 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 	for _, rel := range plan.ReleaseReservations {
 		if err := walletAdapter.ReleaseReservationWithTx(ctx, tx, rel.Type, rel.ID); err != nil {
 			return fmt.Errorf("release %s:%s: %w", rel.Type, rel.ID, err)
+		}
+	}
+
+	// Seller proceeds on secondary fills: the buyer's captured cash (above)
+	// is credited to the seller. CreditKey is unique per trade so a retried
+	// persist is idempotent.
+	for _, sc := range plan.SellerCredits {
+		if err := walletAdapter.CreditWithTx(ctx, tx, sc.UserID, sc.AmountCents, sc.CreditKey, "secondary fill proceeds"); err != nil {
+			return fmt.Errorf("credit seller %s: %w", sc.UserID, err)
 		}
 	}
 

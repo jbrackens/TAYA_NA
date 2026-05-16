@@ -77,8 +77,22 @@ type MatchPlan struct {
 	HoldReservation     *ReservationHold     // taker's cash reservation
 	CaptureReservations []ReservationCapture // per-fill captures from holds
 	ReleaseReservations []ReservationRef     // refund the unfilled portion
+	// SellerCredits pay the seller's cash proceeds on secondary (same-side
+	// transfer) fills. The buyer's cash is captured via CaptureReservations;
+	// the matching credit to the seller goes here. Issuance fills mint
+	// contracts (both sides pay) and produce no SellerCredits.
+	SellerCredits []SellerCredit
 	// FillSummary is a succinct human-readable summary for logs/WS.
 	FillSummary string
+}
+
+// SellerCredit is a cash credit to a seller for proceeds on a secondary
+// fill. CreditKey is unique per trade for wallet idempotency (a retried
+// PersistMatchAtomic must not double-credit).
+type SellerCredit struct {
+	UserID      string
+	AmountCents int64
+	CreditKey   string
 }
 
 // ReservationRef identifies a wallet reservation by (type, id).
@@ -190,16 +204,68 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 		LedgerEntries:     []CollateralLedgerEntry{},
 	}
 
-	if taker.Action == OrderActionBuy {
-		// Match against secondary (resting opposite-action sells on same side)
-		// first, then complementary issuance against opposite-side buys.
-		for i := range input.MakersSecondary {
+	// Secondary matching (same-side transfer) runs for BOTH buy and sell
+	// takers. canCrossSecondary and LoadMakersForSecondary handle the role
+	// inversion: a Sell taker crosses resting Buy makers on the same side
+	// (taker sell vs maker buy). Sells never generate issuance (no naked
+	// shorts) — they only transfer existing shares via this path.
+	for i := range input.MakersSecondary {
+		if takerDone(&taker) {
+			break
+		}
+		maker := &input.MakersSecondary[i]
+		if !canCrossSecondary(&taker, maker) {
+			break // book ordered by price-time; no further crossing possible
+		}
+		if blocked, blockErr := applySelfMatch(&taker, maker); blockErr != nil {
+			return nil, blockErr
+		} else if blocked {
+			continue
+		}
+		if taker.PostOnly {
+			// Limit order set to post_only would take here — reject.
+			return nil, ErrPostOnlyWouldTake
+		}
+		fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
+		fillQty = capFillQtyByNotionalCap(&taker, fillQty, *maker.PriceCents)
+		if fillQty <= 0 {
+			continue
+		}
+		fillPrice := *maker.PriceCents // maker price wins on secondary
+		fillSecondary(plan, &taker, maker, fillQty, fillPrice, input.Now, input.IDFactory)
+	}
+
+	// Complementary issuance is Buy-only: a Buy taker mints new contracts
+	// against opposite-side Buy makers. A Sell taker has no issuance path
+	// (no naked shorts) — it is fully serviced by the secondary loop above.
+	//
+	// For limit orders the taker's PriceCents bounds feasibility:
+	// `taker_limit + maker_limit >= par`. For market orders the taker
+	// has no explicit limit, so we use par-1 (MaxTickPriceCents) as the
+	// implied taker price. That makes every in-band maker
+	// (price >= 1) feasible — the notional cap on the request limits
+	// total dollar exposure upstream.
+	//
+	// SMM Phase 1 surfaced that without this market-order issuance
+	// path, the default trade ticket got "cancelled — no matching
+	// liquidity" on every order_book market with only SMM-provided
+	// Buy-NO quotes. Users had to switch to Limit mode to get fills.
+	// Fixed here so market buys cross issuance correctly.
+	if taker.Action == OrderActionBuy && !takerDone(&taker) {
+		takerPriceForIssuance := MaxTickPriceCents
+		if taker.PriceCents != nil {
+			takerPriceForIssuance = *taker.PriceCents
+		}
+		for i := range input.MakersIssuance {
 			if takerDone(&taker) {
 				break
 			}
-			maker := &input.MakersSecondary[i]
-			if !canCrossSecondary(&taker, maker) {
-				break // book ordered by price-time; no further crossing possible
+			maker := &input.MakersIssuance[i]
+			if maker.PriceCents == nil {
+				continue
+			}
+			if !IssuanceFillFeasible(takerPriceForIssuance, *maker.PriceCents) {
+				break // book ordered by maker price; no further matches
 			}
 			if blocked, blockErr := applySelfMatch(&taker, maker); blockErr != nil {
 				return nil, blockErr
@@ -207,73 +273,20 @@ func (e *ExchangeEngine) BuildPlan(input MatchInput) (*MatchPlan, error) {
 				continue
 			}
 			if taker.PostOnly {
-				// Limit order set to post_only would take here — reject.
 				return nil, ErrPostOnlyWouldTake
 			}
 			fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
-			fillQty = capFillQtyByNotionalCap(&taker, fillQty, *maker.PriceCents)
+			// Issuance fills cost the taker (100 - maker_limit) per share,
+			// not the maker's limit price. Cap-check at the actual taker
+			// cost so a market BUY with notionalCapCents=N can't overshoot
+			// the reservation.
+			fillQty = capFillQtyByNotionalCap(&taker, fillQty, ComplementaryTakerPriceCents(*maker.PriceCents))
 			if fillQty <= 0 {
 				continue
 			}
-			fillPrice := *maker.PriceCents // maker price wins on secondary
-			fillSecondary(plan, &taker, maker, fillQty, fillPrice, input.Now, input.IDFactory)
-		}
-
-		// Complementary issuance against opposite-side Buy makers.
-		//
-		// For limit orders the taker's PriceCents bounds feasibility:
-		// `taker_limit + maker_limit >= par`. For market orders the taker
-		// has no explicit limit, so we use par-1 (MaxTickPriceCents) as the
-		// implied taker price. That makes every in-band maker
-		// (price >= 1) feasible — the notional cap on the request limits
-		// total dollar exposure upstream.
-		//
-		// SMM Phase 1 surfaced that without this market-order issuance
-		// path, the default trade ticket got "cancelled — no matching
-		// liquidity" on every order_book market with only SMM-provided
-		// Buy-NO quotes. Users had to switch to Limit mode to get fills.
-		// Fixed here so market buys cross issuance correctly.
-		if !takerDone(&taker) {
-			takerPriceForIssuance := MaxTickPriceCents
-			if taker.PriceCents != nil {
-				takerPriceForIssuance = *taker.PriceCents
-			}
-			for i := range input.MakersIssuance {
-				if takerDone(&taker) {
-					break
-				}
-				maker := &input.MakersIssuance[i]
-				if maker.PriceCents == nil {
-					continue
-				}
-				if !IssuanceFillFeasible(takerPriceForIssuance, *maker.PriceCents) {
-					break // book ordered by maker price; no further matches
-				}
-				if blocked, blockErr := applySelfMatch(&taker, maker); blockErr != nil {
-					return nil, blockErr
-				} else if blocked {
-					continue
-				}
-				if taker.PostOnly {
-					return nil, ErrPostOnlyWouldTake
-				}
-				fillQty := minInt(taker.RemainingQuantity, maker.RemainingQuantity)
-				// Issuance fills cost the taker (100 - maker_limit) per share,
-				// not the maker's limit price. Cap-check at the actual taker
-				// cost so a market BUY with notionalCapCents=N can't overshoot
-				// the reservation.
-				fillQty = capFillQtyByNotionalCap(&taker, fillQty, ComplementaryTakerPriceCents(*maker.PriceCents))
-				if fillQty <= 0 {
-					continue
-				}
-				fillIssuance(plan, &taker, maker, fillQty, input.Now, input.IDFactory)
-			}
+			fillIssuance(plan, &taker, maker, fillQty, input.Now, input.IDFactory)
 		}
 	}
-	// NOTE: sell-side matching reuses the same secondary path with role
-	// inversion (taker sell vs maker buy on the same side). The book-fetch
-	// in MakersSecondary supplies that ordering. canCrossSecondary handles
-	// both directions. Sells do not generate issuance (no naked shorts).
 
 	// Apply TIF to remainder.
 	if err := applyTIF(plan, &taker); err != nil {
@@ -410,6 +423,18 @@ func fillSecondary(plan *MatchPlan, taker, maker *Order, fillQty, fillPrice int,
 		AmountCents: int64(fillQty) * int64(fillPrice),
 		CaptureKey:  "prediction_fill:" + tradeID,
 	})
+
+	// Credit the seller's proceeds. A secondary fill is a same-side
+	// transfer: the buyer's captured cash (above) is paid to the seller.
+	// Without this the seller's position decrements but they receive
+	// nothing — silent value loss (UAT 2026-05-16 D-1, second-order).
+	if sellerID != nil {
+		plan.SellerCredits = append(plan.SellerCredits, SellerCredit{
+			UserID:      *sellerID,
+			AmountCents: int64(fillQty) * int64(fillPrice),
+			CreditKey:   "prediction_fill_proceeds:" + tradeID,
+		})
+	}
 
 	// Fee ledger entry (taker pays fee in v1; maker fee = 0).
 	if takerFee > 0 {

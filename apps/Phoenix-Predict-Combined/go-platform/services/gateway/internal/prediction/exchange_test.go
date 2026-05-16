@@ -163,6 +163,104 @@ func TestBuildPlan_BuyYesMatchesSellYesAtMakerPrice(t *testing.T) {
 	if int64(tr.FeeCents) != wantFee {
 		t.Errorf("expected taker fee %d, got %d", wantFee, tr.FeeCents)
 	}
+	// Maker is the seller here (bob) — must be credited proceeds too
+	// (10 × 55 = 550). Pre-fix, no secondary fill credited any seller.
+	if len(plan.SellerCredits) != 1 || plan.SellerCredits[0].UserID != "bob" || plan.SellerCredits[0].AmountCents != 550 {
+		t.Errorf("expected seller credit bob/550, got %+v", plan.SellerCredits)
+	}
+}
+
+// Regression (UAT 2026-05-16 D-1): a SELL taker must cross resting BUY
+// makers on the same side via the secondary path. BuildPlan previously
+// gated the secondary loop behind `if taker.Action == OrderActionBuy`, so
+// a market sell of a held position returned 0 fill and IOC-cancelled even
+// with resting bids in the book (reproduced 2/2 on UCL-BARCA-2526).
+func TestBuildPlan_SellYesMatchesRestingBuyYes(t *testing.T) {
+	e := NewExchangeEngine()
+	market := makeMarket()
+	taker := makeOrder("t", "alice", OrderSideYes, OrderActionSell, OrderTypeMarket, nil, 10)
+	maker := makeOrder("m", "bob", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(55), 10)
+
+	plan, err := e.BuildPlan(MatchInput{
+		Market: market, Taker: taker,
+		MakersSecondary: []Order{maker},
+		Now:             time.Now(), IDFactory: counterIDs(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(plan.Trades) != 1 {
+		t.Fatalf("expected 1 trade, got %d", len(plan.Trades))
+	}
+	tr := plan.Trades[0]
+	if tr.TradeKind != TradeKindSecondary {
+		t.Errorf("expected secondary, got %s", tr.TradeKind)
+	}
+	if tr.PriceCents != 55 {
+		t.Errorf("expected fill at maker price 55, got %d", tr.PriceCents)
+	}
+	if tr.SellerID == nil || *tr.SellerID != "alice" {
+		t.Errorf("expected seller=alice (taker), got %v", tr.SellerID)
+	}
+	if tr.BuyerID != "bob" {
+		t.Errorf("expected buyer=bob (maker), got %s", tr.BuyerID)
+	}
+	if plan.Taker.Status != OrderStatusFilled {
+		t.Errorf("expected taker status=filled, got %s", plan.Taker.Status)
+	}
+	if plan.Taker.RemainingQuantity != 0 {
+		t.Errorf("expected remaining=0, got %d", plan.Taker.RemainingQuantity)
+	}
+	// Seller (taker alice) must be credited proceeds = 10 × 55 = 550.
+	if len(plan.SellerCredits) != 1 {
+		t.Fatalf("expected 1 seller credit, got %d", len(plan.SellerCredits))
+	}
+	sc := plan.SellerCredits[0]
+	if sc.UserID != "alice" || sc.AmountCents != 550 {
+		t.Errorf("expected seller credit alice/550, got %s/%d", sc.UserID, sc.AmountCents)
+	}
+	if sc.CreditKey == "" {
+		t.Errorf("seller credit must have an idempotency key")
+	}
+}
+
+// Regression (UAT 2026-05-16 D-1): a SELL taker larger than the resting
+// bid depth fills what it can and IOC-cancels the remainder — it must NOT
+// return a 0-fill cancel. Mirrors the smoke partial (req=35, thin bids).
+func TestBuildPlan_SellYesPartialFillThenIOCCancel(t *testing.T) {
+	e := NewExchangeEngine()
+	market := makeMarket()
+	taker := makeOrder("t", "alice", OrderSideYes, OrderActionSell, OrderTypeMarket, nil, 35)
+	taker.TimeInForce = TIFIOC
+	maker := makeOrder("m", "bob", OrderSideYes, OrderActionBuy, OrderTypeLimit, intPtr(13), 20)
+
+	plan, err := e.BuildPlan(MatchInput{
+		Market: market, Taker: taker,
+		MakersSecondary: []Order{maker},
+		Now:             time.Now(), IDFactory: counterIDs(),
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(plan.Trades) != 1 {
+		t.Fatalf("expected 1 partial trade, got %d", len(plan.Trades))
+	}
+	if plan.Trades[0].Quantity != 20 {
+		t.Errorf("expected 20 filled, got %d", plan.Trades[0].Quantity)
+	}
+	if plan.Taker.FilledQuantity != 20 {
+		t.Errorf("expected taker filled=20, got %d", plan.Taker.FilledQuantity)
+	}
+	if plan.Taker.Status != OrderStatusCancelled {
+		t.Errorf("expected status=cancelled (IOC remainder), got %s", plan.Taker.Status)
+	}
+	// Seller credited only for the filled portion: 20 × 13 = 260.
+	if len(plan.SellerCredits) != 1 {
+		t.Fatalf("expected 1 seller credit, got %d", len(plan.SellerCredits))
+	}
+	if plan.SellerCredits[0].AmountCents != 260 {
+		t.Errorf("expected seller credit 260 (20×13), got %d", plan.SellerCredits[0].AmountCents)
+	}
 }
 
 func TestBuildPlan_BuyYesMatchesBuyNoIssuance(t *testing.T) {
