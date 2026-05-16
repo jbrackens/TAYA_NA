@@ -3,6 +3,7 @@ package prediction
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -207,6 +208,84 @@ func TestRealizedStakeCents(t *testing.T) {
 				t.Fatalf("realizedStakeCents = %d, want %d", got, c.want)
 			}
 		})
+	}
+}
+
+// D-5 codex review P1 #1: an AMM market buy whose real LMSR cost exceeds the
+// caller-supplied notionalCapCents must be rejected BEFORE execution. The RG
+// gate evaluates worstCaseSpend (= the cap for a market buy); the order-book
+// path clamps fills to that cap, but the AMM path did not — so a tiny cap let
+// a large LMSR spend both fat-finger the wallet and slip the RG gate (the gate
+// saw the small cap, the wallet was debited the real cost). Fails on pre-fix
+// code (order filled, wallet debited > cap, stake recorded > cap).
+func TestPlaceOrder_AMMMarketBuy_RejectedWhenCostExceedsNotionalCap(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo) // mkt-1: ExecutionMode unset → AMM path
+	wallet := newFakeWallet(1_000_000) // ample balance, so balance is not the blocker
+	svc := NewService(repo, wallet)
+
+	rg := &fakeCompliance{deny: false}
+	svc.SetComplianceChecker(rg)
+
+	tinyCap := int64(1) // 1 cent — far below the LMSR cost of qty 50
+	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:         "mkt-1",
+		Side:             OrderSideYes,
+		Action:           OrderActionBuy,
+		OrderType:        OrderTypeMarket,
+		Quantity:         50,
+		NotionalCapCents: &tinyCap,
+	}, "user1")
+
+	if err == nil {
+		t.Fatal("AMM market buy whose cost exceeds notionalCapCents must be rejected (D-5 P1 #1)")
+	}
+	if got := err.Error(); !strings.Contains(got, "exceeds notional cap") {
+		t.Fatalf("expected a notional-cap rejection, got %q", got)
+	}
+	if len(wallet.debitCalls) != 0 {
+		t.Errorf("rejected over-cap order must not debit the wallet; got %d", len(wallet.debitCalls))
+	}
+	if repo.persistCalls != 0 {
+		t.Errorf("rejected over-cap order must not persist; got %d", repo.persistCalls)
+	}
+	// The RG-soundness crux: the gate was evaluated on the under-estimated cap,
+	// but the order is now stopped before any debit, so the under-estimate can
+	// no longer be a vector to slip a large AMM spend past RG accounting.
+	if len(rg.checkCalls) != 1 || rg.checkCalls[0] != tinyCap {
+		t.Fatalf("expected gate evaluated once on the cap (%d); got %v", tinyCap, rg.checkCalls)
+	}
+	if len(rg.recordCalls) != 0 {
+		t.Errorf("rejected order must not record stake; got %v", rg.recordCalls)
+	}
+}
+
+// Guard: a legitimate AMM market buy whose cost is within the cap still fills
+// (the fix must not block valid orders — only those that exceed their cap).
+func TestPlaceOrder_AMMMarketBuy_WithinNotionalCap_StillFills(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo)
+	wallet := newFakeWallet(1_000_000)
+	svc := NewService(repo, wallet)
+	svc.SetComplianceChecker(&fakeCompliance{deny: false})
+
+	bigCap := int64(1_000_000) // generously above the LMSR cost of qty 10
+	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:         "mkt-1",
+		Side:             OrderSideYes,
+		Action:           OrderActionBuy,
+		OrderType:        OrderTypeMarket,
+		Quantity:         10,
+		NotionalCapCents: &bigCap,
+	}, "user1")
+	if err != nil {
+		t.Fatalf("AMM market buy within the notional cap must still fill, got %v", err)
+	}
+	if order == nil || trade == nil {
+		t.Fatal("expected a filled order and trade")
+	}
+	if order.TotalCostCents > bigCap {
+		t.Fatalf("filled cost %d must not exceed cap %d", order.TotalCostCents, bigCap)
 	}
 }
 

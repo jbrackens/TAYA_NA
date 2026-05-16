@@ -331,10 +331,23 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("AMM preview failed: %w", err)
 	}
 
+	totalCost := preview.TotalCost + preview.FeeCents
+
+	// Notional-cap ceiling — the order-book path clamps fills to
+	// notionalCapCents (capFillQtyByNotionalCap); the AMM path historically
+	// did not, so an LMSR cost above the cap both fat-fingered the wallet AND
+	// slipped the responsible-gambling gate, which evaluated worstCaseSpend
+	// (= cap for market buys, price×qty for limit buys) — not the real cost.
+	// Reject here, before ExecuteTrade mutates market state, so the RG gate's
+	// worst-case is an enforced upper bound on the AMM path too. (UAT
+	// 2026-05-16 D-5 codex review P1 #1.)
+	if cap := worstCaseSpend(req); cap > 0 && totalCost > cap {
+		return nil, nil, fmt.Errorf("order cost %d cents exceeds notional cap %d cents", totalCost, cap)
+	}
+
 	// Balance check — reject early before mutating anything. NoopWallet returns
 	// math.MaxInt64 so test paths that don't care about wallet state pass
 	// through; real wallets return actual balances and will reject correctly.
-	totalCost := preview.TotalCost + preview.FeeCents
 	if balance := s.wallet.Balance(userID); balance < totalCost {
 		return nil, nil, fmt.Errorf("insufficient balance: have %d cents, need %d cents", balance, totalCost)
 	}
