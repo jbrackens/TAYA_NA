@@ -12,19 +12,7 @@ import { useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
-
-// safeReturnPath validates a returnUrl query param before honoring it.
-// We accept only same-origin absolute paths so a crafted login link
-// cannot redirect a user to an attacker-controlled URL after sign-in.
-function safeReturnPath(raw: string | null): string {
-  if (!raw) return "/predict";
-  // Must start with a single slash and not include "//" (protocol-relative)
-  // or backslashes (some browsers normalize them to forward slashes).
-  if (!raw.startsWith("/") || raw.startsWith("//") || raw.includes("\\")) {
-    return "/predict";
-  }
-  return raw;
-}
+import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -58,6 +46,11 @@ export default function LoginPage() {
     },
     [username, password, login, router, searchParams],
   );
+
+  // LC-05: carry a deep-link returnUrl across to the sign-up flow so a
+  // user who chose "Sign up" from a gated page still lands back on it.
+  const registerHref =
+    "/auth/register" + returnUrlSuffix(searchParams.get("returnUrl"));
 
   return (
     <div className="la-shell">
@@ -145,7 +138,7 @@ export default function LoginPage() {
 
         <footer className="la-foot">
           New to Predict?{" "}
-          <Link href="/auth/register" className="la-link la-link-accent">
+          <Link href={registerHref} className="la-link la-link-accent">
             Create an account
           </Link>
         </footer>

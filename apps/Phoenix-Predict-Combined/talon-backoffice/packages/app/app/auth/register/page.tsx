@@ -9,7 +9,9 @@
 
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { register as registerUser } from "../../lib/api";
+import { returnUrlSuffix } from "../../lib/safeReturnPath";
 
 interface FormData {
   username: string;
@@ -57,6 +59,10 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  // LC-05: preserve a deep-link returnUrl threaded in from the login page
+  // so signup doesn't drop the user's original destination.
+  const searchParams = useSearchParams();
+  const returnSuffix = returnUrlSuffix(searchParams.get("returnUrl"));
 
   const update = useCallback(
     <K extends keyof FormData>(key: K, value: FormData[K]) => {
@@ -146,7 +152,7 @@ export default function RegisterPage() {
       });
       setSuccessMessage("Account created. Redirecting to sign-in…");
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        window.location.href = "/auth/login" + returnSuffix;
       }, 1500);
     } catch (err: unknown) {
       setErrorMessage(
@@ -155,7 +161,7 @@ export default function RegisterPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [form, validate]);
+  }, [form, validate, returnSuffix]);
 
   const progress = useMemo(() => (step / TOTAL_STEPS) * 100, [step]);
 
@@ -376,7 +382,7 @@ export default function RegisterPage() {
 
         <footer className="ra-foot">
           Already have an account?{" "}
-          <Link href="/auth/login" className="ra-link-accent">
+          <Link href={"/auth/login" + returnSuffix} className="ra-link-accent">
             Sign in
           </Link>
         </footer>
