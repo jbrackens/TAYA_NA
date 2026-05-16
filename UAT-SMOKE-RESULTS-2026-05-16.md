@@ -333,7 +333,7 @@ LC-23 run, 7 flag-blocked, 16 not run (budget).** No fabricated passes.
 | LC-09 anonymous toggle | ✅ PASS | flip → `/me/leaderboards` handle becomes "Trader #1", stats kept, reversible |
 | LC-10 change password | ✅ PASS | `/account/security/`: requires current pw (re-auth), min-12, Confirm; not executed on demo (irreversible-risk) — verified by inspection |
 | LC-11 change email | ⚠️ GAP (S3) | no change-email surface anywhere (consistent with email-not-a-credential finding) — not implemented |
-| LC-12 forgot-password | ❌ **FAIL (S2)** | form posts `POST /api/v1/auth/forgot-password/` → **404**. Account recovery is non-functional |
+| LC-12 forgot-password | ❌→⚠️ **ROOT-CAUSED + interim shipped** | Root cause: feature unimplemented backend-side (no `/api/v1/auth/forgot-password` route, no reset-token store/migration, no email delivery in stack — investigated, commit-logged). Was a dead form 404ing + false "check your email". Interim `591d645b`: honest "email support to recover" notice, no 404, gate 8/8. **Real reset feature still unbuilt** (tracked, not a regression) |
 | LC-13 notification prefs persist | ❌ **FAIL/suspect (S3)** | flipped toggle + Save + reload → reverted. Caveat: Save driven via React-onClick (harness pattern reliable elsewhere this session) → likely real non-persistence/STUB; flagged for network-confirmed repro |
 | LC-14 sensitive-change re-auth | ✅ PASS | password change requires current password (re-auth gate present); +2FA, +Active Sessions sections exist |
 | LC-15 account closure w/ open positions | ⚠️ GAP (S3) | no close/delete-account control anywhere. No silent loss (can't close); capability absent (GDPR/lifecycle gap) |
