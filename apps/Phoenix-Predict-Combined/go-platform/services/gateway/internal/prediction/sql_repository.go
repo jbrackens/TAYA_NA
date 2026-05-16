@@ -422,12 +422,14 @@ func (r *SQLRepository) createOrderWithExec(ctx context.Context, execer sqlRowEx
 		`INSERT INTO prediction_orders
 		 (user_id, market_id, side, action, order_type, price_cents,
 		  quantity, filled_quantity, remaining_quantity, total_cost_cents,
-		  status, wallet_reservation_id, idempotency_key, expires_at, filled_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+		  status, wallet_reservation_id, idempotency_key, expires_at, filled_at,
+		  reserved_cash_cents, captured_cash_cents)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
 		 RETURNING id, created_at, updated_at`,
 		o.UserID, o.MarketID, o.Side, o.Action, o.OrderType, o.PriceCents,
 		o.Quantity, o.FilledQuantity, o.RemainingQuantity, o.TotalCostCents,
 		o.Status, o.WalletReservationID, o.IdempotencyKey, o.ExpiresAt, o.FilledAt,
+		o.ReservedCashCents, o.CapturedCashCents,
 	).Scan(&o.ID, &o.CreatedAt, &o.UpdatedAt)
 }
 

@@ -403,16 +403,35 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 
 	totalCost := preview.TotalCost + preview.FeeCents
 
-	// Notional-cap ceiling — the order-book path clamps fills to
+	// Notional-cap ceiling. The order-book path clamps fills to
 	// notionalCapCents (capFillQtyByNotionalCap); the AMM path historically
-	// did not, so an LMSR cost above the cap both fat-fingered the wallet AND
-	// slipped the responsible-gambling gate, which evaluated worstCaseSpend
-	// (= cap for market buys, price×qty for limit buys) — not the real cost.
-	// Reject here, before ExecuteTrade mutates market state, so the RG gate's
-	// worst-case is an enforced upper bound on the AMM path too. (UAT
-	// 2026-05-16 D-5 codex review P1 #1.)
-	if cap := worstCaseSpend(req); cap > 0 && totalCost > cap {
-		return nil, nil, fmt.Errorf("order cost %d cents exceeds notional cap %d cents", totalCost, cap)
+	// did not, so an LMSR cost above the bound both fat-fingered the wallet
+	// AND slipped the RG gate, which evaluated worstCaseSpend — not the real
+	// cost. This is an AMM *buy* here (sells were rejected above). The gate
+	// already ran on worstCaseSpend(req); enforce that the actual cost does
+	// not exceed it. worstCaseSpend is 0 for a buy with neither a notional
+	// cap (market) nor a limit price — an unbounded order the gate could not
+	// meaningfully evaluate (stake 0). The HTTP handler rejects capless
+	// market buys, but the bot path calls PlaceOrder directly and bypasses
+	// that, so enforce it here at the service layer for every caller.
+	// (UAT 2026-05-16 D-5 codex review P1 #1 + re-review.)
+	bound := worstCaseSpend(req)
+	if bound > 0 && totalCost > bound {
+		// An explicit cap (market) or limit price was given and the real
+		// LMSR cost exceeds it — honor the user's bound (fat-finger / cap).
+		return nil, nil, fmt.Errorf("order cost %d cents exceeds notional cap %d cents", totalCost, bound)
+	}
+	if totalCost > bound {
+		// bound == 0: a capless market buy (or limit buy without price) the
+		// RG gate could only evaluate at stake 0 — i.e. it under-gated. The
+		// HTTP handler rejects capless market buys, but the bot path calls
+		// PlaceOrder directly and bypasses that. Re-run the RG gate against
+		// the *actual* cost before executing so the limit can't be slipped.
+		// No-op when no RG checker is wired (nil compliance), so legitimate
+		// unbounded AMM buys on the non-RG path are unaffected.
+		if err := s.checkComplianceForOrder(ctx, userID, totalCost); err != nil {
+			return nil, nil, err
+		}
 	}
 
 	// Balance check — reject early before mutating anything. NoopWallet returns

@@ -440,7 +440,14 @@ WHERE user_id = $1 AND activity_type = $2 AND created_at >= $3`,
 		slog.Error("rg: failed to query usage", "user_id", userID, "activity_type", activityType, "period", period, "error", err)
 		return 0
 	}
-	if total.Valid {
+	// Clamp at zero. ReleaseBet writes compensating negative "bet" rows; an
+	// orphan release (a cancel with no matching prior RecordBet — e.g. an
+	// order placed before this accounting existed, or a cross-period cancel)
+	// could otherwise drive the SUM negative, and CheckBetAllowed's
+	// `used + stake > limit` would then hand the user free headroom. The
+	// interface contract requires non-negative cumulative usage (mirrors the
+	// mock's clamp). D-5 codex re-review P1 #3.
+	if total.Valid && total.Int64 > 0 {
 		return total.Int64
 	}
 	return 0

@@ -13,10 +13,11 @@ import (
 // error is a *decision*, not an outage. A genuine "could not evaluate" infra
 // failure is modelled separately as (allowed=true, "", infraErr).
 type fakeCompliance struct {
-	deny        bool
-	reason      string
-	denyErr     error // returned alongside allowed=false on a deliberate deny
-	infraErr    error // returned alongside allowed=true (could not evaluate)
+	deny          bool
+	denyAtOrAbove int64 // if >0, deny only when stakeCents >= this (stake-aware)
+	reason        string
+	denyErr       error // returned alongside allowed=false on a deliberate deny
+	infraErr      error // returned alongside allowed=true (could not evaluate)
 	checkCalls   []int64
 	recordErr    error
 	recordCalls  []int64
@@ -27,6 +28,9 @@ type fakeCompliance struct {
 func (f *fakeCompliance) CheckBetAllowed(_ context.Context, _ string, stakeCents int64) (bool, string, error) {
 	f.checkCalls = append(f.checkCalls, stakeCents)
 	if f.deny {
+		return false, f.reason, f.denyErr
+	}
+	if f.denyAtOrAbove > 0 && stakeCents >= f.denyAtOrAbove {
 		return false, f.reason, f.denyErr
 	}
 	if f.infraErr != nil {
@@ -140,12 +144,18 @@ func TestPlaceOrder_RecordsRealizedStakeOnComplianceSuccess(t *testing.T) {
 	rg := &fakeCompliance{deny: false}
 	svc.SetComplianceChecker(rg)
 
+	// A real RG-gated market buy carries a notional cap (the HTTP handler
+	// requires one). With a cap that bounds the cost, the gate evaluates
+	// worstCaseSpend once and the AMM cost stays within it — no actual-cost
+	// re-gate (that path only fires for a capless/under-bounded AMM buy).
+	cap := int64(100000)
 	order, trade, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
-		MarketID:  "mkt-1",
-		Side:      OrderSideYes,
-		Action:    OrderActionBuy,
-		OrderType: OrderTypeMarket,
-		Quantity:  10,
+		MarketID:         "mkt-1",
+		Side:             OrderSideYes,
+		Action:           OrderActionBuy,
+		OrderType:        OrderTypeMarket,
+		Quantity:         10,
+		NotionalCapCents: &cap,
 	}, "user1")
 	if err != nil {
 		t.Fatalf("PlaceOrder failed: %v", err)
@@ -264,6 +274,52 @@ func TestPlaceOrder_AMMMarketBuy_RejectedWhenCostExceedsNotionalCap(t *testing.T
 	}
 	if len(rg.recordCalls) != 0 {
 		t.Errorf("rejected order must not record stake; got %v", rg.recordCalls)
+	}
+}
+
+// D-5 codex re-review P1 #1: a capless AMM buy has worstCaseSpend == 0, so
+// the initial RG gate evaluates stake 0 and a per-bet/period limit cannot
+// block it. The HTTP handler rejects capless market buys but the bot path
+// calls PlaceOrder directly and bypasses that. The fix re-gates on the
+// actual LMSR cost before executing. Stake-aware checker: allows 0, denies
+// at/above 100c. Pre-fix (no re-gate) the order filled (under-gated).
+func TestPlaceOrder_AMMCaplessBuy_ReGatedOnActualCost(t *testing.T) {
+	repo := newMemRepo()
+	seedMarket(t, repo) // AMM (ExecutionMode unset)
+	wallet := newFakeWallet(1_000_000)
+	svc := NewService(repo, wallet)
+
+	rg := &fakeCompliance{denyAtOrAbove: 100, reason: "Bet limit exceeded for daily period"}
+	svc.SetComplianceChecker(rg)
+
+	_, _, err := svc.PlaceOrder(context.Background(), PlaceOrderRequest{
+		MarketID:  "mkt-1",
+		Side:      OrderSideYes,
+		Action:    OrderActionBuy,
+		OrderType: OrderTypeMarket,
+		Quantity:  10, // no NotionalCapCents → worstCaseSpend == 0
+	}, "user1")
+
+	if err == nil {
+		t.Fatal("capless AMM buy must be re-gated on actual cost and blocked (D-5 P1 #1)")
+	}
+	if got := err.Error(); got != "Bet limit exceeded for daily period" {
+		t.Fatalf("expected the RG reason surfaced, got %q", got)
+	}
+	if len(rg.checkCalls) != 2 {
+		t.Fatalf("expected 2 gate calls (initial stake 0, then re-gate on actual cost), got %v", rg.checkCalls)
+	}
+	if rg.checkCalls[0] != 0 {
+		t.Errorf("initial gate must see worstCaseSpend 0 for a capless buy, got %d", rg.checkCalls[0])
+	}
+	if rg.checkCalls[1] <= 0 {
+		t.Errorf("re-gate must see the actual (positive) LMSR cost, got %d", rg.checkCalls[1])
+	}
+	if len(wallet.debitCalls) != 0 {
+		t.Errorf("re-gated-blocked order must not debit; got %d", len(wallet.debitCalls))
+	}
+	if len(rg.recordCalls) != 0 {
+		t.Errorf("blocked order must not record stake; got %v", rg.recordCalls)
 	}
 }
 
