@@ -1,53 +1,15 @@
 "use client";
 
-import { useState } from "react";
+// Self-service password reset is not yet implemented backend-side (no
+// /api/v1/auth/forgot-password route, no reset-token store, no email
+// delivery in the stack — UAT 2026-05-16 LC-12). Until the feature ships,
+// this page is an honest notice rather than a form that POSTs to a 404
+// and tells the user "check your email" when nothing was sent.
 import Link from "next/link";
-import { forgotPassword } from "../../lib/api";
+
+const SUPPORT_EMAIL = "support@hula.na";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const validateEmail = (emailStr: string): boolean => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(emailStr);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    if (!email.trim()) {
-      setErrorMessage("Please enter your email address");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setErrorMessage("Please enter a valid email address");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      await forgotPassword({ email });
-      setSuccessMessage("Check your email for password reset instructions");
-      setSubmitted(true);
-      setEmail("");
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      setErrorMessage(
-        message || "Failed to send reset email. Please try again.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="auth-shell">
       <style>{`
@@ -117,48 +79,18 @@ export default function ForgotPasswordPage() {
           <span className="auth-eyebrow">Reset access</span>
           <h1 className="fp-title">Forgot password?</h1>
           <p className="fp-sub">
-            Enter your email and we&apos;ll send a reset link.
+            Self-service password reset isn&apos;t available yet.
           </p>
         </div>
 
-        {errorMessage && <div className="fp-alert err">{errorMessage}</div>}
-        {successMessage && <div className="fp-alert ok">{successMessage}</div>}
-
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: 14 }}
-        >
-          <div>
-            <label className="fp-label" htmlFor="fp-email">
-              Email address
-            </label>
-            <input
-              id="fp-email"
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errorMessage) setErrorMessage("");
-              }}
-              placeholder="you@example.com"
-              className="auth-input"
-              style={{ width: "100%", boxSizing: "border-box" }}
-              disabled={submitted}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading || submitted}
-            className="auth-submit"
-          >
-            {isLoading
-              ? "Sending…"
-              : submitted
-                ? "Email sent"
-                : "Send reset link"}
-          </button>
-        </form>
+        <div className="fp-alert err" role="status">
+          To recover your account, email{" "}
+          <a className="auth-link" href={`mailto:${SUPPORT_EMAIL}`}>
+            {SUPPORT_EMAIL}
+          </a>{" "}
+          from your registered address and our team will help you reset your
+          password.
+        </div>
 
         <div className="fp-divider">
           <span>or</span>
