@@ -128,6 +128,42 @@ func TestWithdraw_KYCJustInTimeGate(t *testing.T) {
 			t.Fatalf("dev must fail open on KYC error, got %d calls=%d (%s)", rec.Code, svc.withdrawalCalls, rec.Body.String())
 		}
 	})
+
+	// codex LC-22 P2: a withdrawal with no auth session must be rejected,
+	// not fall back to the body userId.
+	t.Run("no session is forbidden, no withdrawal", func(t *testing.T) {
+		rec, svc := doWithdraw(t, &fakeKYC{status: "approved"}, true, "production", 0, 500, "")
+		if rec.Code != http.StatusForbidden {
+			t.Fatalf("no-session withdrawal must be 403, got %d (%s)", rec.Code, rec.Body.String())
+		}
+		if svc.withdrawalCalls != 0 {
+			t.Fatalf("no-session withdrawal must not initiate, calls=%d", svc.withdrawalCalls)
+		}
+	})
+
+	// Body userId disagreeing with the session is rejected (defense in depth).
+	t.Run("body userId mismatch is forbidden", func(t *testing.T) {
+		t.Setenv("KYC_ENFORCEMENT", "false")
+		t.Setenv("ENVIRONMENT", "production")
+		prevGate := KYCGate
+		KYCGate = &fakeKYC{status: "approved"}
+		t.Cleanup(func() { KYCGate = prevGate })
+		svc := &stubPaymentService{}
+		mux := http.NewServeMux()
+		RegisterPaymentRoutes(mux, svc)
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/withdraw",
+			strings.NewReader(`{"userId":"u-victim","amountCents":500,"paymentMethod":"card"}`))
+		req.Header.Set("Content-Type", "application/json")
+		req = req.WithContext(httpx.WithTestUser(context.Background(), "u-attacker", "u-attacker", "player"))
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		if rec.Code != http.StatusForbidden {
+			t.Fatalf("body userId != session must be 403, got %d (%s)", rec.Code, rec.Body.String())
+		}
+		if svc.withdrawalCalls != 0 {
+			t.Fatalf("mismatched withdrawal must not initiate, calls=%d", svc.withdrawalCalls)
+		}
+	})
 }
 
 func itoa(n int64) string {

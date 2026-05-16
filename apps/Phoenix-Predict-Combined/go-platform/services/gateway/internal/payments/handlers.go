@@ -145,13 +145,18 @@ func RegisterPaymentRoutes(mux *stdhttp.ServeMux, service PaymentService) {
 			return httpx.BadRequest("paymentMethod is required", map[string]any{"field": "paymentMethod"})
 		}
 
-		// Bind to the authenticated session when present (this route is not
-		// public, so production always has one). The KYC gate must evaluate
-		// the real caller, and the withdrawal target must be the caller —
-		// not an arbitrary body userId.
-		userID := req.UserID
-		if sid := httpx.UserIDFromContext(r.Context()); sid != "" {
-			userID = sid
+		// Bind to the authenticated session. This route is not public, so a
+		// session is always present in production; require it explicitly so
+		// the KYC gate evaluates the real caller and the withdrawal target
+		// is the caller — never an attacker-controlled body userId. A
+		// non-empty body userId that disagrees with the session is rejected
+		// (defense in depth, mirrors sessionBoundUserID). (codex LC-22 P2.)
+		userID := httpx.UserIDFromContext(r.Context())
+		if userID == "" {
+			return httpx.Forbidden("authentication required")
+		}
+		if req.UserID != "" && req.UserID != userID {
+			return httpx.Forbidden("cannot withdraw for another user")
 		}
 
 		// KYC just-in-time gate (LC-22/D-8). Only when enforcement is enabled

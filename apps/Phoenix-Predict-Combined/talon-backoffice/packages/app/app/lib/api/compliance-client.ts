@@ -287,32 +287,17 @@ export async function verifyIdentity(
   userId: string,
   documentType: string = "passport",
 ): Promise<{ status: string }> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:18080";
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("phoenix_access_token")
-      : null;
-
-  const res = await fetch(`${apiUrl}/api/v1/compliance/kyc/verify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    credentials: "include",
-    body: JSON.stringify({
+  // Use the shared apiClient so the CSRF token (double-submit) and
+  // credentials are attached exactly like every other compliance mutation.
+  // A raw fetch here previously 403'd with "missing CSRF token header".
+  const raw = await apiClient.post<{ result?: { status?: string } }>(
+    "/api/v1/compliance/kyc/verify",
+    {
       userId,
       documents: [{ type: documentType }],
-    }),
-  });
-
-  if (!res.ok) {
-    const errorBody = await res.text().catch(() => "Verification failed");
-    throw new Error(errorBody || "Failed to verify identity");
-  }
-
-  const body = (await res.json()) as { result?: { status?: string } };
-  return { status: body.result?.status ?? "pending" };
+    },
+  );
+  return { status: raw.result?.status ?? "pending" };
 }
 
 /**
