@@ -482,3 +482,74 @@ fails *closed* as intended (not silently allowed).
 **Note:** `.env.local` (RG flags) is a gitignored local UAT artifact, not a
 committed config change; it was intentionally left out of commit `2d783d7f`
 (only `service.go`, `handlers.go`, `compliance_gate_test.go` staged).
+
+## §21 — LC-21 self-exclusion enforcement: explicit end-to-end (no-shortcuts pass)
+
+Followed up the §20 note that the LC-17 gate now routes self-exclusion +
+cool-off through `CheckBetAllowed`, with an explicit e2e against a **throwaway**
+account (not demo — self-exclusion is irreversible). Driven via authenticated
+API (trade-ticket onClick is a CDP deadzone in preview). Gateway = rebuilt
+docker container, build `2d783d7f`, in-memory mock RG service.
+
+Throwaway acct: `lcok21@predict.local` (registered fresh, userId
+`u-6c636f6b3231`, player role), wallet credited $50 for a true success
+baseline.
+
+| # | Step | Result |
+|---|---|---|
+| 1 | Baseline order pre-exclusion (10 qty market BUY, cap 500¢) | ✅ **HTTP 201 filled** — 10/10 @ 19¢, 190¢ captured. Account fully functional. |
+| 2 | `POST /rg/self-exclude {permanent:false}` | HTTP 201; `/rg/restrictions` → `isExcluded:true isBlocked:true exclusionType:temporary` |
+| 3 | Same order, **fresh** idem key (`lc21:postexcl:0001`) | ✅ **HTTP 400 `"User is self-excluded"`** — order-path gate blocks |
+| 4 | Control: replay **baseline** idem key while excluded | ✅ **HTTP 201**, returns prior order `e1cfc4e9…` `status:filled`, `trade:null` — LC-17 pre-gate idempotent short-circuit holds, no double-count, no spurious block |
+| 5 | Self-reversal A: `DELETE /rg/self-exclude` | ✅ **HTTP 405** (POST-only; no clear capability) |
+| 6 | Self-reversal B: re-`POST /rg/self-exclude` (only available action) | does NOT clear — `isExcluded` still true |
+| 7 | Post-attempt: `/rg/restrictions` + fresh order | still `isExcluded:true`; order still **HTTP 400** |
+
+**LC-21 verdict: ✅ PASS.** Self-exclusion is enforced on the prediction
+order path (via the LC-17 gate → `CheckBetAllowed`, `allowed==false`
+authoritative) and is **irreversible via the player API**. Code confirms the
+full RG/compliance route surface (geo/*, kyc/*, rg/deposit-limit[s],
+rg/bet-limit[s], rg/check-*, rg/session-limit, rg/cool-off, rg/self-exclude,
+rg/restrictions) has **no** clear/un-exclude endpoint, and
+`MockResponsibleGamblingService` exposes no method that removes a
+`selfExclusions` entry.
+
+**Honest caveat:** verified against the in-memory mock (per §20 owed item #2).
+Mock self-exclusion clears on a gateway rebuild — but that is an
+ops/persistence concern, **not** player-reversibility. Production
+`rg_postgres.go` wiring (still owed) does not change the LC-21 enforcement
+verdict; it changes durability.
+
+### D-6 — RG controls accept body `userId` without session-match → irreversible cross-account lockout (S2)
+
+```
+[LC-21 byproduct] /api/v1/compliance/rg/self-exclude trusts request-body userId
+Severity: S2          Priority: P1
+Env: BASE gateway docker (rebuilt) build=2d783d7f  2026-05-16
+Step #: while authenticated as session lcok21 (userId u-6c636f6b3231),
+        POST /rg/self-exclude {"userId":"u-lc21-probe-victim","permanent":false}
+Expected: server self-excludes the SESSION's userId (or 403 on userId mismatch)
+Actual: HTTP 201; target u-lc21-probe-victim flips isExcluded:false→true.
+        Caller can self-exclude an account that is not their own.
+Repro: always (used a harmless fake target id; no real account harmed)
+Evidence: restrictions before {isExcluded:false} → after {isExcluded:true,
+          exclusionType:temporary} for a userId the session does not own
+Known-issue?: no
+```
+**Impact:** the `rg/self-exclude` handler (`internal/compliance/handlers.go`
+~L432) reads `req.UserID` from the body and never checks it against the
+authenticated session. Self-exclusion has **no reversal API** (proven above)
+and userIds are deterministic from username (`u-` + `hex(username)[:12]`,
+auth `Register` ~L1046) — trivially enumerable. So any authenticated user can
+**permanently brick an arbitrary account** by userId. The same body-`userId`
+pattern appears across the sibling RG endpoints (cool-off, bet-limit,
+deposit-limit), which are similarly user-hostile if set on a non-owned id.
+Regulatorily sensitive.
+
+**Scope note:** orthogonal to LC-21. LC-21 (enforcement + irreversibility) is a
+genuine PASS; D-6 is an authorization defect surfaced *by* the e2e. Not fixed
+here — fixing it is a money/RG-correctness change owed the full no-shortcuts
+protocol (root-cause → fix at the trust boundary → fails-without/passes-with
+test → suite → live verify → **codex** → commit). Recommend batching the D-6
+fix with the owed D-5 codex review after the codex usage-limit reset
+(~20:07 local 2026-05-16). **Status: OPEN.**
