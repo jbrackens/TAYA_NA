@@ -304,3 +304,85 @@ Commits: `2301aeea` (fix) → `b96d01f9` (idempotency test) → `e8de72c4`
 ([P1] oversell guard). Outstanding: pre-existing seed-wide collateral drift
 (separate, logged) and the office dev-error-overlay suppression (recommended
 removal, not yet done).
+
+---
+
+## §19 — Account-lifecycle smoke (LC-01..40)
+
+40 new lifecycle scenarios (signup → profile → responsible gaming → search →
+betting depth → session/resilience). **Honest status: 16 run with verdicts,
+LC-23 run, 7 flag-blocked, 16 not run (budget).** No fabricated passes.
+
+### Group A — Sign-up & onboarding (RUN, 7/7)
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-01 register | ✅ PASS | 4-step wizard; valid adult → account created (`auth_users`), handle login → authed `/predict/` |
+| LC-02 validation | ✅ PASS | bad email / short pw / mismatch → inline errors, stayed step 1, no account |
+| LC-03 duplicate | ✅ PASS\* | dup handle → server "already registered", no 2nd account. *Caught only at final submit, not step 1 (late-feedback UX, S3)* |
+| LC-04 OAuth stubs | ✅ PASS (S3) | Google/Apple present + backend-wired, but unconfigured env returns a **raw JSON error page** to the user (`"Google OAuth is not configured"`) instead of a graceful message. TC-A01 convention: S3, don't fail |
+| LC-05 deep-link→signup→returnUrl | ❌ **FAIL (S3)** | signup link carries **no `returnUrl`**; post-register lands at bare `/auth/login/`. A user who deep-links a market and chooses "Sign up" loses the destination. (Login path *does* preserve it — SX-17.) |
+| LC-06 terms/age gate | ✅ PASS\* | terms-unchecked blocked at step 4; underage DOB (2015) created **0** accounts → age enforced server-side. *But rejection is silent — bounces to /login with no on-screen age message (S3 UX)* |
+| LC-07 brand-new empty states | ✅ PASS | $0 BAL, "No settled predictions yet", "Not ranked yet", Accuracy "—" (no divide-by-zero), no errors |
+
+**Cross-cutting (S3):** signup collects an email and login says "USERNAME OR EMAIL", but `auth_users` keys on the **handle** only — email login fails for wizard-registered users.
+
+### Group B — Personal details & profile (RUN, 8/8)
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-08 display-name → board handle | ⚠️ PARTIAL | no inline name-edit on `/account/`; `/profile/` exists (200) but not exercised. Handle pipeline itself proven by LC-09. S3 — needs a focused pass |
+| LC-09 anonymous toggle | ✅ PASS | flip → `/me/leaderboards` handle becomes "Trader #1", stats kept, reversible |
+| LC-10 change password | ✅ PASS | `/account/security/`: requires current pw (re-auth), min-12, Confirm; not executed on demo (irreversible-risk) — verified by inspection |
+| LC-11 change email | ⚠️ GAP (S3) | no change-email surface anywhere (consistent with email-not-a-credential finding) — not implemented |
+| LC-12 forgot-password | ❌ **FAIL (S2)** | form posts `POST /api/v1/auth/forgot-password/` → **404**. Account recovery is non-functional |
+| LC-13 notification prefs persist | ❌ **FAIL/suspect (S3)** | flipped toggle + Save + reload → reverted. Caveat: Save driven via React-onClick (harness pattern reliable elsewhere this session) → likely real non-persistence/STUB; flagged for network-confirmed repro |
+| LC-14 sensitive-change re-auth | ✅ PASS | password change requires current password (re-auth gate present); +2FA, +Active Sessions sections exist |
+| LC-15 account closure w/ open positions | ⚠️ GAP (S3) | no close/delete-account control anywhere. No silent loss (can't close); capability absent (GDPR/lifecycle gap) |
+
+### Group C — Responsible gaming & compliance (LC-16..23)
+With `NEXT_PUBLIC_FEATURE_RG/KYC/LIMITS` **off (default)** the RG consumer surfaces are flag-gated:
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-23 RG status / flag-off cleanliness | ✅ PASS | `/account/self-exclude/` etc. render a **clean in-app 404** ("Back to Home"), no 500/crash; backend compliance APIs present (`restrictions`→200, `deposit-limit`/`self-exclude`→405 POST-only, `kyc/status`→400) |
+| LC-16 deposit limit | ⛔ BLOCKED | feature-flag gated off (UI 404). Backend endpoint exists |
+| LC-17 stake limit | ⛔ BLOCKED | flag-gated off; backend exists |
+| LC-18 reality-check timer | ⛔ BLOCKED | flag-gated off |
+| LC-19 loosen-limit cooldown | ⛔ BLOCKED | flag-gated off |
+| LC-20 cool-off | ⛔ BLOCKED | flag-gated off |
+| LC-21 self-exclusion enforcement | ⛔ BLOCKED | flag-gated off (UI 404); **not verifiable without enabling flags** — high-importance, see recommendation |
+| LC-22 KYC just-in-time | ⛔ BLOCKED | flag-gated off; `kyc/status` endpoint exists |
+
+**Not defects** — backend compliance implemented; consumer UI intentionally disabled by default flags. Fully running LC-16..22 needs the flags enabled + dev-server restart.
+
+### Group D — Search & discovery depth (PARTIAL)
+| LC | Verdict | Evidence |
+|---|---|---|
+| LC-25 search injection/safety | ✅ PASS | `<img onerror>` + `';DROP TABLE` + 1200-char query → no XSS execution, no crash |
+| LC-28 settled-only term | ✅ PASS (known) | "senate" (all settled) → 0 search results is correct, not a bug (documented gotcha #1 + BX-02) |
+| LC-24 keyboard nav | ⬜ NOT RUN | budget |
+| LC-26 ticker vs text relevance | ⬜ NOT RUN | probe measured grid not dropdown — inconclusive, not claimed |
+| LC-27 rapid-type debounce | ⬜ NOT RUN | budget |
+| LC-29 multi-outcome event view | ⬜ NOT RUN | budget |
+
+### Group E — Betting & money lifecycle depth (LC-30..35) — ⬜ NOT RUN (budget)
+### Group F — Session / resilience / outside-the-box (LC-36..40) — ⬜ NOT RUN (budget)
+
+LC-36 (double-submit guard) and LC-38 (network-drop idempotency) are money-path
+and partially de-risked already this session (D-1 hardening proved wallet
+idempotency on `(kind,userID,idempotencyKey)`), but the user-facing
+double-click/network-drop UX is untested.
+
+### Net findings (this group)
+- **LC-12 (S2)** forgot-password backend 404 — account recovery broken.
+- **LC-05 (S3)** signup path drops returnUrl.
+- **LC-13 (S3, suspect)** notification prefs don't persist.
+- **LC-04 (S3)** OAuth misconfig surfaces as raw JSON to the user.
+- Gaps (S3, not-implemented): change-email, account closure.
+- Cross-cutting (S3): email collected at signup is not a usable login id.
+- LC-16..22 blocked by default RG/KYC/LIMITS flags (config, not defects).
+
+**Honest completion:** 16 scenarios executed with real verdicts (3 new findings:
+1×S2 + 2×S3, plus 2 gaps), LC-23 passed, 7 flag-blocked, 16 not run. Not
+padded. Recommended next: (1) enable RG/KYC/LIMITS flags + restart to run
+LC-16..22 (responsible-gaming is high-importance and currently unverifiable);
+(2) a focused pass for the 16 not-run (Groups D-rest/E/F), prioritizing
+money-path LC-36/38.
