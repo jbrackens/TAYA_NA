@@ -1,0 +1,60 @@
+   362	func (r *memRepo) GetDiscovery(context.Context) (*DiscoveryResponse, error) { return nil, nil }
+   363	func (r *memRepo) DashboardVolumeStatsSince(context.Context, time.Time, int) (*DashboardVolumeStats, error) {
+   364		return nil, nil
+   365	}
+   366	
+   367	func cloneOrder(o *Order) *Order {
+   368		if o == nil {
+   369			return nil
+   370		}
+   371		copy := *o
+   372		if o.PriceCents != nil {
+   373			value := *o.PriceCents
+   374			copy.PriceCents = &value
+   375		}
+   376		if o.WalletReservationID != nil {
+   377			value := *o.WalletReservationID
+   378			copy.WalletReservationID = &value
+   379		}
+   380		if o.IdempotencyKey != nil {
+
+codex
+I’ve got enough evidence now. The main surprises are not in the pure accounting helper; they’re at the integration boundaries: SQL order creation never persists the reservation fields the cancel release now depends on, and Postgres `ReleaseBet` is not actually clamped.
+codex
+VERDICT: 2 P1, 2 P2
+
+Original P1s:
+- P1#1: STILL-BROKEN. `worstCaseSpend` can be `0`, the gate uses it before AMM execution, and AMM cap rejection only runs when `cap > 0`.
+- P1#2: FIXED for fresh order-book placements/maker fills: placement records committed stake, open/partial release nothing, terminal placements reconcile. Cancel/expiry reconciliation has P2 defects below.
+- P1#3: FIXED. Sequential replay returns before record; concurrent replay returns `replayed=true`, and the new committed `RecordBet` block is skipped.
+
+Findings:
+1. P1: AMM zero-cap path still under-gates. `checkComplianceForOrder(... worstCaseSpend(req))` runs at `service.go:361`; `worstCaseSpend` returns `0` for market buy without cap or limit buy without price at `service.go:741-751`; AMM rejects only when `cap > 0` at `service.go:414-416`, then executes at `service.go:426`. The normal user route validates cap, but bot orders call `svc.PlaceOrder` directly at `internal/http/bot_handlers.go:87-94`.
+
+2. P2: cancel `RETURNING` cannot net resting orders correctly because SQL create never populates `reserved_cash_cents`. Service sets `ReservedCashCents` at `service.go:604-605`, but `createOrderWithExec` inserts only legacy columns at `sql_repository.go:421-430`; migration default is `0` at `019_prediction_exchange_engine.sql:46`. Cancel returns `reserved_cash_cents,captured_cash_cents` at `service.go:886-893` and releases `reserved-captured` at `service.go:909`, so a partially maker-filled resting buy has `reserved=0,captured>0`, release is skipped by `service.go:130-132`, leaving full committed RG usage instead of realized net.
+
+3. P1: Postgres `ReleaseBet` is not clamped and can create free headroom. Interface requires non-negative cumulative usage at `services.go:83-88`; mock clamps at `mock_compliance.go:730-747`; Postgres writes a negative activity row at `rg_postgres.go:405-410`, and `usageInPeriod` returns raw `SUM` at `rg_postgres.go:433-445`. `CheckBetAllowed` then uses negative `used` in `used+stake > limit` at `rg_postgres.go:175-177`. Cross-period cancels or orphan releases can make usage negative.
+
+4. P2: expired reservation/order lifecycle is not reconciled. `rgPlacementAccounting` treats `expired` as terminal at `service.go:145-166`, but the running expiry job only expires wallet reservations at `wallet/service.go:898-901`; `CancelOrder` no-ops already-expired prediction orders at `service.go:835-838`. I found no production path that transitions prediction orders to expired and calls `ReleaseBet`, so committed RG usage can remain stuck after expiry.
+
+No normal double-release found for terminal-at-placement orders: placement release is in `service.go:386-390`, and later cancel is a no-op for terminal statuses at `service.go:835-839`.
+2026-05-16T19:54:36.525601Z ERROR codex_core::session: failed to record rollout items: thread 019e3256-f981-72f2-89dc-722abbce7ba1 not found
+tokens used
+155,769
+VERDICT: 2 P1, 2 P2
+
+Original P1s:
+- P1#1: STILL-BROKEN. `worstCaseSpend` can be `0`, the gate uses it before AMM execution, and AMM cap rejection only runs when `cap > 0`.
+- P1#2: FIXED for fresh order-book placements/maker fills: placement records committed stake, open/partial release nothing, terminal placements reconcile. Cancel/expiry reconciliation has P2 defects below.
+- P1#3: FIXED. Sequential replay returns before record; concurrent replay returns `replayed=true`, and the new committed `RecordBet` block is skipped.
+
+Findings:
+1. P1: AMM zero-cap path still under-gates. `checkComplianceForOrder(... worstCaseSpend(req))` runs at `service.go:361`; `worstCaseSpend` returns `0` for market buy without cap or limit buy without price at `service.go:741-751`; AMM rejects only when `cap > 0` at `service.go:414-416`, then executes at `service.go:426`. The normal user route validates cap, but bot orders call `svc.PlaceOrder` directly at `internal/http/bot_handlers.go:87-94`.
+
+2. P2: cancel `RETURNING` cannot net resting orders correctly because SQL create never populates `reserved_cash_cents`. Service sets `ReservedCashCents` at `service.go:604-605`, but `createOrderWithExec` inserts only legacy columns at `sql_repository.go:421-430`; migration default is `0` at `019_prediction_exchange_engine.sql:46`. Cancel returns `reserved_cash_cents,captured_cash_cents` at `service.go:886-893` and releases `reserved-captured` at `service.go:909`, so a partially maker-filled resting buy has `reserved=0,captured>0`, release is skipped by `service.go:130-132`, leaving full committed RG usage instead of realized net.
+
+3. P1: Postgres `ReleaseBet` is not clamped and can create free headroom. Interface requires non-negative cumulative usage at `services.go:83-88`; mock clamps at `mock_compliance.go:730-747`; Postgres writes a negative activity row at `rg_postgres.go:405-410`, and `usageInPeriod` returns raw `SUM` at `rg_postgres.go:433-445`. `CheckBetAllowed` then uses negative `used` in `used+stake > limit` at `rg_postgres.go:175-177`. Cross-period cancels or orphan releases can make usage negative.
+
+4. P2: expired reservation/order lifecycle is not reconciled. `rgPlacementAccounting` treats `expired` as terminal at `service.go:145-166`, but the running expiry job only expires wallet reservations at `wallet/service.go:898-901`; `CancelOrder` no-ops already-expired prediction orders at `service.go:835-838`. I found no production path that transitions prediction orders to expired and calls `ReleaseBet`, so committed RG usage can remain stuck after expiry.
+
+No normal double-release found for terminal-at-placement orders: placement release is in `service.go:386-390`, and later cancel is a no-op for terminal statuses at `service.go:835-839`.

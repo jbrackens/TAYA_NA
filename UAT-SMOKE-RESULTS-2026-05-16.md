@@ -553,3 +553,145 @@ protocol (root-cause → fix at the trust boundary → fails-without/passes-with
 test → suite → live verify → **codex** → commit). Recommend batching the D-6
 fix with the owed D-5 codex review after the codex usage-limit reset
 (~20:07 local 2026-05-16). **Status: OPEN.**
+
+## §22 — D-5 codex review (owed item #1) + remediation + D-6 fix (no-shortcuts)
+
+The §20-deferred independent codex review of commit `2d783d7f` (LC-17 RG
+order-path gate) was run after the usage-limit reset, then iterated through
+**four adversarial codex rounds** + unit (fails-without/passes-with) + full
+suite + live-verify per fix. Raw transcripts: `.codex-reviews/*.txt`
+(`2d783d7f-review-raw`, `remediation-rereview{,3,4}-raw`).
+
+### Round 1 — codex on `2d783d7f`: **5 P1, 1 P2**
+Verified each against code (trust-but-verify; not blind):
+- **#1 (P1, real):** AMM market-buy under-gated — `worstCaseSpend` is the
+  gate's stake but the AMM path never bounded LMSR cost by it.
+- **#2 (P1, real):** resting limit orders + maker fills bypassed the period
+  limit — only the realized *taker* fill was recorded, so resting orders
+  (realized 0) each passed the gate independently and maker fills were
+  never recorded.
+- **#3 (P1, real):** a concurrent idempotent replay double-recorded stake
+  (`placeExchangeOrder` returned the existing order with `perr==nil`;
+  `PlaceOrder` recorded again).
+- **#4 (P1→tracked):** check-vs-record TOCTOU — real but bounded, legacy
+  parity; **deferred** (documented residual, per user scope decision).
+- **#5 (P1→folded):** `rg_postgres` false-zero on query error + swallowed
+  `RecordBet` err — `rg_postgres` is **dormant** (the wired service is the
+  in-memory mock); folded into the already-owed §20 item #2.
+- **#6 (P2→tracked):** SMM may place orders in the startup window before
+  `SetComplianceChecker` — house bot, low-sev; tracked.
+
+User scope decision: fix #1/#2/#3 in full (no-shortcuts); document #4/#5/#6.
+
+### Fixes (atomic commits, each fails-without/passes-with + suite 24/24)
+- `7e410855` **#1**: reject on the AMM path before `ExecuteTrade` when cost
+  exceeds the gate's worst-case bound.
+- `41ae8d4b` **#3**: `placeExchangeOrder` returns an explicit `replayed`
+  bool; `PlaceOrder` skips `RecordBet` on a concurrent replay.
+- `e67360d1` **#2**: reserve+reconcile — `RecordBet` the committed
+  worst-case at placement (counts while resting); release committed−realized
+  when terminal; cancel releases reserved−captured. New symmetric
+  `ReleaseBet` on the `ComplianceChecker`/RG interfaces + mock + postgres.
+
+### Round 2 — codex re-review + live-verify: **2 P1, 2 P2**
+Live-verify (rebuilt gateway) caught what the unit tests could not:
+- **#1 still-broken:** `worstCaseSpend==0` for a capless market buy / limit
+  buy w/o price; the HTTP handler rejects capless market buys but the **bot
+  path** calls `PlaceOrder` directly and bypassed it.
+- **#2 cancel-reconcile broken (live-confirmed):** `createOrderWithExec`
+  never persisted `reserved_cash_cents`, so the cancel `RETURNING` read 0
+  and the release was skipped — `used` stayed 200 after cancel (the §20
+  wrongful-lockout).
+- **new P1:** Postgres `ReleaseBet` unclamped → negative usage / free
+  headroom.
+- P2 #4: no production path expires a resting prediction order with a
+  `ReleaseBet` (→ tracked residual; conservative over-count, safe-direction).
+
+`0173d0f6` (round-2 fixes): AMM **actual-cost re-gate** when the real cost
+exceeds the gated bound (no-op when no RG checker wired; covers the bot
+path); **persist `reserved_cash_cents`/`captured_cash_cents`** on create;
+**clamp** Postgres `usageInPeriod` at 0.
+
+### Round 3 — codex re-review: **1 P1**
+Cross-period release offset — a release from a resting order placed in a
+prior period offset the *current* period's usage → free headroom. Verified
+this hit the **wired mock** too (`refreshBetLimitState` zeroes `UsedCents`
+at rollover). User-chosen fix: thread `committedAt` into `ReleaseBet`.
+
+`a17721fd`: `ReleaseBet(…, committedAt)`. Mock skips the reversal when the
+commit predates the limit's current period start; Postgres dates the
+compensating negative row at `committedAt` so the window filter scopes it.
+Cancel passes the order's `created_at` (via `RETURNING`); terminal-at-
+placement passes `now`. Fails-without/passes-with cross-period no-op.
+
+### D-6 fix — `b4432672`
+`sessionBoundUserID(r, bodyUserID)` binds every RG self-service mutation
+(deposit-limit, bet-limit, session-limit, cool-off, self-exclude) to the
+authenticated session: no session ⇒ 403; body userID ≠ session ⇒ 403;
+responses reflect the session uid. Fails-without/passes-with handler test.
+
+### Round 4 — codex final gate (covers P1 remediation **+ D-6**): **1 P1, 1 P2**
+- **All five** prior items + D-6: **FIXED** (independently confirmed, file:line).
+- **NEW P1 — D-7 (OPEN, distinct from D-5/D-6):** `SetBetLimit` /
+  `SetDepositLimit` in the wired mock replace the period row with
+  `UsedCents:0`, so a user can consume a limit then re-POST the *same*
+  limit via the (now session-bound, self-callable) route and reset their
+  own usage → indefinite headroom. **Pre-existing mock flaw — not
+  introduced by this work or D-6** (a user could already self-set their
+  limit pre-D-6). Real RG bypass on the wired path. `mock_compliance.go`
+  `SetBetLimit` ~L425-438 / `SetDepositLimit` ~L371-384;
+  `CheckBetAllowed` ~L531-536; wired at `internal/http/handlers.go`
+  ~L239-247. See D-7 below.
+- **NEW P2 — mock monthly reset boundary:** `getResetTime("monthly")`
+  returns same-day-next-month, not first-of-month → monthly usage can
+  carry past the real month boundary. Tracked residual.
+
+### Live verification (rebuilt gateway docker, demo u-1 + throwaway)
+- **P1 #2 reserve+reconcile (round-2+3c):** resting limit BUY @2¢×100 →
+  `used=200 remaining=100` (pre-fix: 0 — the bypass); a 2nd resting order
+  exceeding the cumulative limit → **HTTP 400 "Bet limit exceeded"**;
+  cancel → `used=0 remaining=300`; limit frees. Idempotent-replay control
+  returns the prior filled order with no double-count.
+- **D-6:** demo session POST `self-exclude {userId:u-d6-probe-victim}` →
+  **HTTP 403 "cannot modify another user's responsible-gambling
+  settings"**, victim `isExcluded=false` unchanged; self-bind own
+  bet-limit → 201.
+- **P1 #1** re-gate and **#3** and the **cross-period** scoping are
+  deterministically unit-covered (no open AMM market exists in the seed to
+  live-trade; a cross-period live test needs clock manipulation). Demo
+  limits restored to effectively unlimited after the run.
+
+### Status
+- **D-5 / LC-17 P1 #1, #2, #3 — FIXED & cleared to the D-1 standard**
+  (independent codex round-4 confirmation + live-verify). §20's "Independent
+  cross-model review: DEFERRED" is hereby **resolved** (recorded here;
+  §20 left intact per the append-only rule).
+- **D-6 — FIXED & live-verified** (`b4432672`).
+- **Tracked residuals (not fixed, by scope decision):** codex-#4 TOCTOU;
+  expired-order-lifecycle RG release; GET disclosure endpoints
+  (restrictions/bet-limits/deposit-limits read an arbitrary query userId);
+  `rg_postgres` dormant/not production-wired (owed §20 item #2); mock
+  monthly-reset boundary (new P2).
+
+### D-7 — Setting an RG limit zeroes accumulated period usage (S2, OPEN)
+
+```
+[codex round-4 finding] SetBetLimit/SetDepositLimit reset UsedCents to 0
+Severity: S2          Priority: P1
+Env: wired in-memory MockResponsibleGamblingService (handlers.go ~239-247)
+Repro: set daily bet-limit N → place orders consuming ~N → re-POST the
+       SAME bet-limit (own session, allowed post-D-6) → usedCents back to 0
+       → place another ~N of orders. Repeat indefinitely.
+Root cause: mock SetBetLimit replaces the period row with UsedCents:0 /
+            RemainingCents:amountCents (mock_compliance.go ~L425-438);
+            SetDepositLimit same (~L371-384); CheckBetAllowed trusts the
+            reset remaining (~L531-536).
+Pre-existing? YES — independent of the D-5 order-path work and D-6 (a user
+            could already self-set their own limit before D-6; D-6 only
+            made the call ownership-correct, it did not create this).
+Correct behavior (design decision needed): setting/changing a self-set
+limit must NOT clear already-accumulated period usage; lowering a limit
+should keep usage; an unchanged re-POST must be a no-op for usage.
+Status: OPEN — distinct new defect, outside the D-5/D-6 scope that was
+authorized; surfaced for scoping.
+```

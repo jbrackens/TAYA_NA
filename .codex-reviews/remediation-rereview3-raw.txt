@@ -1,0 +1,51 @@
+0173d0f6 fix(prediction): close D-5 codex re-review P1s — AMM re-gate, cancel-reconcile persistence, RG clamp
+   870		return entry, nil
+   871	}
+   872	
+   873	// ReleaseReservationWithTx releases the uncaptured remainder of a held
+   874	// reservation, freeing the user's available balance. Idempotent: releasing an
+   875	// already-released or already-captured reservation is a no-op (returns nil).
+   876	// Any captured portion remains debited; only the uncaptured remainder is freed.
+   877	func (s *Service) ReleaseReservationWithTx(ctx context.Context, tx *sql.Tx, referenceType, referenceID string) error {
+   878		if _, err := tx.ExecContext(ctx, `
+   879	UPDATE wallet_reservations
+   880	SET status = 'released', resolved_at = NOW()
+   881	WHERE reference_type = $1 AND reference_id = $2 AND status = 'held'`,
+   882			referenceType, referenceID); err != nil {
+   883			return err
+   884		}
+   885		return nil
+   886	}
+   887	
+   888	// ExpireStaleReservations marks overdue held reservations as expired.
+   889	// Should be called periodically (e.g., every minute) as a background job.
+   890	func (s *Service) ExpireStaleReservations() (int64, error) {
+
+codex
+VERDICT: 1 P1, 0 P2
+
+A. FIXED — `service.go:418-433`: explicit cap reject retained at `419-423`; capless/zero-bound AMM buy re-gates on actual LMSR cost at `424-433`, before `ExecuteTrade` at `445`.
+
+B. FIXED for the requested non-racy flows — `service.go:386-389`, `service.go:160-170`, `sql_repository.go:421-433`, `service.go:905-928`. Net is:
+resting cancel = `record committed - release committed = 0`; partial maker-filled cancel = `committed - (committed-captured) = captured`; terminal-at-placement = `committed - (committed-realized) = realized`. Later cancel no-ops terminal statuses at `service.go:854-857`.
+
+C. STILL-BROKEN — see finding 1. The literal `SUM<=0` clamp exists at `rg_postgres.go:450-453`, but it does not preserve period correctness.
+
+1. [P1] `internal/compliance/rg_postgres.go:405` — `ReleaseBet` writes a negative `bet` row at cancel time, and `usageInPeriod` sums current-period rows at `rg_postgres.go:433-453`. A prior-period resting order canceled today can offset unrelated bets placed today: day 1 record 1000; day 2 record 1000; cancel day-1 order releases `-1000` today via `service.go:928`; current daily usage becomes 0, so `CheckBetAllowed` at `rg_postgres.go:175-177` allows another full-limit bet. The clamp only floors the aggregate after the damage. This is not the expired-order lifecycle residual; ordinary cancel triggers it.
+
+No new AMM re-gate side-effect or reserved/captured INSERT alignment finding. `go test ./internal/prediction ./internal/compliance` passes cached.
+2026-05-16T20:08:31.783922Z ERROR codex_core::session: failed to record rollout items: thread 019e3263-1f28-7583-9ed4-0e0511b9bb02 not found
+tokens used
+144,335
+VERDICT: 1 P1, 0 P2
+
+A. FIXED — `service.go:418-433`: explicit cap reject retained at `419-423`; capless/zero-bound AMM buy re-gates on actual LMSR cost at `424-433`, before `ExecuteTrade` at `445`.
+
+B. FIXED for the requested non-racy flows — `service.go:386-389`, `service.go:160-170`, `sql_repository.go:421-433`, `service.go:905-928`. Net is:
+resting cancel = `record committed - release committed = 0`; partial maker-filled cancel = `committed - (committed-captured) = captured`; terminal-at-placement = `committed - (committed-realized) = realized`. Later cancel no-ops terminal statuses at `service.go:854-857`.
+
+C. STILL-BROKEN — see finding 1. The literal `SUM<=0` clamp exists at `rg_postgres.go:450-453`, but it does not preserve period correctness.
+
+1. [P1] `internal/compliance/rg_postgres.go:405` — `ReleaseBet` writes a negative `bet` row at cancel time, and `usageInPeriod` sums current-period rows at `rg_postgres.go:433-453`. A prior-period resting order canceled today can offset unrelated bets placed today: day 1 record 1000; day 2 record 1000; cancel day-1 order releases `-1000` today via `service.go:928`; current daily usage becomes 0, so `CheckBetAllowed` at `rg_postgres.go:175-177` allows another full-limit bet. The clamp only floors the aggregate after the damage. This is not the expired-order lifecycle residual; ordinary cancel triggers it.
+
+No new AMM re-gate side-effect or reserved/captured INSERT alignment finding. `go test ./internal/prediction ./internal/compliance` passes cached.
