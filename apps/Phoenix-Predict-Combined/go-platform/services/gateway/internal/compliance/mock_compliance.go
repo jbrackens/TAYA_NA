@@ -369,16 +369,27 @@ func (m *MockResponsibleGamblingService) SetDepositLimit(ctx context.Context, us
 	defer m.mu.Unlock()
 
 	now := time.Now().UTC()
-	resetAt := getResetTime(now, period)
 
 	limit := DepositLimit{
-		UserID:         userID,
-		Period:         period,
-		LimitCents:     amountCents,
-		RemainingCents: amountCents,
-		UsedCents:      0,
-		ResetsAt:       resetAt.Format(time.RFC3339),
-		CreatedAt:      now.Format(time.RFC3339),
+		UserID:     userID,
+		Period:     period,
+		LimitCents: amountCents,
+		CreatedAt:  now.Format(time.RFC3339),
+	}
+	// D-7: see SetBetLimit — changing a deposit limit must not reset the
+	// in-progress period's accumulated usage (self-service reset bypass).
+	if existing := findDepositLimit(m.depositLimits[userID], period); existing != nil {
+		refreshDepositLimitState(existing, now)
+		limit.UsedCents = existing.UsedCents
+		limit.ResetsAt = existing.ResetsAt
+		limit.CreatedAt = existing.CreatedAt
+	} else {
+		limit.UsedCents = 0
+		limit.ResetsAt = getResetTime(now, period).Format(time.RFC3339)
+	}
+	limit.RemainingCents = limit.LimitCents - limit.UsedCents
+	if limit.RemainingCents < 0 {
+		limit.RemainingCents = 0
 	}
 
 	m.depositLimits[userID] = upsertDepositLimit(m.depositLimits[userID], limit)
@@ -423,16 +434,31 @@ func (m *MockResponsibleGamblingService) SetBetLimit(ctx context.Context, userID
 	defer m.mu.Unlock()
 
 	now := time.Now().UTC()
-	resetAt := getResetTime(now, period)
 
 	limit := BetLimit{
-		UserID:         userID,
-		Period:         period,
-		LimitCents:     amountCents,
-		RemainingCents: amountCents,
-		UsedCents:      0,
-		ResetsAt:       resetAt.Format(time.RFC3339),
-		CreatedAt:      now.Format(time.RFC3339),
+		UserID:     userID,
+		Period:     period,
+		LimitCents: amountCents,
+		CreatedAt:  now.Format(time.RFC3339),
+	}
+	// D-7: changing a self-set limit must NOT clear already-accumulated
+	// usage for the in-progress period. Otherwise a user can consume the
+	// limit, re-POST the same limit, and reset their own usage to 0 for
+	// fresh headroom indefinitely. Carry the existing period's UsedCents
+	// and window forward (after applying any legitimate period rollover);
+	// only a brand-new limit starts at 0 (it applies prospectively).
+	if existing := findBetLimit(m.betLimits[userID], period); existing != nil {
+		refreshBetLimitState(existing, now) // zeroes only on a genuine period elapse
+		limit.UsedCents = existing.UsedCents
+		limit.ResetsAt = existing.ResetsAt
+		limit.CreatedAt = existing.CreatedAt
+	} else {
+		limit.UsedCents = 0
+		limit.ResetsAt = getResetTime(now, period).Format(time.RFC3339)
+	}
+	limit.RemainingCents = limit.LimitCents - limit.UsedCents
+	if limit.RemainingCents < 0 {
+		limit.RemainingCents = 0
 	}
 
 	m.betLimits[userID] = upsertBetLimit(m.betLimits[userID], limit)
@@ -761,6 +787,26 @@ func (m *MockResponsibleGamblingService) ReleaseBet(ctx context.Context, userID 
 		m.betLimits[userID] = limits
 	}
 
+	return nil
+}
+
+// findBetLimit returns a pointer to the existing same-period bet limit (so
+// callers can read its accumulated usage), or nil if none exists.
+func findBetLimit(limits []BetLimit, period string) *BetLimit {
+	for i := range limits {
+		if limits[i].Period == period {
+			return &limits[i]
+		}
+	}
+	return nil
+}
+
+func findDepositLimit(limits []DepositLimit, period string) *DepositLimit {
+	for i := range limits {
+		if limits[i].Period == period {
+			return &limits[i]
+		}
+	}
 	return nil
 }
 

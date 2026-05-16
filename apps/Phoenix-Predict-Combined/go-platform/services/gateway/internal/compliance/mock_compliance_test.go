@@ -160,6 +160,87 @@ func TestMockResponsibleGamblingServiceReleaseBetReversesUsage(t *testing.T) {
 	}
 }
 
+// D-7 (codex round-4 P1): changing a self-set limit must NOT clear the
+// in-progress period's accumulated usage. Pre-fix, re-POSTing the same limit
+// reset UsedCents to 0, so a user could consume the limit, re-set it, and
+// get fresh headroom indefinitely (the self-service reset bypass — now
+// cleanly reachable per-user after the D-6 session binding).
+func TestMockSetBetLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
+	service := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetBetLimit: %v", err)
+	}
+	if err := service.RecordBet(ctx, "u-1", 800); err != nil {
+		t.Fatalf("RecordBet: %v", err)
+	}
+
+	// The exploit: re-POST the SAME limit hoping usage resets to 0.
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetBetLimit (re-post): %v", err)
+	}
+	limits, _ := service.GetBetLimits(ctx, "u-1")
+	if limits[0].UsedCents != 800 {
+		t.Fatalf("re-POST must preserve accumulated usage: want used 800, got %d (reset bypass)", limits[0].UsedCents)
+	}
+	if limits[0].RemainingCents != 200 {
+		t.Fatalf("want remaining 200 after re-POST, got %d", limits[0].RemainingCents)
+	}
+	if allowed, _, _ := service.CheckBetAllowed(ctx, "u-1", 900); allowed {
+		t.Fatal("a 900 bet must still be blocked after a same-limit re-POST (reset bypass)")
+	}
+
+	// Raising the limit keeps usage; the user only gains the delta.
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 1500); err != nil {
+		t.Fatalf("SetBetLimit (raise): %v", err)
+	}
+	limits, _ = service.GetBetLimits(ctx, "u-1")
+	if limits[0].UsedCents != 800 || limits[0].RemainingCents != 700 {
+		t.Fatalf("raise must keep used=800 and grant only the delta (remaining 700), got used=%d remaining=%d",
+			limits[0].UsedCents, limits[0].RemainingCents)
+	}
+
+	// Lowering below accumulated usage → no remaining (RG restricts; never negative).
+	if err := service.SetBetLimit(ctx, "u-1", "daily", 500); err != nil {
+		t.Fatalf("SetBetLimit (lower): %v", err)
+	}
+	limits, _ = service.GetBetLimits(ctx, "u-1")
+	if limits[0].UsedCents != 800 || limits[0].RemainingCents != 0 {
+		t.Fatalf("lower below usage → used=800 remaining=0, got used=%d remaining=%d",
+			limits[0].UsedCents, limits[0].RemainingCents)
+	}
+}
+
+// D-7 (deposit limit shares the reset pattern).
+func TestMockSetDepositLimit_RePostDoesNotResetAccumulatedUsage(t *testing.T) {
+	service := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	if err := service.SetDepositLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetDepositLimit: %v", err)
+	}
+	// Consume 600 of the deposit limit.
+	if allowed, _, _ := service.CheckDepositAllowed(ctx, "u-1", 600); !allowed {
+		t.Fatal("first 600 deposit should be allowed")
+	}
+	if err := service.RecordDeposit(ctx, "u-1", 600); err != nil {
+		t.Fatalf("RecordDeposit: %v", err)
+	}
+	// Re-POST the same limit; usage must persist.
+	if err := service.SetDepositLimit(ctx, "u-1", "daily", 1000); err != nil {
+		t.Fatalf("SetDepositLimit (re-post): %v", err)
+	}
+	limits, _ := service.GetDepositLimits(ctx, "u-1")
+	if limits[0].UsedCents != 600 || limits[0].RemainingCents != 400 {
+		t.Fatalf("deposit re-POST must preserve usage: want used 600 remaining 400, got used=%d remaining=%d",
+			limits[0].UsedCents, limits[0].RemainingCents)
+	}
+	if allowed, _, _ := service.CheckDepositAllowed(ctx, "u-1", 500); allowed {
+		t.Fatal("a 500 deposit must still be blocked after a same-limit re-POST")
+	}
+}
+
 // D-5 codex re-review round 3 (P1): a release from a cross-period cancel must
 // NOT offset the current period's usage. A resting order placed in a prior
 // period then cancelled today: its committed stake already aged out at the
