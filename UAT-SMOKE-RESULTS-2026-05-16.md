@@ -200,3 +200,54 @@ both fixes built in, fresh login, clean console). Purpose: confirm D-1
 **Documented caveats (unchanged, not defects):** BX-06 (max open YES 81¢, no ≥85¢ — seed settles near-certain markets), BX-07 (politics canonical markets settled — gotcha-#1 class), SX-05 (IMP "thin" market partial-fills via issuance — truthful, S1 invariant holds), SX-08 (MAX known-issue, safely disabled), SX-18 (Sharpness 1 qualifier — MinSettled+volume-floor vs seed), SX-19/20 (preview can't reach backoffice :3001; admin auth + data layer verified via HTTP, no defect).
 
 **Conclusion:** Both defects found this session are fixed and stay fixed across a full re-run; no regressions anywhere in the 57-scenario corpus. Suite is green modulo the documented seed/threshold/known-issue/harness caveats.
+
+---
+
+## §17 — SX-19/20 resolved: backoffice now browser-verified (D-3 found & fixed)
+
+The §15/§16 "SX-19/20 PARTIAL (preview origin-lock)" was resolved by
+starting the **Back-Office** preview config (it existed in `.claude/launch.json`
+all along — prior runs wrongly cross-navigated the player-app preview).
+Freeing :3001 from an externally-started office dev server and starting it
+under Claude Preview made the backoffice browser-drivable — which
+immediately surfaced a real S2.
+
+### D-3 — Backoffice renders blank under React 19 (S2) — **FIXED `e2aff8a9`**
+
+```
+[SX-19/20, TC-I01..03] Entire admin backoffice renders blank ("HEADER" stub)
+Severity: S2          Priority: P1
+Env: office :3001  React 19.2.4 + react-dom 19.2.4 + antd 4.16.12 + Next 16.2.2
+Root cause: antd/es/modal/confirm + antd/es/typography/util import
+            render()/unmountComponentAtNode() from react-dom — removed in
+            React 19. Failing import trace runs through components/app ->
+            session-guard (app shell), so pages/index's redirect useEffect
+            never hydrates; admins stranded on the "HEADER" placeholder.
+Fix: office-only webpack alias → react-dom React-19 compat shim
+     (createRoot-backed render/unmount; real RD surface via __real_react_dom
+     alias to avoid the react-dom$ exact-alias loop). Player app untouched.
+Verified live: admin login → /dashboard renders real data (OPEN MARKETS 95,
+     SETTLEMENT QUEUE 18, 24H VOLUME $602, TOP MOVERS); 0 console/server
+     errors; AntD react-dom import error gone from the build.
+```
+
+| ID | Result | Evidence |
+|---|---|---|
+| SX-19 Admin login (:3001) | ✅ **PASS** (was PARTIAL) | admin@phoenix.local → `/dashboard/` renders shell (Dashboard/Markets/Settlements/Sign Out) + live cards; no console errors |
+| SX-20 Market list + settlement queue | ✅ **PASS** (was PARTIAL) | `/dashboard/`: OPEN MARKETS 95 (Closing-soon list), SETTLEMENT QUEUE 18 (Awaiting-resolution list), Top movers — all live gateway data. Legacy `/prediction-admin/markets` renders AntD table + "Create Market"/Actions controls |
+
+### D-4 — Legacy Pages-Router `/prediction-admin/markets` table empty (S3, open)
+
+`/prediction-admin/markets/` renders its AntD shell + column headers +
+"Create Market" but shows "0 markets / No Data" — it issues **no** market
+fetch (no failed requests; the App-Router `/dashboard` fetches and shows
+markets fine). Pre-existing data-wiring gap on a superseded surface
+(`pages/index.tsx` redirects admins to the App-Router `/dashboard`, not
+here), unrelated to D-3 and not introduced by the D-3 fix. Logged for
+separate triage; does not block SX-19/20 (canonical `/dashboard` shows the
+market list + settlement queue with live data).
+
+**Net:** all 57 scenarios now **PASS** (0 PARTIAL, 0 open failures). Session
+defects: D-1 (S2, fixed), D-2 (S3, fixed), D-3 (S2, fixed). D-4 (S3) noted
+for separate triage. Remaining caveats are documented seed/threshold/
+known-issue, not defects.
