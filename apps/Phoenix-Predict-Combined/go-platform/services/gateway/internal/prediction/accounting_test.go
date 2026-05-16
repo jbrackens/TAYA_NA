@@ -32,13 +32,13 @@ func TestCalculateTakerFeeCents(t *testing.T) {
 	// Default Hula Na rate: 500 bps (5%). Peak fee at p=50.
 	// floor(500 * 50 * 50 * q / 1_000_000) = floor(1.25 * q)
 	cases := []struct {
-		name                    string
-		bps, price, qty         int
-		want                    int64
+		name            string
+		bps, price, qty int
+		want            int64
 	}{
-		{"peak at p=50, q=10", 500, 50, 10, 12},   // floor(12.5) = 12
-		{"peak at p=50, q=1", 500, 50, 1, 1},      // floor(1.25) = 1
-		{"low p=10, q=100", 500, 10, 100, 45},     // 500*10*90*100/1e6 = 45
+		{"peak at p=50, q=10", 500, 50, 10, 12}, // floor(12.5) = 12
+		{"peak at p=50, q=1", 500, 50, 1, 1},    // floor(1.25) = 1
+		{"low p=10, q=100", 500, 10, 100, 45},   // 500*10*90*100/1e6 = 45
 		{"zero qty", 500, 50, 0, 0},
 		{"zero rate", 0, 50, 100, 0},
 		{"price at lower bound (still valid)", 500, 1, 100, 4}, // 500*1*99*100/1e6=4 (floor)
@@ -60,7 +60,7 @@ func TestCalculateTakerFeeCents(t *testing.T) {
 
 func TestAverageCostAfterBuy(t *testing.T) {
 	cases := []struct {
-		name                                                   string
+		name                                             string
 		existingQty, existingAvg, addQty, addPrice, want int
 	}{
 		{"empty position", 0, 0, 10, 50, 50},
@@ -84,7 +84,7 @@ func TestAverageCostAfterBuy(t *testing.T) {
 
 func TestRealizedPnLOnSell(t *testing.T) {
 	cases := []struct {
-		name                                  string
+		name                     string
 		qty, avgCents, sellPrice int
 		want                     int64
 	}{
@@ -107,7 +107,7 @@ func TestRealizedPnLOnSell(t *testing.T) {
 
 func TestIssuanceFillFeasible(t *testing.T) {
 	cases := []struct {
-		name             string
+		name         string
 		taker, maker int
 		want         bool
 	}{
@@ -225,5 +225,32 @@ func TestAvailableQuantity(t *testing.T) {
 	overReserved := &Position{Quantity: 10, ReservedQuantity: 50}
 	if got := AvailableQuantity(overReserved); got != 0 {
 		t.Errorf("over-reserved = %d, want 0 (clamped)", got)
+	}
+}
+
+// Hardening (UAT D-1 / codex [P1]): the in-tx oversell guard's decision
+// must be exact at the boundary — this is the predicate PersistMatchAtomic
+// uses, under the per-market advisory lock, to reject a stale-validated
+// concurrent sell before any seller credit. Off-by-one here = paying out
+// phantom shares.
+func TestSellExceedsOwned(t *testing.T) {
+	cases := []struct {
+		name                  string
+		sold, owned, reserved int
+		wantOversell          bool
+	}{
+		{"exact fit is allowed", 70, 100, 30, false},
+		{"one over available is rejected", 71, 100, 30, true},
+		{"sell entire unreserved position", 100, 100, 0, false},
+		{"no position owns nothing", 1, 0, 0, true},
+		{"reserved shares are not sellable", 1, 50, 50, true},
+		{"over-reserved clamps to zero available", 1, 10, 50, true},
+		{"zero fill never oversells", 0, 0, 0, false},
+	}
+	for _, c := range cases {
+		if got := SellExceedsOwned(c.sold, c.owned, c.reserved); got != c.wantOversell {
+			t.Errorf("%s: SellExceedsOwned(%d,%d,%d)=%v want %v",
+				c.name, c.sold, c.owned, c.reserved, got, c.wantOversell)
+		}
 	}
 }

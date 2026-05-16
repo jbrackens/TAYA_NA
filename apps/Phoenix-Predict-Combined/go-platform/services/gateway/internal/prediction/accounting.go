@@ -139,6 +139,21 @@ func AvailableQuantity(p *Position) int {
 	return avail
 }
 
+// SellExceedsOwned reports whether selling soldQty shares would exceed what
+// the owner can actually deliver (owned minus shares already locked by
+// resting sell orders). Pure so the money-safety decision is deterministically
+// testable. Pre-trade validation (ValidatePlaceOrderRequest) reads a snapshot
+// that can go stale before the match commits; PersistMatchAtomic re-checks
+// this under the per-market advisory lock + row lock so two concurrent sells
+// of the same position cannot both be credited (UAT D-1 / codex [P1]).
+func SellExceedsOwned(soldQty, ownedQty, reservedQty int) bool {
+	avail := ownedQty - reservedQty
+	if avail < 0 {
+		avail = 0
+	}
+	return soldQty > avail
+}
+
 // PositionMutation describes a single fill's effect on one user's position
 // on one side. The exchange engine emits one mutation per fill; the
 // persistence layer aggregates them by (user_id, market_id, side), applies

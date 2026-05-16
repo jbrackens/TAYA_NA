@@ -22,7 +22,7 @@ var _ ExchangeRepository = (*SQLRepository)(nil)
 //  4. Apply HoldReservation (taker's cash hold) if present
 //  5. Apply CaptureReservations (per-fill partial debits — buyer)
 //  6. Apply ReleaseReservations (free uncaptured remainder)
-//  6b. Apply SellerCredits (secondary-fill proceeds — seller)
+//     6b. Apply SellerCredits (secondary-fill proceeds — seller)
 //  7. INSERT trades
 //  8. UPDATE maker orders + taker order (fill state)
 //  9. Apply position mutations (group, load, mutate, upsert)
@@ -60,6 +60,36 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 	}
 	if marketStatus != string(MarketStatusOpen) {
 		return ErrClosedMarket
+	}
+
+	// Authoritative oversell guard for SELL takers. Pre-trade validation
+	// (ValidatePlaceOrderRequest) ran against a position snapshot that can
+	// be stale by the time we commit — two near-simultaneous market sells
+	// of the same position both pass pre-trade and, without this check,
+	// both get credited while ApplyPositionMutation silently clamps the
+	// second to zero (UAT D-1 / codex [P1] phantom-share double-payout).
+	// We are inside the per-market advisory lock; re-read the seller's
+	// position FOR UPDATE so we see any prior sell that already committed,
+	// and reject before any reservation/credit/position write.
+	if plan.Taker.Action == OrderActionSell && plan.Taker.FilledQuantity > 0 {
+		var owned, reserved int
+		err := tx.QueryRowContext(ctx,
+			`SELECT quantity, reserved_quantity
+			   FROM prediction_positions
+			  WHERE user_id = $1 AND market_id = $2 AND side = $3
+			  FOR UPDATE`,
+			plan.Taker.UserID, plan.Market.ID, string(plan.Taker.Side),
+		).Scan(&owned, &reserved)
+		if err == sql.ErrNoRows {
+			// No position row → owns nothing on this side.
+			return ErrInsufficientPosition
+		}
+		if err != nil {
+			return fmt.Errorf("revalidate sell position: %w", err)
+		}
+		if SellExceedsOwned(plan.Taker.FilledQuantity, owned, reserved) {
+			return ErrInsufficientPosition
+		}
 	}
 
 	if plan.HoldReservation != nil {

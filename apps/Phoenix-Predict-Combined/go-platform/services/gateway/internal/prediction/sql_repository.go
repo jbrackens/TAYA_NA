@@ -471,11 +471,12 @@ func (r *SQLRepository) GetPosition(ctx context.Context, userID, marketID string
 	var p Position
 	err := r.db.QueryRowContext(ctx,
 		`SELECT id, user_id, market_id, side, quantity, avg_price_cents, total_cost_cents,
-		        realized_pnl_cents, created_at, updated_at
+		        realized_pnl_cents, reserved_quantity, created_at, updated_at
 		 FROM prediction_positions WHERE user_id = $1 AND market_id = $2 AND side = $3`,
 		userID, marketID, side,
 	).Scan(&p.ID, &p.UserID, &p.MarketID, &p.Side, &p.Quantity,
-		&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.CreatedAt, &p.UpdatedAt)
+		&p.AvgPriceCents, &p.TotalCostCents, &p.RealizedPnlCents, &p.ReservedQuantity,
+		&p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
