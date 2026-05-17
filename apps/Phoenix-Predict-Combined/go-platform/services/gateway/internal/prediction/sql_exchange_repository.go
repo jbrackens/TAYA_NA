@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 )
 
@@ -62,33 +63,51 @@ func (r *SQLRepository) PersistMatchAtomic(ctx context.Context, walletAdapter Ex
 		return ErrClosedMarket
 	}
 
-	// Authoritative oversell guard for SELL takers. Pre-trade validation
+	// Authoritative oversell guard for EVERY seller in the match — the
+	// taker AND every resting maker. Pre-trade validation
 	// (ValidatePlaceOrderRequest) ran against a position snapshot that can
-	// be stale by the time we commit — two near-simultaneous market sells
-	// of the same position both pass pre-trade and, without this check,
-	// both get credited while ApplyPositionMutation silently clamps the
-	// second to zero (UAT D-1 / codex [P1] phantom-share double-payout).
-	// We are inside the per-market advisory lock; re-read the seller's
-	// position FOR UPDATE so we see any prior sell that already committed,
-	// and reject before any reservation/credit/position write.
-	if plan.Taker.Action == OrderActionSell && plan.Taker.FilledQuantity > 0 {
-		var owned, reserved int
-		err := tx.QueryRowContext(ctx,
-			`SELECT quantity, reserved_quantity
-			   FROM prediction_positions
-			  WHERE user_id = $1 AND market_id = $2 AND side = $3
-			  FOR UPDATE`,
-			plan.Taker.UserID, plan.Market.ID, string(plan.Taker.Side),
-		).Scan(&owned, &reserved)
-		if err == sql.ErrNoRows {
-			// No position row → owns nothing on this side.
-			return ErrInsufficientPosition
+	// be stale by commit time, and resting sells do not reserve shares
+	// (reserved_quantity is never written), so two resting maker sells by
+	// one user that together exceed their position both pass pre-trade and,
+	// without this check, both get credited while ApplyPositionMutation
+	// silently clamps the phantom shares to zero (UAT D-1 / codex [P1]
+	// phantom-share double-payout — D-1 closed only the taker leg; LC-31
+	// is the maker leg). We are inside the per-market advisory lock;
+	// re-read each selling user's position FOR UPDATE so we see any prior
+	// sell that already committed, and reject the whole match before any
+	// reservation/credit/position write. Sorted for deterministic lock
+	// acquisition order.
+	soldByPosition := AggregateSoldQty(plan.PositionMutations)
+	if len(soldByPosition) > 0 {
+		keys := make([]SellerPositionKey, 0, len(soldByPosition))
+		for k := range soldByPosition {
+			keys = append(keys, k)
 		}
-		if err != nil {
-			return fmt.Errorf("revalidate sell position: %w", err)
-		}
-		if SellExceedsOwned(plan.Taker.FilledQuantity, owned, reserved) {
-			return ErrInsufficientPosition
+		sort.Slice(keys, func(i, j int) bool {
+			if keys[i].UserID != keys[j].UserID {
+				return keys[i].UserID < keys[j].UserID
+			}
+			return keys[i].Side < keys[j].Side
+		})
+		for _, k := range keys {
+			var owned, reserved int
+			err := tx.QueryRowContext(ctx,
+				`SELECT quantity, reserved_quantity
+				   FROM prediction_positions
+				  WHERE user_id = $1 AND market_id = $2 AND side = $3
+				  FOR UPDATE`,
+				k.UserID, plan.Market.ID, string(k.Side),
+			).Scan(&owned, &reserved)
+			if err == sql.ErrNoRows {
+				// No position row → owns nothing on this side.
+				return ErrInsufficientPosition
+			}
+			if err != nil {
+				return fmt.Errorf("revalidate sell position: %w", err)
+			}
+			if SellExceedsOwned(soldByPosition[k], owned, reserved) {
+				return ErrInsufficientPosition
+			}
 		}
 	}
 

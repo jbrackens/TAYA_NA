@@ -154,6 +154,33 @@ func SellExceedsOwned(soldQty, ownedQty, reservedQty int) bool {
 	return soldQty > avail
 }
 
+// SellerPositionKey identifies one user's position on one side that a match
+// reduces via sell fills.
+type SellerPositionKey struct {
+	UserID string
+	Side   OrderSide
+}
+
+// AggregateSoldQty sums the share quantity each (user, side) is selling
+// across a match plan's position mutations (every sell fill — taker AND
+// resting makers). PersistMatchAtomic uses this to authoritatively re-check
+// every seller against owned shares under the per-market advisory lock.
+// The original D-1 guard only re-checked plan.Taker, so two resting maker
+// sells by one user that together exceed their position both filled and
+// both credited proceeds while ApplyPositionMutation silently clamped the
+// phantom shares to zero — the same double-payout class D-1 fixed, via the
+// maker leg it didn't cover (UAT 2026-05-17 LC-31).
+func AggregateSoldQty(muts []PositionMutation) map[SellerPositionKey]int {
+	out := make(map[SellerPositionKey]int)
+	for _, m := range muts {
+		if !m.IsSell || m.DeltaQty >= 0 {
+			continue
+		}
+		out[SellerPositionKey{UserID: m.UserID, Side: m.Side}] += -m.DeltaQty
+	}
+	return out
+}
+
 // PositionMutation describes a single fill's effect on one user's position
 // on one side. The exchange engine emits one mutation per fill; the
 // persistence layer aggregates them by (user_id, market_id, side), applies

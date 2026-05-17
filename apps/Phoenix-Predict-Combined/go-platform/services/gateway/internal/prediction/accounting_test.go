@@ -254,3 +254,46 @@ func TestSellExceedsOwned(t *testing.T) {
 		}
 	}
 }
+
+// LC-31: AggregateSoldQty must sum EVERY seller's sell fills (taker AND
+// resting makers) per (user,side) so PersistMatchAtomic re-checks them
+// all. The D-1 guard only looked at plan.Taker, so two resting maker
+// sells by one user (the exploit shape) were never re-validated. Pure
+// fails-without/passes-with: the "two maker sells, one user" case below
+// must total 200 — the old taker-only logic would have re-checked 0.
+func TestAggregateSoldQty(t *testing.T) {
+	yes := OrderSideYes
+	no := OrderSideNo
+	muts := []PositionMutation{
+		// buyer leg — must be ignored (not a sell)
+		{UserID: "buyer", Side: yes, DeltaQty: 200, IsSell: false},
+		// LC-31 exploit: same user, two resting maker sell fills, same side
+		{UserID: "u-evil", Side: yes, DeltaQty: -100, IsSell: true},
+		{UserID: "u-evil", Side: yes, DeltaQty: -100, IsSell: true},
+		// a different seller, different side — kept separate
+		{UserID: "u-evil", Side: no, DeltaQty: -30, IsSell: true},
+		{UserID: "u-other", Side: yes, DeltaQty: -10, IsSell: true},
+		// defensive: a sell-flagged but non-negative delta is ignored
+		{UserID: "u-noise", Side: yes, DeltaQty: 0, IsSell: true},
+	}
+	got := AggregateSoldQty(muts)
+
+	if v := got[SellerPositionKey{"u-evil", yes}]; v != 200 {
+		t.Fatalf("u-evil/yes: want 200 (100+100 across two maker sells), got %d", v)
+	}
+	if v := got[SellerPositionKey{"u-evil", no}]; v != 30 {
+		t.Fatalf("u-evil/no: want 30, got %d", v)
+	}
+	if v := got[SellerPositionKey{"u-other", yes}]; v != 10 {
+		t.Fatalf("u-other/yes: want 10, got %d", v)
+	}
+	if _, ok := got[SellerPositionKey{"buyer", yes}]; ok {
+		t.Fatal("buyer leg must not appear (not a sell)")
+	}
+	if _, ok := got[SellerPositionKey{"u-noise", yes}]; ok {
+		t.Fatal("zero/non-negative sell delta must not appear")
+	}
+	if len(got) != 3 {
+		t.Fatalf("want exactly 3 selling (user,side) keys, got %d: %+v", len(got), got)
+	}
+}
