@@ -1,0 +1,76 @@
+name: Deploy demo (Hetzner)
+
+# Auto-deploy the live demo (https://demo.99rtp.io) on push.
+#
+# Mirrors the validated manual flow exactly: rsync the app dir to the box,
+# rebuild the player image ON the box, recreate only the player container.
+# Does NOT run migrate/seed/sync-markets — those are one-time data ops, not
+# per-deploy. Market thumbnails live on the `market_images` Docker volume,
+# so `rsync --delete` is safe (it can't touch the volume).
+#
+# Requires repo secret DEPLOY_SSH_KEY = the private key whose public half is
+# in the box's root authorized_keys (a DEDICATED, revocable deploy key —
+# not an admin key). Note: anyone who can run/modify this workflow or has
+# repo admin can reach root on the demo box. Acceptable for a throwaway
+# 2-6 week demo box; rotate/lock down (non-root deploy user) for anything
+# longer-lived.
+
+on:
+  push:
+    branches: [feat/binary-exchange-engine]   # the deployed branch; change here to retarget
+    paths: ['apps/Phoenix-Predict-Combined/**']
+  workflow_dispatch: {}                        # manual "Run workflow" button
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false   # serialize: a 2-vCPU box can't take two builds; let one finish
+
+env:
+  BOX: 91.98.118.132
+  SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45   # on-box build is ~15-20 min on this small box
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up deploy SSH key
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync app dir to the box
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/deploy $SSH_OPTS" \
+            --exclude node_modules --exclude .next --exclude .git --exclude '*.log' \
+            --exclude test-results --exclude playwright-report --exclude coverage \
+            apps/Phoenix-Predict-Combined/ root@"$BOX":/opt/phoenix/
+
+      - name: Build player image on the box
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix/talon-backoffice &&
+            docker build -f docker/frontend.Dockerfile \
+              --build-arg module_name=app \
+              --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+              -t predict-frontend:app-slim .'
+
+      - name: Recreate player container
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate player'
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://demo.99rtp.io/predict || echo 000)
+            [ "$code" = "200" ] && { echo "live OK ($code)"; exit 0; }
+            echo "attempt $i: $code, retrying…"; sleep 10
+          done
+          echo "demo did not return 200 after deploy"; exit 1
