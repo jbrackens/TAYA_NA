@@ -34,7 +34,44 @@ export class PredictionApiClient {
     this.baseUrl = baseUrl.replace(/\/$/, "");
   }
 
-  private async request<T>(path: string, options?: RequestInit): Promise<T> {
+  // refreshLock dedupes concurrent refresh attempts: a page firing several
+  // prediction calls that all 401 must do ONE /refresh (the auth service
+  // rotates the refresh-token cookie per call, so parallel refreshes race
+  // and cascade-fail). Mirrors the app-level apiClient.refreshSession.
+  private refreshLock: Promise<boolean> | null = null;
+
+  private async refreshSession(): Promise<boolean> {
+    if (typeof window === "undefined") return false;
+    if (this.refreshLock) return this.refreshLock;
+    this.refreshLock = (async () => {
+      try {
+        const res = await fetch(`${this.baseUrl}/api/v1/auth/refresh/`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            ...this.getCSRFHeaders(),
+          },
+        });
+        return res.ok;
+      } catch {
+        return false;
+      } finally {
+        // Clear in a macrotask so awaiting callers resolve with the result
+        // before the lock reopens for the next 401.
+        setTimeout(() => {
+          this.refreshLock = null;
+        }, 0);
+      }
+    })();
+    return this.refreshLock;
+  }
+
+  private async request<T>(
+    path: string,
+    options?: RequestInit,
+    retried = false,
+  ): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     const res = await fetch(url, {
       credentials: "include",
@@ -45,6 +82,24 @@ export class PredictionApiClient {
       },
       ...options,
     });
+
+    // LC-37: a stale access token mid-action (place/preview/cancel order,
+    // portfolio) previously surfaced as a raw "API error: 401" with the
+    // action silently dropped — PredictionApiClient never refreshed, unlike
+    // the app-level apiClient.fetchWithRetry. Refresh once and retry. This
+    // is money-safe: the order path holds a stable idempotencyKey (LC-38)
+    // across the retry, so a re-driven placeOrder is deduped by the gateway
+    // and never double-executes.
+    if (
+      res.status === 401 &&
+      !retried &&
+      typeof window !== "undefined" &&
+      (await this.refreshSession())
+    ) {
+      // Re-issue with rebuilt headers (CSRF cookie may have rotated; the
+      // refreshed access_token rides the credentials:"include" cookie).
+      return this.request<T>(path, options, true);
+    }
 
     if (!res.ok) {
       const errorBody = await res
