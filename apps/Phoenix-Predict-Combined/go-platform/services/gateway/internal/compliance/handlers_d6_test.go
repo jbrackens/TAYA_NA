@@ -53,7 +53,7 @@ func TestRGMutations_SessionBound(t *testing.T) {
 		if rec.Code != http.StatusForbidden {
 			t.Fatalf("cross-user self-exclude must be 403, got %d (%s)", rec.Code, rec.Body.String())
 		}
-		if !strings.Contains(rec.Body.String(), "cannot modify another user's") {
+		if !strings.Contains(rec.Body.String(), "cannot access another user's") {
 			t.Fatalf("expected ownership rejection, got %s", rec.Body.String())
 		}
 		if excluded(mux, "u-victim") {
@@ -178,4 +178,96 @@ func TestKYCMutations_SessionBound(t *testing.T) {
 			t.Fatalf("no-session kyc/verify must be 403, got %d (%s)", rec.Code, rec.Body.String())
 		}
 	})
+}
+
+// GET-disclosure residual (2026-05-17): the RG/KYC *read* endpoints
+// historically trusted an arbitrary ?userId=, so any authenticated user
+// could enumerate another user's compliance state (limits + usage, KYC
+// status/documents, restrictions). They must now be session-bound like the
+// D-6 mutations: a mismatched ?userId= is 403 with no data; an absent one
+// defaults to the session user; no session is 403.
+func TestRGKYCReads_SessionBound(t *testing.T) {
+	get := func(mux *http.ServeMux, path, sessionUID string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		if sessionUID != "" {
+			req = req.WithContext(httpx.WithTestUser(context.Background(), sessionUID, sessionUID, "player"))
+		}
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, req)
+		return rec
+	}
+
+	rgMux := func() *http.ServeMux {
+		mux := http.NewServeMux()
+		registerResponsibleGamblingRoutes(mux, NewMockResponsibleGamblingService())
+		return mux
+	}
+	kycMux := func() *http.ServeMux {
+		mux := http.NewServeMux()
+		registerKYCRoutes(mux, NewMockKYCService())
+		return mux
+	}
+
+	// path is split into base + the extra required params so the
+	// cross-user case can omit them and still prove the ownership check
+	// runs BEFORE param validation.
+	cases := []struct {
+		name        string
+		mux         func() *http.ServeMux
+		base, extra string
+	}{
+		{"rg/restrictions", rgMux, "/api/v1/compliance/rg/restrictions", ""},
+		{"rg/bet-limits", rgMux, "/api/v1/compliance/rg/bet-limits", ""},
+		{"rg/deposit-limits", rgMux, "/api/v1/compliance/rg/deposit-limits", ""},
+		{"rg/check-bet", rgMux, "/api/v1/compliance/rg/check-bet", "&stakeCents=100"},
+		{"rg/check-deposit", rgMux, "/api/v1/compliance/rg/check-deposit", "&amountCents=100"},
+		{"kyc/status", kycMux, "/api/v1/compliance/kyc/status", ""},
+		{"kyc/documents", kycMux, "/api/v1/compliance/kyc/documents", ""},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name+" cross-user is forbidden and leaks nothing", func(t *testing.T) {
+			mux := tc.mux()
+			rec := get(mux, tc.base+"?userId=u-victim"+tc.extra, "u-attacker")
+			if rec.Code != http.StatusForbidden {
+				t.Fatalf("cross-user read must be 403, got %d (%s)", rec.Code, rec.Body.String())
+			}
+			if !strings.Contains(rec.Body.String(), "cannot access another user's") {
+				t.Fatalf("expected ownership rejection, got %s", rec.Body.String())
+			}
+			// A 200 response echoes "userId":"u-victim"; a correct 403
+			// must not carry the victim id back at all.
+			if strings.Contains(rec.Body.String(), "u-victim") {
+				t.Fatalf("403 body must not echo the victim userId: %s", rec.Body.String())
+			}
+		})
+
+		t.Run(tc.name+" own session succeeds", func(t *testing.T) {
+			mux := tc.mux()
+			rec := get(mux, tc.base+"?userId=u-self"+tc.extra, "u-self")
+			if rec.Code != http.StatusOK {
+				t.Fatalf("own read must be 200, got %d (%s)", rec.Code, rec.Body.String())
+			}
+		})
+
+		t.Run(tc.name+" absent userId defaults to session", func(t *testing.T) {
+			mux := tc.mux()
+			q := ""
+			if tc.extra != "" {
+				q = "?" + tc.extra[1:] // drop the leading '&'
+			}
+			rec := get(mux, tc.base+q, "u-self")
+			if rec.Code != http.StatusOK {
+				t.Fatalf("absent-userId read must be 200 (session user), got %d (%s)", rec.Code, rec.Body.String())
+			}
+		})
+
+		t.Run(tc.name+" unauthenticated is forbidden", func(t *testing.T) {
+			mux := tc.mux()
+			rec := get(mux, tc.base+"?userId=u-x"+tc.extra, "")
+			if rec.Code != http.StatusForbidden {
+				t.Fatalf("no-session read must be 403, got %d (%s)", rec.Code, rec.Body.String())
+			}
+		})
+	}
 }

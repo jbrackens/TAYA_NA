@@ -134,9 +134,15 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
-		if userID == "" {
-			return httpx.BadRequest("userId query parameter is required", map[string]any{"field": "userId"})
+		// D-6 parity / GET-disclosure fix: bind the read to the
+		// authenticated session. These reads previously trusted an
+		// arbitrary ?userId=, so any authenticated user could read
+		// another user's RG/KYC state (deterministic userIDs → trivial
+		// enumeration). A mismatched supplied userId is rejected (403);
+		// an absent one defaults to the session user.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
 		}
 
 		status, err := service.GetVerificationStatus(r.Context(), userID)
@@ -197,9 +203,15 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
-		if userID == "" {
-			return httpx.BadRequest("userId query parameter is required", map[string]any{"field": "userId"})
+		// D-6 parity / GET-disclosure fix: bind the read to the
+		// authenticated session. These reads previously trusted an
+		// arbitrary ?userId=, so any authenticated user could read
+		// another user's RG/KYC state (deterministic userIDs → trivial
+		// enumeration). A mismatched supplied userId is rejected (403);
+		// an absent one defaults to the session user.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
 		}
 
 		documents, err := service.ListDocuments(r.Context(), userID)
@@ -215,22 +227,24 @@ func registerKYCRoutes(mux *stdhttp.ServeMux, service KYCService) {
 	}))
 }
 
-// sessionBoundUserID enforces that a responsible-gambling self-service
-// mutation targets the authenticated caller's own account. It returns the
-// session userID — which callers MUST use as the mutation target instead of
-// the request body. The handlers historically trusted a body `userId`, so
-// any authenticated user could set another user's limits / cool-off /
-// (irreversible) self-exclusion by guessing their userID (deterministic from
-// username). A non-empty body userID that doesn't match the session is
-// rejected (defense in depth + surfaces client/integration bugs); an
-// unauthenticated context is rejected. (UAT 2026-05-16 D-6.)
+// sessionBoundUserID enforces that a responsible-gambling / KYC operation
+// targets the authenticated caller's own account. It returns the session
+// userID — which callers MUST use as the target instead of the request
+// body or query param. The handlers historically trusted a caller-supplied
+// `userId`, so any authenticated user could set another user's limits /
+// cool-off / (irreversible) self-exclusion (D-6) — and, via the GET reads,
+// read another user's RG/KYC state — by guessing their userID (deterministic
+// from username). A non-empty supplied userID that doesn't match the session
+// is rejected (defense in depth + surfaces client/integration bugs); an
+// unauthenticated context is rejected. (UAT 2026-05-16 D-6; reads hardened
+// 2026-05-17 GET-disclosure residual.)
 func sessionBoundUserID(r *stdhttp.Request, bodyUserID string) (string, error) {
 	sessionUID := httpx.UserIDFromContext(r.Context())
 	if sessionUID == "" {
 		return "", httpx.Forbidden("authentication required")
 	}
 	if bodyUserID != "" && bodyUserID != sessionUID {
-		return "", httpx.Forbidden("cannot modify another user's responsible-gambling settings")
+		return "", httpx.Forbidden("cannot access another user's compliance data")
 	}
 	return sessionUID, nil
 }
@@ -294,9 +308,15 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
-		if userID == "" {
-			return httpx.BadRequest("userId query parameter is required", map[string]any{"field": "userId"})
+		// D-6 parity / GET-disclosure fix: bind the read to the
+		// authenticated session. These reads previously trusted an
+		// arbitrary ?userId=, so any authenticated user could read
+		// another user's RG/KYC state (deterministic userIDs → trivial
+		// enumeration). A mismatched supplied userId is rejected (403);
+		// an absent one defaults to the session user.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
 		}
 
 		limits, err := service.GetDepositLimits(r.Context(), userID)
@@ -370,9 +390,15 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
-		if userID == "" {
-			return httpx.BadRequest("userId query parameter is required", map[string]any{"field": "userId"})
+		// D-6 parity / GET-disclosure fix: bind the read to the
+		// authenticated session. These reads previously trusted an
+		// arbitrary ?userId=, so any authenticated user could read
+		// another user's RG/KYC state (deterministic userIDs → trivial
+		// enumeration). A mismatched supplied userId is rejected (403);
+		// an absent one defaults to the session user.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
 		}
 
 		limits, err := service.GetBetLimits(r.Context(), userID)
@@ -392,10 +418,16 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
+		// GET-disclosure fix: bind to the authenticated session (see
+		// the read handlers above) so a caller cannot probe another
+		// user's deposit-limit state via ?userId=.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
+		}
 		amountStr := r.URL.Query().Get("amountCents")
-		if userID == "" || amountStr == "" {
-			return httpx.BadRequest("userId and amountCents query parameters are required", map[string]any{"field": "query"})
+		if amountStr == "" {
+			return httpx.BadRequest("amountCents query parameter is required", map[string]any{"field": "amountCents"})
 		}
 
 		amountCents, err := strconv.ParseInt(amountStr, 10, 64)
@@ -421,10 +453,16 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
+		// GET-disclosure fix: bind to the authenticated session (see
+		// the read handlers above) so a caller cannot probe another
+		// user's bet-limit / exclusion state via ?userId=.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
+		}
 		stakeStr := r.URL.Query().Get("stakeCents")
-		if userID == "" || stakeStr == "" {
-			return httpx.BadRequest("userId and stakeCents query parameters are required", map[string]any{"field": "query"})
+		if stakeStr == "" {
+			return httpx.BadRequest("stakeCents query parameter is required", map[string]any{"field": "stakeCents"})
 		}
 
 		stakeCents, err := strconv.ParseInt(stakeStr, 10, 64)
@@ -565,9 +603,15 @@ func registerResponsibleGamblingRoutes(mux *stdhttp.ServeMux, service Responsibl
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
 		}
 
-		userID := r.URL.Query().Get("userId")
-		if userID == "" {
-			return httpx.BadRequest("userId query parameter is required", map[string]any{"field": "userId"})
+		// D-6 parity / GET-disclosure fix: bind the read to the
+		// authenticated session. These reads previously trusted an
+		// arbitrary ?userId=, so any authenticated user could read
+		// another user's RG/KYC state (deterministic userIDs → trivial
+		// enumeration). A mismatched supplied userId is rejected (403);
+		// an absent one defaults to the session user.
+		userID, err := sessionBoundUserID(r, r.URL.Query().Get("userId"))
+		if err != nil {
+			return err
 		}
 
 		restrictions, err := service.GetPlayerRestrictions(r.Context(), userID)
