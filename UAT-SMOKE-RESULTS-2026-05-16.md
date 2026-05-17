@@ -1230,3 +1230,61 @@ confirmed). **Status: RESOLVED.**
 codex CLEAN, live-verified), LC-05 FIXED (D-14), LC-13 interim shipped
 (D-13) + full build tracked. 3 atomic commits (`a4c8974e`, `aad654a9`,
 `cf488509`). 3 new tracked residuals (#8–#10). No fabricated results.
+
+## §30 — Security/correctness residual remediation (3 fixed) + overnight decision log
+
+User picked the "security/correctness residuals first" track and deferred
+the three feature/architecture builds. Triage = 3 parallel read-only
+subagents (GET-disclosure, codex-#4 RG TOCTOU, expired-order); all three
+CONFIRMED with mechanical root-cause fixes, then serial no-shortcuts
+remediation.
+
+### Tracked residuals RESOLVED
+
+| Residual | Verdict | Fix | Verification |
+|---|---|---|---|
+| **GET disclosure** (§20-class / prior-residual #3): `/rg/restrictions`, `/rg/bet-limits`, `/rg/deposit-limits`, `/rg/check-bet`, `/rg/check-deposit`, `/kyc/status`, `/kyc/documents` read an arbitrary `?userId=` | **CONFIRMED S2 IDOR** (authenticated; deterministic userIDs → trivial enumeration of another user's RG/KYC + limits/usage) | `9da23fca` — all 7 per-user reads now resolve the target via the existing D-6 `sessionBoundUserID` guard; guard message generalized to "cannot access another user's compliance data" (covers reads+mutations); D-6 test updated. No legitimate cross-user caller exists (in-process callers use the session uid; bot/admin don't hit these routes). | `TestRGKYCReads_SessionBound` 28/28, fails-without/passes-with demonstrated (neutralized guard leaks `{"userId":"u-victim"}`); suite 24/24; live (rebuilt gw): own 200, cross-user 403 no-leak, absent-userId 200 own, unauth 401. Codex deferred (rate-limited). |
+| **RG bet-limit check-then-record TOCTOU** (prior-residual #1, codex round-1 #4; distinct from D-9 KYC) | **CONFIRMED, still open** — no user-scoped lock spans gate→record; D-5 did not close it; ~N concurrent same-user orders bypass the period bet-limit (bounded by wallet balance) | `e6dbd4ae` — optional `AtomicBetGate` capability (`CheckAndRecordBet`) on the wired `MockResponsibleGamblingService`: check+record in one lock acquisition. Mock's check/record bodies extracted to lock-free helpers (one source of truth; D-5/D-7/D-11 cannot drift). Gate reports recorded → placement reconciles (release committed−realized; full on reject/replay/error; nothing for resting — D-5 preserved) instead of recording again; AMM reconciles via defer. Non-atomic checker → exact legacy behavior. Dormant `rg_postgres` deliberately untouched (folds into residual #4 — user decision). | `TestCheckAndRecordBet_NoTOCTOU_ConcurrentSameUser` -race, fails-without/passes-with (non-atomic → used 1200-1500 vs 1000 limit; atomic → exactly 1000); `TestRGReleaseAfterAtomicGate` locks reconcile math; suite 24/24, prediction+compliance -race clean; live (rebuilt gw): 10 concurrent order-book buys (250c each, 500c daily limit) → exactly 2 accepted, 8 "Bet limit exceeded", usage saturated at exactly 500 (not 2500); demo state restored. AMM path unit/-race only (no seed AMM market — back-compat, per-user-decision accepted caveat). Codex deferred. |
+| **expired-order lifecycle** (prior-residual #2): no path transitions a resting order to terminal + `ReleaseBet` when its market closes/settles/voids | **CONFIRMED (RG over-count, safe-direction) + lifecycle leak** — `expired` status exists but nothing drives it; 3 independent close paths, none finalize resting orders | `c8c1d482` — reconciling sweep (chosen over hooking 3 hot paths): `repo.ListRestingOrdersOnInactiveMarkets` + `Service.SweepExpiredRestingOrders`, driven by a new `RestingOrderExpirer` worker (60s, holds `*Service` like SMM). `cancelExchangeOrder` refactored into status-parameterized `finalizeRestingExchangeOrder` shared by user-cancel (→cancelled) and sweep (→expired); tx + reservation-release + RG reconcile byte-identical to the proven cancel path. No-op in memory/test mode. | suite 24/24 (cancel refactor behavior-preserving), prediction+compliance -race clean, `TestSweepExpiredRestingOrders_SafeInMemoryMode` guard. **Live (rebuilt gw, real data): 862 pre-existing orphaned resting orders on settled markets → swept to `expired` in 2 ticks (`failed=0`), orphan count 862→0, 2516 open-market orders untouched (SQL scope correct, zero collateral).** The 862 were pre-D-5 backdated synthetic Phase-2/5 demo orders (reserved≤captured) so the RG/wallet release correctly no-ops; the reserved>captured RG-release branch is the unchanged live-proven cancel path. Codex deferred. |
+
+**Prior tracked-residual list update:** #1 (RG TOCTOU) → RESOLVED `e6dbd4ae`;
+#2 (expired-order) → RESOLVED `c8c1d482`; #3 (GET disclosure) → RESOLVED
+`9da23fca`. Open residuals now: #4 `rg_postgres` wiring, #5 mock
+monthly-reset, #6 `uploadKycDocument`, #7 D-10 reality-check, #8 LC-13
+full persistence, #9 FEATURE_MANIFEST/GATE-5, #10 LC-38 server fallback.
+
+**Codex gate — deferred, not skipped:** codex hit its usage limit
+mid-session (resets ~6:11 AM); per user decision all 3 fixes were
+committed on the other no-shortcuts gates (root-cause → fails-without/
+passes-with → suite → -race → live-verify) with the independent codex
+P1/P2 review to be run **retroactively** on `9da23fca e6dbd4ae c8c1d482`
+and recorded here (append-only); any P1/P2 → follow-up commit. Raw
+transcripts under `.codex-reviews/` (the `getfix-review-raw.txt`
+currently holds only the rate-limit error; real runs appended on reset).
+
+### Overnight autonomous-work decision log (user asleep, "uninterrupted")
+
+Operating rule while the user is unavailable: fix anything with a clear
+root cause and **no product/compliance/architecture design choice**
+(full no-shortcuts); for genuine feature-build / compliance-parameter /
+large-architecture / policy items **defer with documentation — do NOT
+unilaterally build** (the standing "scope decisions belong to the user;
+do not unilaterally build regulatory features or pick compliance
+parameters" guardrail, enforced ~10× this session, is not overridden by
+"resolve everything" — AskUserQuestion is unavailable overnight, so the
+conservative path is to defer rather than guess).
+
+- **Proceeding autonomously:** residual #5 (mock monthly-reset boundary
+  — clear bug), #6 (`uploadKycDocument` JSON/multipart mismatch — clear
+  bug), parallel-triage Groups E (LC-30-35), F (LC-37/39/40), D-rest
+  (LC-24/26/27/29) then serial-fix only the mechanical defects, office
+  dev-error-overlay suppression removal (if no design choice),
+  retroactive codex.
+- **Deferred (await user decision; documented, NOT built overnight):**
+  #4 `rg_postgres` wiring (large architecture; user deferred), #7 D-10
+  reality-check timer (regulatory feature + compliance parameters; user
+  deferred), #8 LC-13 full notification-prefs persistence (feature +
+  schema design; user deferred), #9 FEATURE_MANIFEST false-REAL /
+  GATE-5 policy (quality-infra policy choice; user deferred), #10 LC-38
+  server `UnixNano` fallback (defense-in-depth; user said leave), LC-12
+  real password-reset (feature + email-infra + security-token design).
