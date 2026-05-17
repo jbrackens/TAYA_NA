@@ -96,7 +96,7 @@ function DiscoveryHero({
     market.ticker,
     yes,
     800,
-    220,
+    140,
     heroPoints ?? undefined,
   );
   const volumeLabel = formatHeroVolume(market.volumeCents);
@@ -113,7 +113,7 @@ function DiscoveryHero({
           background: var(--surface-1);
           border: 1px solid var(--border-1);
           border-radius: var(--r-rh-lg);
-          padding: 36px;
+          padding: 28px;
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .rh-hero-eyebrow {
@@ -138,7 +138,7 @@ function DiscoveryHero({
           font-family: 'Inter', sans-serif;
           font-size: 28px; font-weight: 600;
           line-height: 1.2; letter-spacing: -0.02em;
-          margin: 0 0 24px;
+          margin: 0 0 16px;
           color: var(--t1);
           max-width: 720px;
         }
@@ -158,7 +158,7 @@ function DiscoveryHero({
           display: inline-flex; align-items: center; gap: 10px;
           font-size: 17px; font-weight: 600;
           font-variant-numeric: tabular-nums;
-          margin-bottom: 28px;
+          margin-bottom: 18px;
         }
         .rh-change.up    { color: var(--yes-text); }
         .rh-change.down  { color: var(--no-text); }
@@ -175,7 +175,7 @@ function DiscoveryHero({
         }
 
         .rh-chart { margin-bottom: 16px; }
-        .rh-chart svg { width: 100%; height: 220px; display: block; }
+        .rh-chart svg { width: 100%; height: 140px; display: block; }
         .rh-periods {
           display: flex; gap: 4px;
           margin-top: 14px;
@@ -197,7 +197,7 @@ function DiscoveryHero({
 
         .rh-actions {
           display: flex; gap: 12px;
-          margin-top: 28px;
+          margin-top: 20px;
         }
         .rh-buy-yes, .rh-buy-no {
           flex: 1; max-width: 280px;
@@ -224,7 +224,7 @@ function DiscoveryHero({
         .rh-stats {
           display: grid; grid-template-columns: repeat(4, 1fr);
           gap: 24px;
-          margin-top: 32px;
+          margin-top: 24px;
           padding-top: 24px;
           border-top: 1px solid var(--border-1);
         }
@@ -244,7 +244,7 @@ function DiscoveryHero({
           .rh-bigprice .cents { font-size: 40px; }
           .rh-hero-q { font-size: 22px; margin-bottom: 18px; }
           .rh-change { margin-bottom: 18px; }
-          .rh-chart svg { height: 160px; }
+          .rh-chart svg { height: 120px; }
           .rh-actions { margin-top: 18px; }
           .rh-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
         }
@@ -281,7 +281,7 @@ function DiscoveryHero({
         </div>
 
         <div className="rh-chart">
-          <svg viewBox="0 0 800 220" preserveAspectRatio="none">
+          <svg viewBox="0 0 800 140" preserveAspectRatio="none">
             <defs>
               <linearGradient id="rh-chart-fill" x1="0" x2="0" y1="0" y2="1">
                 <stop
