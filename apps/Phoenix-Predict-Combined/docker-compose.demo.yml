@@ -23,14 +23,26 @@
 # all seed users present. The "production-mode" guards protect against a
 # misconfigured EXTERNAL dsn — N/A with a pinned local Postgres container.
 
+# restart: unless-stopped on EVERY service. The base docker-compose.yml sets
+# no restart policy; during validation a Docker Desktop auto-update restarted
+# the VM (29.3.1 -> 29.4.3) and the whole demo stayed down with no recovery.
+# For an unattended always-on demo ("we don't know when they'll test") a host
+# or Docker restart MUST self-heal — this is the fix.
 services:
+  postgres:
+    restart: unless-stopped
+  redis:
+    restart: unless-stopped
+
   auth:
+    restart: unless-stopped
     environment:
       AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
       JWT_SECRET: "${JWT_SECRET:?export a strong JWT_SECRET before up}"
       LOG_LEVEL: "info"
 
   gateway:
+    restart: unless-stopped
     environment:
       WALLET_DB_DRIVER: "postgres"
       WALLET_DB_MAX_OPEN_CONNS: "20"             # local PG max_conns=100; only real knob
