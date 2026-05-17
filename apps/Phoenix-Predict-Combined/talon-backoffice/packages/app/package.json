@@ -6,7 +6,7 @@
     "bootstrap:locales": "node ./scripts/translations/generate.js",
     "dev": "next dev --webpack",
     "run-local:dev": "yarn watch & next dev --webpack",
-    "build": "yarn bootstrap:locales && next build && ./scripts/check-no-upstream-leak.sh",
+    "build": "next build --webpack && ./scripts/check-no-upstream-leak.sh",
     "check:no-upstream-leak": "./scripts/check-no-upstream-leak.sh",
     "build:local": "env-cmd -f .env.local yarn build",
     "build:dev": "env-cmd -f .env.development yarn build",
@@ -32,6 +32,7 @@
     "watch": "node ./scripts/translations/watch.js"
   },
   "dependencies": {
+    "@phoenix-ui/api-client": "1.0.0",
     "@phoenix-ui/utils": "0.23.1-build.1",
     "@types/react-infinite-scroller": "^1.2.1",
     "formik": "^2.2.9",

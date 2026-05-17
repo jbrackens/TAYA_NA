@@ -1,37 +1,62 @@
-# syntax=docker/dockerfile:experimental
-FROM node:14.17.0
+# Multi-stage build for @phoenix-ui/{app,office} (parameterized by module_name).
+#
+# Why this shape (validated 2026-05-17 — see DEMO_DEPLOYMENT_PLAN.md
+# "Validation status"): single-stage COPY-everything produced a ~7.7 GB image.
+# This builds in a full toolchain stage, then ships only Next's `output:
+# "standalone"` traced closure (server + minimal node_modules) + static +
+# public — typically a few hundred MB.
+#
+# Build-debt fixes baked in (the original Dockerfile + plan A0 were off by 6):
+#  - node:14 -> node:20-bookworm-slim
+#  - no private-Nexus .npmrc secret mount (deps are yarn-workspace-resolved;
+#    yarn.lock has zero @phoenix-ui / flipsports entries)
+#  - NO `yarn bootstrap` (lerna bootstrap EEXISTs on @babel/.bin under node:20
+#    + yarn workspaces); build the target package via `yarn lerna run build`
+#  - app build uses `next build --webpack` (Next 16 defaults to Turbopack;
+#    the app needs its custom webpack alias) — set in packages/app/package.json
+#  - @phoenix-ui/api-client declared in packages/app deps; qs typing shimmed
+#  - .dockerignore must NOT exclude /packages/utils or public/static/locales
+#
+# NOTE (standalone + rewrites): Next evaluates next.config rewrites() at BUILD
+# time for standalone output, so NEXT_PUBLIC_API_URL in the rewrite destination
+# is baked, not runtime. Irrelevant for Path A: Caddy owns /api and /ws on the
+# single origin, so the Next rewrite never fires in production.
 
+# ---- Stage 1: builder (full toolchain) ----
+FROM node:20-bookworm-slim AS builder
 WORKDIR /usr/src
 
-COPY --chown=node . .
-# A good practice: manually inspect what we've just copied from build context,
-# to check if there is anything that should be added to .dockerignore.
-RUN find . | sort
+COPY . .
 
-# We need to enable experimental syntax (requires DOCKER_BUILDKIT=1)
-# to allow to mount a secret just for the execution of `yarn install`
-# (we need that to access our private Nexus repository) -
-# so that .npmrc does NOT remain in any layer of the image.
-# See https://www.alexandraulsh.com/2018/06/25/docker-npmrc-security/ for the UNsafe alternatives.
-# This article suggests using multistage builds... which is okay-ish,
-# but would still bake the secret into commit history of the first stage,
-# which we would later need to explicitly remove from build cache... mounting a secret is just easier.
-RUN --mount=type=secret,id=npmrc,dst=$HOME/.npmrc yarn install
-# A paranoia check to make sure .npmrc does NOT remain in the image
-RUN ! test -e $HOME/.npmrc
-RUN yarn bootstrap
+# Root package.json is private + has workspaces, so `yarn install` already
+# installs and symlinks every @phoenix-ui/* package. Do NOT run `yarn bootstrap`.
+RUN yarn install --frozen-lockfile
 
-# Let's move the ARGs further down the Dockerfile (as close to the actual use as possible)
-# to make a better use of build cache.
 ARG module_name
-RUN yarn build --scope @phoenix-ui/$module_name
+ARG NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+# Builds workspace deps (utils, api-client) then the target package.
+RUN yarn lerna run build --scope @phoenix-ui/$module_name --include-dependencies
+
+# ---- Stage 2: runtime (standalone closure only) ----
+FROM node:20-bookworm-slim AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+# Standalone server binds HOSTNAME (default localhost — would be unreachable
+# from Caddy/host). 0.0.0.0 so the container is reachable.
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+ARG module_name
+ENV MODULE_NAME=$module_name
+
+# Next standalone is rooted at outputFileTracingRoot (= talon-backoffice root),
+# so the traced tree under .next/standalone mirrors packages/<m>/...
+COPY --from=builder --chown=node:node /usr/src/packages/${module_name}/.next/standalone ./
+COPY --from=builder --chown=node:node /usr/src/packages/${module_name}/.next/static ./packages/${module_name}/.next/static
+COPY --from=builder --chown=node:node /usr/src/packages/${module_name}/public ./packages/${module_name}/public
 
 EXPOSE 3000
-
 USER node
-
-# Note that unlike in RUNs, we need to use an ENV, not just ARG
-# since ARGs are only available during the image build,
-# while `$...`s in CMD are only evaluated once container is started.
-ENV MODULE_NAME=$module_name
-CMD yarn start:$MODULE_NAME
+# $MODULE_NAME resolved at container start (ARGs are build-only).
+CMD ["sh", "-c", "node packages/$MODULE_NAME/server.js"]

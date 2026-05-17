@@ -16,7 +16,6 @@
 /prettier.config.js
 /README.md
 /packages/mock-server
-/packages/utils
 /.vscode/
 
 **/build/
@@ -35,7 +34,10 @@
 **/*.pem
 **/.pnp/
 **/.pnp.js
-**/public/static/locales/*
+# NOTE: generated locales under public/static/locales are now the COMMITTED
+# canonical i18n artifact (the translations/ source for @phoenix-ui/app was
+# deleted in #15 "bulk-delete legacy package-root carcass" and app no longer
+# regenerates them). They MUST ship in the image — do not re-exclude.
 **/__tests__/
 **/.vercel
 **/yarn-debug.log*

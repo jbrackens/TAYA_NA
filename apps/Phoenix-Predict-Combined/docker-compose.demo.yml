@@ -1,0 +1,79 @@
+# Production demo overlay for Path A (single box).
+#   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d
+#
+# Base docker-compose.yml already wires postgres+redis+gateway+auth with the
+# store-mode gates (WALLET_STORE_MODE/GATEWAY_READ_REPO_MODE/AUTH_STORE_MODE=db).
+# This overlay (a) hardens env for a public demo, (b) adds the two Next
+# standalone frontends + Caddy (the only public surface).
+#
+# Prereqs (validated 2026-05-17 — see DEMO_DEPLOYMENT_PLAN.md "Validation status"):
+#   1. Build the slim images first (on the box, on corp VPN NOT required):
+#        cd talon-backoffice
+#        docker build -f docker/frontend.Dockerfile --build-arg module_name=app \
+#          --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws   -t predict-frontend:app-slim .
+#        docker build -f docker/frontend.Dockerfile --build-arg module_name=office \
+#          --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws -t predict-frontend:office-slim .
+#   2. export JWT_SECRET=$(openssl rand -hex 32)
+#   3. up; then run one-shot migrate + `seed -mode demo` (Phase A2) — demo data
+#      (u-1 == demo@phoenix.local) is MANDATORY or the demo looks empty.
+#   4. Put the bcrypt hash in ./Caddyfile (office basic_auth).
+#
+# ENVIRONMENT is deliberately left UNSET (validated Path A choice): WS
+# CheckOrigin then allows (no WS_ALLOWED_ORIGINS trap), wallet won't fatal,
+# all seed users present. The "production-mode" guards protect against a
+# misconfigured EXTERNAL dsn — N/A with a pinned local Postgres container.
+
+services:
+  auth:
+    environment:
+      AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
+      JWT_SECRET: "${JWT_SECRET:?export a strong JWT_SECRET before up}"
+      LOG_LEVEL: "info"
+
+  gateway:
+    environment:
+      WALLET_DB_DRIVER: "postgres"
+      WALLET_DB_MAX_OPEN_CONNS: "20"             # local PG max_conns=100; only real knob
+      WALLET_DB_MAX_IDLE_CONNS: "4"
+      LOG_LEVEL: "info"
+      # no JWT_SECRET here (gateway delegates token validation to auth);
+      # no GATEWAY_CORS_ORIGINS (single origin — CORS never triggers).
+
+  player:
+    image: predict-frontend:app-slim
+    container_name: predict_player
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ""                    # client same-origin; Caddy owns /api
+    depends_on: [gateway]
+    networks: [predict_network]
+
+  office:
+    image: predict-frontend:office-slim
+    container_name: predict_office
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: ""
+    depends_on: [gateway]
+    networks: [predict_network]
+
+  caddy:
+    image: caddy:2
+    container_name: predict_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data                         # persists Let's Encrypt certs across restarts
+      - caddy_config:/config
+    depends_on: [player, office, gateway]
+    networks: [predict_network]
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  predict_network:

@@ -1,0 +1,41 @@
+# Production Caddyfile — Path A single-box, two single-origin hosts.
+# Validated topology (2026-05-17, see DEMO_DEPLOYMENT_PLAN.md):
+#   - Each app is ONE origin. The auth cookie is host-only + SameSite=Lax,
+#     so page + /api + /ws MUST share a hostname or auth/WS break.
+#   - Caddy upgrades /ws to the gateway (Next.js does not proxy WS).
+#   - Caddy auto-provisions Let's Encrypt TLS (needs :80/:443 reachable and
+#     the DNS A records pointing here, DNS-only / grey-cloud at Cloudflare).
+#
+# Container names match docker-compose.yml (predict_gateway:18080) and
+# docker-compose.demo.yml (predict_player:3000, predict_office:3000).
+
+{
+	email ops@99rtp.io
+}
+
+# ---- Player (public demo) ----
+demo.99rtp.io {
+	@backend path /api/* /admin/* /ws /ws/*
+	handle @backend {
+		reverse_proxy predict_gateway:18080
+	}
+	handle {
+		reverse_proxy predict_player:3000
+	}
+}
+
+# ---- Backoffice (basic-auth gated; keeps it out of crawlers/uninvited eyes) ----
+office.99rtp.io {
+	@backend path /api/* /admin/* /ws /ws/*
+	handle @backend {
+		reverse_proxy predict_gateway:18080
+	}
+	# Generate the hash on the box:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'
+	# then paste it below (Caddy >=2.8 uses `basic_auth`; older uses `basicauth`).
+	basic_auth {
+		admin REPLACE_WITH_BCRYPT_HASH
+	}
+	handle {
+		reverse_proxy predict_office:3000
+	}
+}

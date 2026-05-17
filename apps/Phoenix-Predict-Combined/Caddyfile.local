@@ -1,0 +1,21 @@
+# Local single-origin validation only (no TLS, no real hostnames).
+# Proves: page + /api (cookie) + /ws all on ONE origin (localhost:8080),
+# which is the exact mechanism Path A relies on in production.
+# Production Caddyfile (two hostnames + auto-TLS) is generated separately.
+{
+	auto_https off
+	admin off
+}
+
+:80 {
+	# Gateway owns the API, admin proxy, and the WebSocket. Caddy v2
+	# reverse_proxy upgrades WS transparently (no extra directive needed).
+	@backend path /api/* /admin/* /ws /ws/*
+	handle @backend {
+		reverse_proxy predict_gateway:18080
+	}
+	# Everything else is the Next.js player app.
+	handle {
+		reverse_proxy predict_player:3000
+	}
+}
