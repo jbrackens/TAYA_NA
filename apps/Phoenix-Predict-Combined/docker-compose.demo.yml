@@ -1,6 +1,10 @@
 # Production demo overlay for Path A (single box).
 #   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d
 #
+# Deploys are automated: pushing changes under apps/Phoenix-Predict-Combined/
+# to feat/binary-exchange-engine triggers .github/workflows/deploy-demo.yml
+# (rsync -> on-box build -> recreate player). No manual step needed.
+#
 # Base docker-compose.yml already wires postgres+redis+gateway+auth with the
 # store-mode gates (WALLET_STORE_MODE/GATEWAY_READ_REPO_MODE/AUTH_STORE_MODE=db).
 # This overlay (a) hardens env for a public demo, (b) adds the two Next
