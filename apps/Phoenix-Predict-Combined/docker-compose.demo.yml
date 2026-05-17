@@ -57,6 +57,12 @@ services:
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ""                    # client same-origin; Caddy owns /api
+    volumes:
+      # sync-markets-rehosted market thumbnails are RUNTIME state, not source.
+      # Persist them on a volume the player serves so a code rsync --delete /
+      # image rebuild can't clobber them and desync DB image_url ↔ files.
+      # Next standalone serves public/ from <serverdir>/public at runtime.
+      - market_images:/app/packages/app/public/images/markets
     depends_on: [gateway]
     networks: [predict_network]
 
@@ -86,6 +92,7 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  market_images:   # sync-markets thumbnails; survives rsync/rebuild/recreate
 
 networks:
   predict_network:
