@@ -1005,14 +1005,23 @@ func (s *Service) CancelOrder(ctx context.Context, orderID, userID string) error
 	return s.repo.UpdateOrder(ctx, order)
 }
 
-// cancelExchangeOrder runs the cancel for an exchange-mode order in one tx
-// so the wallet reservation release commits with the order status update.
-// Buy orders had cash held; sell orders had shares reserved (TODO follow-up
-// for resting-sell reserved_quantity bookkeeping).
+// cancelExchangeOrder runs a user cancel for an exchange-mode order.
 func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet ExchangeWalletAdapter, order *Order) error {
+	return s.finalizeRestingExchangeOrder(ctx, exchangeWallet, order, OrderStatusCancelled)
+}
+
+// finalizeRestingExchangeOrder moves a resting exchange order to a terminal
+// state — OrderStatusCancelled (user cancel) or OrderStatusExpired (the
+// close/void sweep: the order's market is no longer tradeable) — in one tx
+// so the wallet reservation release commits with the status update, then
+// reconciles the RG committed stake (release reserved−captured, scoped to
+// the order's original commit period — D-5). Buy orders had cash held; sell
+// orders had shares reserved (TODO follow-up for resting-sell
+// reserved_quantity bookkeeping).
+func (s *Service) finalizeRestingExchangeOrder(ctx context.Context, exchangeWallet ExchangeWalletAdapter, order *Order, terminal OrderStatus) error {
 	tx, err := exchangeWallet.BeginExchangeTx(ctx)
 	if err != nil {
-		return fmt.Errorf("begin cancel tx: %w", err)
+		return fmt.Errorf("begin %s tx: %w", terminal, err)
 	}
 	defer func() { _ = tx.Rollback() }()
 
@@ -1027,26 +1036,34 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 	// RETURNING the reservation columns (GetOrder's narrower scan does not
 	// load them) gives the exact committed-vs-captured split for the RG
 	// release below, without widening the shared order scan path.
+	// cancelled_at is only meaningful for a user cancel; an expiry leaves
+	// it NULL (the order was not cancelled — its market closed under it).
 	now := time.Now().UTC()
+	var cancelledAt interface{}
+	if terminal == OrderStatusCancelled {
+		cancelledAt = now
+	}
 	var reservedCents, capturedCents int64
 	var placedAt time.Time
 	if err := tx.QueryRowContext(ctx,
 		`UPDATE prediction_orders
-		   SET status = 'cancelled',
-		       cancelled_at = $2,
+		   SET status = $2,
+		       cancelled_at = $3,
 		       updated_at = NOW()
 		 WHERE id = $1
 		 RETURNING reserved_cash_cents, captured_cash_cents, created_at`,
-		order.ID, now,
+		order.ID, string(terminal), cancelledAt,
 	).Scan(&reservedCents, &capturedCents, &placedAt); err != nil {
-		return fmt.Errorf("update order to cancelled: %w", err)
+		return fmt.Errorf("update order to %s: %w", terminal, err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit cancel tx: %w", err)
+		return fmt.Errorf("commit %s tx: %w", terminal, err)
 	}
-	order.Status = OrderStatusCancelled
-	order.CancelledAt = &now
+	order.Status = terminal
+	if terminal == OrderStatusCancelled {
+		order.CancelledAt = &now
+	}
 	order.UpdatedAt = now
 
 	// Reserve+reconcile (D-5 codex P1 #2): the committed stake was recorded
@@ -1060,6 +1077,41 @@ func (s *Service) cancelExchangeOrder(ctx context.Context, exchangeWallet Exchan
 	// D-5 codex re-review round 3).
 	s.releaseComplianceOrder(ctx, order.UserID, reservedCents-capturedCents, placedAt)
 	return nil
+}
+
+// SweepExpiredRestingOrders finalizes resting open/partial exchange orders
+// whose market is no longer tradeable (closed/settled/voided). No market-
+// transition path (admin TransitionMarketStatus, the MarketCloser worker,
+// or SettlementEngine void) finalizes resting orders, so without this sweep
+// the order's RG committed stake stays counted toward the user's period
+// bet-limit and its wallet cash reservation stays held — indefinitely
+// (expired-order residual). Each order is finalized to OrderStatusExpired
+// via the same tx + RG-reconcile path as a user cancel. Best-effort: a
+// per-order failure is counted and retried on the next tick; returns
+// (expired, failed). The worker logs.
+func (s *Service) SweepExpiredRestingOrders(ctx context.Context) (expired, failed int, err error) {
+	orders, lerr := s.repo.ListRestingOrdersOnInactiveMarkets(ctx, 500)
+	if lerr != nil {
+		return 0, 0, fmt.Errorf("list resting orders on inactive markets: %w", lerr)
+	}
+	if len(orders) == 0 {
+		return 0, 0, nil
+	}
+	exchangeWallet, ok := s.wallet.(ExchangeWalletAdapter)
+	if !ok {
+		// Memory/test wallet: the tx-based finalize path is unavailable;
+		// nothing to do (the exchange path only runs against a real DB).
+		return 0, 0, nil
+	}
+	for i := range orders {
+		o := orders[i]
+		if ferr := s.finalizeRestingExchangeOrder(ctx, exchangeWallet, &o, OrderStatusExpired); ferr != nil {
+			failed++
+			continue
+		}
+		expired++
+	}
+	return expired, failed, nil
 }
 
 // --- Portfolio ---

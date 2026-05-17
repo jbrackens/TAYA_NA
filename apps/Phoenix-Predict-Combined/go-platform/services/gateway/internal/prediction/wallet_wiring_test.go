@@ -339,6 +339,9 @@ func (r *memRepo) CreateMarket(context.Context, *Market) error                  
 func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
 func (r *memRepo) ListMarketsToClose(context.Context) ([]Market, error)           { return nil, nil }
 func (r *memRepo) ListMarketsToSettle(context.Context) ([]Market, error)          { return nil, nil }
+func (r *memRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]Order, error) {
+	return nil, nil
+}
 func (r *memRepo) ListOrders(context.Context, OrderFilter) ([]Order, int, error)  { return nil, 0, nil }
 func (r *memRepo) GetOrder(context.Context, string) (*Order, error)               { return nil, nil }
 func (r *memRepo) UpdateOrder(context.Context, *Order) error                      { return nil }

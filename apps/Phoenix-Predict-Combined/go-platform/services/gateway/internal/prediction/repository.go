@@ -36,6 +36,12 @@ type Repository interface {
 
 	// Orders
 	ListOrders(ctx context.Context, filter OrderFilter) ([]Order, int, error)
+	// ListRestingOrdersOnInactiveMarkets returns up to limit open/partial
+	// orders whose market is no longer tradeable (closed/settled/voided).
+	// No market-transition path finalizes resting orders, so their RG
+	// committed stake + wallet reservation stay counted forever; the
+	// expiry sweep uses this to reconcile them (expired-order residual).
+	ListRestingOrdersOnInactiveMarkets(ctx context.Context, limit int) ([]Order, error)
 	GetOrder(ctx context.Context, id string) (*Order, error)
 	GetOrderByIdempotencyKey(ctx context.Context, key string) (*Order, error)
 	CreateOrder(ctx context.Context, o *Order) error

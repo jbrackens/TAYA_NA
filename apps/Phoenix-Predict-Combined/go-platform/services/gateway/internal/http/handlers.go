@@ -190,6 +190,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		settler := workers.NewAutoSettler(predRepo, feedRegistry, predWallet, 60*time.Second)
 		go settler.Run(context.Background())
 
+		// Resting-order expirer: every 60s, finalize resting orders left on
+		// markets that became inactive (closed/settled/voided) — no
+		// transition path does this, so their RG committed stake + wallet
+		// reservation would otherwise stay counted forever.
+		expirer := workers.NewRestingOrderExpirer(predictionService, 60*time.Second)
+		go expirer.Run(context.Background())
+
 		// Reconciler: 15-minute two-phase collateral check across all open
 		// order-book markets per the engine plan. Phase 1 reads without
 		// taking the per-market advisory lock so healthy markets see zero

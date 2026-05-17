@@ -55,6 +55,9 @@ func (r *jsonDefaultRepo) UpdateMarket(context.Context, *Market) error          
 func (r *jsonDefaultRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
 func (r *jsonDefaultRepo) ListMarketsToClose(context.Context) ([]Market, error)           { return nil, nil }
 func (r *jsonDefaultRepo) ListMarketsToSettle(context.Context) ([]Market, error)          { return nil, nil }
+func (r *jsonDefaultRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]Order, error) {
+	return nil, nil
+}
 func (r *jsonDefaultRepo) ListOrders(context.Context, OrderFilter) ([]Order, int, error) {
 	return nil, 0, nil
 }

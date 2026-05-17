@@ -410,6 +410,22 @@ func TestRGPlacementAccounting(t *testing.T) {
 	}
 }
 
+// The resting-order expiry sweep worker is wired in every deployment,
+// including memory/test mode where the wallet is not an
+// ExchangeWalletAdapter and the DB-backed repo query is unavailable. It
+// MUST no-op cleanly there (return 0,0,nil) — never error the worker loop
+// or panic — so a non-DB process can run the worker harmlessly.
+func TestSweepExpiredRestingOrders_SafeInMemoryMode(t *testing.T) {
+	svc := NewService(newMemRepo(), newFakeWallet(0))
+	expired, failed, err := svc.SweepExpiredRestingOrders(context.Background())
+	if err != nil {
+		t.Fatalf("memory-mode sweep must not error, got %v", err)
+	}
+	if expired != 0 || failed != 0 {
+		t.Fatalf("memory-mode sweep must be a no-op, got expired=%d failed=%d", expired, failed)
+	}
+}
+
 // codex-#4: on the AtomicBetGate path the committed stake is recorded
 // atomically AT the gate, so placement never records again — it only
 // RELEASES the portion that didn't become realized spend. This locks the

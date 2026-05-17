@@ -390,6 +390,41 @@ func (r *SQLRepository) ListOrders(ctx context.Context, filter OrderFilter) ([]O
 	return orders, total, rows.Err()
 }
 
+// ListRestingOrdersOnInactiveMarkets returns open/partial orders whose
+// market is closed/settled/voided — orders that can never match again but
+// were never finalized, so their RG committed stake + wallet reservation
+// stay counted. Oldest first so the sweep drains the backlog deterministically.
+func (r *SQLRepository) ListRestingOrdersOnInactiveMarkets(ctx context.Context, limit int) ([]Order, error) {
+	if limit <= 0 {
+		limit = 500
+	}
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT o.id, o.user_id, o.market_id, o.side, o.action, o.order_type, o.price_cents,
+		        o.quantity, o.filled_quantity, o.remaining_quantity, o.total_cost_cents,
+		        o.status, o.wallet_reservation_id, o.idempotency_key,
+		        o.expires_at, o.filled_at, o.cancelled_at, o.created_at, o.updated_at
+		   FROM prediction_orders o
+		   JOIN prediction_markets m ON m.id = o.market_id
+		  WHERE o.status IN ('open','partial')
+		    AND m.status IN ('closed','settled','voided')
+		  ORDER BY o.created_at
+		  LIMIT $1`, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []Order
+	for rows.Next() {
+		o, err := scanOrder(rows)
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, *o)
+	}
+	return orders, rows.Err()
+}
+
 func (r *SQLRepository) GetOrder(ctx context.Context, id string) (*Order, error) {
 	row := r.db.QueryRowContext(ctx,
 		`SELECT id, user_id, market_id, side, action, order_type, price_cents,

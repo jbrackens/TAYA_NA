@@ -114,6 +114,9 @@ func (r *predictionAdminRepo) UpdateMarketStatus(_ context.Context, id string, s
 func (r *predictionAdminRepo) ListMarketsToClose(context.Context) ([]prediction.Market, error) {
 	return nil, nil
 }
+func (r *predictionAdminRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]prediction.Order, error) {
+	return nil, nil
+}
 
 func (r *predictionAdminRepo) ListMarketsToSettle(context.Context) ([]prediction.Market, error) {
 	return nil, nil
