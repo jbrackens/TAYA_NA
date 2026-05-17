@@ -232,7 +232,7 @@ export function TopBar() {
              page content on 1440+ screens. */
           max-width: 1280px;
           margin: 0 auto;
-          height: 76px;
+          height: 64px;
           display: flex;
           align-items: center;
           gap: 24px;
@@ -473,12 +473,9 @@ export function TopBar() {
         @media (max-width: 900px) {
           .tb-inner { gap: 12px; padding: 0 16px; height: 64px; }
           .tb-brand { font-size: 24px; gap: 7px; }
-          /* Cap brand-asset height so the 56px mark + 34px wordmark don't
-             swallow the right rail at 375px. The old text-wordmark sized
-             via font-size; the new <img> wordmark needs its own size
-             rule. Without this BAL gets compressed to "$5.2K" and the
-             header looks cramped. */
-          .tb-brand img { max-height: 32px; }
+          /* Cap brand-asset height (mark 28px + wordmark 22px) so they
+             never swallow the right rail / compress the balance at 375px. */
+          .tb-brand img { max-height: 28px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
         }
@@ -491,13 +488,13 @@ export function TopBar() {
             className="tb-brand"
             aria-label="Hula Na! — home"
           >
-            <BrandMark size={56} />
+            <BrandMark size={28} />
             <img
               src="/brand/wordmark.png"
               alt="Hula Na!"
-              width={140}
-              height={34}
-              style={{ display: "block", height: 34, width: "auto" }}
+              width={91}
+              height={22}
+              style={{ display: "block", height: 22, width: "auto" }}
             />
           </Link>
 
