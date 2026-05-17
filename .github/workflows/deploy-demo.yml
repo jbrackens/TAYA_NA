@@ -68,8 +68,11 @@ jobs:
 
       - name: Health check
         run: |
+          # Use the markets API: returns 200 directly (the player pages
+          # 308-redirect due to next trailingSlash) and also proves the
+          # Caddy -> gateway path, not just that Caddy serves a redirect.
           for i in $(seq 1 12); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://demo.99rtp.io/predict || echo 000)
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://demo.99rtp.io/api/v1/markets?limit=1" || echo 000)
             [ "$code" = "200" ] && { echo "live OK ($code)"; exit 0; }
             echo "attempt $i: $code, retrying…"; sleep 10
           done
