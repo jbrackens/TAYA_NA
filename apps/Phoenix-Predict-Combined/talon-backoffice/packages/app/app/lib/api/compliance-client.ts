@@ -251,31 +251,26 @@ export async function uploadKycDocument(
   file: File,
   documentType: string,
 ): Promise<{ documentId: string; status: string }> {
-  // `??` (not `||`) so an explicit empty string opts into same-origin
-  // mode; only undefined/null falls through to the dev fallback.
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:18080";
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("phoenix_access_token")
-      : null;
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("user_id", userId);
-  formData.append("document_type", documentType);
-
-  const res = await fetch(`${apiUrl}/api/v1/compliance/kyc/submit-document`, {
-    method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
+  // The gateway KYC service records document METADATA as JSON — it does
+  // not accept a multipart binary (KYC is a mock; submit-document decodes
+  // {userId,type,...} and is session-bound). The previous implementation
+  // POSTed multipart snake_case with a raw fetch + Bearer header, which
+  // 400'd on the JSON contract and would 403 on the missing CSRF
+  // double-submit token. Mirror verifyIdentity: shared apiClient (cookie
+  // auth + CSRF + credentials), JSON camelCase. The picked file is a UX
+  // affordance only; just its type is submitted.
+  void file;
+  const raw = await apiClient.post<{
+    document?: { id?: string; documentId?: string; status?: string };
+  }>("/api/v1/compliance/kyc/submit-document", {
+    userId,
+    type: documentType,
   });
-
-  if (!res.ok) {
-    const errorBody = await res.text().catch(() => "Upload failed");
-    throw new Error(errorBody || "Failed to upload KYC document");
-  }
-
-  return res.json();
+  const doc = raw.document ?? {};
+  return {
+    documentId: doc.documentId || doc.id || "",
+    status: doc.status ?? "submitted",
+  };
 }
 
 /**
