@@ -6,7 +6,18 @@ export default function PrivacyPage() {
       <style dangerouslySetInnerHTML={{ __html: legalStyles }} />
       <div className="legal-page">
         <h1>Privacy Policy</h1>
-        <p className="legal-updated">Effective: April 2026</p>
+        <p className="legal-updated">
+          Last updated: May 2026 · Controller: DORA Research, Inc.
+        </p>
+
+        <section>
+          <p>
+            This Privacy Policy explains how DORA Research, Inc. ("DORA
+            Research", "we", "us"), operator of Hula Na!, collects, uses, and
+            protects personal information when you use the Platform. DORA
+            Research, Inc. is the data controller for that information.
+          </p>
+        </section>
 
         <section>
           <h2>1. Information We Collect</h2>
@@ -77,10 +88,52 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2>8. Contact</h2>
+          <h2>8. Legal Bases for Processing</h2>
+          <p>
+            Where applicable law requires a legal basis, we process personal
+            data to perform our contract with you (operating your account and
+            transactions), to comply with legal and regulatory obligations
+            (including KYC/AML), and for our legitimate interests in securing,
+            improving, and operating the Platform, balanced against your rights.
+          </p>
+        </section>
+
+        <section>
+          <h2>9. International Data Transfers</h2>
+          <p>
+            We and our service providers may process personal data in countries
+            other than the one in which you reside. Where data is transferred
+            across borders, we apply appropriate safeguards consistent with
+            applicable data-protection law.
+          </p>
+        </section>
+
+        <section>
+          <h2>10. Children</h2>
+          <p>
+            The Platform is not directed to, and may not be used by, anyone
+            below the minimum age for participation in event-contract markets in
+            their jurisdiction. We do not knowingly collect data from such
+            individuals and will delete it if identified.
+          </p>
+        </section>
+
+        <section>
+          <h2>11. Changes to This Policy</h2>
+          <p>
+            We may update this Policy from time to time. Material changes will
+            be reflected by updating the "Last updated" date above. Continued
+            use of the Platform after an update constitutes acceptance of the
+            revised Policy.
+          </p>
+        </section>
+
+        <section>
+          <h2>12. Contact</h2>
           <p>
             Privacy inquiries can be sent to{" "}
-            <a href="mailto:privacy@hulana.com">privacy@hulana.com</a>.
+            <a href="mailto:privacy@hulana.com">privacy@hulana.com</a>, DORA
+            Research, Inc.
           </p>
         </section>
       </div>

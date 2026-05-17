@@ -15,7 +15,7 @@ const YEAR = new Date().getFullYear();
 
 const LINKS = [
   { href: "/about", label: "About" },
-  { href: "/terms", label: "Terms" },
+  { href: "/terms", label: "Terms of Use" },
   { href: "/privacy", label: "Privacy" },
   ...(FEATURE_RG
     ? [{ href: "/responsible-gaming", label: "Responsible Gaming" }]
@@ -27,13 +27,13 @@ export function PredictFooter() {
   return (
     <footer
       style={{
-        borderTop: "1px solid #1a1f3a",
+        borderTop: "1px solid var(--border-1)",
         padding: "16px 24px",
         display: "flex",
         flexDirection: "column",
         gap: 8,
         fontSize: 12,
-        color: "#D3D3D3",
+        color: "var(--t3)",
       }}
     >
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
@@ -41,17 +41,17 @@ export function PredictFooter() {
           <Link
             key={l.href}
             href={l.href}
-            style={{ color: "#D3D3D3", textDecoration: "none" }}
+            style={{ color: "var(--t3)", textDecoration: "none" }}
           >
             {l.label}
           </Link>
         ))}
       </div>
       <div style={{ opacity: 0.7 }}>
-        <span style={{ color: "#f8fafc", fontWeight: 700 }}>
+        <span style={{ color: "var(--t1)", fontWeight: 700 }}>
           Hula <span style={{ color: "var(--accent)" }}>Na!</span>
         </span>
-        {" · "}© {YEAR}
+        {" · "}© {YEAR} DORA Research, Inc.
         {" · "}Trade event contracts, not sports bets
       </div>
     </footer>

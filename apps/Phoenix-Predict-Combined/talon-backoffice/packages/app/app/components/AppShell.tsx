@@ -19,6 +19,7 @@ import { I18nProvider } from "../lib/i18n/I18nProvider";
 import { AuthProvider } from "./AuthProvider";
 import { ToastProvider } from "./ToastProvider";
 import { TopBar } from "./prediction/TopBar";
+import { PredictFooter } from "./prediction/PredictFooter";
 import { BackendStatusBanner } from "./BackendStatusBanner";
 import MobileTabBar from "./MobileTabBar";
 
@@ -47,6 +48,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     {children}
                   </main>
+                  <PredictFooter />
                   <MobileTabBar />
                 </div>
               )}
