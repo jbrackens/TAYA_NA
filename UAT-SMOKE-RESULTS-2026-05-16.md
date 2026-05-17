@@ -1288,3 +1288,136 @@ conservative path is to defer rather than guess).
   GATE-5 policy (quality-infra policy choice; user deferred), #10 LC-38
   server `UnixNano` fallback (defense-in-depth; user said leave), LC-12
   real password-reset (feature + email-infra + security-token design).
+
+## §31 — Smoke backlog triage (Groups E/F/D-rest) + 3 fixes + codex OWED
+
+Continued the overnight autonomous pass. 3 parallel read-only triage
+subagents over the never-run groups; mechanical defects fixed serially
+no-shortcuts; feature/design-choice items deferred (user asleep —
+AskUserQuestion unavailable, so defer-with-documentation per the §30
+operating rule).
+
+### Triage verdicts
+
+| Item | Verdict | Disposition |
+|---|---|---|
+| **LC-30** partial-fill accounting | ✅ PASS | qty/avg-cost/wallet/RG consistent (`accounting.go:187`, `service.go:201`). |
+| **LC-31** sell / position-close | ❌ **DEFECT S1 → FIXED** `7972aaeb` | Resting-MAKER oversell double-credit (D-1 guard was taker-only; `reserved_quantity` never written). Unified authoritative seller-oversell guard over all sell PositionMutations. See below. |
+| **LC-32** cancel refund | ✅ PASS | releases exactly uncaptured reservation, idempotent (`service.go` finalize + `wallet/service.go:877`). |
+| **LC-33** settlement payout | ✅ PASS | 100¢/0, re-settle structurally blocked, payout key idempotent (`settlement.go:250`). |
+| **LC-34** insufficient funds | ✅ PASS | rejected before money moves; S3 cosmetic stale-`rejected`-row note only (non-money) — deferred nit. |
+| **LC-35** void/refund | ✅ PASS | per-position refund idempotent; resting orders reaped by the §30 expirer. |
+| **LC-37** session-expiry mid-action | ❌ **DEFECT → FIXED** `9438a7de` | Order client had no 401-refresh-retry. See below. |
+| **LC-39** multi-tab/device | ✅ PASS | CSRF read fresh per request; refresh-lock dedupes; stale views fail safe at the gateway. |
+| **LC-40** hostile/malformed input | ✅ PASS | explicit boundary validation + MaxBodySize/Recovery/CSRF middleware (`prediction_handlers.go:401`, `cmd/gateway/main.go:89`). |
+| **LC-24** keyboard nav / a11y | ✅ PASS | combobox ARIA + key handling; inline ticket (no modal/trap needed). S3 roving-tabindex nit — deferred. |
+| **LC-26** ticker-vs-text relevance | ❌ **DEFECT S3 → FIXED** `bc50a0b4` | No ranking. Relevance-ranked search helper. See below. |
+| **LC-27** rapid-type debounce | ✅ PASS | one-time cached in-memory index; per-keystroke is a sync useMemo — no requests, no stale-response race. |
+| **LC-29** multi-outcome event view | ⚠️ **UNBUILT-FEATURE (S3)** | No event-detail route/component exists; intended per the domain model but never built. **Deferred** (feature build). |
+
+### LC-31 — resting-maker oversell / double-payout (S1) — FIXED `7972aaeb`
+
+```
+[LC-31] Two resting limit SELLs by one user exceeding their position
+        both fill and both credit proceeds (phantom-share double-payout)
+Severity: S1   Priority: P1 (real money loss; same class as D-1)
+Env: code-traced + suite/-race; in-tx guard codex+unit+D-1-parity (see verify)
+```
+**Root cause:** D-1's authoritative oversell guard re-read only
+`plan.Taker`; resting sells fill as makers and never reserve shares
+(`reserved_quantity` is never written anywhere), so two resting maker
+sells totalling > owned both passed pre-trade and both got credited
+while `ApplyPositionMutation` clamped the phantom shares to zero.
+**Fix:** `AggregateSoldQty` sums sell `PositionMutations` per (user,side)
+for **every** seller (taker + makers); `PersistMatchAtomic` re-reads each
+selling position `FOR UPDATE` (sorted) and rejects the whole match
+(`ErrInsufficientPosition`, identical D-1 semantics) on oversell. The
+taker-only block is *replaced*, not duplicated — the asymmetry cannot
+recur. Closes the double-CREDIT (money loss).
+**Verification:** `TestAggregateSoldQty` (pure core, fails-without/
+passes-with); `SellExceedsOwned` tests unchanged; full suite 24/24 with
+D-1 taker-oversell regression tests green; prediction `-race` clean;
+live normal order place/cancel unaffected. End-to-end maker-oversell
+economic exploit is **codex+unit+D-1-parity verified, NOT fresh
+live-economic** — a clean live repro needs a 2nd loginable trading user
++ irreversible demo trades (only `demo`/`admin` log in; self-match is
+blocked); this is the exact verification class D-1's own in-tx guard
+used (§18). **Manual repro for the user:** as user A holding N shares of
+an order_book market/side, place two resting limit SELLs of N each (both
+rest — `reserved_quantity` unwritten); as a different user place a
+taker BUY crossing both; pre-fix A is credited for 2N while owning N,
+post-fix the match is rejected `ErrInsufficientPosition`.
+**New tracked residual #11 (deferred — design choice):** prevent the
+over-committed resting sell at *placement* by writing/enforcing
+`reserved_quantity` so the 2nd sell is rejected up front (vs the current
+reject-at-match). Larger feature; reserve-on-rest vs maker-side-only
+re-check is a product/UX decision. Folds with the existing
+`reserved_quantity` TODO (`sql_exchange_repository.go` "Lane C").
+
+### LC-37 — order client no 401-refresh mid-action — FIXED `9438a7de`
+
+`PredictionApiClient.request()` (order/preview/cancel/portfolio) threw a
+raw "API error: 401" and dropped the action; the app-level
+`apiClient.fetchWithRetry` refreshes+retries but the order path never
+used it. Added a self-contained deduped `refreshSession()` + one
+401→refresh→retry mirroring the proven app client (shared package can't
+import the app layer). Money-safe via the LC-38 stable idempotencyKey
+across the retry. Verified: `prediction-client-refresh.test.ts` (real
+client, scripted fetch; fails-without/passes-with), app suite 138/138,
+gate 8/8; mirrors the already-live-proven `fetchWithRetry` contract.
+
+### LC-26 — search relevance ranking — FIXED `bc50a0b4`
+
+Unranked `filter(includes).slice(0,8)` in API order → exact ticker
+match missing/buried. Extracted pure `searchMarkets()` (tiered rank,
+stable tiebreak; recall unchanged) + wired TopBar. Verified:
+`market-search.test.ts` (incl. exact-ticker-survives-top-N-cap;
+fails-without/passes-with), app suite 144/144, gate 8/8.
+
+### Codex independent review — OWED (rate-limited the entire night)
+
+Codex hit its usage limit and the reset moved out to **~2:10 PM**, so
+the no-shortcuts independent P1/P2 review could **not** run for any of
+the night's commits. Per the user's earlier "commit now; run codex
+retroactively" decision, all were committed on the other gates
+(root-cause → fails-without/passes-with → suite → -race → live-verify
+where applicable). **OWED — run codex on each, append verdicts here
+(append-only); any P1/P2 → follow-up commit:**
+
+- `9da23fca` GET-disclosure IDOR (compliance)
+- `e6dbd4ae` RG bet-limit TOCTOU (RG/money) — priority
+- `c8c1d482` expired-order sweep (RG/money)
+- `7a855d35` monthly-reset boundary (RG)
+- `d29ab4c0` uploadKycDocument JSON/CSRF (KYC client)
+- `7972aaeb` LC-31 maker-oversell guard (exchange/money) — **highest priority**
+- `9438a7de` LC-37 order-client 401 refresh (client)
+- `bc50a0b4` LC-26 search ranking (client)
+
+Command per commit (background, ~3-6 min, no `$()` in the prompt):
+`timeout 480 /opt/homebrew/bin/codex exec --skip-git-repo-check "<review prompt: state the change + contract, enumerate failure modes, terse VERDICT, review-only>"`
+→ `cp` output to `.codex-reviews/<name>-raw.txt`, grep VERDICT.
+LC-31 + RG-TOCTOU are the money-path priorities for that pass.
+
+### Deferred — documented, NOT built (await user decision)
+
+Standing: #4 rg_postgres wiring, #7 D-10 reality-check timer, #8 LC-13
+full notification-prefs persistence, #9 FEATURE_MANIFEST/GATE-5 policy,
+#10 LC-38 server `UnixNano` fallback, LC-12 real password-reset.
+New this pass: **#11 LC-31 reserve-on-resting-sell** (placement-time
+prevention; design choice). **LC-29 multi-outcome event-detail view**
+(unbuilt feature — no route exists; per domain model intended). **Office
+dev-error-overlay suppression** (`office/pages/_app.js:39-53`): a
+dev-only MutationObserver hides ALL `NEXTJS-PORTAL` nodes, masking real
+errors — but naive removal reintroduces noisy overlay spam from the
+claimed-benign localStorage hydration mismatches; the correct fix is
+upstream (resolve the hydration mismatches via `suppressHydrationWarning`
+/ client-only render on the localStorage-dependent nodes), an
+investigation/multi-component change, not a clean removal. Dev-only,
+zero prod/correctness impact → deferred. **S3 nits:** LC-34
+stale-`rejected`-order-row cosmetic; LC-24 roving-tabindex on pills.
+
+**Net §31:** 13 triage verdicts (8 PASS, 1 UNBUILT-FEATURE, 3 DEFECT→
+FIXED, plus LC-31). Commits `7972aaeb 9438a7de bc50a0b4`. New residual
+#11. Codex OWED for all 8 night code commits (resets ~2:10 PM). No
+fabricated results — LC-31 end-to-end verification limits stated
+explicitly.
