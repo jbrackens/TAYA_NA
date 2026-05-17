@@ -26,6 +26,7 @@ import {
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { logger } from "../../lib/logger";
+import { searchMarkets } from "../../lib/marketSearch";
 import { useAuth } from "../../hooks/useAuth";
 import { useAppDispatch, useAppSelector } from "../../lib/store/hooks";
 import {
@@ -111,13 +112,10 @@ export function TopBar() {
     }
   }, [allMarkets.length]);
 
-  const searchResults = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [] as PredictionMarket[];
-    return allMarkets
-      .filter((m) => `${m.ticker} ${m.title}`.toLowerCase().includes(q))
-      .slice(0, 8);
-  }, [query, allMarkets]);
+  const searchResults = useMemo(
+    () => searchMarkets(allMarkets, query, 8),
+    [query, allMarkets],
+  );
 
   useEffect(() => {
     if (!searchOpen) return;
