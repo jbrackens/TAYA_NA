@@ -566,6 +566,15 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	return m.checkBetAllowedLocked(userID, stakeCents)
+}
+
+// checkBetAllowedLocked is CheckBetAllowed's decision logic with no locking.
+// The caller MUST already hold m.mu for writing (it lazily refreshes
+// per-period bet-limit state, same as the public method). Extracted so
+// CheckBetAllowed, CheckAndRecordBet, and RecordBet share one source of
+// truth for the limit decision (no drift).
+func (m *MockResponsibleGamblingService) checkBetAllowedLocked(userID string, stakeCents int64) (bool, string, error) {
 	// Check if user is blocked
 	if _, found := m.selfExclusions[userID]; found {
 		se := m.selfExclusions[userID]
@@ -595,6 +604,33 @@ func (m *MockResponsibleGamblingService) CheckBetAllowed(ctx context.Context, us
 		m.betLimits[userID] = limits
 	}
 
+	return true, "", nil
+}
+
+// CheckAndRecordBet performs the bet-limit check and the committed-stake
+// record as ONE atomic operation under a single lock acquisition, closing
+// the check-then-record TOCTOU (codex round-1 #4): with separate
+// CheckBetAllowed → RecordBet calls, N concurrent same-user orders could
+// each pass the gate before any of them recorded, letting aggregate
+// committed stake exceed the period bet-limit. Records ONLY when the check
+// passes and stakeCents > 0 (a sell / zero-stake order is still gated for
+// self-exclusion + cool-off but records no usage). The mock's single global
+// mutex makes the whole check+record sequence atomic per process.
+func (m *MockResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, userID string, stakeCents int64) (bool, string, error) {
+	if userID == "" {
+		return false, "Invalid user", ErrInvalidUserID
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	allowed, reason, err := m.checkBetAllowedLocked(userID, stakeCents)
+	if !allowed || err != nil {
+		return allowed, reason, err
+	}
+	if stakeCents > 0 {
+		m.recordBetLocked(userID, stakeCents, time.Now().UTC())
+	}
 	return true, "", nil
 }
 
@@ -751,8 +787,15 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	now := time.Now().UTC()
+	m.recordBetLocked(userID, stakeCents, time.Now().UTC())
+	return nil
+}
 
+// recordBetLocked is RecordBet's mutation with no locking. The caller MUST
+// already hold m.mu for writing. Extracted so RecordBet and the atomic
+// CheckAndRecordBet share one source of truth (D-5/D-7/D-11 accounting
+// semantics cannot drift between the two entry points).
+func (m *MockResponsibleGamblingService) recordBetLocked(userID string, stakeCents int64, now time.Time) {
 	// Update tracking
 	tracking, found := m.betTracking[userID]
 	if !found || !tracking.ResetAt.After(now) {
@@ -778,8 +821,6 @@ func (m *MockResponsibleGamblingService) RecordBet(ctx context.Context, userID s
 		}
 		m.betLimits[userID] = limits
 	}
-
-	return nil
 }
 
 // ReleaseBet is the symmetric inverse of RecordBet: it reverses committed

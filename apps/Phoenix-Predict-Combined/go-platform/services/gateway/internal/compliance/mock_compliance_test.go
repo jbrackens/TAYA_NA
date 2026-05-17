@@ -2,6 +2,8 @@ package compliance
 
 import (
 	"context"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -401,5 +403,67 @@ func TestMockResponsibleGamblingServiceReleaseBet_CrossPeriodIsNoOp(t *testing.T
 	limits, _ = service.GetBetLimits(ctx, "u-1")
 	if limits[0].UsedCents != 600 {
 		t.Fatalf("same-period release must net: want used 600, got %d", limits[0].UsedCents)
+	}
+}
+
+// codex round-1 #4 TOCTOU: with separate CheckBetAllowed → RecordBet calls,
+// N concurrent same-user orders could each pass the gate before any of them
+// recorded, letting aggregate committed stake exceed the period bet-limit
+// (bounded only by wallet balance). CheckAndRecordBet performs the check and
+// the record as ONE atomic operation, so the limit holds exactly under
+// concurrency. Run with -race. Fails-without/passes-with: temporarily make
+// CheckAndRecordBet non-atomic (check, unlock, record) and this fails with
+// used > limit / allowed > limit/stake.
+func TestCheckAndRecordBet_NoTOCTOU_ConcurrentSameUser(t *testing.T) {
+	svc := NewMockResponsibleGamblingService()
+	ctx := context.Background()
+
+	const (
+		limit      = 1000
+		stake      = 100
+		goroutines = 64
+	)
+	if err := svc.SetBetLimit(ctx, "u-1", "daily", limit); err != nil {
+		t.Fatalf("SetBetLimit: %v", err)
+	}
+
+	var allowed int64
+	var wg sync.WaitGroup
+	start := make(chan struct{})
+	for i := 0; i < goroutines; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			<-start // release all goroutines at once to maximize the race
+			ok, _, _ := svc.CheckAndRecordBet(ctx, "u-1", stake)
+			if ok {
+				atomic.AddInt64(&allowed, 1)
+			}
+		}()
+	}
+	close(start)
+	wg.Wait()
+
+	limits, err := svc.GetBetLimits(ctx, "u-1")
+	if err != nil || len(limits) != 1 {
+		t.Fatalf("GetBetLimits: %v (n=%d)", err, len(limits))
+	}
+	// The control's whole point: recorded usage may never exceed the limit.
+	if limits[0].UsedCents > limit {
+		t.Fatalf("TOCTOU: recorded usage %d exceeds bet-limit %d (allowed=%d/%d)",
+			limits[0].UsedCents, limit, allowed, goroutines)
+	}
+	// And it must be exactly saturated — precisely limit/stake winners, no
+	// over- or under-count.
+	if want := int64(limit / stake); allowed != want {
+		t.Fatalf("expected exactly %d allowed (limit/stake), got %d (used=%d)",
+			want, allowed, limits[0].UsedCents)
+	}
+	if limits[0].UsedCents != limit {
+		t.Fatalf("expected used to saturate at %d, got %d", limit, limits[0].UsedCents)
+	}
+	// Limit fully consumed: a further bet must now be rejected.
+	if ok, _, _ := svc.CheckAndRecordBet(ctx, "u-1", stake); ok {
+		t.Fatal("limit exhausted; a further bet must be rejected")
 	}
 }

@@ -48,6 +48,20 @@ type ComplianceChecker interface {
 	ReleaseBet(ctx context.Context, userID string, amountCents int64, committedAt time.Time) error
 }
 
+// AtomicBetGate is an OPTIONAL ComplianceChecker capability: it performs the
+// bet-limit check and the committed-stake record as one atomic per-user
+// operation. Separate CheckBetAllowed → RecordBet calls have a TOCTOU
+// (codex round-1 #4): N concurrent same-user orders can each pass the gate
+// before any RecordBet runs, so aggregate committed stake exceeds the
+// period bet-limit (bounded only by wallet balance). When the wired checker
+// implements this, the gate uses it and the committed stake is reconciled
+// (released down to realized) after execution instead of recorded then;
+// a checker that does NOT implement it falls back to the legacy (racy)
+// CheckBetAllowed-then-RecordBet path with no behavior change.
+type AtomicBetGate interface {
+	CheckAndRecordBet(ctx context.Context, userID string, stakeCents int64) (allowed bool, reason string, err error)
+}
+
 // SetComplianceChecker wires the responsible-gambling gate. Optional — pass
 // nil (or never call) to leave order placement ungated. Mirrors SetMetrics /
 // SetLoyaltyAdapter: wire after construction so tests can omit it.
@@ -60,13 +74,33 @@ func (s *Service) SetComplianceChecker(c ComplianceChecker) {
 // legacy bets.Service.checkComplianceForPlacement contract: fail-closed in
 // production/staging when the RG service errors, fail-open in development so
 // local testing isn't blocked by a misconfigured checker. nil checker = no-op.
-func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, stakeCents int64) error {
+// Returns recorded=true iff the committed stake was atomically recorded by
+// an AtomicBetGate checker (codex-#4 TOCTOU fix) — the caller must then
+// reconcile (release committed−realized) after execution instead of
+// calling RecordBet. recorded=false means the legacy fall-back path is in
+// effect and the caller records as before. recorded is always false when
+// the order is blocked, when the checker errored (nothing was recorded),
+// for stakeCents<=0 (sells record no usage), and for a non-atomic checker.
+func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, stakeCents int64) (recorded bool, _ error) {
 	if s.compliance == nil {
-		return nil
+		return false, nil
 	}
 	cctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
-	allowed, reason, err := s.compliance.CheckBetAllowed(cctx, userID, stakeCents)
+	atomicGate, atomic := s.compliance.(AtomicBetGate)
+	var (
+		allowed bool
+		reason  string
+		err     error
+	)
+	if atomic {
+		// Atomic check+record closes the check-then-record TOCTOU: a
+		// concurrent same-user order cannot pass the gate between this
+		// decision and the usage write — they are one critical section.
+		allowed, reason, err = atomicGate.CheckAndRecordBet(cctx, userID, stakeCents)
+	} else {
+		allowed, reason, err = s.compliance.CheckBetAllowed(cctx, userID, stakeCents)
+	}
 	// `allowed == false` is an authoritative RG denial (bet limit /
 	// self-exclusion / cool-off). The wired RG service returns a sentinel
 	// error *alongside* allowed=false on a deliberate block — that is a
@@ -77,20 +111,24 @@ func (s *Service) checkComplianceForOrder(ctx context.Context, userID string, st
 		if strings.TrimSpace(reason) == "" {
 			reason = "order blocked by responsible-gambling controls"
 		}
-		return fmt.Errorf("%s", reason)
+		return false, fmt.Errorf("%s", reason)
 	}
 	// allowed == true but the checker still errored → it could not evaluate
 	// (genuine infra ambiguity). Fail closed in production/staging so an
 	// outage cannot silently disable the control; fail open in development
-	// so a locally-misconfigured RG backend doesn't block testing.
+	// so a locally-misconfigured RG backend doesn't block testing. Nothing
+	// was recorded in this branch (CheckAndRecordBet records only on a
+	// clean allow), so recorded stays false.
 	if err != nil {
 		env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT")))
 		if env == "production" || env == "staging" {
-			return fmt.Errorf("responsible-gambling check unavailable")
+			return false, fmt.Errorf("responsible-gambling check unavailable")
 		}
-		return nil // fail-open in development only
+		return false, nil // fail-open in development only
 	}
-	return nil
+	// Clean allow. The atomic gate recorded the committed stake iff it was
+	// positive (sells / zero-stake gate-only orders record nothing).
+	return atomic && stakeCents > 0, nil
 }
 
 // realizedStakeCents is the cash actually staked by a placed order, for
@@ -171,6 +209,33 @@ func rgPlacementAccounting(committed int64, o *Order) (record, release int64) {
 		}
 	}
 	return record, release
+}
+
+// rgReleaseAfterAtomicGate is the reconcile-only counterpart of
+// rgPlacementAccounting for the AtomicBetGate path: the committed worst-case
+// stake was ALREADY recorded atomically at the gate (closing the codex-#4
+// TOCTOU), so placement never records again — it only releases the portion
+// that did not become realized spend. A failed placement or a concurrent
+// idempotent replay releases the whole committed amount (the order did not
+// stand / the original request already counts it). A terminal order releases
+// committed−realized (the unfilled remainder). A resting order releases
+// nothing now: its full committed stays counted until cancel/expire frees
+// the remainder (preserves the D-5 resting-order invariant). A
+// never-reserved reject releases the whole committed (realized 0).
+func rgReleaseAfterAtomicGate(committed int64, o *Order, replayed, hadErr bool) int64 {
+	if committed <= 0 {
+		return 0
+	}
+	if hadErr || replayed || o == nil || o.Status == OrderStatusRejected {
+		return committed
+	}
+	if isTerminalReservedStatus(o.Status) {
+		if rel := committed - realizedStakeCents(o); rel > 0 {
+			return rel
+		}
+		return 0
+	}
+	return 0 // resting (open/partial): committed stays counted (D-5)
 }
 
 // SetMetrics enables domain-level Prometheus counter emission. Wire after
@@ -361,7 +426,9 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 	// limit buys, notional cap for market buys, 0 for sells). Sells still hit
 	// the gate (stake 0) so self-exclusion / cool-off block them too, while
 	// per-bet stake limits don't apply to position-closing sells.
-	if err := s.checkComplianceForOrder(ctx, userID, worstCaseSpend(req)); err != nil {
+	committed := worstCaseSpend(req)
+	gateRecorded, err := s.checkComplianceForOrder(ctx, userID, committed)
+	if err != nil {
 		return nil, nil, err
 	}
 
@@ -375,19 +442,24 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		// the realized taker fill let a user bypass the period limit two ways:
 		// (a) many resting limit orders each passed the gate independently
 		// because nothing was recorded until fill, and (b) a maker fill was
-		// never recorded at all. Instead, record the *committed* worst-case
-		// stake at placement — the same value the gate evaluated and the
-		// wallet reserved — so it counts immediately while the order rests.
-		// An order that is already terminal (market/IOC taker, immediate
-		// fill) has its unfilled remainder freed in the same match, so
-		// release committed−realized now: the net equals realized. A resting
-		// order keeps the full committed counted until cancel/expire releases
-		// the remainder (see cancelExchangeOrder). A maker fill needs no
-		// extra record — it draws down an envelope already counted at the
-		// maker's own placement. Skipped on a concurrent idempotent replay
-		// (#3) and for never-reserved rejects.
-		if perr == nil && !replayed {
-			rec, rel := rgPlacementAccounting(worstCaseSpend(req), o)
+		// never recorded at all. Instead the *committed* worst-case stake —
+		// the same value the gate evaluated and the wallet reserved — counts
+		// from placement so it covers a resting order; the unfilled remainder
+		// is reconciled (released) once the order is terminal.
+		if gateRecorded {
+			// codex-#4 path: the committed stake was recorded ATOMICALLY at
+			// the gate (no check-then-record TOCTOU). Never record again
+			// here — only release the portion that did not become realized
+			// spend. A failed placement or a concurrent idempotent replay
+			// (#3) releases the whole committed amount; a terminal order
+			// releases committed−realized; a resting order releases nothing
+			// (its committed stays counted until cancel/expire).
+			rel := rgReleaseAfterAtomicGate(committed, o, replayed, perr != nil)
+			s.releaseComplianceOrder(ctx, userID, rel, time.Now().UTC())
+		} else if perr == nil && !replayed {
+			// Legacy fall-back (non-atomic checker): record at placement
+			// then release the terminal remainder, exactly as before.
+			rec, rel := rgPlacementAccounting(committed, o)
 			s.recordComplianceOrder(ctx, userID, rec)
 			// committedAt = now: the record and this terminal release happen
 			// in the same call, so they are always the same RG period.
@@ -395,6 +467,37 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		}
 		return o, t, perr
 	}
+
+	// AMM path. The shared RG gate above already recorded the committed
+	// worst-case stake atomically (codex-#4) when gateRecorded is true. AMM
+	// is buy-only and fills immediately (no resting), so reconcile the
+	// gate-recorded amount on EVERY exit via defer: release it entirely on
+	// any failure before the fill (no realized spend), or release
+	// committed−realized on success. rgRecorded accumulates the atomically
+	// recorded amount; the bound==0 capless re-gate below adds the actual
+	// cost it records. A non-atomic checker recorded nothing here
+	// (rgRecorded==0) and the legacy record-realized-on-success calls below
+	// are kept untouched.
+	rgRecorded := int64(0)
+	if gateRecorded {
+		rgRecorded = committed
+	}
+	ammFilled := false
+	var ammRealized int64
+	defer func() {
+		if rgRecorded <= 0 {
+			return
+		}
+		rel := rgRecorded
+		if ammFilled {
+			if rel = rgRecorded - ammRealized; rel < 0 {
+				rel = 0
+			}
+		}
+		if rel > 0 {
+			s.releaseComplianceOrder(context.Background(), userID, rel, time.Now().UTC())
+		}
+	}()
 
 	if req.Action == OrderActionSell {
 		return nil, nil, fmt.Errorf("sell orders not yet supported (requires existing position)")
@@ -434,8 +537,14 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		// the *actual* cost before executing so the limit can't be slipped.
 		// No-op when no RG checker is wired (nil compliance), so legitimate
 		// unbounded AMM buys on the non-RG path are unaffected.
-		if err := s.checkComplianceForOrder(ctx, userID, totalCost); err != nil {
-			return nil, nil, err
+		rec2, gerr := s.checkComplianceForOrder(ctx, userID, totalCost)
+		if gerr != nil {
+			return nil, nil, gerr
+		}
+		// If this capless re-gate recorded atomically, the deferred
+		// reconcile must also account for that actual-cost record.
+		if rec2 {
+			rgRecorded += totalCost
 		}
 	}
 
@@ -534,7 +643,15 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 			); err != nil {
 				return nil, nil, fmt.Errorf("persist filled order atomically: %w", err)
 			}
-			s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
+			if rgRecorded > 0 {
+				// codex-#4 atomic path: committed was recorded at the gate;
+				// mark filled so the deferred reconcile releases
+				// committed−realized. Do NOT record again here.
+				ammFilled = true
+				ammRealized = realizedStakeCents(order)
+			} else {
+				s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
+			}
 			return order, trade, nil
 		}
 	}
@@ -551,7 +668,12 @@ func (s *Service) PlaceOrder(ctx context.Context, req PlaceOrderRequest, userID 
 		return nil, nil, fmt.Errorf("persist filled order: %w", err)
 	}
 
-	s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
+	if rgRecorded > 0 {
+		ammFilled = true
+		ammRealized = realizedStakeCents(order)
+	} else {
+		s.recordComplianceOrder(ctx, userID, realizedStakeCents(order))
+	}
 	return order, trade, nil
 }
 

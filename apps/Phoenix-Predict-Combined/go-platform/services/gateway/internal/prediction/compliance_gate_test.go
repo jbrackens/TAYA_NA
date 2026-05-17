@@ -410,6 +410,57 @@ func TestRGPlacementAccounting(t *testing.T) {
 	}
 }
 
+// codex-#4: on the AtomicBetGate path the committed stake is recorded
+// atomically AT the gate, so placement never records again — it only
+// RELEASES the portion that didn't become realized spend. This locks the
+// reconcile math: a failed placement or a concurrent idempotent replay
+// releases the whole committed (order didn't stand / original already
+// counts it); a terminal order releases committed−realized; a resting
+// order releases nothing (its full committed stays counted until
+// cancel/expire — the D-5 invariant, preserved).
+func TestRGReleaseAfterAtomicGate(t *testing.T) {
+	cases := []struct {
+		name        string
+		committed   int64
+		o           *Order
+		replayed    bool
+		hadErr      bool
+		wantRelease int64
+	}{
+		{"zero committed releases nothing", 0, &Order{Status: OrderStatusFilled}, false, false, 0},
+		{"placement error releases whole committed", 5000,
+			&Order{Status: OrderStatusOpen}, false, true, 5000},
+		{"idempotent replay releases whole committed (original counts it)", 5000,
+			&Order{Status: OrderStatusFilled, CapturedCashCents: 5000}, true, false, 5000},
+		{"nil order releases whole committed", 5000, nil, false, false, 5000},
+		{"never-reserved reject releases whole committed", 5000,
+			&Order{Status: OrderStatusRejected}, false, false, 5000},
+		{"resting open releases nothing (committed stays counted)", 5000,
+			&Order{Status: OrderStatusOpen, FilledQuantity: 0}, false, false, 0},
+		{"resting partial releases nothing", 5000,
+			&Order{Status: OrderStatusPartial, FilledQuantity: 3, CapturedCashCents: 1500}, false, false, 0},
+		{"filled taker releases committed−realized", 5000,
+			&Order{Status: OrderStatusFilled, FilledQuantity: 136, CapturedCashCents: 4994}, false, false, 6},
+		{"IOC cancelled remainder releases committed−realized", 2500,
+			&Order{Status: OrderStatusCancelled, FilledQuantity: 1, CapturedCashCents: 190}, false, false, 2310},
+		{"expired unfilled releases whole committed", 2500,
+			&Order{Status: OrderStatusExpired, FilledQuantity: 0}, false, false, 2500},
+		{"fully captured terminal releases nothing", 1900,
+			&Order{Status: OrderStatusFilled, FilledQuantity: 10, CapturedCashCents: 1900}, false, false, 0},
+		{"error wins over a resting status", 5000,
+			&Order{Status: OrderStatusOpen}, false, true, 5000},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := rgReleaseAfterAtomicGate(c.committed, c.o, c.replayed, c.hadErr)
+			if got != c.wantRelease {
+				t.Fatalf("rgReleaseAfterAtomicGate(%d, %+v, replayed=%v, hadErr=%v) = %d, want %d",
+					c.committed, c.o, c.replayed, c.hadErr, got, c.wantRelease)
+			}
+		})
+	}
+}
+
 // A genuine "could not evaluate" infra error (allowed=true + err) fails open
 // in development (so a misconfigured local RG does not block testing) and
 // fails closed in production/staging (so an outage cannot silently disable
@@ -420,19 +471,19 @@ func TestCheckComplianceForOrder_InfraError_FailOpenDevFailClosedProd(t *testing
 
 	t.Run("dev fails open", func(t *testing.T) {
 		t.Setenv("ENVIRONMENT", "")
-		if err := svc.checkComplianceForOrder(context.Background(), "u", 500); err != nil {
+		if _, err := svc.checkComplianceForOrder(context.Background(), "u", 500); err != nil {
 			t.Fatalf("dev must fail open on infra error, got %v", err)
 		}
 	})
 	t.Run("production fails closed", func(t *testing.T) {
 		t.Setenv("ENVIRONMENT", "production")
-		if err := svc.checkComplianceForOrder(context.Background(), "u", 500); err == nil {
+		if _, err := svc.checkComplianceForOrder(context.Background(), "u", 500); err == nil {
 			t.Fatal("production must fail closed on infra error, got nil")
 		}
 	})
 	t.Run("staging fails closed", func(t *testing.T) {
 		t.Setenv("ENVIRONMENT", "staging")
-		if err := svc.checkComplianceForOrder(context.Background(), "u", 500); err == nil {
+		if _, err := svc.checkComplianceForOrder(context.Background(), "u", 500); err == nil {
 			t.Fatal("staging must fail closed on infra error, got nil")
 		}
 	})
