@@ -988,7 +988,12 @@ func getResetTime(now time.Time, period string) time.Time {
 		}
 		return now.AddDate(0, 0, daysUntilMonday).Truncate(24 * time.Hour)
 	case "monthly":
-		return now.AddDate(0, 1, 0).Truncate(24 * time.Hour)
+		// First of NEXT month at 00:00 UTC — a calendar-month period, not
+		// "same day-of-month next month". Matches the (correct) Postgres
+		// periodResetTime/periodStart so cross-period release scoping
+		// (D-5) and the surfaced resetsAt agree. time.Date normalizes
+		// month 13 → next-year January.
+		return time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	default:
 		return now.AddDate(0, 0, 1)
 	}

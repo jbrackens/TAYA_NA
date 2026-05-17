@@ -467,3 +467,55 @@ func TestCheckAndRecordBet_NoTOCTOU_ConcurrentSameUser(t *testing.T) {
 		t.Fatal("limit exhausted; a further bet must be rejected")
 	}
 }
+
+// Residual #5 (codex P2): the mock's monthly period reset was
+// now.AddDate(0,1,0) — "same day-of-month next month" — instead of the
+// first of next month at 00:00 UTC. That disagreed with the (correct)
+// Postgres periodStart/periodResetTime and the surfaced resetsAt, and
+// mis-scoped D-5 cross-period release for monthly limits. Fails-without:
+// the mid-month case below was 2026-02-15, not 2026-02-01.
+func TestGetResetTime_MonthlyIsFirstOfNextMonthUTC(t *testing.T) {
+	mustUTC := func(s string) time.Time {
+		ts, err := time.Parse(time.RFC3339, s)
+		if err != nil {
+			t.Fatalf("parse %q: %v", s, err)
+		}
+		return ts
+	}
+	cases := []struct {
+		name string
+		now  string
+		want string
+	}{
+		{"mid-month", "2026-01-15T14:23:11Z", "2026-02-01T00:00:00Z"},
+		{"first-of-month", "2026-03-01T00:00:00Z", "2026-04-01T00:00:00Z"},
+		{"last-day-of-month", "2026-01-31T23:59:59Z", "2026-02-01T00:00:00Z"},
+		{"year boundary (Dec→Jan)", "2026-12-20T09:00:00Z", "2027-01-01T00:00:00Z"},
+		{"leap-Feb start", "2028-02-29T12:00:00Z", "2028-03-01T00:00:00Z"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			got := getResetTime(mustUTC(c.now), "monthly")
+			if !got.Equal(mustUTC(c.want)) {
+				t.Fatalf("getResetTime(%s, monthly) = %s, want %s", c.now, got.Format(time.RFC3339), c.want)
+			}
+			// Must be a clean UTC midnight on the 1st, strictly future.
+			if got.Day() != 1 || got.Hour() != 0 || got.Minute() != 0 || got.Second() != 0 {
+				t.Fatalf("monthly reset must be the 1st at 00:00, got %s", got.Format(time.RFC3339))
+			}
+			if !got.After(mustUTC(c.now)) {
+				t.Fatalf("monthly reset must be in the future of %s, got %s", c.now, got.Format(time.RFC3339))
+			}
+		})
+	}
+
+	// Regression guard: daily/weekly were already correct — keep them so.
+	d := getResetTime(mustUTC("2026-01-15T14:00:00Z"), "daily")
+	if !d.Equal(mustUTC("2026-01-16T00:00:00Z")) {
+		t.Fatalf("daily reset regressed: got %s", d.Format(time.RFC3339))
+	}
+	w := getResetTime(mustUTC("2026-01-15T14:00:00Z"), "weekly") // Thu → next Mon
+	if !w.Equal(mustUTC("2026-01-19T00:00:00Z")) {
+		t.Fatalf("weekly reset regressed: got %s", w.Format(time.RFC3339))
+	}
+}
