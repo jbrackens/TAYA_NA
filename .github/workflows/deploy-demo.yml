@@ -70,6 +70,20 @@ jobs:
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d --no-deps --force-recreate player'
 
+      - name: Health check (player)
+        run: |
+          # Player is the live demo and the priority — verify it BEFORE the
+          # office steps so an office-side problem can never skip this check.
+          # Use the markets API: returns 200 directly (the player pages
+          # 308-redirect due to next trailingSlash) and also proves the
+          # Caddy -> gateway path, not just that Caddy serves a redirect.
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://demo.99rtp.io/api/v1/markets?limit=1" || echo 000)
+            [ "$code" = "200" ] && { echo "live OK ($code)"; exit 0; }
+            echo "attempt $i: $code, retrying…"; sleep 10
+          done
+          echo "demo did not return 200 after deploy"; exit 1
+
       - name: Build office image on the box
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
@@ -94,8 +108,13 @@ jobs:
           # password into this committed file (credential in source — no).
           # Instead assert on the box that the recreated office container is
           # actually up and not crash-looping. Retry to allow Next start.
+          # JWT_SECRET=unused is mandatory for ANY `docker compose` call here:
+          # the compose config interpolates services.auth.environment.JWT_SECRET,
+          # so `ps`/`logs` error out (and the run false-fails) without it —
+          # the same prefix the recreate steps already use.
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
             cd /opt/phoenix &&
+            export JWT_SECRET=unused &&
             for i in $(seq 1 12); do
               state=$(docker inspect -f "{{.State.Status}}/{{.State.Restarting}}" \
                 "$(docker compose -f docker-compose.yml -f docker-compose.demo.yml ps -q office)" 2>/dev/null || echo "missing/true")
@@ -106,15 +125,3 @@ jobs:
             echo "office container not healthy after recreate"
             docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 office || true
             exit 1'
-
-      - name: Health check
-        run: |
-          # Use the markets API: returns 200 directly (the player pages
-          # 308-redirect due to next trailingSlash) and also proves the
-          # Caddy -> gateway path, not just that Caddy serves a redirect.
-          for i in $(seq 1 12); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://demo.99rtp.io/api/v1/markets?limit=1" || echo 000)
-            [ "$code" = "200" ] && { echo "live OK ($code)"; exit 0; }
-            echo "attempt $i: $code, retrying…"; sleep 10
-          done
-          echo "demo did not return 200 after deploy"; exit 1
