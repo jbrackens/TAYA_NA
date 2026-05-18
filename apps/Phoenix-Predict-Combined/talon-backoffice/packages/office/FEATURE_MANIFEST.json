@@ -26,6 +26,7 @@
     {
       "id": "pages-router-no-hydration",
       "severity": "S1-architectural",
+      "status": "RESOLVED for prediction-admin (2026-05-18) via Option A — markets+settlements migrated Pages->App Router and verified hydrating with live data. The underlying Next-16/React-19 legacy-Pages-Router bootstrap failure still affects the REMAINING Pages-Router routes (pages/logs, pages/terms-and-conditions, pages/index, pages/not-authorized, the market-categories container) — migrate any that must be interactive; do NOT add new Pages-Router routes to this app.",
       "discovered": "2026-05-18",
       "summary": "EVERY Pages-Router route in this office app fails to hydrate on the client. Verified across /prediction-admin/settlements, /prediction-admin/markets, and /logs: the page+container+_app JS modules all evaluate, but NO React component renders client-side (AppComponent/SessionGuard/page/container render markers never fire), there are ZERO client errors (window.onerror + unhandledrejection + console.error all empty with _app.js suppression disabled), and no DOM node has a React fiber. Only SSR HTML is shown; effects never run; data never loads. App-Router routes (/auth/login, /dashboard, /audit-logs) hydrate fine. Root cause is at the Next Pages-Router CLIENT BOOTSTRAP itself — pages/_app.js modules evaluate but PhoenixApp/AppComponent never render. Stack: Next 16.2.2 + React 19.2.4 + legacy Pages Router (+ AntD 4.16, next-i18next ^14).",
       "impact": "All Pages-Router admin surfaces (prediction-admin/markets, prediction-admin/settlements, logs, terms-and-conditions, market-categories) are server-rendered but non-interactive: tables never populate, buttons/modals/forms do nothing. The 'settlements/markets show 0 markets' symptom is one facet of this.",
@@ -37,21 +38,21 @@
   "pages": [
     {
       "route": "/prediction-admin/markets",
-      "router": "pages",
-      "file": "pages/prediction-admin/markets.tsx -> containers/prediction-markets/index.tsx",
+      "router": "app",
+      "file": "app/(dashboard)/prediction-admin/markets/page.tsx -> containers/prediction-markets/index.tsx",
       "domain": "prediction",
-      "status": "STUBBED",
+      "status": "REAL",
       "verification": "verified",
-      "notes": "Container CODE is REAL (504 lines, createPredictionClient, hits /api/v1/admin/markets/:id/status,/settle,getMarkets,getCategories,getDriftAlerts, ADMIN-secured) — but the PAGE is non-functional client-side: blocked by known_blockers/pages-router-no-hydration (no client render, table never populates). Marked STUBBED because it does not work end-to-end until the dual-router hydration blocker is resolved (App Router migration)."
+      "notes": "2026-05-18: MIGRATED Pages->App Router (Option A; resolves pages-router-no-hydration). Verified end-to-end: hydrates (React fiber present), renders 100 markets from the live gateway, Create Market button interactive, inside the (dashboard) shell. Container code unchanged + reused. AntD CSS supplied by app/(dashboard)/prediction-admin/layout.tsx. Old pages/prediction-admin/markets.tsx deleted (route collision). No securedPage/ADMIN guard (matches other app-router (dashboard) pages; re-adding role-gating is a separate app-wide decision)."
     },
     {
       "route": "/prediction-admin/settlements",
-      "router": "pages",
-      "file": "pages/prediction-admin/settlements.tsx -> containers/prediction-settlements/index.tsx",
+      "router": "app",
+      "file": "app/(dashboard)/prediction-admin/settlements/page.tsx -> containers/prediction-settlements/index.tsx",
       "domain": "prediction",
-      "status": "STUBBED",
+      "status": "REAL",
       "verification": "verified",
-      "notes": "Container CODE is REAL (NOT empty — a head-truncated ls on 2026-05-18 falsely flagged it broken; loadData -> getMarkets({status:'closed'}) + getDriftAlerts; gateway returns 200 with 22 closed markets; polished 2026-05-18: verbatim error, drift badge, conditional override). The PAGE is non-functional client-side: NOT the earlier auth-thrash (that was fixed via ROUTE_AUTH ed71d8c3) — it is known_blockers/pages-router-no-hydration (no client render at all; queue never populates). STUBBED until the dual-router hydration blocker is resolved (App Router migration)."
+      "notes": "2026-05-18: MIGRATED Pages->App Router (Option A; resolves pages-router-no-hydration). Verified end-to-end: hydrates (React fiber present), queue shows '22 markets awaiting settlement' with 20 rows from the live gateway, Settle action present, inside the (dashboard) shell. Container code unchanged + reused (incl. the 2026-05-18 polish: verbatim load error, drift badge, conditional override). Old pages/prediction-admin/settlements.tsx deleted (route collision). No securedPage/ADMIN guard (matches other app-router (dashboard) pages)."
     },
     {
       "route": "/prediction-admin (market-categories)",
