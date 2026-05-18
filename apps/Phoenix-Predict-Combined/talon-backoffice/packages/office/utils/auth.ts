@@ -1,6 +1,5 @@
-const {
-  API_GLOBAL_ENDPOINT,
-} = require("next/config").default().publicRuntimeConfig;
+const { API_GLOBAL_ENDPOINT } =
+  require("next/config").default().publicRuntimeConfig;
 import Router from "next/router";
 import { NextPageContext } from "next";
 import { appendSecondsToTimestamp } from "@phoenix-ui/utils/dist/converters";
@@ -14,7 +13,11 @@ import jwt from "jsonwebtoken";
 import dayjs from "dayjs";
 import { isEmpty } from "lodash";
 
-export const ROUTE_AUTH = "/auth";
+// Must be the real login route. The login page lives at /auth/login
+// (app-router app/(auth)/auth/login/page.tsx); there is NO /auth page,
+// so pointing this at "/auth" sent every auth-failure redirect to a 404
+// and the session could never recover (redirect thrash).
+export const ROUTE_AUTH = "/auth/login";
 export const ROUTE_NOT_AUTHORIZED = "/not-authorized";
 
 export const auth = async (
@@ -55,7 +58,9 @@ const callRefreshToken = async (refreshToken: string) => {
  * gateway doesn't issue JWTs — it issues opaque bearer tokens.
  */
 const isDevOpaqueToken = (token: string | undefined): boolean =>
-  process.env.NODE_ENV === "development" && !!token && !validateAndDecode(token);
+  process.env.NODE_ENV === "development" &&
+  !!token &&
+  !validateAndDecode(token);
 
 export const validateSession = async (
   eligibleRoles: PunterRoles = [],
@@ -228,7 +233,7 @@ export const validateAndCheckEligibility = (
 };
 
 export const buildRedirectUrl = (pathname: string) =>
-  pathname.includes(ROUTE_AUTH) ? "" : `${ROUTE_AUTH}?redirectTo=${pathname}`;
+  pathname.includes(ROUTE_AUTH) ? "" : `${ROUTE_AUTH}?returnUrl=${pathname}`;
 
 type NormalizedRefreshPayload = {
   token: string;

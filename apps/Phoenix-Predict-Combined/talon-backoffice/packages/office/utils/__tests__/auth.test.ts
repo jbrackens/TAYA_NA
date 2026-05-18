@@ -3,7 +3,13 @@ import { cleanup } from "@testing-library/react";
 import dayjs from "dayjs";
 import { isString } from "lodash";
 import { appendSecondsToTimestamp, PunterRoleEnum } from "@phoenix-ui/utils";
-import { resolveToken, validateAndDecode, isEligibleToAccess } from "../auth";
+import {
+  resolveToken,
+  validateAndDecode,
+  isEligibleToAccess,
+  buildRedirectUrl,
+  ROUTE_AUTH,
+} from "../auth";
 import {
   setupTokensMock,
   TEST_REFRESH_TOKEN,
@@ -169,5 +175,26 @@ describe("Auth utils", () => {
       expect(getItem("JdaTokenExpDate")).toBe(null);
       expect(getItem("RefreshTokenExpDate")).toBe(null);
     });
+  });
+});
+
+// Regression: ROUTE_AUTH used to be "/auth", which has no page (the login
+// page is the app-router /auth/login). Every auth-failure redirect landed
+// on a 404 and the session could never recover -> redirect thrash that
+// blocked all local back-office QA. Also: the login page reads ?returnUrl=,
+// so buildRedirectUrl must emit returnUrl, not redirectTo.
+describe("auth redirect target (regression: /auth 404 thrash)", () => {
+  test("ROUTE_AUTH is the real login route, not the dead /auth", () => {
+    expect(ROUTE_AUTH).toBe("/auth/login");
+  });
+
+  test("buildRedirectUrl bounces to /auth/login with the returnUrl the login page reads", () => {
+    expect(buildRedirectUrl("/prediction-admin/settlements")).toBe(
+      "/auth/login?returnUrl=/prediction-admin/settlements",
+    );
+  });
+
+  test("buildRedirectUrl does not self-redirect when already on the login route", () => {
+    expect(buildRedirectUrl("/auth/login")).toBe("");
   });
 });
