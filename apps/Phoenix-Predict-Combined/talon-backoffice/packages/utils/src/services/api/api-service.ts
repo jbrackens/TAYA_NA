@@ -1,5 +1,5 @@
 import useFetch, { CachePolicies } from "use-http";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useToken } from "../token-store/token-store-service";
 import { useDispatch } from "react-redux";
 import { get as getProps, isEqual, isEmpty, startCase, isNil } from "lodash";
@@ -8,11 +8,7 @@ import { transformError } from "../../errors";
 import { appendSecondsToTimestamp } from "../../converters";
 import dayjs from "dayjs";
 
-export type UseApiHook<
-  TData = any,
-  TError = any,
-  TBody = any,
-> = {
+export type UseApiHook<TData = any, TError = any, TBody = any> = {
   triggerApi: (
     body?: TBody,
     params?: RequestParams,
@@ -63,9 +59,8 @@ export const sanitizeHeaders = (headers: RequestHeaders): RequestHeaders =>
     .reduce(
       (prev: RequestHeaders, curr: string) => ({
         ...prev,
-        [startCase(startCase(curr).toLowerCase())
-          .split(" ")
-          .join("-")]: headers[curr],
+        [startCase(startCase(curr).toLowerCase()).split(" ").join("-")]:
+          headers[curr],
       }),
       {},
     );
@@ -148,11 +143,7 @@ export const useApiHook = (
   return useApiHookTyped(url, method, apiEndpoint, onSucceed, logOut);
 };
 
-export const useApiHookTyped = <
-  TData = any,
-  TError = any,
-  TBody = any,
->(
+export const useApiHookTyped = <TData = any, TError = any, TBody = any>(
   url: string,
   method: Method,
   apiEndpoint: string,
@@ -221,20 +212,31 @@ export const useApiHookTyped = <
   /**
    * Trigger API function exposed to the FC
    */
-  const triggerApi = (
-    body: TBody = {} as TBody,
-    params: RequestParams = {},
-    headers: RequestHeaders = {},
-  ): void => {
-    setStateRef({
-      ...stateRef.current,
-      requestBody: body,
-      requestParams: params,
-      requestHeaders: headers,
-      isReadyToTrigger: true,
-      isReadyToReturn: true,
-    });
-  };
+  // Stable identity across renders. Consumers put this in useEffect dep
+  // arrays (the lint-correct thing to do); without memoization triggerApi
+  // was a new function every render, so those effects re-ran every render
+  // -> triggerApi -> setState -> re-render -> "Maximum update depth
+  // exceeded" (e.g. containers/audit-logs/index.tsx:251). It only touches
+  // the stable stateRef/setState refs and reads stateRef.current at call
+  // time, so [] deps is correct.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const triggerApi = useCallback(
+    (
+      body: TBody = {} as TBody,
+      params: RequestParams = {},
+      headers: RequestHeaders = {},
+    ): void => {
+      setStateRef({
+        ...stateRef.current,
+        requestBody: body,
+        requestParams: params,
+        requestHeaders: headers,
+        isReadyToTrigger: true,
+        isReadyToReturn: true,
+      });
+    },
+    [],
+  );
 
   /**
    * Resolve query and props and build final url
