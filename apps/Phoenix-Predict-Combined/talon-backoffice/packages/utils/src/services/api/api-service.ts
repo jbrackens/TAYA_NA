@@ -150,9 +150,16 @@ export const useApiHookTyped = <TData = any, TError = any, TBody = any>(
   onSucceed?: Function,
   logOut?: Function,
 ): UseApiHook<TData, TError, TBody> => {
-  if (typeof window === "undefined") {
-    return {} as UseApiHook<TData, TError, TBody>;
-  }
+  // Hooks MUST be called unconditionally and in the same order on server
+  // and client. The previous `if (typeof window === "undefined") return {}`
+  // ran ZERO hooks during SSR but ~10 on the client, so every component
+  // using this hook — notably SessionGuard, which wraps every Pages-Router
+  // page via components/app — hit a React hook-count mismatch on hydration.
+  // The Pages-Router page tree then never hydrated: inert SSR HTML, no
+  // effects, data never loaded ("0 markets"). The hooks below are
+  // SSR-tolerant: useEffect bodies (and the use-http network calls they
+  // gate) never run during SSR, and useToken guards window/localStorage
+  // internally, so running them on the server yields inert initial state.
   const dispatch = useDispatch();
   const stateRef = useRef<ApiHookState>(initState);
   const [state, setState] = useState<ApiHookState>(initState);
