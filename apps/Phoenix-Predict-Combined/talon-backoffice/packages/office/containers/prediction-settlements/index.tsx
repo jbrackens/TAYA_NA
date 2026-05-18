@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Button,
   Card,
   Col,
@@ -11,21 +12,35 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
   message,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import type {
+  CollateralDriftAlert,
+  PredictionMarket,
+} from "@phoenix-ui/api-client/src/prediction-types";
 
 const { Text } = Typography;
 const { TextArea } = Input;
 
 const predictionClient = createPredictionClient();
 
+const formatUsd = (cents: number) =>
+  `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+
 export default function PredictionSettlementsContainer() {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [loading, setLoading] = useState(true);
+  // Drift alerts keyed by marketId for O(1) row lookup. A queued market
+  // with a collateral drift alert can't be settled without an explicit
+  // overrideReason — surfacing it here (badge + modal warning) saves the
+  // admin a failed-submit round trip to discover that.
+  const [driftByMarket, setDriftByMarket] = useState<
+    Record<string, CollateralDriftAlert>
+  >({});
   const [settleOpen, setSettleOpen] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<PredictionMarket | null>(
     null,
@@ -44,10 +59,30 @@ export default function PredictionSettlementsContainer() {
         pageSize: 100,
       });
       setMarkets(res.data || []);
-    } catch {
-      message.error("Failed to load markets");
+    } catch (err: unknown) {
+      // Surface the gateway error verbatim (auth expired, schema mismatch,
+      // etc.) instead of a generic toast — consistent with handleSettle
+      // and the markets container.
+      const detail =
+        err instanceof Error ? err.message : "Failed to load settlement queue";
+      message.error(detail);
     } finally {
       setLoading(false);
+    }
+
+    // Drift alerts run as a follow-up so a 404 on an older gateway build
+    // doesn't fail the main queue load. Silent failure just means no drift
+    // badge / no proactive override prompt — settlement still works and
+    // the gateway still enforces the override server-side.
+    try {
+      const alerts = await predictionClient.getDriftAlerts("24h");
+      const byId: Record<string, CollateralDriftAlert> = {};
+      for (const a of alerts.data) {
+        byId[a.marketId] = a;
+      }
+      setDriftByMarket(byId);
+    } catch {
+      // Silent — see above.
     }
   }
 
@@ -98,7 +133,33 @@ export default function PredictionSettlementsContainer() {
   }
 
   const columns = [
-    { title: "Ticker", dataIndex: "ticker", key: "ticker", width: 160 },
+    {
+      title: "Ticker",
+      dataIndex: "ticker",
+      key: "ticker",
+      width: 200,
+      render: (ticker: string, record: PredictionMarket) => {
+        const drift = driftByMarket[record.id];
+        if (!drift) {
+          return <Text>{ticker}</Text>;
+        }
+        const tip = `${drift.adjustmentCount} adjustment${
+          drift.adjustmentCount === 1 ? "" : "s"
+        } · max drift ${formatUsd(Math.abs(drift.maxDriftCents))} · ${
+          drift.latestReason || "see ledger"
+        } — settlement needs an override reason`;
+        return (
+          <Space size={6}>
+            <Text>{ticker}</Text>
+            <Tooltip title={tip}>
+              <Tag color="red" style={{ marginLeft: 0 }}>
+                drift
+              </Tag>
+            </Tooltip>
+          </Space>
+        );
+      },
+    },
     { title: "Title", dataIndex: "title", key: "title", ellipsis: true },
     {
       title: "Last YES",
@@ -163,6 +224,10 @@ export default function PredictionSettlementsContainer() {
     },
   ];
 
+  const driftOnSelected = selectedMarket
+    ? driftByMarket[selectedMarket.id]
+    : undefined;
+
   return (
     <>
       <PageHeader title="Settlement Queue" />
@@ -216,6 +281,17 @@ export default function PredictionSettlementsContainer() {
             </Text>
           </div>
         )}
+        {driftOnSelected && (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message="Collateral drift detected on this market"
+            description={`${driftOnSelected.adjustmentCount} adjustment(s), max drift ${formatUsd(
+              Math.abs(driftOnSelected.maxDriftCents),
+            )}. An override reason is required to settle.`}
+          />
+        )}
         <Form form={form} layout="vertical" onFinish={handleSettle}>
           <Form.Item name="result" label="Outcome" rules={[{ required: true }]}>
             <Select placeholder="Select outcome">
@@ -256,8 +332,27 @@ export default function PredictionSettlementsContainer() {
           */}
           <Form.Item
             name="overrideReason"
-            label="Override Reason (only if collateral imbalance)"
-            help="Required when the gateway flags a collateral mismatch. Otherwise leave empty."
+            label={
+              driftOnSelected
+                ? "Override Reason (required — collateral drift on this market)"
+                : "Override Reason (only if collateral imbalance)"
+            }
+            help={
+              driftOnSelected
+                ? "This market has a collateral drift alert. Settlement is rejected without an override reason; it is recorded with your user id and timestamp."
+                : "Required when the gateway flags a collateral mismatch. Otherwise leave empty."
+            }
+            rules={
+              driftOnSelected
+                ? [
+                    {
+                      required: true,
+                      message:
+                        "Required: this market has a collateral drift alert",
+                    },
+                  ]
+                : undefined
+            }
           >
             <TextArea
               rows={2}
