@@ -1,0 +1,177 @@
+{
+  "$schema": "phoenix-office-feature-manifest-v1",
+  "generated": "2026-05-18",
+  "generator": "hand-seeded from session greps; statuses carry a `verification` field — run gate.sh + per-route audit to promote `inferred`/`unverified` to `verified`",
+  "intent": "Office is NOT a pages->app migration like packages/app. It is a back-office forked from a sportsbook (2026-04-16) and partially re-pointed at the prediction domain. Completeness here means: every admin surface is REAL (wired to a real gateway API), no SAMPLE_/MOCK_ data, and the sportsbook carcass (CLAUDE.md rule #2) is removed.",
+  "status_legend": {
+    "REAL": "Renders data from a real gateway API (/api/v1/*) with no hardcoded/mock fallback.",
+    "STUBBED": "UI exists but data is SAMPLE_/MOCK_/inline/setTimeout — technical debt, not done.",
+    "MISSING": "Route referenced (nav/import) but no working page, or empty placeholder.",
+    "REMOVE": "Sportsbook-domain leftover that violates CLAUDE.md rule #2 — delete, do not wire."
+  },
+  "verification_legend": {
+    "verified": "Confirmed this session by reading the file AND observing the live API call (status + payload).",
+    "inferred": "Grep-level signal only (appears in real-API-call set, no SAMPLE_ hit) — not per-file confirmed.",
+    "unverified": "Not yet inspected. Status is a placeholder; the gate must not treat it as truth."
+  },
+  "summary": {
+    "note": "Counts intentionally omitted until per-route verification lands. A hand-asserted count is the exact failure this manifest exists to prevent (a head-truncated `ls` produced a false 'broken settlements' call on 2026-05-18).",
+    "total_routes": 12,
+    "verified": 2,
+    "inferred": 5,
+    "unverified": 5,
+    "sportsbook_leftovers_to_remove": 8
+  },
+  "pages": [
+    {
+      "route": "/prediction-admin/markets",
+      "router": "pages",
+      "file": "pages/prediction-admin/markets.tsx -> containers/prediction-markets/index.tsx",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "verified",
+      "notes": "Container (504 lines) uses createPredictionClient(); confirmed hitting /api/v1/admin/markets/:id/status and /:id/settle, getMarkets, getCategories, getDriftAlerts. ADMIN-secured."
+    },
+    {
+      "route": "/prediction-admin/settlements",
+      "router": "pages",
+      "file": "pages/prediction-admin/settlements.tsx -> containers/prediction-settlements/index.tsx",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "verified",
+      "notes": "Container present (NOT empty — a head-truncated ls on 2026-05-18 falsely flagged it broken). loadData -> getMarkets({status:'closed'}) + getDriftAlerts; confirmed 200 from :18080 with 22 closed markets. Polished 2026-05-18 (verbatim error, drift badge, conditional override). Live visual render currently blocked by pre-existing office auth-session thrash (separate task)."
+    },
+    {
+      "route": "/prediction-admin (market-categories)",
+      "router": "pages",
+      "file": "containers/market-categories/",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "unverified",
+      "notes": "Prediction taxonomy admin container exists; not per-file inspected this session."
+    },
+    {
+      "route": "/dashboard",
+      "router": "app",
+      "file": "app/(dashboard)/dashboard/page.tsx",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "inferred",
+      "notes": "Observed calling /api/v1/markets?status=open|closed and /api/v1/admin/dashboard/volume. Stale INTEGRATION_PROGRESS.md describes a sportsbook SAMPLE_ version — superseded; verify the live wiring."
+    },
+    {
+      "route": "/loyalty",
+      "router": "app",
+      "file": "app/(dashboard)/loyalty/{page,settings,[id]}.tsx",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "inferred",
+      "notes": "In real-API-call grep set (/api/v1/...). Predict-native loyalty admin per gateway registerPredictLoyaltyRoutes. Per-route confirm pending."
+    },
+    {
+      "route": "/content",
+      "router": "app",
+      "file": "app/(dashboard)/content/page.tsx",
+      "domain": "prediction",
+      "status": "REAL",
+      "verification": "inferred",
+      "notes": "In real-API-call grep set. Maps to gateway /api/v1/admin/content/pages + /admin/banners. Per-route confirm pending."
+    },
+    {
+      "route": "/users",
+      "router": "app",
+      "file": "app/(dashboard)/users/{page,[id]}.tsx + containers/users/*",
+      "domain": "mixed",
+      "status": "STUBBED",
+      "verification": "inferred",
+      "notes": "containers/users/details/* has SAMPLE_ data (grep-confirmed). containers/users/prediction-orders + wallet are real. containers/users/bets/ is sportsbook leftover (see remove list). Split needed."
+    },
+    {
+      "route": "/leaderboards",
+      "router": "app",
+      "file": "app/(dashboard)/leaderboards/{page,[id]}.tsx",
+      "domain": "prediction",
+      "status": "STUBBED",
+      "verification": "inferred",
+      "notes": "Both SAMPLE_ AND /api/v1 calls present (grep-confirmed) — partial wiring. Gateway has registerPredictLeaderboardRoutes; finish the wiring."
+    },
+    {
+      "route": "/audit-logs",
+      "router": "app",
+      "file": "app/(dashboard)/audit-logs/page.tsx + containers/audit-logs/index.tsx",
+      "domain": "mixed",
+      "status": "STUBBED",
+      "verification": "inferred",
+      "notes": "SAMPLE_ data + sportsbook resolvers. ALSO has a confirmed infinite-render bug (containers/audit-logs/index.tsx:268 useEffect -> setState loop; api-service base resolves to 'undefined' -> GET /undefined/admin/audit-logs 404). Tracked as a separate task."
+    },
+    {
+      "route": "/reports",
+      "router": "app",
+      "file": "app/(dashboard)/reports/page.tsx",
+      "domain": "sportsbook",
+      "status": "STUBBED",
+      "verification": "inferred",
+      "notes": "Flagged sportsbook-domain (fixtures/odds language). Stale docs describe SAMPLE_ metrics. Needs reframe to prediction analytics or removal."
+    },
+    {
+      "route": "/risk-management",
+      "router": "app",
+      "file": "app/(dashboard)/risk-management/page.tsx + containers/risk-management-summary/",
+      "domain": "mixed",
+      "status": "STUBBED",
+      "verification": "inferred",
+      "notes": "app/(dashboard)/risk-management/page.tsx flagged sportsbook. containers/risk-management-summary/ is prediction + in real-API set. Old sportsbook page likely superseded; confirm and drop the sportsbook variant."
+    },
+    {
+      "route": "/campaigns",
+      "router": "app",
+      "file": "app/(dashboard)/campaigns/page.tsx",
+      "domain": "sportsbook",
+      "status": "STUBBED",
+      "verification": "unverified",
+      "notes": "Flagged sportsbook-domain. Gateway has /api/v1/admin/campaigns; decide reframe vs remove."
+    }
+  ],
+  "sportsbook_leftovers_to_remove": [
+    {
+      "path": "components/fixtures/",
+      "reason": "Sportsbook fixtures UI — CLAUDE.md rule #2.",
+      "verification": "verified"
+    },
+    {
+      "path": "containers/fixtures/",
+      "reason": "Sportsbook fixtures containers.",
+      "verification": "verified"
+    },
+    {
+      "path": "containers/fixed-exotics/",
+      "reason": "Sportsbook exotic bets.",
+      "verification": "verified"
+    },
+    {
+      "path": "components/markets/odds/",
+      "reason": "Odds inputs — prediction uses cents/probability, not odds.",
+      "verification": "verified"
+    },
+    {
+      "path": "components/markets/phone-bet/",
+      "reason": "Phone-bet (sportsbook).",
+      "verification": "verified"
+    },
+    {
+      "path": "components/users/bets/",
+      "reason": "User bets list — prediction has positions/orders, not bets.",
+      "verification": "verified"
+    },
+    {
+      "path": "app/api/fixtures/route.ts",
+      "reason": "Live sportsbook fixtures API route in office.",
+      "verification": "verified"
+    },
+    {
+      "path": "app/hooks/useTradingWebSocket.ts",
+      "reason": "Sportsbook trading WS hook with mock data.",
+      "verification": "verified"
+    }
+  ]
+}
