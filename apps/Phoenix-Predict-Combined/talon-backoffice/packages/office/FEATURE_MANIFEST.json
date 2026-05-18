@@ -144,46 +144,65 @@
       "notes": "Flagged sportsbook-domain. Gateway has /api/v1/admin/campaigns; decide reframe vs remove."
     }
   ],
-  "sportsbook_leftovers_to_remove": [
-    {
-      "path": "components/fixtures/",
-      "reason": "Sportsbook fixtures UI — CLAUDE.md rule #2.",
-      "verification": "verified"
-    },
-    {
-      "path": "containers/fixtures/",
-      "reason": "Sportsbook fixtures containers.",
-      "verification": "verified"
-    },
-    {
-      "path": "containers/fixed-exotics/",
-      "reason": "Sportsbook exotic bets.",
-      "verification": "verified"
-    },
-    {
-      "path": "components/markets/odds/",
-      "reason": "Odds inputs — prediction uses cents/probability, not odds.",
-      "verification": "verified"
-    },
-    {
-      "path": "components/markets/phone-bet/",
-      "reason": "Phone-bet (sportsbook).",
-      "verification": "verified"
-    },
-    {
-      "path": "components/users/bets/",
-      "reason": "User bets list — prediction has positions/orders, not bets.",
-      "verification": "verified"
-    },
-    {
-      "path": "app/api/fixtures/route.ts",
-      "reason": "Live sportsbook fixtures API route in office.",
-      "verification": "verified"
-    },
-    {
-      "path": "app/hooks/useTradingWebSocket.ts",
-      "reason": "Sportsbook trading WS hook with mock data.",
-      "verification": "verified"
-    }
-  ]
+  "sportsbook_leftovers_removal": {
+    "note": "2026-05-18 importer audit: these are NOT clean leaf deletions. They are entangled with Redux slices (lib/slices/fixturesSlice, fixturesDetailsSlice, usersDetailsSlice — wired into the store), shared lib/ + types/, barrels (app/hooks/index.ts), a live page route (pages/risk-management/fixed-exotics), and at least one PREDICTION container imports a leftover (containers/markets/details/index.tsx -> components/markets/odds). Office next.config has ignoreBuildErrors:true, so a dangling import fails SILENTLY at runtime, not at build. Removal is a multi-file REFACTOR (untangle slices/store, fix prediction containers that import odds, update barrels + the risk-management/fixed-exotics route), not a deletion. Do NOT 'just delete' these and do NOT attempt unsupervised on the deployed branch. The earlier 'verification: verified' meant 'confirmed to be sportsbook-domain', NOT 'confirmed safe to delete'.",
+    "items": [
+      {
+        "path": "components/fixtures/",
+        "reason": "Sportsbook fixtures UI — CLAUDE.md rule #2.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "imported by containers/fixtures/*; resolvers used by containers/fixtures/details"
+      },
+      {
+        "path": "containers/fixtures/",
+        "reason": "Sportsbook fixtures containers.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "imports lib/slices/fixturesSlice + fixturesDetailsSlice (store-wired); imports components/fixtures + components/markets/odds + phone-bet"
+      },
+      {
+        "path": "containers/fixed-exotics/",
+        "reason": "Sportsbook exotic bets.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "imported by the live route pages/risk-management/fixed-exotics/index.tsx — that page must go too"
+      },
+      {
+        "path": "components/markets/odds/",
+        "reason": "Odds inputs — prediction uses cents/probability, not odds.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "imported by containers/markets/details/index.tsx (PREDICTION markets detail) AND containers/fixtures/details — prediction code must be de-odds'd first"
+      },
+      {
+        "path": "components/markets/phone-bet/",
+        "reason": "Phone-bet (sportsbook).",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "only importer is containers/fixtures/details (itself a leftover) — removable once containers/fixtures goes"
+      },
+      {
+        "path": "components/users/bets/",
+        "reason": "User bets list — prediction has positions/orders, not bets.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "imported by containers/users/details/activity-details + containers/users/bets; lib/slices/usersDetailsSlice uses types/bets"
+      },
+      {
+        "path": "app/api/fixtures/route.ts",
+        "reason": "Live sportsbook fixtures API route in office.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "route handler; verify no fixtures UI still calls /api/fixtures before removing (fixtures containers do)"
+      },
+      {
+        "path": "app/hooks/useTradingWebSocket.ts",
+        "reason": "Sportsbook trading WS hook with mock data.",
+        "domain_verified": true,
+        "safe_to_delete": false,
+        "entanglement": "re-exported by app/hooks/index.ts barrel; imported by app/components/dashboard/LiveMatchesWidget.tsx (sportsbook dashboard widget) — barrel + widget must be updated"
+      }
+    ]
+  }
 }
