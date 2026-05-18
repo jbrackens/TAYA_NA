@@ -22,24 +22,36 @@
     "unverified": 5,
     "sportsbook_leftovers_to_remove": 8
   },
+  "known_blockers": [
+    {
+      "id": "pages-router-no-hydration",
+      "severity": "S1-architectural",
+      "discovered": "2026-05-18",
+      "summary": "EVERY Pages-Router route in this office app fails to hydrate on the client. Verified across /prediction-admin/settlements, /prediction-admin/markets, and /logs: the page+container+_app JS modules all evaluate, but NO React component renders client-side (AppComponent/SessionGuard/page/container render markers never fire), there are ZERO client errors (window.onerror + unhandledrejection + console.error all empty with _app.js suppression disabled), and no DOM node has a React fiber. Only SSR HTML is shown; effects never run; data never loads. App-Router routes (/auth/login, /dashboard, /audit-logs) hydrate fine. Root cause is above components/app — pages/_app.js evaluates but appWithTranslation(PhoenixApp) -> AppComponent never renders: a Next.js App-Router + Pages-Router + next-i18next (appWithTranslation) dual-router client-bootstrap incompatibility.",
+      "impact": "All Pages-Router admin surfaces (prediction-admin/markets, prediction-admin/settlements, logs, terms-and-conditions, market-categories) are server-rendered but non-interactive: tables never populate, buttons/modals/forms do nothing. The 'settlements/markets show 0 markets' symptom is one facet of this.",
+      "not_the_cause": "Ruled out (each verified): data/CORS (gateway returns 22 closed markets; raw fetch from page ctx OK), the useApi render-loop (fixed 4e148445), hydration text-mismatch (none captured), the useApiHookTyped SSR pre-hooks early-return (fixed 6ab68903, clean-rebuilt, still no hydration).",
+      "recommended_fix": "Architectural, not a patch: migrate the prediction-admin Pages-Router pages to the App Router (the office's active tree per root CLAUDE.md), OR fix the App+Pages+next-i18next client bootstrap. next-i18next/appWithTranslation is Pages-Router-only and is the prime suspect when an app/ dir coexists. Do NOT attempt under time pressure or unsupervised on the deployed branch.",
+      "fixes_shipped_enroute": "ROUTE_AUTH /auth->/auth/login 404 auth-thrash (ed71d8c3), useApi triggerApi useCallback memo killing the app-router Maximum-update-depth loop (4e148445), useApiHookTyped hooks-stable SSR fix (6ab68903) — all real, verified, pushed; none resolves this dual-router blocker."
+    }
+  ],
   "pages": [
     {
       "route": "/prediction-admin/markets",
       "router": "pages",
       "file": "pages/prediction-admin/markets.tsx -> containers/prediction-markets/index.tsx",
       "domain": "prediction",
-      "status": "REAL",
+      "status": "STUBBED",
       "verification": "verified",
-      "notes": "Container (504 lines) uses createPredictionClient(); confirmed hitting /api/v1/admin/markets/:id/status and /:id/settle, getMarkets, getCategories, getDriftAlerts. ADMIN-secured."
+      "notes": "Container CODE is REAL (504 lines, createPredictionClient, hits /api/v1/admin/markets/:id/status,/settle,getMarkets,getCategories,getDriftAlerts, ADMIN-secured) — but the PAGE is non-functional client-side: blocked by known_blockers/pages-router-no-hydration (no client render, table never populates). Marked STUBBED because it does not work end-to-end until the dual-router hydration blocker is resolved (App Router migration)."
     },
     {
       "route": "/prediction-admin/settlements",
       "router": "pages",
       "file": "pages/prediction-admin/settlements.tsx -> containers/prediction-settlements/index.tsx",
       "domain": "prediction",
-      "status": "REAL",
+      "status": "STUBBED",
       "verification": "verified",
-      "notes": "Container present (NOT empty — a head-truncated ls on 2026-05-18 falsely flagged it broken). loadData -> getMarkets({status:'closed'}) + getDriftAlerts; confirmed 200 from :18080 with 22 closed markets. Polished 2026-05-18 (verbatim error, drift badge, conditional override). Live visual render currently blocked by pre-existing office auth-session thrash (separate task)."
+      "notes": "Container CODE is REAL (NOT empty — a head-truncated ls on 2026-05-18 falsely flagged it broken; loadData -> getMarkets({status:'closed'}) + getDriftAlerts; gateway returns 200 with 22 closed markets; polished 2026-05-18: verbatim error, drift badge, conditional override). The PAGE is non-functional client-side: NOT the earlier auth-thrash (that was fixed via ROUTE_AUTH ed71d8c3) — it is known_blockers/pages-router-no-hydration (no client render at all; queue never populates). STUBBED until the dual-router hydration blocker is resolved (App Router migration)."
     },
     {
       "route": "/prediction-admin (market-categories)",
