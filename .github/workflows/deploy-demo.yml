@@ -1,9 +1,13 @@
 name: Deploy demo (Hetzner)
 
-# Auto-deploy the live demo (https://demo.99rtp.io) on push.
+# Auto-deploy the live demo (https://demo.99rtp.io player +
+# https://office.99rtp.io office) on push.
 #
 # Mirrors the validated manual flow exactly: rsync the app dir to the box,
-# rebuild the player image ON the box, recreate only the player container.
+# rebuild the player AND office images ON the box, recreate both containers.
+# Office build+recreate runs in the same serialized job after player, so the
+# ~doubled on-box build time (two ~15-20 min builds on a 2-vCPU box) is
+# bounded by `concurrency` and `timeout-minutes` below.
 # Does NOT run migrate/seed/sync-markets — those are one-time data ops, not
 # per-deploy. Market thumbnails live on the `market_images` Docker volume,
 # so `rsync --delete` is safe (it can't touch the volume).
@@ -32,7 +36,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 45   # on-box build is ~15-20 min on this small box
+    timeout-minutes: 75   # two on-box builds (player + office), ~15-20 min each on this small box
     steps:
       - uses: actions/checkout@v4
 
@@ -65,6 +69,43 @@ jobs:
             cd /opt/phoenix &&
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d --no-deps --force-recreate player'
+
+      - name: Build office image on the box
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix/talon-backoffice &&
+            docker build -f docker/frontend.Dockerfile \
+              --build-arg module_name=office \
+              --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
+              -t predict-frontend:office-slim .'
+
+      - name: Recreate office container
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate office'
+
+      - name: Office container health
+        run: |
+          # office.99rtp.io sits behind Caddy basic_auth, so an external
+          # HTTP probe either 401s before reaching the app (proves nothing
+          # about the office upstream) or requires baking the basic-auth
+          # password into this committed file (credential in source — no).
+          # Instead assert on the box that the recreated office container is
+          # actually up and not crash-looping. Retry to allow Next start.
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            for i in $(seq 1 12); do
+              state=$(docker inspect -f "{{.State.Status}}/{{.State.Restarting}}" \
+                "$(docker compose -f docker-compose.yml -f docker-compose.demo.yml ps -q office)" 2>/dev/null || echo "missing/true")
+              echo "attempt $i: office=$state"
+              [ "$state" = "running/false" ] && { echo "office OK"; exit 0; }
+              sleep 10
+            done
+            echo "office container not healthy after recreate"
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 office || true
+            exit 1'
 
       - name: Health check
         run: |
