@@ -1,11 +1,14 @@
+// AntD v5 + React 19: restores the static Modal.confirm/message/notification
+// APIs (rc-util render path React 19 removed). Must load before any antd use.
+import "@ant-design/v5-patch-for-react-19";
 import App from "next/app";
 import { appWithTranslation } from "i18n";
 import AppComponent from "../components/app";
 
 import store from "../store";
 
-import "antd/dist/antd.css";
-// P8 design tokens — must come AFTER antd.css so the body/layout
+// AntD v5 is CSS-in-JS — no antd/dist/antd.css (file does not exist in v5).
+// P8 design tokens — body/layout overrides win without bumping specificity
 // overrides win without bumping specificity. See styles/p8-tokens.css
 // for the token list and the migration plan.
 import "../styles/p8-tokens.css";

@@ -259,7 +259,7 @@ export default function PredictionSettlementsContainer() {
 
       <Modal
         title={`Settle: ${selectedMarket?.ticker || ""}`}
-        visible={settleOpen}
+        open={settleOpen}
         onCancel={() => {
           // Reset on cancel so a stale ticker-confirm value from a
           // previous market doesn't leak into the next Settle attempt.

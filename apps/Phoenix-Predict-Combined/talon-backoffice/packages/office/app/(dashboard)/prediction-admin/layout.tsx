@@ -2,11 +2,10 @@
 // migrated off the Pages Router (which never hydrated under Next 16 +
 // React 19 — see FEATURE_MANIFEST known_blockers/pages-router-no-hydration).
 //
-// The containers are AntD-heavy. The App Router root layout only loads
-// p8-tokens.css, so AntD's stylesheet must be brought in here. Import order
-// mirrors the proven Pages-Router pages/_app.js order:
-// antd base -> p8 tokens -> p8 AntD overrides (overrides must win).
-import "antd/dist/antd.css";
+// The containers are AntD-heavy. AntD v5 is CSS-in-JS (no global
+// antd/dist/antd.css — that file does not exist in v5; styles are
+// injected at runtime). P8 layering: tokens then the AntD overrides
+// (slimmed in Phase 2 as the ConfigProvider theme takes over).
 import "../../../styles/p8-tokens.css";
 import "../../../styles/p8-antd.css";
 

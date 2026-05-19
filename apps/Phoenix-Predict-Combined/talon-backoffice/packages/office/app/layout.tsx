@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+// AntD v5 is CSS-in-JS. In the App Router this registry handles style
+// injection + SSR extraction; without it the cssinjs motion styles
+// don't apply and Modal/Drawer enter-leave animations freeze mid-
+// transition (rc-motion never sees transitionend). Required for v5.
+import { AntdRegistry } from "@ant-design/nextjs-registry";
 import StyledComponentsRegistry from "./lib/styled-components-registry";
 // P8 design tokens — shared with the Pages Router via the same
 // stylesheet so /auth/login (App Router) and /prediction-admin/*
@@ -24,7 +29,9 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+        <StyledComponentsRegistry>
+          <AntdRegistry>{children}</AntdRegistry>
+        </StyledComponentsRegistry>
       </body>
     </html>
   );

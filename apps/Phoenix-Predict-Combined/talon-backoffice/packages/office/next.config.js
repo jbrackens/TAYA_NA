@@ -69,11 +69,10 @@ module.exports = {
         fs: false,
       };
     }
-    // React 19 compat for AntD 4.x: alias the exact `react-dom` request to
-    // a shim that restores render()/unmountComponentAtNode() on top of
-    // createRoot. `__real_react_dom` points at the genuine module so the
-    // shim can re-export it without the `react-dom$` alias looping.
-    const realReactDom = require.resolve("react-dom");
+    // AntD v5 is natively React-19 compatible (+ @ant-design/v5-patch-for-
+    // react-19 for the static Modal/message/notification APIs). The old
+    // react-dom-react19-shim alias (AntD 4.x stopgap) is removed — it
+    // would now double-patch react-dom and break v5's render path.
     return {
       ...config,
       resolve: {
@@ -82,11 +81,6 @@ module.exports = {
           ...config.resolve.alias,
           i18n: path.resolve(__dirname, "i18n.js"),
           "next/config$": path.resolve(__dirname, "lib/next-runtime-config.js"),
-          __real_react_dom$: realReactDom,
-          "react-dom$": path.resolve(
-            __dirname,
-            "lib/react-dom-react19-shim.js",
-          ),
         },
       },
     };
