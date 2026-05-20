@@ -73,7 +73,7 @@ const FixturesDetailsUpdate: React.FC<FixturesDetailsUpdateProps> = ({
     <FormModal
       title={t("page-fixtures-details:UPDATE_MODAL_HEADER")}
       name="marketData"
-      visible={visible}
+      open={visible}
       loading={loading}
       onSubmit={onFinish}
       onCancel={onClose}

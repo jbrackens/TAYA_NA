@@ -174,7 +174,7 @@ export const TransctionModal: FC<Props> = ({
   return (
     <Modal
       title={t("TRANSACTION_MODAL_TITLE")}
-      visible={isTransactionModalVisible}
+      open={isTransactionModalVisible}
       onCancel={handleTransactionCancel}
       footer={null}
     >

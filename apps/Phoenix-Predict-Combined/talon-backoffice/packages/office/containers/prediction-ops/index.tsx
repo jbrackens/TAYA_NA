@@ -812,7 +812,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
         ) : null}
       </Row>
       <Modal
-        visible={lifecycleVisible}
+        open={lifecycleVisible}
         title={
           lifecycleAction && lifecycleMarket
             ? `${lifecycleActionLabel(t, lifecycleAction)}: ${lifecycleMarket.shortTitle}`

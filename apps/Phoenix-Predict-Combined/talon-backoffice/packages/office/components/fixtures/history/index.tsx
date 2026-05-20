@@ -98,7 +98,7 @@ const FixtureMarketsHistoryDrawer = ({
       )}
       closable={true}
       onClose={onClose}
-      visible={visible}
+      open={visible}
     >
       <FixtureMarketsHistory data={data} single={single} />
     </Drawer>

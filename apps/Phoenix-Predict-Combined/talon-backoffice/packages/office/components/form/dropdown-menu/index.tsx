@@ -9,7 +9,7 @@ type DropdownMenuProps = {
 
 const DropdownMenu = ({ menu }: DropdownMenuProps) => {
   return (
-    <Dropdown key="more" overlay={menu}>
+    <Dropdown key="more" dropdownRender={() => menu}>
       <MoreButton shape="round">
         <EllipsisOutlined
           style={{

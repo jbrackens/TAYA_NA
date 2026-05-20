@@ -473,7 +473,7 @@ const FixedExoticsContainer = () => {
 
       <Modal
         title={t("DETAILS_TITLE")}
-        visible={detailsVisible}
+        open={detailsVisible}
         footer={[
           <Button key="close" onClick={() => setDetailsVisible(false)}>
             {t("CANCEL")}
@@ -488,7 +488,7 @@ const FixedExoticsContainer = () => {
 
       <Modal
         title={t("EXPIRE_TITLE")}
-        visible={expireVisible}
+        open={expireVisible}
         okText={t("EXPIRE_CONFIRM")}
         cancelText={t("CANCEL")}
         onCancel={() => setExpireVisible(false)}

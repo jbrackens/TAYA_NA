@@ -69,7 +69,7 @@ const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
     <FormModal
       title={t("page-users-details:MODAL_LIMITS_HEADER")}
       name="limits"
-      visible={visible}
+      open={visible}
       loading={loading}
       onSubmit={onFinish}
       onCancel={onClose}

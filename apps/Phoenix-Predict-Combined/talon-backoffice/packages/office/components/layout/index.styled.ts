@@ -1,5 +1,5 @@
 import { Layout } from "antd";
-import { LayoutProps } from "antd/lib/layout";
+import type { LayoutProps } from "antd";
 import styled from "styled-components";
 
 const { Content } = Layout;

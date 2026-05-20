@@ -44,7 +44,7 @@ const UserLifecycleSuspend = ({
       id={id}
       url={API_USERS_LIFECYCLE_URL}
       active={status === PunterStatusEnum.SUSPENDED}
-      visible={canSuspend(status)}
+      open={canSuspend(status)}
       labels={labels}
       actions={userLifecycleSuspendActions}
       onComplete={onCompleteFunc}

@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 import { Space, Spin, Typography } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { SpinProps } from "antd/lib/spin";
+import type { SpinProps } from "antd";
 import { Layout } from "@phoenix-ui/utils/dist/types/layout";
 import { Wrapper } from "./index.styled";
 

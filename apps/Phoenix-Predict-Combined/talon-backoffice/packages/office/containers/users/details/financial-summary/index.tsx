@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { TabsUserDetails } from "../index.styled";
-import { Tabs, Card, Row, Col, Statistic, Divider } from "antd";
+import { TabsUserDetails, TabPane } from "../index.styled";
+import { Card, Row, Col, Statistic, Divider } from "antd";
 import { IdcardOutlined } from "@ant-design/icons";
 import { useTranslation } from "i18n";
 import {
@@ -74,7 +74,6 @@ const normalizeFinancialSummary = (
 
 export const FinancialSummary = ({ id }: FinancialSummaryProps) => {
   const { t } = useTranslation("page-users-details");
-  const { TabPane } = Tabs;
   const [financialSummary, setFinancialSummary] =
     useState<FinancialSummaryWithProductBreakdown>();
 

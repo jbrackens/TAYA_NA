@@ -82,7 +82,7 @@ export const ModifyPunterModal = ({
   return (
     <Modal
       title={`${t("MODAL_TITLE")} ${formLabels(fieldName)}`}
-      visible={fieldName && fieldName?.length > 0 ? true : false}
+      open={fieldName && fieldName?.length > 0 ? true : false}
       onCancel={closingModal}
       footer={null}
       destroyOnClose

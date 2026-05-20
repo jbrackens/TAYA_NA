@@ -181,7 +181,7 @@ const SessionGuard = ({ children }: TokenRequiredProps): any => {
       <>
         {children}
         <Modal
-          visible={isModalVisible}
+          open={isModalVisible}
           title={t("session-guard:ACCOUNT_INACTIVITY")}
           closable={false}
           footer={[

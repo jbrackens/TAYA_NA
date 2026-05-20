@@ -30,7 +30,7 @@ const MarketsDetailsUpdate: React.FC<MarketsDetailsUpdateProps> = ({
     <FormModal
       title={t("page-markets-details:UPDATE_MODAL_HEADER")}
       name="marketData"
-      visible={visible}
+      open={visible}
       loading={loading}
       onSubmit={onFinish}
       onCancel={onClose}

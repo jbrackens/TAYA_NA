@@ -49,7 +49,7 @@ const UsersRecentActivityDrawer = ({
       title={t("HEADER_RECENT_ACTIVITIES")}
       closable={false}
       onClose={onClose}
-      visible={visible}
+      open={visible}
     >
       <UsersRecentActivity data={data} isLoading={isLoading} />
     </Drawer>

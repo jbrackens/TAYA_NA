@@ -78,7 +78,7 @@ const UserBetCancel = ({ id, label, onComplete }: BetCancelProps) => {
       </Button>
       <Modal
         title={t("REASON_MODAL_TITLE")}
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleModalCancel}
         footer={null}
       >

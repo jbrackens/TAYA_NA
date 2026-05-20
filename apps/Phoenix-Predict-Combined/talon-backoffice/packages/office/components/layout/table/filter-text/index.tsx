@@ -5,7 +5,7 @@ import { get } from "lodash";
 import { RefsCollection } from "../../../../lib/utils/filters";
 import { useTranslation } from "i18n";
 import { FilterInput, FilterButton } from "./index.styled";
-import moment from "moment";
+import dayjs from "dayjs";
 
 type TableFilterTextProps = {
   dataIndex: string;
@@ -76,7 +76,7 @@ const TableFilterText = ({
           placeholder={t("TABLE_FILTER_INPUT_PLACEHOLDER", {
             key: label || dataIndex,
           })}
-          value={searchInputValue ? moment(searchInputValue) : undefined}
+          value={searchInputValue ? dayjs(searchInputValue) : undefined}
           onChange={handleChange}
           style={{ display: "flex", marginBottom: "5px" }}
         />

@@ -23,7 +23,7 @@ const FixtureLifecycleSuspend = ({
     id={id}
     url={API_FIXTURE_LIFECYCLE_URL}
     active={status === FixtureStatusEnum.BREAK_IN_PLAY}
-    visible={canSuspend(status)}
+    open={canSuspend(status)}
     labels={labels}
     onComplete={onComplete}
   />

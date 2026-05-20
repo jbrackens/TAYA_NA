@@ -26,7 +26,7 @@ const FormModal: React.FC<FormModalProps> = ({
   onSubmit,
   onChange,
   onResetForm,
-  visible,
+  open,
   initialValues,
   children,
   ...props
@@ -50,13 +50,13 @@ const FormModal: React.FC<FormModalProps> = ({
 
   useResetFormOnModalTransitions({
     formRef: form,
-    visibleRef: visible,
+    visibleRef: open,
   });
 
   const submitForm = () => form.submit();
 
   return (
-    <Modal {...props} visible={visible} onSubmit={submitForm}>
+    <Modal {...props} open={open} onSubmit={submitForm}>
       <Form.Provider>
         <Form
           form={form}

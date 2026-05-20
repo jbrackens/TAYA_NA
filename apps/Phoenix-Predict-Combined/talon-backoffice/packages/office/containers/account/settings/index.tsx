@@ -61,7 +61,7 @@ export const SettingsContainer = () => {
         </Row>
       </Card>
       <Modal
-        visible={!!dataToEdit}
+        open={!!dataToEdit}
         onCancel={() => setDataToEdit(undefined)}
         title={t("EDIT", { name: t(dataToEdit || "") })}
         onOk={() => formInstance.submit()}

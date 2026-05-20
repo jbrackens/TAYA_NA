@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Menu } from "antd";
+import type { MenuProps } from "antd";
 import { MenuItem, MenuItemGrouped } from "../../../../types/menu";
 import {
   resolveToken,
@@ -19,7 +20,6 @@ type SidebarMenuProps = {
   menu?: MenuItem[];
   onVisibilityChange: Function;
 };
-const { SubMenu } = Menu;
 
 const SidebarMenu: React.FC<SidebarMenuProps> = ({
   menu,
@@ -57,34 +57,34 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
   spy(activeItem, checkIfSidebarShouldBeVisible);
 
+  // AntD v5 removed Menu's children/<Menu.Item>/<SubMenu> JSX API; built as
+  // an `items` array. Each group becomes a submenu item; an item with
+  // `children` is rendered as a submenu by default.
+  const items: MenuProps["items"] = groups.map(
+    (groupItem: MenuItemGrouped) => {
+      const { icon: Icon }: any = groupItem;
+      return {
+        key: groupItem.key,
+        icon: <Icon />,
+        label: t(groupItem.label),
+        children: groupItem.children.map(
+          ({ key, label, path, absolutePath }: MenuItem) => ({
+            key,
+            label: <Link href={absolutePath || path}>{t(label)}</Link>,
+          }),
+        ),
+      };
+    },
+  );
+
   return (
     <Menu
       mode="inline"
       defaultSelectedKeys={[activeGroupItem?.key as string]}
       defaultOpenKeys={[activeGroupItem?.group as string]}
       style={{ paddingTop: 64, height: "100vh", borderRight: 0 }}
-    >
-      {groups.map((groupItem: MenuItemGrouped) => {
-        const { icon: Icon }: any = groupItem;
-        return (
-          <SubMenu
-            key={groupItem.key}
-            icon={<Icon />}
-            title={t(groupItem.label)}
-          >
-            {groupItem.children.map(
-              ({ key, label, path, absolutePath }: MenuItem) => (
-                <Menu.Item key={key}>
-                  <Link href={absolutePath || path}>
-                    {t(label)}
-                  </Link>
-                </Menu.Item>
-              ),
-            )}
-          </SubMenu>
-        );
-      })}
-    </Menu>
+      items={items}
+    />
   );
 };
 export { SidebarMenu };

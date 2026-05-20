@@ -4,7 +4,7 @@ import { useApi } from "../../../services/api/api-service";
 import { Button, Modal, Form, Input } from "antd";
 import { ToggleLabels } from "../../../types/utils";
 import { LockOutlined, UnlockOutlined } from "@ant-design/icons";
-import FormItem from "antd/lib/form/FormItem";
+const FormItem = Form.Item;
 import { API_USERS_LIFECYCLE_URL } from "../../users/lifecycle/constants";
 import { useTranslation } from "i18n";
 
@@ -121,7 +121,7 @@ const LifecycleSuspend = ({
         </Button>
         <Modal
           title={t("SUSPENSION_REASON")}
-          visible={isModalVisible}
+          open={isModalVisible}
           onCancel={() => setIsModalVisible(false)}
           footer={null}
         >

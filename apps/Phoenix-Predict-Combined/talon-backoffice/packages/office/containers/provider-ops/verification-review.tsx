@@ -555,7 +555,7 @@ const VerificationReviewPanel = () => {
         placement="right"
         width={640}
         onClose={closeDrawer}
-        visible={drawerVisible}
+        open={drawerVisible}
       >
         {!selectedSession ? (
           <Empty description={t("VERIFICATION_EMPTY")} />

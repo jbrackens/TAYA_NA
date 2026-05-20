@@ -4,7 +4,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import { RefsCollection } from "../../../../lib/utils/filters";
 import { useTranslation } from "i18n";
 import { FilterButton } from "./index.styled";
-import moment from "moment";
+import dayjs from "dayjs";
 
 type TableFilterDateRangeProps = {
   dataIndex: string;
@@ -69,7 +69,7 @@ const TableFilterDateRange = ({
           refs && refs.set(dataIndex, node);
         }}
         placeholder={t("TABLE_FILTER_FROM")}
-        value={searchSinceValue ? moment(searchSinceValue) : undefined}
+        value={searchSinceValue ? dayjs(searchSinceValue) : undefined}
         onChange={handleSinceChange}
         style={{ display: "flex", marginBottom: "5px" }}
       />
@@ -78,7 +78,7 @@ const TableFilterDateRange = ({
           refs && refs.set(dataIndex, node);
         }}
         placeholder={t("TABLE_FILTER_TO")}
-        value={searchUntilValue ? moment(searchUntilValue) : undefined}
+        value={searchUntilValue ? dayjs(searchUntilValue) : undefined}
         onChange={handleUntilChange}
         style={{ display: "flex", marginBottom: "5px" }}
       />

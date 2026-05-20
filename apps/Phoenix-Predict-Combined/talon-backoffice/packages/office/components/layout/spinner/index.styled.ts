@@ -1,4 +1,4 @@
-import { SpaceProps } from "antd/lib/space";
+import type { SpaceProps } from "antd";
 import { Space } from "antd";
 import styled from "styled-components";
 

@@ -213,7 +213,7 @@ const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
     <FormModal
       title={t("page-bets:BET_MODAL_HEADER", { name: fixtureName })}
       name="placeBet"
-      visible={visible}
+      open={visible}
       loading={loading}
       onChange={onFormChange}
       onSubmit={onFinish}

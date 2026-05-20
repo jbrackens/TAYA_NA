@@ -12,7 +12,7 @@ export type ModalActionLabels = {
 export type ModalProps = {
   title: string;
   children: ReactNode;
-  visible: boolean;
+  open: boolean;
   loading?: boolean;
   footer?: any[];
   labels?: ModalActionLabels;
@@ -23,7 +23,7 @@ export type ModalProps = {
 const Modal: React.FC<ModalProps> = ({
   title,
   children,
-  visible,
+  open,
   loading,
   footer,
   labels,
@@ -68,7 +68,7 @@ const Modal: React.FC<ModalProps> = ({
     <ModalComponent
       title={title}
       centered
-      visible={visible}
+      open={open}
       onCancel={() => onCancel && onCancel()}
       footer={footerActions}
     >

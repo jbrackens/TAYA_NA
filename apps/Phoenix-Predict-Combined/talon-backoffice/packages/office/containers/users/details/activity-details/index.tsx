@@ -1,4 +1,4 @@
-import { TabsSection } from "../../../../components/layout/tabs/index.styled";
+import { TabsSection, TabPane } from "../../../../components/layout/tabs/index.styled";
 import {
   DollarCircleOutlined,
   HistoryOutlined,
@@ -8,7 +8,6 @@ import {
   MonitorOutlined,
   FolderOpenOutlined,
 } from "@ant-design/icons";
-import { Tabs } from "antd";
 import UsersDetailsBetsContainer from "../../bets";
 import UsersDetailsWalletsContainer from "../../wallet";
 import UsersDetailsSessionHistoryContainer from "../../session-history";
@@ -26,7 +25,6 @@ import UsersPredictionOrdersContainer from "../../prediction-orders";
 //   SHOW_FOR_SUBMISSION,
 // } = require("next/config").default().publicRuntimeConfig;
 
-const { TabPane } = Tabs;
 
 type ActivityDetailsProps = {
   id: Id;

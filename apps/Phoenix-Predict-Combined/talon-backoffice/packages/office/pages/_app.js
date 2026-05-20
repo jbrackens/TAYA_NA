@@ -4,6 +4,7 @@ import "@ant-design/v5-patch-for-react-19";
 import App from "next/app";
 import { appWithTranslation } from "i18n";
 import AppComponent from "../components/app";
+import AntdConfigProvider from "../app/lib/antd-config-provider";
 
 import store from "../store";
 
@@ -86,12 +87,14 @@ const theme = {
 
 function PhoenixApp(props) {
   return (
-    <AppComponent
-      {...props}
-      store={store}
-      theme={theme}
-      menuItems={defaultMenuItems}
-    />
+    <AntdConfigProvider>
+      <AppComponent
+        {...props}
+        store={store}
+        theme={theme}
+        menuItems={defaultMenuItems}
+      />
+    </AntdConfigProvider>
   );
 }
 

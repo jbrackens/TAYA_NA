@@ -403,7 +403,7 @@ export default function PredictionMarketsContainer() {
 
       <Modal
         title="Create Prediction Market"
-        visible={createOpen}
+        open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() => form.submit()}
         width={600}

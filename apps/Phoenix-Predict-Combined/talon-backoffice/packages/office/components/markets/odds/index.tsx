@@ -166,7 +166,7 @@ const MarketsSelectionsList = ({
       />
       <MarketsSelectionsPlaceStatic
         marketId={marketId}
-        visible={activeSelectionModalVisible}
+        open={activeSelectionModalVisible}
         onComplete={onSelectionUpdate}
         onClose={handleMarketSingleSelectionModalClose}
         selection={activeSelection}
@@ -175,7 +175,7 @@ const MarketsSelectionsList = ({
         multi
         marketId={marketId}
         marketName={marketName}
-        visible={activeMarketSelectionModalVisible}
+        open={activeMarketSelectionModalVisible}
         onComplete={onSelectionUpdate}
         onClose={handleMarketBatchSelectionModalClose}
         selection={selectionOdds}

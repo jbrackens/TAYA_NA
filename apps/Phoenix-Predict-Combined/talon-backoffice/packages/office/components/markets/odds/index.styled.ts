@@ -1,5 +1,5 @@
 import { Divider } from "antd";
-import { DividerProps } from "antd/lib/divider";
+import type { DividerProps } from "antd";
 import styled from "styled-components";
 
 export const Wrapper = styled.div`

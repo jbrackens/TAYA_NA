@@ -46,7 +46,7 @@ const MarketLifecycleSettleModal: React.FC<MarketLifecycleSettleModalProps> = ({
     <FormModal
       title={t("page-markets-details:SETTLE_MODAL_HEADER")}
       name="marketSettle"
-      visible={visible}
+      open={visible}
       loading={loading}
       onSubmit={onFinish}
       onCancel={onClose}

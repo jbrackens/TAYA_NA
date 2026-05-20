@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Table as TableComponent } from "antd";
-import { TableProps as CoreTableProps } from "antd/lib/table";
+import type { TableProps as CoreTableProps } from "antd";
 import Spinner from "../spinner";
 import { useResize, useSpy } from "@phoenix-ui/utils";
 import { PADDING_SIZE, TableWrapper } from "./index.styled";

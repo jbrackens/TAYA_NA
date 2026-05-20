@@ -57,7 +57,7 @@ export const ChangeVisibilityModal: FC<Props> = ({
 
   return (
     <Modal
-      visible={!!marketCategory}
+      open={!!marketCategory}
       onOk={onOk}
       onCancel={onCancel}
       title={t("MODAL_TITLE", { name: marketCategory?.name })}

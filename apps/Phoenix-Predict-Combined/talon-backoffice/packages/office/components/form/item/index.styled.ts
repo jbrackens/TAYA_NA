@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Form } from "antd";
-import { FormItemProps } from "antd/lib/form";
+import type { FormItemProps } from "antd";
 
 export const FormItemPreview = styled(Form.Item)<FormItemProps>`
   &:last-child {

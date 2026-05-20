@@ -21,7 +21,7 @@ const FixtureLifecycleCancel = ({
   <LifecycleCancel
     id={id}
     url={API_FIXTURE_LIFECYCLE_URL}
-    visible={status !== FixtureStatusEnum.GAME_ABANDONED}
+    open={status !== FixtureStatusEnum.GAME_ABANDONED}
     disabled={!canCancel(status)}
     label={label}
     onComplete={onComplete}

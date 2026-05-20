@@ -1,9 +1,7 @@
 "use client";
 
-// AntD v5 + React 19 static-API patch (Modal.confirm/message/notification).
-// Phase 0 placement on the client page; Phase 1 centralizes it into a root
-// client provider.
-import "@ant-design/v5-patch-for-react-19";
+// (AntD v5 React-19 patch is loaded centrally via app/lib/antd-patch.tsx,
+// wired into app/layout.tsx so every App Router page inherits it.)
 
 // Migrated from pages/prediction-admin/settlements.tsx (Pages Router never
 // hydrated under Next 16 + React 19). The container is unchanged, real

@@ -144,7 +144,7 @@ const UsersContainer = () => {
         handleOpenRecentActivity={handleOpenRecentActivity}
       />
       <UsersRecentActivityDrawer
-        visible={previewVisible}
+        open={previewVisible}
         data={recentActivities}
         isLoading={isLoadingRecentActivities}
         onClose={handleCloseRecentActivity}

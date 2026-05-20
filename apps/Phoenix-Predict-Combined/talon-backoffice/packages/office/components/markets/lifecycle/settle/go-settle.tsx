@@ -90,7 +90,7 @@ const GoMarketSettle = ({
       </Button>
       <Modal
         title="Settle Market"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >

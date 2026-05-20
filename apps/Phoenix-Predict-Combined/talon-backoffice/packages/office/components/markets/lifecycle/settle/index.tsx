@@ -103,7 +103,7 @@ const MarketLifecycleSettle = ({
           {ableToSettle ? labels.settle : labels.resettle}
         </Button>
         <MarketLifecycleSettleModal
-          visible={isModalVisible}
+          open={isModalVisible}
           loading={loading}
           data={selections}
           onSubmit={handleSubmit}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import {
   TabsUserDetails,
+  TabPane,
   DescriptionItemText,
   DescriptionItemLink,
 } from "../index.styled";
-import { Tabs, Card, Row, Col, Descriptions, Checkbox, Spin } from "antd";
+import { Card, Row, Col, Descriptions, Checkbox, Spin } from "antd";
 import UsersDetailsLimits from "../../../../components/users/limits";
 import UsersDetailsLimitsUpdate from "../../../../components/users/limits/update";
 import {
@@ -60,7 +61,6 @@ export const BasicDetails = ({
   editUserDetails,
 }: BasicDetailsProps) => {
   const { t } = useTranslation("page-users-details");
-  const { TabPane } = Tabs;
   const router = useRouter();
   const [ssnVisibility, setSsnVisibility] = useState<SsnVisibilityType>(
     SsnVisibilityEnum.HIDDEN,
@@ -484,7 +484,7 @@ export const BasicDetails = ({
               stake: basicData.stakeLimits,
               session: basicData.sessionLimits,
             }}
-            visible={limitsModalVisible}
+            open={limitsModalVisible}
             loading={limitsUpdateInProgress}
             onClose={() => setLimitsModalVisible(false)}
             onSubmit={onSubmitUpdateLimits}

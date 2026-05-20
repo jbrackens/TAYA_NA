@@ -204,19 +204,19 @@ const FixturesDetailsContainer = ({ id }: FixturesDetailsContainerProps) => {
         </Col>
       </Row>
       <FixtureMarketsHistoryDrawer
-        visible={historyVisible}
+        open={historyVisible}
         data={history}
         onClose={handleCloseHistoryDrawer}
       />
       <FixturesDetailsUpdate
         data={basicData}
-        visible={updateFormVisible}
+        open={updateFormVisible}
         onClose={handleEditModalClose}
       />
       <MarketsSelectionsPhoneBet
         fixtureName={fixtureName}
         markets={markets}
-        visible={fixturePhoneBetModalVisible}
+        open={fixturePhoneBetModalVisible}
         onClose={handlePhoneBetModalClose}
       />
     </>

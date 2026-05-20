@@ -78,7 +78,7 @@ const UserAddNote = ({ id }: UserAddNoteProps) => {
       </Button>
       <Modal
         title="Add Note"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={handleModalCancel}
         footer={null}
       >

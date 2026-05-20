@@ -1189,7 +1189,7 @@ const CashierReviewPanel = () => {
 
       <Drawer
         title={t("CASHIER_DETAIL_TITLE")}
-        visible={drawerVisible}
+        open={drawerVisible}
         width={720}
         onClose={closeDrawer}
       >
@@ -1310,7 +1310,7 @@ const CashierReviewPanel = () => {
                   ? t(CASHIER_ACTION_CONFIRM_KEYS[pendingAction.type])
                   : ""
               }
-              visible={!!pendingAction}
+              open={!!pendingAction}
               onCancel={cancelPendingAction}
               onOk={() => void confirmPendingAction()}
               okText={t("CASHIER_CONFIRM_OK")}

@@ -1,5 +1,5 @@
 import React from "react";
-import { InputNumberProps } from "antd/lib/input-number";
+import type { InputNumberProps } from "antd";
 import { InputNumberStyled } from "./index.styled";
 
 const InputNumber = (props: InputNumberProps) => (

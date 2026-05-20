@@ -6,7 +6,7 @@ import { Id, Method, useSpy } from "@phoenix-ui/utils";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useTranslation } from "i18n";
-import FormItem from "antd/lib/form/FormItem";
+const FormItem = Form.Item;
 
 type TableActionsProps = {
   punterId: Id;
@@ -130,7 +130,7 @@ export const TableActions: FC<TableActionsProps> = ({
       </ActionButtonContainer>
       <Modal
         title={t("REJECTION_MODAL_TITLE")}
-        visible={isRejectModalVisible}
+        open={isRejectModalVisible}
         onCancel={() => setIsRejectModalVisible(false)}
         footer={null}
       >
@@ -151,7 +151,7 @@ export const TableActions: FC<TableActionsProps> = ({
       </Modal>
       <Modal
         title={t("ACCEPTANCE_MODAL_TITLE")}
-        visible={isAcceptModalVisible}
+        open={isAcceptModalVisible}
         onCancel={() => setIsAcceptModalVisible(false)}
         footer={null}
       >

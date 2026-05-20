@@ -25,7 +25,7 @@ const MarketLifecycleCancel = ({
   <LifecycleCancel
     id={id}
     url={API_MARKET_LIFECYCLE_URL}
-    visible={lifecycle !== MarketLifecycleTypeEnum.CANCELLED}
+    open={lifecycle !== MarketLifecycleTypeEnum.CANCELLED}
     disabled={!canCancel(lifecycle)}
     label={label}
     onComplete={onComplete}

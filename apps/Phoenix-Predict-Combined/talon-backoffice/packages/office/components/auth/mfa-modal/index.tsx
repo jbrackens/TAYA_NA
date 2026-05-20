@@ -109,7 +109,7 @@ const MfaModalComponent: React.FC<MfaModalComponentProps> = ({
       <Modal
         title={t("MODAL_TITLE")}
         centered
-        visible={isMfaCodeModalVisible}
+        open={isMfaCodeModalVisible}
         onOk={resetMfaModal}
         onCancel={resetMfaModal}
         footer={null}

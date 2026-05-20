@@ -146,7 +146,7 @@ const MarketsSelectionsPlaceStatic: React.FC<MarketsSelectionsPlaceStaticProps> 
     <FormModal
       title={title}
       name="placeBet"
-      visible={visible}
+      open={visible}
       loading={loading}
       onChange={onFormChange}
       onSubmit={onFinish}
