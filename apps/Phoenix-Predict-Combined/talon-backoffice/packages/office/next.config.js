@@ -89,6 +89,15 @@ module.exports = {
     styledComponents: true,
   },
   trailingSlash: true,
+  // Without `skipTrailingSlashRedirect`, Next.js auto-308s `/foo` → `/foo/`
+  // before applying the `/api/v1/:path*` rewrite. That breaks admin GETs
+  // like `GET /api/v1/admin/punters`: the gateway has a prefix handler at
+  // `/api/v1/admin/punters/` that treats an empty subpath as "detail with
+  // no id" and returns 404. With this flag, `/api/v1/admin/punters` flows
+  // straight through to the list handler and the no-slash URL is honored
+  // both for page routes and api proxies. Pages still resolve under either
+  // form because Next's pages router accepts both.
+  skipTrailingSlashRedirect: true,
   // Suppress React 18 hydration mismatch overlay in dev mode.
   // SSR/client differences from localStorage-dependent UI (menus, profile)
   // cause benign text mismatches that don't affect runtime behavior.

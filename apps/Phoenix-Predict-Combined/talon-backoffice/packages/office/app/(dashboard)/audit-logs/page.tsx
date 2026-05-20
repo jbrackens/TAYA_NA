@@ -8,6 +8,7 @@ import {
   ErrorState,
 } from "../../components/shared";
 import { useState, useEffect } from "react";
+import { adminFetch } from "../../lib/admin-fetch";
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -107,13 +108,8 @@ function AuditLogsPageContent() {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch(
+        const response = await adminFetch(
           "/api/v1/admin/audit-logs?page=1&pageSize=100",
-          {
-            headers: {
-              "X-Admin-Role": "admin",
-            },
-          },
         );
         if (!response.ok) {
           throw new Error("Failed to load audit logs");

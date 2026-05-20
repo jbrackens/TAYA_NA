@@ -8,6 +8,7 @@ import {
   SkeletonLoader,
 } from "../../components/shared";
 import type { ColumnDef } from "../../components/shared";
+import { adminFetch } from "../../lib/admin-fetch";
 
 interface CampaignRow {
   id: number;
@@ -52,10 +53,7 @@ function CampaignsPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/admin/campaigns", {
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
-      });
+      const res = await adminFetch("/api/v1/admin/campaigns");
       if (!res.ok) throw new Error("Failed to load campaigns");
       const data = await res.json();
       setCampaigns(Array.isArray(data?.campaigns) ? data.campaigns : []);
@@ -70,10 +68,7 @@ function CampaignsPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/admin/bonuses", {
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
-      });
+      const res = await adminFetch("/api/v1/admin/bonuses");
       if (!res.ok) throw new Error("Failed to load bonuses");
       const data = await res.json();
       setBonuses(Array.isArray(data?.bonuses) ? data.bonuses : []);
@@ -92,13 +87,11 @@ function CampaignsPageContent() {
   const createCampaign = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/v1/admin/campaigns", {
+      const res = await adminFetch("/api/v1/admin/campaigns", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
-        credentials: "include",
         body: JSON.stringify({
           name,
           campaign_type: campaignType,
@@ -135,10 +128,8 @@ function CampaignsPageContent() {
 
   const activateCampaign = async (id: number) => {
     try {
-      await fetch(`/api/v1/admin/campaigns/${id}/activate`, {
+      await adminFetch(`/api/v1/admin/campaigns/${id}/activate`, {
         method: "POST",
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
       });
       loadCampaigns();
     } catch (err: unknown) {
@@ -148,10 +139,8 @@ function CampaignsPageContent() {
 
   const closeCampaign = async (id: number) => {
     try {
-      await fetch(`/api/v1/admin/campaigns/${id}/close`, {
+      await adminFetch(`/api/v1/admin/campaigns/${id}/close`, {
         method: "POST",
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
       });
       loadCampaigns();
     } catch (err: unknown) {
@@ -163,13 +152,11 @@ function CampaignsPageContent() {
     const reason = prompt("Reason for forfeiture:");
     if (!reason) return;
     try {
-      await fetch(`/api/v1/admin/bonuses/${id}/forfeit`, {
+      await adminFetch(`/api/v1/admin/bonuses/${id}/forfeit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
-        credentials: "include",
         body: JSON.stringify({ reason }),
       });
       loadBonuses();

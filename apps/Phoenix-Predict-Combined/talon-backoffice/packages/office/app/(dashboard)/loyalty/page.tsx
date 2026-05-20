@@ -16,6 +16,7 @@ import {
   SkeletonLoader,
 } from "../../components/shared";
 import type { ColumnDef } from "../../components/shared";
+import { adminFetch } from "../../lib/admin-fetch";
 
 interface LoyaltyAccountRow {
   accountId: string;
@@ -47,11 +48,8 @@ function LoyaltyPageContent() {
       if (search.trim()) params.set("search", search.trim());
       if (tierCode) params.set("tierCode", tierCode);
       const query = params.toString();
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/loyalty/accounts${query ? `?${query}` : ""}`,
-        {
-          headers: { "X-Admin-Role": "admin" },
-        },
       );
       if (!response.ok) {
         throw new Error("Failed to load loyalty accounts");

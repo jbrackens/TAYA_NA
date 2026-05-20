@@ -18,6 +18,7 @@ import {
   SkeletonLoader,
 } from "../../components/shared";
 import type { ColumnDef } from "../../components/shared";
+import { adminFetch } from "../../lib/admin-fetch";
 
 interface LeaderboardRow {
   leaderboardId: string;
@@ -106,11 +107,8 @@ function LeaderboardsPageContent() {
       if (search.trim()) params.set("search", search.trim());
       if (statusFilter) params.set("status", statusFilter);
       const query = params.toString();
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/leaderboards${query ? `?${query}` : ""}`,
-        {
-          headers: { "X-Admin-Role": "admin" },
-        },
       );
       if (!response.ok) {
         throw new Error("Failed to load leaderboards");
@@ -143,11 +141,10 @@ function LeaderboardsPageContent() {
     let failed = 0;
     for (const board of activeBoards) {
       try {
-        const response = await fetch(
+        const response = await adminFetch(
           `/api/v1/admin/leaderboards/${encodeURIComponent(board.leaderboardId)}/recompute`,
           {
             method: "POST",
-            headers: { "X-Admin-Role": "admin" },
           },
         );
         if (!response.ok) {
@@ -266,11 +263,10 @@ function LeaderboardsPageContent() {
               setFeedback(null);
               setRecomputingId(row.leaderboardId);
               try {
-                const response = await fetch(
+                const response = await adminFetch(
                   `/api/v1/admin/leaderboards/${encodeURIComponent(row.leaderboardId)}/recompute`,
                   {
                     method: "POST",
-                    headers: { "X-Admin-Role": "admin" },
                   },
                 );
                 if (!response.ok) {
@@ -320,11 +316,10 @@ function LeaderboardsPageContent() {
     }
     setIsCreating(true);
     try {
-      const response = await fetch("/api/v1/admin/leaderboards", {
+      const response = await adminFetch("/api/v1/admin/leaderboards", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
         body: JSON.stringify({
           ...form,

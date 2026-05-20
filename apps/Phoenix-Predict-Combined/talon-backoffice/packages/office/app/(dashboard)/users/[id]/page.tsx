@@ -11,6 +11,7 @@ import {
 } from "../../../components/shared";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { adminFetch } from "../../../lib/admin-fetch";
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -93,11 +94,7 @@ function UserDetailPageContent() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const loadPunter = async () => {
-    const response = await fetch(`/api/v1/admin/punters/${punterId}/`, {
-      headers: {
-        "X-Admin-Role": "admin",
-      },
-    });
+    const response = await adminFetch(`/api/v1/admin/punters/${punterId}/`);
     if (!response.ok) {
       throw new Error("Failed to load user");
     }
@@ -133,7 +130,7 @@ function UserDetailPageContent() {
         case "suspend":
         case "activate": {
           const nextStatus = action === "suspend" ? "suspended" : "active";
-          const response = await fetch(
+          const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/status/`,
             {
               method: "PUT",
@@ -147,7 +144,7 @@ function UserDetailPageContent() {
           break;
         }
         case "resetPassword": {
-          const response = await fetch(
+          const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/reset-password`,
             {
               method: "POST",
@@ -159,7 +156,7 @@ function UserDetailPageContent() {
           break;
         }
         case "disable2FA": {
-          const response = await fetch(
+          const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/risk-segment`,
             {
               method: "PUT",
@@ -176,7 +173,7 @@ function UserDetailPageContent() {
         case "adjustSegment": {
           const segment = data?.segment || "medium";
           const reason = data?.reason || "Admin adjustment";
-          const response = await fetch(
+          const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/risk-segment`,
             {
               method: "PUT",
@@ -188,7 +185,7 @@ function UserDetailPageContent() {
           break;
         }
         case "setLimits": {
-          const response = await fetch(
+          const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/limits`,
             {
               method: "PUT",
@@ -204,7 +201,7 @@ function UserDetailPageContent() {
           break;
         }
         case "addNote": {
-          const response = await fetch(
+          const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/notes`,
             {
               method: "POST",

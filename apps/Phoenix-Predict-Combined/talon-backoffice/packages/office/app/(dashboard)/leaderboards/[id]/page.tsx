@@ -17,6 +17,7 @@ import {
   ErrorState,
   LoadingSpinner,
 } from "../../../components/shared";
+import { adminFetch } from "../../../lib/admin-fetch";
 
 interface LeaderboardDefinition {
   leaderboardId: string;
@@ -127,11 +128,8 @@ function LeaderboardDetailPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/leaderboards/${encodeURIComponent(leaderboardId)}`,
-        {
-          headers: { "X-Admin-Role": "admin" },
-        },
       );
       if (!response.ok) {
         throw new Error("Failed to load leaderboard");
@@ -183,13 +181,12 @@ function LeaderboardDetailPageContent() {
     setFeedback(null);
     setIsSaving(true);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/leaderboards/${encodeURIComponent(leaderboardId)}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "X-Admin-Role": "admin",
           },
           body: JSON.stringify(buildSavePayload()),
         },
@@ -214,13 +211,12 @@ function LeaderboardDetailPageContent() {
     setFeedback(null);
     setIsSaving(true);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/leaderboards/${encodeURIComponent(leaderboardId)}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "X-Admin-Role": "admin",
           },
           body: JSON.stringify(buildSavePayload(targetStatus)),
         },
@@ -254,13 +250,12 @@ function LeaderboardDetailPageContent() {
     }
     setIsRecording(true);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/leaderboards/${encodeURIComponent(leaderboardId)}/entries`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Admin-Role": "admin",
           },
           body: JSON.stringify({
             playerId: eventForm.playerId.trim(),
@@ -299,11 +294,10 @@ function LeaderboardDetailPageContent() {
     setError(null);
     setFeedback(null);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/leaderboards/${encodeURIComponent(leaderboardId)}/recompute`,
         {
           method: "POST",
-          headers: { "X-Admin-Role": "admin" },
         },
       );
       if (!response.ok) {

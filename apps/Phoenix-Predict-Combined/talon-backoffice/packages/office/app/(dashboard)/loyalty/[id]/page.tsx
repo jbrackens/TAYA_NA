@@ -16,6 +16,7 @@ import {
   ErrorState,
   LoadingSpinner,
 } from "../../../components/shared";
+import { adminFetch } from "../../../lib/admin-fetch";
 
 interface LoyaltyAccount {
   accountId: string;
@@ -83,11 +84,8 @@ function LoyaltyDetailPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/loyalty/accounts/${encodeURIComponent(playerId)}?limit=20`,
-        {
-          headers: { "X-Admin-Role": "admin" },
-        },
       );
       if (!response.ok) {
         throw new Error("Failed to load loyalty account");
@@ -186,11 +184,10 @@ function LoyaltyDetailPageContent() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/v1/admin/loyalty/adjustments", {
+      const response = await adminFetch("/api/v1/admin/loyalty/adjustments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
         body: JSON.stringify({
           playerId,

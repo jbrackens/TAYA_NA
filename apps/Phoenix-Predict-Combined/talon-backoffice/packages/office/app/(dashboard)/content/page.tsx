@@ -8,6 +8,7 @@ import {
   SkeletonLoader,
 } from "../../components/shared";
 import type { ColumnDef } from "../../components/shared";
+import { adminFetch } from "../../lib/admin-fetch";
 
 interface ContentPageRow {
   page_id: number;
@@ -55,10 +56,7 @@ function ContentPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/admin/content/pages", {
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
-      });
+      const res = await adminFetch("/api/v1/admin/content/pages");
       if (!res.ok) throw new Error("Failed to load pages");
       const data = await res.json();
       setPages(Array.isArray(data?.pages) ? data.pages : []);
@@ -73,10 +71,7 @@ function ContentPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/v1/admin/banners", {
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
-      });
+      const res = await adminFetch("/api/v1/admin/banners");
       if (!res.ok) throw new Error("Failed to load banners");
       const data = await res.json();
       setBanners(Array.isArray(data?.banners) ? data.banners : []);
@@ -95,13 +90,11 @@ function ContentPageContent() {
   const createPage = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/v1/admin/content/pages", {
+      const res = await adminFetch("/api/v1/admin/content/pages", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
-        credentials: "include",
         body: JSON.stringify({
           slug: pageSlug,
           title: pageTitle,
@@ -124,10 +117,8 @@ function ContentPageContent() {
 
   const publishPage = async (id: number) => {
     try {
-      await fetch(`/api/v1/admin/content/pages/${id}/publish`, {
+      await adminFetch(`/api/v1/admin/content/pages/${id}/publish`, {
         method: "POST",
-        headers: { "X-Admin-Role": "admin" },
-        credentials: "include",
       });
       loadPages();
     } catch (err: unknown) {
@@ -138,13 +129,11 @@ function ContentPageContent() {
   const createBanner = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/v1/admin/banners", {
+      const res = await adminFetch("/api/v1/admin/banners", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
-        credentials: "include",
         body: JSON.stringify({
           title: bannerTitle,
           image_url: bannerImageUrl,

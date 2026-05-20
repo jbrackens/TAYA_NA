@@ -9,6 +9,7 @@ import {
   SkeletonLoader,
 } from "../../components/shared";
 import { useState, useEffect } from "react";
+import { adminFetch } from "../../lib/admin-fetch";
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -58,13 +59,8 @@ function UsersPageContent() {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch(
+        const response = await adminFetch(
           "/api/v1/admin/punters?page=1&pageSize=100",
-          {
-            headers: {
-              "X-Admin-Role": "admin",
-            },
-          },
         );
         if (!response.ok) {
           throw new Error("Failed to load users");
@@ -103,11 +99,7 @@ function UsersPageContent() {
     setPunters([]);
     setIsLoading(true);
     setError(null);
-    fetch("/api/v1/admin/punters?page=1&pageSize=100", {
-      headers: {
-        "X-Admin-Role": "admin",
-      },
-    })
+    adminFetch("/api/v1/admin/punters?page=1&pageSize=100")
       .then((response) => {
         if (!response.ok) throw new Error("Failed to load users");
         return response.json();

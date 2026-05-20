@@ -11,6 +11,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { adminFetch } from "../../../lib/admin-fetch";
 import {
   ErrorBoundary,
   ErrorState,
@@ -101,9 +102,7 @@ function LoyaltySettingsPageContent() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/v1/admin/loyalty/config", {
-        headers: { "X-Admin-Role": "admin" },
-      });
+      const response = await adminFetch("/api/v1/admin/loyalty/config");
       if (!response.ok) {
         throw new Error("Failed to load loyalty configuration");
       }
@@ -193,13 +192,12 @@ function LoyaltySettingsPageContent() {
         benefits:
           Object.keys(benefitsPayload).length > 0 ? benefitsPayload : undefined,
       };
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/loyalty/tiers/${encodeURIComponent(tierDraft.tierCode)}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "X-Admin-Role": "admin",
           },
           body: JSON.stringify(payload),
         },
@@ -234,13 +232,12 @@ function LoyaltySettingsPageContent() {
         effectiveTo:
           localToRfc3339(rfc3339ToLocal(ruleDraft.effectiveTo)) || undefined,
       };
-      const response = await fetch(
+      const response = await adminFetch(
         `/api/v1/admin/loyalty/rules/${encodeURIComponent(ruleDraft.ruleId)}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "X-Admin-Role": "admin",
           },
           body: JSON.stringify(payload),
         },
@@ -271,11 +268,10 @@ function LoyaltySettingsPageContent() {
         ...newRuleDraft,
         maxPointsPerEvent: newRuleDraft.maxPointsPerEvent || undefined,
       };
-      const response = await fetch("/api/v1/admin/loyalty/rules", {
+      const response = await adminFetch("/api/v1/admin/loyalty/rules", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Admin-Role": "admin",
         },
         body: JSON.stringify(payload),
       });

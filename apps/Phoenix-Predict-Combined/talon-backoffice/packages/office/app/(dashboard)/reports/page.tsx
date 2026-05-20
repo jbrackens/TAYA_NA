@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { Card } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { ErrorBoundary, ErrorState } from "../../components/shared";
+import { adminFetch } from "../../lib/admin-fetch";
 
 const PageTitle = styled.h1`
   font-size: 28px;
@@ -238,7 +239,6 @@ function ReportsPageContent() {
       try {
         setIsLoading(true);
         setError(null);
-        const headers = { "X-Admin-Role": "admin" };
         const [
           walletResponse,
           promoResponse,
@@ -246,11 +246,11 @@ function ReportsPageContent() {
           configResponse,
           leaderboardResponse,
         ] = await Promise.all([
-          fetch("/api/v1/admin/wallet/reconciliation", { headers }),
-          fetch("/api/v1/admin/promotions/usage", { headers }),
-          fetch("/api/v1/admin/feed-health", { headers }),
-          fetch("/api/v1/admin/config", { headers }),
-          fetch("/api/v1/admin/leaderboards", { headers }),
+          adminFetch("/api/v1/admin/wallet/reconciliation"),
+          adminFetch("/api/v1/admin/promotions/usage"),
+          adminFetch("/api/v1/admin/feed-health"),
+          adminFetch("/api/v1/admin/config"),
+          adminFetch("/api/v1/admin/leaderboards"),
         ]);
 
         if (
@@ -282,9 +282,8 @@ function ReportsPageContent() {
         setFeaturedLeaderboard(activeBoard);
 
         if (activeBoard?.leaderboardId) {
-          const standingsResponse = await fetch(
+          const standingsResponse = await adminFetch(
             `/api/v1/admin/leaderboards/${encodeURIComponent(activeBoard.leaderboardId)}`,
-            { headers },
           );
           if (!standingsResponse.ok) {
             throw new Error("Failed to load leaderboard analytics");
