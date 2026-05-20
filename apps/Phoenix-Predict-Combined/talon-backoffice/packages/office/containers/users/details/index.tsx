@@ -1,4 +1,4 @@
-import { Skeleton, Col, message } from "antd";
+import { App, Skeleton, Col } from "antd";
 import { isBoolean, isEmpty } from "lodash";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,14 +38,14 @@ const UsersDetailsContainer = ({ id }: UsersDetailsContainerProps) => {
   const { t } = useTranslation("page-users-details");
   const { spy } = useSpy();
   const dispatch = useDispatch();
+  const { message } = App.useApp();
   const [forceUpdate, setForceUpdate] = useState(true);
   const [limitsModalVisible, setLimitsModalVisible] = useState(false);
   const [updatedLimits, setUpdatedLimits] = useState<FormValues>({});
   const [updatedLimitsCall, setUpdatedLimitsCall] = useState(false);
   const basicData = useSelector(selectBasicData);
-  const [isTransactionModalVisible, setIsTransactionModalVisbile] = useState(
-    false,
-  );
+  const [isTransactionModalVisible, setIsTransactionModalVisbile] =
+    useState(false);
   const [editModalData, setEditModalData] = useState<EditModalDataType>({
     field: "",
     currentValue: {},

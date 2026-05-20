@@ -1,4 +1,4 @@
-import { Button, message } from "antd";
+import { App, Button } from "antd";
 import React, { useEffect } from "react";
 import { useApi } from "../../../../services/api/api-service";
 import { useTranslation } from "i18n";
@@ -21,6 +21,7 @@ type UserDetailsWalletExportProps = {
 const UserDetailsWalletExport = ({ id }: UserDetailsWalletExportProps) => {
   const { t } = useTranslation("page-transactions");
   const router = useRouter();
+  const { message } = App.useApp();
 
   const [triggerExport, loadingExport, response] = useApi(
     "admin/punters/:id/transactions/export",

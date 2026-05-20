@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  App,
   Button,
   Card,
   Col,
@@ -14,7 +15,6 @@ import {
   Space,
   Tag,
   Typography,
-  message,
 } from "antd";
 import dayjs from "dayjs";
 import { Method, useTimezone } from "@phoenix-ui/utils";
@@ -80,9 +80,16 @@ type VerificationDecisionRequest = {
   questions?: KBAQuestion[];
 };
 
-type VerificationDecisionOption = "approved" | "rejected" | "manual_review" | "questions";
+type VerificationDecisionOption =
+  | "approved"
+  | "rejected"
+  | "manual_review"
+  | "questions";
 
-const DECISION_OPTIONS: { value: VerificationDecisionOption; labelKey: string }[] = [
+const DECISION_OPTIONS: {
+  value: VerificationDecisionOption;
+  labelKey: string;
+}[] = [
   { value: "approved", labelKey: "VERIFICATION_DECISION_APPROVED" },
   { value: "rejected", labelKey: "VERIFICATION_DECISION_REJECTED" },
   { value: "manual_review", labelKey: "VERIFICATION_DECISION_MANUAL_REVIEW" },
@@ -148,12 +155,12 @@ const renderTimestamp = (
 const VerificationReviewPanel = () => {
   const { t } = useTranslation(["page-provider-ops", "common"]);
   const { getTimeWithTimezone } = useTimezone();
+  const { message } = App.useApp();
   const [filters, setFilters] = useState<VerificationFilters>(DEFAULT_FILTERS);
   const [sessions, setSessions] = useState<VerificationSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
-  const [selectedSession, setSelectedSession] = useState<VerificationSession | null>(
-    null,
-  );
+  const [selectedSession, setSelectedSession] =
+    useState<VerificationSession | null>(null);
   const [events, setEvents] = useState<VerificationProviderEvent[]>([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [assignTo, setAssignTo] = useState("");
@@ -175,21 +182,21 @@ const VerificationReviewPanel = () => {
       "admin/users/verification-sessions/:sessionID/events",
       Method.GET,
     );
-  const [triggerAssign, assignLoading, assignResponse] =
-    useApi<VerificationSession, any, VerificationAssignmentRequest>(
-      "admin/users/verification-sessions/:sessionID/assign",
-      Method.POST,
-    );
-  const [triggerAddNote, noteLoading, noteResponse] =
-    useApi<VerificationProviderEventListResponse, any, VerificationNoteRequest>(
-      "admin/users/verification-sessions/:sessionID/notes",
-      Method.POST,
-    );
-  const [triggerDecision, decisionLoading, decisionResponse] =
-    useApi<VerificationSession, any, VerificationDecisionRequest>(
-      "admin/users/verification-sessions/:sessionID/decision",
-      Method.POST,
-    );
+  const [triggerAssign, assignLoading, assignResponse] = useApi<
+    VerificationSession,
+    any,
+    VerificationAssignmentRequest
+  >("admin/users/verification-sessions/:sessionID/assign", Method.POST);
+  const [triggerAddNote, noteLoading, noteResponse] = useApi<
+    VerificationProviderEventListResponse,
+    any,
+    VerificationNoteRequest
+  >("admin/users/verification-sessions/:sessionID/notes", Method.POST);
+  const [triggerDecision, decisionLoading, decisionResponse] = useApi<
+    VerificationSession,
+    any,
+    VerificationDecisionRequest
+  >("admin/users/verification-sessions/:sessionID/decision", Method.POST);
 
   const [decision, setDecision] = useState<VerificationDecisionOption | "">("");
   const [decisionReason, setDecisionReason] = useState("");
@@ -322,11 +329,14 @@ const VerificationReviewPanel = () => {
         if (!`${session.assignedTo || ""}`.trim()) {
           summary.unassigned += 1;
         }
-        if (`${session.status || ""}`.trim().toLowerCase() === "pending_review") {
+        if (
+          `${session.status || ""}`.trim().toLowerCase() === "pending_review"
+        ) {
           summary.pendingReview += 1;
         }
         if (
-          `${session.status || ""}`.trim().toLowerCase() === "provider_reviewing"
+          `${session.status || ""}`.trim().toLowerCase() ===
+          "provider_reviewing"
         ) {
           summary.providerReviewing += 1;
         }
@@ -430,7 +440,11 @@ const VerificationReviewPanel = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       render: (value: string) =>
-        renderTimestamp(value, t("common:DATE_TIME_FORMAT"), getTimeWithTimezone),
+        renderTimestamp(
+          value,
+          t("common:DATE_TIME_FORMAT"),
+          getTimeWithTimezone,
+        ),
     },
     {
       title: t("VERIFICATION_HEADER_ACTIONS"),
@@ -489,7 +503,9 @@ const VerificationReviewPanel = () => {
               placeholder={t("VERIFICATION_FILTER_STATUS")}
               style={{ width: "100%" }}
             >
-              <Select.Option value="pending_review">pending_review</Select.Option>
+              <Select.Option value="pending_review">
+                pending_review
+              </Select.Option>
               <Select.Option value="provider_reviewing">
                 provider_reviewing
               </Select.Option>
@@ -506,7 +522,11 @@ const VerificationReviewPanel = () => {
           </Col>
           <Col xs={24} md={6}>
             <Space>
-              <Button type="primary" onClick={() => void refreshQueue()} loading={queueLoading}>
+              <Button
+                type="primary"
+                onClick={() => void refreshQueue()}
+                loading={queueLoading}
+              >
                 {t("VERIFICATION_ACTION_REFRESH")}
               </Button>
               <Button onClick={() => setFilters(DEFAULT_FILTERS)}>
@@ -529,7 +549,8 @@ const VerificationReviewPanel = () => {
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Typography.Paragraph style={{ marginBottom: 0 }}>
-              {t("VERIFICATION_METRIC_PENDING_REVIEW")}: {queueCounts.pendingReview}
+              {t("VERIFICATION_METRIC_PENDING_REVIEW")}:{" "}
+              {queueCounts.pendingReview}
             </Typography.Paragraph>
           </Col>
           <Col xs={24} sm={12} lg={6}>
@@ -561,7 +582,12 @@ const VerificationReviewPanel = () => {
           <Empty description={t("VERIFICATION_EMPTY")} />
         ) : (
           <>
-            <Descriptions bordered size="small" column={1} style={{ marginBottom: 16 }}>
+            <Descriptions
+              bordered
+              size="small"
+              column={1}
+              style={{ marginBottom: 16 }}
+            >
               <Descriptions.Item label={t("VERIFICATION_HEADER_USER")}>
                 {selectedSession.userId}
               </Descriptions.Item>
@@ -576,7 +602,9 @@ const VerificationReviewPanel = () => {
               <Descriptions.Item label={t("VERIFICATION_HEADER_ASSIGNED")}>
                 {selectedSession.assignedTo || t("VERIFICATION_UNASSIGNED")}
               </Descriptions.Item>
-              <Descriptions.Item label={t("VERIFICATION_HEADER_PROVIDER_REFERENCE")}>
+              <Descriptions.Item
+                label={t("VERIFICATION_HEADER_PROVIDER_REFERENCE")}
+              >
                 {selectedSession.providerReference || "-"}
               </Descriptions.Item>
               <Descriptions.Item label={t("VERIFICATION_HEADER_PROVIDER_CASE")}>
@@ -710,11 +738,18 @@ const VerificationReviewPanel = () => {
                 {decision === "questions" && (
                   <Col span={24}>
                     <Divider style={{ margin: "8px 0" }} />
-                    <Typography.Text strong style={{ display: "block", marginBottom: 8 }}>
+                    <Typography.Text
+                      strong
+                      style={{ display: "block", marginBottom: 8 }}
+                    >
                       {t("VERIFICATION_DECISION_QUESTIONS_LABEL")}
                     </Typography.Text>
                     {decisionQuestions.map((q, idx) => (
-                      <Row key={idx} gutter={[8, 8]} style={{ marginBottom: 8 }}>
+                      <Row
+                        key={idx}
+                        gutter={[8, 8]}
+                        style={{ marginBottom: 8 }}
+                      >
                         <Col flex="auto">
                           <Input
                             value={q.text}
@@ -802,7 +837,11 @@ const VerificationReviewPanel = () => {
                             {event.payload ? (
                               <Typography.Paragraph
                                 style={{ marginBottom: 0 }}
-                                ellipsis={{ rows: 3, expandable: true, symbol: "more" }}
+                                ellipsis={{
+                                  rows: 3,
+                                  expandable: true,
+                                  symbol: "more",
+                                }}
                               >
                                 <code>{JSON.stringify(event.payload)}</code>
                               </Typography.Paragraph>

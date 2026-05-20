@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
+  App,
   Button,
   Card,
   Col,
@@ -13,7 +14,6 @@ import {
   Space,
   Tag,
   Typography,
-  message,
 } from "antd";
 import dayjs from "dayjs";
 import { Method, useTimezone } from "@phoenix-ui/utils";
@@ -248,12 +248,16 @@ const normalizeQueueResponse = (
   };
 };
 
-const normalizeSummary = (payload?: PaymentSummaryResponse): PaymentSummaryItem[] => {
+const normalizeSummary = (
+  payload?: PaymentSummaryResponse,
+): PaymentSummaryItem[] => {
   const data = payload?.data;
   return Array.isArray(data) ? data : [];
 };
 
-const normalizeEvents = (payload?: PaymentEventListResponse): PaymentEvent[] => {
+const normalizeEvents = (
+  payload?: PaymentEventListResponse,
+): PaymentEvent[] => {
   const data = payload?.data;
   return Array.isArray(data) ? data : [];
 };
@@ -317,6 +321,7 @@ const renderValue = (value: unknown) => {
 const CashierReviewPanel = () => {
   const { t } = useTranslation(["page-provider-ops", "common"]);
   const { getTimeWithTimezone } = useTimezone();
+  const { message } = App.useApp();
   const [filters, setFilters] = useState<CashierFilters>(DEFAULT_FILTERS);
   const [queueState, setQueueState] = useState<QueueState>(DEFAULT_QUEUE_STATE);
   const [reconciliationState, setReconciliationState] =
@@ -324,14 +329,15 @@ const CashierReviewPanel = () => {
   const [paymentQueue, setPaymentQueue] = useState<PaymentQueueItem[]>([]);
   const [paymentQueuePagination, setPaymentQueuePagination] =
     useState<Pagination>(DEFAULT_PAGINATION);
-  const [reconciliationQueue, setReconciliationQueue] = useState<PaymentQueueItem[]>([]);
+  const [reconciliationQueue, setReconciliationQueue] = useState<
+    PaymentQueueItem[]
+  >([]);
   const [reconciliationPagination, setReconciliationPagination] =
     useState<Pagination>(DEFAULT_PAGINATION);
   const [summary, setSummary] = useState<PaymentSummaryItem[]>([]);
   const [selectedTransactionId, setSelectedTransactionId] = useState("");
-  const [selectedTransaction, setSelectedTransaction] = useState<PaymentDetails | null>(
-    null,
-  );
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<PaymentDetails | null>(null);
   const [events, setEvents] = useState<PaymentEvent[]>([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [assignTo, setAssignTo] = useState("");
@@ -349,28 +355,39 @@ const CashierReviewPanel = () => {
   const [reconciliationPreview, setReconciliationPreview] =
     useState<PaymentReconciliationPreview | null>(null);
 
-  const [triggerQueue, queueLoading, queueResponse] = useApi<PaymentQueueResponse>(
-    "admin/payments/transactions",
-    Method.GET,
-  );
-  const [triggerQueueExport, queueExportLoading, queueExportResponse] = useApi<any>(
-    "admin/payments/transactions/export",
-    Method.GET,
-  );
+  const [triggerQueue, queueLoading, queueResponse] =
+    useApi<PaymentQueueResponse>("admin/payments/transactions", Method.GET);
+  const [triggerQueueExport, queueExportLoading, queueExportResponse] =
+    useApi<any>("admin/payments/transactions/export", Method.GET);
   const [triggerSummary, summaryLoading, summaryResponse] =
-    useApi<PaymentSummaryResponse>("admin/payments/transactions/summary", Method.GET);
-  const [triggerReconciliationQueue, reconciliationLoading, reconciliationResponse] =
-    useApi<PaymentQueueResponse>(
-      "admin/payments/transactions/reconciliation-queue",
+    useApi<PaymentSummaryResponse>(
+      "admin/payments/transactions/summary",
       Method.GET,
     );
-  const [triggerReconciliationQueueExport, reconciliationQueueExportLoading, reconciliationQueueExportResponse] =
-    useApi<any>("admin/payments/transactions/reconciliation-queue/export", Method.GET);
-  const [triggerReconciliationPreview, reconciliationPreviewLoading, reconciliationPreviewResponse] =
-    useApi<PaymentReconciliationPreview, any, PaymentReconciliationRequest>(
-      "admin/payments/transactions/reconcile/preview",
-      Method.POST,
-    );
+  const [
+    triggerReconciliationQueue,
+    reconciliationLoading,
+    reconciliationResponse,
+  ] = useApi<PaymentQueueResponse>(
+    "admin/payments/transactions/reconciliation-queue",
+    Method.GET,
+  );
+  const [
+    triggerReconciliationQueueExport,
+    reconciliationQueueExportLoading,
+    reconciliationQueueExportResponse,
+  ] = useApi<any>(
+    "admin/payments/transactions/reconciliation-queue/export",
+    Method.GET,
+  );
+  const [
+    triggerReconciliationPreview,
+    reconciliationPreviewLoading,
+    reconciliationPreviewResponse,
+  ] = useApi<PaymentReconciliationPreview, any, PaymentReconciliationRequest>(
+    "admin/payments/transactions/reconcile/preview",
+    Method.POST,
+  );
   const [triggerReconcile, reconcileLoading] = useApi<
     PaymentDetails,
     any,
@@ -385,10 +402,11 @@ const CashierReviewPanel = () => {
       "admin/payments/transactions/:transactionID/events",
       Method.GET,
     );
-  const [triggerAssign, assignLoading] = useApi<PaymentDetails, any, PaymentAssignmentRequest>(
-    "admin/payments/transactions/:transactionID/assign",
-    Method.POST,
-  );
+  const [triggerAssign, assignLoading] = useApi<
+    PaymentDetails,
+    any,
+    PaymentAssignmentRequest
+  >("admin/payments/transactions/:transactionID/assign", Method.POST);
   const [triggerAddNote, noteLoading] = useApi<
     PaymentEventListResponse,
     any,
@@ -442,7 +460,8 @@ const CashierReviewPanel = () => {
     chargebackLoading ||
     reconcileLoading;
 
-  const [pendingAction, setPendingAction] = useState<PendingCashierAction | null>(null);
+  const [pendingAction, setPendingAction] =
+    useState<PendingCashierAction | null>(null);
   const [confirmReason, setConfirmReason] = useState("");
   const [confirmSubmitting, setConfirmSubmitting] = useState(false);
 
@@ -459,7 +478,15 @@ const CashierReviewPanel = () => {
       reverse: triggerReverse,
       chargeback: triggerChargeback,
     }),
-    [triggerApprove, triggerDecline, triggerRetry, triggerSettle, triggerRefund, triggerReverse, triggerChargeback],
+    [
+      triggerApprove,
+      triggerDecline,
+      triggerRetry,
+      triggerSettle,
+      triggerRefund,
+      triggerReverse,
+      triggerChargeback,
+    ],
   );
 
   const requestAction = useCallback(
@@ -483,7 +510,9 @@ const CashierReviewPanel = () => {
     if (!pendingAction) {
       return;
     }
-    const isReasonRequired = REASON_REQUIRED_ACTIONS.includes(pendingAction.type);
+    const isReasonRequired = REASON_REQUIRED_ACTIONS.includes(
+      pendingAction.type,
+    );
     if (isReasonRequired && !confirmReason.trim()) {
       return;
     }
@@ -500,7 +529,7 @@ const CashierReviewPanel = () => {
         trigger(payload, { transactionID: pendingAction.transactionId }),
       );
       void message.success(t(CASHIER_ACTION_SUCCESS_KEYS[pendingAction.type]));
-  
+
       cancelPendingAction();
       await Promise.all([
         refreshAll(),
@@ -519,7 +548,9 @@ const CashierReviewPanel = () => {
   ]);
 
   const downloadCSV = (content: any, filename: string) => {
-    const url = window.URL.createObjectURL(new Blob([content], { type: "text/csv" }));
+    const url = window.URL.createObjectURL(
+      new Blob([content], { type: "text/csv" }),
+    );
     const link = document.createElement("a");
     link.href = url;
     link.setAttribute("download", filename);
@@ -529,7 +560,10 @@ const CashierReviewPanel = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  const refreshQueue = async (page = queueState.page, limit = queueState.limit) => {
+  const refreshQueue = async (
+    page = queueState.page,
+    limit = queueState.limit,
+  ) => {
     await triggerQueue(undefined, {
       query: {
         ...(filters.userId ? { user_id: filters.userId } : {}),
@@ -593,7 +627,11 @@ const CashierReviewPanel = () => {
   };
 
   useEffect(() => {
-    void Promise.all([refreshQueue(), refreshSummary(), refreshReconciliationQueue()]);
+    void Promise.all([
+      refreshQueue(),
+      refreshSummary(),
+      refreshReconciliationQueue(),
+    ]);
   }, [
     filters.userId,
     filters.type,
@@ -643,7 +681,10 @@ const CashierReviewPanel = () => {
   ]);
 
   useEffect(() => {
-    if (!reconciliationPreviewResponse.succeeded || !reconciliationPreviewResponse.data) {
+    if (
+      !reconciliationPreviewResponse.succeeded ||
+      !reconciliationPreviewResponse.data
+    ) {
       return;
     }
     setReconciliationPreview(reconciliationPreviewResponse.data);
@@ -698,7 +739,10 @@ const CashierReviewPanel = () => {
     await Promise.all([
       refreshQueue(queueState.page, queueState.limit),
       refreshSummary(),
-      refreshReconciliationQueue(reconciliationState.page, reconciliationState.limit),
+      refreshReconciliationQueue(
+        reconciliationState.page,
+        reconciliationState.limit,
+      ),
     ]);
   };
 
@@ -726,7 +770,10 @@ const CashierReviewPanel = () => {
       { transactionID: selectedTransactionId },
     );
     setAssignReason("");
-    await Promise.all([refreshAll(), refreshSelectedTransaction(selectedTransactionId)]);
+    await Promise.all([
+      refreshAll(),
+      refreshSelectedTransaction(selectedTransactionId),
+    ]);
   };
 
   const submitNote = async () => {
@@ -738,7 +785,10 @@ const CashierReviewPanel = () => {
       { transactionID: selectedTransactionId },
     );
     setNote("");
-    await Promise.all([refreshAll(), refreshSelectedTransaction(selectedTransactionId)]);
+    await Promise.all([
+      refreshAll(),
+      refreshSelectedTransaction(selectedTransactionId),
+    ]);
   };
 
   const canRunReconciliation =
@@ -802,7 +852,9 @@ const CashierReviewPanel = () => {
       title: t("CASHIER_HEADER_STATUS"),
       dataIndex: "status",
       key: "status",
-      render: (value: string) => <Tag color={paymentStatusColor(value)}>{value || "-"}</Tag>,
+      render: (value: string) => (
+        <Tag color={paymentStatusColor(value)}>{value || "-"}</Tag>
+      ),
     },
     {
       title: t("CASHIER_HEADER_PROVIDER"),
@@ -827,7 +879,11 @@ const CashierReviewPanel = () => {
       dataIndex: "timestamp",
       key: "timestamp",
       render: (value: string) =>
-        renderTimestamp(value, t("common:DATE_TIME_FORMAT"), getTimeWithTimezone),
+        renderTimestamp(
+          value,
+          t("common:DATE_TIME_FORMAT"),
+          getTimeWithTimezone,
+        ),
     },
     {
       title: t("CASHIER_HEADER_ACTIONS"),
@@ -1000,7 +1056,11 @@ const CashierReviewPanel = () => {
                   dataSource={summary}
                   renderItem={(item) => (
                     <List.Item>
-                      <Space direction="vertical" size={0} style={{ width: "100%" }}>
+                      <Space
+                        direction="vertical"
+                        size={0}
+                        style={{ width: "100%" }}
+                      >
                         <Typography.Text>
                           {`${item.provider || t("CASHIER_UNSPECIFIED_PROVIDER")} / ${item.type} / ${item.status}`}
                         </Typography.Text>
@@ -1018,7 +1078,10 @@ const CashierReviewPanel = () => {
             </Card>
           </Col>
           <Col xs={24} xl={12}>
-            <Card title={t("CASHIER_RECONCILIATION_TITLE")} loading={reconciliationLoading}>
+            <Card
+              title={t("CASHIER_RECONCILIATION_TITLE")}
+              loading={reconciliationLoading}
+            >
               <Table
                 rowKey={(record: Record<string, any>) =>
                   `${record.transactionId}:${record.timestamp || ""}`
@@ -1026,9 +1089,13 @@ const CashierReviewPanel = () => {
                 columns={queueColumns}
                 dataSource={reconciliationQueue}
                 pagination={{
-                  current: reconciliationPagination.page || reconciliationState.page,
-                  pageSize: reconciliationPagination.limit || reconciliationState.limit,
-                  total: reconciliationPagination.total || reconciliationQueue.length,
+                  current:
+                    reconciliationPagination.page || reconciliationState.page,
+                  pageSize:
+                    reconciliationPagination.limit || reconciliationState.limit,
+                  total:
+                    reconciliationPagination.total ||
+                    reconciliationQueue.length,
                   pageSizeOptions: ["10", "20", "50"],
                   showSizeChanger: true,
                 }}
@@ -1046,7 +1113,10 @@ const CashierReviewPanel = () => {
         </Row>
       </Card>
 
-      <Card title={t("CASHIER_RECONCILIATION_WORKFLOW_TITLE")} style={{ marginBottom: 16 }}>
+      <Card
+        title={t("CASHIER_RECONCILIATION_WORKFLOW_TITLE")}
+        style={{ marginBottom: 16 }}
+      >
         <Row gutter={[12, 12]}>
           <Col xs={24} md={6}>
             <Input
@@ -1130,28 +1200,40 @@ const CashierReviewPanel = () => {
           <Col span={24}>
             {reconciliationPreview ? (
               <Descriptions bordered column={1} size="small">
-                <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_TRANSACTION")}>
+                <Descriptions.Item
+                  label={t("CASHIER_RECON_PREVIEW_TRANSACTION")}
+                >
                   {reconciliationPreview.transactionId}
                 </Descriptions.Item>
-                <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_CURRENT_STATUS")}>
+                <Descriptions.Item
+                  label={t("CASHIER_RECON_PREVIEW_CURRENT_STATUS")}
+                >
                   {reconciliationPreview.currentStatus}
                 </Descriptions.Item>
-                <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_REQUESTED_STATUS")}>
+                <Descriptions.Item
+                  label={t("CASHIER_RECON_PREVIEW_REQUESTED_STATUS")}
+                >
                   {reconciliationPreview.requestedStatus}
                 </Descriptions.Item>
-                <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_NORMALIZED_STATUS")}>
+                <Descriptions.Item
+                  label={t("CASHIER_RECON_PREVIEW_NORMALIZED_STATUS")}
+                >
                   {reconciliationPreview.normalizedStatus}
                 </Descriptions.Item>
                 <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_ACTION")}>
                   {reconciliationPreview.action}
                 </Descriptions.Item>
                 <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_ALLOWED")}>
-                  {reconciliationPreview.allowed ? t("VALUE_ENABLED") : t("VALUE_DISABLED")}
+                  {reconciliationPreview.allowed
+                    ? t("VALUE_ENABLED")
+                    : t("VALUE_DISABLED")}
                 </Descriptions.Item>
                 <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_BALANCE")}>
                   {`${reconciliationPreview.currentBalance} -> ${reconciliationPreview.projectedBalance}`}
                 </Descriptions.Item>
-                <Descriptions.Item label={t("CASHIER_RECON_PREVIEW_BLOCKING_REASON")}>
+                <Descriptions.Item
+                  label={t("CASHIER_RECON_PREVIEW_BLOCKING_REASON")}
+                >
                   {reconciliationPreview.blockingReason || "-"}
                 </Descriptions.Item>
               </Descriptions>
@@ -1219,7 +1301,7 @@ const CashierReviewPanel = () => {
               <Descriptions.Item label={t("CASHIER_HEADER_ASSIGNED")}>
                 {selectedTransaction.assignedTo || t("CASHIER_UNASSIGNED")}
               </Descriptions.Item>
-              <Descriptions.Item label={t("CASHIER_HEADER_CREATED") }>
+              <Descriptions.Item label={t("CASHIER_HEADER_CREATED")}>
                 {renderTimestamp(
                   selectedTransaction.createdAt,
                   t("common:DATE_TIME_FORMAT"),
@@ -1272,31 +1354,89 @@ const CashierReviewPanel = () => {
                 <Col span={24}>
                   <Input
                     value={actionProviderReference}
-                    onChange={(event) => setActionProviderReference(event.target.value)}
+                    onChange={(event) =>
+                      setActionProviderReference(event.target.value)
+                    }
                     placeholder={t("CASHIER_FIELD_PROVIDER_REFERENCE")}
                   />
                 </Col>
                 <Col span={24}>
                   <Space wrap>
-                    <Button onClick={() => requestAction("approve")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "approve")}>
+                    <Button
+                      onClick={() => requestAction("approve")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(selectedTransaction?.status, "approve")
+                      }
+                    >
                       {t("CASHIER_ACTION_APPROVE")}
                     </Button>
-                    <Button onClick={() => requestAction("decline")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "decline")} danger>
+                    <Button
+                      onClick={() => requestAction("decline")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(selectedTransaction?.status, "decline")
+                      }
+                      danger
+                    >
                       {t("CASHIER_ACTION_DECLINE")}
                     </Button>
-                    <Button onClick={() => requestAction("retry")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "retry")}>
+                    <Button
+                      onClick={() => requestAction("retry")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(selectedTransaction?.status, "retry")
+                      }
+                    >
                       {t("CASHIER_ACTION_RETRY")}
                     </Button>
-                    <Button onClick={() => requestAction("settle")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "settle")}>
+                    <Button
+                      onClick={() => requestAction("settle")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(selectedTransaction?.status, "settle")
+                      }
+                    >
                       {t("CASHIER_ACTION_SETTLE")}
                     </Button>
-                    <Button onClick={() => requestAction("refund")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "refund")} danger>
+                    <Button
+                      onClick={() => requestAction("refund")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(selectedTransaction?.status, "refund")
+                      }
+                      danger
+                    >
                       {t("CASHIER_ACTION_REFUND")}
                     </Button>
-                    <Button onClick={() => requestAction("reverse")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "reverse")} danger>
+                    <Button
+                      onClick={() => requestAction("reverse")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(selectedTransaction?.status, "reverse")
+                      }
+                      danger
+                    >
                       {t("CASHIER_ACTION_REVERSE")}
                     </Button>
-                    <Button onClick={() => requestAction("chargeback")} disabled={actionLoading || confirmSubmitting || !isActionAllowed(selectedTransaction?.status, "chargeback")} danger>
+                    <Button
+                      onClick={() => requestAction("chargeback")}
+                      disabled={
+                        actionLoading ||
+                        confirmSubmitting ||
+                        !isActionAllowed(
+                          selectedTransaction?.status,
+                          "chargeback",
+                        )
+                      }
+                      danger
+                    >
                       {t("CASHIER_ACTION_CHARGEBACK")}
                     </Button>
                   </Space>
@@ -1328,7 +1468,9 @@ const CashierReviewPanel = () => {
                 <>
                   <Typography.Paragraph>
                     {t("CASHIER_CONFIRM_TRANSACTION_LABEL")}:{" "}
-                    <Typography.Text strong>{pendingAction.transactionId}</Typography.Text>
+                    <Typography.Text strong>
+                      {pendingAction.transactionId}
+                    </Typography.Text>
                   </Typography.Paragraph>
                   <Input.TextArea
                     rows={3}
@@ -1341,11 +1483,15 @@ const CashierReviewPanel = () => {
                     }
                     data-testid="cashier-confirm-reason"
                   />
-                  {REASON_REQUIRED_ACTIONS.includes(pendingAction.type) && !confirmReason.trim() && (
-                    <Typography.Text type="danger" style={{ display: "block", marginTop: 4 }}>
-                      {t("CASHIER_CONFIRM_REASON_REQUIRED_HINT")}
-                    </Typography.Text>
-                  )}
+                  {REASON_REQUIRED_ACTIONS.includes(pendingAction.type) &&
+                    !confirmReason.trim() && (
+                      <Typography.Text
+                        type="danger"
+                        style={{ display: "block", marginTop: 4 }}
+                      >
+                        {t("CASHIER_CONFIRM_REASON_REQUIRED_HINT")}
+                      </Typography.Text>
+                    )}
                 </>
               )}
             </Modal>
@@ -1373,7 +1519,11 @@ const CashierReviewPanel = () => {
               </Row>
             </Card>
 
-            <Card title={t("CASHIER_EVENTS_TITLE")} size="small" loading={eventsLoading}>
+            <Card
+              title={t("CASHIER_EVENTS_TITLE")}
+              size="small"
+              loading={eventsLoading}
+            >
               {events.length === 0 ? (
                 <Empty description={t("CASHIER_EVENTS_EMPTY")} />
               ) : (
@@ -1381,7 +1531,11 @@ const CashierReviewPanel = () => {
                   dataSource={events}
                   renderItem={(event) => (
                     <List.Item key={event.id}>
-                      <Space direction="vertical" size={0} style={{ width: "100%" }}>
+                      <Space
+                        direction="vertical"
+                        size={0}
+                        style={{ width: "100%" }}
+                      >
                         <Typography.Text strong>
                           {`${event.status} / ${event.source}`}
                         </Typography.Text>

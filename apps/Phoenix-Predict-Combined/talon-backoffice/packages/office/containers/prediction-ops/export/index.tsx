@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, message } from "antd";
+import { App, Button } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { Button as ButtonEnum } from "@phoenix-ui/utils";
 import { useTranslation } from "i18n";
@@ -36,6 +36,7 @@ const downloadCsv = (filename: string, lines: string) => {
 
 const PredictionOpsExportButton = (props: PredictionOpsExportButtonProps) => {
   const { t } = useTranslation("page-prediction-ops");
+  const { message } = App.useApp();
 
   const onClick = () => {
     try {
@@ -77,7 +78,8 @@ const PredictionOpsExportButton = (props: PredictionOpsExportButtonProps) => {
               market.tags.join("|"),
             ]
               .map(escapeCsv)
-              .join(",")),
+              .join(","),
+          ),
         ].join("\n");
 
         downloadCsv("Prediction Market Catalog.csv", lines);
@@ -130,7 +132,8 @@ const PredictionOpsExportButton = (props: PredictionOpsExportButtonProps) => {
             order.createdAt,
           ]
             .map(escapeCsv)
-            .join(",")),
+            .join(","),
+        ),
       ].join("\n");
 
       downloadCsv("Prediction Order Flow.csv", lines);

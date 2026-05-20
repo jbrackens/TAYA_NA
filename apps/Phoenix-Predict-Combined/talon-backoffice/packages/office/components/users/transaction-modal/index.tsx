@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, message, Modal, Radio } from "antd";
+import { App, Button, Form, Input, InputNumber, Modal, Radio } from "antd";
 import { FC, useState } from "react";
 import { useTranslation } from "i18n";
 import { Id, Method, useSpy } from "@phoenix-ui/utils";
@@ -33,6 +33,7 @@ export const TransctionModal: FC<Props> = ({
   const { t } = useTranslation("page-users-details");
   const [transactionForm] = Form.useForm();
   const { spy } = useSpy();
+  const { message } = App.useApp();
 
   const [triggerFundsCredit, _loadingFundsCredit, creditResponse] = useApi(
     "admin/punters/:id/funds/credit",

@@ -18,7 +18,7 @@
 //      low-power modes. Modal/Drawer/Tooltip then close instantly.
 
 import React, { useEffect, useMemo, useState } from "react";
-import { ConfigProvider, type ThemeConfig } from "antd";
+import { App, ConfigProvider, type ThemeConfig } from "antd";
 
 // P8 token map. Color values reference CSS vars from `styles/p8-tokens.css`
 // (CLAUDE.md forbids hex literals — vars resolve at runtime via the
@@ -91,5 +91,16 @@ export default function AntdConfigProvider({
     [reduceMotion],
   );
 
-  return <ConfigProvider theme={theme}>{children}</ConfigProvider>;
+  // `<App>` provides the message/notification/modal contexts that
+  // `App.useApp()` consumes. Required for v5's static-API replacement
+  // — without it, every `message.*` callsite logs:
+  //   "Static function can not consume context like dynamic theme.
+  //    Please use 'App' component instead."
+  // Wrapping here covers both the App Router (app/layout.tsx) and the
+  // Pages Router (pages/_app.js) since both render through this provider.
+  return (
+    <ConfigProvider theme={theme}>
+      <App>{children}</App>
+    </ConfigProvider>
+  );
 }

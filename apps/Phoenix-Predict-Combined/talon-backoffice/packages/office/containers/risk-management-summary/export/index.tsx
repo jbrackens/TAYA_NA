@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, message } from "antd";
+import { App, Button } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { Button as ButtonEnum } from "@phoenix-ui/utils";
 import { useTranslation } from "i18n";
@@ -32,6 +32,7 @@ const RiskManagementPredictionExportButton = ({
   disabled,
 }: RiskManagementPredictionExportButtonProps) => {
   const { t } = useTranslation("page-risk-management-summary");
+  const { message } = App.useApp();
 
   const onClick = () => {
     try {
@@ -45,12 +46,42 @@ const RiskManagementPredictionExportButton = ({
           .map(escapeCsv)
           .join(","),
         ...[
-          [t("PREDICTION_EXPORT_SECTION_SUMMARY"), t("PREDICTION_EXPORT_PRODUCT_LABEL"), t("PREDICTION_TOTAL_MARKETS"), summary.totalMarkets],
-          [t("PREDICTION_EXPORT_SECTION_SUMMARY"), t("PREDICTION_EXPORT_PRODUCT_LABEL"), t("PREDICTION_LIVE_MARKETS"), summary.liveMarkets],
-          [t("PREDICTION_EXPORT_SECTION_SUMMARY"), t("PREDICTION_EXPORT_PRODUCT_LABEL"), t("PREDICTION_RESOLVED_MARKETS"), summary.resolvedMarkets],
-          [t("PREDICTION_EXPORT_SECTION_SUMMARY"), t("PREDICTION_EXPORT_PRODUCT_LABEL"), t("PREDICTION_TOTAL_ORDERS"), summary.totalOrders],
-          [t("PREDICTION_EXPORT_SECTION_SUMMARY"), t("PREDICTION_EXPORT_PRODUCT_LABEL"), t("PREDICTION_OPEN_ORDERS"), summary.openOrders],
-          [t("PREDICTION_EXPORT_SECTION_SUMMARY"), t("PREDICTION_EXPORT_PRODUCT_LABEL"), t("PREDICTION_TOTAL_VOLUME"), summary.totalVolumeUsd],
+          [
+            t("PREDICTION_EXPORT_SECTION_SUMMARY"),
+            t("PREDICTION_EXPORT_PRODUCT_LABEL"),
+            t("PREDICTION_TOTAL_MARKETS"),
+            summary.totalMarkets,
+          ],
+          [
+            t("PREDICTION_EXPORT_SECTION_SUMMARY"),
+            t("PREDICTION_EXPORT_PRODUCT_LABEL"),
+            t("PREDICTION_LIVE_MARKETS"),
+            summary.liveMarkets,
+          ],
+          [
+            t("PREDICTION_EXPORT_SECTION_SUMMARY"),
+            t("PREDICTION_EXPORT_PRODUCT_LABEL"),
+            t("PREDICTION_RESOLVED_MARKETS"),
+            summary.resolvedMarkets,
+          ],
+          [
+            t("PREDICTION_EXPORT_SECTION_SUMMARY"),
+            t("PREDICTION_EXPORT_PRODUCT_LABEL"),
+            t("PREDICTION_TOTAL_ORDERS"),
+            summary.totalOrders,
+          ],
+          [
+            t("PREDICTION_EXPORT_SECTION_SUMMARY"),
+            t("PREDICTION_EXPORT_PRODUCT_LABEL"),
+            t("PREDICTION_OPEN_ORDERS"),
+            summary.openOrders,
+          ],
+          [
+            t("PREDICTION_EXPORT_SECTION_SUMMARY"),
+            t("PREDICTION_EXPORT_PRODUCT_LABEL"),
+            t("PREDICTION_TOTAL_VOLUME"),
+            summary.totalVolumeUsd,
+          ],
         ].map((row) => row.map(escapeCsv).join(",")),
         ...summary.categories.map((category) =>
           [
@@ -60,7 +91,8 @@ const RiskManagementPredictionExportButton = ({
             `markets=${category.marketCount}; live=${category.liveMarketCount}; open=${category.openMarketCount}; resolved=${category.resolvedMarketCount}`,
           ]
             .map(escapeCsv)
-            .join(",")),
+            .join(","),
+        ),
         ...summary.topMarkets.map((market) =>
           [
             t("PREDICTION_EXPORT_SECTION_TOP_MARKET"),
@@ -69,7 +101,8 @@ const RiskManagementPredictionExportButton = ({
             `status=${market.status}; volumeUsd=${market.volumeUsd}; liquidityUsd=${market.liquidityUsd}`,
           ]
             .map(escapeCsv)
-            .join(",")),
+            .join(","),
+        ),
       ].join("\n");
 
       downloadCsv("Prediction Risk Summary.csv", lines);

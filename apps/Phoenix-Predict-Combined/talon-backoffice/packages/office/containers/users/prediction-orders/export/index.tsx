@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, message } from "antd";
+import { App, Button } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { useTranslation } from "i18n";
 import { Id, Button as ButtonEnum } from "@phoenix-ui/utils";
@@ -19,6 +19,7 @@ const UserPredictionOrdersExport = ({
   orders,
 }: UserPredictionOrdersExportProps) => {
   const { t } = useTranslation("page-prediction-ops");
+  const { message } = App.useApp();
 
   const onClick = () => {
     try {
@@ -65,7 +66,8 @@ const UserPredictionOrdersExport = ({
             order.createdAt,
           ]
             .map(escapeCsv)
-            .join(",")),
+            .join(","),
+        ),
       ].join("\n");
 
       const url = window.URL.createObjectURL(

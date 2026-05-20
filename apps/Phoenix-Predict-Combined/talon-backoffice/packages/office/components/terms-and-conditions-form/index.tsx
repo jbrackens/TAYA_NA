@@ -1,6 +1,6 @@
 import { useTranslation } from "i18n";
 import { useState } from "react";
-import { Upload, Button, InputNumber, Card, Form, message, Spin } from "antd";
+import { App, Upload, Button, InputNumber, Card, Form, Spin } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 // @ts-ignore
 import mammoth from "mammoth";
@@ -10,14 +10,10 @@ import { useEffect } from "react";
 
 export const TermsAndConditionsForm = () => {
   const { t } = useTranslation(TermsAndConditionsForm.namespace);
+  const { message } = App.useApp();
   const [resultHtml, setResultHtml] = useState("");
-  const [
-    getTerms,
-    getTermsIsLoading,
-    getTermsResponse,
-    ,
-    resetGetTerms,
-  ] = useApi("admin/terms/current", Method.GET);
+  const [getTerms, getTermsIsLoading, getTermsResponse, , resetGetTerms] =
+    useApi("admin/terms/current", Method.GET);
   const [form] = Form.useForm();
   const [triggerApi, isLoading, response, , resetHookState] = useApi(
     "admin/upload-terms",

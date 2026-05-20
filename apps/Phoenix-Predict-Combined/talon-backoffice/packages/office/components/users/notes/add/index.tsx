@@ -1,4 +1,4 @@
-import { Button, Modal, Form, Input, message } from "antd";
+import { App, Button, Modal, Form, Input } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useApi } from "../../../../services/api/api-service";
@@ -19,6 +19,7 @@ const UserAddNote = ({ id }: UserAddNoteProps) => {
   const dispatch = useDispatch();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const { message } = App.useApp();
 
   const [triggerAddNote, loadingAddNote, response] = useApi(
     "admin/punters/:id/notes",

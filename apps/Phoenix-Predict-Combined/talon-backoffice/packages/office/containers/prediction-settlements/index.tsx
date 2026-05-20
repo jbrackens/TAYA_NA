@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Alert,
+  App,
   Button,
   Card,
   Col,
@@ -14,7 +15,6 @@ import {
   Tag,
   Tooltip,
   Typography,
-  message,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
@@ -46,6 +46,7 @@ export default function PredictionSettlementsContainer() {
     null,
   );
   const [form] = Form.useForm();
+  const { message } = App.useApp();
 
   useEffect(() => {
     loadData();

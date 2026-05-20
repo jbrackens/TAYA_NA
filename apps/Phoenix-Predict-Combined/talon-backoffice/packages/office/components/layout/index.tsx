@@ -3,7 +3,7 @@ import { LayoutContent, LayoutWrapper } from "./index.styled";
 import { SidebarComponent } from "./sidebar";
 import MenuContext from "../../providers/menu";
 import { isEmpty } from "lodash";
-import { notification } from "antd";
+import { App } from "antd";
 import { useTranslation } from "i18n";
 import dynamic from "next/dynamic";
 
@@ -25,6 +25,7 @@ const Layout: React.FC<LayoutComponentProps> = ({
   const [sidebarVisible, setSidebarVisibility] = useState(true);
   const menu = useContext(MenuContext);
   const hasSidebar = !isAuth && !isEmpty(menu) && sidebarVisible;
+  const { notification } = App.useApp();
 
   const updateSidebarVisibility = (visible: boolean) => {
     setSidebarVisibility(visible);

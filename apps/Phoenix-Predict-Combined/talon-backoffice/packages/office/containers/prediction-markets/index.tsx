@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  App,
   Button,
   Card,
   Col,
@@ -15,7 +16,6 @@ import {
   Tooltip,
   Typography,
   DatePicker,
-  message,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
@@ -54,6 +54,10 @@ export default function PredictionMarketsContainer() {
     Record<string, CollateralDriftAlert>
   >({});
   const [form] = Form.useForm();
+  // `App.useApp()` returns the contextual message/modal handles instead of
+  // the top-level statics — required by v5 for theme-aware rendering and
+  // silences the "Static function can not consume context" dev warning.
+  const { message, modal } = App.useApp();
 
   useEffect(() => {
     loadData();
@@ -172,7 +176,7 @@ export default function PredictionMarketsContainer() {
       action === "halt"
         ? "New orders blocked. Resting orders stay until you resume or close."
         : "Trading stops permanently. Market enters the settlement queue.";
-    Modal.confirm({
+    modal.confirm({
       title: `${verb} ${market.ticker}?`,
       width: 520,
       content: (
