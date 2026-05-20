@@ -1,9 +1,10 @@
 # PLAN: Office antd 4 → antd 5 upgrade
 
-**Status:** ready to execute (engineering side scoped; product approval still needed before merge)
-**Branch:** new `feat/office-antd-5` recommended
-**Author:** /continue-with-TODOs session 2026-05-15
-**Goal:** retire the "render is not exported from react-dom" + "unmountComponentAtNode" compile warnings on `packages/office` by upgrading antd 4.16.12 → antd 5 (latest 5.x supports React 16-19 natively).
+**Status:** **EXECUTED end-to-end on `feat/antd-v5` (NOT pushed).** 4 commits + Phase 3 verification proof. Deploy gated per primer §8.
+**Branch:** `feat/antd-v5` (not `feat/office-antd-5` as originally proposed)
+**Author:** /continue-with-TODOs session 2026-05-15; executed 2026-05-19 → 2026-05-20
+**Original goal (2026-05-15):** retire React-19 compile warnings by upgrading antd 4.16.12 → 5.
+**Actual trigger (2026-05-18):** F3/F4 hard blockers — AntD 4.16 modals don't close and toasts don't render under React 19 (`findDOMNode` + `element.ref` removed). Settlement queue rendered but Settle Modal was unusable. The "nice cleanup" became "must ship now."
 
 ## Why now
 
@@ -137,3 +138,97 @@ Before merge:
 ## What unblocks this
 
 User approval to start. The migration itself is engineering-side scoped end-to-end. The risk surface is bounded and the test plan is concrete.
+
+---
+
+## EXECUTION OUTCOME (2026-05-19 → 2026-05-20)
+
+The plan above is the **original 2026-05-15 scoping**, kept as historical record. The actual execution diverged: the trigger escalated from "warnings cleanup" to "hard blocker" on 2026-05-18, scope grew, phase numbering shifted, and Codex adversarial review caught several holes the plan missed.
+
+### Plan-vs-reality map
+
+| Original plan phase | What actually shipped |
+|---|---|
+| Phase 1 (deps bump, 30 min) | Folded into **execution Phase 0** (commit `dda682d7`) — also added `@ant-design/v5-patch-for-react-19`, `@ant-design/nextjs-registry` (AntdRegistry for cssinjs SSR), and React-19 hoist verification. GO/NO-GO smoke test gated the rest. |
+| Phase 2 (mechanical rewrites, 1-2 h) | Became **execution Phase 1** (commit `fa1677f6`). Codemod tool refused to work + reformatted parseable files for 4 real renames; reverted, did it manually. Scope grew: **Tabs.TabPane removed** (not in original audit — required two children→items bridge wrappers), Menu items API rewrite, Modal `visible`→`open` TS surface, PageHeader replaced with v5-primitives component. |
+| Phase 3 (manual test, 1 h) | Became **execution Phase 3** (no commit — verification only). Drove throwaway market `QA-V5-1779277648440` end-to-end through the office UI; verified settle round-trip + visible success toast + gateway-side `status: settled` |
+| Phase 4 (optional ConfigProvider polish) | **Promoted to required** — became **execution Phase 2** (commit `0bcdea38`). Without theme tokens wired up, AntD's internal-class permutations bypass `styles/p8-antd.css` overrides, so v5 components paint default-blue instead of P8 mint. Not optional. |
+| Codemod-driven flow | **Falsified.** `@ant-design/codemod-v5` refused dirty trees, then skipped all 53 modern TSX files, then reformatted parseable files with 1568 lines of recast whitespace churn for 4 real renames. Reverted. Manual `xargs sed` + targeted `Edit` calls worked. |
+| 3-5 h total | Actual: ~2 days of focused work (incl. Codex review iteration + verification). |
+
+### Scope additions not in original plan (must-have, all done)
+
+1. **`@ant-design/v5-patch-for-react-19`** centralized in [`app/lib/antd-patch.tsx`](apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/app/lib/antd-patch.tsx). Patches static `Modal.confirm` / `message.*` / `notification.*` (rc-util render path React 19 removed). Loaded in both App Router (`app/layout.tsx`) and Pages Router (`pages/_app.js`) top-of-file.
+2. **`AntdRegistry`** from `@ant-design/nextjs-registry` wraps the App Router tree. Without it, v5 cssinjs motion styles don't apply and Modal/Drawer enter-leave animations freeze mid-transition (rc-motion never sees `transitionend`).
+3. **Tabs children→items bridge** ([`components/layout/tabs/build-items.ts`](apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/components/layout/tabs/build-items.ts)) — shared hardened helper used by `TabsSection` and `TabsUserDetails`. Marker-type guard, Fragment flattening, missing-key dev warning, full prop forward, `destroyInactiveTabPane`→`destroyOnHidden` rename, memoized item identity. Preserves consumer JSX (`<TabPane key tab>...</TabPane>`).
+4. **Reduced-motion mitigation** in [`app/lib/antd-config-provider.tsx`](apps/Phoenix-Predict-Combined/talon-backoffice/packages/office/app/lib/antd-config-provider.tsx) — when `prefers-reduced-motion: reduce`, disable AntD's motion tokens. rc-motion's `transitionend` dependency gets throttled in backgrounded tabs and low-power modes; Modal/Drawer/Tooltip then close instantly.
+5. **NO `hashPriority="high"`** — deliberate. v5's `:where()` zero-specificity wrap means existing `.ant-*` class overrides in `styles/p8-antd.css` keep winning. Setting `hashPriority="high"` would flip the cascade and require rewriting every override.
+6. **Hoist single React** — react/react-dom moved to workspace root `package.json` to guarantee a single React copy across packages; verified via `find node_modules -name react -type d`.
+7. **F2 CSRF fix carried forward** (commit `d0937941`) — login route mints `csrf_token` cookie; preserved through the v5 migration. Verified: throwaway market admin writes still return 200 under v5.
+
+### Codex adversarial review of plan (2026-05-19)
+
+Codex flagged 13 holes. 4 blockers fixed inline:
+
+- **#3 Patch import scattered** → centralized in `antd-patch.tsx`, single source of truth.
+- **#5/#7 Tabs bridge fragility** → hardened with marker-type guard + Fragment flattening + missing-key warning + memoized identity.
+- **#8 React copies unverified** → ran the hoist check and confirmed single copy.
+- **#11 Animation freeze in headless/throttled tabs** → reduced-motion ConfigProvider toggle.
+
+Codex follow-ups remaining (see Debt below): #4, #6, #9, #10, #12.
+
+### Phase 3 end-to-end proof (2026-05-20)
+
+Throwaway market `QA-V5-1779277648440` (id `4a6e6699-962b-405c-af58-488d2a74eb2b`) driven through the full stack via the office UI:
+
+- create 201 → open 200 → close 200 → settle 200 (CSRF still works under v5)
+- Settle modal opens, outcome select renders, attestation form validates, type-the-ticker guard fires
+- **Toast visible in DOM:** "Market settled: QA-V5-1779277648440 → yes (0 payouts)" with green-check icon (F3 PROVEN — v5 `message.success` renders under React 19)
+- Gateway authoritative state: `GET /api/v1/markets/{id}` → `{ status: "settled", result: "yes", updatedAt: 2026-05-20T11:48:33Z }` (F4 PROVEN — modal handler completed, no React 19 reconciler freeze)
+- Full verification log appended to [.gstack/qa-reports/qa-report-office-settlements-2026-05-18.md](.gstack/qa-reports/qa-report-office-settlements-2026-05-18.md) (local artifact, gitignored).
+
+### Commits on `feat/antd-v5` (NOT pushed — deploy gated per primer §8)
+
+| Commit | What |
+|---|---|
+| `d0937941` | F2 fix — mint `csrf_token` cookie on login (carried into the v5 branch) |
+| `dda682d7` | Phase 0 — foundation + GO/NO-GO validated |
+| `fa1677f6` | Phase 1 — v5 API sweep + 4 Codex blockers |
+| `0bcdea38` | Phase 2 — P8 design tokens via ConfigProvider |
+
+---
+
+## DEBT / FIX OPPORTUNITIES (post-merge follow-ups)
+
+Tracked here so they don't fall on the floor. None block merge or deploy of `feat/antd-v5`.
+
+### Known dev warnings (cosmetic, dev-only — production strips them)
+
+1. **`[antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.`** — fires twice per session. Static `message.*` renders correctly under v5; warning only flags that static calls can't subscribe to dynamic theme context. **Fix:** migrate to `App.useApp()` + `contextHolder` pattern. Touches every `message.success/error/info/warning` callsite (~25 files). Estimated 2-3 h.
+
+### Codex follow-ups not addressed in Phase 1
+
+2. **#4 Pages-Router cssinjs strategy** — `AntdRegistry` is wired into the App Router root layout but the Pages Router (`pages/_app.js`) tree relies on the same patch import being top-of-file. cssinjs styles work because the registry catches them on shared route navigation, but a fresh Pages-Router-first cold load skips the registry-driven SSR style extraction. Risk: FOUC on initial Pages-Router page load in prod. **Fix:** add an equivalent Pages-Router-side cssinjs cache/extract path (per AntD docs Pages-Router recipe) or migrate the last Pages-Router routes to App Router. Estimated 1-2 h for the extract path; multi-day for the App Router migration.
+3. **#6 Warning-debt cleanup** — production overlay swallows React 18→19 hydration mismatches in `pages/_app.js` (the `MutationObserver` that hides `NEXTJS-PORTAL`). The mismatches are real and localStorage-driven (menu state, profile, tokens). **Fix:** make the localStorage-dependent UI suspend or render an SSR-safe placeholder until hydration completes. Estimated 1 h.
+4. **#9 / #10 Phase-2 corrections (already absorbed)** — keep structural CSS in `styles/p8-antd.css` (e.g. PageHeader layout, table cell padding) even though tokens cover colors; do NOT set `hashPriority="high"`. **Status:** done — documented inline in `app/lib/antd-config-provider.tsx`. No further action.
+5. **#12 Warning-debt cleanup in app/** — `console.error` suppression block in `pages/_app.js:25-40` is a sledgehammer. Replace with targeted hydration-warning ignore at the React level once #6 is resolved. Estimated 30 min after #6 ships.
+
+### Migration residue (low priority)
+
+6. **Untracked PRIMER files** at the repo root (5 PRIMER-2026-05-*.md files). Primer §4 says these are local-only working notes; they're correctly untracked. **Fix:** confirm with user whether to delete or move to `.gstack/primers/`. Estimated 5 min.
+7. **`.codex-reviews/getfix-review-raw.txt`** also untracked. Same status as primers; ephemeral review artifact. **Fix:** delete or archive. Estimated 1 min.
+
+### Verification gaps that the original plan asked for but Phase 3 only partially covered
+
+8. **DatePicker form submission** — original plan called out moment→dayjs migration risk. The migration shipped (2 direct imports, 6 call sites), but Phase 3 only exercised the Settle modal, which doesn't use a DatePicker. **Fix:** smoke test market-create modal (which has `closeAt` DatePicker) end-to-end. Estimated 10 min once user clears the deploy gate or a real admin market needs creating.
+9. **`Modal.confirm` Halt/Close paths** — `containers/prediction-markets/index.tsx:175` uses `Modal.confirm` for Halt/Close lifecycle confirmations. v5-patch covers `Modal.confirm` via `unstableSetRender`, but Phase 3 settled (not halted/closed) the throwaway. **Fix:** create a second throwaway and click Halt + Close from the markets list. Estimated 10 min.
+10. **Full back-office page sweep** — Phase 3 only verified settlements. The original plan called for clicking every prediction-admin page (dashboard, markets, settlements). **Fix:** boot, click through `/dashboard`, `/prediction-admin/markets`, `/prediction-admin/users`, `/prediction-admin/audit-logs` and watch console + DOM. Estimated 30 min.
+
+### Larger debt opportunities (separate effort)
+
+11. **Office test suite** — original plan noted "existing test coverage is thin." Still true. The migration shipped without automated tests because there's no test runner wired up for `packages/office`. **Fix:** wire up Vitest or Jest + RTL, write smoke tests for the bridges (Tabs items, PageHeader, ConfigProvider reduced-motion). Estimated 1 day; would prevent the next React-major surprise.
+12. **AntD 5 → 6 (when it arrives)** — v5 is now the active line. Drop `@ant-design/v5-patch-for-react-19` once a v5 minor includes the React 19 fixes natively (or v6 lands). Track via AntD changelog.
+
+### Deferred non-blockers from QA report
+
+13. **F2 prod parity** — login route mints `csrf_token` locally; behavior in prod (where `AUTH_COOKIE_SECURE=true`) was not exercised on a real admin mutation. **Fix:** when the deploy gate opens, perform one disposable admin write in prod (NOT a settle — pick lifecycle halt+resume on a non-active demo market).
