@@ -54,6 +54,29 @@ jobs:
             --exclude test-results --exclude playwright-report --exclude coverage \
             apps/Phoenix-Predict-Combined/ root@"$BOX":/opt/phoenix/
 
+      - name: Patch Caddyfile basic_auth hash on box
+        # The committed Caddyfile keeps `admin REPLACE_WITH_BCRYPT_HASH` so the
+        # bcrypt hash never lives in source control. The rsync above clobbers
+        # the live file with that placeholder; restore the real hash from the
+        # BACKOFFICE_BASIC_AUTH_HASH secret here BEFORE anything triggers a
+        # Caddy reload. If the secret is missing we hard-fail rather than risk
+        # the next reload reading the placeholder and breaking basic_auth.
+        env:
+          BACKOFFICE_BASIC_AUTH_HASH: ${{ secrets.BACKOFFICE_BASIC_AUTH_HASH }}
+        run: |
+          if [ -z "$BACKOFFICE_BASIC_AUTH_HASH" ]; then
+            echo "::error::BACKOFFICE_BASIC_AUTH_HASH secret is unset — aborting before Caddy goes stale."
+            echo "Generate the hash with:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'"
+            echo "Then add it to repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          # Pipe the hash via stdin (no shell expansion of $ etc.); python
+          # does literal str.replace (bcrypt hashes contain $/. which are
+          # painful for sed). Fails loudly if the placeholder isn't present.
+          printf '%s' "$BACKOFFICE_BASIC_AUTH_HASH" | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
+
       - name: Build player image on the box
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
@@ -125,3 +148,13 @@ jobs:
             echo "office container not healthy after recreate"
             docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 office || true
             exit 1'
+
+      - name: Reload Caddy with new config
+        # Caddy does NOT auto-reload on bind-mount file change. Without this
+        # step the rsync'd Caddyfile sits on disk while the running Caddy
+        # process keeps its old in-memory config — any routing change
+        # (e.g. @backend matcher narrowing) silently never activates.
+        # `caddy reload` is graceful (no dropped connections, ~1 s).
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+            'docker exec predict_caddy caddy reload --config /etc/caddy/Caddyfile'

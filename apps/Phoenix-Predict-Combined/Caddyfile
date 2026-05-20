@@ -26,7 +26,12 @@ demo.99rtp.io {
 
 # ---- Backoffice (basic-auth gated; keeps it out of crawlers/uninvited eyes) ----
 office.99rtp.io {
-	@backend path /api/* /admin/* /ws /ws/*
+	# Narrowed from /api/* to /api/v1/* so the office's own App Router proxies
+	# under /api/auth/* (and /api/fixtures, etc.) reach predict_office instead
+	# of being intercepted and 401'd by the gateway. Gateway public/admin
+	# routes all live under /api/v1/* (see cmd/gateway/main.go publicPrefixes
+	# + handlers.go) and /admin/*, so this matcher still covers them.
+	@backend path /api/v1/* /admin/* /ws /ws/*
 	handle @backend {
 		reverse_proxy predict_gateway:18080
 	}
