@@ -20,9 +20,11 @@
     "start:dev": "env-cmd -f .env.development next start",
     "start:stage": "env-cmd -f .env.staging next start",
     "export": "yarn build && next export",
-    "test": "echo 'office tests skipped: jest 25 + babel-jest + TS 5 incompatible (hangs). Run test:jest to attempt.'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "test:jest": "jest --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
-    "test:coverage": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
+    "test:jest:coverage": "jest --coverage --logHeapUsage --maxWorkers=50% --config ./jest.config.js",
     "watch": "node ./scripts/translations/watch.js"
   },
   "dependencies": {
@@ -66,7 +68,10 @@
     "i18next-hmr": "^1.6.0",
     "jest-matchmedia-mock": "^1.1.0",
     "react-test-renderer": "19.2.4",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vitest": "^2.1.9",
+    "happy-dom": "^15.11.7"
   },
   "serial-number": 188
 }
