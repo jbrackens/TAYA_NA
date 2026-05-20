@@ -198,13 +198,41 @@ Throwaway market `QA-V5-1779277648440` (id `4a6e6699-962b-405c-af58-488d2a74eb2b
 
 ---
 
+## CLEANUP UPDATE (2026-05-20 post-deploy)
+
+After the v5 work was deployed and stable on `feat/binary-exchange-engine`, three follow-up cleanup commits landed:
+
+| Commit | What |
+|---|---|
+| `8bf3b0b2` | `chore(office): migrate static AntD APIs to App.useApp() hook` — wraps `AntdConfigProvider` children with `<App>`; migrates 29 `message.*` callsites across 12 components, plus the lone `Modal.confirm` in `containers/prediction-markets/index.tsx:175` and the `notification.error` in `components/layout/index.tsx`. Verified live: confirm-dialog opens cleanly + zero AntD context warnings across the App-Router sweep (dashboard, users, audit-logs, campaigns, content, reports, leaderboards, loyalty, loyalty/settings). **Closes debt #1.** |
+| `4ca9ca9b` | `chore(office): centralize App-Router admin fetches via adminFetch helper` — new `app/lib/admin-fetch.ts` consolidates `credentials: "include"`, `X-Admin-Role: admin`, and `X-CSRF-Token` (read from the `csrf_token` cookie) on every state-changing request. 12 App-Router pages migrated. Also adds `skipTrailingSlashRedirect: true` to `next.config.js` so `/api/v1/admin/foo` doesn't 308 to `/api/v1/admin/foo/` ahead of the rewrite. |
+| `d99f5076` | `chore(office): scaffold Vitest test suite` — replaces the broken Jest 25 + babel-jest + TS 5 setup with Vitest + happy-dom. 7 passing tests for the new `adminFetch` helper, ~400ms total runtime. **Partial close of debt #11** — harness exists, future tests just need a file under `tests/`. |
+
+### Live Halt+Resume smoke (modal.confirm round-trip, 2026-05-20)
+
+Throwaway market `IMP-931C4BD8` (id `18bd42da-c296-4bca-8bf2-0d4cc65b5d2f`, $0 volume) driven through the full v5 `modal.confirm()` happy path:
+
+- Click Halt on /prediction-admin/markets → `modal.confirm()` dialog opens with "Halt IMP-931C4BD8?" title, reason textarea, "Halt market" danger button
+- Fill reason → click "Halt market" → React handler completes → gateway `GET /api/v1/markets?status=halted` confirms `status: "halted"`
+- Resume button (single-click, no confirm) → state restored to `status: "open"`
+- Sentinel watching `Static function` / `App.useApp` / `consume context` across the full flow: **0 matches**
+
+**Closes debt #9.**
+
+### Findings worth recording
+
+- **Gateway scope gap (new debt — out of scope for v5 cleanup):** `internal/http/admin_handlers.go:148` defines `registerAdminRoutes()` (wires `/api/v1/admin/punters`, `/api/v1/admin/punters/{id}/{status,limits,notes,reset-password,risk-segment}`, plus admin trading/utility/wallet routes) but `internal/http/handlers.go:25-295` (`RegisterRoutes`) never calls it. Every App-Router page that loads from those endpoints (`/users`, `/users/[id]`, `/audit-logs`) returns "Failed to load …" because the gateway responds 404. The `adminFetch` refactor is correct preparatory work; wiring the registrations is a Go-side change + rebuild + Docker compose redeploy. Filed as a follow-up gateway PR, not blocking the office cleanup.
+- **Docker single-file bind-mount audit:** the only single-file bind mount in `apps/Phoenix-Predict-Combined/docker-compose*.yml` is `./Caddyfile:/etc/caddy/Caddyfile:ro` — the known footgun, already patched via deploy-time `--force-recreate`. `services/codex-prep/docker-compose.demo.yml` uses a directory bind mount which is inode-safe. **Closes debt-table item #6 (single-file bind-mount footgun) — no new bind-mount risks.**
+
+---
+
 ## DEBT / FIX OPPORTUNITIES (post-merge follow-ups)
 
 Tracked here so they don't fall on the floor. None block merge or deploy of `feat/antd-v5`.
 
 ### Known dev warnings (cosmetic, dev-only — production strips them)
 
-1. **`[antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.`** — fires twice per session. Static `message.*` renders correctly under v5; warning only flags that static calls can't subscribe to dynamic theme context. **Fix:** migrate to `App.useApp()` + `contextHolder` pattern. Touches every `message.success/error/info/warning` callsite (~25 files). Estimated 2-3 h.
+1. ~~**`[antd: message] Static function can not consume context like dynamic theme. Please use 'App' component instead.`** — fires twice per session.~~ ✅ **DONE in commit `8bf3b0b2` (2026-05-20).** Migrated 29 `message.*` callsites + 1 `Modal.confirm` + 1 `notification.*` to `App.useApp()`. Verified zero warnings across 9 swept admin pages.
 
 ### Codex follow-ups not addressed in Phase 1
 
@@ -220,13 +248,13 @@ Tracked here so they don't fall on the floor. None block merge or deploy of `fea
 
 ### Verification gaps that the original plan asked for but Phase 3 only partially covered
 
-8. **DatePicker form submission** — original plan called out moment→dayjs migration risk. The migration shipped (2 direct imports, 6 call sites), but Phase 3 only exercised the Settle modal, which doesn't use a DatePicker. **Fix:** smoke test market-create modal (which has `closeAt` DatePicker) end-to-end. Estimated 10 min once user clears the deploy gate or a real admin market needs creating.
-9. **`Modal.confirm` Halt/Close paths** — `containers/prediction-markets/index.tsx:175` uses `Modal.confirm` for Halt/Close lifecycle confirmations. v5-patch covers `Modal.confirm` via `unstableSetRender`, but Phase 3 settled (not halted/closed) the throwaway. **Fix:** create a second throwaway and click Halt + Close from the markets list. Estimated 10 min.
-10. **Full back-office page sweep** — Phase 3 only verified settlements. The original plan called for clicking every prediction-admin page (dashboard, markets, settlements). **Fix:** boot, click through `/dashboard`, `/prediction-admin/markets`, `/prediction-admin/users`, `/prediction-admin/audit-logs` and watch console + DOM. Estimated 30 min.
+8. ~~**DatePicker form submission**~~ ✅ **MOOT (resolved 2026-05-20).** Inspected the Create Market modal: it uses native `<input type="datetime-local">` for the closeAt field, NOT AntD DatePicker. No moment/dayjs surface to test. Other DatePicker imports in the v5 audit were either removed or never reached on hot paths.
+9. ~~**`Modal.confirm` Halt/Close paths** — `containers/prediction-markets/index.tsx:175` uses `Modal.confirm` for Halt/Close lifecycle confirmations.~~ ✅ **DONE 2026-05-20.** `Modal.confirm` migrated to `modal.confirm` from `App.useApp()` in commit `8bf3b0b2`. Halt+Resume cycle smoked end-to-end on throwaway market IMP-931C4BD8; modal opens, reason typed, OK confirmed, gateway state transitioned, sentinel captured 0 warnings.
+10. ~~**Full back-office page sweep** — Phase 3 only verified settlements.~~ ✅ **DONE 2026-05-20.** Swept 9 App-Router pages: `/dashboard`, `/users`, `/audit-logs`, `/campaigns`, `/content`, `/reports`, `/leaderboards`, `/loyalty`, `/loyalty/settings`. All render under v5 with the P8 theme. Sentinel: 0 AntD context warnings, 0 runtime JS errors. Note: `/users`, `/audit-logs`, `/loyalty/settings` show "Failed to load …" because the gateway's `registerAdminRoutes()` is defined but never wired into `RegisterRoutes()` — separate gateway-side follow-up, not a v5 regression.
 
 ### Larger debt opportunities (separate effort)
 
-11. **Office test suite** — original plan noted "existing test coverage is thin." Still true. The migration shipped without automated tests because there's no test runner wired up for `packages/office`. **Fix:** wire up Vitest or Jest + RTL, write smoke tests for the bridges (Tabs items, PageHeader, ConfigProvider reduced-motion). Estimated 1 day; would prevent the next React-major surprise.
+11. **Office test suite** — original plan noted "existing test coverage is thin." 🟡 **Partial fix in commit `d99f5076` (2026-05-20).** Vitest + happy-dom scaffold landed with 7 passing tests for the new `adminFetch` helper (~400ms runtime). Path forward is now mechanical — future tests go under `tests/*.test.{ts,tsx}` and import from `"vitest"`. **Remaining:** write tests for the bridges (Tabs items, PageHeader, ConfigProvider reduced-motion) and component smoke tests. Estimated 0.5-1 day for the bridge coverage; existing legacy `__tests__/*.test.*` Jest files still hang and can be migrated incrementally.
 12. **AntD 5 → 6 (when it arrives)** — v5 is now the active line. Drop `@ant-design/v5-patch-for-react-19` once a v5 minor includes the React 19 fixes natively (or v6 lands). Track via AntD changelog.
 
 ### Deferred non-blockers from QA report
