@@ -149,12 +149,22 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 office || true
             exit 1'
 
-      - name: Reload Caddy with new config
-        # Caddy does NOT auto-reload on bind-mount file change. Without this
-        # step the rsync'd Caddyfile sits on disk while the running Caddy
-        # process keeps its old in-memory config — any routing change
-        # (e.g. @backend matcher narrowing) silently never activates.
-        # `caddy reload` is graceful (no dropped connections, ~1 s).
+      - name: Recreate Caddy with new config
+        # `caddy reload` is NOT enough here. Caddy's volume mount is a
+        # single-file bind: `./Caddyfile:/etc/caddy/Caddyfile`. rsync writes
+        # via temp-file + atomic rename, which gives the host file a new
+        # inode every deploy. Docker single-file bind mounts pin to the
+        # ORIGINAL inode at container-start time — the container keeps
+        # reading the orphaned old inode forever, even though the host path
+        # points elsewhere. `caddy reload` then re-reads the stale file and
+        # says "config is unchanged" → routing changes silently never
+        # activate. Force-recreating Caddy re-binds to the current host
+        # inode and applies the new config. ~5 s of downtime per deploy;
+        # acceptable for the demo. The proper structural fix would be to
+        # bind-mount the parent directory instead of the file, but that
+        # touches docker-compose.demo.yml + the in-place file layout.
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-            'docker exec predict_caddy caddy reload --config /etc/caddy/Caddyfile'
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate caddy'

@@ -76,6 +76,15 @@ services:
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ""
+      # The App Router login proxy at app/api/auth/login/route.ts does a
+      # SERVER-SIDE fetch to ${NEXT_PUBLIC_AUTH_URL}/api/v1/auth/login.
+      # Without this, it falls back to http://localhost:18081 — i.e. the
+      # office container's OWN localhost, where nothing listens — and the
+      # try/catch returns "Internal server error" (500) on every login.
+      # The auth service is reachable on the predict_network at service
+      # name `auth`. Same name the gateway uses (see docker-compose.yml
+      # AUTH_SERVICE_URL).
+      NEXT_PUBLIC_AUTH_URL: "http://auth:18081"
     depends_on: [gateway]
     networks: [predict_network]
 
