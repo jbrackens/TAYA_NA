@@ -13,8 +13,8 @@ import StyledComponentsRegistry from "./lib/styled-components-registry";
 import "../styles/p8-tokens.css";
 
 export const metadata: Metadata = {
-  title: "TAYA NA! Backoffice | Admin Panel",
-  description: "Admin and settlement dashboard for TAYA NA Predict",
+  title: "Hula Na! Backoffice | Admin Panel",
+  description: "Admin and settlement dashboard for Hula Na Predict",
 };
 
 export default function RootLayout({

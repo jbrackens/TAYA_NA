@@ -130,9 +130,14 @@ function LoginForm() {
         {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <img
-            src="/logo-tn.png"
-            alt="TAYA NA!"
-            style={{ width: 56, height: 56, marginBottom: 16 }}
+            src="/logo-hn-full.png"
+            alt="Hula Na!"
+            style={{
+              width: "100%",
+              maxWidth: 240,
+              height: "auto",
+              marginBottom: 16,
+            }}
           />
           <h1
             style={{
@@ -143,7 +148,7 @@ function LoginForm() {
               letterSpacing: "-0.01em",
             }}
           >
-            TAYA NA! Backoffice
+            Backoffice
           </h1>
           <p
             style={{
@@ -291,7 +296,7 @@ function LoginForm() {
             color: "var(--t3, #8b8378)",
           }}
         >
-          TAYA NA Predict Admin
+          Hula Na Predict Admin
         </p>
       </div>
     </div>

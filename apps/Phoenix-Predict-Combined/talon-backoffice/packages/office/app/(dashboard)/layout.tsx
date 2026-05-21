@@ -198,8 +198,8 @@ export default function DashboardLayout({
         <aside className="dash-sidebar">
           <div className="dash-brand">
             <img
-              src="/logo-tn.png"
-              alt="TAYA NA!"
+              src="/logo-hn.png"
+              alt="Hula Na!"
               className="dash-brand-logo"
             />
             <span className="dash-brand-text">Backoffice</span>

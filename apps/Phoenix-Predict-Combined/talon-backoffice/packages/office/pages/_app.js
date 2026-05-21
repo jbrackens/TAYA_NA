@@ -45,7 +45,7 @@ const theme = {
   accent: "var(--accent, #2be480)",
   accentText: "var(--focus-ring, #0e7a53)",
   logo: {
-    source: "/images/logo.png",
+    source: "/logo-hn.png",
     width: 60,
   },
 };
