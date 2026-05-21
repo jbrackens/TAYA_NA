@@ -290,6 +290,11 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// local dev without a DB). The two can't coexist on the same paths.
 	if predictLoyaltyService != nil {
 		registerPredictLoyaltyRoutes(mux, predictLoyaltyService)
+		// Office loyalty admin pages (/loyalty, /loyalty/[id], /loyalty/settings).
+		// The sportsbook admin loyalty routes live in registerLoyaltyRoutes
+		// (the else branch), so on a DB deployment they were 404 — this is the
+		// Predict-native replacement.
+		registerPredictLoyaltyAdminRoutes(mux, predictLoyaltyService)
 		registerPredictPrivacyRoutes(mux, walletService.DB())
 	} else {
 		registerLoyaltyRoutes(mux, loyalty.NewServiceFromEnv())
