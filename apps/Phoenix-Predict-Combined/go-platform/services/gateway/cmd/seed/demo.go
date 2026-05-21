@@ -89,6 +89,14 @@ func RunDemo(db *sql.DB, driver, dsn string) error {
 	fmt.Printf("  markets settled: %d  |  payouts created: %d  |  errors: %d\n",
 		p5.MarketsTouched, p5.OrdersPlaced, p5.Errors)
 
+	fmt.Println("\n--- Demo Seed: Phase 6 (backoffice audit_logs + loyalty_accounts) ---")
+	p6, err := RunPhase6Backoffice(db)
+	if err != nil {
+		return fmt.Errorf("phase 6: %w", err)
+	}
+	fmt.Printf("  audit_logs inserted: %d  |  loyalty_accounts inserted: %d\n",
+		p6.AuditLogsInserted, p6.LoyaltyRowsInserted)
+
 	return nil
 }
 
@@ -110,5 +118,13 @@ func RunWipe(db *sql.DB) error {
 	fmt.Printf("  demo settlements deleted: %d\n", cleanup.DemoSettlementsDeleted)
 	fmt.Printf("  demo positions deleted:  %d\n", cleanup.DemoPositionsDeleted)
 	fmt.Printf("  orphan order reservations deleted: %d\n", cleanup.OrphanOrderReservationsDeleted)
+
+	fmt.Println("\n--- Wipe: removing demo backoffice rows ---")
+	bo, err := RunPhase6WipeBackoffice(db)
+	if err != nil {
+		return fmt.Errorf("wipe backoffice: %w", err)
+	}
+	fmt.Printf("  audit_logs deleted:      %d\n", bo.AuditLogsDeleted)
+	fmt.Printf("  loyalty_accounts deleted:%d\n", bo.LoyaltyAccountsDeleted)
 	return nil
 }
