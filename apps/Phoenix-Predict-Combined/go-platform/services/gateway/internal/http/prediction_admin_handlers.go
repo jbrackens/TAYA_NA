@@ -21,6 +21,8 @@ type predictionAdminReader interface {
 	GetAdminPunter(ctx context.Context, id string) (*prediction.AdminPunter, error)
 	UpdatePunterStatus(ctx context.Context, id, status string) (*prediction.AdminPunter, error)
 	ListAuditLogsAdmin(ctx context.Context, filter prediction.AdminAuditLogFilter, page, pageSize int) ([]prediction.AdminAuditLog, prediction.PageMeta, error)
+	AddPunterNote(ctx context.Context, punterID, authorID, category, content string) (*prediction.AdminPunterNote, error)
+	ListPunterNotes(ctx context.Context, punterID string) ([]prediction.AdminPunterNote, error)
 }
 
 // allowedPunterAdminStatuses gates the status values the office can set.
@@ -54,13 +56,15 @@ func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminRe
 // registerAdminPunterDetail handles the /punters/{id} subtree for the office
 // /users/[id] page:
 //
-//	GET /punters/{id}          → detail
-//	PUT /punters/{id}/status   → suspend/activate
+//	GET  /punters/{id}          → detail
+//	PUT  /punters/{id}/status   → suspend/activate
+//	GET  /punters/{id}/notes    → list admin CRM notes
+//	POST /punters/{id}/notes    → add an admin CRM note
 //
-// The page also exposes reset-password / risk-segment / limits / notes
-// buttons. Those are responsible-gambling + CRM features with no prediction-
-// side data model yet, so they return 501 with a clear message rather than
-// faking success (CLAUDE.md rule #7).
+// reset-password / risk-segment / limits still return 501: risk-segment +
+// limits were sportsbook leftovers and have been removed from the office UI
+// (CLAUDE.md rule #2); reset-password is deferred (it spans the auth service
+// and needs a flow decision). Returning 501 beats faking success (rule #7).
 func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predictionAdminReader) {
 	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {
@@ -116,7 +120,46 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 				return httpx.NotFound("punter not found")
 			}
 			return httpx.WriteJSON(w, stdhttp.StatusOK, p)
-		case "reset-password", "risk-segment", "limits", "notes":
+		case "notes":
+			// Admin CRM notes — prediction-native (no sportsbook semantics).
+			switch r.Method {
+			case stdhttp.MethodGet:
+				notes, err := repo.ListPunterNotes(r.Context(), id)
+				if err != nil {
+					return httpx.Internal("failed to list notes", err)
+				}
+				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": notes})
+			case stdhttp.MethodPost:
+				var body struct {
+					Content  string `json:"content"`
+					Category string `json:"category"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					return httpx.BadRequest("invalid request body", nil)
+				}
+				content := strings.TrimSpace(body.Content)
+				if content == "" {
+					return httpx.BadRequest("content is required",
+						map[string]any{"field": "content"})
+				}
+				category := strings.TrimSpace(body.Category)
+				authorID := httpx.UserIDFromContext(r.Context())
+				if _, err := repo.AddPunterNote(r.Context(), id, authorID, category, content); err != nil {
+					return httpx.Internal("failed to add note", err)
+				}
+				notes, err := repo.ListPunterNotes(r.Context(), id)
+				if err != nil {
+					return httpx.Internal("failed to list notes", err)
+				}
+				return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"items": notes})
+			default:
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
+			}
+		case "reset-password", "risk-segment", "limits":
+			// reset-password: deferred (spans the auth service — needs a flow
+			// decision). risk-segment + limits: removed from the office UI as
+			// sportsbook leftovers (CLAUDE.md rule #2); kept here as 501 so any
+			// stale caller gets a clear answer rather than a fake success.
 			return httpx.NewError(stdhttp.StatusNotImplemented, "not_implemented",
 				action+" is not available on the prediction platform yet", nil, nil)
 		default:

@@ -31,6 +31,12 @@ type fakeAdminReader struct {
 	gotStatusID   string
 	gotStatusVal  string
 	statusUpdated *prediction.AdminPunter
+
+	notes          []prediction.AdminPunterNote
+	gotNotePunter  string
+	gotNoteAuthor  string
+	gotNoteCat     string
+	gotNoteContent string
 }
 
 func (f *fakeAdminReader) ListPuntersAdmin(_ context.Context, filter prediction.AdminPunterFilter, page, pageSize int) ([]prediction.AdminPunter, prediction.PageMeta, error) {
@@ -53,6 +59,20 @@ func (f *fakeAdminReader) UpdatePunterStatus(_ context.Context, id, status strin
 	f.gotStatusID = id
 	f.gotStatusVal = status
 	return f.statusUpdated, nil
+}
+
+func (f *fakeAdminReader) AddPunterNote(_ context.Context, punterID, authorID, category, content string) (*prediction.AdminPunterNote, error) {
+	f.gotNotePunter = punterID
+	f.gotNoteAuthor = authorID
+	f.gotNoteCat = category
+	f.gotNoteContent = content
+	n := prediction.AdminPunterNote{ID: 1, PunterID: punterID, Category: category, Content: content, CreatedAt: "2026-01-01T00:00:00Z"}
+	f.notes = append([]prediction.AdminPunterNote{n}, f.notes...)
+	return &n, nil
+}
+
+func (f *fakeAdminReader) ListPunterNotes(_ context.Context, _ string) ([]prediction.AdminPunterNote, error) {
+	return f.notes, nil
 }
 
 func adminTestHandler(repo predictionAdminReader) http.Handler {
@@ -227,11 +247,69 @@ func TestAdminPunterStatusRejectsBadValue(t *testing.T) {
 func TestAdminPunterUnsupportedActionReturns501(t *testing.T) {
 	repo := &fakeAdminReader{}
 	handler := adminTestHandler(repo)
-	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/reset-password", nil)
+	// risk-segment + limits + reset-password remain 501.
+	for _, action := range []string{"reset-password", "risk-segment", "limits"} {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/"+action, nil)
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		if res.Code != http.StatusNotImplemented {
+			t.Fatalf("expected 501 for %s, got %d", action, res.Code)
+		}
+	}
+}
+
+func TestAdminPunterNotesList(t *testing.T) {
+	repo := &fakeAdminReader{notes: []prediction.AdminPunterNote{
+		{ID: 1, PunterID: "u-1", Category: "general", Content: "hello", CreatedAt: "2026-01-01T00:00:00Z"},
+	}}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/notes", nil)
 	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
 	res := httptest.NewRecorder()
 	handler.ServeHTTP(res, req)
-	if res.Code != http.StatusNotImplemented {
-		t.Fatalf("expected 501 for reset-password, got %d", res.Code)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var payload struct {
+		Items []prediction.AdminPunterNote `json:"items"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(payload.Items) != 1 || payload.Items[0].Content != "hello" {
+		t.Fatalf("unexpected notes: %+v", payload.Items)
+	}
+}
+
+func TestAdminPunterAddNote(t *testing.T) {
+	repo := &fakeAdminReader{}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
+		strings.NewReader(`{"content":"watch this user","category":"risk"}`))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d body=%s", res.Code, res.Body.String())
+	}
+	if repo.gotNotePunter != "u-1" || repo.gotNoteContent != "watch this user" || repo.gotNoteCat != "risk" {
+		t.Fatalf("note not plumbed: punter=%s content=%q cat=%q", repo.gotNotePunter, repo.gotNoteContent, repo.gotNoteCat)
+	}
+	if repo.gotNoteAuthor != "admin-1" {
+		t.Fatalf("author not plumbed from session: got %q", repo.gotNoteAuthor)
+	}
+}
+
+func TestAdminPunterAddNoteRejectsEmpty(t *testing.T) {
+	repo := &fakeAdminReader{}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/punters/u-1/notes",
+		strings.NewReader(`{"content":"   "}`))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for empty content, got %d", res.Code)
 	}
 }

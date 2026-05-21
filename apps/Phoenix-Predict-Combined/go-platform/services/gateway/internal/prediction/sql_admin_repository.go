@@ -56,6 +56,17 @@ type AdminAuditLogFilter struct {
 	ActorID      string
 }
 
+// AdminPunterNote is an admin CRM note on a punter. Field names match what the
+// office /users/[id] notes panel reads.
+type AdminPunterNote struct {
+	ID        int64   `json:"id"`
+	PunterID  string  `json:"punterId"`
+	AuthorID  *string `json:"authorId,omitempty"`
+	Category  string  `json:"category"`
+	Content   string  `json:"content"`
+	CreatedAt string  `json:"createdAt"`
+}
+
 // clampPage normalizes page (1-based) and pageSize into safe bounds and
 // returns the SQL LIMIT/OFFSET.
 func clampPage(page, pageSize int) (limit, offset int) {
@@ -272,4 +283,71 @@ func (r *SQLRepository) ListAuditLogsAdmin(
 		HasNext:  offset+len(items) < total,
 	}
 	return items, meta, nil
+}
+
+// AddPunterNote inserts an admin note on a punter and returns the created row.
+// authorID may be empty (stored NULL). category defaults to "general".
+func (r *SQLRepository) AddPunterNote(ctx context.Context, punterID, authorID, category, content string) (*AdminPunterNote, error) {
+	var author any
+	if authorID != "" {
+		author = authorID
+	}
+	if category == "" {
+		category = "general"
+	}
+	row := r.db.QueryRowContext(ctx, `
+		INSERT INTO user_notes (punter_id, author_id, category, content)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, punter_id, author_id, category, content, created_at`,
+		punterID, author, category, content)
+	return scanPunterNote(row)
+}
+
+// ListPunterNotes returns a punter's admin notes, newest first.
+func (r *SQLRepository) ListPunterNotes(ctx context.Context, punterID string) ([]AdminPunterNote, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT id, punter_id, author_id, category, content, created_at
+		FROM user_notes
+		WHERE punter_id = $1
+		ORDER BY created_at DESC`, punterID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Empty slice (not nil) so JSON encodes [] for zero notes.
+	items := []AdminPunterNote{}
+	for rows.Next() {
+		n, err := scanPunterNote(rows)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, *n)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// scanPunterNote scans one user_notes row.
+func scanPunterNote(row interface{ Scan(...any) error }) (*AdminPunterNote, error) {
+	var (
+		n         AdminPunterNote
+		author    sql.NullString
+		createdAt sql.NullTime
+	)
+	if err := row.Scan(&n.ID, &n.PunterID, &author, &n.Category, &n.Content, &createdAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	if author.Valid {
+		n.AuthorID = &author.String
+	}
+	if createdAt.Valid {
+		n.CreatedAt = createdAt.Time.UTC().Format("2006-01-02T15:04:05Z07:00")
+	}
+	return &n, nil
 }
