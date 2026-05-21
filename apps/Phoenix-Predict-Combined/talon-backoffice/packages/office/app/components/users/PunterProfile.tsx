@@ -137,9 +137,12 @@ export interface PunterProfileData {
   createdAt: string;
   status: "active" | "suspended" | "inactive";
   verificationStatus: "verified" | "pending" | "failed";
-  totalBets: number;
-  pnl: number;
   balance: number;
+  portfolioValue: number;
+  totalPredictions: number;
+  openPositions: number;
+  accuracyPct: number;
+  pnl: number;
 }
 
 interface PunterProfileProps {
@@ -216,15 +219,27 @@ export function PunterProfile({
             </InfoValue>
           </InfoRow>
           <InfoRow>
-            <InfoLabel>Current Balance</InfoLabel>
+            <InfoLabel>Wallet Balance</InfoLabel>
             <InfoValue>${punter.balance.toLocaleString()}</InfoValue>
           </InfoRow>
           <InfoRow>
-            <InfoLabel>Total Bets</InfoLabel>
-            <InfoValue>{punter.totalBets.toLocaleString()}</InfoValue>
+            <InfoLabel>Portfolio Value</InfoLabel>
+            <InfoValue>${punter.portfolioValue.toLocaleString()}</InfoValue>
           </InfoRow>
           <InfoRow>
-            <InfoLabel>P&L</InfoLabel>
+            <InfoLabel>Open Positions</InfoLabel>
+            <InfoValue>{punter.openPositions.toLocaleString()}</InfoValue>
+          </InfoRow>
+          <InfoRow>
+            <InfoLabel>Total Predictions</InfoLabel>
+            <InfoValue>{punter.totalPredictions.toLocaleString()}</InfoValue>
+          </InfoRow>
+          <InfoRow>
+            <InfoLabel>Accuracy</InfoLabel>
+            <InfoValue>{punter.accuracyPct.toFixed(1)}%</InfoValue>
+          </InfoRow>
+          <InfoRow>
+            <InfoLabel>Realized P&L</InfoLabel>
             <InfoValue
               style={{
                 color:

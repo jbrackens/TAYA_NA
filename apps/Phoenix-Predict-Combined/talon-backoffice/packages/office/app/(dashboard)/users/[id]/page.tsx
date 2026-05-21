@@ -77,7 +77,10 @@ interface PunterProfileData {
   lastLoginDate: string;
   status: "active" | "suspended" | "inactive";
   balance: number;
-  totalBets: number;
+  portfolioValue: number;
+  totalPredictions: number;
+  openPositions: number;
+  accuracyPct: number;
   pnl: number;
   verificationStatus: "verified" | "pending" | "failed";
 }
@@ -117,9 +120,12 @@ const mapPunter = (data: any): PunterProfileData => ({
   createdAt: data.createdAt,
   lastLoginDate: data.lastLoginAt || "Never",
   status: toUserStatus(data.status),
-  balance: 0,
-  totalBets: 0,
-  pnl: 0,
+  balance: (data.walletBalanceCents ?? 0) / 100,
+  portfolioValue: (data.portfolio?.totalValueCents ?? 0) / 100,
+  totalPredictions: data.portfolio?.totalPredictions ?? 0,
+  openPositions: data.portfolio?.openPositions ?? 0,
+  accuracyPct: data.portfolio?.accuracyPct ?? 0,
+  pnl: (data.portfolio?.realizedPnlCents ?? 0) / 100,
   verificationStatus: data.status === "active" ? "verified" : "pending",
 });
 
