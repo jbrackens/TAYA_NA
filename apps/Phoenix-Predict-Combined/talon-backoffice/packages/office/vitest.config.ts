@@ -24,6 +24,9 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     globals: true,
+    // jest-dom v6 matchers + RTL auto-cleanup (see vitest.setup.ts). Required
+    // by the render-based tests added with the RTL v11 -> v16 upgrade.
+    setupFiles: ["./vitest.setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
     // Existing __tests__/*.test.* files are still Jest-targeted. Keep them
     // out of Vitest's collection until they're migrated one-by-one.
