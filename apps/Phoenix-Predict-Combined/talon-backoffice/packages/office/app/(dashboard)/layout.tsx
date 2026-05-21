@@ -3,22 +3,21 @@
 import { usePathname } from "next/navigation";
 
 // Sidebar navigation. Only entries whose backend is wired for the
-// prediction platform are shown. Removed entries (sportsbook-era, never
-// ported to prediction): /users, /content, /campaigns, /loyalty,
-// /leaderboards, /audit-logs, /reports, /risk-management. Their gateway
-// endpoints (admin/punters, admin/content, admin/campaigns,
-// admin/loyalty, admin/leaderboards, admin/audit-logs, admin/wallet/
-// reconciliation, etc.) all return 404 because they were never
-// implemented on the predict-native gateway. Their UI shells were
-// carried wholesale from the sportsbook fork and render "Failed to
-// load X" red banners on every visit.
+// prediction platform are shown, and restored as each backend lands.
 //
-// Restoration plan: each entry comes back when its backend is wired.
-// The pages themselves still exist under app/(dashboard)/<name>/page.tsx
-// for direct URL access during development; deleting them is a separate
-// follow-up once the team confirms none will be ported.
+// /users is wired: admin/punters (GW-1) returns prediction-native punter
+// identity + financials (wallet balance, portfolio P&L, positions,
+// accuracy), so the list + detail render real data.
+//
+// Still hidden pending verification of their predict-native backends:
+// /content, /campaigns, /loyalty, /leaderboards, /audit-logs, /reports,
+// /risk-management. Their UI shells were carried from the sportsbook fork;
+// re-add each here once confirmed it loads without "Failed to load X". The
+// pages still exist under app/(dashboard)/<name>/page.tsx for direct URL
+// access during development.
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "layout-dashboard" },
+  { href: "/users", label: "Users", icon: "users" },
   {
     href: "/prediction-admin/markets",
     label: "Markets",
