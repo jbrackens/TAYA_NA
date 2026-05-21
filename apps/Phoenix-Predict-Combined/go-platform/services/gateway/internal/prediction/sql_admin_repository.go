@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+
+	"github.com/lib/pq"
 )
 
 // Prediction-native admin read models. These intentionally do NOT reuse the
@@ -43,6 +45,15 @@ type AdminPunterDetail struct {
 	AdminPunter
 	WalletBalanceCents int64            `json:"walletBalanceCents"`
 	Portfolio          PortfolioSummary `json:"portfolio"`
+}
+
+// AdminPunterListItem is one row of the admin punter list: identity plus the
+// two financials the roster surfaces (wallet balance + realized P&L). Both are
+// batch-fetched for the whole page, not per-row.
+type AdminPunterListItem struct {
+	AdminPunter
+	WalletBalanceCents int64 `json:"walletBalanceCents"`
+	RealizedPnlCents   int64 `json:"realizedPnlCents"`
 }
 
 // AdminAuditLog is the admin view of an audit_logs row. Field names match
@@ -338,6 +349,33 @@ func (r *SQLRepository) ListPunterNotes(ctx context.Context, punterID string) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+// ListPuntersRealizedPnl returns realized P&L (cents) per user for the given
+// IDs in a single query, to enrich the admin punter list. Users with no
+// settled payouts are absent from the map (caller treats missing as 0).
+func (r *SQLRepository) ListPuntersRealizedPnl(ctx context.Context, userIDs []string) (map[string]int64, error) {
+	out := make(map[string]int64, len(userIDs))
+	if len(userIDs) == 0 {
+		return out, nil
+	}
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT user_id, COALESCE(SUM(pnl_cents), 0)
+		 FROM prediction_payouts WHERE user_id = ANY($1) GROUP BY user_id`,
+		pq.Array(userIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		var pnl int64
+		if err := rows.Scan(&id, &pnl); err != nil {
+			return nil, err
+		}
+		out[id] = pnl
+	}
+	return out, rows.Err()
 }
 
 // scanPunterNote scans one user_notes row.

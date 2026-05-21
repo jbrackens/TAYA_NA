@@ -16,6 +16,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 var (
@@ -322,6 +324,42 @@ func (s *Service) Balance(userID string) int64 {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.balances[userID]
+}
+
+// Balances returns the cash balance for each user ID in a single query, for
+// admin list views. Users with no wallet row default to 0.
+func (s *Service) Balances(userIDs []string) map[string]int64 {
+	out := make(map[string]int64, len(userIDs))
+	if len(userIDs) == 0 {
+		return out
+	}
+	if s.db != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), walletDBTimeout)
+		defer cancel()
+		rows, err := s.db.QueryContext(ctx,
+			"SELECT user_id, balance_cents FROM wallet_balances WHERE user_id = ANY($1)",
+			pq.Array(userIDs))
+		if err != nil {
+			return out
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var id string
+			var bal int64
+			if err := rows.Scan(&id, &bal); err != nil {
+				return out
+			}
+			out[id] = bal
+		}
+		return out
+	}
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, id := range userIDs {
+		out[id] = s.balances[id]
+	}
+	return out
 }
 
 // BalanceBreakdown returns the real money and bonus fund balances separately.

@@ -1030,6 +1030,21 @@ func (r *SQLRepository) GetPortfolioSummary(ctx context.Context, userID string) 
 		return nil, err
 	}
 
+	// Unrealized PnL: mark open positions to the current market price minus
+	// their cost basis. yes positions mark at yes_price_cents, no at no.
+	err = r.db.QueryRowContext(ctx,
+		`SELECT COALESCE(SUM(
+		        p.quantity * (CASE WHEN p.side = 'yes' THEN m.yes_price_cents ELSE m.no_price_cents END)
+		        - p.total_cost_cents
+		 ), 0)
+		 FROM prediction_positions p
+		 JOIN prediction_markets m ON m.id = p.market_id
+		 WHERE p.user_id = $1 AND p.quantity > 0`, userID,
+	).Scan(&s.UnrealizedPnlCents)
+	if err != nil {
+		return nil, err
+	}
+
 	// Accuracy: correct predictions / total predictions
 	err = r.db.QueryRowContext(ctx,
 		`SELECT COALESCE(COUNT(*), 0),

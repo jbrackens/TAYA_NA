@@ -24,13 +24,15 @@ type predictionAdminReader interface {
 	AddPunterNote(ctx context.Context, punterID, authorID, category, content string) (*prediction.AdminPunterNote, error)
 	ListPunterNotes(ctx context.Context, punterID string) ([]prediction.AdminPunterNote, error)
 	GetPortfolioSummary(ctx context.Context, userID string) (*prediction.PortfolioSummary, error)
+	ListPuntersRealizedPnl(ctx context.Context, userIDs []string) (map[string]int64, error)
 }
 
-// adminWalletBalanceReader is the one wallet method the admin punter detail
-// needs (the player's cash balance). Satisfied by the prediction wallet
-// adapter — keeps the prediction repo decoupled from the wallet package.
+// adminWalletBalanceReader is the wallet access the admin punter routes need:
+// a single cash balance (detail) and a batched lookup (list). Satisfied by
+// *wallet.Service — kept behind an interface so the http layer stays testable.
 type adminWalletBalanceReader interface {
 	Balance(userID string) int64
+	Balances(userIDs []string) map[string]int64
 }
 
 // allowedPunterAdminStatuses gates the status values the office can set.
@@ -53,8 +55,8 @@ var allowedPunterAdminStatuses = map[string]struct{}{
 // Both no-slash and trailing-slash forms are registered because the office's
 // next.config.js rewrite + skipTrailingSlashRedirect can send either.
 func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminReader, wallet adminWalletBalanceReader) {
-	registerAdminPuntersList(mux, "/api/v1/admin/punters", repo)
-	registerAdminPuntersList(mux, "/admin/punters", repo)
+	registerAdminPuntersList(mux, "/api/v1/admin/punters", repo, wallet)
+	registerAdminPuntersList(mux, "/admin/punters", repo, wallet)
 	registerAdminPunterDetail(mux, "/api/v1/admin/punters/", repo, wallet)
 	registerAdminPunterDetail(mux, "/admin/punters/", repo, wallet)
 	registerAdminAuditLogsList(mux, "/api/v1/admin/audit-logs", repo)
@@ -188,7 +190,7 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 	}))
 }
 
-func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictionAdminReader) {
+func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictionAdminReader, wallet adminWalletBalanceReader) {
 	mux.Handle(path, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
@@ -207,8 +209,28 @@ func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictio
 		if err != nil {
 			return httpx.Internal("failed to list punters", err)
 		}
+
+		// Enrich the page with the two financials the roster shows — wallet
+		// balance + realized P&L — batch-fetched for all rows (not per-row).
+		ids := make([]string, 0, len(items))
+		for _, it := range items {
+			ids = append(ids, it.ID)
+		}
+		balances := wallet.Balances(ids)
+		pnls, err := repo.ListPuntersRealizedPnl(r.Context(), ids)
+		if err != nil {
+			return httpx.Internal("failed to load punter financials", err)
+		}
+		enriched := make([]prediction.AdminPunterListItem, 0, len(items))
+		for _, it := range items {
+			enriched = append(enriched, prediction.AdminPunterListItem{
+				AdminPunter:        it,
+				WalletBalanceCents: balances[it.ID],
+				RealizedPnlCents:   pnls[it.ID],
+			})
+		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"items":      items,
+			"items":      enriched,
 			"pagination": meta,
 		})
 	}))

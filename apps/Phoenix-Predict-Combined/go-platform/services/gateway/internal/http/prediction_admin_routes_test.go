@@ -40,6 +40,8 @@ type fakeAdminReader struct {
 
 	portfolio     *prediction.PortfolioSummary
 	walletBalance int64
+	listPnls      map[string]int64
+	balancesByID  map[string]int64
 }
 
 func (f *fakeAdminReader) ListPuntersAdmin(_ context.Context, filter prediction.AdminPunterFilter, page, pageSize int) ([]prediction.AdminPunter, prediction.PageMeta, error) {
@@ -87,6 +89,20 @@ func (f *fakeAdminReader) GetPortfolioSummary(_ context.Context, _ string) (*pre
 
 func (f *fakeAdminReader) Balance(_ string) int64 { return f.walletBalance }
 
+func (f *fakeAdminReader) Balances(_ []string) map[string]int64 {
+	if f.balancesByID != nil {
+		return f.balancesByID
+	}
+	return map[string]int64{}
+}
+
+func (f *fakeAdminReader) ListPuntersRealizedPnl(_ context.Context, _ []string) (map[string]int64, error) {
+	if f.listPnls != nil {
+		return f.listPnls, nil
+	}
+	return map[string]int64{}, nil
+}
+
 func adminTestHandler(repo *fakeAdminReader) http.Handler {
 	mux := http.NewServeMux()
 	registerPredictionAdminRoutes(mux, repo, repo)
@@ -132,6 +148,42 @@ func TestAdminPuntersListReturnsItemsAndPagination(t *testing.T) {
 	}
 	if repo.gotPunterPage != 2 || repo.gotPunterSize != 25 {
 		t.Fatalf("paging not plumbed: page=%d size=%d", repo.gotPunterPage, repo.gotPunterSize)
+	}
+}
+
+func TestAdminPuntersListIncludesFinancials(t *testing.T) {
+	repo := &fakeAdminReader{
+		punters: []prediction.AdminPunter{
+			{ID: "u-1", Email: "alice@predict.dev", Status: "active"},
+			{ID: "u-2", Email: "bob@predict.dev", Status: "active"},
+		},
+		punterMeta:   prediction.PageMeta{Page: 1, PageSize: 50, Total: 2},
+		balancesByID: map[string]int64{"u-1": 500000, "u-2": 12345},
+		listPnls:     map[string]int64{"u-1": 4200},
+	}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var payload struct {
+		Items []prediction.AdminPunterListItem `json:"items"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(payload.Items) != 2 {
+		t.Fatalf("expected 2 items, got %d", len(payload.Items))
+	}
+	if payload.Items[0].WalletBalanceCents != 500000 || payload.Items[0].RealizedPnlCents != 4200 {
+		t.Fatalf("u-1 financials wrong: %+v", payload.Items[0])
+	}
+	// u-2 has a balance but no settled payouts -> realized pnl defaults to 0.
+	if payload.Items[1].WalletBalanceCents != 12345 || payload.Items[1].RealizedPnlCents != 0 {
+		t.Fatalf("u-2 financials wrong: %+v", payload.Items[1])
 	}
 }
 
