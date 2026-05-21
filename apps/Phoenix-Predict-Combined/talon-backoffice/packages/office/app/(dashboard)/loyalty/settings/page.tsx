@@ -1028,8 +1028,8 @@ const labelStyle: CSSProperties = {
 
 const inputStyle: CSSProperties = {
   width: "100%",
-  background: "#0f172a",
-  border: "1px solid #1e3a5f",
+  background: "var(--surface-1, #ffffff)",
+  border: "1px solid var(--border-1, #e5dfd2)",
   borderRadius: 8,
   padding: "10px 12px",
   color: "var(--t1, #1a1a1a)",
