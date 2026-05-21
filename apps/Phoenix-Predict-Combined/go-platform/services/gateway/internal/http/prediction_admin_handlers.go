@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"phoenix-revival/gateway/internal/prediction"
+	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
 )
 
@@ -25,6 +26,7 @@ type predictionAdminReader interface {
 	ListPunterNotes(ctx context.Context, punterID string) ([]prediction.AdminPunterNote, error)
 	GetPortfolioSummary(ctx context.Context, userID string) (*prediction.PortfolioSummary, error)
 	ListPuntersRealizedPnl(ctx context.Context, userIDs []string) (map[string]int64, error)
+	ListSettledPositions(ctx context.Context, userID string, page, pageSize int) ([]prediction.Payout, int, error)
 }
 
 // adminWalletBalanceReader is the wallet access the admin punter routes need:
@@ -33,6 +35,7 @@ type predictionAdminReader interface {
 type adminWalletBalanceReader interface {
 	Balance(userID string) int64
 	Balances(userIDs []string) map[string]int64
+	Ledger(userID string, limit int) []wallet.LedgerEntry
 }
 
 // allowedPunterAdminStatuses gates the status values the office can set.
@@ -177,6 +180,37 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			default:
 				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 			}
+		case "settlements":
+			// Settled-position (trade) history for the Trade History tab.
+			if r.Method != stdhttp.MethodGet {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+			}
+			page, pageSize := parseAdminPaging(r)
+			payouts, total, err := repo.ListSettledPositions(r.Context(), id, page, pageSize)
+			if err != nil {
+				return httpx.Internal("failed to load settlement history", err)
+			}
+			if payouts == nil {
+				payouts = []prediction.Payout{}
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"items": payouts,
+				"total": total,
+			})
+		case "wallet":
+			// Wallet transaction ledger for the Wallet tab.
+			if r.Method != stdhttp.MethodGet {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+			}
+			limit := 50
+			if v := strings.TrimSpace(r.URL.Query().Get("limit")); v != "" {
+				if n, convErr := strconv.Atoi(v); convErr == nil && n > 0 && n <= 200 {
+					limit = n
+				}
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"items": wallet.Ledger(id, limit),
+			})
 		case "reset-password", "risk-segment", "limits":
 			// reset-password: deferred (spans the auth service — needs a flow
 			// decision). risk-segment + limits: removed from the office UI as

@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"phoenix-revival/gateway/internal/prediction"
+	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/platform/transport/httpx"
 )
 
@@ -42,6 +43,8 @@ type fakeAdminReader struct {
 	walletBalance int64
 	listPnls      map[string]int64
 	balancesByID  map[string]int64
+	settled       []prediction.Payout
+	ledger        []wallet.LedgerEntry
 }
 
 func (f *fakeAdminReader) ListPuntersAdmin(_ context.Context, filter prediction.AdminPunterFilter, page, pageSize int) ([]prediction.AdminPunter, prediction.PageMeta, error) {
@@ -102,6 +105,12 @@ func (f *fakeAdminReader) ListPuntersRealizedPnl(_ context.Context, _ []string) 
 	}
 	return map[string]int64{}, nil
 }
+
+func (f *fakeAdminReader) ListSettledPositions(_ context.Context, _ string, _, _ int) ([]prediction.Payout, int, error) {
+	return f.settled, len(f.settled), nil
+}
+
+func (f *fakeAdminReader) Ledger(_ string, _ int) []wallet.LedgerEntry { return f.ledger }
 
 func adminTestHandler(repo *fakeAdminReader) http.Handler {
 	mux := http.NewServeMux()
@@ -314,6 +323,53 @@ func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
 	}
 	if d.Portfolio.RealizedPnlCents != 4200 || d.Portfolio.OpenPositions != 3 || d.Portfolio.AccuracyPct != 70 {
 		t.Fatalf("portfolio not returned: %+v", d.Portfolio)
+	}
+}
+
+func TestAdminPunterSettlements(t *testing.T) {
+	repo := &fakeAdminReader{settled: []prediction.Payout{
+		{ID: "p-1", UserID: "u-1", MarketID: "m-1", Side: "yes", Quantity: 10, PnlCents: 250, PayoutCents: 1000},
+	}}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/settlements", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var payload struct {
+		Items []prediction.Payout `json:"items"`
+		Total int                 `json:"total"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(payload.Items) != 1 || payload.Items[0].ID != "p-1" || payload.Total != 1 {
+		t.Fatalf("unexpected settlements: %+v total=%d", payload.Items, payload.Total)
+	}
+}
+
+func TestAdminPunterWalletLedger(t *testing.T) {
+	repo := &fakeAdminReader{ledger: []wallet.LedgerEntry{
+		{EntryID: "e-1", UserID: "u-1", Type: "credit", AmountCents: 5000, BalanceCents: 5000},
+	}}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1/wallet", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var payload struct {
+		Items []wallet.LedgerEntry `json:"items"`
+	}
+	if err := json.Unmarshal(res.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(payload.Items) != 1 || payload.Items[0].EntryID != "e-1" {
+		t.Fatalf("unexpected ledger: %+v", payload.Items)
 	}
 }
 
