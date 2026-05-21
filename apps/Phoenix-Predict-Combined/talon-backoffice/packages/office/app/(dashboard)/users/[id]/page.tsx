@@ -30,6 +30,44 @@ const ContentGrid = styled.div`
   }
 `;
 
+const NotesCard = styled.div`
+  margin-top: 20px;
+  background-color: var(--surface-1, #fff);
+  border: 1px solid var(--border-1, #e5dfd2);
+  border-radius: 6px;
+  padding: 20px;
+`;
+
+const NotesTitle = styled.h3`
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--t1, #1a1a1a);
+`;
+
+const NoteItem = styled.div`
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-1, #e5dfd2);
+  font-size: 13px;
+  color: var(--t1, #1a1a1a);
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const NoteMeta = styled.div`
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--t3, #8b8378);
+`;
+
+const EmptyNotes = styled.p`
+  margin: 0;
+  font-size: 13px;
+  color: var(--t3, #8b8378);
+`;
+
 interface PunterProfileData {
   id: string;
   name: string;
@@ -41,8 +79,15 @@ interface PunterProfileData {
   balance: number;
   totalBets: number;
   pnl: number;
-  riskSegment: "low" | "medium" | "high" | "vip";
   verificationStatus: "verified" | "pending" | "failed";
+}
+
+interface PunterNote {
+  id: number;
+  category: string;
+  content: string;
+  authorId?: string;
+  createdAt: string;
 }
 
 const toDisplayName = (email: string) =>
@@ -57,12 +102,6 @@ const toUserStatus = (status: string): PunterProfileData["status"] => {
   if (status === "suspended") return "suspended";
   if (status === "active") return "active";
   return "inactive";
-};
-
-const toRiskSegment = (status: string): PunterProfileData["riskSegment"] => {
-  if (status === "suspended") return "high";
-  if (status === "active") return "low";
-  return "medium";
 };
 
 const mapPunter = (data: any): PunterProfileData => ({
@@ -81,7 +120,6 @@ const mapPunter = (data: any): PunterProfileData => ({
   balance: 0,
   totalBets: 0,
   pnl: 0,
-  riskSegment: toRiskSegment(data.status),
   verificationStatus: data.status === "active" ? "verified" : "pending",
 });
 
@@ -89,6 +127,7 @@ function UserDetailPageContent() {
   const params = useParams();
   const punterId = params?.id as string;
   const [punter, setPunter] = useState<PunterProfileData | null>(null);
+  const [notes, setNotes] = useState<PunterNote[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -102,12 +141,23 @@ function UserDetailPageContent() {
     setPunter(mapPunter(data));
   };
 
+  const loadNotes = async () => {
+    const response = await adminFetch(
+      `/api/v1/admin/punters/${punterId}/notes`,
+    );
+    if (response.ok) {
+      const data = await response.json();
+      setNotes(Array.isArray(data?.items) ? data.items : []);
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
         setIsLoading(true);
         setError(null);
         await loadPunter();
+        await loadNotes();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -155,51 +205,6 @@ function UserDetailPageContent() {
           await response.json();
           break;
         }
-        case "disable2FA": {
-          const response = await adminFetch(
-            `/api/v1/admin/punters/${punterId}/risk-segment`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                segment: "low",
-                reason: "2FA disabled by admin",
-              }),
-            },
-          );
-          if (!response.ok) throw new Error("Failed to disable 2FA");
-          break;
-        }
-        case "adjustSegment": {
-          const segment = data?.segment || "medium";
-          const reason = data?.reason || "Admin adjustment";
-          const response = await adminFetch(
-            `/api/v1/admin/punters/${punterId}/risk-segment`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ segment, reason }),
-            },
-          );
-          if (!response.ok) throw new Error("Failed to adjust risk segment");
-          break;
-        }
-        case "setLimits": {
-          const response = await adminFetch(
-            `/api/v1/admin/punters/${punterId}/limits`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                limitType: data?.limitType || "bet",
-                period: data?.period || "daily",
-                amountCents: data?.amountCents || 100000,
-              }),
-            },
-          );
-          if (!response.ok) throw new Error("Failed to set limits");
-          break;
-        }
         case "addNote": {
           const response = await adminFetch(
             `/api/v1/admin/punters/${punterId}/notes`,
@@ -221,6 +226,7 @@ function UserDetailPageContent() {
 
       // Reload punter data after any mutation
       await loadPunter();
+      await loadNotes();
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to ${action}`);
     } finally {
@@ -282,6 +288,23 @@ function UserDetailPageContent() {
             currentStatus={punter.status}
             onAction={handleAction}
           />
+          <NotesCard>
+            <NotesTitle>Admin Notes</NotesTitle>
+            {notes.length === 0 ? (
+              <EmptyNotes>No notes yet.</EmptyNotes>
+            ) : (
+              notes.map((note) => (
+                <NoteItem key={note.id}>
+                  {note.content}
+                  <NoteMeta>
+                    {note.category} ·{" "}
+                    {new Date(note.createdAt).toLocaleString()}
+                    {note.authorId ? ` · ${note.authorId}` : ""}
+                  </NoteMeta>
+                </NoteItem>
+              ))
+            )}
+          </NotesCard>
         </div>
       </ContentGrid>
     </div>

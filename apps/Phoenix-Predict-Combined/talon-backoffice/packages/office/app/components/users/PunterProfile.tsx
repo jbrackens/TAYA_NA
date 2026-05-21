@@ -136,7 +136,6 @@ export interface PunterProfileData {
   email: string;
   createdAt: string;
   status: "active" | "suspended" | "inactive";
-  riskSegment: "low" | "medium" | "high" | "vip";
   verificationStatus: "verified" | "pending" | "failed";
   totalBets: number;
   pnl: number;
@@ -145,7 +144,7 @@ export interface PunterProfileData {
 
 interface PunterProfileProps {
   punter?: PunterProfileData;
-  onAction?: (action: string) => void;
+  onAction?: (action: string, data?: Record<string, unknown>) => void;
   actionsAvailable?: boolean;
 }
 
@@ -217,21 +216,6 @@ export function PunterProfile({
             </InfoValue>
           </InfoRow>
           <InfoRow>
-            <InfoLabel>Risk Segment</InfoLabel>
-            <InfoValue
-              style={{
-                color:
-                  punter.riskSegment === "high"
-                    ? "var(--no-text, #a8472d)"
-                    : punter.riskSegment === "vip"
-                      ? "var(--focus-ring, #0e7a53)"
-                      : "var(--t2, #4a4a4a)",
-              }}
-            >
-              {punter.riskSegment.toUpperCase()}
-            </InfoValue>
-          </InfoRow>
-          <InfoRow>
             <InfoLabel>Current Balance</InfoLabel>
             <InfoValue>${punter.balance.toLocaleString()}</InfoValue>
           </InfoRow>
@@ -277,8 +261,15 @@ export function PunterProfile({
             </Button>
             <Button
               variant="secondary"
-              onClick={() => onAction?.("addNote")}
-              disabled={true}
+              onClick={() => {
+                const content = window.prompt(
+                  "Add an admin note for this punter:",
+                );
+                if (content && content.trim()) {
+                  onAction?.("addNote", { content: content.trim() });
+                }
+              }}
+              disabled={!actionsAvailable}
             >
               Add Note
             </Button>
@@ -293,7 +284,7 @@ export function PunterProfile({
             }}
           >
             {actionsAvailable
-              ? "Suspend and activate are live. Password reset and note actions are still awaiting backend support."
+              ? "Suspend, activate, and admin notes are live. Force password reset is awaiting auth-service support."
               : "Admin account mutations are read-only here until the Go backoffice mutation routes are implemented."}
           </div>
         </InfoCard>

@@ -147,51 +147,6 @@ export function AccountActions({
             >
               Reset Password
             </StyledButton>
-            <StyledButton
-              variant="secondary"
-              onClick={() =>
-                handleAction(
-                  "disable2FA",
-                  "Disable 2FA",
-                  "Disable two-factor authentication for this punter.",
-                )
-              }
-              disabled={isLoading}
-            >
-              Disable 2FA
-            </StyledButton>
-          </ButtonGrid>
-        </ActionGroup>
-
-        <ActionGroup>
-          <GroupTitle>Risk Management</GroupTitle>
-          <ButtonGrid>
-            <StyledButton
-              variant="secondary"
-              onClick={() =>
-                handleAction(
-                  "adjustSegment",
-                  "Adjust Risk Segment",
-                  "Adjust this punter's risk classification.",
-                )
-              }
-              disabled={isLoading}
-            >
-              Risk Segment
-            </StyledButton>
-            <StyledButton
-              variant="secondary"
-              onClick={() =>
-                handleAction(
-                  "setLimits",
-                  "Set Manual Limits",
-                  "Set custom deposit, stake, or session time limits.",
-                )
-              }
-              disabled={isLoading}
-            >
-              Set Limits
-            </StyledButton>
           </ButtonGrid>
         </ActionGroup>
 
@@ -200,13 +155,15 @@ export function AccountActions({
           <ButtonGrid style={{ gridTemplateColumns: "1fr" }}>
             <StyledButton
               variant="secondary"
-              onClick={() =>
-                handleAction(
-                  "addNote",
-                  "Add Admin Note",
-                  "Attach an admin note to this punter's profile.",
-                )
-              }
+              onClick={() => {
+                if (!statusActionsAvailable) return;
+                const content = window.prompt(
+                  "Add an admin note for this punter:",
+                );
+                if (content && content.trim()) {
+                  onAction?.("addNote", { content: content.trim() });
+                }
+              }}
               disabled={isLoading}
             >
               Add Admin Note
