@@ -26,7 +26,6 @@ interface PunterData {
   balance: number;
   pnl: number;
   status: "active" | "suspended" | "inactive";
-  riskSegment: "low" | "medium" | "high";
 }
 
 const toDisplayName = (email: string) =>
@@ -41,12 +40,6 @@ const toUserStatus = (status: string): PunterData["status"] => {
   if (status === "suspended") return "suspended";
   if (status === "active") return "active";
   return "inactive";
-};
-
-const toRiskSegment = (status: string): PunterData["riskSegment"] => {
-  if (status === "suspended") return "high";
-  if (status === "active") return "low";
-  return "medium";
 };
 
 function UsersPageContent() {
@@ -76,7 +69,6 @@ function UsersPageContent() {
             balance: (item.walletBalanceCents ?? 0) / 100,
             pnl: (item.realizedPnlCents ?? 0) / 100,
             status: toUserStatus(item.status),
-            riskSegment: toRiskSegment(item.status),
           })),
         );
       } catch (err) {
@@ -115,7 +107,6 @@ function UsersPageContent() {
             balance: (item.walletBalanceCents ?? 0) / 100,
             pnl: (item.realizedPnlCents ?? 0) / 100,
             status: toUserStatus(item.status),
-            riskSegment: toRiskSegment(item.status),
           })),
         );
       })

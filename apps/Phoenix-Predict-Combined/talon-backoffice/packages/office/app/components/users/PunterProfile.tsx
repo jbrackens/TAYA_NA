@@ -152,6 +152,12 @@ interface PunterProfileProps {
   actionsAvailable?: boolean;
 }
 
+const money = (n: number) =>
+  n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 export function PunterProfile({
   punter,
   onAction,
@@ -221,11 +227,11 @@ export function PunterProfile({
           </InfoRow>
           <InfoRow>
             <InfoLabel>Wallet Balance</InfoLabel>
-            <InfoValue>${punter.balance.toLocaleString()}</InfoValue>
+            <InfoValue>${money(punter.balance)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>Portfolio Value</InfoLabel>
-            <InfoValue>${punter.portfolioValue.toLocaleString()}</InfoValue>
+            <InfoValue>${money(punter.portfolioValue)}</InfoValue>
           </InfoRow>
           <InfoRow>
             <InfoLabel>Open Positions</InfoLabel>
@@ -249,8 +255,7 @@ export function PunterProfile({
                     : "var(--no-text, #a8472d)",
               }}
             >
-              {punter.pnl < 0 ? "-" : "+"}$
-              {Math.abs(punter.pnl).toLocaleString()}
+              {punter.pnl < 0 ? "-" : "+"}${money(Math.abs(punter.pnl))}
             </InfoValue>
           </InfoRow>
           <InfoRow>
@@ -264,7 +269,7 @@ export function PunterProfile({
               }}
             >
               {punter.unrealizedPnl < 0 ? "-" : "+"}$
-              {Math.abs(punter.unrealizedPnl).toLocaleString()}
+              {money(Math.abs(punter.unrealizedPnl))}
             </InfoValue>
           </InfoRow>
 

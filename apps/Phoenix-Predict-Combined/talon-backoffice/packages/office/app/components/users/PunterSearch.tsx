@@ -22,7 +22,7 @@ const Title = styled.h3`
 
 const FilterRow = styled.div`
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  grid-template-columns: 2fr 1fr auto;
   gap: 12px;
   margin-bottom: 16px;
 
@@ -86,7 +86,6 @@ export interface PunterData {
   name: string;
   email: string;
   status: "active" | "suspended" | "inactive";
-  riskSegment: "low" | "medium" | "high";
   balance: number;
   pnl: number;
   lastActivity: string;
@@ -107,9 +106,6 @@ export function PunterSearch({
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "suspended" | "inactive"
   >("all");
-  const [segmentFilter, setSegmentFilter] = useState<
-    "all" | "low" | "medium" | "high"
-  >("all");
 
   const filteredPunters = useMemo(() => {
     return punters.filter((p) => {
@@ -117,11 +113,9 @@ export function PunterSearch({
         p.name.toLowerCase().includes(searchText.toLowerCase()) ||
         p.email.toLowerCase().includes(searchText.toLowerCase());
       const matchesStatus = statusFilter === "all" || p.status === statusFilter;
-      const matchesSegment =
-        segmentFilter === "all" || p.riskSegment === segmentFilter;
-      return matchesText && matchesStatus && matchesSegment;
+      return matchesText && matchesStatus;
     });
-  }, [punters, searchText, statusFilter, segmentFilter]);
+  }, [punters, searchText, statusFilter]);
 
   const columns: ColumnDef<PunterData>[] = [
     {
@@ -164,29 +158,14 @@ export function PunterSearch({
       ),
     },
     {
-      key: "riskSegment",
-      label: "Risk Segment",
-      sortable: true,
-      render: (value) => (
-        <span
-          style={{
-            color:
-              value === "high"
-                ? "var(--no-text, #a8472d)"
-                : value === "medium"
-                  ? "var(--warn, #d97706)"
-                  : "var(--accent-lo, #1fa65e)",
-          }}
-        >
-          {value.toUpperCase()}
-        </span>
-      ),
-    },
-    {
       key: "balance",
       label: "Balance",
       sortable: true,
-      render: (value) => `$${value.toLocaleString()}`,
+      render: (value) =>
+        `$${value.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
     },
     {
       key: "pnl",
@@ -202,7 +181,11 @@ export function PunterSearch({
             fontWeight: "600",
           }}
         >
-          {value < 0 ? "-" : "+"}${Math.abs(value).toLocaleString()}
+          {value < 0 ? "-" : "+"}$
+          {Math.abs(value).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </span>
       ),
     },
@@ -241,26 +224,12 @@ export function PunterSearch({
             </StyledSelect>
           </FilterGroup>
 
-          <FilterGroup>
-            <Label>Risk Segment</Label>
-            <StyledSelect
-              value={segmentFilter}
-              onChange={(e) => setSegmentFilter(e.target.value as any)}
-            >
-              <option value="all">All</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </StyledSelect>
-          </FilterGroup>
-
           <FilterGroup style={{ justifyContent: "flex-end" }}>
             <Button
               variant="primary"
               onClick={() => {
                 setSearchText("");
                 setStatusFilter("all");
-                setSegmentFilter("all");
               }}
             >
               Reset
