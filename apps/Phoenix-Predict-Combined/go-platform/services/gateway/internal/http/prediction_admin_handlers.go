@@ -23,6 +23,14 @@ type predictionAdminReader interface {
 	ListAuditLogsAdmin(ctx context.Context, filter prediction.AdminAuditLogFilter, page, pageSize int) ([]prediction.AdminAuditLog, prediction.PageMeta, error)
 	AddPunterNote(ctx context.Context, punterID, authorID, category, content string) (*prediction.AdminPunterNote, error)
 	ListPunterNotes(ctx context.Context, punterID string) ([]prediction.AdminPunterNote, error)
+	GetPortfolioSummary(ctx context.Context, userID string) (*prediction.PortfolioSummary, error)
+}
+
+// adminWalletBalanceReader is the one wallet method the admin punter detail
+// needs (the player's cash balance). Satisfied by the prediction wallet
+// adapter — keeps the prediction repo decoupled from the wallet package.
+type adminWalletBalanceReader interface {
+	Balance(userID string) int64
 }
 
 // allowedPunterAdminStatuses gates the status values the office can set.
@@ -44,11 +52,11 @@ var allowedPunterAdminStatuses = map[string]struct{}{
 // legacy `domain` package and would reintroduce fixtures/bets surfaces.
 // Both no-slash and trailing-slash forms are registered because the office's
 // next.config.js rewrite + skipTrailingSlashRedirect can send either.
-func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminReader) {
+func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminReader, wallet adminWalletBalanceReader) {
 	registerAdminPuntersList(mux, "/api/v1/admin/punters", repo)
 	registerAdminPuntersList(mux, "/admin/punters", repo)
-	registerAdminPunterDetail(mux, "/api/v1/admin/punters/", repo)
-	registerAdminPunterDetail(mux, "/admin/punters/", repo)
+	registerAdminPunterDetail(mux, "/api/v1/admin/punters/", repo, wallet)
+	registerAdminPunterDetail(mux, "/admin/punters/", repo, wallet)
 	registerAdminAuditLogsList(mux, "/api/v1/admin/audit-logs", repo)
 	registerAdminAuditLogsList(mux, "/admin/audit-logs", repo)
 }
@@ -65,7 +73,7 @@ func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminRe
 // limits were sportsbook leftovers and have been removed from the office UI
 // (CLAUDE.md rule #2); reset-password is deferred (it spans the auth service
 // and needs a flow decision). Returning 501 beats faking success (rule #7).
-func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predictionAdminReader) {
+func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predictionAdminReader, wallet adminWalletBalanceReader) {
 	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {
 			return err
@@ -89,7 +97,19 @@ func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predic
 			if p == nil {
 				return httpx.NotFound("punter not found")
 			}
-			return httpx.WriteJSON(w, stdhttp.StatusOK, p)
+			// Enrich with the player's financials: wallet cash balance + the
+			// prediction portfolio summary (value, realized P&L, positions,
+			// accuracy). Reuses the same GetPortfolioSummary the player app uses.
+			ps, err := repo.GetPortfolioSummary(r.Context(), id)
+			if err != nil {
+				return httpx.Internal("failed to load portfolio", err)
+			}
+			detail := prediction.AdminPunterDetail{
+				AdminPunter:        *p,
+				WalletBalanceCents: wallet.Balance(id),
+				Portfolio:          *ps,
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, detail)
 		}
 
 		// /punters/{id}/{action}.

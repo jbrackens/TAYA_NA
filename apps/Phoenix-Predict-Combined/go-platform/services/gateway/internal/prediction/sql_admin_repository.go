@@ -35,6 +35,16 @@ type AdminPunterFilter struct {
 	Search string
 }
 
+// AdminPunterDetail is the full admin user-detail view: identity (AdminPunter)
+// plus the player's financials — wallet cash balance and the prediction
+// portfolio summary (value, realized P&L, open positions, accuracy). Returned
+// by GET /api/v1/admin/punters/{id}; the list endpoint stays identity-only.
+type AdminPunterDetail struct {
+	AdminPunter
+	WalletBalanceCents int64            `json:"walletBalanceCents"`
+	Portfolio          PortfolioSummary `json:"portfolio"`
+}
+
 // AdminAuditLog is the admin view of an audit_logs row. Field names match
 // what app/(dashboard)/audit-logs/page.tsx reads: id, occurredAt, actorId,
 // action, targetId, details.

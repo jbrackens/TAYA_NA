@@ -184,7 +184,7 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// registered when the SQL repo is live (DB present); the legacy
 	// sportsbook registerAdminRoutes in admin_handlers.go stays unwired.
 	if predSQLRepo != nil {
-		registerPredictionAdminRoutes(mux, predSQLRepo)
+		registerPredictionAdminRoutes(mux, predSQLRepo, predWallet)
 		slog.Info("prediction: admin read routes registered (punters, audit-logs)")
 	}
 

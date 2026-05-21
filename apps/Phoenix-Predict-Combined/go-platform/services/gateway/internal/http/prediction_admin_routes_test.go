@@ -37,6 +37,9 @@ type fakeAdminReader struct {
 	gotNoteAuthor  string
 	gotNoteCat     string
 	gotNoteContent string
+
+	portfolio     *prediction.PortfolioSummary
+	walletBalance int64
 }
 
 func (f *fakeAdminReader) ListPuntersAdmin(_ context.Context, filter prediction.AdminPunterFilter, page, pageSize int) ([]prediction.AdminPunter, prediction.PageMeta, error) {
@@ -75,9 +78,18 @@ func (f *fakeAdminReader) ListPunterNotes(_ context.Context, _ string) ([]predic
 	return f.notes, nil
 }
 
-func adminTestHandler(repo predictionAdminReader) http.Handler {
+func (f *fakeAdminReader) GetPortfolioSummary(_ context.Context, _ string) (*prediction.PortfolioSummary, error) {
+	if f.portfolio != nil {
+		return f.portfolio, nil
+	}
+	return &prediction.PortfolioSummary{}, nil
+}
+
+func (f *fakeAdminReader) Balance(_ string) int64 { return f.walletBalance }
+
+func adminTestHandler(repo *fakeAdminReader) http.Handler {
 	mux := http.NewServeMux()
-	registerPredictionAdminRoutes(mux, repo)
+	registerPredictionAdminRoutes(mux, repo, repo)
 	return httpx.Chain(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { mux.ServeHTTP(w, r) }),
 		httpx.RequestID(),
@@ -214,6 +226,42 @@ func TestAdminPunterDetail404ForUnknown(t *testing.T) {
 	handler.ServeHTTP(res, req)
 	if res.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", res.Code)
+	}
+}
+
+func TestAdminPunterDetailIncludesFinancials(t *testing.T) {
+	repo := &fakeAdminReader{
+		detail:        &prediction.AdminPunter{ID: "u-1", Email: "a@b.dev", Status: "active"},
+		walletBalance: 512300,
+		portfolio: &prediction.PortfolioSummary{
+			TotalValueCents:    100000,
+			RealizedPnlCents:   4200,
+			OpenPositions:      3,
+			TotalPredictions:   10,
+			CorrectPredictions: 7,
+			AccuracyPct:        70,
+		},
+	}
+	handler := adminTestHandler(repo)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/punters/u-1", nil)
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var d prediction.AdminPunterDetail
+	if err := json.Unmarshal(res.Body.Bytes(), &d); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if d.ID != "u-1" {
+		t.Fatalf("identity not preserved: %+v", d.AdminPunter)
+	}
+	if d.WalletBalanceCents != 512300 {
+		t.Fatalf("wallet balance not returned: %d", d.WalletBalanceCents)
+	}
+	if d.Portfolio.RealizedPnlCents != 4200 || d.Portfolio.OpenPositions != 3 || d.Portfolio.AccuracyPct != 70 {
+		t.Fatalf("portfolio not returned: %+v", d.Portfolio)
 	}
 }
 
