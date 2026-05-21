@@ -47,7 +47,15 @@ export const SettingsContainer = () => {
                 labelStyle={{ fontWeight: "bold" }}
                 label={t(FieldNameEnum.TIMEZONE)}
               >
-                <div>
+                {/*
+                  selectedTimezone is seeded from localStorage (empty during
+                  SSR, populated on the client), so its text differs between
+                  server and client render. suppressHydrationWarning scopes the
+                  benign mismatch to this element instead of relying on the
+                  global dev suppression in pages/_app.js. The value fills in on
+                  hydration regardless.
+                */}
+                <div suppressHydrationWarning>
                   {selectedTimezone}
                   <Button
                     type="link"
