@@ -11,7 +11,7 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    logger.error("App", "Phoenix app error", error);
+    logger.error("App", "Unhandled app error", error);
   }, [error]);
 
   return (
