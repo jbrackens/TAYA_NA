@@ -118,11 +118,17 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	// --- Prediction Platform Routes ---
 	var predRepo prediction.Repository
+	// Concrete handle kept alongside the interface var so the prediction-
+	// native admin read routes (punters + audit logs) can call methods that
+	// live only on *SQLRepository, without widening the shared Repository
+	// interface (which a caching decorator + workers also implement).
+	var predSQLRepo *prediction.SQLRepository
 	var predictLoyaltyService *loyalty.PredictService
 	var predictLBRepo *leaderboards.PredictSQLRepo
 	var predictLBService *leaderboards.PredictService
 	if walletDB := walletService.DB(); walletDB != nil {
-		predRepo = prediction.NewSQLRepository(walletDB)
+		predSQLRepo = prediction.NewSQLRepository(walletDB)
+		predRepo = predSQLRepo
 		slog.Info("prediction: SQL repository initialized")
 		predictLoyaltyService = loyalty.NewPredictService(loyalty.NewPredictSQLRepo(walletDB))
 		slog.Info("loyalty: Predict-native service initialized")
@@ -171,6 +177,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	registerSettlementRoutes(mux, predictionService)
 	registerDashboardRoutes(mux, predictionService)
 	registerDiscoverRoutes(mux, walletService.DB())
+	// Prediction-native admin read APIs (office /users + /audit-logs). Only
+	// registered when the SQL repo is live (DB present); the legacy
+	// sportsbook registerAdminRoutes in admin_handlers.go stays unwired.
+	if predSQLRepo != nil {
+		registerPredictionAdminRoutes(mux, predSQLRepo)
+		slog.Info("prediction: admin read routes registered (punters, audit-logs)")
+	}
 
 	// --- Feed Adapters & Background Workers ---
 	if predRepo != nil {
