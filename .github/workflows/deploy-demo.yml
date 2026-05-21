@@ -4,10 +4,14 @@ name: Deploy demo (Hetzner)
 # https://office.99rtp.io office) on push.
 #
 # Mirrors the validated manual flow exactly: rsync the app dir to the box,
-# rebuild the player AND office images ON the box, recreate both containers.
-# Office build+recreate runs in the same serialized job after player, so the
-# ~doubled on-box build time (two ~15-20 min builds on a 2-vCPU box) is
-# bounded by `concurrency` and `timeout-minutes` below.
+# rebuild the gateway, player AND office images ON the box, recreate each
+# container. The gateway (Go backend) is built+recreated FIRST so the
+# player/office health checks below validate end-to-end against the new
+# backend; if the gateway build or health check fails the run aborts before
+# touching the frontends. Go builds are layer-cache-friendly (deps cached
+# when go.mod/go.sum are unchanged) so the gateway step is typically far
+# shorter than the two ~15-20 min Next.js builds; total bounded by
+# `concurrency` and `timeout-minutes` below.
 # Does NOT run migrate/seed/sync-markets — those are one-time data ops, not
 # per-deploy. Market thumbnails live on the `market_images` Docker volume,
 # so `rsync --delete` is safe (it can't touch the volume).
@@ -36,7 +40,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 75   # two on-box builds (player + office), ~15-20 min each on this small box
+    timeout-minutes: 90   # gateway (Go, usually cached/fast) + two Next.js builds (~15-20 min each) on this small box
     steps:
       - uses: actions/checkout@v4
 
@@ -76,6 +80,46 @@ jobs:
           printf '%s' "$BACKOFFICE_BASIC_AUTH_HASH" | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
+
+      - name: Build gateway image on the box
+        # The Go gateway uses compose's `build:` directive (context
+        # ./go-platform, dockerfile services/gateway/Dockerfile) rather than
+        # a pre-tagged image like the frontends, so `docker compose build`
+        # is the right call. Built FIRST so the player/office health checks
+        # downstream validate against the new backend; a gateway compile
+        # failure aborts the whole run before any frontend is recreated.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              build gateway'
+
+      - name: Recreate gateway container
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate gateway'
+
+      - name: Health check (gateway)
+        run: |
+          # Probe the gateway directly on the box's published port (18080)
+          # rather than through Caddy — proves the Go process is actually
+          # serving, not just that the container is "running". The gateway
+          # needs longer than a frontend to come up (DB connect + workers),
+          # so allow ~120s. JWT_SECRET=unused is required for the compose
+          # `logs` call (it interpolates services.auth.environment.JWT_SECRET).
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            export JWT_SECRET=unused &&
+            for i in $(seq 1 24); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:18080/healthz || echo 000)
+              [ "$code" = "200" ] && { echo "gateway OK ($code)"; exit 0; }
+              echo "attempt $i: gateway /healthz=$code, retrying…"; sleep 5
+            done
+            echo "gateway did not return 200 from /healthz after recreate"
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 gateway || true
+            exit 1'
 
       - name: Build player image on the box
         run: |
