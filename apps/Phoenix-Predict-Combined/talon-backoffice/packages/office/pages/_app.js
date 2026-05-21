@@ -19,56 +19,6 @@ import "../styles/p8-tokens.css";
 import "../styles/p8-antd.css";
 import { defaultMenuItems } from "../providers/menu/defaults";
 
-// DEV-ONLY hydration-mismatch suppression. No-op in production (the guard
-// below). Two parts: quiet the console.error spam, and hide the Next.js dev
-// overlay that pops on every mismatch.
-//
-// Root cause (investigated 2026-05-21): the dominant source is timezone date
-// formatting. `useTimezone` (packages/utils/src/hooks/timezone) reads the
-// saved TZ from localStorage during render and falls back to dayjs.tz.guess()
-// on the server — so any cell formatted through getTimeWithTimezone renders
-// with the server TZ on the server and the browser/saved TZ on the client.
-// That's pervasive across every admin table with a date column, which is why
-// this is a blanket suppression rather than per-element suppressHydrationWarning.
-// A handful of non-date sources (e.g. the timezone label on /account/settings)
-// have been migrated to per-element suppressHydrationWarning directly.
-//
-// Proper fix (deferred — app-wide change, dev-only payoff): make useTimezone
-// mounted-aware (render UTC/undefined until mount, then switch) OR pin a single
-// SSR timezone and let the client reconcile, then drop this block. Tracked in
-// PLAN-antd-5-office-upgrade.md debt #3.
-if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-  // 1. Suppress console.error hydration messages
-  const origError = console.error;
-  console.error = (...args) => {
-    const msg = typeof args[0] === "string" ? args[0] : "";
-    if (
-      msg.includes("Text content does not match") ||
-      msg.includes("did not match") ||
-      msg.includes("Hydration failed") ||
-      msg.includes("server-rendered HTML")
-    ) {
-      return;
-    }
-    origError.apply(console, args);
-  };
-
-  // 2. Hide the Next.js dev error overlay entirely (hydration mismatches are cosmetic)
-  const observer = new MutationObserver(function (mutations) {
-    for (const m of mutations) {
-      for (const node of m.addedNodes) {
-        if (node.tagName === "NEXTJS-PORTAL") {
-          node.style.display = "none";
-        }
-      }
-    }
-  });
-  observer.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
-  });
-}
-
 // P8 theme (light cream) — replaces the prior dark menu/header.
 // Keys match what providers/menu/* and components/layout/* read off
 // the styled-components ThemeProvider downstream. See DESIGN.md §3 / §4.
