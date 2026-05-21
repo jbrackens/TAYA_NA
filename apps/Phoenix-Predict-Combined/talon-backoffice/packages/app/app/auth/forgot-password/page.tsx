@@ -7,7 +7,7 @@
 // and tells the user "check your email" when nothing was sent.
 import Link from "next/link";
 
-const SUPPORT_EMAIL = "support@hula.na";
+const SUPPORT_EMAIL = "support@hulana.com";
 
 export default function ForgotPasswordPage() {
   return (
