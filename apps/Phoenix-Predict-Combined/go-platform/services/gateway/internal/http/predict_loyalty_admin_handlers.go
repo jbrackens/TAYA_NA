@@ -16,16 +16,19 @@ import (
 //	GET  /api/v1/admin/loyalty/accounts?search=&tierCode=&page=&pageSize=  (list)
 //	GET  /api/v1/admin/loyalty/accounts/{playerId}?limit=                  (detail + ledger + tiers)
 //	POST /api/v1/admin/loyalty/adjustments                                 (manual points adjust)
-//	GET  /api/v1/admin/loyalty/config                                      (read-only tier config)
+//	GET  /api/v1/admin/loyalty/config                                      (DB-backed tier config)
+//	PUT  /api/v1/admin/loyalty/tiers/{tierCode}                            (edit one tier)
 //
 // The sportsbook equivalents in loyalty_handlers.go's registerLoyaltyRoutes are
 // only wired in the no-DB fallback branch (handlers.go), so on a real (DB)
 // deployment these were 404. Mirrors the GW-1 prediction-native pattern.
 //
-// Config is read-only: Predict tiers + the points formula are code constants
-// (loyalty/tiers.go), not DB-persisted, so there are no rules/tiers WRITE
-// endpoints. The office /loyalty/settings page loads + displays the tier table;
-// its mutation controls are inert until a persisted config model exists.
+// Tier config is DB-backed as of migration 021_loyalty_tier_config.sql: the
+// GET serves the persisted tier table and the PUT edits a tier in place so the
+// office /loyalty/settings save control is no longer inert. The `rules` array
+// stays empty (the Predict points formula has no DB-backed accrual-rule model —
+// it's the hardcoded loyalty/tiers.go formula); the accrual-rule editor on the
+// settings page remains a no-op surface.
 func registerPredictLoyaltyAdminRoutes(mux *stdhttp.ServeMux, service *loyalty.PredictService) {
 	if service == nil {
 		return
@@ -34,6 +37,7 @@ func registerPredictLoyaltyAdminRoutes(mux *stdhttp.ServeMux, service *loyalty.P
 		registerLoyaltyAdminAccounts(mux, base, service)
 		registerLoyaltyAdminAdjustments(mux, base, service)
 		registerLoyaltyAdminConfig(mux, base, service)
+		registerLoyaltyAdminTiers(mux, base, service)
 	}
 }
 
@@ -154,13 +158,69 @@ func registerLoyaltyAdminConfig(mux *stdhttp.ServeMux, base string, service *loy
 		if err := requireAdminRole(r); err != nil {
 			return err
 		}
-		// Read-only: Predict tier table is a code constant. `rules` is empty
-		// (no DB-backed accrual rules in the Predict model — the points formula
-		// is hardcoded in loyalty/tiers.go) and referralBonusPoints is 0.
+		// DB-backed tier config (migration 021). Falls back to the tiers.go
+		// constants when the table is empty. `rules` is empty (no DB-backed
+		// accrual-rule model — the points formula is hardcoded in
+		// loyalty/tiers.go) and referralBonusPoints is 0.
+		tiers, err := service.EditableTiers(r.Context())
+		if err != nil {
+			return httpx.Internal("failed to load loyalty config", err)
+		}
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"tiers":               service.AdminTiers(),
+			"tiers":               tiers,
 			"rules":               []any{},
 			"referralBonusPoints": 0,
+		})
+	}))
+}
+
+// registerLoyaltyAdminTiers wires the per-tier editor:
+//
+//	PUT /admin/loyalty/tiers/{tierCode}   (body = office LoyaltyTier shape)
+//
+// On success it returns { "tiers": [...] } — the full updated tier list — which
+// is what the office saveTier reads (data.tiers). Mirrors the GW-1
+// UpdatePunterStatus handler's "mutate then return refreshed view" shape.
+func registerLoyaltyAdminTiers(mux *stdhttp.ServeMux, base string, service *loyalty.PredictService) {
+	prefix := base + "/tiers/"
+	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPut {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+		}
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		tierCode := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
+		if tierCode == "" || strings.Contains(tierCode, "/") {
+			return httpx.NotFound("tier not found")
+		}
+
+		var body loyalty.EditableTier
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		if strings.TrimSpace(body.DisplayName) == "" {
+			return httpx.BadRequest("displayName is required", map[string]any{"field": "displayName"})
+		}
+		if body.MinLifetimePoints < 0 {
+			return httpx.BadRequest("minLifetimePoints must be non-negative", map[string]any{"field": "minLifetimePoints"})
+		}
+		if body.MinRolling30dPoints < 0 {
+			return httpx.BadRequest("minRolling30dPoints must be non-negative", map[string]any{"field": "minRolling30dPoints"})
+		}
+
+		tiers, err := service.UpdateTier(r.Context(), tierCode, body)
+		switch {
+		case err == loyalty.ErrTierConfigNotFound:
+			return httpx.NotFound("unknown tier code: " + tierCode)
+		case err == loyalty.ErrTierConfigUnsupported:
+			return httpx.NewError(stdhttp.StatusNotImplemented, "not_implemented",
+				"loyalty tier config is not editable on this deployment", nil, nil)
+		case err != nil:
+			return httpx.Internal("failed to update tier", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"tiers": tiers,
 		})
 	}))
 }
