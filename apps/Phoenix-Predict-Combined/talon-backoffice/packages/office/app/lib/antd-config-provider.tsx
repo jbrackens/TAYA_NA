@@ -65,6 +65,35 @@ const p8Theme: ThemeConfig = {
     fontFamily:
       'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
+
+  // P8 Layout component tokens.
+  // AntD v5 Layout.Header defaults headerBg to '#001529' (dark navy) in its
+  // CSS-in-JS token map (antd/lib/layout/style/index.js). Because v5 CSS-in-JS
+  // rules are injected at runtime they win by insertion order over any static
+  // class-selector override in p8-antd.css. Overriding here, at the token
+  // level, is the correct v5 escape hatch — it patches the CSS variable before
+  // the rule is written to the document, so there is no specificity race.
+  components: {
+    Layout: {
+      // Header chrome — cream surface matching the P8 backdrop.
+      headerBg: "var(--surface-1)",
+      // Sider chrome — also cream; aligns with the styled-component sidebar.
+      siderBg: "var(--surface-1)",
+      // Page body — deep cream backdrop (matches colorBgLayout above).
+      bodyBg: "var(--bg-deep)",
+    },
+    // Same v5 CSS-in-JS escape hatch as Layout above: the Table header cell
+    // background is injected at runtime and was winning over the static
+    // p8-antd.css `.ant-table-thead th` rule (rendering black header cells).
+    // Patch the tokens here so AntD emits the cream values directly.
+    Table: {
+      headerBg: "var(--surface-2)",
+      headerColor: "var(--t2)",
+      colorBgContainer: "var(--surface-1)",
+      rowHoverBg: "var(--surface-2)",
+      borderColor: "var(--border-1)",
+    },
+  },
 };
 
 export default function AntdConfigProvider({

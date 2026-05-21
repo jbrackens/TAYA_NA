@@ -29,7 +29,13 @@
 }
 
 .ant-layout-header {
-  background: var(--surface-1);
+  /* !important beats the AntD v5 CSS-in-JS injected rule (#001529 default)
+   * which wins by insertion order over static stylesheets at equal specificity.
+   * The ConfigProvider components.Layout.headerBg token override in
+   * app/lib/antd-config-provider.tsx is the primary fix; this rule is a
+   * belt-and-suspenders guard for any SSR/hydration window before the
+   * CSS-in-JS style tag is written. */
+  background: var(--surface-1) !important;
   border-bottom: 1px solid var(--border-1);
   color: var(--t1);
   height: 64px;
@@ -165,7 +171,7 @@ textarea.ant-input::placeholder {
   border-radius: var(--r-rh-md);
 }
 .ant-table-thead > tr > th {
-  background: var(--surface-2);
+  background: var(--surface-2) !important;
   color: var(--t2);
   border-bottom: 1px solid var(--border-1);
   font-weight: 600;
