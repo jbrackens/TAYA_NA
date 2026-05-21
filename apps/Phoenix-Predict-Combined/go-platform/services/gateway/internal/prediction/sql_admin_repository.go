@@ -144,6 +144,60 @@ func (r *SQLRepository) ListPuntersAdmin(
 	return items, meta, nil
 }
 
+// GetAdminPunter returns a single punter by id for the admin detail page, or
+// (nil, nil) when not found so the handler can 404 cleanly.
+func (r *SQLRepository) GetAdminPunter(ctx context.Context, id string) (*AdminPunter, error) {
+	row := r.db.QueryRowContext(ctx, `
+		SELECT id, email, username, status, country_code, created_at, last_login_at
+		FROM punters
+		WHERE id = $1`, id)
+	return scanAdminPunter(row)
+}
+
+// UpdatePunterStatus sets a punter's status and returns the updated row.
+// Returns (nil, nil) if the id doesn't exist.
+func (r *SQLRepository) UpdatePunterStatus(ctx context.Context, id, status string) (*AdminPunter, error) {
+	row := r.db.QueryRowContext(ctx, `
+		UPDATE punters SET status = $2, updated_at = now()
+		WHERE id = $1
+		RETURNING id, email, username, status, country_code, created_at, last_login_at`,
+		id, status)
+	return scanAdminPunter(row)
+}
+
+// scanAdminPunter scans one punter row (shared by GetAdminPunter +
+// UpdatePunterStatus). Returns (nil, nil) on no rows.
+func scanAdminPunter(row interface{ Scan(...any) error }) (*AdminPunter, error) {
+	var (
+		p           AdminPunter
+		username    sql.NullString
+		countryCode sql.NullString
+		createdAt   sql.NullTime
+		lastLoginAt sql.NullTime
+	)
+	err := row.Scan(&p.ID, &p.Email, &username, &p.Status, &countryCode, &createdAt, &lastLoginAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if username.Valid {
+		p.Username = &username.String
+	}
+	if countryCode.Valid {
+		p.CountryCode = &countryCode.String
+	}
+	if createdAt.Valid {
+		p.CreatedAt = createdAt.Time.UTC().Format("2006-01-02T15:04:05Z07:00")
+	}
+	if lastLoginAt.Valid {
+		s := lastLoginAt.Time.UTC().Format("2006-01-02T15:04:05Z07:00")
+		p.LastLoginAt = &s
+	}
+	return &p, nil
+}
+
 // ListAuditLogsAdmin returns a paginated audit-log list for the admin
 // audit-logs page, newest first.
 func (r *SQLRepository) ListAuditLogsAdmin(

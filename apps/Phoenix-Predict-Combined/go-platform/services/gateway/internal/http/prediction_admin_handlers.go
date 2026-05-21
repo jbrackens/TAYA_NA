@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	stdhttp "net/http"
 	"strconv"
 	"strings"
@@ -17,7 +18,17 @@ import (
 // add two read methods.
 type predictionAdminReader interface {
 	ListPuntersAdmin(ctx context.Context, filter prediction.AdminPunterFilter, page, pageSize int) ([]prediction.AdminPunter, prediction.PageMeta, error)
+	GetAdminPunter(ctx context.Context, id string) (*prediction.AdminPunter, error)
+	UpdatePunterStatus(ctx context.Context, id, status string) (*prediction.AdminPunter, error)
 	ListAuditLogsAdmin(ctx context.Context, filter prediction.AdminAuditLogFilter, page, pageSize int) ([]prediction.AdminAuditLog, prediction.PageMeta, error)
+}
+
+// allowedPunterAdminStatuses gates the status values the office can set.
+var allowedPunterAdminStatuses = map[string]struct{}{
+	"active":       {},
+	"suspended":    {},
+	"self_excluded": {},
+	"deactivated":  {},
 }
 
 // registerPredictionAdminRoutes wires the prediction-native admin read APIs
@@ -34,8 +45,84 @@ type predictionAdminReader interface {
 func registerPredictionAdminRoutes(mux *stdhttp.ServeMux, repo predictionAdminReader) {
 	registerAdminPuntersList(mux, "/api/v1/admin/punters", repo)
 	registerAdminPuntersList(mux, "/admin/punters", repo)
+	registerAdminPunterDetail(mux, "/api/v1/admin/punters/", repo)
+	registerAdminPunterDetail(mux, "/admin/punters/", repo)
 	registerAdminAuditLogsList(mux, "/api/v1/admin/audit-logs", repo)
 	registerAdminAuditLogsList(mux, "/admin/audit-logs", repo)
+}
+
+// registerAdminPunterDetail handles the /punters/{id} subtree for the office
+// /users/[id] page:
+//
+//	GET /punters/{id}          → detail
+//	PUT /punters/{id}/status   → suspend/activate
+//
+// The page also exposes reset-password / risk-segment / limits / notes
+// buttons. Those are responsible-gambling + CRM features with no prediction-
+// side data model yet, so they return 501 with a clear message rather than
+// faking success (CLAUDE.md rule #7).
+func registerAdminPunterDetail(mux *stdhttp.ServeMux, prefix string, repo predictionAdminReader) {
+	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
+		if rest == "" {
+			return httpx.NotFound("punter not found")
+		}
+		parts := strings.Split(rest, "/")
+		id := parts[0]
+
+		// /punters/{id} — detail.
+		if len(parts) == 1 {
+			if r.Method != stdhttp.MethodGet {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+			}
+			p, err := repo.GetAdminPunter(r.Context(), id)
+			if err != nil {
+				return httpx.Internal("failed to load punter", err)
+			}
+			if p == nil {
+				return httpx.NotFound("punter not found")
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, p)
+		}
+
+		// /punters/{id}/{action}.
+		action := parts[1]
+		switch action {
+		case "status":
+			if r.Method != stdhttp.MethodPut {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPut)
+			}
+			var body struct {
+				Status string `json:"status"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid request body", nil)
+			}
+			status := strings.TrimSpace(strings.ToLower(body.Status))
+			if _, ok := allowedPunterAdminStatuses[status]; !ok {
+				return httpx.BadRequest(
+					"status must be one of active, suspended, self_excluded, deactivated",
+					map[string]any{"field": "status", "value": body.Status},
+				)
+			}
+			p, err := repo.UpdatePunterStatus(r.Context(), id, status)
+			if err != nil {
+				return httpx.Internal("failed to update punter status", err)
+			}
+			if p == nil {
+				return httpx.NotFound("punter not found")
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, p)
+		case "reset-password", "risk-segment", "limits", "notes":
+			return httpx.NewError(stdhttp.StatusNotImplemented, "not_implemented",
+				action+" is not available on the prediction platform yet", nil, nil)
+		default:
+			return httpx.NotFound("punter route not found")
+		}
+	}))
 }
 
 func registerAdminPuntersList(mux *stdhttp.ServeMux, path string, repo predictionAdminReader) {

@@ -10,7 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"phoenix-revival/gateway/internal/bonus"
 	"phoenix-revival/gateway/internal/compliance"
+	"phoenix-revival/gateway/internal/content"
+	"phoenix-revival/gateway/internal/events"
 	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
 	"phoenix-revival/gateway/internal/payments"
@@ -305,9 +308,34 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// wired, sportsbook in-memory handlers otherwise.
 	if predictLBService != nil {
 		registerPredictLeaderboardRoutes(mux, predictLBService)
+		// Office /leaderboards admin page. Predict-native admin list/entries
+		// (the sportsbook admin leaderboard routes live in the else branch).
+		registerPredictLeaderboardAdminRoutes(mux, predictLBService)
 	} else {
 		registerLeaderboardRoutes(mux, leaderboards.NewServiceFromEnv())
 	}
+
+	// --- Content / Banners CMS + Campaigns / Bonuses ---
+	// Both are DB-backed, domain-agnostic services (content_pages/banners and
+	// campaigns/player_bonuses tables, migrations 011 + 012) whose handlers
+	// already cover the office /content + /campaigns admin pages — they just
+	// were never wired into RegisterRoutes. Public delivery routes
+	// (/api/v1/content/, /api/v1/banners) come along for the player app.
+	// The bonus service's optional FreebetGranter is deliberately NOT set:
+	// freebet/odds-boost issuance is a sportsbook concept (CLAUDE.md rule #2);
+	// campaigns/bonuses CRUD works without it.
+	if walletDB := walletService.DB(); walletDB != nil {
+		registerContentRoutes(mux, content.NewService(walletDB))
+		bonusSvc := bonus.NewService(bonus.NewRepository(walletDB), walletService, events.NewBus())
+		registerBonusRoutes(mux, bonusSvc)
+		slog.Info("content + bonus admin routes registered")
+	}
+
+	// --- Reports aggregates (office /reports page) ---
+	// Wallet reconciliation is real; promo/feed/config are minimal/honest-zero
+	// for the prediction domain (the page is sportsbook-shaped). Leaderboard
+	// analytics on the same page use the admin leaderboard routes above.
+	registerReportsRoutes(mux, walletService)
 
 	// --- Auth Proxy (kept from sportsbook) ---
 	registerAuthProxy(mux)
