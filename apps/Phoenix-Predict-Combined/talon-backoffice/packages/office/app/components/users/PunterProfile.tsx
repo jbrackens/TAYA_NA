@@ -146,10 +146,31 @@ export interface PunterProfileData {
   unrealizedPnl: number;
 }
 
+export interface SettlementRow {
+  id: string;
+  marketId: string;
+  side: string;
+  quantity: number;
+  pnlCents: number;
+  payoutCents: number;
+  paidAt: string;
+}
+
+export interface WalletLedgerRow {
+  entryId: string;
+  type: string;
+  amountCents: number;
+  balanceCents: number;
+  reason?: string;
+  transactionTime: string;
+}
+
 interface PunterProfileProps {
   punter?: PunterProfileData;
   onAction?: (action: string, data?: Record<string, unknown>) => void;
   actionsAvailable?: boolean;
+  settlements?: SettlementRow[];
+  walletLedger?: WalletLedgerRow[];
 }
 
 const money = (n: number) =>
@@ -158,10 +179,37 @@ const money = (n: number) =>
     maximumFractionDigits: 2,
   });
 
+const cents = (c: number) => `$${money(c / 100)}`;
+const signedCents = (c: number) =>
+  `${c < 0 ? "-" : "+"}$${money(Math.abs(c) / 100)}`;
+const fmtDate = (iso: string) => (iso ? new Date(iso).toLocaleString() : "—");
+
+const HistTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+`;
+const HistTh = styled.th`
+  text-align: left;
+  padding: 8px 10px;
+  color: var(--t2, #4a4a4a);
+  border-bottom: 1px solid var(--border-1, #e5dfd2);
+  font-weight: 600;
+  white-space: nowrap;
+`;
+const HistTd = styled.td`
+  padding: 8px 10px;
+  color: var(--t1, #1a1a1a);
+  border-bottom: 1px solid var(--border-1, #e5dfd2);
+  white-space: nowrap;
+`;
+
 export function PunterProfile({
   punter,
   onAction,
   actionsAvailable = true,
+  settlements = [],
+  walletLedger = [],
 }: PunterProfileProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -338,7 +386,7 @@ export function PunterProfile({
               $active={activeTab === "bets"}
               onClick={() => setActiveTab("bets")}
             >
-              Recent Bets
+              Trade History
             </TabButton>
             <TabButton
               $active={activeTab === "wallet"}
@@ -364,9 +412,45 @@ export function PunterProfile({
           {activeTab === "bets" && (
             <TabContent>
               <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
-                Recent Bets
+                Trade History
               </h4>
-              <p>Bet history table would be displayed here.</p>
+              {settlements.length === 0 ? (
+                <p>No settled trades yet.</p>
+              ) : (
+                <HistTable>
+                  <thead>
+                    <tr>
+                      <HistTh>Market</HistTh>
+                      <HistTh>Side</HistTh>
+                      <HistTh>Qty</HistTh>
+                      <HistTh>P&L</HistTh>
+                      <HistTh>Payout</HistTh>
+                      <HistTh>Settled</HistTh>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {settlements.map((s) => (
+                      <tr key={s.id}>
+                        <HistTd>{s.marketId.slice(0, 8)}</HistTd>
+                        <HistTd>{s.side.toUpperCase()}</HistTd>
+                        <HistTd>{s.quantity.toLocaleString()}</HistTd>
+                        <HistTd
+                          style={{
+                            color:
+                              s.pnlCents < 0
+                                ? "var(--no-text, #a8472d)"
+                                : "var(--accent-lo, #1fa65e)",
+                          }}
+                        >
+                          {signedCents(s.pnlCents)}
+                        </HistTd>
+                        <HistTd>{cents(s.payoutCents)}</HistTd>
+                        <HistTd>{fmtDate(s.paidAt)}</HistTd>
+                      </tr>
+                    ))}
+                  </tbody>
+                </HistTable>
+              )}
             </TabContent>
           )}
           {activeTab === "wallet" && (
@@ -374,7 +458,42 @@ export function PunterProfile({
               <h4 style={{ color: "var(--t1, #1a1a1a)", marginTop: 0 }}>
                 Wallet & Transactions
               </h4>
-              <p>Transaction history would be displayed here.</p>
+              {walletLedger.length === 0 ? (
+                <p>No wallet transactions yet.</p>
+              ) : (
+                <HistTable>
+                  <thead>
+                    <tr>
+                      <HistTh>Type</HistTh>
+                      <HistTh>Amount</HistTh>
+                      <HistTh>Balance</HistTh>
+                      <HistTh>Reason</HistTh>
+                      <HistTh>Time</HistTh>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {walletLedger.map((e) => (
+                      <tr key={e.entryId}>
+                        <HistTd>{e.type}</HistTd>
+                        <HistTd
+                          style={{
+                            color:
+                              e.type.toLowerCase() === "debit"
+                                ? "var(--no-text, #a8472d)"
+                                : "var(--accent-lo, #1fa65e)",
+                          }}
+                        >
+                          {e.type.toLowerCase() === "debit" ? "-" : "+"}$
+                          {money(Math.abs(e.amountCents) / 100)}
+                        </HistTd>
+                        <HistTd>{cents(e.balanceCents)}</HistTd>
+                        <HistTd>{e.reason || "—"}</HistTd>
+                        <HistTd>{fmtDate(e.transactionTime)}</HistTd>
+                      </tr>
+                    ))}
+                  </tbody>
+                </HistTable>
+              )}
             </TabContent>
           )}
         </ContentArea>

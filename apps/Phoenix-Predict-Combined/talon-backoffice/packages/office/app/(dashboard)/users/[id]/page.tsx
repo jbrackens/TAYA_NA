@@ -4,6 +4,10 @@ export const dynamic = "force-dynamic";
 
 import styled from "styled-components";
 import { PunterProfile, AccountActions } from "../../../components/users";
+import type {
+  SettlementRow,
+  WalletLedgerRow,
+} from "../../../components/users/PunterProfile";
 import {
   ErrorBoundary,
   LoadingSpinner,
@@ -136,6 +140,8 @@ function UserDetailPageContent() {
   const punterId = params?.id as string;
   const [punter, setPunter] = useState<PunterProfileData | null>(null);
   const [notes, setNotes] = useState<PunterNote[]>([]);
+  const [settlements, setSettlements] = useState<SettlementRow[]>([]);
+  const [walletLedger, setWalletLedger] = useState<WalletLedgerRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -159,6 +165,26 @@ function UserDetailPageContent() {
     }
   };
 
+  // History is secondary data — failures here must not blank the whole page.
+  const loadHistory = async () => {
+    try {
+      const [sRes, wRes] = await Promise.all([
+        adminFetch(`/api/v1/admin/punters/${punterId}/settlements`),
+        adminFetch(`/api/v1/admin/punters/${punterId}/wallet`),
+      ]);
+      if (sRes.ok) {
+        const d = await sRes.json();
+        setSettlements(Array.isArray(d?.items) ? d.items : []);
+      }
+      if (wRes.ok) {
+        const d = await wRes.json();
+        setWalletLedger(Array.isArray(d?.items) ? d.items : []);
+      }
+    } catch {
+      // ignore — Trade History / Wallet tabs just stay empty
+    }
+  };
+
   useEffect(() => {
     const fetchPunter = async () => {
       try {
@@ -166,6 +192,7 @@ function UserDetailPageContent() {
         setError(null);
         await loadPunter();
         await loadNotes();
+        await loadHistory();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load user");
       } finally {
@@ -288,6 +315,8 @@ function UserDetailPageContent() {
             punter={punter}
             onAction={handleAction}
             actionsAvailable={!isUpdatingStatus}
+            settlements={settlements}
+            walletLedger={walletLedger}
           />
         </div>
 
