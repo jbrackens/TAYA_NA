@@ -143,6 +143,7 @@ export interface PunterProfileData {
   openPositions: number;
   accuracyPct: number;
   pnl: number;
+  unrealizedPnl: number;
 }
 
 interface PunterProfileProps {
@@ -248,8 +249,22 @@ export function PunterProfile({
                     : "var(--no-text, #a8472d)",
               }}
             >
-              {punter.pnl >= 0 ? "+" : ""}$
+              {punter.pnl < 0 ? "-" : "+"}$
               {Math.abs(punter.pnl).toLocaleString()}
+            </InfoValue>
+          </InfoRow>
+          <InfoRow>
+            <InfoLabel>Unrealized P&L</InfoLabel>
+            <InfoValue
+              style={{
+                color:
+                  punter.unrealizedPnl >= 0
+                    ? "var(--accent-lo, #1fa65e)"
+                    : "var(--no-text, #a8472d)",
+              }}
+            >
+              {punter.unrealizedPnl < 0 ? "-" : "+"}$
+              {Math.abs(punter.unrealizedPnl).toLocaleString()}
             </InfoValue>
           </InfoRow>
 

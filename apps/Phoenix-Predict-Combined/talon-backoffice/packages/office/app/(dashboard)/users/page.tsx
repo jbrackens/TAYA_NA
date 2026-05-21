@@ -23,7 +23,7 @@ interface PunterData {
   name: string;
   email: string;
   lastActivity: string;
-  totalBets: number;
+  balance: number;
   pnl: number;
   status: "active" | "suspended" | "inactive";
   riskSegment: "low" | "medium" | "high";
@@ -73,8 +73,8 @@ function UsersPageContent() {
             name: toDisplayName(item.email),
             email: item.email,
             lastActivity: item.lastLoginAt || "Never",
-            totalBets: 0,
-            pnl: 0,
+            balance: (item.walletBalanceCents ?? 0) / 100,
+            pnl: (item.realizedPnlCents ?? 0) / 100,
             status: toUserStatus(item.status),
             riskSegment: toRiskSegment(item.status),
           })),
@@ -112,8 +112,8 @@ function UsersPageContent() {
             name: toDisplayName(item.email),
             email: item.email,
             lastActivity: item.lastLoginAt || "Never",
-            totalBets: 0,
-            pnl: 0,
+            balance: (item.walletBalanceCents ?? 0) / 100,
+            pnl: (item.realizedPnlCents ?? 0) / 100,
             status: toUserStatus(item.status),
             riskSegment: toRiskSegment(item.status),
           })),

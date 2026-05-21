@@ -87,7 +87,7 @@ export interface PunterData {
   email: string;
   status: "active" | "suspended" | "inactive";
   riskSegment: "low" | "medium" | "high";
-  totalBets: number;
+  balance: number;
   pnl: number;
   lastActivity: string;
 }
@@ -183,10 +183,10 @@ export function PunterSearch({
       ),
     },
     {
-      key: "totalBets",
-      label: "Total Bets",
+      key: "balance",
+      label: "Balance",
       sortable: true,
-      render: (value) => value.toLocaleString(),
+      render: (value) => `$${value.toLocaleString()}`,
     },
     {
       key: "pnl",
@@ -202,7 +202,7 @@ export function PunterSearch({
             fontWeight: "600",
           }}
         >
-          {value >= 0 ? "+" : ""}${Math.abs(value).toLocaleString()}
+          {value < 0 ? "-" : "+"}${Math.abs(value).toLocaleString()}
         </span>
       ),
     },

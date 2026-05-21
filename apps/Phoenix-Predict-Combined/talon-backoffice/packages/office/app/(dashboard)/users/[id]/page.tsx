@@ -82,6 +82,7 @@ interface PunterProfileData {
   openPositions: number;
   accuracyPct: number;
   pnl: number;
+  unrealizedPnl: number;
   verificationStatus: "verified" | "pending" | "failed";
 }
 
@@ -126,6 +127,7 @@ const mapPunter = (data: any): PunterProfileData => ({
   openPositions: data.portfolio?.openPositions ?? 0,
   accuracyPct: data.portfolio?.accuracyPct ?? 0,
   pnl: (data.portfolio?.realizedPnlCents ?? 0) / 100,
+  unrealizedPnl: (data.portfolio?.unrealizedPnlCents ?? 0) / 100,
   verificationStatus: data.status === "active" ? "verified" : "pending",
 });
 
