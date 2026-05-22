@@ -19,58 +19,11 @@ type walletMutationRequest struct {
 }
 
 func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
-	mux.Handle("/api/v1/wallet/credit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
-		}
-
-		request, err := decodeWalletMutationRequest(r)
-		if err != nil {
-			return err
-		}
-
-		entry, err := service.Credit(wallet.MutationRequest{
-			UserID:         request.UserID,
-			AmountCents:    request.AmountCents,
-			IdempotencyKey: request.IdempotencyKey,
-			Reason:         request.Reason,
-		})
-		if err != nil {
-			return mapWalletError(err)
-		}
-
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"entry":        entry,
-			"balanceCents": entry.BalanceCents,
-		})
-	}))
-
-	mux.Handle("/api/v1/wallet/debit", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
-		}
-
-		request, err := decodeWalletMutationRequest(r)
-		if err != nil {
-			return err
-		}
-
-		entry, err := service.Debit(wallet.MutationRequest{
-			UserID:         request.UserID,
-			AmountCents:    request.AmountCents,
-			IdempotencyKey: request.IdempotencyKey,
-			Reason:         request.Reason,
-		})
-		if err != nil {
-			return mapWalletError(err)
-		}
-
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"entry":        entry,
-			"balanceCents": entry.BalanceCents,
-		})
-	}))
-
+	// Money movement happens through the in-process WalletAdapter used by the
+	// order and settlement paths; admin balance adjustments go through the
+	// admin-gated /api/v1/admin/wallet/{credit,debit} routes. There is
+	// deliberately no public credit/debit endpoint — a session alone must
+	// never be able to move funds.
 	mux.Handle("/api/v1/wallet/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if r.Method != stdhttp.MethodGet {
 			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
@@ -96,10 +49,10 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 		if len(parts) == 2 && parts[1] == "breakdown" {
 			breakdown := service.BalanceWithBreakdown(userID)
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-				"realMoneyCents":   breakdown.RealMoneyCents,
-				"bonusFundCents":   breakdown.BonusFundCents,
-				"totalCents":       breakdown.TotalCents,
-				"currency":         "USD",
+				"realMoneyCents": breakdown.RealMoneyCents,
+				"bonusFundCents": breakdown.BonusFundCents,
+				"totalCents":     breakdown.TotalCents,
+				"currency":       "USD",
 			})
 		}
 

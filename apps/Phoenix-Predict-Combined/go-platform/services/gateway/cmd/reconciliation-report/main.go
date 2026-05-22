@@ -145,7 +145,7 @@ func runCase(tc fixtureCase) caseResult {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	seedBody := fmt.Sprintf(`{"userId":"%s","amountCents":%d,"idempotencyKey":"seed-%s"}`, tc.UserID, tc.SeedCents, tc.Name)
-	if status, body := issueJSON(handler, http.MethodPost, "/api/v1/wallet/credit", seedBody, false); status != http.StatusOK {
+	if status, body := issueJSON(handler, http.MethodPost, "/api/v1/admin/wallet/credit", seedBody, true); status != http.StatusOK {
 		result.Passed = false
 		result.FailNotes = append(result.FailNotes, fmt.Sprintf("seed credit status=%d body=%s", status, body))
 		return result
@@ -544,7 +544,7 @@ func issueJSON(handler http.Handler, method, path, body string, admin bool) (int
 func issueJSONWithHeaders(handler http.Handler, method, path, body string, admin bool, headers map[string]string) (int, string) {
 	req := httptest.NewRequest(method, path, strings.NewReader(body))
 	if admin {
-		req.Header.Set("X-Admin-Role", "admin")
+		req = req.WithContext(httpx.WithTestUser(req.Context(), "reconciliation-report", "reconciliation-report", "admin"))
 	}
 	for key, value := range headers {
 		req.Header.Set(key, value)

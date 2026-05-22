@@ -20,6 +20,21 @@ type SettlementEngine struct {
 	// parent Service via SetMetrics so a settle records a counter. nil is
 	// safe — the Record* helpers no-op.
 	metrics *Metrics
+	// Optional settlement audit recorder. nil disables auditing. The concrete
+	// implementation lives in internal/http (same decoupling rationale as
+	// WalletAdapter — keeps the prediction package transport-agnostic).
+	auditor SettlementAuditor
+	// Optional resolution store for the propose -> finalize seam (ADR-0003/0004).
+	// nil disables ProposeResolution/FinalizeResolution; ResolveMarket (the
+	// immediate path) is unaffected. Concrete impl is wired in internal/http.
+	resolutions ResolutionStore
+}
+
+// SettlementAuditor records an audit-log entry for a completed settlement,
+// whether admin-triggered or resolved by the AutoSettler. Optional; a nil
+// auditor disables auditing.
+type SettlementAuditor interface {
+	RecordSettlement(actorID, marketID string, details map[string]any)
 }
 
 // TierPromotedHandler is a post-commit callback invoked once per user whose
@@ -58,18 +73,308 @@ func (s *SettlementEngine) SetMarketLifecycleHandler(fn MarketLifecycleHandler) 
 	s.onMarketLifecycle = fn
 }
 
-// ResolveMarket settles a market with the given result and attestation.
+// SetSettlementAuditor wires the optional settlement audit recorder. Pass nil
+// to disable.
+func (s *SettlementEngine) SetSettlementAuditor(a SettlementAuditor) {
+	s.auditor = a
+}
+
+// SetResolutionStore wires the optional propose -> finalize resolution store.
+// Pass nil to disable the windowed path.
+func (s *SettlementEngine) SetResolutionStore(store ResolutionStore) {
+	s.resolutions = store
+}
+
+// ProposeResolution records a proposed result for a closed market and moves it
+// into the challenge window (status proposed_resolution). Payouts are NOT
+// credited until FinalizeResolution. Requires a configured ResolutionStore.
+func (s *SettlementEngine) ProposeResolution(ctx context.Context, req ResolveMarketRequest, marketID string, proposedBy *string, window time.Duration) (*ResolutionProposal, error) {
+	if s.resolutions == nil {
+		return nil, fmt.Errorf("resolution store not configured")
+	}
+	market, err := s.repo.GetMarket(ctx, marketID)
+	if err != nil {
+		return nil, fmt.Errorf("get market: %w", err)
+	}
+	if market.Status != MarketStatusClosed {
+		return nil, fmt.Errorf("market %s is not closed (status: %s), cannot propose", market.Ticker, market.Status)
+	}
+	if window <= 0 {
+		window = DefaultChallengeWindow
+	}
+
+	var digest *string
+	if req.AttestationData != nil {
+		h := sha256.Sum256(req.AttestationData)
+		d := fmt.Sprintf("%x", h)
+		digest = &d
+	}
+	now := time.Now().UTC()
+	proposal := &ResolutionProposal{
+		MarketID:          marketID,
+		Result:            req.Result,
+		Status:            "proposed",
+		AttestationSource: req.AttestationSource,
+		AttestationID:     req.AttestationID,
+		AttestationDigest: digest,
+		AttestationData:   defaultJSONObject(req.AttestationData),
+		ProposedBy:        proposedBy,
+		ChallengeEndsAt:   now.Add(window),
+		ProposedAt:        now,
+	}
+	if err := s.resolutions.CreateProposal(ctx, proposal); err != nil {
+		return nil, fmt.Errorf("create resolution proposal: %w", err)
+	}
+
+	result := req.Result
+	market.Result = &result
+	if err := TransitionMarket(market, MarketStatusProposedResolution); err != nil {
+		return nil, fmt.Errorf("transition market: %w", err)
+	}
+	if err := s.repo.UpdateMarket(ctx, market); err != nil {
+		return nil, fmt.Errorf("update market: %w", err)
+	}
+
+	lifecycle := &LifecycleEvent{
+		MarketID:   marketID,
+		EventType:  string(MarketStatusProposedResolution),
+		ActorID:    proposedBy,
+		ActorType:  actorType(proposedBy),
+		OccurredAt: now,
+	}
+	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
+	s.fireMarketLifecycle(market, lifecycle)
+	return proposal, nil
+}
+
+// FinalizeResolution finalizes a proposed resolution once the challenge window
+// has elapsed and no dispute is open: it credits payouts and settles the market
+// (reusing ResolveMarket). Idempotency for payouts is handled by the existing
+// per-position idempotency keys.
+func (s *SettlementEngine) FinalizeResolution(ctx context.Context, marketID string, finalizedBy *string) (*Settlement, []Payout, error) {
+	if s.resolutions == nil {
+		return nil, nil, fmt.Errorf("resolution store not configured")
+	}
+	proposal, err := s.resolutions.GetActiveProposal(ctx, marketID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get resolution proposal: %w", err)
+	}
+	if proposal == nil {
+		return nil, nil, fmt.Errorf("no active resolution proposal for market %s", marketID)
+	}
+
+	// Reconcile a proposal stranded on an already-terminal market (e.g. the
+	// market was voided by an upheld dispute or settled out-of-band): void the
+	// proposal so the auto-finalizer stops retrying it forever, then bail.
+	if market, merr := s.repo.GetMarket(ctx, marketID); merr == nil && IsTerminal(market.Status) {
+		_ = s.resolutions.MarkProposalVoided(ctx, marketID)
+		return nil, nil, fmt.Errorf("market %s is already %s; proposal reconciled", marketID, market.Status)
+	}
+
+	// Dual-control (ADR-0003 #5): a human finalizer must differ from the
+	// proposer. The automated path (finalizedBy == nil) is exempt — it only
+	// finalizes system-proposed resolutions (ListFinalizableProposals filters
+	// proposed_by IS NULL), so a self-approval is impossible there.
+	if finalizedBy != nil && proposal.ProposedBy != nil && *finalizedBy == *proposal.ProposedBy {
+		return nil, nil, fmt.Errorf("dual-control: the finalizing admin must differ from the proposer")
+	}
+	if time.Now().UTC().Before(proposal.ChallengeEndsAt) {
+		return nil, nil, fmt.Errorf("challenge window for market %s has not elapsed", marketID)
+	}
+	if openDisputes, derr := s.resolutions.CountOpenDisputes(ctx, marketID); derr != nil {
+		return nil, nil, fmt.Errorf("count open disputes: %w", derr)
+	} else if openDisputes > 0 {
+		return nil, nil, fmt.Errorf("market %s has %d open dispute(s); cannot finalize", marketID, openDisputes)
+	}
+
+	// Claim the proposal before paying: the proposed -> finalized compare-and-
+	// swap means only one finalizer (a second admin, another replica, or the
+	// AutoSettler) wins. A loser sees claimed == false and stops, so payouts
+	// execute exactly once.
+	claimed, err := s.resolutions.MarkProposalFinalized(ctx, marketID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("claim resolution proposal: %w", err)
+	}
+	if !claimed {
+		return nil, nil, fmt.Errorf("resolution for market %s is already being finalized", marketID)
+	}
+
+	// Re-check disputes after the claim to shrink the file-dispute-then-finalize
+	// race. (Full closure needs a row-locked tx around check+pay; tracked as a
+	// production-hardening item.) Reopen the claim if a late dispute appears.
+	if openDisputes, derr := s.resolutions.CountOpenDisputes(ctx, marketID); derr != nil || openDisputes > 0 {
+		_ = s.resolutions.ReopenProposal(ctx, marketID)
+		if derr != nil {
+			return nil, nil, fmt.Errorf("re-check open disputes: %w", derr)
+		}
+		return nil, nil, fmt.Errorf("market %s has %d open dispute(s); cannot finalize", marketID, openDisputes)
+	}
+
+	settlement, payouts, err := s.resolveMarket(ctx, ResolveMarketRequest{
+		Result:            proposal.Result,
+		AttestationSource: proposal.AttestationSource,
+		AttestationID:     proposal.AttestationID,
+		AttestationData:   proposal.AttestationData,
+	}, marketID, finalizedBy, true)
+	if err != nil {
+		// Settle failed after we claimed the proposal — revert the claim so the
+		// funds aren't stranded; a later tick or admin can retry.
+		_ = s.resolutions.ReopenProposal(ctx, marketID)
+		return nil, nil, err
+	}
+	return settlement, payouts, nil
+}
+
+// MarkMarketDisputed moves a market from proposed_resolution to disputed when
+// the first dispute is filed, so the state is visible to users and ops. It is
+// idempotent and best-effort: a no-op when the market is not in
+// proposed_resolution (already disputed, settled, or no longer disputable).
+// The finalize gate itself is CountOpenDisputes, not this status — so a missed
+// transition never lets a disputed market settle.
+func (s *SettlementEngine) MarkMarketDisputed(ctx context.Context, marketID, disputerID string) error {
+	market, err := s.repo.GetMarket(ctx, marketID)
+	if err != nil {
+		return fmt.Errorf("get market: %w", err)
+	}
+	if market.Status != MarketStatusProposedResolution {
+		return nil
+	}
+	if err := TransitionMarket(market, MarketStatusDisputed); err != nil {
+		return fmt.Errorf("transition market: %w", err)
+	}
+	if err := s.repo.UpdateMarket(ctx, market); err != nil {
+		return fmt.Errorf("update market: %w", err)
+	}
+	actor := disputerID
+	lifecycle := &LifecycleEvent{
+		MarketID:   marketID,
+		EventType:  string(MarketStatusDisputed),
+		ActorID:    &actor,
+		ActorType:  "user",
+		OccurredAt: time.Now().UTC(),
+	}
+	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
+	s.fireMarketLifecycle(market, lifecycle)
+	return nil
+}
+
+// ResolveDispute records an admin decision on a dispute (ADR-0004 review queue).
+//
+//	uphold=true  → the proposed result was wrong: VOID the market (refund stakes,
+//	               no clawback since payouts were held) and terminate the
+//	               proposal so the auto-finalizer skips it. Every open dispute on
+//	               the market is marked upheld — the void vindicates all of them.
+//	uphold=false → reject this dispute as without merit; the market stays
+//	               disputed until all open disputes clear, then finalize settles.
+//
+// Dual-control: the reviewing admin must differ from the resolution proposer.
+func (s *SettlementEngine) ResolveDispute(ctx context.Context, disputeID string, uphold bool, note string, resolvedBy *string) (*Dispute, error) {
+	if s.resolutions == nil {
+		return nil, fmt.Errorf("resolution store not configured")
+	}
+	dispute, err := s.resolutions.GetDispute(ctx, disputeID)
+	if err != nil {
+		return nil, fmt.Errorf("get dispute: %w", err)
+	}
+	if dispute == nil {
+		return nil, fmt.Errorf("dispute %s not found", disputeID)
+	}
+	if dispute.Status != "open" {
+		return nil, fmt.Errorf("dispute %s is already resolved (%s)", disputeID, dispute.Status)
+	}
+	// Dual-control: the reviewing admin must differ from the proposer. A read
+	// error here must NOT silently skip the check (that would let the proposer
+	// review their own dispute on a transient DB blip) — fail the operation.
+	proposal, perr := s.resolutions.GetActiveProposal(ctx, dispute.MarketID)
+	if perr != nil {
+		return nil, fmt.Errorf("get active proposal: %w", perr)
+	}
+	if proposal != nil && proposal.ProposedBy != nil && resolvedBy != nil && *resolvedBy == *proposal.ProposedBy {
+		return nil, fmt.Errorf("dual-control: the reviewing admin must differ from the proposer")
+	}
+
+	if !uphold {
+		if err := s.resolutions.ResolveDispute(ctx, disputeID, "rejected", note, resolvedBy); err != nil {
+			return nil, fmt.Errorf("resolve dispute: %w", err)
+		}
+		dispute.Status = "rejected"
+		dispute.ResolvedBy = resolvedBy
+		return dispute, nil
+	}
+
+	reason := "resolution dispute upheld"
+	if note != "" {
+		reason = note
+	}
+	if _, err := s.VoidMarket(ctx, dispute.MarketID, reason, resolvedBy); err != nil {
+		return nil, fmt.Errorf("void market: %w", err)
+	}
+	if err := s.resolutions.MarkProposalVoided(ctx, dispute.MarketID); err != nil {
+		return nil, fmt.Errorf("mark proposal voided: %w", err)
+	}
+	// The void resolves the whole market: mark every open dispute upheld.
+	open, _ := s.resolutions.ListDisputes(ctx, dispute.MarketID)
+	for _, d := range open {
+		if d.Status == "open" {
+			_ = s.resolutions.ResolveDispute(ctx, d.ID, "upheld", reason, resolvedBy)
+		}
+	}
+	dispute.Status = "upheld"
+	dispute.ResolvedBy = resolvedBy
+	return dispute, nil
+}
+
+// recordSettlementAudit emits a post-commit audit entry for a settlement. The
+// actor is the admin who settled, or "auto-settler" when the AutoSettler
+// resolved the market (settledBy == nil).
+func (s *SettlementEngine) recordSettlementAudit(settledBy *string, settlement *Settlement) {
+	if s.auditor == nil || settlement == nil {
+		return
+	}
+	actor := "auto-settler"
+	if settledBy != nil && *settledBy != "" {
+		actor = *settledBy
+	}
+	s.auditor.RecordSettlement(actor, settlement.MarketID, map[string]any{
+		"settlementId":      settlement.ID,
+		"result":            settlement.Result,
+		"totalPayoutCents":  settlement.TotalPayoutCents,
+		"positionsSettled":  settlement.PositionsSettled,
+		"attestationSource": settlement.AttestationSource,
+	})
+}
+
+// ResolveMarket is the DIRECT (immediate) settle path: admin "settle now" and
+// the backward-compat AutoSettler path when no resolution store is wired. It
+// only accepts a `closed` market. A market already in the windowed resolution
+// flow (proposed_resolution / disputed) must settle through FinalizeResolution
+// so the challenge window, dual-control, and dispute gates cannot be bypassed
+// by hitting the legacy settle endpoint.
+func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketRequest, marketID string, settledBy *string) (*Settlement, []Payout, error) {
+	return s.resolveMarket(ctx, req, marketID, settledBy, false)
+}
+
+// resolveMarket is the shared settle implementation. allowWindowed=true is the
+// FinalizeResolution path (settling out of proposed_resolution / disputed once
+// the gates have passed); allowWindowed=false is the direct path (closed only).
 // In DB mode, settlement records, payout records, wallet credits, market
 // status, and lifecycle logging can commit as one shared transaction.
-func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketRequest, marketID string, settledBy *string) (*Settlement, []Payout, error) {
+func (s *SettlementEngine) resolveMarket(ctx context.Context, req ResolveMarketRequest, marketID string, settledBy *string, allowWindowed bool) (*Settlement, []Payout, error) {
 	market, err := s.repo.GetMarket(ctx, marketID)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get market: %w", err)
 	}
 
-	// Market must be closed to settle
-	if market.Status != MarketStatusClosed {
-		return nil, nil, fmt.Errorf("market %s is not closed (status: %s), cannot settle", market.Ticker, market.Status)
+	switch market.Status {
+	case MarketStatusClosed:
+		// Always settle-eligible (immediate / backward-compat).
+	case MarketStatusProposedResolution, MarketStatusDisputed:
+		// Only reachable via FinalizeResolution, never the direct endpoint.
+		if !allowWindowed {
+			return nil, nil, fmt.Errorf("market %s is in the resolution challenge flow (status: %s); settle it via finalize, not direct settle", market.Ticker, market.Status)
+		}
+	default:
+		return nil, nil, fmt.Errorf("market %s is not settle-eligible (status: %s)", market.Ticker, market.Status)
 	}
 
 	// Compute attestation digest
@@ -198,6 +503,7 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 			}
 			s.metrics.RecordSettlement(marketID, string(result), settlement.OverrideReason != nil)
 			s.fireMarketLifecycle(market, lifecycle)
+			s.recordSettlementAudit(settledBy, settlement)
 			return settlement, payouts, nil
 		}
 	}
@@ -226,11 +532,12 @@ func (s *SettlementEngine) ResolveMarket(ctx context.Context, req ResolveMarketR
 	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
 
 	// TODO: thread override flag through ResolveMarketRequest once the
-// HTTP layer pipes overrideReason from the back-office settlement
-// modal into the request body. Until then, every settlement records
-// override=false even when the admin filled in the override field.
-s.metrics.RecordSettlement(marketID, string(result), false)
+	// HTTP layer pipes overrideReason from the back-office settlement
+	// modal into the request body. Until then, every settlement records
+	// override=false even when the admin filled in the override field.
+	s.metrics.RecordSettlement(marketID, string(result), false)
 	s.fireMarketLifecycle(market, lifecycle)
+	s.recordSettlementAudit(settledBy, settlement)
 	return settlement, payouts, nil
 }
 

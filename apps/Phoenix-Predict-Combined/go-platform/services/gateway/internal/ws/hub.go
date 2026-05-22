@@ -292,3 +292,19 @@ func (h *Hub) NotifyLeaderboardUpdate(data interface{}) {
 func (h *Hub) NotifyLoyaltyTierPromoted(userID string, data interface{}) {
 	h.BroadcastEvent("loyalty:"+userID, "tier_promoted", "tier_promoted", data)
 }
+
+// NotifyResolutionUpdate broadcasts a resolution-lifecycle change (ADR-0004):
+// phase is one of proposed_resolution | disputed | settled | voided. It fans
+// out to the market channel (so a viewer sees "result proposed / under review")
+// and the admin resolutions channel (so the office review queue updates live).
+func (h *Hub) NotifyResolutionUpdate(marketID, phase string, data interface{}) {
+	h.BroadcastEvent("market:"+marketID, "resolution_update", phase, data)
+	h.BroadcastEvent("admin:resolutions", "resolution_update", phase, data)
+}
+
+// NotifyDisputeFiled broadcasts a newly-filed dispute to the admin disputes
+// channel (the office review queue) and the affected market channel.
+func (h *Hub) NotifyDisputeFiled(marketID string, data interface{}) {
+	h.BroadcastEvent("admin:disputes", "dispute_filed", "dispute_filed", data)
+	h.BroadcastEvent("market:"+marketID, "dispute_filed", "dispute_filed", data)
+}

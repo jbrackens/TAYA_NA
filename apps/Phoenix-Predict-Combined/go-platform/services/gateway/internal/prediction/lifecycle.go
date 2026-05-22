@@ -7,7 +7,11 @@ var validTransitions = map[MarketStatus][]MarketStatus{
 	MarketStatusUnopened: {MarketStatusOpen, MarketStatusVoided},
 	MarketStatusOpen:     {MarketStatusHalted, MarketStatusClosed, MarketStatusVoided},
 	MarketStatusHalted:   {MarketStatusOpen, MarketStatusClosed, MarketStatusVoided},
-	MarketStatusClosed:   {MarketStatusSettled, MarketStatusVoided},
+	// closed can settle directly (immediate finalize / backward-compat) or move
+	// through the proposed-resolution challenge window (ADR-0003/0004).
+	MarketStatusClosed:             {MarketStatusProposedResolution, MarketStatusSettled, MarketStatusVoided},
+	MarketStatusProposedResolution: {MarketStatusSettled, MarketStatusDisputed, MarketStatusVoided},
+	MarketStatusDisputed:           {MarketStatusSettled, MarketStatusVoided},
 	// Terminal states — no transitions out
 	MarketStatusSettled: {},
 	MarketStatusVoided:  {},

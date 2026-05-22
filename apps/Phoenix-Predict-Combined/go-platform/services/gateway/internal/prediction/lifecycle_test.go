@@ -16,6 +16,12 @@ func TestValidMarketTransitions(t *testing.T) {
 		{MarketStatusHalted, MarketStatusVoided},
 		{MarketStatusClosed, MarketStatusSettled},
 		{MarketStatusClosed, MarketStatusVoided},
+		{MarketStatusClosed, MarketStatusProposedResolution},
+		{MarketStatusProposedResolution, MarketStatusSettled},
+		{MarketStatusProposedResolution, MarketStatusDisputed},
+		{MarketStatusProposedResolution, MarketStatusVoided},
+		{MarketStatusDisputed, MarketStatusSettled},
+		{MarketStatusDisputed, MarketStatusVoided},
 	}
 
 	for _, tc := range valid {

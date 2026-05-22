@@ -70,12 +70,14 @@ type Event struct {
 type MarketStatus string
 
 const (
-	MarketStatusUnopened MarketStatus = "unopened"
-	MarketStatusOpen     MarketStatus = "open"
-	MarketStatusHalted   MarketStatus = "halted"
-	MarketStatusClosed   MarketStatus = "closed"
-	MarketStatusSettled  MarketStatus = "settled"
-	MarketStatusVoided   MarketStatus = "voided"
+	MarketStatusUnopened           MarketStatus = "unopened"
+	MarketStatusOpen               MarketStatus = "open"
+	MarketStatusHalted             MarketStatus = "halted"
+	MarketStatusClosed             MarketStatus = "closed"
+	MarketStatusProposedResolution MarketStatus = "proposed_resolution"
+	MarketStatusDisputed           MarketStatus = "disputed"
+	MarketStatusSettled            MarketStatus = "settled"
+	MarketStatusVoided             MarketStatus = "voided"
 )
 
 // MarketResult is the resolved outcome of a market.
@@ -97,45 +99,45 @@ const (
 
 // Market represents an individual binary contract within an event.
 type Market struct {
-	ID                   string          `json:"id" db:"id"`
-	EventID              string          `json:"eventId" db:"event_id"`
-	Ticker               string          `json:"ticker" db:"ticker"`
-	Title                string          `json:"title" db:"title"`
-	Description          string          `json:"description,omitempty" db:"description"`
-	Status               MarketStatus    `json:"status" db:"status"`
-	Result               *MarketResult   `json:"result,omitempty" db:"result"`
-	YesPriceCents        int             `json:"yesPriceCents" db:"yes_price_cents"`
-	NoPriceCents         int             `json:"noPriceCents" db:"no_price_cents"`
-	LastTradePriceCents  *int            `json:"lastTradePriceCents,omitempty" db:"last_trade_price_cents"`
-	VolumeCents          int64           `json:"volumeCents" db:"volume_cents"`
-	OpenInterestCents    int64           `json:"openInterestCents" db:"open_interest_cents"`
-	LiquidityCents       int64           `json:"liquidityCents" db:"liquidity_cents"`
-	AMMYesShares         float64         `json:"ammYesShares" db:"amm_yes_shares"`
-	AMMNoShares          float64         `json:"ammNoShares" db:"amm_no_shares"`
-	AMMLiquidityParam    float64         `json:"ammLiquidityParam" db:"amm_liquidity_param"`
-	AMMSubsidyCents      int64           `json:"ammSubsidyCents" db:"amm_subsidy_cents"`
-	SettlementSourceKey  string          `json:"settlementSourceKey" db:"settlement_source_key"`
-	SettlementCutoffAt   *time.Time      `json:"settlementCutoffAt,omitempty" db:"settlement_cutoff_at"`
-	SettlementRule       string          `json:"settlementRule" db:"settlement_rule"`
-	SettlementParams     json.RawMessage `json:"settlementParams,omitempty" db:"settlement_params"`
-	FallbackSourceKey    *string         `json:"fallbackSourceKey,omitempty" db:"fallback_source_key"`
-	FeeRateBps           int             `json:"feeRateBps" db:"fee_rate_bps"`
-	MakerRebateBps       int             `json:"makerRebateBps" db:"maker_rebate_bps"`
-	OpenAt               *time.Time      `json:"openAt,omitempty" db:"open_at"`
-	CloseAt              time.Time       `json:"closeAt" db:"close_at"`
-	CreatedAt            time.Time       `json:"createdAt" db:"created_at"`
-	UpdatedAt            time.Time       `json:"updatedAt" db:"updated_at"`
-	ImagePath            string          `json:"imagePath,omitempty" db:"image_path"`
+	ID                  string          `json:"id" db:"id"`
+	EventID             string          `json:"eventId" db:"event_id"`
+	Ticker              string          `json:"ticker" db:"ticker"`
+	Title               string          `json:"title" db:"title"`
+	Description         string          `json:"description,omitempty" db:"description"`
+	Status              MarketStatus    `json:"status" db:"status"`
+	Result              *MarketResult   `json:"result,omitempty" db:"result"`
+	YesPriceCents       int             `json:"yesPriceCents" db:"yes_price_cents"`
+	NoPriceCents        int             `json:"noPriceCents" db:"no_price_cents"`
+	LastTradePriceCents *int            `json:"lastTradePriceCents,omitempty" db:"last_trade_price_cents"`
+	VolumeCents         int64           `json:"volumeCents" db:"volume_cents"`
+	OpenInterestCents   int64           `json:"openInterestCents" db:"open_interest_cents"`
+	LiquidityCents      int64           `json:"liquidityCents" db:"liquidity_cents"`
+	AMMYesShares        float64         `json:"ammYesShares" db:"amm_yes_shares"`
+	AMMNoShares         float64         `json:"ammNoShares" db:"amm_no_shares"`
+	AMMLiquidityParam   float64         `json:"ammLiquidityParam" db:"amm_liquidity_param"`
+	AMMSubsidyCents     int64           `json:"ammSubsidyCents" db:"amm_subsidy_cents"`
+	SettlementSourceKey string          `json:"settlementSourceKey" db:"settlement_source_key"`
+	SettlementCutoffAt  *time.Time      `json:"settlementCutoffAt,omitempty" db:"settlement_cutoff_at"`
+	SettlementRule      string          `json:"settlementRule" db:"settlement_rule"`
+	SettlementParams    json.RawMessage `json:"settlementParams,omitempty" db:"settlement_params"`
+	FallbackSourceKey   *string         `json:"fallbackSourceKey,omitempty" db:"fallback_source_key"`
+	FeeRateBps          int             `json:"feeRateBps" db:"fee_rate_bps"`
+	MakerRebateBps      int             `json:"makerRebateBps" db:"maker_rebate_bps"`
+	OpenAt              *time.Time      `json:"openAt,omitempty" db:"open_at"`
+	CloseAt             time.Time       `json:"closeAt" db:"close_at"`
+	CreatedAt           time.Time       `json:"createdAt" db:"created_at"`
+	UpdatedAt           time.Time       `json:"updatedAt" db:"updated_at"`
+	ImagePath           string          `json:"imagePath,omitempty" db:"image_path"`
 
 	// Exchange engine fields (migration 019).
-	ExecutionMode           ExecutionMode `json:"executionMode" db:"execution_mode"`
-	CollateralPoolCents     int64         `json:"collateralPoolCents" db:"collateral_pool_cents"`
-	SettledPayoutPoolCents  int64         `json:"settledPayoutPoolCents" db:"settled_payout_pool_cents"`
-	BestYesBidCents         *int          `json:"bestYesBidCents,omitempty" db:"best_yes_bid_cents"`
-	BestYesAskCents         *int          `json:"bestYesAskCents,omitempty" db:"best_yes_ask_cents"`
-	BestNoBidCents          *int          `json:"bestNoBidCents,omitempty" db:"best_no_bid_cents"`
-	BestNoAskCents          *int          `json:"bestNoAskCents,omitempty" db:"best_no_ask_cents"`
-	LastQuoteAt             *time.Time    `json:"lastQuoteAt,omitempty" db:"last_quote_at"`
+	ExecutionMode          ExecutionMode `json:"executionMode" db:"execution_mode"`
+	CollateralPoolCents    int64         `json:"collateralPoolCents" db:"collateral_pool_cents"`
+	SettledPayoutPoolCents int64         `json:"settledPayoutPoolCents" db:"settled_payout_pool_cents"`
+	BestYesBidCents        *int          `json:"bestYesBidCents,omitempty" db:"best_yes_bid_cents"`
+	BestYesAskCents        *int          `json:"bestYesAskCents,omitempty" db:"best_yes_ask_cents"`
+	BestNoBidCents         *int          `json:"bestNoBidCents,omitempty" db:"best_no_bid_cents"`
+	BestNoAskCents         *int          `json:"bestNoAskCents,omitempty" db:"best_no_ask_cents"`
+	LastQuoteAt            *time.Time    `json:"lastQuoteAt,omitempty" db:"last_quote_at"`
 }
 
 // OrderSide is the side of a prediction (YES or NO).
@@ -195,15 +197,15 @@ const (
 
 // Failure-reason constants populated on rejected/cancelled orders.
 const (
-	FailurePriceBandViolation    = "price_band_violation"
-	FailurePostOnlyWouldTake     = "post_only_would_take"
-	FailureSelfMatchRejected     = "self_match_rejected"
-	FailureClosedMarket          = "closed_market"
-	FailureInsufficientBalance   = "insufficient_balance"
-	FailureInsufficientPosition  = "insufficient_position"
-	FailureNotionalCapMissing    = "notional_cap_missing"
-	FailureNotionalCapExceeded   = "notional_cap_exceeded"
-	FailureFOKUnavailable        = "fok_unavailable"
+	FailurePriceBandViolation   = "price_band_violation"
+	FailurePostOnlyWouldTake    = "post_only_would_take"
+	FailureSelfMatchRejected    = "self_match_rejected"
+	FailureClosedMarket         = "closed_market"
+	FailureInsufficientBalance  = "insufficient_balance"
+	FailureInsufficientPosition = "insufficient_position"
+	FailureNotionalCapMissing   = "notional_cap_missing"
+	FailureNotionalCapExceeded  = "notional_cap_exceeded"
+	FailureFOKUnavailable       = "fok_unavailable"
 )
 
 // Order represents a user's order to buy or sell contracts.
@@ -229,18 +231,18 @@ type Order struct {
 	UpdatedAt           time.Time   `json:"updatedAt" db:"updated_at"`
 
 	// Exchange engine fields (migration 019).
-	TimeInForce            TimeInForce      `json:"timeInForce" db:"time_in_force"`
-	ReservedCashCents      int64            `json:"reservedCashCents" db:"reserved_cash_cents"`
-	CapturedCashCents      int64            `json:"capturedCashCents" db:"captured_cash_cents"`
-	ReleasedCashCents      int64            `json:"releasedCashCents" db:"released_cash_cents"`
-	ReservedQuantity       int              `json:"reservedQuantity" db:"reserved_quantity"`
-	AverageFillPriceCents  *int             `json:"averageFillPriceCents,omitempty" db:"average_fill_price_cents"`
-	FilledCostCents        int64            `json:"filledCostCents" db:"filled_cost_cents"`
-	FailureReason          *string          `json:"failureReason,omitempty" db:"failure_reason"`
-	PostOnly               bool             `json:"postOnly" db:"post_only"`
-	ClientOrderID          *string          `json:"clientOrderId,omitempty" db:"client_order_id"`
-	SelfMatchAction        SelfMatchAction  `json:"selfMatchAction" db:"self_match_action"`
-	NotionalCapCents       *int64           `json:"notionalCapCents,omitempty" db:"notional_cap_cents"`
+	TimeInForce           TimeInForce     `json:"timeInForce" db:"time_in_force"`
+	ReservedCashCents     int64           `json:"reservedCashCents" db:"reserved_cash_cents"`
+	CapturedCashCents     int64           `json:"capturedCashCents" db:"captured_cash_cents"`
+	ReleasedCashCents     int64           `json:"releasedCashCents" db:"released_cash_cents"`
+	ReservedQuantity      int             `json:"reservedQuantity" db:"reserved_quantity"`
+	AverageFillPriceCents *int            `json:"averageFillPriceCents,omitempty" db:"average_fill_price_cents"`
+	FilledCostCents       int64           `json:"filledCostCents" db:"filled_cost_cents"`
+	FailureReason         *string         `json:"failureReason,omitempty" db:"failure_reason"`
+	PostOnly              bool            `json:"postOnly" db:"post_only"`
+	ClientOrderID         *string         `json:"clientOrderId,omitempty" db:"client_order_id"`
+	SelfMatchAction       SelfMatchAction `json:"selfMatchAction" db:"self_match_action"`
+	NotionalCapCents      *int64          `json:"notionalCapCents,omitempty" db:"notional_cap_cents"`
 }
 
 // Position represents a user's net holding in a market on one side.
@@ -360,39 +362,39 @@ type OrderBook struct {
 
 // Settlement records a market resolution.
 type Settlement struct {
-	ID                 string          `json:"id" db:"id"`
-	MarketID           string          `json:"marketId" db:"market_id"`
-	Result             MarketResult    `json:"result" db:"result"`
-	AttestationSource  string          `json:"attestationSource" db:"attestation_source"`
-	AttestationID      *string         `json:"attestationId,omitempty" db:"attestation_id"`
-	AttestationDigest  *string         `json:"attestationDigest,omitempty" db:"attestation_digest"`
-	AttestationData    json.RawMessage `json:"attestationData,omitempty" db:"attestation_data"`
-	SettledBy          *string         `json:"settledBy,omitempty" db:"settled_by"`
-	SettledAt          time.Time       `json:"settledAt" db:"settled_at"`
-	TotalPayoutCents   int64           `json:"totalPayoutCents" db:"total_payout_cents"`
-	PositionsSettled   int             `json:"positionsSettled" db:"positions_settled"`
+	ID                string          `json:"id" db:"id"`
+	MarketID          string          `json:"marketId" db:"market_id"`
+	Result            MarketResult    `json:"result" db:"result"`
+	AttestationSource string          `json:"attestationSource" db:"attestation_source"`
+	AttestationID     *string         `json:"attestationId,omitempty" db:"attestation_id"`
+	AttestationDigest *string         `json:"attestationDigest,omitempty" db:"attestation_digest"`
+	AttestationData   json.RawMessage `json:"attestationData,omitempty" db:"attestation_data"`
+	SettledBy         *string         `json:"settledBy,omitempty" db:"settled_by"`
+	SettledAt         time.Time       `json:"settledAt" db:"settled_at"`
+	TotalPayoutCents  int64           `json:"totalPayoutCents" db:"total_payout_cents"`
+	PositionsSettled  int             `json:"positionsSettled" db:"positions_settled"`
 
 	// Admin override audit (migration 019). Either all three are null or all
 	// three are set together; enforced by a CHECK constraint.
-	OverrideReason       *string    `json:"overrideReason,omitempty" db:"override_reason"`
-	OverriddenByUserID   *string    `json:"overriddenByUserId,omitempty" db:"overridden_by_user_id"`
-	OverriddenAt         *time.Time `json:"overriddenAt,omitempty" db:"overridden_at"`
+	OverrideReason     *string    `json:"overrideReason,omitempty" db:"override_reason"`
+	OverriddenByUserID *string    `json:"overriddenByUserId,omitempty" db:"overridden_by_user_id"`
+	OverriddenAt       *time.Time `json:"overriddenAt,omitempty" db:"overridden_at"`
 }
 
 // Payout records a per-position settlement credit.
 type Payout struct {
-	ID             string    `json:"id" db:"id"`
-	SettlementID   string    `json:"settlementId" db:"settlement_id"`
-	PositionID     string    `json:"positionId" db:"position_id"`
-	UserID         string    `json:"userId" db:"user_id"`
-	MarketID       string    `json:"marketId" db:"market_id"`
-	Side           OrderSide `json:"side" db:"side"`
-	Quantity       int       `json:"quantity" db:"quantity"`
-	EntryPriceCents int      `json:"entryPriceCents" db:"entry_price_cents"`
-	ExitPriceCents  int      `json:"exitPriceCents" db:"exit_price_cents"`
-	PnlCents       int64     `json:"pnlCents" db:"pnl_cents"`
-	PayoutCents    int64     `json:"payoutCents" db:"payout_cents"`
-	PaidAt         time.Time `json:"paidAt" db:"paid_at"`
+	ID              string    `json:"id" db:"id"`
+	SettlementID    string    `json:"settlementId" db:"settlement_id"`
+	PositionID      string    `json:"positionId" db:"position_id"`
+	UserID          string    `json:"userId" db:"user_id"`
+	MarketID        string    `json:"marketId" db:"market_id"`
+	Side            OrderSide `json:"side" db:"side"`
+	Quantity        int       `json:"quantity" db:"quantity"`
+	EntryPriceCents int       `json:"entryPriceCents" db:"entry_price_cents"`
+	ExitPriceCents  int       `json:"exitPriceCents" db:"exit_price_cents"`
+	PnlCents        int64     `json:"pnlCents" db:"pnl_cents"`
+	PayoutCents     int64     `json:"payoutCents" db:"payout_cents"`
+	PaidAt          time.Time `json:"paidAt" db:"paid_at"`
 }
 
 // LifecycleEvent records a market state transition.
@@ -434,25 +436,25 @@ type PlaceOrderRequest struct {
 	IdempotencyKey *string     `json:"idempotencyKey,omitempty"`
 
 	// Exchange engine fields (ignored on AMM-mode markets).
-	TimeInForce      TimeInForce      `json:"timeInForce,omitempty"`
-	PostOnly         bool             `json:"postOnly,omitempty"`
-	ClientOrderID    *string          `json:"clientOrderId,omitempty"`
-	SelfMatchAction  SelfMatchAction  `json:"selfMatchAction,omitempty"`
-	NotionalCapCents *int64           `json:"notionalCapCents,omitempty"`
+	TimeInForce      TimeInForce     `json:"timeInForce,omitempty"`
+	PostOnly         bool            `json:"postOnly,omitempty"`
+	ClientOrderID    *string         `json:"clientOrderId,omitempty"`
+	SelfMatchAction  SelfMatchAction `json:"selfMatchAction,omitempty"`
+	NotionalCapCents *int64          `json:"notionalCapCents,omitempty"`
 }
 
 // OrderPreview is the response from previewing an order cost.
 type OrderPreview struct {
-	Side         OrderSide `json:"side"`
-	Action       OrderAction `json:"action"`
-	Quantity     int         `json:"quantity"`
-	PriceCents   int         `json:"priceCents"`
-	TotalCost    int64       `json:"totalCostCents"`
-	FeeCents     int64       `json:"feeCents"`
-	MaxProfit    int64       `json:"maxProfitCents"`
-	MaxLoss      int64       `json:"maxLossCents"`
-	NewYesPrice  int         `json:"newYesPriceCents"`
-	NewNoPrice   int         `json:"newNoPriceCents"`
+	Side        OrderSide   `json:"side"`
+	Action      OrderAction `json:"action"`
+	Quantity    int         `json:"quantity"`
+	PriceCents  int         `json:"priceCents"`
+	TotalCost   int64       `json:"totalCostCents"`
+	FeeCents    int64       `json:"feeCents"`
+	MaxProfit   int64       `json:"maxProfitCents"`
+	MaxLoss     int64       `json:"maxLossCents"`
+	NewYesPrice int         `json:"newYesPriceCents"`
+	NewNoPrice  int         `json:"newNoPriceCents"`
 }
 
 // PortfolioSummary provides a user's aggregate prediction stats.
@@ -508,10 +510,10 @@ type ResolveMarketRequest struct {
 
 // PageMeta provides pagination metadata in list responses.
 type PageMeta struct {
-	Page      int  `json:"page"`
-	PageSize  int  `json:"pageSize"`
-	Total     int  `json:"total"`
-	HasNext   bool `json:"hasNext"`
+	Page     int  `json:"page"`
+	PageSize int  `json:"pageSize"`
+	Total    int  `json:"total"`
+	HasNext  bool `json:"hasNext"`
 }
 
 // DashboardMover is a single market in the "biggest YES price moves" list,

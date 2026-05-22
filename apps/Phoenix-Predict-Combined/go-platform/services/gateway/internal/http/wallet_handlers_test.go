@@ -10,13 +10,22 @@ import (
 	"phoenix-revival/platform/transport/httpx"
 )
 
+// Wallet mutations (credit/debit) are admin-gated: the ungated public endpoints
+// were removed per ADR-0002, so these tests drive the /api/v1/admin/wallet
+// routes with a validated admin session. The GET balance/ledger routes remain
+// (ownership-checked) and are exercised directly.
+
+func adminWalletContext(req *http.Request) *http.Request {
+	return req.WithContext(httpx.WithTestUser(req.Context(), "admin-test", "admin-test", "admin"))
+}
+
 func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 	mux := http.NewServeMux()
 	RegisterRoutes(mux, "gateway")
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	creditPayload := []byte(`{"userId":"u-wallet-1","amountCents":1000,"idempotencyKey":"credit-1","reason":"deposit"}`)
-	creditReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/credit", bytes.NewBuffer(creditPayload))
+	creditReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(creditPayload)))
 	creditRes := httptest.NewRecorder()
 	handler.ServeHTTP(creditRes, creditReq)
 	if creditRes.Code != http.StatusOK {
@@ -24,7 +33,7 @@ func TestWalletCreditDebitBalanceAndLedgerFlow(t *testing.T) {
 	}
 
 	debitPayload := []byte(`{"userId":"u-wallet-1","amountCents":400,"idempotencyKey":"debit-1","reason":"bet"}`)
-	debitReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/debit", bytes.NewBuffer(debitPayload))
+	debitReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/debit", bytes.NewBuffer(debitPayload)))
 	debitRes := httptest.NewRecorder()
 	handler.ServeHTTP(debitRes, debitReq)
 	if debitRes.Code != http.StatusOK {
@@ -72,14 +81,14 @@ func TestWalletCreditIsIdempotentAcrossRetries(t *testing.T) {
 
 	payload := []byte(`{"userId":"u-wallet-2","amountCents":750,"idempotencyKey":"credit-unique","reason":"deposit"}`)
 
-	firstReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/credit", bytes.NewBuffer(payload))
+	firstReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 	firstRes := httptest.NewRecorder()
 	handler.ServeHTTP(firstRes, firstReq)
 	if firstRes.Code != http.StatusOK {
 		t.Fatalf("first credit failed: status=%d body=%s", firstRes.Code, firstRes.Body.String())
 	}
 
-	secondReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/credit", bytes.NewBuffer(payload))
+	secondReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(payload)))
 	secondRes := httptest.NewRecorder()
 	handler.ServeHTTP(secondRes, secondReq)
 	if secondRes.Code != http.StatusOK {
@@ -111,7 +120,7 @@ func TestWalletDebitInsufficientFundsReturnsForbidden(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	debitPayload := []byte(`{"userId":"u-wallet-3","amountCents":200,"idempotencyKey":"debit-insufficient","reason":"bet"}`)
-	debitReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/debit", bytes.NewBuffer(debitPayload))
+	debitReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/debit", bytes.NewBuffer(debitPayload)))
 	debitRes := httptest.NewRecorder()
 	handler.ServeHTTP(debitRes, debitReq)
 
@@ -134,7 +143,7 @@ func TestWalletIdempotencyReplayConflictReturnsConflict(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	firstPayload := []byte(`{"userId":"u-wallet-4","amountCents":500,"idempotencyKey":"dup-key","reason":"first"}`)
-	firstReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/credit", bytes.NewBuffer(firstPayload))
+	firstReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(firstPayload)))
 	firstRes := httptest.NewRecorder()
 	handler.ServeHTTP(firstRes, firstReq)
 	if firstRes.Code != http.StatusOK {
@@ -142,7 +151,7 @@ func TestWalletIdempotencyReplayConflictReturnsConflict(t *testing.T) {
 	}
 
 	conflictPayload := []byte(`{"userId":"u-wallet-4","amountCents":700,"idempotencyKey":"dup-key","reason":"changed"}`)
-	conflictReq := httptest.NewRequest(http.MethodPost, "/api/v1/wallet/credit", bytes.NewBuffer(conflictPayload))
+	conflictReq := adminWalletContext(httptest.NewRequest(http.MethodPost, "/api/v1/admin/wallet/credit", bytes.NewBuffer(conflictPayload)))
 	conflictRes := httptest.NewRecorder()
 	handler.ServeHTTP(conflictRes, conflictReq)
 	if conflictRes.Code != http.StatusConflict {

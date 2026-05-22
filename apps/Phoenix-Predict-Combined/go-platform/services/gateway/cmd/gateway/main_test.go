@@ -81,3 +81,41 @@ func TestValidateGatewayRuntimeConfigAllowsMissingWebhookSecretInDevelopment(t *
 		t.Fatalf("expected development validation to allow missing webhook secret, got %v", err)
 	}
 }
+
+func TestValidateGatewayRuntimeConfigRefusesAuthDisabledInDeployedEnvs(t *testing.T) {
+	for _, env := range []string{"production", "staging"} {
+		err := validateGatewayRuntimeConfig(func(key string) string {
+			switch key {
+			case "ENVIRONMENT":
+				return env
+			case "GATEWAY_AUTH_ENABLED":
+				return "false"
+			case "PAYMENTS_WEBHOOK_SECRET":
+				return "whsec_present"
+			default:
+				return ""
+			}
+		})
+
+		if err == nil {
+			t.Fatalf("expected boot refusal with auth disabled in %s", env)
+		}
+	}
+}
+
+func TestValidateGatewayRuntimeConfigAllowsAuthDisabledInDevelopment(t *testing.T) {
+	err := validateGatewayRuntimeConfig(func(key string) string {
+		switch key {
+		case "ENVIRONMENT":
+			return "development"
+		case "GATEWAY_AUTH_ENABLED":
+			return "false"
+		default:
+			return ""
+		}
+	})
+
+	if err != nil {
+		t.Fatalf("expected dev to allow the auth kill switch, got %v", err)
+	}
+}

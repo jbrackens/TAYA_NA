@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	stdhttp "net/http"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -40,10 +41,10 @@ type adminWalletBalanceReader interface {
 
 // allowedPunterAdminStatuses gates the status values the office can set.
 var allowedPunterAdminStatuses = map[string]struct{}{
-	"active":       {},
-	"suspended":    {},
+	"active":        {},
+	"suspended":     {},
 	"self_excluded": {},
-	"deactivated":  {},
+	"deactivated":   {},
 }
 
 // registerPredictionAdminRoutes wires the prediction-native admin read APIs
@@ -286,15 +287,108 @@ func registerAdminAuditLogsList(mux *stdhttp.ServeMux, path string, repo predict
 			ActorID:      strings.TrimSpace(r.URL.Query().Get("actorId")),
 		}
 
-		items, meta, err := repo.ListAuditLogsAdmin(r.Context(), filter, page, pageSize)
+		// Audit entries live in two stores: the audit_logs table (admin + demo
+		// rows) and the in-process provider-ops store, where privileged
+		// money-moving actions (wallet adjustments, settlements) are recorded.
+		// Merge both so money/settlement audit surfaces in the office view, then
+		// sort + paginate the combined set.
+		dbItems, _, err := repo.ListAuditLogsAdmin(r.Context(), filter, 1, mergedAuditFetchCap)
 		if err != nil {
 			return httpx.Internal("failed to list audit logs", err)
 		}
+		merged := append(dbItems, providerOpsAuditAsAdminLogs(filter)...)
+		sort.SliceStable(merged, func(i, j int) bool {
+			return merged[i].OccurredAt > merged[j].OccurredAt
+		})
+		items, meta := paginateAdminAuditLogs(merged, page, pageSize)
 		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 			"items":      items,
 			"pagination": meta,
 		})
 	}))
+}
+
+// mergedAuditFetchCap bounds how many audit_logs rows are pulled for the
+// in-memory merge with the provider-ops store. audit_logs is small (admin +
+// demo rows); the provider-ops store is itself capped at providerOpsAuditLimit.
+const mergedAuditFetchCap = 1000
+
+// providerOpsAuditAsAdminLogs converts the in-process provider-ops audit store
+// (where money-moving actions are recorded) into the admin audit-log shape,
+// applying the same filter as the SQL query. resourceType is derived from the
+// action prefix (e.g. "wallet.credit" -> "wallet") so the resourceType filter
+// works for these entries too.
+func providerOpsAuditAsAdminLogs(filter prediction.AdminAuditLogFilter) []prediction.AdminAuditLog {
+	entries := providerOpsAuditSnapshot()
+	out := make([]prediction.AdminAuditLog, 0, len(entries))
+	for _, e := range entries {
+		resourceType := e.Action
+		if i := strings.IndexByte(e.Action, '.'); i > 0 {
+			resourceType = e.Action[:i]
+		}
+		if filter.Action != "" && e.Action != filter.Action {
+			continue
+		}
+		if filter.ResourceType != "" && resourceType != filter.ResourceType {
+			continue
+		}
+		if filter.ActorID != "" && e.ActorID != filter.ActorID {
+			continue
+		}
+		item := prediction.AdminAuditLog{
+			ID:         e.ID,
+			Action:     e.Action,
+			Status:     "recorded",
+			OccurredAt: e.OccurredAt,
+		}
+		if e.ActorID != "" {
+			actor := e.ActorID
+			item.ActorID = &actor
+		}
+		if resourceType != "" {
+			rt := resourceType
+			item.ResourceType = &rt
+		}
+		if e.TargetID != "" {
+			target := e.TargetID
+			item.TargetID = &target
+		}
+		if d := strings.TrimSpace(e.Details); d != "" {
+			if json.Valid([]byte(d)) {
+				item.Details = json.RawMessage(d)
+			} else if encoded, err := json.Marshal(d); err == nil {
+				item.Details = encoded
+			}
+		}
+		out = append(out, item)
+	}
+	return out
+}
+
+// paginateAdminAuditLogs slices the merged audit list to the requested page.
+func paginateAdminAuditLogs(items []prediction.AdminAuditLog, page, pageSize int) ([]prediction.AdminAuditLog, prediction.PageMeta) {
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 50
+	}
+	total := len(items)
+	start := (page - 1) * pageSize
+	if start > total {
+		start = total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	pageItems := append([]prediction.AdminAuditLog{}, items[start:end]...)
+	return pageItems, prediction.PageMeta{
+		Page:     page,
+		PageSize: pageSize,
+		Total:    total,
+		HasNext:  end < total,
+	}
 }
 
 // parseAdminPaging reads page + pageSize query params with safe defaults.

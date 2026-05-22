@@ -275,13 +275,13 @@ type marketUpdatePayload struct {
 // update; clients refetch GET /markets/{id}/orderbook for full depth.
 func buildOrderBookHintPayload(m *prediction.Market) map[string]any {
 	return map[string]any{
-		"marketId":         m.ID,
-		"bestYesBidCents":  m.BestYesBidCents,
-		"bestYesAskCents":  m.BestYesAskCents,
-		"bestNoBidCents":   m.BestNoBidCents,
-		"bestNoAskCents":   m.BestNoAskCents,
-		"lastQuoteAt":      m.LastQuoteAt,
-		"ts":               time.Now().UTC().Format(time.RFC3339),
+		"marketId":        m.ID,
+		"bestYesBidCents": m.BestYesBidCents,
+		"bestYesAskCents": m.BestYesAskCents,
+		"bestNoBidCents":  m.BestNoBidCents,
+		"bestNoAskCents":  m.BestNoAskCents,
+		"lastQuoteAt":     m.LastQuoteAt,
+		"ts":              time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
@@ -305,15 +305,15 @@ func buildMarketUpdatePayload(m *prediction.Market) marketUpdatePayload {
 // consumes this to render the live tape.
 func buildTradeFillPayload(t *prediction.Trade) map[string]any {
 	return map[string]any{
-		"tradeId":     t.ID,
-		"marketId":    t.MarketID,
-		"side":        t.Side,
-		"priceCents":  t.PriceCents,
-		"quantity":    t.Quantity,
-		"feeCents":    t.FeeCents,
-		"isAmmTrade":  t.IsAMMTrade,
-		"tradedAt":    t.TradedAt.UTC().Format(time.RFC3339),
-		"ts":          time.Now().UTC().Format(time.RFC3339),
+		"tradeId":    t.ID,
+		"marketId":   t.MarketID,
+		"side":       t.Side,
+		"priceCents": t.PriceCents,
+		"quantity":   t.Quantity,
+		"feeCents":   t.FeeCents,
+		"isAmmTrade": t.IsAMMTrade,
+		"tradedAt":   t.TradedAt.UTC().Format(time.RFC3339),
+		"ts":         time.Now().UTC().Format(time.RFC3339),
 	}
 }
 
@@ -383,6 +383,11 @@ func registerOrderRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, notifie
 			userID := userIDFromRequest(r)
 			if userID == "" {
 				return httpx.Unauthorized("authentication required")
+			}
+			// Jurisdiction + KYC gates (launch policy: crypto-native, outside
+			// US). Both default-off; no-op until configured (see pretrade_gate.go).
+			if err := checkPreTradeCompliance(r, userID); err != nil {
+				return err
 			}
 			var req prediction.PlaceOrderRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -662,12 +667,65 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/admin/markets/")
 		parts := strings.Split(path, "/")
-		if len(parts) != 3 || parts[0] == "" || parts[1] != "lifecycle" || parts[2] == "" {
+		if len(parts) == 0 || parts[0] == "" {
 			return httpx.NotFound("route not found")
 		}
 
 		adminID := userIDFromRequest(r)
 		actorID := actorIDPointer(adminID)
+
+		// ADR-0003/0004 windowed resolution (two-part {id}/{action}). Dual-
+		// control is enforced in the engine: the finalizing admin must differ
+		// from the proposer of the resolution.
+		if len(parts) == 2 {
+			// Dual-control needs an identifiable actor. An admin with the role
+			// but no session uid would store proposed_by=NULL, which the
+			// AutoSettler treats as system-proposed and auto-finalizes —
+			// bypassing the second-admin requirement. Refuse instead.
+			if adminID == "" {
+				return httpx.Forbidden("an identified admin is required for resolution actions (dual-control)")
+			}
+			switch strings.ToLower(strings.TrimSpace(parts[1])) {
+			case "propose":
+				var req prediction.ResolveMarketRequest
+				if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+					return httpx.BadRequest("invalid request body", nil)
+				}
+				window := prediction.DefaultChallengeWindow
+				if h := intQueryParam(r, "windowHours", 0); h > 0 {
+					window = time.Duration(h) * time.Hour
+				}
+				proposal, err := svc.ProposeResolution(r.Context(), parts[0], req, actorID, window)
+				if err != nil {
+					return httpx.BadRequest(err.Error(), nil)
+				}
+				recordMoneyAuditEntry(adminID, "market.resolution_proposed", parts[0], map[string]any{
+					"result":          proposal.Result,
+					"challengeEndsAt": proposal.ChallengeEndsAt,
+				})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, proposal)
+			case "finalize":
+				settlement, payouts, err := svc.FinalizeResolution(r.Context(), parts[0], actorID)
+				if err != nil {
+					return httpx.BadRequest(err.Error(), nil)
+				}
+				recordMoneyAuditEntry(adminID, "market.finalized", parts[0], map[string]any{
+					"settlementId":     settlement.ID,
+					"totalPayoutCents": settlement.TotalPayoutCents,
+					"payoutCount":      len(payouts),
+				})
+				return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+					"settlement": settlement,
+					"payouts":    payouts,
+				})
+			default:
+				return httpx.NotFound("route not found")
+			}
+		}
+
+		if len(parts) != 3 || parts[1] != "lifecycle" || parts[2] == "" {
+			return httpx.NotFound("route not found")
+		}
 		reason, err := decodeLifecycleReason(r)
 		if err != nil {
 			return err
@@ -718,6 +776,10 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			if err != nil {
 				return httpx.BadRequest(err.Error(), nil)
 			}
+			recordMoneyAuditEntry(adminID, "market.voided", parts[0], map[string]any{
+				"reason":      reason,
+				"payoutCount": len(payouts),
+			})
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
 				"marketId": parts[0],
 				"status":   prediction.MarketStatusVoided,

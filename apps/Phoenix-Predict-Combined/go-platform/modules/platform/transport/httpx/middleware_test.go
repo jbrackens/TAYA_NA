@@ -29,6 +29,33 @@ func TestRequestIDUsesIncomingHeader(t *testing.T) {
 	}
 }
 
+func TestAuthStripsClientSuppliedIdentityHeaders(t *testing.T) {
+	var sawUserID, sawAdminRole string
+	inner := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sawUserID = r.Header.Get("X-User-ID")
+		sawAdminRole = r.Header.Get("X-Admin-Role")
+		w.WriteHeader(http.StatusOK)
+	})
+
+	// A public route skips session validation, so this exercises the ingress
+	// strip without an auth service — and it is exactly the route shape where a
+	// forged identity header would otherwise reach a handler.
+	handler := Chain(inner, Auth("http://127.0.0.1:1", []string{"/public"}))
+
+	req := httptest.NewRequest(http.MethodGet, "/public/markets", nil)
+	req.Header.Set("X-User-ID", "victim")
+	req.Header.Set("X-Admin-Role", "admin")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if sawUserID != "" {
+		t.Fatalf("X-User-ID must be stripped at ingress, handler saw %q", sawUserID)
+	}
+	if sawAdminRole != "" {
+		t.Fatalf("X-Admin-Role must be stripped at ingress, handler saw %q", sawAdminRole)
+	}
+}
+
 func TestRequestIDGeneratesWhenMissing(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)

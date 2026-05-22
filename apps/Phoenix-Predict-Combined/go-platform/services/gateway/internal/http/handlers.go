@@ -143,6 +143,17 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	}
 	predWallet := NewPredictionWalletAdapter(walletService)
 	predictionService := prediction.NewService(predRepo, predWallet)
+	predictionService.SetSettlementAuditor(settlementAuditRecorder{})
+	// ADR-0003/0004: wire the propose -> finalize resolution store + dispute API
+	// when a DB is available (the windowed path requires persistence). Hoisted
+	// out of the if so the AutoSettler (below) can share the same store.
+	var predResolutionStore prediction.ResolutionStore
+	if predDB := walletService.DB(); predDB != nil {
+		predResolutionStore = prediction.NewSQLResolutionStore(predDB)
+		predictionService.SetResolutionStore(predResolutionStore)
+		registerDisputeRoutes(mux, predictionService, predResolutionStore, wsHub)
+		registerAdminDisputeRoutes(mux, predictionService, predResolutionStore)
+	}
 	// Prediction-domain counters: orders placed (by status + side + action +
 	// type), trades produced, reconciler runs (clean/drift/error), drift
 	// events per market, settlements (by result + override). Mounted at
@@ -172,7 +183,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// SettlementEngine.{ResolveMarket,VoidMarket}). Fire-and-forget; a
 	// dropped push is recoverable on the client by refetching market state.
 	predictionService.SetMarketLifecycleHandler(func(market *prediction.Market, _ prediction.LifecycleEvent) {
-		wsHub.NotifyPredictionMarketUpdate(market.ID, buildMarketUpdatePayload(market))
+		payload := buildMarketUpdatePayload(market)
+		wsHub.NotifyPredictionMarketUpdate(market.ID, payload)
+		// ADR-0004 #7: surface resolution-phase transitions (proposed-result,
+		// under-review, finalized/settled, voided) on a typed channel for the
+		// player UI and the office review queue. Status is authoritative;
+		// richer proposal detail (challenge end time) is fetched on receipt.
+		switch market.Status {
+		case prediction.MarketStatusProposedResolution,
+			prediction.MarketStatusDisputed,
+			prediction.MarketStatusSettled,
+			prediction.MarketStatusVoided:
+			wsHub.NotifyResolutionUpdate(market.ID, string(market.Status), payload)
+		}
 	})
 	registerPredictionRoutes(mux, predictionService)
 	registerOrderRoutes(mux, predictionService, wsHub)
@@ -204,7 +227,17 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 		// Auto-settler: check every 60 seconds for closed markets with automated sources
 		settler := workers.NewAutoSettler(predRepo, feedRegistry, predWallet, 60*time.Second)
+		settler.SetSettlementAuditor(settlementAuditRecorder{})
+		// ADR-0003/0004: when a resolution store is wired, the settler proposes
+		// resolutions and finalizes them after the challenge window instead of
+		// settling immediately (no clawbacks; disputes can block finalize).
+		if predResolutionStore != nil {
+			settler.SetResolutionStore(predResolutionStore)
+		}
 		go settler.Run(context.Background())
+		// ADR-0003: per-source resolution health for the office (don't let a
+		// degraded single source stall silently).
+		registerResolutionSourceRoutes(mux, settler)
 
 		// Resting-order expirer: every 60s, finalize resting orders left on
 		// markets that became inactive (closed/settled/voided) — no
@@ -254,6 +287,10 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	// --- Wallet Routes (kept from sportsbook — adapt for prediction stakes) ---
 	registerWalletRoutes(mux, walletService)
+	// Admin-gated wallet adjustments (requireAdminRole). The ungated public
+	// credit/debit routes were removed per ADR-0002; this admin-only route is
+	// the sole HTTP money-mutation surface.
+	registerAdminWalletMutationRoutes(mux, "/api/v1/admin", walletService)
 
 	// --- Account/User Routes ---
 	registerUserRoutes(mux)
@@ -264,6 +301,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status
 	rgService := compliance.NewMockResponsibleGamblingService()
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
+	// Pre-trade jurisdiction + KYC gates (launch policy: crypto-native, outside
+	// US). Both default OFF — wired here so a single env flag activates them
+	// without a code change. See internal/http/pretrade_gate.go and
+	// docs/compliance/geofencing-kyc.md (depth pending legal sign-off).
+	tradeGeoGate = compliance.NewGeoGateFromEnv()
+	tradeKYCGate = kycService
+	// The geo gate is intentionally default-off (depth pending legal), so a
+	// missing GEO_GATE_ENABLED fails open. Make that loud in prod/staging so a
+	// deploy that MEANT to enforce "outside-US only" but forgot the flag is a
+	// visible misconfiguration, not a silent compliance gap.
+	if env := strings.ToLower(strings.TrimSpace(os.Getenv("ENVIRONMENT"))); (env == "production" || env == "staging") && !tradeGeoGate.Enabled() {
+		slog.Warn("geo gate DISABLED — jurisdiction policy NOT enforced; set GEO_GATE_ENABLED=true once legal sign-off lands", "environment", env)
+	}
 	// Gate prediction order placement through the same RG service instance the
 	// /api/v1/compliance/rg/* routes write to, so a user-set bet limit /
 	// self-exclusion / cool-off actually blocks trades (UAT 2026-05-16 LC-17:

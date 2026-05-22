@@ -73,7 +73,7 @@ func TestAdminLeaderboardCreateUpdateRecordAndRecompute(t *testing.T) {
 		bytes.NewBufferString(`{"slug":"weekly-accuracy","name":"Weekly Accuracy","description":"Best prediction rate","metricKey":"accuracy_points","eventType":"challenge","rankingMode":"max","order":"desc","status":"active","createdBy":"admin-ops-1"}`),
 	)
 	createReq.Header.Set("Content-Type", "application/json")
-	createReq.Header.Set("X-Admin-Role", "admin")
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-test", "admin-test", "admin"))
 	createRes := httptest.NewRecorder()
 	handler.ServeHTTP(createRes, createReq)
 	if createRes.Code != http.StatusOK {
@@ -95,7 +95,7 @@ func TestAdminLeaderboardCreateUpdateRecordAndRecompute(t *testing.T) {
 		bytes.NewBufferString(`{"playerId":"u-rank-1","score":88.5,"sourceType":"admin_seed","sourceId":"seed-1","idempotencyKey":"rank-entry-1"}`),
 	)
 	recordReq.Header.Set("Content-Type", "application/json")
-	recordReq.Header.Set("X-Admin-Role", "admin")
+	recordReq = recordReq.WithContext(httpx.WithTestUser(recordReq.Context(), "admin-test", "admin-test", "admin"))
 	recordRes := httptest.NewRecorder()
 	handler.ServeHTTP(recordRes, recordReq)
 	if recordRes.Code != http.StatusOK {
@@ -108,7 +108,7 @@ func TestAdminLeaderboardCreateUpdateRecordAndRecompute(t *testing.T) {
 		bytes.NewBufferString(`{"slug":"weekly-accuracy","name":"Weekly Accuracy Updated","description":"Best prediction rate","metricKey":"accuracy_points","eventType":"challenge","rankingMode":"max","order":"desc","status":"active","createdBy":"admin-ops-1"}`),
 	)
 	updateReq.Header.Set("Content-Type", "application/json")
-	updateReq.Header.Set("X-Admin-Role", "admin")
+	updateReq = updateReq.WithContext(httpx.WithTestUser(updateReq.Context(), "admin-test", "admin-test", "admin"))
 	updateRes := httptest.NewRecorder()
 	handler.ServeHTTP(updateRes, updateReq)
 	if updateRes.Code != http.StatusOK {
@@ -116,7 +116,7 @@ func TestAdminLeaderboardCreateUpdateRecordAndRecompute(t *testing.T) {
 	}
 
 	recomputeReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/leaderboards/"+leaderboardID+"/recompute", nil)
-	recomputeReq.Header.Set("X-Admin-Role", "admin")
+	recomputeReq = recomputeReq.WithContext(httpx.WithTestUser(recomputeReq.Context(), "admin-test", "admin-test", "admin"))
 	recomputeRes := httptest.NewRecorder()
 	handler.ServeHTTP(recomputeRes, recomputeReq)
 	if recomputeRes.Code != http.StatusOK {

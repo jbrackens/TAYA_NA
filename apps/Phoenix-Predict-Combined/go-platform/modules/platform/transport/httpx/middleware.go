@@ -234,6 +234,17 @@ func Auth(authServiceURL string, publicPrefixes []string) Middleware {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Identity and privilege are established only by trusted middleware:
+			// this Auth middleware sets them in the request context, and the bot
+			// API-key middleware sets X-User-ID after validating the key. Strip
+			// any client-supplied copies at ingress — for public and protected
+			// routes alike — so a request header can never be a source of
+			// identity or privilege.
+			r.Header.Del("X-User-ID")
+			r.Header.Del("X-Admin-Role")
+			r.Header.Del("X-Bot-Scopes")
+			r.Header.Del("X-Bot-Key-ID")
+
 			// Check if path is public
 			path := r.URL.Path
 			for _, prefix := range publicPrefixes {

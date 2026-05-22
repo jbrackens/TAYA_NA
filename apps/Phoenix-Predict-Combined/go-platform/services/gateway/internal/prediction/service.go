@@ -296,6 +296,12 @@ func (s *Service) SetMarketLifecycleHandler(fn MarketLifecycleHandler) {
 	s.settlement.SetMarketLifecycleHandler(fn)
 }
 
+// SetSettlementAuditor wires the optional settlement audit recorder onto the
+// settlement engine. Pass nil to disable.
+func (s *Service) SetSettlementAuditor(a SettlementAuditor) {
+	s.settlement.SetSettlementAuditor(a)
+}
+
 // --- Categories ---
 
 func (s *Service) ListCategories(ctx context.Context, activeOnly bool) ([]Category, error) {
@@ -1142,6 +1148,32 @@ func (s *Service) ResolveMarket(ctx context.Context, marketID string, req Resolv
 
 func (s *Service) VoidMarket(ctx context.Context, marketID, reason string, actorID *string) ([]Payout, error) {
 	return s.settlement.VoidMarket(ctx, marketID, reason, actorID)
+}
+
+// SetResolutionStore wires the propose -> finalize resolution store onto the
+// settlement engine. Pass nil to disable the windowed path.
+func (s *Service) SetResolutionStore(store ResolutionStore) {
+	s.settlement.SetResolutionStore(store)
+}
+
+// ProposeResolution records a proposed result and opens the challenge window.
+func (s *Service) ProposeResolution(ctx context.Context, marketID string, req ResolveMarketRequest, proposedBy *string, window time.Duration) (*ResolutionProposal, error) {
+	return s.settlement.ProposeResolution(ctx, req, marketID, proposedBy, window)
+}
+
+// FinalizeResolution finalizes a proposed resolution after the window elapses.
+func (s *Service) FinalizeResolution(ctx context.Context, marketID string, finalizedBy *string) (*Settlement, []Payout, error) {
+	return s.settlement.FinalizeResolution(ctx, marketID, finalizedBy)
+}
+
+// MarkMarketDisputed transitions a market to disputed when a dispute is filed.
+func (s *Service) MarkMarketDisputed(ctx context.Context, marketID, disputerID string) error {
+	return s.settlement.MarkMarketDisputed(ctx, marketID, disputerID)
+}
+
+// ResolveDispute applies an admin uphold (void+refund) / reject decision.
+func (s *Service) ResolveDispute(ctx context.Context, disputeID string, uphold bool, note string, resolvedBy *string) (*Dispute, error) {
+	return s.settlement.ResolveDispute(ctx, disputeID, uphold, note, resolvedBy)
 }
 
 // --- Market Trades ---

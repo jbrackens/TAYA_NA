@@ -160,3 +160,39 @@ func TestRegisterPaymentRoutes_WebhookAcceptsValidSignature(t *testing.T) {
 		t.Fatalf("expected webhook service to run once, got %d calls", service.webhookCalls)
 	}
 }
+
+func TestRegisterPaymentRoutes_WebhookRejectsExpiredTimestamp(t *testing.T) {
+	t.Setenv(webhookSecretEnv, "whsec_test")
+
+	service := &stubPaymentService{}
+	mux := http.NewServeMux()
+	RegisterPaymentRoutes(mux, service)
+
+	// A validly-signed message whose timestamp is older than the replay window
+	// must be rejected — this is the captured-and-replayed webhook attack.
+	body, err := json.Marshal(WebhookPayload{
+		EventType:     "deposit.confirmed",
+		TransactionID: "dep:test",
+		UserID:        "u-1",
+		Amount:        100,
+		Status:        "approved",
+		Timestamp:     time.Now().UTC().Add(-10 * time.Minute).Format(time.RFC3339),
+	})
+	if err != nil {
+		t.Fatalf("marshal webhook body: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/payments/webhook", strings.NewReader(string(body)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(webhookSignatureHeader, signWebhookBody("whsec_test", body))
+	rec := httptest.NewRecorder()
+
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for replayed (expired-timestamp) webhook, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	if service.webhookCalls != 0 {
+		t.Fatalf("expected webhook service not to run for expired timestamp, got %d calls", service.webhookCalls)
+	}
+}

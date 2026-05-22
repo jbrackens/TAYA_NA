@@ -136,7 +136,7 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 
 	payload := []byte(`{"playerId":"u-loyalty-admin-1","pointsDelta":250,"idempotencyKey":"adj-1","reason":"manual goodwill","createdBy":"admin-ops-1","entrySubtype":"goodwill"}`)
 	adjustReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/loyalty/adjustments", bytes.NewBuffer(payload))
-	adjustReq.Header.Set("X-Admin-Role", "admin")
+	adjustReq = adjustReq.WithContext(httpx.WithTestUser(adjustReq.Context(), "admin-test", "admin-test", "admin"))
 	adjustRes := httptest.NewRecorder()
 	handler.ServeHTTP(adjustRes, adjustReq)
 	if adjustRes.Code != http.StatusOK {
@@ -158,7 +158,7 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 	}
 
 	listReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/accounts?search=u-loyalty-admin-1", nil)
-	listReq.Header.Set("X-Admin-Role", "admin")
+	listReq = listReq.WithContext(httpx.WithTestUser(listReq.Context(), "admin-test", "admin-test", "admin"))
 	listRes := httptest.NewRecorder()
 	handler.ServeHTTP(listRes, listReq)
 	if listRes.Code != http.StatusOK {
@@ -177,7 +177,7 @@ func TestAdminLoyaltyAdjustmentAndDetailFlow(t *testing.T) {
 	}
 
 	detailReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/accounts/u-loyalty-admin-1?limit=5", nil)
-	detailReq.Header.Set("X-Admin-Role", "admin")
+	detailReq = detailReq.WithContext(httpx.WithTestUser(detailReq.Context(), "admin-test", "admin-test", "admin"))
 	detailRes := httptest.NewRecorder()
 	handler.ServeHTTP(detailRes, detailReq)
 	if detailRes.Code != http.StatusOK {
@@ -226,7 +226,7 @@ func TestReferralRegistrationAndPlayerListFlow(t *testing.T) {
 		bytes.NewBufferString(`{"referrerPlayerId":"u-referrer-office-1","referredPlayerId":"u-referred-office-1"}`),
 	)
 	createReq.Header.Set("Content-Type", "application/json")
-	createReq.Header.Set("X-Admin-Role", "admin")
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-test", "admin-test", "admin"))
 	createRes := httptest.NewRecorder()
 	handler.ServeHTTP(createRes, createReq)
 	if createRes.Code != http.StatusOK {
@@ -265,7 +265,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
 
 	configReq := httptest.NewRequest(http.MethodGet, "/api/v1/admin/loyalty/config", nil)
-	configReq.Header.Set("X-Admin-Role", "admin")
+	configReq = configReq.WithContext(httpx.WithTestUser(configReq.Context(), "admin-test", "admin-test", "admin"))
 	configRes := httptest.NewRecorder()
 	handler.ServeHTTP(configRes, configReq)
 	if configRes.Code != http.StatusOK {
@@ -278,7 +278,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 		bytes.NewBufferString(`{"displayName":"Silver","rank":2,"minLifetimePoints":700,"minRolling30dPoints":0,"benefits":{"cashoutBoost":"priority"},"active":true}`),
 	)
 	tierReq.Header.Set("Content-Type", "application/json")
-	tierReq.Header.Set("X-Admin-Role", "admin")
+	tierReq = tierReq.WithContext(httpx.WithTestUser(tierReq.Context(), "admin-test", "admin-test", "admin"))
 	tierRes := httptest.NewRecorder()
 	handler.ServeHTTP(tierRes, tierReq)
 	if tierRes.Code != http.StatusOK {
@@ -291,7 +291,7 @@ func TestAdminLoyaltyConfigAndSettingsUpdateFlow(t *testing.T) {
 		bytes.NewBufferString(`{"name":"Default settled bet accrual","sourceType":"bet_settlement","active":true,"multiplier":2,"minQualifiedStakeCents":100,"eligibleSportIds":[],"eligibleBetTypes":[],"maxPointsPerEvent":0}`),
 	)
 	ruleReq.Header.Set("Content-Type", "application/json")
-	ruleReq.Header.Set("X-Admin-Role", "admin")
+	ruleReq = ruleReq.WithContext(httpx.WithTestUser(ruleReq.Context(), "admin-test", "admin-test", "admin"))
 	ruleRes := httptest.NewRecorder()
 	handler.ServeHTTP(ruleRes, ruleReq)
 	if ruleRes.Code != http.StatusOK {

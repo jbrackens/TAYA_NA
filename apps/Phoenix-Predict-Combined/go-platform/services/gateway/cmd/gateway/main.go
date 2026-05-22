@@ -175,6 +175,12 @@ func gatewayCSRFSkipPrefixes() []string {
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
+	// The auth kill switch is a local-dev convenience only. Refuse to boot with
+	// it disabled in any deployed environment.
+	if strings.EqualFold(strings.TrimSpace(getenv("GATEWAY_AUTH_ENABLED")), "false") &&
+		(env == "production" || env == "staging") {
+		return fmt.Errorf("GATEWAY_AUTH_ENABLED=false is not permitted when ENVIRONMENT=%s", env)
+	}
 	if env != "production" {
 		return nil
 	}
