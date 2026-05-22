@@ -1,0 +1,60 @@
+name: Migrate demo DB (Hetzner)
+
+# Manual, one-shot DB migration runner for the demo box (91.98.118.132).
+#
+# deploy-demo.yml deliberately does NOT run migrations (they're one-time data
+# ops, not per-deploy), so this is the controlled way to apply a pending
+# migration (e.g. 023_resolution_proposals_disputes) to the box. It SSHes to the
+# box reusing the deploy SSH key and runs goose in a throwaway golang container
+# on the compose network, against the migration source already rsynced to
+# /opt/phoenix by the last deploy. The DSN is read from the running gateway
+# container so we always hit the right DB. goose is idempotent (it tracks the
+# applied version), so re-running `up` is safe.
+#
+# Trigger: Actions tab -> "Migrate demo DB (Hetzner)" -> Run workflow ->
+# pick a command (default: up).
+#
+# NOTE: workflow_dispatch requires this file on the DEFAULT branch (main). The
+# job only SSHes to the box and does not use the repo for the migration itself,
+# so it migrates whatever the box currently has deployed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: goose command to run against the demo DB
+        type: choice
+        options:
+          - status
+          - up
+          - down
+        default: up
+
+concurrency:
+  group: migrate-demo
+  cancel-in-progress: false
+
+env:
+  BOX: 91.98.118.132
+  SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up deploy SSH key
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Run goose ${{ inputs.command }} on the box
+        env:
+          MIGRATE_CMD: ${{ inputs.command }}
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+            "MIGRATE_CMD='${MIGRATE_CMD}' bash -s" < .github/scripts/migrate-on-box.sh
