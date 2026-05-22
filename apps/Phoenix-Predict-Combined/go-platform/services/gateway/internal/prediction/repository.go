@@ -188,6 +188,19 @@ type AtomicMarketSettlementPersister interface {
 	) error
 }
 
+// AtomicProposalPersister is an optional repository capability (ADR-0003/0004)
+// that records a resolution proposal AND the closed -> proposed_resolution
+// market transition (plus the lifecycle event) in ONE transaction. Without it a
+// crash between the proposal insert and the market update strands a proposal on
+// a still-closed market — and the proposals' UNIQUE(market_id) makes that
+// orphan unrecoverable (no re-propose), so the windowed flow could later settle
+// a market that never visibly entered the challenge window. The guarded market
+// UPDATE (status='closed') also serializes a double-propose. Callers without
+// this capability (in-memory test repos) fall back to the non-atomic path.
+type AtomicProposalPersister interface {
+	PersistProposalAtomic(ctx context.Context, proposal *ResolutionProposal, lifecycle *LifecycleEvent) error
+}
+
 // EventFilter provides filtering options for listing events.
 type EventFilter struct {
 	CategoryID *string

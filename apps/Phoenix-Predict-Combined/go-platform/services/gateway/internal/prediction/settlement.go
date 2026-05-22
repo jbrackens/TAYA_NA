@@ -122,19 +122,11 @@ func (s *SettlementEngine) ProposeResolution(ctx context.Context, req ResolveMar
 		ChallengeEndsAt:   now.Add(window),
 		ProposedAt:        now,
 	}
-	if err := s.resolutions.CreateProposal(ctx, proposal); err != nil {
-		return nil, fmt.Errorf("create resolution proposal: %w", err)
-	}
-
 	result := req.Result
 	market.Result = &result
 	if err := TransitionMarket(market, MarketStatusProposedResolution); err != nil {
 		return nil, fmt.Errorf("transition market: %w", err)
 	}
-	if err := s.repo.UpdateMarket(ctx, market); err != nil {
-		return nil, fmt.Errorf("update market: %w", err)
-	}
-
 	lifecycle := &LifecycleEvent{
 		MarketID:   marketID,
 		EventType:  string(MarketStatusProposedResolution),
@@ -142,7 +134,25 @@ func (s *SettlementEngine) ProposeResolution(ctx context.Context, req ResolveMar
 		ActorType:  actorType(proposedBy),
 		OccurredAt: now,
 	}
-	_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
+
+	// Persist the proposal + the closed -> proposed_resolution transition + the
+	// lifecycle event atomically when the repo supports it (production), so a
+	// crash can't strand an unrecoverable orphan proposal. Fall back to separate
+	// writes for in-memory test repos (effectively atomic there anyway).
+	if ap, ok := s.repo.(AtomicProposalPersister); ok {
+		if err := ap.PersistProposalAtomic(ctx, proposal, lifecycle); err != nil {
+			return nil, fmt.Errorf("persist proposal: %w", err)
+		}
+	} else {
+		if err := s.resolutions.CreateProposal(ctx, proposal); err != nil {
+			return nil, fmt.Errorf("create resolution proposal: %w", err)
+		}
+		if err := s.repo.UpdateMarket(ctx, market); err != nil {
+			return nil, fmt.Errorf("update market: %w", err)
+		}
+		_ = s.repo.CreateLifecycleEvent(ctx, lifecycle)
+	}
+
 	s.fireMarketLifecycle(market, lifecycle)
 	return proposal, nil
 }

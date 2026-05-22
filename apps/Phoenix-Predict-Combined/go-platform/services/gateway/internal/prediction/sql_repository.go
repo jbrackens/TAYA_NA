@@ -770,6 +770,58 @@ func (r *SQLRepository) PersistResolvedMarketAtomic(
 	return loyaltyResults, nil
 }
 
+// PersistProposalAtomic records a resolution proposal and the closed ->
+// proposed_resolution market transition (plus the lifecycle event) in one
+// transaction (ADR-0003/0004). The market UPDATE is guarded on status='closed',
+// so a stale read or a concurrent propose cannot double-transition: if it
+// doesn't update exactly one row the whole tx rolls back and nothing is
+// written. This prevents the unrecoverable orphan a crash between two separate
+// writes would otherwise leave (a proposal row on a still-closed market that
+// UNIQUE(market_id) blocks from being re-proposed).
+func (r *SQLRepository) PersistProposalAtomic(ctx context.Context, proposal *ResolutionProposal, lifecycle *LifecycleEvent) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	res, err := tx.ExecContext(ctx,
+		`UPDATE prediction_markets SET status=$1, result=$2, updated_at=NOW()
+		 WHERE id=$3 AND status=$4`,
+		MarketStatusProposedResolution, proposal.Result, proposal.MarketID, MarketStatusClosed,
+	)
+	if err != nil {
+		return fmt.Errorf("transition market: %w", err)
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("market %s is not closed; cannot propose", proposal.MarketID)
+	}
+
+	if err := tx.QueryRowContext(ctx,
+		`INSERT INTO prediction_resolution_proposals
+		   (market_id, result, status, attestation_source, attestation_id,
+		    attestation_digest, attestation_data, proposed_by, challenge_ends_at, proposed_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		 RETURNING id`,
+		proposal.MarketID, proposal.Result, proposal.Status, proposal.AttestationSource,
+		proposal.AttestationID, proposal.AttestationDigest, string(proposal.AttestationData),
+		proposal.ProposedBy, proposal.ChallengeEndsAt, proposal.ProposedAt,
+	).Scan(&proposal.ID); err != nil {
+		return fmt.Errorf("insert proposal: %w", err)
+	}
+
+	if lifecycle != nil {
+		if err := r.createLifecycleEventWithExec(ctx, tx, lifecycle); err != nil {
+			return fmt.Errorf("create lifecycle event: %w", err)
+		}
+	}
+	return tx.Commit()
+}
+
 func (r *SQLRepository) PersistVoidedMarketAtomic(
 	ctx context.Context,
 	wallet WalletAdapter,
