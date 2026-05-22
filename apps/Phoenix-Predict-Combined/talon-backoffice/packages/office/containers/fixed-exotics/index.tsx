@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -89,14 +89,10 @@ const FixedExoticsContainer = () => {
     return validateAndCheckEligibility(token, [PunterRoleEnum.ADMIN]);
   }, []);
 
-  const [triggerList, listLoading, listResponse] = useApi<FixedExoticListPayload>(
-    "admin/exotics/fixed/quotes",
-    Method.GET,
-  );
-  const [triggerOpsList, opsLoading, opsResponse] = useApi<FixedExoticListPayload>(
-    "admin/exotics/fixed/quotes",
-    Method.GET,
-  );
+  const [triggerList, listLoading, listResponse] =
+    useApi<FixedExoticListPayload>("admin/exotics/fixed/quotes", Method.GET);
+  const [triggerOpsList, opsLoading, opsResponse] =
+    useApi<FixedExoticListPayload>("admin/exotics/fixed/quotes", Method.GET);
   const [triggerAuditLogsList, auditLogsLoading, auditLogsResponse] =
     useApi<AuditLogListPayload>("admin/audit-logs", Method.GET);
   const [triggerDetails, detailsLoading, detailsResponse] =
@@ -323,7 +319,9 @@ const FixedExoticsContainer = () => {
                   size="small"
                   danger
                   disabled={!canExpire}
-                  title={!canExpireQuotes ? t("EXPIRE_DISABLED_ADMIN_ONLY") : ""}
+                  title={
+                    !canExpireQuotes ? t("EXPIRE_DISABLED_ADMIN_ONLY") : ""
+                  }
                   loading={expireLoading && expireQuoteId === record.quoteId}
                   onClick={() => openExpire(record.quoteId)}
                 >
@@ -389,7 +387,9 @@ const FixedExoticsContainer = () => {
           </Col>
         </Row>
         <div style={{ marginTop: 16 }}>
-          <Typography.Text strong>{t("OPS_RECENT_EXPIRES_TITLE")}</Typography.Text>
+          <Typography.Text strong>
+            {t("OPS_RECENT_EXPIRES_TITLE")}
+          </Typography.Text>
           <List
             size="small"
             dataSource={recentExpireLogs}
@@ -410,7 +410,10 @@ const FixedExoticsContainer = () => {
                       {occurredAt}
                     </Typography.Text>
                     {details && (
-                      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                      <Typography.Text
+                        type="secondary"
+                        style={{ fontSize: 12 }}
+                      >
                         {details}
                       </Typography.Text>
                     )}

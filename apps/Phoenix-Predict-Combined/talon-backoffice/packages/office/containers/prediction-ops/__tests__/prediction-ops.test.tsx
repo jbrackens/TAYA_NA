@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ThemeProvider } from "styled-components";
@@ -96,7 +95,9 @@ describe("PredictionOpsContainer", () => {
             participants: 1842,
             summary: "A flagship crypto prediction market.",
             insight: "ETF inflows and macro easing kept YES in control.",
-            rules: ["Resolves YES if BTC trades above 120k before market close."],
+            rules: [
+              "Resolves YES if BTC trades above 120k before market close.",
+            ],
             tags: ["Featured", "Live"],
             resolutionSource: "Composite BTC/USD reference basket",
             heroMetricLabel: "Implied YES",
@@ -148,7 +149,8 @@ describe("PredictionOpsContainer", () => {
             actorId: "admin-risk-1",
             targetId: "pm-btc-120k-2026",
             occurredAt: "2026-03-07T11:00:00Z",
-            details: "Operator refreshed live pricing bands after upstream market move.",
+            details:
+              "Operator refreshed live pricing bands after upstream market move.",
             product: "prediction",
           },
         ],
@@ -177,21 +179,57 @@ describe("PredictionOpsContainer", () => {
 
     mockedUseApi.mockImplementation((url: string) => {
       if (url === "admin/prediction/summary") {
-        return [jest.fn().mockResolvedValue({}), false, summaryResponse, jest.fn(), jest.fn()];
+        return [
+          jest.fn().mockResolvedValue({}),
+          false,
+          summaryResponse,
+          jest.fn(),
+          jest.fn(),
+        ];
       }
       if (url === "admin/prediction/markets") {
-        return [jest.fn().mockResolvedValue({}), false, marketsResponse, jest.fn(), jest.fn()];
+        return [
+          jest.fn().mockResolvedValue({}),
+          false,
+          marketsResponse,
+          jest.fn(),
+          jest.fn(),
+        ];
       }
       if (url === "admin/prediction/orders") {
-        return [jest.fn().mockResolvedValue({}), false, ordersResponse, jest.fn(), jest.fn()];
+        return [
+          jest.fn().mockResolvedValue({}),
+          false,
+          ordersResponse,
+          jest.fn(),
+          jest.fn(),
+        ];
       }
       if (url === "admin/prediction/markets/:id/lifecycle") {
-        return [jest.fn().mockResolvedValue({}), false, lifecycleHistoryResponse, jest.fn(), jest.fn()];
+        return [
+          jest.fn().mockResolvedValue({}),
+          false,
+          lifecycleHistoryResponse,
+          jest.fn(),
+          jest.fn(),
+        ];
       }
       if (url === "admin/audit-logs") {
-        return [jest.fn().mockResolvedValue({}), false, auditLogsResponse, jest.fn(), jest.fn()];
+        return [
+          jest.fn().mockResolvedValue({}),
+          false,
+          auditLogsResponse,
+          jest.fn(),
+          jest.fn(),
+        ];
       }
-      return [jest.fn().mockResolvedValue({}), false, defaultResponse, jest.fn(), jest.fn()];
+      return [
+        jest.fn().mockResolvedValue({}),
+        false,
+        defaultResponse,
+        jest.fn(),
+        jest.fn(),
+      ];
     });
   });
 
@@ -222,8 +260,12 @@ describe("PredictionOpsContainer", () => {
 
     expect(await screen.findByText("READ_ONLY_WARNING")).toBeInTheDocument();
     expect(screen.getByText("READ_ONLY_WARNING_DETAIL")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ACTION_SUSPEND" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "ACTION_VIEW_AUDIT" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "ACTION_SUSPEND" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "ACTION_VIEW_AUDIT" }),
+    ).toBeDisabled();
   });
 
   test("keeps operator sessions in oversight mode without audit pivots or exports", async () => {
@@ -239,8 +281,14 @@ describe("PredictionOpsContainer", () => {
     );
 
     expect(await screen.findByText("TABLE_TITLE")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "ACTION_VIEW_AUDIT" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "ACTION_EXPORT_MARKETS" })).toBeDisabled();
-    expect(screen.queryByRole("button", { name: "ACTION_EXPORT_ORDERS" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "ACTION_VIEW_AUDIT" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "ACTION_EXPORT_MARKETS" }),
+    ).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "ACTION_EXPORT_ORDERS" }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, CSSProperties } from "react";
 import {
   DataTable,
   ErrorBoundary,
-  ErrorState,
   SkeletonLoader,
 } from "../../components/shared";
 import type { ColumnDef } from "../../components/shared";
@@ -186,16 +185,16 @@ function CampaignsPageContent() {
 
   const campaignColumns: ColumnDef<CampaignRow>[] = useMemo(
     () => [
-      { key: "name", header: "Name", render: (row) => row.name },
+      { key: "name", label: "Name", render: (_value, row) => row.name },
       {
-        key: "type",
-        header: "Type",
-        render: (row) => row.campaign_type.replace(/_/g, " "),
+        key: "campaign_type",
+        label: "Type",
+        render: (_value, row) => row.campaign_type.replace(/_/g, " "),
       },
       {
         key: "status",
-        header: "Status",
-        render: (row) => {
+        label: "Status",
+        render: (_value, row) => {
           const c = statusColor(row.status);
           return (
             <span
@@ -214,19 +213,19 @@ function CampaignsPageContent() {
         },
       },
       {
-        key: "claims",
-        header: "Claims",
-        render: (row) => String(row.claim_count),
+        key: "claim_count",
+        label: "Claims",
+        render: (_value, row) => String(row.claim_count),
       },
       {
-        key: "spent",
-        header: "Spent",
-        render: (row) => `$${(row.spent_cents / 100).toFixed(2)}`,
+        key: "spent_cents",
+        label: "Spent",
+        render: (_value, row) => `$${(row.spent_cents / 100).toFixed(2)}`,
       },
       {
-        key: "actions",
-        header: "",
-        render: (row) => (
+        key: "id",
+        label: "",
+        render: (_value, row) => (
           <div style={{ display: "flex", gap: "4px" }}>
             {(row.status === "draft" || row.status === "paused") && (
               <button
@@ -258,24 +257,25 @@ function CampaignsPageContent() {
   const bonusColumns: ColumnDef<BonusRow>[] = useMemo(
     () => [
       {
-        key: "user",
-        header: "Player",
-        render: (row) => row.user_id.slice(0, 12) + "...",
+        key: "user_id",
+        label: "Player",
+        render: (_value, row) => row.user_id.slice(0, 12) + "...",
       },
       {
-        key: "type",
-        header: "Type",
-        render: (row) => row.bonus_type.replace(/_/g, " "),
+        key: "bonus_type",
+        label: "Type",
+        render: (_value, row) => row.bonus_type.replace(/_/g, " "),
       },
       {
-        key: "amount",
-        header: "Amount",
-        render: (row) => `$${(row.granted_amount_cents / 100).toFixed(2)}`,
+        key: "granted_amount_cents",
+        label: "Amount",
+        render: (_value, row) =>
+          `$${(row.granted_amount_cents / 100).toFixed(2)}`,
       },
       {
-        key: "progress",
-        header: "Wagering",
-        render: (row) => {
+        key: "wagering_required_cents",
+        label: "Wagering",
+        render: (_value, row) => {
           if (row.wagering_required_cents <= 0) return "—";
           const pct = Math.round(
             (row.wagering_completed_cents / row.wagering_required_cents) * 100,
@@ -285,8 +285,8 @@ function CampaignsPageContent() {
       },
       {
         key: "status",
-        header: "Status",
-        render: (row) => {
+        label: "Status",
+        render: (_value, row) => {
           const c = statusColor(row.status);
           return (
             <span
@@ -305,9 +305,9 @@ function CampaignsPageContent() {
         },
       },
       {
-        key: "actions",
-        header: "",
-        render: (row) =>
+        key: "id",
+        label: "",
+        render: (_value, row) =>
           row.status === "active" ? (
             <button
               onClick={() => forfeitBonus(row.id)}
@@ -438,7 +438,7 @@ function CampaignsPageContent() {
       )}
 
       {isLoading ? (
-        <SkeletonLoader rows={5} />
+        <SkeletonLoader count={5} />
       ) : activeTab === "campaigns" ? (
         <DataTable
           data={campaigns}

@@ -1,4 +1,3 @@
-import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { useRouter } from "next/router";
@@ -215,11 +214,29 @@ describe("RiskManagementSummaryContainer", () => {
             jest.fn(),
           ];
         case "admin/wallet/corrections/tasks":
-          return [triggerCorrectionTasks, false, { succeeded: true, data: { items: [], summary: {} } }, jest.fn(), jest.fn()];
+          return [
+            triggerCorrectionTasks,
+            false,
+            { succeeded: true, data: { items: [], summary: {} } },
+            jest.fn(),
+            jest.fn(),
+          ];
         case "admin/risk/player-scores":
-          return [triggerRiskPlayerScore, false, { succeeded: true, data: {} }, jest.fn(), jest.fn()];
+          return [
+            triggerRiskPlayerScore,
+            false,
+            { succeeded: true, data: {} },
+            jest.fn(),
+            jest.fn(),
+          ];
         case "admin/risk/segments":
-          return [triggerRiskSegments, false, { succeeded: true, data: { items: [] } }, jest.fn(), jest.fn()];
+          return [
+            triggerRiskSegments,
+            false,
+            { succeeded: true, data: { items: [] } },
+            jest.fn(),
+            jest.fn(),
+          ];
         default:
           return [jest.fn(), false, {}, jest.fn(), jest.fn()];
       }

@@ -19,6 +19,10 @@ export interface PageHeaderProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  // Legacy AntD PageHeader props still passed by some call sites; accepted
+  // for type-compatibility but intentionally not rendered by this shim.
+  tags?: React.ReactNode;
+  avatar?: { src?: React.ReactNode };
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({

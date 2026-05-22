@@ -2,11 +2,7 @@
 
 import styled from "styled-components";
 import { AuditLogTable } from "../../components/audit";
-import {
-  ErrorBoundary,
-  LoadingSpinner,
-  ErrorState,
-} from "../../components/shared";
+import { ErrorBoundary, ErrorState } from "../../components/shared";
 import { useState, useEffect } from "react";
 import { adminFetch } from "../../lib/admin-fetch";
 
@@ -115,23 +111,23 @@ function AuditLogsPageContent() {
           throw new Error("Failed to load audit logs");
         }
         const data = await response.json();
-        let items = (Array.isArray(data?.items) ? data.items : []).map(
-          (item: any) => {
-            const entityType = deriveEntityType(
-              item.action || "",
-              item.targetId || "",
-            );
-            return {
-              id: item.id,
-              timestamp: item.occurredAt,
-              actor: item.actorId,
-              action: deriveActionLabel(item.action || ""),
-              entityType,
-              entityId: item.targetId || "system",
-              dataAfter: item.details ? { details: item.details } : undefined,
-            } as AuditLogEntry;
-          },
-        );
+        let items: AuditLogEntry[] = (
+          Array.isArray(data?.items) ? data.items : []
+        ).map((item: any) => {
+          const entityType = deriveEntityType(
+            item.action || "",
+            item.targetId || "",
+          );
+          return {
+            id: item.id,
+            timestamp: item.occurredAt,
+            actor: item.actorId,
+            action: deriveActionLabel(item.action || ""),
+            entityType,
+            entityId: item.targetId || "system",
+            dataAfter: item.details ? { details: item.details } : undefined,
+          } as AuditLogEntry;
+        });
 
         if (searchTerm) {
           const search = searchTerm.toLowerCase();

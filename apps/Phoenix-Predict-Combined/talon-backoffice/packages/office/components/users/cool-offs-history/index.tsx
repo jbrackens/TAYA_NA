@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "i18n";
 import { TablePagination } from "../../../types/filters";
 import { CoolOffCause, CoolOffsHistoryData } from "../../../types/punters";

@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, Drawer, Timeline, Skeleton } from "antd";
 import { useTranslation } from "i18n";
 import UserTalonPunterRecentActivityItem from "./item";

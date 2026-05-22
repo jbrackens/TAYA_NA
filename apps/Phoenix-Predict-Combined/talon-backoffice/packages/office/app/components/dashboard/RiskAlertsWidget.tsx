@@ -66,12 +66,6 @@ const AlertTitle = styled.div`
   margin-bottom: 4px;
 `;
 
-const AlertDescription = styled.p`
-  margin: 0;
-  font-size: 11px;
-  color: var(--t2, #4a4a4a);
-`;
-
 const AlertTime = styled.span`
   font-size: 10px;
   color: var(--t2, #4a4a4a);

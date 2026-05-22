@@ -1,5 +1,5 @@
 import { PunterStatus, PunterStatusEnum, Id } from "@phoenix-ui/utils";
-import React, { useState } from "react";
+import { useState } from "react";
 import { ToggleLabels } from "../../../../types/utils";
 import { API_USERS_LIFECYCLE_URL } from "../constants";
 import LifecycleSuspend, {

@@ -1,4 +1,3 @@
-import React from "react";
 import { Tag } from "antd";
 import { useTranslation } from "i18n";
 import { FixtureStatus } from "@phoenix-ui/utils";

@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Button, Form, Input, Modal } from "antd";
 import { ActionButtonContainer, CancelButton } from "./index.styled";
 import { useApi } from "../../../../services/api/api-service";

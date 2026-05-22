@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button, Form, Space, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import InputPercentage from "../../../form/input-percentage";
@@ -36,9 +36,8 @@ const MarketsSelectionsAlign = ({
   title,
   onComplete,
 }: MarketsSelectionsAlignProps) => {
-  const [inputValue, setInputValue] = useState<InputPercentageInputValue>(
-    undefined,
-  );
+  const [inputValue, setInputValue] =
+    useState<InputPercentageInputValue>(undefined);
   const [inputValueChanged, setInputValueChanged] = useState(false);
   const [submitForm, setSubmitForm] = useState(false);
   const dispatch = useDispatch();

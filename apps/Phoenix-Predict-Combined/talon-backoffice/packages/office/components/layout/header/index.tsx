@@ -36,7 +36,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({ menu }) => {
   const handleSignOut = () => clientNukeAuth(false);
 
   const filteredMenuItems = menu?.filter((item: MenuItem) =>
-    validateAndCheckEligibility(token, item.roles),
+    validateAndCheckEligibility(token ?? "", item.roles),
   );
 
   // AntD v5 removed Menu's children/<Menu.Item> JSX API. Both menus on this

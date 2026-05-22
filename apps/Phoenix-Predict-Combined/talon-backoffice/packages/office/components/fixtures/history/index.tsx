@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, Drawer, Timeline } from "antd";
 import { useTranslation } from "i18n";
 import { orderBy } from "lodash";

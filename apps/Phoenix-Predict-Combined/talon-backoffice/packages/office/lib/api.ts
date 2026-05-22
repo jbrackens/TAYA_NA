@@ -3,7 +3,7 @@
  * Single instance of the API client for use throughout the backoffice app
  */
 
-import { PhoenixApiClient } from '@phoenix-ui/api-client';
+import { PhoenixApiClient } from "@phoenix-ui/api-client";
 
 let apiClientInstance: PhoenixApiClient | null = null;
 
@@ -12,12 +12,10 @@ let apiClientInstance: PhoenixApiClient | null = null;
  */
 export function getApiClient(): PhoenixApiClient {
   if (!apiClientInstance) {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:18080';
-    const authUrl = process.env.NEXT_PUBLIC_AUTH_URL || 'http://localhost:18081';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
 
     apiClientInstance = new PhoenixApiClient({
       baseUrl,
-      authUrl,
       timeout: 30000,
       retryAttempts: 3,
       retryDelay: 100,

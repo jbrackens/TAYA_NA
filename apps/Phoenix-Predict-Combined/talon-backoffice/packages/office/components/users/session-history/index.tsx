@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "i18n";
 import { isEmpty, snakeCase } from "lodash";
 import dayjs from "dayjs";

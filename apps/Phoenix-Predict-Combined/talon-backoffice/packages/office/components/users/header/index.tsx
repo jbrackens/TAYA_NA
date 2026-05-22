@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import React, { FC } from "react";
+import { FC } from "react";
 import defaultMenuStructure from "../../../providers/menu/structure";
 import PageHeader from "../../layout/page-header";
 import { EditOutlined, DollarCircleOutlined } from "@ant-design/icons";
@@ -21,9 +21,8 @@ import {
 import UserAddNote from "../notes/add";
 import UserLifecycleSuspend from "../lifecycle/suspend";
 
-const {
-  SHOW_FOR_SUBMISSION,
-} = require("next/config").default().publicRuntimeConfig;
+const { SHOW_FOR_SUBMISSION } =
+  require("next/config").default().publicRuntimeConfig;
 
 type Props = {
   editUserModalProps: (field?: string, currentValue?: {}) => void;
@@ -75,7 +74,11 @@ export const UsersPageHeader: FC<Props> = ({
         <Popover
           placement="bottom"
           title={t("HEADER_CARD_DETAILS_SUSPENSION_REASON")}
-          content={richStatus?.reason}
+          content={
+            richStatus?.reason
+              ? `${richStatus.reason.startTime} - ${richStatus.reason.endTime}`
+              : null
+          }
         >
           <Tag role="userStatus" color={color}>
             {t(tKey).toUpperCase()}

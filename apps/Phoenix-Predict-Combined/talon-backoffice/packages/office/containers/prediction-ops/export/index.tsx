@@ -1,4 +1,3 @@
-import React from "react";
 import { App, Button } from "antd";
 import { FileTextOutlined } from "@ant-design/icons";
 import { Button as ButtonEnum } from "@phoenix-ui/utils";

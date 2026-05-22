@@ -115,7 +115,7 @@ export function AuditLogTable({
       key: "action",
       label: "Action",
       sortable: true,
-      render: (value) => <Badge variant="primary">{value}</Badge>,
+      render: (value) => <Badge $variant="default">{value}</Badge>,
     },
     {
       key: "entityType",

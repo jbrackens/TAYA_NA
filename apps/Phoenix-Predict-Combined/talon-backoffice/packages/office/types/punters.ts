@@ -1,4 +1,12 @@
-import { Punter, PunterDetails, Id } from "@phoenix-ui/utils";
+import {
+  Punter,
+  PunterDetails,
+  Id,
+  WalletHistoryActionElement,
+  PunterStandardLimitsScope,
+  PunterSessionLimitsScope,
+  PaymentMethodTypeEnum,
+} from "@phoenix-ui/utils";
 
 export type TalonPunterShort = Punter & {};
 
@@ -6,6 +14,10 @@ export type TalonPunter = PunterDetails & {
   twoFactorAuthEnabled: boolean;
   hasActiveSession: boolean;
 };
+
+export type TalonPunterLimitsScope =
+  | PunterStandardLimitsScope
+  | PunterSessionLimitsScope;
 
 export type TalonPunterLimits = {
   [key in TalonPunterLimitsTypesEnum]?: TalonPunterLimitsScope;
@@ -17,8 +29,16 @@ export enum TalonPunterLimitsTypesEnum {
   SESSION = "session",
 }
 
+export type TalonPunterWalletPaymentMethod = {
+  type?: PaymentMethodTypeEnum;
+  details?: string;
+  adminPunterId?: Id;
+};
+
 export type TalonPunterWalletItem = WalletHistoryActionElement & {
   punter?: TalonPunter;
+  externalId?: string;
+  paymentMethod?: TalonPunterWalletPaymentMethod;
 };
 export type TalonPunterWallet = TalonPunterWalletItem[];
 
@@ -43,6 +63,11 @@ export type TalonPunterRecentActivityItem = {
 
 export type TalonPunterRecentActivityItemData = {
   [key: string]: any;
+};
+
+export type TalonPunterAuditLogCore = {
+  id: Id;
+  createdAt: string;
 };
 
 export type TalonPunterAuditLogAdjustment = TalonPunterAuditLogCore & {
@@ -86,7 +111,7 @@ export type TalonPunterNotesItem = {
   noteId: Id;
   createdAt: string;
   authorId: Id;
-  authorName: TalonNoteAuthor;
+  authorName: TalonPunterNotesAuthor;
   noteType: TalonPunterNotesType;
   text: string;
 };
@@ -118,12 +143,12 @@ export type LimitsHistoryData = {
   requestedAt: string;
 };
 
-enum CoolOffCauseEnum {
+export enum CoolOffCauseEnum {
   SELF_INITIATED = "SELF_INITIATED",
   SESSION_LIMIT_BREACH = "SESSION_LIMIT_BREACH",
 }
 
-type CoolOffCause =
+export type CoolOffCause =
   | CoolOffCauseEnum.SELF_INITIATED
   | CoolOffCauseEnum.SESSION_LIMIT_BREACH;
 

@@ -484,7 +484,7 @@ export const BasicDetails = ({
               stake: basicData.stakeLimits,
               session: basicData.sessionLimits,
             }}
-            open={limitsModalVisible}
+            visible={limitsModalVisible}
             loading={limitsUpdateInProgress}
             onClose={() => setLimitsModalVisible(false)}
             onSubmit={onSubmitUpdateLimits}

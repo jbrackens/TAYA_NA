@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   App,
   Button,
@@ -15,7 +15,6 @@ import {
   Tag,
   Tooltip,
   Typography,
-  DatePicker,
 } from "antd";
 import PageHeader from "../../components/layout/page-header";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";

@@ -9,7 +9,6 @@ import {
   Row,
   Select,
 } from "antd";
-import React from "react";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useTranslation } from "i18n";

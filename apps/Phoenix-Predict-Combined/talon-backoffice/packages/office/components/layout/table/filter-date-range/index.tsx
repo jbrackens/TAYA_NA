@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Space, DatePicker } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { RefsCollection } from "../../../../lib/utils/filters";
 import { useTranslation } from "i18n";
 import { FilterButton } from "./index.styled";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 type TableFilterDateRangeProps = {
   dataIndex: string;
@@ -35,13 +35,19 @@ const TableFilterDateRange = ({
     defaultUntilValue || "",
   );
 
-  const handleSinceChange = (_e: any, dateString: string) => {
-    const value = dateString;
+  const handleSinceChange = (
+    _e: Dayjs | null,
+    dateString: string | string[],
+  ) => {
+    const value = Array.isArray(dateString) ? dateString[0] : dateString;
     setSearchSinceValue(value);
   };
 
-  const handleUntilChange = (_e: any, dateString: string) => {
-    const value = dateString;
+  const handleUntilChange = (
+    _e: Dayjs | null,
+    dateString: string | string[],
+  ) => {
+    const value = Array.isArray(dateString) ? dateString[0] : dateString;
     setSearchUntilValue(value);
   };
 

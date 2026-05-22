@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "i18n";
 import { SelectionOdd, Layout, Button as ButtonEnum } from "@phoenix-ui/utils";
 import Table from "../../layout/table";

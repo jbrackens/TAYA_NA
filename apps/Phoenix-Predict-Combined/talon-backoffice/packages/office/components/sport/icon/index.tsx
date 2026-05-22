@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { SportIconStyled } from "./index.styled";
 
 const { CDN_URL } = require("next/config").default().publicRuntimeConfig;

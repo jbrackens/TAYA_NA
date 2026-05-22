@@ -1,8 +1,5 @@
-import React, { ReactNode, useState, useEffect } from "react";
-import {
-  validateAndCheckEligibility,
-  resolveToken,
-} from "../../../utils/auth";
+import { ReactNode, useState, useEffect } from "react";
+import { validateAndCheckEligibility, resolveToken } from "../../../utils/auth";
 import { PunterRoles } from "@phoenix-ui/utils";
 
 export type ProtectedProps = {
@@ -15,7 +12,7 @@ const Protected = ({ children, roles }: ProtectedProps) => {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const token = mounted ? resolveToken() : null;
-  if (validateAndCheckEligibility(token, roles)) {
+  if (validateAndCheckEligibility(token ?? "", roles)) {
     return <>{children}</>;
   }
   return null;

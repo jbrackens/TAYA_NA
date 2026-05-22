@@ -1,4 +1,3 @@
-import React from "react";
 import { Tag } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";
@@ -162,9 +161,7 @@ const UsersDetailsBetsList = ({
       },
       {
         title: t("page-bets:HEADER_BET_FIXTURE"),
-        render: ({ fixture }: TalonBetLeg) => (
-          <span>{fixture.name}</span>
-        ),
+        render: ({ fixture }: TalonBetLeg) => <span>{fixture.name}</span>,
       },
       {
         title: t("page-bets:HEADER_BET_MARKET"),

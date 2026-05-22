@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { PunterSearch } from "../../components/users";
 import {
   ErrorBoundary,
-  LoadingSpinner,
   ErrorState,
   SkeletonLoader,
 } from "../../components/shared";

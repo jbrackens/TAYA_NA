@@ -46,15 +46,6 @@ const StyledButton = styled(Button)`
   width: 100%;
 `;
 
-const WarningText = styled.p`
-  margin: 12px 0 0 0;
-  font-size: 11px;
-  color: var(--no-text, #a8472d);
-  padding: 8px;
-  background-color: rgba(248, 113, 113, 0.1);
-  border-radius: 3px;
-`;
-
 interface AccountActionsProps {
   currentStatus?: "active" | "suspended" | "inactive";
   onAction?: (action: string, data?: any) => void | Promise<void>;

@@ -1,4 +1,3 @@
-import React from "react";
 import { Input, Form, Select } from "antd";
 import { FormFieldWrapper } from "./../index.styled";
 const { Option } = Select;

@@ -1,5 +1,13 @@
 import styled from "styled-components";
 import { Layout, Menu as MenuComponent } from "antd";
+import type { ComponentType, ComponentProps } from "react";
+
+const LayoutHeader19 = Layout.Header as ComponentType<
+  ComponentProps<typeof Layout.Header>
+>;
+const MenuComponent19 = MenuComponent as ComponentType<
+  ComponentProps<typeof MenuComponent>
+>;
 
 // P8 office chrome (2026-04-28). Reads from the styled-components
 // ThemeProvider set in pages/_app.js — see DESIGN.md §11 for the
@@ -11,7 +19,7 @@ import { Layout, Menu as MenuComponent } from "antd";
 // supported here so a future theme refactor can re-introduce
 // per-key overrides without touching this file.
 
-export const Header = styled(Layout.Header)`
+export const Header = styled(LayoutHeader19)`
   display: flex;
   align-items: center;
   width: 100vw;
@@ -33,7 +41,7 @@ export const Header = styled(Layout.Header)`
   }
 `;
 
-export const Menu = styled(MenuComponent)`
+export const Menu = styled(MenuComponent19)`
   flex-grow: 1;
   background: transparent;
   border-bottom: 0;

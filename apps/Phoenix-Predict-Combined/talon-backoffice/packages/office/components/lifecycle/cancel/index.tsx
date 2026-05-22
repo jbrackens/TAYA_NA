@@ -1,5 +1,5 @@
 import { Button as ButtonEnum, Method, useSpy, Id } from "@phoenix-ui/utils";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useApi } from "../../../services/api/api-service";
 import { Button } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
@@ -7,7 +7,7 @@ import { CloseOutlined } from "@ant-design/icons";
 export type LifecycleCancelProps = {
   id: Id;
   url: string;
-  visible: boolean;
+  open: boolean;
   disabled: boolean;
   label: string;
   onComplete: Function;
@@ -16,7 +16,7 @@ export type LifecycleCancelProps = {
 const LifecycleCancel = ({
   id,
   url,
-  visible,
+  open,
   disabled,
   label,
   onComplete,
@@ -43,7 +43,7 @@ const LifecycleCancel = ({
     }
   });
 
-  if (visible) {
+  if (open) {
     return (
       <Button
         shape={ButtonEnum.Shape.ROUND}

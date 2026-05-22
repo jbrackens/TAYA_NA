@@ -3,7 +3,6 @@ import {
   MarketLifecycleTypeEnum,
   Id,
 } from "@phoenix-ui/utils";
-import React from "react";
 import { API_MARKET_LIFECYCLE_URL } from "../constants";
 import LifecycleCancel from "../../../lifecycle/cancel";
 import { canCancel } from "./utils";

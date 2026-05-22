@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from "react";
 
 interface WebSocketMessage {
   type: string;
@@ -19,7 +19,7 @@ interface UseTradingWebSocketOptions {
 
 export function useTradingWebSocket(options: UseTradingWebSocketOptions = {}) {
   const {
-    url = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001',
+    url = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:3001",
     onMessage,
     onError,
     onConnect,
@@ -30,8 +30,12 @@ export function useTradingWebSocket(options: UseTradingWebSocketOptions = {}) {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<WebSocketMessage[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
-  const messageHandlersRef = useRef<Map<string, (data: any) => void>>(new Map());
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const messageHandlersRef = useRef<Map<string, (data: any) => void>>(
+    new Map(),
+  );
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -56,7 +60,7 @@ export function useTradingWebSocket(options: UseTradingWebSocketOptions = {}) {
             handler(message.data);
           }
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          console.error("Failed to parse WebSocket message:", error);
         }
       };
 
@@ -86,27 +90,27 @@ export function useTradingWebSocket(options: UseTradingWebSocketOptions = {}) {
     setIsConnected(false);
   }, []);
 
-  const send = useCallback(
-    (type: string, data: any) => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.send(
-          JSON.stringify({
-            type,
-            data,
-            timestamp: new Date().toISOString(),
-          }),
-        );
-      } else {
-        console.warn('WebSocket is not connected');
-      }
+  const send = useCallback((type: string, data: any) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(
+        JSON.stringify({
+          type,
+          data,
+          timestamp: new Date().toISOString(),
+        }),
+      );
+    } else {
+      console.warn("WebSocket is not connected");
+    }
+  }, []);
+
+  const subscribe = useCallback(
+    (messageType: string, handler: (data: any) => void) => {
+      messageHandlersRef.current.set(messageType, handler);
+      return () => messageHandlersRef.current.delete(messageType);
     },
     [],
   );
-
-  const subscribe = useCallback((messageType: string, handler: (data: any) => void) => {
-    messageHandlersRef.current.set(messageType, handler);
-    return () => messageHandlersRef.current.delete(messageType);
-  }, []);
 
   useEffect(() => {
     if (autoConnect) {

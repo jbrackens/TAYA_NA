@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -63,17 +63,25 @@ const RiskManagementSummaryContainer = () => {
     () => parsePromoUsageFiltersFromQuery(router.query),
     [router.query],
   );
-  const [formFilters, setFormFilters] = useState<PromoUsageFilters>(
-    queryFilters,
-  );
+  const [formFilters, setFormFilters] =
+    useState<PromoUsageFilters>(queryFilters);
   const [reportDate, setReportDate] = useState("");
 
   const [triggerPromoUsage, isLoading, promoUsageResponse] =
     useApi<PromoUsageResponse>("admin/promotions/usage", Method.GET);
-  const [triggerCorrectionTasks, isCorrectionTasksLoading, correctionTasksResponse] =
-    useApi<WalletCorrectionResponse>("admin/wallet/corrections/tasks", Method.GET);
-  const [triggerRiskPlayerScore, isRiskPlayerScoreLoading, riskPlayerScoreResponse] =
-    useApi<RiskPlayerScore>("admin/risk/player-scores", Method.GET);
+  const [
+    triggerCorrectionTasks,
+    isCorrectionTasksLoading,
+    correctionTasksResponse,
+  ] = useApi<WalletCorrectionResponse>(
+    "admin/wallet/corrections/tasks",
+    Method.GET,
+  );
+  const [
+    triggerRiskPlayerScore,
+    isRiskPlayerScoreLoading,
+    riskPlayerScoreResponse,
+  ] = useApi<RiskPlayerScore>("admin/risk/player-scores", Method.GET);
   const [triggerRiskSegments, isRiskSegmentsLoading, riskSegmentsResponse] =
     useApi<RiskSegmentsResponse>("admin/risk/segments", Method.GET);
   const [
@@ -83,12 +91,21 @@ const RiskManagementSummaryContainer = () => {
   ] = useApi<PredictionAdminSummary>("admin/prediction/summary", Method.GET);
   const [triggerDailyReport, isDailyReportLoading, dailyReportResponse] =
     useApi<DailyReportsResponse>("admin/reports/daily", Method.POST);
-  const [triggerRepeatDailyReport, isRepeatDailyReportLoading, repeatDailyReportResponse] =
-    useApi<DailyReportsResponse>("admin/reports/daily/repeat", Method.GET);
-  const [triggerExcludedPuntersExport, isExcludedPuntersExportLoading, excludedPuntersExportResponse] =
-    useApi<any>("admin/punters/exclusions/export", Method.POST);
-  const [triggerUserTransactionsExport, isUserTransactionsExportLoading, userTransactionsExportResponse] =
-    useApi<any>("admin/punters/:id/transactions/export", Method.GET);
+  const [
+    triggerRepeatDailyReport,
+    isRepeatDailyReportLoading,
+    repeatDailyReportResponse,
+  ] = useApi<DailyReportsResponse>("admin/reports/daily/repeat", Method.GET);
+  const [
+    triggerExcludedPuntersExport,
+    isExcludedPuntersExportLoading,
+    excludedPuntersExportResponse,
+  ] = useApi<any>("admin/punters/exclusions/export", Method.POST);
+  const [
+    triggerUserTransactionsExport,
+    isUserTransactionsExportLoading,
+    userTransactionsExportResponse,
+  ] = useApi<any>("admin/punters/:id/transactions/export", Method.GET);
 
   const summary = useMemo(
     () =>
@@ -405,7 +422,9 @@ const RiskManagementSummaryContainer = () => {
     },
   ];
   const isRiskLoading =
-    isCorrectionTasksLoading || isRiskPlayerScoreLoading || isRiskSegmentsLoading;
+    isCorrectionTasksLoading ||
+    isRiskPlayerScoreLoading ||
+    isRiskSegmentsLoading;
 
   return (
     <>
@@ -491,7 +510,11 @@ const RiskManagementSummaryContainer = () => {
             />
           </Col>
           <Col span={24}>
-            <Button type="primary" onClick={applyFilters} style={{ marginRight: 8 }}>
+            <Button
+              type="primary"
+              onClick={applyFilters}
+              style={{ marginRight: 8 }}
+            >
               {t("FILTER_APPLY")}
             </Button>
             <Button onClick={resetFilters}>{t("FILTER_RESET")}</Button>
@@ -502,7 +525,11 @@ const RiskManagementSummaryContainer = () => {
         </Row>
       </Card>
 
-      <Card title={t("SUMMARY_TITLE")} loading={isLoading} style={{ marginBottom: 16 }}>
+      <Card
+        title={t("SUMMARY_TITLE")}
+        loading={isLoading}
+        style={{ marginBottom: 16 }}
+      >
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12} lg={6}>
             <Typography.Text type="secondary">
@@ -732,7 +759,11 @@ const RiskManagementSummaryContainer = () => {
         </Col>
       </Row>
 
-      <Card title={t("RISK_INTELLIGENCE_TITLE")} loading={isRiskLoading} style={{ marginTop: 16 }}>
+      <Card
+        title={t("RISK_INTELLIGENCE_TITLE")}
+        loading={isRiskLoading}
+        style={{ marginTop: 16 }}
+      >
         <Row gutter={[16, 16]}>
           <Col xs={24} md={8}>
             <Typography.Text type="secondary">

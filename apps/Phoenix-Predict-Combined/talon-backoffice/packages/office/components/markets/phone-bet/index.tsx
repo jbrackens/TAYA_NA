@@ -7,12 +7,7 @@ import FormModal from "../../form/modal";
 import { TalonMarket } from "../../../types/market";
 import { TalonSelectionOdd } from "../../../types/selections";
 import { useApi } from "../../../services/api/api-service";
-import {
-  Method,
-  SpyCallbackProps,
-  useSpy,
-  DisplayOdds,
-} from "@phoenix-ui/utils";
+import { Method, SpyCallbackProps, useSpy } from "@phoenix-ui/utils";
 import { TalonPunterShort } from "../../../types/punters";
 
 const { Option, OptGroup } = Select;
@@ -27,7 +22,7 @@ export type MarketsSelectionsPhoneBetProps = {
 
 type MarketsSelectionsBetsInitValues = {
   id: string;
-  odds: DisplayOdds;
+  odds: number | undefined;
 };
 
 const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
@@ -182,7 +177,7 @@ const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
         "page-bets:BET_MODAL_FORM_ODD",
       )}`}
       name={`bet-${value}`}
-      initialValue={selection?.displayOdds.decimal}
+      initialValue={selection?.displayOdds?.decimal}
       rules={[
         {
           required: true,
@@ -192,7 +187,7 @@ const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
     >
       <InputNumber
         disabled={loading}
-        min={selection?.displayOdds.decimal}
+        min={selection?.displayOdds?.decimal}
         step={0.01}
       />
     </Form.Item>
@@ -203,7 +198,7 @@ const MarketsSelectionsPhoneBet: React.FC<MarketsSelectionsPhoneBetProps> = ({
     selection: TalonSelectionOdd,
   ): MarketsSelectionsBetsInitValues => ({
     id: value,
-    odds: selection.displayOdds.decimal,
+    odds: selection.displayOdds?.decimal,
   });
 
   spy(searchValue, getPunters);

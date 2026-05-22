@@ -1,4 +1,3 @@
-import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import VerificationReviewPanel from "../verification-review";
@@ -87,8 +86,7 @@ describe("VerificationReviewPanel — decision flow", () => {
 
     mockedUseApi.mockImplementation((url: string) => {
       if (
-        url ===
-        "admin/providers/idcomply/verification-sessions/review-queue"
+        url === "admin/providers/idcomply/verification-sessions/review-queue"
       ) {
         return buildMockTuple(triggerQueue, false, queueResponse);
       }
@@ -159,9 +157,7 @@ describe("VerificationReviewPanel — decision flow", () => {
     });
 
     // Open the Select dropdown and pick "approved"
-    fireEvent.mouseDown(
-      screen.getByText("VERIFICATION_DECISION_PLACEHOLDER"),
-    );
+    fireEvent.mouseDown(screen.getByText("VERIFICATION_DECISION_PLACEHOLDER"));
     await waitFor(() => {
       expect(
         screen.getByText("VERIFICATION_DECISION_APPROVED"),
@@ -170,9 +166,7 @@ describe("VerificationReviewPanel — decision flow", () => {
     fireEvent.click(screen.getByText("VERIFICATION_DECISION_APPROVED"));
 
     fireEvent.change(
-      screen.getByPlaceholderText(
-        "VERIFICATION_DECISION_REASON_PLACEHOLDER",
-      ),
+      screen.getByPlaceholderText("VERIFICATION_DECISION_REASON_PLACEHOLDER"),
       { target: { value: "Documents look good" } },
     );
 
@@ -203,9 +197,7 @@ describe("VerificationReviewPanel — decision flow", () => {
       ).toBeInTheDocument();
     });
 
-    fireEvent.mouseDown(
-      screen.getByText("VERIFICATION_DECISION_PLACEHOLDER"),
-    );
+    fireEvent.mouseDown(screen.getByText("VERIFICATION_DECISION_PLACEHOLDER"));
     await waitFor(() => {
       expect(
         screen.getByText("VERIFICATION_DECISION_REJECTED"),

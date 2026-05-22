@@ -5,7 +5,7 @@ import {
   HistoryOutlined,
 } from "@ant-design/icons";
 import { isEmpty } from "lodash";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getFixturesDetails,
@@ -204,19 +204,19 @@ const FixturesDetailsContainer = ({ id }: FixturesDetailsContainerProps) => {
         </Col>
       </Row>
       <FixtureMarketsHistoryDrawer
-        open={historyVisible}
+        visible={historyVisible}
         data={history}
         onClose={handleCloseHistoryDrawer}
       />
       <FixturesDetailsUpdate
         data={basicData}
-        open={updateFormVisible}
+        visible={updateFormVisible}
         onClose={handleEditModalClose}
       />
       <MarketsSelectionsPhoneBet
         fixtureName={fixtureName}
         markets={markets}
-        open={fixturePhoneBetModalVisible}
+        visible={fixturePhoneBetModalVisible}
         onClose={handlePhoneBetModalClose}
       />
     </>

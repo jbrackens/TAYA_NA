@@ -28,6 +28,11 @@ const navItems = [
     label: "Settlements",
     icon: "check-square",
   },
+  {
+    href: "/disputes",
+    label: "Disputes",
+    icon: "shield-alert",
+  },
 ];
 
 /* Lucide icon SVG paths — inlined to avoid a runtime dependency in the office package */

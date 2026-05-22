@@ -10,7 +10,7 @@ const { TextArea } = Input;
 
 export type MarketLifecycleSettleModalProps = {
   data: SelectionOdd[];
-  visible: boolean;
+  open: boolean;
   loading: boolean;
   onSubmit: Function;
   onClose: Function;
@@ -24,7 +24,7 @@ export type MarketLifecycleSettlePayload = {
 
 const MarketLifecycleSettleModal: React.FC<MarketLifecycleSettleModalProps> = ({
   data,
-  visible,
+  open,
   loading,
   onSubmit,
   onClose,
@@ -46,7 +46,7 @@ const MarketLifecycleSettleModal: React.FC<MarketLifecycleSettleModalProps> = ({
     <FormModal
       title={t("page-markets-details:SETTLE_MODAL_HEADER")}
       name="marketSettle"
-      open={visible}
+      open={open}
       loading={loading}
       onSubmit={onFinish}
       onCancel={onClose}

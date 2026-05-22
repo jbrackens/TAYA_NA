@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import type { ComponentType, ComponentProps } from "react";
 import { Tabs, Row } from "antd";
 import type { TabsProps } from "antd";
 import styled from "styled-components";
@@ -6,6 +7,9 @@ import {
   buildTabsItemsFromChildren,
   type LegacyTabPaneProps,
 } from "./build-items";
+
+const Tabs19 = Tabs as ComponentType<ComponentProps<typeof Tabs>>;
+const Row19 = Row as ComponentType<ComponentProps<typeof Row>>;
 
 const PADDING_SIZE = 48;
 
@@ -17,7 +21,7 @@ const PADDING_SIZE = 48;
 // full prop forward, destroyInactiveTabPane → destroyOnHidden rename,
 // memoized item identity).
 
-const StyledTabs = styled(Tabs)`
+const StyledTabs = styled(Tabs19)`
   display: flex;
   flex-grow: 1;
 
@@ -65,14 +69,13 @@ export const TabsSection: React.FC<TabsSectionProps> = ({
   ...rest
 }) => {
   const items = useMemo(
-    () =>
-      buildTabsItemsFromChildren(children, TabPaneStatic, "TabsSection"),
+    () => buildTabsItemsFromChildren(children, TabPaneStatic, "TabsSection"),
     [children],
   );
   return <StyledTabs items={items} {...rest} />;
 };
 
-export const TabSectionRow = styled(Row)`
+export const TabSectionRow = styled(Row19)`
   flex-grow: 1;
 
   .ant-col {

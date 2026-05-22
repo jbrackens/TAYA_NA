@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";

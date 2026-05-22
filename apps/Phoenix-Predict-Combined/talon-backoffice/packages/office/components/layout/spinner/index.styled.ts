@@ -1,8 +1,11 @@
 import type { SpaceProps } from "antd";
 import { Space } from "antd";
 import styled from "styled-components";
+import type { ComponentType, ComponentProps } from "react";
 
-export const Wrapper = styled(Space)<SpaceProps>`
+const Space19 = Space as ComponentType<ComponentProps<typeof Space>>;
+
+export const Wrapper = styled(Space19)<SpaceProps>`
   display: flex;
   flex-direction: row;
   align-items: center;

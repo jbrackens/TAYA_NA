@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Method } from "@phoenix-ui/utils";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";

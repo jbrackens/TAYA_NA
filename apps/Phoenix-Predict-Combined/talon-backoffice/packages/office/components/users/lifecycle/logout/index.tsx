@@ -1,5 +1,5 @@
 import { Button as ButtonEnum, Method, useSpy, Id } from "@phoenix-ui/utils";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApi } from "../../../../services/api/api-service";
 import { Button } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";

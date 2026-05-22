@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, Timeline, Tag } from "antd";
 import {
   DollarCircleOutlined,

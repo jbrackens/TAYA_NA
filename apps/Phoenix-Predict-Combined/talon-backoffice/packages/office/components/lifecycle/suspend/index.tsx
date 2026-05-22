@@ -1,5 +1,5 @@
 import { Button as ButtonEnum, Method, useSpy, Id } from "@phoenix-ui/utils";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApi } from "../../../services/api/api-service";
 import { Button, Modal, Form, Input } from "antd";
 import { ToggleLabels } from "../../../types/utils";
@@ -21,7 +21,7 @@ export type LifecycleSuspendProps = {
   id: Id;
   url: string;
   active: boolean;
-  visible: boolean;
+  open: boolean;
   labels: ToggleLabels;
   actions?: LifecycleSuspendActions;
   onComplete: Function;
@@ -38,7 +38,7 @@ const LifecycleSuspend = ({
   id,
   url,
   active,
-  visible,
+  open,
   labels,
   actions = DEFAULT_LIFECYCLE_SUSPEND_ACTIONS,
   onComplete,
@@ -106,7 +106,7 @@ const LifecycleSuspend = ({
     !isModalVisible && form.resetFields();
   }, [isModalVisible]);
 
-  if (visible) {
+  if (open) {
     return (
       <>
         <Button

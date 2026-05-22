@@ -1,4 +1,3 @@
-import React from "react";
 import { Descriptions } from "antd";
 import { Layout, PunterStandardLimitsScope } from "@phoenix-ui/utils";
 import { useTranslation } from "i18n";

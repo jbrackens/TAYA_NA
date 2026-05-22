@@ -1,5 +1,5 @@
 import { App, Button, Modal, Form, Input } from "antd";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useApi } from "../../../../services/api/api-service";
 import { useTranslation } from "i18n";

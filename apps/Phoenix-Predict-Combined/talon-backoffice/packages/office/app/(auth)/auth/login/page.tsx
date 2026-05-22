@@ -20,7 +20,7 @@ export default function LoginPage() {
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl") || "/dashboard";
+  const returnUrl = searchParams?.get("returnUrl") || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

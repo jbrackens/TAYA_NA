@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { Modal, Select, Spin } from "antd";
 import { useTranslation } from "i18n";
 import { MarketVisibility, MarketVisibilityEnum } from "../../../types/market";

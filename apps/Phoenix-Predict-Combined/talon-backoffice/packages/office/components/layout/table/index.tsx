@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Table as TableComponent } from "antd";
 import type { TableProps as CoreTableProps } from "antd";
 import Spinner from "../spinner";
@@ -11,7 +11,7 @@ export type TableProps<T> = CoreTableProps<T> & {
 
 const Table = ({ scrollable, ...props }: TableProps<any>) => {
   const [tableHeight, setTableHeight] = useState(0);
-  const tableRef = useRef();
+  const tableRef = useRef<HTMLDivElement>(null);
   const { spy } = useSpy();
   const { height } = useResize(tableRef);
 

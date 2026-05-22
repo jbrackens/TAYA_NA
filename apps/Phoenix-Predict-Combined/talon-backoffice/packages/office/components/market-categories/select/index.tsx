@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Method } from "@phoenix-ui/utils";
 import { useRouter } from "next/router";
 import { Select, Spin } from "antd";
@@ -55,7 +55,9 @@ const SportSelect = () => {
       optionFilterProp="children"
       onSelect={onSelect}
       filterOption={(input, option) =>
-        option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+        String(option?.children ?? "")
+          .toLowerCase()
+          .indexOf(input.toLowerCase()) >= 0
       }
       value={selectedValue}
     >

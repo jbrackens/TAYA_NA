@@ -1,12 +1,13 @@
 import { MenuItem, MenuItemGroupEnum, MenuItemGroupedIcons } from "types/menu";
 import { DashboardOutlined, ReconciliationOutlined } from "@ant-design/icons";
+import { PunterRoleEnum } from "@phoenix-ui/utils";
 import defaultMenuStructure from "./structure";
 import { MenuModulesPathEnum } from "./structure";
 
 const OfficeRole = {
-  ADMIN: "admin",
-  TRADER: "trader",
-  OPERATOR: "operator",
+  ADMIN: PunterRoleEnum.ADMIN,
+  TRADER: PunterRoleEnum.TRADER,
+  OPERATOR: PunterRoleEnum.OPERATOR,
 } as const;
 
 // Pages Router top-nav menu items.

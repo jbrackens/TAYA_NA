@@ -31,9 +31,9 @@ const UsersDetailsLimitsUpdate: React.FC<UsersDetailsLimitsUpdateProps> = ({
   const { spy } = useSpy();
 
   const initializeValues = (values: TalonPunterLimits): TalonPunterLimits => ({
-    deposits: values.deposits || {},
-    stake: values.stake || {},
-    session: values.session || {},
+    deposits: values.deposits || undefined,
+    stake: values.stake || undefined,
+    session: values.session || undefined,
   });
 
   const onFinish = (values: FormValues): void => {

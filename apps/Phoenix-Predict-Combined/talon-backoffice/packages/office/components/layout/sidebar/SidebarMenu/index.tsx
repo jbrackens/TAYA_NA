@@ -36,7 +36,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   const { t } = useTranslation("sidebar");
 
   const filteredMenuItems = menu?.filter((item: MenuItem) =>
-    validateAndCheckEligibility(token, item.roles),
+    validateAndCheckEligibility(token ?? "", item.roles),
   );
 
   const activeItem = find(filteredMenuItems, (item: MenuItem) =>
@@ -60,22 +60,20 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   // AntD v5 removed Menu's children/<Menu.Item>/<SubMenu> JSX API; built as
   // an `items` array. Each group becomes a submenu item; an item with
   // `children` is rendered as a submenu by default.
-  const items: MenuProps["items"] = groups.map(
-    (groupItem: MenuItemGrouped) => {
-      const { icon: Icon }: any = groupItem;
-      return {
-        key: groupItem.key,
-        icon: <Icon />,
-        label: t(groupItem.label),
-        children: groupItem.children.map(
-          ({ key, label, path, absolutePath }: MenuItem) => ({
-            key,
-            label: <Link href={absolutePath || path}>{t(label)}</Link>,
-          }),
-        ),
-      };
-    },
-  );
+  const items: MenuProps["items"] = groups.map((groupItem: MenuItemGrouped) => {
+    const { icon: Icon }: any = groupItem;
+    return {
+      key: groupItem.key,
+      icon: <Icon />,
+      label: t(groupItem.label),
+      children: groupItem.children.map(
+        ({ key, label, path, absolutePath }: MenuItem) => ({
+          key,
+          label: <Link href={absolutePath || path}>{t(label)}</Link>,
+        }),
+      ),
+    };
+  });
 
   return (
     <Menu

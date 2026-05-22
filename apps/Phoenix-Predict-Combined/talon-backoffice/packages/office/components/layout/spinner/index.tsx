@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import { Space, Spin, Typography } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import type { SpinProps } from "antd";

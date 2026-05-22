@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import UsersList from "../../components/users/list";
 import UsersRecentActivityDrawer from "../../components/users/recent-activity";
@@ -144,7 +144,7 @@ const UsersContainer = () => {
         handleOpenRecentActivity={handleOpenRecentActivity}
       />
       <UsersRecentActivityDrawer
-        open={previewVisible}
+        visible={previewVisible}
         data={recentActivities}
         isLoading={isLoadingRecentActivities}
         onClose={handleCloseRecentActivity}

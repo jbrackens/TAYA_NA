@@ -6,7 +6,7 @@ import {
   Id,
   SelectionOdd,
 } from "@phoenix-ui/utils";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApi } from "../../../../services/api/api-service";
 import { Button } from "antd";
 import { GoldOutlined } from "@ant-design/icons";
@@ -37,9 +37,8 @@ const MarketLifecycleSettle = ({
   labels,
   onComplete,
 }: LifecycleSuspendProps) => {
-  const [submitData, setSubmitSelection] = useState<
-    MarketLifecycleSettlePayload
-  >();
+  const [submitData, setSubmitSelection] =
+    useState<MarketLifecycleSettlePayload>();
   const [submitChange, setSubmitChange] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
 

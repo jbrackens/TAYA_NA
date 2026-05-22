@@ -110,7 +110,9 @@ export function LiveMatchesWidget({
       }
     });
 
-    return () => unsubscribe?.();
+    return () => {
+      unsubscribe?.();
+    };
   }, [subscribe]);
 
   const totalMatches = matches.reduce((sum, m) => sum + m.count, 0);

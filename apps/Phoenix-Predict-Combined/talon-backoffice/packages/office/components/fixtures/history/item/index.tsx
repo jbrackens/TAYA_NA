@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, Timeline, Tag, Space } from "antd";
 import { NodeIndexOutlined, UpSquareOutlined } from "@ant-design/icons";
 import {

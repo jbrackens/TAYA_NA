@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Alert, Card, Tag, Typography } from "antd";
 import { useRouter } from "next/router";
 import { Method, Id, PunterRoleEnum } from "@phoenix-ui/utils";
@@ -44,10 +44,8 @@ const UsersPredictionOrdersContainer = ({
       PunterRoleEnum.TRADER,
     ]);
   }, []);
-  const [triggerOrders, isLoading, ordersResponse] = useApi<PredictionOrdersResponse>(
-    "admin/prediction/orders",
-    Method.GET,
-  );
+  const [triggerOrders, isLoading, ordersResponse] =
+    useApi<PredictionOrdersResponse>("admin/prediction/orders", Method.GET);
 
   const { predictionP, predictionLimit, predictionStatus } = router.query as {
     predictionP?: number;
@@ -121,7 +119,9 @@ const UsersPredictionOrdersContainer = ({
       title: t("page-prediction-ops:ORDERS_TABLE_ORDER"),
       dataIndex: "orderId",
       key: "orderId",
-      render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
+      render: (value: string) => (
+        <Typography.Text code>{value}</Typography.Text>
+      ),
     },
     {
       title: t("page-prediction-ops:ORDERS_TABLE_MARKET"),
@@ -145,7 +145,11 @@ const UsersPredictionOrdersContainer = ({
         { text: "cancelled", value: "cancelled" },
       ],
       filteredValue: predictionStatus
-        ? [Array.isArray(predictionStatus) ? predictionStatus[0] : predictionStatus]
+        ? [
+            Array.isArray(predictionStatus)
+              ? predictionStatus[0]
+              : predictionStatus,
+          ]
         : null,
       render: (value: string) => (
         <Tag color={resolveStatusColor(value)}>{`${value}`.toUpperCase()}</Tag>
@@ -158,42 +162,52 @@ const UsersPredictionOrdersContainer = ({
         <div>
           {order.marketStatus ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_MARKET_STATUS")}: {order.marketStatus}
+              {t("page-prediction-ops:EXPORT_COLUMN_MARKET_STATUS")}:{" "}
+              {order.marketStatus}
             </Typography.Text>
           ) : null}
           {order.winningOutcomeLabel ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_WINNING_OUTCOME")}: {order.winningOutcomeLabel}
+              {t("page-prediction-ops:EXPORT_COLUMN_WINNING_OUTCOME")}:{" "}
+              {order.winningOutcomeLabel}
             </Typography.Text>
           ) : null}
           {order.settledAt ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_SETTLED_AT")}: {new Date(order.settledAt).toLocaleString()}
+              {t("page-prediction-ops:EXPORT_COLUMN_SETTLED_AT")}:{" "}
+              {new Date(order.settledAt).toLocaleString()}
             </Typography.Text>
           ) : null}
           {order.previousSettlementStatus ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLEMENT_STATUS")}: {order.previousSettlementStatus}
+              {t(
+                "page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLEMENT_STATUS",
+              )}
+              : {order.previousSettlementStatus}
             </Typography.Text>
           ) : null}
           {order.previousSettledAt ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLED_AT")}: {new Date(order.previousSettledAt).toLocaleString()}
+              {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLED_AT")}:{" "}
+              {new Date(order.previousSettledAt).toLocaleString()}
             </Typography.Text>
           ) : null}
           {order.previousSettledAmountUsd !== undefined ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLED_AMOUNT")}: ${Number(order.previousSettledAmountUsd || 0).toFixed(2)}
+              {t("page-prediction-ops:EXPORT_COLUMN_PREVIOUS_SETTLED_AMOUNT")}:
+              ${Number(order.previousSettledAmountUsd || 0).toFixed(2)}
             </Typography.Text>
           ) : null}
           {order.settlementReason ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_SETTLEMENT_REASON")}: {order.settlementReason}
+              {t("page-prediction-ops:EXPORT_COLUMN_SETTLEMENT_REASON")}:{" "}
+              {order.settlementReason}
             </Typography.Text>
           ) : null}
           {order.settlementActor ? (
             <Typography.Text type="secondary" style={{ display: "block" }}>
-              {t("page-prediction-ops:EXPORT_COLUMN_SETTLEMENT_ACTOR")}: {order.settlementActor}
+              {t("page-prediction-ops:EXPORT_COLUMN_SETTLEMENT_ACTOR")}:{" "}
+              {order.settlementActor}
             </Typography.Text>
           ) : null}
           {!order.marketStatus &&
@@ -215,7 +229,9 @@ const UsersPredictionOrdersContainer = ({
       key: "marketStatus",
       render: (value?: string) =>
         value ? (
-          <Tag color={resolveStatusColor(value)}>{`${value}`.toUpperCase()}</Tag>
+          <Tag color={resolveStatusColor(value)}>
+            {`${value}`.toUpperCase()}
+          </Tag>
         ) : (
           "-"
         ),
@@ -236,7 +252,8 @@ const UsersPredictionOrdersContainer = ({
       title: t("page-prediction-ops:EXPORT_COLUMN_SETTLED_AT"),
       dataIndex: "settledAt",
       key: "settledAt",
-      render: (value?: string) => (value ? new Date(value).toLocaleString() : "-"),
+      render: (value?: string) =>
+        value ? new Date(value).toLocaleString() : "-",
     },
     {
       title: t("page-prediction-ops:ORDERS_TABLE_CREATED"),
@@ -262,10 +279,7 @@ const UsersPredictionOrdersContainer = ({
     <Card
       title={t("page-users-details:HEADER_PREDICTION_ORDERS")}
       extra={
-        <UserPredictionOrdersExport
-          id={id}
-          orders={normalizedOrders.orders}
-        />
+        <UserPredictionOrdersExport id={id} orders={normalizedOrders.orders} />
       }
     >
       <Table

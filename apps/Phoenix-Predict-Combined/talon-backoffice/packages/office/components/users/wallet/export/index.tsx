@@ -1,5 +1,5 @@
 import { App, Button } from "antd";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useApi } from "../../../../services/api/api-service";
 import { useTranslation } from "i18n";
 import { FileTextOutlined } from "@ant-design/icons";

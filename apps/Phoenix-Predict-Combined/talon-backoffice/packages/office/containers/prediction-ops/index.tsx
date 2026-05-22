@@ -1,5 +1,19 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Button, Card, Col, Input, List, Modal, Row, Select, Space, Table, Tag, Typography } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Input,
+  List,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
 import { Method, PunterRoleEnum } from "@phoenix-ui/utils";
 import { useTranslation } from "i18n";
 import { useRouter } from "next/router";
@@ -71,7 +85,9 @@ const lifecycleActionLabel = (
   }
 };
 
-const getLifecycleActions = (market: PredictionMarket): PredictionLifecycleAction[] => {
+const getLifecycleActions = (
+  market: PredictionMarket,
+): PredictionLifecycleAction[] => {
   switch (`${market.status || ""}`.toLowerCase()) {
     case "open":
     case "live":
@@ -107,18 +123,29 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
   const router = useRouter();
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [appliedFilters, setAppliedFilters] = useState({ category: "", status: "" });
+  const [appliedFilters, setAppliedFilters] = useState({
+    category: "",
+    status: "",
+  });
   const [summary, setSummary] = useState<PredictionAdminSummary>(
     normalizePredictionSummary(),
   );
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [orders, setOrders] = useState<PredictionOrder[]>([]);
-  const [detail, setDetail] = useState<PredictionMarketDetailResponse | null>(null);
-  const [lifecycleHistory, setLifecycleHistory] = useState<PredictionLifecycleHistoryItem[]>([]);
-  const [recentAuditLogs, setRecentAuditLogs] = useState<PredictionAuditLogEntry[]>([]);
+  const [detail, setDetail] = useState<PredictionMarketDetailResponse | null>(
+    null,
+  );
+  const [lifecycleHistory, setLifecycleHistory] = useState<
+    PredictionLifecycleHistoryItem[]
+  >([]);
+  const [recentAuditLogs, setRecentAuditLogs] = useState<
+    PredictionAuditLogEntry[]
+  >([]);
   const [lifecycleVisible, setLifecycleVisible] = useState(false);
-  const [lifecycleAction, setLifecycleAction] = useState<PredictionLifecycleAction | null>(null);
-  const [lifecycleMarket, setLifecycleMarket] = useState<PredictionMarket | null>(null);
+  const [lifecycleAction, setLifecycleAction] =
+    useState<PredictionLifecycleAction | null>(null);
+  const [lifecycleMarket, setLifecycleMarket] =
+    useState<PredictionMarket | null>(null);
   const [lifecycleReason, setLifecycleReason] = useState("");
   const [lifecycleOutcomeId, setLifecycleOutcomeId] = useState("");
   const [lifecycleConfirmation, setLifecycleConfirmation] = useState("");
@@ -193,13 +220,28 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
   const [triggerOrders, ordersLoading, ordersResponse] =
     useApi<PredictionOrdersResponse>("admin/prediction/orders", Method.GET);
   const [triggerDetail, detailLoading, detailResponse] =
-    useApi<PredictionMarketDetailResponse>("admin/prediction/markets/:id", Method.GET);
-  const [triggerLifecycleHistory, lifecycleHistoryLoading, lifecycleHistoryResponse] =
-    useApi<PredictionLifecycleHistoryResponse>("admin/prediction/markets/:id/lifecycle", Method.GET);
+    useApi<PredictionMarketDetailResponse>(
+      "admin/prediction/markets/:id",
+      Method.GET,
+    );
+  const [
+    triggerLifecycleHistory,
+    lifecycleHistoryLoading,
+    lifecycleHistoryResponse,
+  ] = useApi<PredictionLifecycleHistoryResponse>(
+    "admin/prediction/markets/:id/lifecycle",
+    Method.GET,
+  );
   const [triggerLifecycle, lifecycleLoading] =
-    useApi<PredictionMarketDetailResponse>("admin/prediction/markets/:id/lifecycle/:action", Method.POST);
-  const [triggerOpenOrdersPreview, openOrdersPreviewLoading, openOrdersPreviewResponse] =
-    useApi<PredictionOrdersResponse>("admin/prediction/orders", Method.GET);
+    useApi<PredictionMarketDetailResponse>(
+      "admin/prediction/markets/:id/lifecycle/:action",
+      Method.POST,
+    );
+  const [
+    triggerOpenOrdersPreview,
+    openOrdersPreviewLoading,
+    openOrdersPreviewResponse,
+  ] = useApi<PredictionOrdersResponse>("admin/prediction/orders", Method.GET);
   const [triggerAuditLogs, auditLogsLoading, auditLogsResponse] =
     useApi<PredictionAuditLogListResponse>("admin/audit-logs", Method.GET);
 
@@ -210,7 +252,9 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
   useEffect(() => {
     void triggerMarkets(undefined, {
       query: {
-        ...(appliedFilters.category ? { category: appliedFilters.category } : {}),
+        ...(appliedFilters.category
+          ? { category: appliedFilters.category }
+          : {}),
         ...(appliedFilters.status ? { status: appliedFilters.status } : {}),
       },
     });
@@ -220,12 +264,20 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
     }
     void triggerOrders(undefined, {
       query: {
-        ...(appliedFilters.category ? { category: appliedFilters.category } : {}),
+        ...(appliedFilters.category
+          ? { category: appliedFilters.category }
+          : {}),
         ...(appliedFilters.status ? { status: appliedFilters.status } : {}),
         ...(marketId ? { marketId } : {}),
       },
     });
-  }, [appliedFilters, canViewPredictionOrderFlow, marketId, triggerMarkets, triggerOrders]);
+  }, [
+    appliedFilters,
+    canViewPredictionOrderFlow,
+    marketId,
+    triggerMarkets,
+    triggerOrders,
+  ]);
 
   useEffect(() => {
     if (!marketId) {
@@ -275,7 +327,8 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
   useEffect(() => {
     if (lifecycleHistoryResponse.succeeded) {
       setLifecycleHistory(
-        normalizePredictionLifecycleHistory(lifecycleHistoryResponse.data).items,
+        normalizePredictionLifecycleHistory(lifecycleHistoryResponse.data)
+          .items,
       );
     }
   }, [lifecycleHistoryResponse.succeeded, lifecycleHistoryResponse.data]);
@@ -292,10 +345,15 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
     if (!auditLogsResponse.succeeded) {
       return;
     }
-    setRecentAuditLogs(Array.isArray(auditLogsResponse.data?.data) ? auditLogsResponse.data?.data || [] : []);
+    setRecentAuditLogs(
+      Array.isArray(auditLogsResponse.data?.data)
+        ? auditLogsResponse.data?.data || []
+        : [],
+    );
   }, [auditLogsResponse.succeeded, auditLogsResponse.data]);
 
-  const openMarket = (id: string) => router.push(`/risk-management/prediction/${id}`);
+  const openMarket = (id: string) =>
+    router.push(`/risk-management/prediction/${id}`);
   const openAuditLogsForMarket = (id: string, action?: string) => {
     if (!canOpenAuditLogs) {
       return;
@@ -316,7 +374,9 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
       triggerSummary(),
       triggerMarkets(undefined, {
         query: {
-          ...(appliedFilters.category ? { category: appliedFilters.category } : {}),
+          ...(appliedFilters.category
+            ? { category: appliedFilters.category }
+            : {}),
           ...(appliedFilters.status ? { status: appliedFilters.status } : {}),
         },
       }),
@@ -324,9 +384,15 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
         ? [
             triggerOrders(undefined, {
               query: {
-                ...(appliedFilters.category ? { category: appliedFilters.category } : {}),
-                ...(appliedFilters.status ? { status: appliedFilters.status } : {}),
-                ...(focusMarketId || marketId ? { marketId: focusMarketId || marketId } : {}),
+                ...(appliedFilters.category
+                  ? { category: appliedFilters.category }
+                  : {}),
+                ...(appliedFilters.status
+                  ? { status: appliedFilters.status }
+                  : {}),
+                ...(focusMarketId || marketId
+                  ? { marketId: focusMarketId || marketId }
+                  : {}),
               },
             }),
           ]
@@ -360,7 +426,7 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
       triggerOpenOrdersPreview(undefined, {
         query: {
           marketId: market.marketId,
-          ...((`${action || ""}`.toLowerCase() === "resettle")
+          ...(`${action || ""}`.toLowerCase() === "resettle"
             ? {}
             : { status: "open" }),
         },
@@ -368,7 +434,10 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
     ]);
   };
 
-  const openLifecycleModal = async (action: PredictionLifecycleAction, market: PredictionMarket) => {
+  const openLifecycleModal = async (
+    action: PredictionLifecycleAction,
+    market: PredictionMarket,
+  ) => {
     if (!canManageLifecycleAction(action)) {
       return;
     }
@@ -393,17 +462,25 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
   };
 
   const submitLifecycle = async () => {
-    if (!lifecycleAction || !lifecycleMarket || !canManageLifecycleAction(lifecycleAction)) {
+    if (
+      !lifecycleAction ||
+      !lifecycleMarket ||
+      !canManageLifecycleAction(lifecycleAction)
+    ) {
       return;
     }
-    if ((lifecycleAction === "resolve" || lifecycleAction === "resettle") && !`${lifecycleOutcomeId || ""}`.trim()) {
+    if (
+      (lifecycleAction === "resolve" || lifecycleAction === "resettle") &&
+      !`${lifecycleOutcomeId || ""}`.trim()
+    ) {
       return;
     }
 
     await triggerLifecycle(
       {
-        reason: `${lifecycleReason || ""}`.trim() || `manual ${lifecycleAction}`,
-        ...((lifecycleAction === "resolve" || lifecycleAction === "resettle")
+        reason:
+          `${lifecycleReason || ""}`.trim() || `manual ${lifecycleAction}`,
+        ...(lifecycleAction === "resolve" || lifecycleAction === "resettle"
           ? { outcomeId: lifecycleOutcomeId }
           : {}),
       },
@@ -417,27 +494,33 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
     await refreshData(lifecycleMarket.marketId);
   };
 
-  const confirmationToken = (lifecycleAction &&
-    (lifecycleAction === "resolve" || lifecycleAction === "cancel" || lifecycleAction === "resettle"))
-    ? lifecycleAction.toUpperCase()
-    : "";
+  const confirmationToken =
+    lifecycleAction &&
+    (lifecycleAction === "resolve" ||
+      lifecycleAction === "cancel" ||
+      lifecycleAction === "resettle")
+      ? lifecycleAction.toUpperCase()
+      : "";
 
   const requiresExplicitConfirmation = Boolean(confirmationToken);
   const canSubmitLifecycle = Boolean(
-      lifecycleAction &&
-      lifecycleMarket &&
-      canManageLifecycleAction(lifecycleAction) &&
-      `${lifecycleReason || ""}`.trim().length >= 5 &&
-      (
-        (lifecycleAction !== "resolve" && lifecycleAction !== "resettle") ||
-        `${lifecycleOutcomeId || ""}`.trim()
-      ) &&
-      (!requiresExplicitConfirmation ||
-        `${lifecycleConfirmation || ""}`.trim().toUpperCase() === confirmationToken),
+    lifecycleAction &&
+    lifecycleMarket &&
+    canManageLifecycleAction(lifecycleAction) &&
+    `${lifecycleReason || ""}`.trim().length >= 5 &&
+    ((lifecycleAction !== "resolve" && lifecycleAction !== "resettle") ||
+      `${lifecycleOutcomeId || ""}`.trim()) &&
+    (!requiresExplicitConfirmation ||
+      `${lifecycleConfirmation || ""}`.trim().toUpperCase() ===
+        confirmationToken),
   );
 
   const categoryOptions = useMemo(
-    () => summary.categories.map((category) => ({ label: category.label, value: category.key })),
+    () =>
+      summary.categories.map((category) => ({
+        label: category.label,
+        value: category.key,
+      })),
     [summary.categories],
   );
 
@@ -447,21 +530,45 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
       dataIndex: "title",
       key: "title",
       render: (_: string, record: PredictionMarket) => (
-        <Button type="link" onClick={() => openMarket(record.marketId)} style={{ padding: 0 }}>
+        <Button
+          type="link"
+          onClick={() => openMarket(record.marketId)}
+          style={{ padding: 0 }}
+        >
           {record.title}
         </Button>
       ),
     },
-    { title: t("TABLE_CATEGORY"), dataIndex: "categoryLabel", key: "categoryLabel" },
+    {
+      title: t("TABLE_CATEGORY"),
+      dataIndex: "categoryLabel",
+      key: "categoryLabel",
+    },
     {
       title: t("TABLE_STATUS"),
       dataIndex: "status",
       key: "status",
-      render: (status: string) => <Tag color={resolveStatusColor(status)}>{status.toUpperCase()}</Tag>,
+      render: (status: string) => (
+        <Tag color={resolveStatusColor(status)}>{status.toUpperCase()}</Tag>
+      ),
     },
-    { title: t("TABLE_VOLUME"), dataIndex: "volumeUsd", key: "volumeUsd", render: formatUsd },
-    { title: t("TABLE_LIQUIDITY"), dataIndex: "liquidityUsd", key: "liquidityUsd", render: formatUsd },
-    { title: t("TABLE_PARTICIPANTS"), dataIndex: "participants", key: "participants" },
+    {
+      title: t("TABLE_VOLUME"),
+      dataIndex: "volumeUsd",
+      key: "volumeUsd",
+      render: formatUsd,
+    },
+    {
+      title: t("TABLE_LIQUIDITY"),
+      dataIndex: "liquidityUsd",
+      key: "liquidityUsd",
+      render: formatUsd,
+    },
+    {
+      title: t("TABLE_PARTICIPANTS"),
+      dataIndex: "participants",
+      key: "participants",
+    },
     {
       title: t("TABLE_ACTIONS"),
       key: "actions",
@@ -472,7 +579,11 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
               key={`${record.marketId}-${action}`}
               size="small"
               disabled={!canManageLifecycleAction(action)}
-              title={!canManageLifecycleAction(action) ? lifecycleDisabledTitle(action) : ""}
+              title={
+                !canManageLifecycleAction(action)
+                  ? lifecycleDisabledTitle(action)
+                  : ""
+              }
               onClick={() => openLifecycleModal(action, record)}
             >
               {lifecycleActionLabel(t, action)}
@@ -496,16 +607,28 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
       title: t("ORDERS_TABLE_ORDER"),
       dataIndex: "orderId",
       key: "orderId",
-      render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
+      render: (value: string) => (
+        <Typography.Text code>{value}</Typography.Text>
+      ),
     },
     { title: t("ORDERS_TABLE_PUNTER"), dataIndex: "punterId", key: "punterId" },
-    { title: t("ORDERS_TABLE_MARKET"), dataIndex: "marketTitle", key: "marketTitle" },
-    { title: t("ORDERS_TABLE_OUTCOME"), dataIndex: "outcomeLabel", key: "outcomeLabel" },
+    {
+      title: t("ORDERS_TABLE_MARKET"),
+      dataIndex: "marketTitle",
+      key: "marketTitle",
+    },
+    {
+      title: t("ORDERS_TABLE_OUTCOME"),
+      dataIndex: "outcomeLabel",
+      key: "outcomeLabel",
+    },
     {
       title: t("ORDERS_TABLE_STATUS"),
       dataIndex: "status",
       key: "status",
-      render: (status: string) => <Tag color={resolveStatusColor(status)}>{status.toUpperCase()}</Tag>,
+      render: (status: string) => (
+        <Tag color={resolveStatusColor(status)}>{status.toUpperCase()}</Tag>
+      ),
     },
     {
       title: t("ORDERS_TABLE_SETTLEMENT"),
@@ -524,22 +647,26 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
           ) : null}
           {order.settledAt ? (
             <Typography.Text type="secondary">
-              {t("EXPORT_COLUMN_SETTLED_AT")}: {formatTimestamp(order.settledAt)}
+              {t("EXPORT_COLUMN_SETTLED_AT")}:{" "}
+              {formatTimestamp(order.settledAt)}
             </Typography.Text>
           ) : null}
           {order.previousSettlementStatus ? (
             <Typography.Text type="secondary">
-              {t("EXPORT_COLUMN_PREVIOUS_SETTLEMENT_STATUS")}: {order.previousSettlementStatus}
+              {t("EXPORT_COLUMN_PREVIOUS_SETTLEMENT_STATUS")}:{" "}
+              {order.previousSettlementStatus}
             </Typography.Text>
           ) : null}
           {order.previousSettledAt ? (
             <Typography.Text type="secondary">
-              {t("EXPORT_COLUMN_PREVIOUS_SETTLED_AT")}: {formatTimestamp(order.previousSettledAt)}
+              {t("EXPORT_COLUMN_PREVIOUS_SETTLED_AT")}:{" "}
+              {formatTimestamp(order.previousSettledAt)}
             </Typography.Text>
           ) : null}
           {order.previousSettledAmountUsd !== undefined ? (
             <Typography.Text type="secondary">
-              {t("EXPORT_COLUMN_PREVIOUS_SETTLED_AMOUNT")}: ${Number(order.previousSettledAmountUsd || 0).toFixed(2)}
+              {t("EXPORT_COLUMN_PREVIOUS_SETTLED_AMOUNT")}: $
+              {Number(order.previousSettledAmountUsd || 0).toFixed(2)}
             </Typography.Text>
           ) : null}
           {order.settlementReason ? (
@@ -603,12 +730,36 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
       <Row gutter={[16, 16]}>
         <Col span={24}>
           <Row gutter={[16, 16]}>
-            <Col xs={24} md={12} xl={6}><Card loading={summaryLoading} title={t("CARD_TOTAL_MARKETS")}>{summary.totalMarkets}</Card></Col>
-            <Col xs={24} md={12} xl={6}><Card loading={summaryLoading} title={t("CARD_LIVE_MARKETS")}>{summary.liveMarkets}</Card></Col>
-            <Col xs={24} md={12} xl={6}><Card loading={summaryLoading} title={t("CARD_FEATURED_MARKETS")}>{summary.featuredMarkets}</Card></Col>
-            <Col xs={24} md={12} xl={6}><Card loading={summaryLoading} title={t("CARD_TOTAL_VOLUME")}>{formatUsd(summary.totalVolumeUsd)}</Card></Col>
-            <Col xs={24} md={12} xl={6}><Card loading={summaryLoading} title={t("CARD_TOTAL_ORDERS")}>{summary.totalOrders}</Card></Col>
-            <Col xs={24} md={12} xl={6}><Card loading={summaryLoading} title={t("CARD_OPEN_ORDERS")}>{summary.openOrders}</Card></Col>
+            <Col xs={24} md={12} xl={6}>
+              <Card loading={summaryLoading} title={t("CARD_TOTAL_MARKETS")}>
+                {summary.totalMarkets}
+              </Card>
+            </Col>
+            <Col xs={24} md={12} xl={6}>
+              <Card loading={summaryLoading} title={t("CARD_LIVE_MARKETS")}>
+                {summary.liveMarkets}
+              </Card>
+            </Col>
+            <Col xs={24} md={12} xl={6}>
+              <Card loading={summaryLoading} title={t("CARD_FEATURED_MARKETS")}>
+                {summary.featuredMarkets}
+              </Card>
+            </Col>
+            <Col xs={24} md={12} xl={6}>
+              <Card loading={summaryLoading} title={t("CARD_TOTAL_VOLUME")}>
+                {formatUsd(summary.totalVolumeUsd)}
+              </Card>
+            </Col>
+            <Col xs={24} md={12} xl={6}>
+              <Card loading={summaryLoading} title={t("CARD_TOTAL_ORDERS")}>
+                {summary.totalOrders}
+              </Card>
+            </Col>
+            <Col xs={24} md={12} xl={6}>
+              <Card loading={summaryLoading} title={t("CARD_OPEN_ORDERS")}>
+                {summary.openOrders}
+              </Card>
+            </Col>
           </Row>
         </Col>
         <Col span={24}>
@@ -622,7 +773,11 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                 style={{ width: 220 }}
               />
               <datalist id="prediction-category-list">
-                {categoryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                {categoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </datalist>
               <Input
                 placeholder={t("FILTER_STATUS_PLACEHOLDER")}
@@ -630,8 +785,26 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                 onChange={(event) => setStatusFilter(event.target.value)}
                 style={{ width: 180 }}
               />
-              <Button type="primary" onClick={() => setAppliedFilters({ category: categoryFilter.trim(), status: statusFilter.trim() })}>{t("FILTER_APPLY")}</Button>
-              <Button onClick={() => { setCategoryFilter(""); setStatusFilter(""); setAppliedFilters({ category: "", status: "" }); }}>{t("FILTER_RESET")}</Button>
+              <Button
+                type="primary"
+                onClick={() =>
+                  setAppliedFilters({
+                    category: categoryFilter.trim(),
+                    status: statusFilter.trim(),
+                  })
+                }
+              >
+                {t("FILTER_APPLY")}
+              </Button>
+              <Button
+                onClick={() => {
+                  setCategoryFilter("");
+                  setStatusFilter("");
+                  setAppliedFilters({ category: "", status: "" });
+                }}
+              >
+                {t("FILTER_RESET")}
+              </Button>
             </Space>
           </Card>
         </Col>
@@ -649,7 +822,9 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                     size="small"
                     disabled={!canOpenAuditLogs}
                     title={!canOpenAuditLogs ? t("AUDIT_LINK_ADMIN_ONLY") : ""}
-                    onClick={() => openAuditLogsForMarket(detail.market.marketId)}
+                    onClick={() =>
+                      openAuditLogsForMarket(detail.market.marketId)
+                    }
                   >
                     {t("DETAIL_AUDIT_OPEN")}
                   </Button>
@@ -658,7 +833,11 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                       key={`detail-${detail.market.marketId}-${action}`}
                       size="small"
                       disabled={!canManageLifecycleAction(action)}
-                      title={!canManageLifecycleAction(action) ? lifecycleDisabledTitle(action) : ""}
+                      title={
+                        !canManageLifecycleAction(action)
+                          ? lifecycleDisabledTitle(action)
+                          : ""
+                      }
                       onClick={() => openLifecycleModal(action, detail.market)}
                     >
                       {lifecycleActionLabel(t, action)}
@@ -667,32 +846,70 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                 </Space>
               }
             >
-              <Typography.Paragraph>{detail.market.summary}</Typography.Paragraph>
-              <Typography.Paragraph type="secondary">{detail.market.insight}</Typography.Paragraph>
+              <Typography.Paragraph>
+                {detail.market.summary}
+              </Typography.Paragraph>
+              <Typography.Paragraph type="secondary">
+                {detail.market.insight}
+              </Typography.Paragraph>
               <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}><Card size="small" title={t("DETAIL_VOLUME")}>{formatUsd(detail.market.volumeUsd)}</Card></Col>
-                <Col xs={24} md={8}><Card size="small" title={t("DETAIL_LIQUIDITY")}>{formatUsd(detail.market.liquidityUsd)}</Card></Col>
-                <Col xs={24} md={8}><Card size="small" title={t("DETAIL_RESOLUTION_SOURCE")}>{detail.market.resolutionSource}</Card></Col>
+                <Col xs={24} md={8}>
+                  <Card size="small" title={t("DETAIL_VOLUME")}>
+                    {formatUsd(detail.market.volumeUsd)}
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card size="small" title={t("DETAIL_LIQUIDITY")}>
+                    {formatUsd(detail.market.liquidityUsd)}
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card size="small" title={t("DETAIL_RESOLUTION_SOURCE")}>
+                    {detail.market.resolutionSource}
+                  </Card>
+                </Col>
               </Row>
-              <Typography.Title level={5} style={{ marginTop: 16 }}>{t("DETAIL_OUTCOMES")}</Typography.Title>
+              <Typography.Title level={5} style={{ marginTop: 16 }}>
+                {t("DETAIL_OUTCOMES")}
+              </Typography.Title>
               <Space wrap>
-                {detail.market.outcomes.map((outcome) => <Tag key={outcome.outcomeId}>{outcome.label}: {outcome.priceCents}c</Tag>)}
+                {detail.market.outcomes.map((outcome) => (
+                  <Tag key={outcome.outcomeId}>
+                    {outcome.label}: {outcome.priceCents}c
+                  </Tag>
+                ))}
               </Space>
-              <Typography.Title level={5} style={{ marginTop: 16 }}>{t("DETAIL_RULES")}</Typography.Title>
-              <ul>{detail.market.rules.map((rule) => <li key={rule}>{rule}</li>)}</ul>
-              <Typography.Title level={5} style={{ marginTop: 16 }}>{t("DETAIL_ORDERS")}</Typography.Title>
+              <Typography.Title level={5} style={{ marginTop: 16 }}>
+                {t("DETAIL_RULES")}
+              </Typography.Title>
+              <ul>
+                {detail.market.rules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+              <Typography.Title level={5} style={{ marginTop: 16 }}>
+                {t("DETAIL_ORDERS")}
+              </Typography.Title>
               {canViewPredictionOrderFlow ? (
                 <Table
                   rowKey="orderId"
                   loading={ordersLoading}
                   columns={orderColumns}
-                  dataSource={orders.filter((order) => order.marketId === detail.market.marketId)}
+                  dataSource={orders.filter(
+                    (order) => order.marketId === detail.market.marketId,
+                  )}
                   pagination={{ pageSize: 10, hideOnSinglePage: true }}
                 />
               ) : (
-                <Alert type="info" showIcon message={t("ORDER_FLOW_TRADER_ONLY")} />
+                <Alert
+                  type="info"
+                  showIcon
+                  message={t("ORDER_FLOW_TRADER_ONLY")}
+                />
               )}
-              <Typography.Title level={5} style={{ marginTop: 16 }}>{t("DETAIL_LIFECYCLE_HISTORY")}</Typography.Title>
+              <Typography.Title level={5} style={{ marginTop: 16 }}>
+                {t("DETAIL_LIFECYCLE_HISTORY")}
+              </Typography.Title>
               <Table
                 rowKey="id"
                 loading={lifecycleHistoryLoading}
@@ -709,7 +926,11 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                     title: t("LIFECYCLE_HISTORY_ACTION"),
                     dataIndex: "action",
                     key: "action",
-                    render: (value: string) => lifecycleActionLabel(t, value as PredictionLifecycleAction),
+                    render: (value: string) =>
+                      lifecycleActionLabel(
+                        t,
+                        value as PredictionLifecycleAction,
+                      ),
                   },
                   {
                     title: t("LIFECYCLE_HISTORY_ACTOR"),
@@ -719,7 +940,10 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                   {
                     title: t("LIFECYCLE_HISTORY_TRANSITION"),
                     key: "transition",
-                    render: (_: string, record: PredictionLifecycleHistoryItem) =>
+                    render: (
+                      _: string,
+                      record: PredictionLifecycleHistoryItem,
+                    ) =>
                       `${record.marketStatusBefore} -> ${record.marketStatusAfter}`,
                   },
                   {
@@ -756,7 +980,9 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
                     ]}
                   >
                     <Space direction="vertical" size={0}>
-                      <Typography.Text strong>{item.action || t("ACTION_VIEW_AUDIT")}</Typography.Text>
+                      <Typography.Text strong>
+                        {item.action || t("ACTION_VIEW_AUDIT")}
+                      </Typography.Text>
                       <Typography.Text type="secondary">
                         {formatTimestamp(item.occurredAt || item.createdAt)}
                       </Typography.Text>
@@ -822,7 +1048,11 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
         onOk={submitLifecycle}
         confirmLoading={lifecycleLoading}
         okButtonProps={{ disabled: !canSubmitLifecycle }}
-        okText={lifecycleAction ? lifecycleActionLabel(t, lifecycleAction) : t("ACTION_SUBMIT")}
+        okText={
+          lifecycleAction
+            ? lifecycleActionLabel(t, lifecycleAction)
+            : t("ACTION_SUBMIT")
+        }
       >
         {requiresExplicitConfirmation ? (
           <Alert
@@ -852,8 +1082,12 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
             }
           />
         )}
-        {(lifecycleAction === "resolve" || lifecycleAction === "resettle") && lifecycleMarket ? (
-          <Space direction="vertical" style={{ width: "100%", marginBottom: 16 }}>
+        {(lifecycleAction === "resolve" || lifecycleAction === "resettle") &&
+        lifecycleMarket ? (
+          <Space
+            direction="vertical"
+            style={{ width: "100%", marginBottom: 16 }}
+          >
             <Typography.Text>{t("LIFECYCLE_OUTCOME_LABEL")}</Typography.Text>
             <Select
               value={lifecycleOutcomeId || undefined}
@@ -861,7 +1095,10 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
               style={{ width: "100%" }}
             >
               {lifecycleMarket.outcomes.map((outcome) => (
-                <Select.Option key={outcome.outcomeId} value={outcome.outcomeId}>
+                <Select.Option
+                  key={outcome.outcomeId}
+                  value={outcome.outcomeId}
+                >
                   {outcome.label}
                 </Select.Option>
               ))}
@@ -901,10 +1138,12 @@ const PredictionOpsContainer = ({ marketId }: PredictionOpsContainerProps) => {
             <List.Item>
               <Space direction="vertical" size={0}>
                 <Typography.Text strong>
-                  {lifecycleActionLabel(t, item.action)} · {new Date(item.performedAt).toLocaleString()}
+                  {lifecycleActionLabel(t, item.action)} ·{" "}
+                  {new Date(item.performedAt).toLocaleString()}
                 </Typography.Text>
                 <Typography.Text type="secondary">
-                  {item.performedBy} · {item.marketStatusBefore} {"->"} {item.marketStatusAfter}
+                  {item.performedBy} · {item.marketStatusBefore} {"->"}{" "}
+                  {item.marketStatusAfter}
                 </Typography.Text>
                 <Typography.Text>{item.reason}</Typography.Text>
               </Space>

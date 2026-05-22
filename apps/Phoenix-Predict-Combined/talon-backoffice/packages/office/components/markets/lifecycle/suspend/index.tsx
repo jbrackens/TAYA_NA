@@ -5,7 +5,7 @@ import {
   Button as ButtonEnum,
   Method,
 } from "@phoenix-ui/utils";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { ToggleLabels } from "../../../../types/utils";
 import { useApi } from "../../../../services/api/api-service";
 import { Button } from "antd";

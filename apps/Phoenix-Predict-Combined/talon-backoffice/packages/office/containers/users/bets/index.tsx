@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useApi } from "../../../services/api/api-service";
 import UsersDetailsBetsList from "../../../components/users/bets";

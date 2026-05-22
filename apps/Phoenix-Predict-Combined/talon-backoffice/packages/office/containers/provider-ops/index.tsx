@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Button,
@@ -93,9 +93,8 @@ const ProviderOpsContainer = () => {
   const [showUnhealthyOnly, setShowUnhealthyOnly] = useState(false);
   const [lastCancelResult, setLastCancelResult] =
     useState<ProviderCancelResponse | null>(null);
-  const [lastBetInterventionResult, setLastBetInterventionResult] = useState<
-    Record<string, any> | null
-  >(null);
+  const [lastBetInterventionResult, setLastBetInterventionResult] =
+    useState<Record<string, any> | null>(null);
   const [acknowledgements, setAcknowledgements] = useState<
     Record<string, StreamAcknowledgement>
   >({});
@@ -121,14 +120,22 @@ const ProviderOpsContainer = () => {
   const [triggerProviderCancel, cancelLoading, cancelResponse] =
     useApi<ProviderCancelResponse>("admin/provider/cancel", Method.POST);
   const [triggerBetIntervention, interventionLoading, interventionResponse] =
-    useApi<Record<string, any>>("admin/bets/:id/lifecycle/:action", Method.POST);
-  const [triggerBetDetailLookup] =
-    useApi<Record<string, any>>("admin/bets/:id", Method.GET);
-  const [triggerAcknowledgementList, acknowledgementListLoading, acknowledgementListResponse] =
-    useApi<ProviderStreamAcknowledgementsResponse>(
-      "admin/provider/acknowledgements",
-      Method.GET,
+    useApi<Record<string, any>>(
+      "admin/bets/:id/lifecycle/:action",
+      Method.POST,
     );
+  const [triggerBetDetailLookup] = useApi<Record<string, any>>(
+    "admin/bets/:id",
+    Method.GET,
+  );
+  const [
+    triggerAcknowledgementList,
+    acknowledgementListLoading,
+    acknowledgementListResponse,
+  ] = useApi<ProviderStreamAcknowledgementsResponse>(
+    "admin/provider/acknowledgements",
+    Method.GET,
+  );
   const [triggerAcknowledgementUpsert, acknowledgementUpsertLoading] = useApi<
     ProviderStreamAcknowledgement,
     any,
@@ -257,7 +264,10 @@ const ProviderOpsContainer = () => {
 
   const triageSummary = useMemo(
     () =>
-      computeStreamRiskSummary(providerOpsState.streams, providerOpsState.thresholds),
+      computeStreamRiskSummary(
+        providerOpsState.streams,
+        providerOpsState.thresholds,
+      ),
     [providerOpsState.streams, providerOpsState.thresholds],
   );
   const resolvedAcknowledgementsCount = useMemo(
@@ -286,8 +296,7 @@ const ProviderOpsContainer = () => {
               acknowledgement.adapter,
               acknowledgementSLAState,
             ),
-          ) !==
-            "fresh",
+          ) !== "fresh",
       ).length,
     [acknowledgements, acknowledgementSLAState],
   );
@@ -299,8 +308,8 @@ const ProviderOpsContainer = () => {
 
   const effectiveAcknowledgementSLASettings = useMemo(
     () =>
-      Object.values(acknowledgementSLAState.effectiveByAdapter).sort((left, right) =>
-        left.adapter.localeCompare(right.adapter),
+      Object.values(acknowledgementSLAState.effectiveByAdapter).sort(
+        (left, right) => left.adapter.localeCompare(right.adapter),
       ),
     [acknowledgementSLAState.effectiveByAdapter],
   );
@@ -390,10 +399,18 @@ const ProviderOpsContainer = () => {
     return parsed;
   };
 
-  const defaultWarningMinutes = parsePositiveInt(ackSLAForm.defaultWarningMinutes);
-  const defaultCriticalMinutes = parsePositiveInt(ackSLAForm.defaultCriticalMinutes);
-  const adapterWarningMinutes = parsePositiveInt(ackSLAForm.adapterWarningMinutes);
-  const adapterCriticalMinutes = parsePositiveInt(ackSLAForm.adapterCriticalMinutes);
+  const defaultWarningMinutes = parsePositiveInt(
+    ackSLAForm.defaultWarningMinutes,
+  );
+  const defaultCriticalMinutes = parsePositiveInt(
+    ackSLAForm.defaultCriticalMinutes,
+  );
+  const adapterWarningMinutes = parsePositiveInt(
+    ackSLAForm.adapterWarningMinutes,
+  );
+  const adapterCriticalMinutes = parsePositiveInt(
+    ackSLAForm.adapterCriticalMinutes,
+  );
   const canSubmitDefaultSLA =
     defaultWarningMinutes > 0 && defaultCriticalMinutes > defaultWarningMinutes;
   const canSubmitAdapterSLA =
@@ -448,7 +465,8 @@ const ProviderOpsContainer = () => {
   };
 
   const resetAcknowledgementSLAForm = () => {
-    const firstAdapter = Object.keys(acknowledgementSLAState.effectiveByAdapter).sort()[0] || "";
+    const firstAdapter =
+      Object.keys(acknowledgementSLAState.effectiveByAdapter).sort()[0] || "";
     const adapter = `${ackSLAForm.adapter || ""}`.trim() || firstAdapter;
     const adapterThresholds = resolveProviderAcknowledgementSLAThresholds(
       adapter,
@@ -499,7 +517,9 @@ const ProviderOpsContainer = () => {
     const timer = setTimeout(async () => {
       try {
         const result = await triggerBetDetailLookup(undefined, { id: betId });
-        const legs = Array.isArray((result as any)?.legs) ? (result as any).legs : [];
+        const legs = Array.isArray((result as any)?.legs)
+          ? (result as any).legs
+          : [];
         setBetIsMultiLeg(legs.length > 0);
         // If bet is multi-leg and settle is selected, switch to cancel
         if (legs.length > 0 && betInterventionForm.action === "settle") {
@@ -672,12 +692,15 @@ const ProviderOpsContainer = () => {
       title: t("HEADER_STATE"),
       dataIndex: "state",
       key: "state",
-      render: (state: string) => <Tag color={statusColor(state)}>{state || "-"}</Tag>,
+      render: (state: string) => (
+        <Tag color={statusColor(state)}>{state || "-"}</Tag>
+      ),
     },
     {
       title: t("HEADER_BREACHES"),
       key: "breaches",
-      render: (_: unknown, stream: FeedStreamStatus) => renderBreachTags(stream),
+      render: (_: unknown, stream: FeedStreamStatus) =>
+        renderBreachTags(stream),
     },
     {
       title: t("HEADER_RISK_SCORE"),
@@ -748,7 +771,9 @@ const ProviderOpsContainer = () => {
         return (
           <Space direction="vertical" size={0}>
             <Tag color={resolved ? "green" : "blue"}>
-              {resolved ? t("ACK_STATUS_RESOLVED") : t("ACK_STATUS_ACKNOWLEDGED")}
+              {resolved
+                ? t("ACK_STATUS_RESOLVED")
+                : t("ACK_STATUS_ACKNOWLEDGED")}
             </Tag>
             {!resolved && staleness !== "fresh" ? (
               <Tag color={staleness === "critical" ? "red" : "orange"}>
@@ -792,10 +817,16 @@ const ProviderOpsContainer = () => {
           : "fresh";
         return (
           <Space wrap>
-            <Button size="small" onClick={() => prefillCancelFromStream(stream)}>
+            <Button
+              size="small"
+              onClick={() => prefillCancelFromStream(stream)}
+            >
               {t("ACTION_PREFILL_CANCEL")}
             </Button>
-            <Button size="small" onClick={() => prefillInterventionFromStream(stream)}>
+            <Button
+              size="small"
+              onClick={() => prefillInterventionFromStream(stream)}
+            >
               {t("ACTION_PREFILL_INTERVENTION")}
             </Button>
             <Button size="small" onClick={() => openStreamAuditLogs(stream)}>
@@ -806,7 +837,9 @@ const ProviderOpsContainer = () => {
             (staleness === "warning" || staleness === "critical") ? (
               <Button
                 size="small"
-                onClick={() => openAcknowledgementAuditLogs(stream, acknowledgement)}
+                onClick={() =>
+                  openAcknowledgementAuditLogs(stream, acknowledgement)
+                }
               >
                 {t("ACK_ACTION_STALE_AUDIT")}
               </Button>
@@ -875,15 +908,21 @@ const ProviderOpsContainer = () => {
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
         <Col xs={24} sm={12} lg={6}>
           <Card loading={feedLoading}>
-            <Typography.Text type="secondary">{t("METRIC_RUNTIME")}</Typography.Text>
+            <Typography.Text type="secondary">
+              {t("METRIC_RUNTIME")}
+            </Typography.Text>
             <Typography.Title level={3} style={{ margin: 0 }}>
-              {providerOpsState.enabled ? t("VALUE_ENABLED") : t("VALUE_DISABLED")}
+              {providerOpsState.enabled
+                ? t("VALUE_ENABLED")
+                : t("VALUE_DISABLED")}
             </Typography.Title>
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card loading={feedLoading}>
-            <Typography.Text type="secondary">{t("METRIC_STREAM_COUNT")}</Typography.Text>
+            <Typography.Text type="secondary">
+              {t("METRIC_STREAM_COUNT")}
+            </Typography.Text>
             <Typography.Title level={3} style={{ margin: 0 }}>
               {providerOpsState.summary.streamCount}
             </Typography.Title>
@@ -891,7 +930,9 @@ const ProviderOpsContainer = () => {
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card loading={feedLoading}>
-            <Typography.Text type="secondary">{t("METRIC_UNHEALTHY_STREAMS")}</Typography.Text>
+            <Typography.Text type="secondary">
+              {t("METRIC_UNHEALTHY_STREAMS")}
+            </Typography.Text>
             <Typography.Title level={3} style={{ margin: 0 }}>
               {providerOpsState.summary.unhealthyStreams}
             </Typography.Title>
@@ -899,7 +940,9 @@ const ProviderOpsContainer = () => {
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card loading={feedLoading}>
-            <Typography.Text type="secondary">{t("METRIC_TOTAL_ERRORS")}</Typography.Text>
+            <Typography.Text type="secondary">
+              {t("METRIC_TOTAL_ERRORS")}
+            </Typography.Text>
             <Typography.Title level={3} style={{ margin: 0 }}>
               {providerOpsState.summary.totalErrors}
             </Typography.Title>
@@ -917,20 +960,24 @@ const ProviderOpsContainer = () => {
               {t("THRESHOLD_GAPS")}: {providerOpsState.thresholds.maxGapCount}
             </Typography.Paragraph>
             <Typography.Paragraph style={{ marginBottom: 0 }}>
-              {t("THRESHOLD_DUPLICATES")}: {providerOpsState.thresholds.maxDuplicateCount}
+              {t("THRESHOLD_DUPLICATES")}:{" "}
+              {providerOpsState.thresholds.maxDuplicateCount}
             </Typography.Paragraph>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card title={t("CANCEL_METRICS_TITLE")} loading={feedLoading}>
             <Typography.Paragraph style={{ marginBottom: 8 }}>
-              {t("CANCEL_TOTAL_ATTEMPTS")}: {providerOpsState.cancel.totalAttempts}
+              {t("CANCEL_TOTAL_ATTEMPTS")}:{" "}
+              {providerOpsState.cancel.totalAttempts}
             </Typography.Paragraph>
             <Typography.Paragraph style={{ marginBottom: 8 }}>
-              {t("CANCEL_TOTAL_RETRIES")}: {providerOpsState.cancel.totalRetries}
+              {t("CANCEL_TOTAL_RETRIES")}:{" "}
+              {providerOpsState.cancel.totalRetries}
             </Typography.Paragraph>
             <Typography.Paragraph style={{ marginBottom: 8 }}>
-              {t("CANCEL_TOTAL_SUCCESS")}: {providerOpsState.cancel.totalSuccess}
+              {t("CANCEL_TOTAL_SUCCESS")}:{" "}
+              {providerOpsState.cancel.totalSuccess}
             </Typography.Paragraph>
             <Typography.Paragraph style={{ marginBottom: 0 }}>
               {t("CANCEL_TOTAL_FAILED")}: {providerOpsState.cancel.totalFailed}
@@ -1216,7 +1263,9 @@ const ProviderOpsContainer = () => {
                 type="primary"
                 data-testid="provider-ops-ack-submit"
                 onClick={submitAcknowledgement}
-                loading={acknowledgementUpsertLoading || acknowledgementListLoading}
+                loading={
+                  acknowledgementUpsertLoading || acknowledgementListLoading
+                }
                 disabled={
                   !`${selectedAckStreamKey || ""}`.trim() ||
                   !`${ackForm.operator || ""}`.trim() ||
@@ -1233,7 +1282,7 @@ const ProviderOpsContainer = () => {
         </Row>
       </Card>
 
-      <Card title={t("MANUAL_CANCEL_TITLE")}> 
+      <Card title={t("MANUAL_CANCEL_TITLE")}>
         <Row gutter={[12, 12]}>
           <Col xs={24} md={12}>
             <Input
@@ -1302,12 +1351,16 @@ const ProviderOpsContainer = () => {
                 onClick={submitProviderCancel}
                 loading={cancelLoading}
                 disabled={
-                  !canSubmitProviderCancel(buildProviderCancelPayload(cancelForm))
+                  !canSubmitProviderCancel(
+                    buildProviderCancelPayload(cancelForm),
+                  )
                 }
               >
                 {t("ACTION_SUBMIT_CANCEL")}
               </Button>
-              <Button onClick={resetCancelForm}>{t("ACTION_RESET_CANCEL")}</Button>
+              <Button onClick={resetCancelForm}>
+                {t("ACTION_RESET_CANCEL")}
+              </Button>
             </Space>
           </Col>
         </Row>
@@ -1315,7 +1368,9 @@ const ProviderOpsContainer = () => {
         {lastCancelResult && (
           <Alert
             style={{ marginTop: 16 }}
-            type={lastCancelResult.state === "cancelled" ? "success" : "warning"}
+            type={
+              lastCancelResult.state === "cancelled" ? "success" : "warning"
+            }
             message={t("LAST_CANCEL_RESULT")}
             description={
               <span>
@@ -1452,7 +1507,8 @@ const ProviderOpsContainer = () => {
                 {t("BET_LAST_BET_ID")}:{" "}
                 {`${lastBetInterventionResult.betId || betInterventionForm.betId || "-"}`}
                 {" | "}
-                {t("BET_LAST_STATUS")}: {`${lastBetInterventionResult.status || "-"}`}
+                {t("BET_LAST_STATUS")}:{" "}
+                {`${lastBetInterventionResult.status || "-"}`}
               </span>
             }
             showIcon

@@ -5,7 +5,7 @@ import {
   useSpy,
   Id,
 } from "@phoenix-ui/utils";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useApi } from "../../../../services/api/api-service";
 import { Button } from "antd";
 import { FieldTimeOutlined } from "@ant-design/icons";

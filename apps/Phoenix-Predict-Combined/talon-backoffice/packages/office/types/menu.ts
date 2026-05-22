@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
 import { Omit } from "utility-types";
-import { UserOutlined } from "@ant-design/icons/";
 import { PunterRoles } from "@phoenix-ui/utils";
+
+// antd icon component type (e.g. DashboardOutlined), used for menu group icons.
+type AntdIcon = (typeof import("@ant-design/icons"))["DashboardOutlined"];
 
 export type MenuItem = {
   key: string;

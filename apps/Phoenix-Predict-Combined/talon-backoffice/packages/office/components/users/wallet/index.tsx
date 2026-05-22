@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useTranslation } from "i18n";
@@ -328,11 +328,11 @@ const UsersDetailsWalletsList = ({
               if (
                 value.status === WalletHistoryStatusEnum.PENDING &&
                 value?.paymentMethod?.type === PaymentMethodTypeEnum.CHEQUE &&
-                !actionedIds.has(value.transactionId)
+                !actionedIds.has(String(value.transactionId))
               ) {
                 return (
                   <TableActions
-                    transactionId={value.transactionId}
+                    transactionId={String(value.transactionId)}
                     punterId={punterId}
                     triggerWalletApi={triggerWalletApi}
                     onActioned={handleActioned}

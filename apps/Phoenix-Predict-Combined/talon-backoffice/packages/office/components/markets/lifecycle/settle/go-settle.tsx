@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MarketLifecycleType,
   MarketLifecycleTypeEnum,
@@ -135,11 +135,7 @@ const GoMarketSettle = ({
             <TextArea rows={3} />
           </Form.Item>
           <Form.Item>
-            <Button
-              htmlType="submit"
-              type="primary"
-              loading={loading}
-            >
+            <Button htmlType="submit" type="primary" loading={loading}>
               Confirm Settlement
             </Button>
           </Form.Item>

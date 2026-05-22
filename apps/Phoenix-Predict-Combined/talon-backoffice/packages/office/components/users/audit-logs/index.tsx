@@ -1,4 +1,3 @@
-import React from "react";
 import { TalonAuditLogs } from "../../../types/logs";
 import { TablePagination } from "../../../types/filters";
 import AuditLogsList from "../../audit-logs";

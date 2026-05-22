@@ -1,13 +1,11 @@
 import {
   Market,
-  MarketDetails,
-  MarketDetailsWinner,
-  MarketFixtureDetails,
   MarketLifecycle,
+  MarketsFixture,
   MoneyValue,
+  SingleMarketFixture,
 } from "@phoenix-ui/utils";
 import { Overwrite } from "utility-types";
-import { TalonCompetitorScoreHistory } from "./competitor";
 import { TalonFixtureScoreHistory } from "./fixture";
 
 export type TalonMarketsFixture = Overwrite<
@@ -16,7 +14,10 @@ export type TalonMarketsFixture = Overwrite<
     markets: TalonMarket[];
   }
 > &
-  TalonFixtureScoreHistory;
+  TalonFixtureScoreHistory & {
+    fixtureName?: string;
+    fixtureId?: string;
+  };
 
 export type TalonSingleMarketFixture = Overwrite<
   SingleMarketFixture,
@@ -24,7 +25,10 @@ export type TalonSingleMarketFixture = Overwrite<
     market: TalonMarket;
   }
 > &
-  TalonFixtureScoreHistory;
+  TalonFixtureScoreHistory & {
+    fixtureName?: string;
+    marketName?: string;
+  };
 
 export type TalonMarket = Market & {
   marketId: string;

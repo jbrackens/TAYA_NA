@@ -75,7 +75,9 @@ const fixturesDetailsSlice = createSlice({
       state: FixturesDetailsSliceState,
       action: PayloadAction<FixturesStatusUpdateResponse>,
     ) => {
-      state.basic.status = action.payload.status;
+      if (action.payload?.status) {
+        state.basic.status = action.payload.status;
+      }
     },
   },
 });

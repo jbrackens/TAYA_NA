@@ -1,5 +1,8 @@
 import { Button } from "antd";
 import styled from "styled-components";
+import type { ComponentType, ComponentProps } from "react";
+
+const Button19 = Button as ComponentType<ComponentProps<typeof Button>>;
 
 export const ActionButtonContainer = styled.div`
   button:first-child {
@@ -10,6 +13,6 @@ export const ActionButtonContainer = styled.div`
   }
 `;
 
-export const CancelButton = styled(Button)`
+export const CancelButton = styled(Button19)`
   margin-left: 10px;
 `;

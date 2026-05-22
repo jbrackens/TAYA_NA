@@ -23,18 +23,24 @@ export type MarketsSelectionsPlaceStaticProps = {
   marketId: Id;
   marketName?: string;
   multi?: boolean;
-  selection: TalonSelectionOdd | TalonSelectionOdd[] | undefined;
-  visible: boolean;
+  selection:
+    | TalonSelectionOdd
+    | TalonSelectionOddAlign
+    | TalonSelectionOdd[]
+    | undefined;
+  open: boolean;
   onComplete?: Function;
   onClose: Function;
 };
 
-const MarketsSelectionsPlaceStatic: React.FC<MarketsSelectionsPlaceStaticProps> = ({
+const MarketsSelectionsPlaceStatic: React.FC<
+  MarketsSelectionsPlaceStaticProps
+> = ({
   marketId,
   marketName,
   multi,
   selection,
-  visible,
+  open,
   onComplete,
   onClose,
 }: MarketsSelectionsPlaceStaticProps) => {
@@ -146,7 +152,7 @@ const MarketsSelectionsPlaceStatic: React.FC<MarketsSelectionsPlaceStaticProps> 
     <FormModal
       title={title}
       name="placeBet"
-      open={visible}
+      open={open}
       loading={loading}
       onChange={onFormChange}
       onSubmit={onFinish}

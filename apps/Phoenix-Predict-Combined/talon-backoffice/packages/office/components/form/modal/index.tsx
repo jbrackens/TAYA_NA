@@ -34,7 +34,7 @@ const FormModal: React.FC<FormModalProps> = ({
   const [form] = Form.useForm();
 
   const useResetFormOnModalTransitions = ({ formRef, visibleRef }: any) => {
-    const prevVisibleRef = useRef();
+    const prevVisibleRef = useRef<boolean | undefined>(undefined);
     useEffect(() => {
       prevVisibleRef.current = visibleRef;
     }, [visibleRef]);

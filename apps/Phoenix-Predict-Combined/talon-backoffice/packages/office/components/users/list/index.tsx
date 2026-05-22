@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import dayjs from "dayjs";
 import { Tag } from "antd";
 import { useTranslation } from "i18n";

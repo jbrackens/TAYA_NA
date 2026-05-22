@@ -59,11 +59,11 @@ describe("buildTabsItemsFromChildren", () => {
   });
 
   it("flattens React fragments so <>...</> panes are not dropped", () => {
-    const tree = React.createElement(
-      React.Fragment,
-      null,
-      pane("a", { tab: "A" }),
-      pane("b", { tab: "B" }),
+    const tree = (
+      <>
+        {pane("a", { tab: "A" })}
+        {pane("b", { tab: "B" })}
+      </>
     );
     const items = buildTabsItemsFromChildren(tree, TabPane, "TabsSection");
     expect(items.map((i) => i.key)).toEqual(["a", "b"]);

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState, CSSProperties } from "react";
 import {
   DataTable,
   ErrorBoundary,
-  ErrorState,
   SkeletonLoader,
 } from "../../components/shared";
 import type { ColumnDef } from "../../components/shared";
@@ -157,12 +156,12 @@ function ContentPageContent() {
 
   const pageColumns: ColumnDef<ContentPageRow>[] = useMemo(
     () => [
-      { key: "title", header: "Title", render: (row) => row.title },
-      { key: "slug", header: "Slug", render: (row) => row.slug },
+      { key: "title", label: "Title", render: (_value, row) => row.title },
+      { key: "slug", label: "Slug", render: (_value, row) => row.slug },
       {
         key: "status",
-        header: "Status",
-        render: (row) => (
+        label: "Status",
+        render: (_value, row) => (
           <span
             style={{
               padding: "2px 8px",
@@ -184,9 +183,9 @@ function ContentPageContent() {
         ),
       },
       {
-        key: "actions",
-        header: "",
-        render: (row) =>
+        key: "page_id",
+        label: "",
+        render: (_value, row) =>
           row.status === "draft" ? (
             <button
               onClick={() => publishPage(row.page_id)}
@@ -202,12 +201,16 @@ function ContentPageContent() {
 
   const bannerColumns: ColumnDef<BannerRow>[] = useMemo(
     () => [
-      { key: "title", header: "Title", render: (row) => row.title },
-      { key: "position", header: "Position", render: (row) => row.position },
+      { key: "title", label: "Title", render: (_value, row) => row.title },
+      {
+        key: "position",
+        label: "Position",
+        render: (_value, row) => row.position,
+      },
       {
         key: "active",
-        header: "Active",
-        render: (row) => (row.active ? "Yes" : "No"),
+        label: "Active",
+        render: (_value, row) => (row.active ? "Yes" : "No"),
       },
     ],
     [],
@@ -371,7 +374,7 @@ function ContentPageContent() {
       )}
 
       {isLoading ? (
-        <SkeletonLoader rows={5} />
+        <SkeletonLoader count={5} />
       ) : activeTab === "pages" ? (
         <DataTable
           data={pages}

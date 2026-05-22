@@ -1,4 +1,3 @@
-import React from "react";
 import type { InputNumberProps } from "antd";
 import { InputNumberStyled } from "./index.styled";
 

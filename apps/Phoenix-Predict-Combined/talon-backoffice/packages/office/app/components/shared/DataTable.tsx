@@ -126,7 +126,6 @@ export function DataTable<T extends Record<string, any>>({
   data,
   pageSize = 10,
   onRowClick,
-  loading = false,
   emptyMessage = "No data available",
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<keyof T | null>(null);

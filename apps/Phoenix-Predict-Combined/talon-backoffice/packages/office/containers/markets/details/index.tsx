@@ -1,6 +1,6 @@
 import { Tag, Skeleton, Row, Col, Card, Statistic, Form } from "antd";
 import { isEmpty } from "lodash";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getMarketsDetails,

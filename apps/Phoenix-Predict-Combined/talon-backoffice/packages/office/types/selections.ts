@@ -1,4 +1,4 @@
-import { Id } from "@phoenix-ui/utils";
+import { Id, SelectionOdd } from "@phoenix-ui/utils";
 import { Overwrite } from "utility-types";
 
 export type TalonSelectionOdd = SelectionOdd;

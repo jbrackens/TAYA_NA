@@ -1,4 +1,3 @@
-import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ThemeProvider } from "styled-components";
@@ -597,19 +596,21 @@ describe("ProviderOpsContainer", () => {
     await waitFor(() => expect(triggerFeedHealth).toHaveBeenCalled());
 
     expect(screen.getByText("ACK_FORM_TITLE")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("ACK_FIELD_OPERATOR")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("ACK_FIELD_OPERATOR"),
+    ).toBeInTheDocument();
     expect(screen.getByPlaceholderText("ACK_FIELD_NOTE")).toBeInTheDocument();
 
     fireEvent.click(screen.getByText("ACTION_PREFILL_CANCEL"));
-    expect(
-      screen.getByPlaceholderText("FIELD_BET_ID"),
-    ).toHaveValue("bet-risk-1");
-    expect(
-      screen.getByPlaceholderText("FIELD_PLAYER_ID"),
-    ).toHaveValue("player-risk-1");
-    expect(
-      screen.getByPlaceholderText("FIELD_REQUEST_ID"),
-    ).toHaveValue("req-risk-1");
+    expect(screen.getByPlaceholderText("FIELD_BET_ID")).toHaveValue(
+      "bet-risk-1",
+    );
+    expect(screen.getByPlaceholderText("FIELD_PLAYER_ID")).toHaveValue(
+      "player-risk-1",
+    );
+    expect(screen.getByPlaceholderText("FIELD_REQUEST_ID")).toHaveValue(
+      "req-risk-1",
+    );
 
     fireEvent.click(screen.getByText("ACTION_PREFILL_INTERVENTION"));
     expect(screen.getByPlaceholderText("BET_FIELD_BET_ID")).toHaveValue(
@@ -1005,7 +1006,9 @@ describe("ProviderOpsContainer", () => {
 
     await waitFor(() => expect(triggerFeedHealth).toHaveBeenCalled());
 
-    expect(screen.queryByText("ACK_ACTION_STALE_AUDIT")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("ACK_ACTION_STALE_AUDIT"),
+    ).not.toBeInTheDocument();
   });
 
   test.each([
@@ -1309,7 +1312,11 @@ describe("ProviderOpsContainer", () => {
         </ThemeProvider>,
       );
 
-      await waitFor(() => expect(screen.getByPlaceholderText("BET_FIELD_BET_ID")).toBeInTheDocument());
+      await waitFor(() =>
+        expect(
+          screen.getByPlaceholderText("BET_FIELD_BET_ID"),
+        ).toBeInTheDocument(),
+      );
 
       // Short IDs (< 8 chars) should not trigger the debounced lookup
       fireEvent.change(screen.getByPlaceholderText("BET_FIELD_BET_ID"), {
@@ -1344,9 +1351,13 @@ describe("ProviderOpsContainer", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByPlaceholderText("BET_FIELD_BET_ID")).toBeInTheDocument();
+        expect(
+          screen.getByPlaceholderText("BET_FIELD_BET_ID"),
+        ).toBeInTheDocument();
       });
-      expect(screen.getByPlaceholderText("BET_FIELD_REASON")).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("BET_FIELD_REASON"),
+      ).toBeInTheDocument();
       expect(screen.getByText("BET_INTERVENTION_TITLE")).toBeInTheDocument();
     });
   });

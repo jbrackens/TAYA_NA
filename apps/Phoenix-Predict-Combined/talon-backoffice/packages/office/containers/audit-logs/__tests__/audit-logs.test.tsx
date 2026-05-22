@@ -1,4 +1,3 @@
-import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { useRouter } from "next/router";
@@ -71,9 +70,7 @@ const expectScopedCopyDetailKeyParity = (
     scopedCopyEventDetailKeys,
   );
   expect(detail).toBeDefined();
-  expect(Object.keys(detail || {}).sort()).toEqual(
-    scopedCopyEventDetailKeys,
-  );
+  expect(Object.keys(detail || {}).sort()).toEqual(scopedCopyEventDetailKeys);
 };
 
 describe("AuditLogsContainer", () => {
@@ -326,7 +323,9 @@ describe("AuditLogsContainer", () => {
     const copyEvent = dispatchSpy.mock.calls
       .map(([event]) => event as CustomEvent)
       .find((event) => event.detail?.event === "copy_success");
-    expectScopedCopyDetailKeyParity(copyEvent?.detail as Record<string, unknown>);
+    expectScopedCopyDetailKeyParity(
+      copyEvent?.detail as Record<string, unknown>,
+    );
     expect(copyEvent?.detail?.copyMode).toBe("clipboard");
     expect(copyEvent?.detail?.isPresetActive).toBe(true);
     expect(copyEvent?.detail?.canOpenScopedUrl).toBe(true);
@@ -394,7 +393,9 @@ describe("AuditLogsContainer", () => {
     const copyEvent = dispatchSpy.mock.calls
       .map(([event]) => event as CustomEvent)
       .find((event) => event.detail?.event === "copy_success");
-    expectScopedCopyDetailKeyParity(copyEvent?.detail as Record<string, unknown>);
+    expectScopedCopyDetailKeyParity(
+      copyEvent?.detail as Record<string, unknown>,
+    );
     expect(copyEvent?.detail?.copyMode).toBe("clipboard");
     expect(copyEvent?.detail?.isPresetActive).toBe(true);
     expect(copyEvent?.detail?.canOpenScopedUrl).toBe(true);
@@ -484,7 +485,9 @@ describe("AuditLogsContainer", () => {
     expectScopedCopyDetailKeyParity(
       fallbackEvent?.detail as Record<string, unknown>,
     );
-    expectScopedCopyDetailKeyParity(openEvent?.detail as Record<string, unknown>);
+    expectScopedCopyDetailKeyParity(
+      openEvent?.detail as Record<string, unknown>,
+    );
     expect(fallbackEvent?.detail?.copyMode).toBe("manualFallback");
     expect(fallbackEvent?.detail?.isPresetActive).toBe(true);
     expect(fallbackEvent?.detail?.canOpenScopedUrl).toBe(true);
