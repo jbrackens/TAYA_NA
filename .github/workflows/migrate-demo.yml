@@ -56,5 +56,12 @@ jobs:
         env:
           MIGRATE_CMD: ${{ inputs.command }}
         run: |
-          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
-            "MIGRATE_CMD='${MIGRATE_CMD}' bash -s" < .github/scripts/migrate-on-box.sh
+          # Copy the script to the box and run it as a FILE (not via `bash -s`
+          # over stdin): inner commands like `docker compose exec` read stdin
+          # and would otherwise consume the piped script, silently truncating
+          # it. `ssh -n` points the session's stdin at /dev/null for the same
+          # reason.
+          scp -i ~/.ssh/deploy $SSH_OPTS .github/scripts/migrate-on-box.sh \
+            root@"$BOX":/tmp/migrate-on-box.sh
+          ssh -n -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+            "MIGRATE_CMD='${MIGRATE_CMD}' bash /tmp/migrate-on-box.sh"
