@@ -2,7 +2,9 @@ package prediction
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 )
@@ -11,13 +13,29 @@ type fakeResolutionStore struct {
 	proposals map[string]*ResolutionProposal
 	disputes  map[string]*Dispute // keyed by dispute ID
 	seq       int
+	lmu       sync.Mutex
+	locks     map[string]*sync.Mutex
 }
 
 func newFakeResolutionStore() *fakeResolutionStore {
 	return &fakeResolutionStore{
 		proposals: map[string]*ResolutionProposal{},
 		disputes:  map[string]*Dispute{},
+		locks:     map[string]*sync.Mutex{},
 	}
+}
+
+func (f *fakeResolutionStore) WithMarketLock(_ context.Context, marketID string, fn func() error) error {
+	f.lmu.Lock()
+	m := f.locks[marketID]
+	if m == nil {
+		m = &sync.Mutex{}
+		f.locks[marketID] = m
+	}
+	f.lmu.Unlock()
+	m.Lock()
+	defer m.Unlock()
+	return fn()
 }
 
 func (f *fakeResolutionStore) CreateProposal(_ context.Context, p *ResolutionProposal) error {
@@ -355,5 +373,52 @@ func TestFinalizeClaimedExactlyOnce(t *testing.T) {
 	// A second finalize must not re-settle: the proposal is no longer claimable.
 	if _, _, err := svc.FinalizeResolution(context.Background(), "mkt-1", nil); err == nil {
 		t.Fatal("second FinalizeResolution must fail (proposal already finalized)")
+	}
+}
+
+// TestFileDisputeUnderLockBlocksFinalize covers the bucket-5 hardening: a
+// dispute filed via the locked FileDispute path transitions the market to
+// disputed and blocks finalize even after the window elapses.
+func TestFileDisputeUnderLockBlocksFinalize(t *testing.T) {
+	repo := newMemRepo()
+	m := seedMarket(t, repo)
+	m.Status = MarketStatusClosed
+	svc := NewService(repo, &fakeWallet{balances: map[string]int64{}})
+	store := newFakeResolutionStore()
+	svc.SetResolutionStore(store)
+
+	if _, err := svc.ProposeResolution(context.Background(), "mkt-1", ResolveMarketRequest{
+		Result: MarketResultYes, AttestationSource: "system",
+	}, nil, time.Hour); err != nil {
+		t.Fatalf("ProposeResolution: %v", err)
+	}
+	d, err := svc.FileDispute(context.Background(), "mkt-1", "carol", "wrong source")
+	if err != nil {
+		t.Fatalf("FileDispute: %v", err)
+	}
+	if d.Status != "open" || d.ID == "" {
+		t.Fatalf("dispute should be open with an id, got %+v", d)
+	}
+	if got, _ := repo.GetMarket(context.Background(), "mkt-1"); got.Status != MarketStatusDisputed {
+		t.Fatalf("after FileDispute: want disputed, got %s", got.Status)
+	}
+	store.proposals["mkt-1"].ChallengeEndsAt = time.Now().UTC().Add(-time.Minute)
+	if _, _, err := svc.FinalizeResolution(context.Background(), "mkt-1", nil); err == nil {
+		t.Fatal("finalize must be blocked while the filed dispute is open")
+	}
+}
+
+// TestFileDisputeRejectsNonDisputable covers FileDispute's authoritative
+// under-lock status gate: a market not in proposed_resolution/disputed yields
+// ErrMarketNotDisputable.
+func TestFileDisputeRejectsNonDisputable(t *testing.T) {
+	repo := newMemRepo()
+	m := seedMarket(t, repo)
+	m.Status = MarketStatusClosed // not disputable
+	svc := NewService(repo, &fakeWallet{balances: map[string]int64{}})
+	svc.SetResolutionStore(newFakeResolutionStore())
+
+	if _, err := svc.FileDispute(context.Background(), "mkt-1", "carol", "x"); !errors.Is(err, ErrMarketNotDisputable) {
+		t.Fatalf("want ErrMarketNotDisputable, got %v", err)
 	}
 }

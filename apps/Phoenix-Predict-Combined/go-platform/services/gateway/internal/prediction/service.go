@@ -1171,6 +1171,13 @@ func (s *Service) MarkMarketDisputed(ctx context.Context, marketID, disputerID s
 	return s.settlement.MarkMarketDisputed(ctx, marketID, disputerID)
 }
 
+// FileDispute records a user dispute under the per-market lock (insert +
+// transition to disputed), serialized against finalize. Eligibility is the
+// caller's responsibility.
+func (s *Service) FileDispute(ctx context.Context, marketID, userID, reason string) (*Dispute, error) {
+	return s.settlement.FileDispute(ctx, marketID, userID, reason)
+}
+
 // ResolveDispute applies an admin uphold (void+refund) / reject decision.
 func (s *Service) ResolveDispute(ctx context.Context, disputeID string, uphold bool, note string, resolvedBy *string) (*Dispute, error) {
 	return s.settlement.ResolveDispute(ctx, disputeID, uphold, note, resolvedBy)

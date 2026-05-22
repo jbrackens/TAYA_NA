@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	stdhttp "net/http"
 	"strings"
@@ -21,6 +22,11 @@ type disputeNotifier interface {
 // can only be filed against a market in the proposed_resolution state, by a user
 // who holds a position in it; an open dispute blocks FinalizeResolution.
 func registerDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, store prediction.ResolutionStore, notifier disputeNotifier) {
+	// Per-user rate limit on dispute submissions (ADR-0004 #5). Reads count
+	// against a token bucket; GETs are unaffected.
+	perMin := disputeRateLimitPerMin()
+	disputeLimiter := newUserRateLimiter(perMin, perMin)
+
 	mux.Handle("/api/v1/disputes", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		userID := userIDFromRequest(r)
 		if userID == "" {
@@ -40,6 +46,10 @@ func registerDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, store
 			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"items": disputes})
 
 		case stdhttp.MethodPost:
+			// Throttle dispute creation per user before any DB work.
+			if !disputeLimiter.Allow(userID) {
+				return httpx.TooManyRequests("too many dispute submissions; please wait a moment and try again")
+			}
 			var req struct {
 				MarketID string `json:"marketId"`
 				Reason   string `json:"reason"`
@@ -81,20 +91,17 @@ func registerDisputeRoutes(mux *stdhttp.ServeMux, svc *prediction.Service, store
 				return httpx.Forbidden("only holders of a position in this market may dispute")
 			}
 
-			dispute := &prediction.Dispute{
-				MarketID: req.MarketID,
-				UserID:   userID,
-				Reason:   req.Reason,
-				Status:   "open",
-			}
-			if err := store.CreateDispute(r.Context(), dispute); err != nil {
+			// Authoritative create + FSM transition under the per-market lock,
+			// serialized against finalize so a dispute can't be filed in the
+			// window between finalize's dispute-check and its payout. The
+			// status/eligibility checks above are a fast fail for UX; this is
+			// the gate that actually holds.
+			dispute, err := svc.FileDispute(r.Context(), req.MarketID, userID, req.Reason)
+			if err != nil {
+				if errors.Is(err, prediction.ErrMarketNotDisputable) {
+					return httpx.Conflict("market is not in a disputable (proposed_resolution) state", nil)
+				}
 				return httpx.Internal("failed to create dispute", err)
-			}
-			// Reflect the dispute in the market FSM (proposed_resolution ->
-			// disputed) so users/ops see it under review. Best-effort: the
-			// authoritative finalize gate is CountOpenDisputes, not this status.
-			if err := svc.MarkMarketDisputed(r.Context(), req.MarketID, userID); err != nil {
-				slog.Warn("dispute: failed to mark market disputed", "market", req.MarketID, "error", err)
 			}
 			// Push to the office review queue + market channel (ADR-0004 #7).
 			if notifier != nil {

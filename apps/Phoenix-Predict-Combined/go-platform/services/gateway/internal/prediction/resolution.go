@@ -3,8 +3,14 @@ package prediction
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 )
+
+// ErrMarketNotDisputable is returned by FileDispute when, under the per-market
+// lock, the market is no longer in a disputable state (e.g. it finalized in a
+// race between the eligibility check and the dispute insert).
+var ErrMarketNotDisputable = errors.New("market is not in a disputable state")
 
 // ADR-0003/0004 foundation: the propose -> finalize resolution seam.
 //
@@ -85,4 +91,11 @@ type ResolutionStore interface {
 	// ResolveDispute records an admin decision on a dispute (status upheld|
 	// rejected|withdrawn) with a resolution note and the resolving admin.
 	ResolveDispute(ctx context.Context, id, status, note string, resolvedBy *string) error
+	// WithMarketLock runs fn while holding a cluster-wide per-market lock
+	// (Postgres advisory lock), serializing finalize and dispute-filing for the
+	// same market across goroutines AND gateway replicas. This is mutual
+	// exclusion, not write-atomicity: fn's own statements still autocommit; the
+	// lock guarantees no two critical sections for one market interleave, which
+	// is what closes the double-finalize and dispute-then-finalize races.
+	WithMarketLock(ctx context.Context, marketID string, fn func() error) error
 }

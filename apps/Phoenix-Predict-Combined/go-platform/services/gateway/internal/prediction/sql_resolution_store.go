@@ -3,6 +3,7 @@ package prediction
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -15,6 +16,28 @@ type SQLResolutionStore struct {
 
 func NewSQLResolutionStore(db *sql.DB) *SQLResolutionStore {
 	return &SQLResolutionStore{db: db}
+}
+
+// WithMarketLock serializes the finalize / dispute-filing critical sections for
+// a market across goroutines AND gateway replicas via a transaction-scoped
+// advisory lock (auto-released on commit/rollback — same primitive the exchange
+// matcher uses). fn's own queries run on pooled connections; the lock provides
+// mutual exclusion against other WithMarketLock holders for the same market,
+// which is exactly the finalize-vs-finalize and dispute-vs-finalize
+// serialization needed to make the windowed-resolution money path race-free.
+func (s *SQLResolutionStore) WithMarketLock(ctx context.Context, marketID string, fn func() error) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin lock tx: %w", err)
+	}
+	defer func() { _ = tx.Rollback() }()
+	if _, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock(hashtext($1))", marketID); err != nil {
+		return fmt.Errorf("acquire market lock: %w", err)
+	}
+	if err := fn(); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (s *SQLResolutionStore) CreateProposal(ctx context.Context, p *ResolutionProposal) error {
