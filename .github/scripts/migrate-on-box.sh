@@ -23,7 +23,8 @@ cd /opt/phoenix
 export JWT_SECRET=unused # required for docker compose env interpolation on this box
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.demo.yml"
 
-DSN="$($COMPOSE exec -T gateway printenv GATEWAY_DB_DSN | tr -d '\r')"
+# </dev/null so `docker compose exec` never reads the surrounding stdin.
+DSN="$($COMPOSE exec -T gateway printenv GATEWAY_DB_DSN </dev/null | tr -d '\r')"
 [ -n "$DSN" ] || {
   echo "::error::could not read GATEWAY_DB_DSN from the gateway container"
   exit 1
