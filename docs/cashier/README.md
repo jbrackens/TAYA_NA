@@ -67,7 +67,7 @@ Carried over from the independent Codex review; these apply to any on-chain rail
 2. **Scope order:** ship **BEP-20 deposit + withdraw first**, TRC-20/Symbiosis as a fast-follow (recommended), vs both together.
 3. **Verification spikes still relevant** (Thirdweb/Pimlico spikes dropped):
    - **Symbiosis:** does a passive per-user Tron deposit address exist, or must the user sign a Tron contract interaction? (gates the TRC-20 flow; Maria won't tolerate a multi-step bridge). Public docs lean toward wallet-signed swaps — high risk.
-   - **BSC RPC provider** choice (server-side) + on-chain `decimals()==18` assert.
+   - **BSC RPC provider** choice (server-side, e.g. Alchemy/Ankr) still open. On-chain decimals **confirmed = 18** (chainId 56, symbol `USDT`, contract `0x55d3…955`) via public RPC `bsc-dataseed.binance.org`, 2026-05-23 — wire a startup `decimals()==18` assert into the rail.
    - HD-derivation + **sweep-gas** model feasibility on BSC.
 
 ---
