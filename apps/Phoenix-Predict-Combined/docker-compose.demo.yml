@@ -144,10 +144,39 @@ services:
     depends_on: [player, office, gateway]
     networks: [predict_network]
 
+  # Automated logical backups of the Predict database. Loops pg_dump (default
+  # every 6h), keeps BACKUP_RETENTION_DAYS of gzipped dumps on the db_backups
+  # volume. pg_dump is read-only on the source. Local-only by default — a local
+  # backup does NOT survive box loss, so set BACKUP_OFFSITE_CMD for true offsite.
+  # The deploy workflow recreates named services only, so activate this once on
+  # the box:
+  #   docker compose -f docker-compose.yml -f docker-compose.demo.yml up -d db-backup
+  db-backup:
+    image: postgres:16-alpine
+    container_name: predict_db_backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: predict
+      PGPASSWORD: localdev               # demo only; supply real creds in production
+      PGDATABASE: predict
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: "7"
+      BACKUP_INTERVAL_SECONDS: "21600"   # 6h
+    volumes:
+      - ./ops/backup:/ops:ro
+      - db_backups:/backups
+    command: ["sh", "-c", "while true; do sh /ops/backup-db.sh || true; sleep \"$$BACKUP_INTERVAL_SECONDS\"; done"]
+    networks: [predict_network]
+
 volumes:
   caddy_data:
   caddy_config:
   market_images:   # sync-markets thumbnails; survives rsync/rebuild/recreate
+  db_backups:      # automated pg_dump backups (db-backup sidecar)
 
 networks:
   predict_network:
