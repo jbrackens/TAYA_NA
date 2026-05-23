@@ -119,3 +119,57 @@ func TestValidateGatewayRuntimeConfigAllowsAuthDisabledInDevelopment(t *testing.
 		t.Fatalf("expected dev to allow the auth kill switch, got %v", err)
 	}
 }
+
+func TestValidateGatewayRuntimeConfigRejectsDevWebhookSecretInDeployedEnvs(t *testing.T) {
+	for _, env := range []string{"production", "staging"} {
+		err := validateGatewayRuntimeConfig(func(key string) string {
+			switch key {
+			case "ENVIRONMENT":
+				return env
+			case "PAYMENTS_WEBHOOK_SECRET":
+				return "whsec_local" // the dev placeholder
+			default:
+				return ""
+			}
+		})
+		if err == nil {
+			t.Fatalf("expected boot refusal for dev webhook secret in %s", env)
+		}
+	}
+}
+
+func TestValidateGatewayRuntimeConfigRejectsDevDBPasswordInProduction(t *testing.T) {
+	err := validateGatewayRuntimeConfig(func(key string) string {
+		switch key {
+		case "ENVIRONMENT":
+			return "production"
+		case "PAYMENTS_WEBHOOK_SECRET":
+			return "whsec_realsecret"
+		case "GATEWAY_DB_DSN":
+			return "postgres://predict:localdev@db:5432/predict?sslmode=disable"
+		default:
+			return ""
+		}
+	})
+	if err == nil {
+		t.Fatalf("expected boot refusal for dev database password in production")
+	}
+}
+
+func TestValidateGatewayRuntimeConfigAllowsRealSecretsInProduction(t *testing.T) {
+	err := validateGatewayRuntimeConfig(func(key string) string {
+		switch key {
+		case "ENVIRONMENT":
+			return "production"
+		case "PAYMENTS_WEBHOOK_SECRET":
+			return "whsec_a-real-and-strong-secret"
+		case "GATEWAY_DB_DSN", "WALLET_DB_DSN":
+			return "postgres://predict:S3cure-Prod-Pass@db.internal:5432/predict?sslmode=require"
+		default:
+			return ""
+		}
+	})
+	if err != nil {
+		t.Fatalf("expected production with real secrets to validate, got %v", err)
+	}
+}

@@ -37,6 +37,23 @@ Complete guide for deploying Phoenix Sportsbook to production using Kubernetes a
 - **Logs:** Cloud Logging or ELK Stack
 - **Backups:** Cloud Storage or S3 for database backups
 
+## Production Secrets Contract
+
+Set `ENVIRONMENT=production` (or `staging`) on the gateway and auth services for any real deployment. The gateway **fails fast at boot** when a deployed environment still carries development placeholder secrets — this is enforced in code (`validateGatewayRuntimeConfig`), so a forgotten value aborts the start instead of running insecure:
+
+- `PAYMENTS_WEBHOOK_SECRET` must be set and must not be the dev value `whsec_local`. It is the HMAC key the payments webhook verifies, so a guessable value lets anyone forge deposit/withdrawal confirmations.
+- `GATEWAY_DB_DSN` / `WALLET_DB_DSN` must not contain the dev database password `localdev`. Use real credentials.
+- `GATEWAY_AUTH_ENABLED` may not be `false` in a deployed environment.
+
+Also rotate before launch (these are baked into the local `docker-compose.yml` for dev convenience only):
+
+- PostgreSQL password (`localdev` locally).
+- Office basic-auth bcrypt hash in `Caddyfile`.
+
+Note: `JWT_SECRET` is currently **vestigial** — the auth service issues opaque, Redis-backed session tokens (`atk_`/`rtk_`), not JWTs, so nothing reads it. The dev value is therefore not a live risk, but the variable and the "JWT Configuration" subsection below are stale and should be removed in a future cleanup.
+
+Activation knobs that are off by default and required for the real-money / outside-US launch (see `docker-compose.demo.yml` for the full annotated list): the crypto rail (`CRYPTO_RPC_URL`, `CRYPTO_ASSET_CONTRACT`, `CRYPTO_DEPOSIT_ADDRESS_SOURCE`), KYC enforcement (`KYC_ENFORCEMENT`, `KYC_REQUIRED_FOR_TRADING`, optional `KYC_IDV_PROVIDER`/`KYC_IDV_API_KEY`), the jurisdiction gate (`GEO_GATE_ENABLED` plus an edge country header), and email (`SMTP_HOST`).
+
 ## Environment Variables Reference
 
 ### Gateway Service

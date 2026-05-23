@@ -175,18 +175,39 @@ func gatewayCSRFSkipPrefixes() []string {
 
 func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	env := strings.ToLower(strings.TrimSpace(getenv("ENVIRONMENT")))
+	realEnv := env == "production" || env == "staging"
+
 	// The auth kill switch is a local-dev convenience only. Refuse to boot with
 	// it disabled in any deployed environment.
-	if strings.EqualFold(strings.TrimSpace(getenv("GATEWAY_AUTH_ENABLED")), "false") &&
-		(env == "production" || env == "staging") {
+	if strings.EqualFold(strings.TrimSpace(getenv("GATEWAY_AUTH_ENABLED")), "false") && realEnv {
 		return fmt.Errorf("GATEWAY_AUTH_ENABLED=false is not permitted when ENVIRONMENT=%s", env)
 	}
-	if env != "production" {
+
+	// Everything below applies only to deployed environments. Local dev and the
+	// demo box (ENVIRONMENT unset) keep the convenient docker-compose defaults.
+	if !realEnv {
 		return nil
 	}
-	if strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) == "" {
-		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set in production")
+
+	// Payments webhook secret must be set, and must not be the dev placeholder
+	// baked into docker-compose. Reaching a deployed environment with it is a
+	// deploy mistake we fail fast on rather than run with a guessable HMAC key.
+	switch strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) {
+	case "":
+		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set when ENVIRONMENT=%s", env)
+	case "whsec_local":
+		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET is the dev placeholder 'whsec_local'; set a real secret when ENVIRONMENT=%s", env)
 	}
+
+	// Refuse the dev database password in a deployed environment. The local
+	// docker-compose bakes in 'localdev' for convenience; a DSN still carrying
+	// it in prod/staging is a leftover dev config, not a real credential.
+	for _, dsnVar := range []string{"GATEWAY_DB_DSN", "WALLET_DB_DSN"} {
+		if strings.Contains(getenv(dsnVar), ":localdev@") {
+			return fmt.Errorf("%s uses the dev database password 'localdev'; use real credentials when ENVIRONMENT=%s", dsnVar, env)
+		}
+	}
+
 	return nil
 }
 
