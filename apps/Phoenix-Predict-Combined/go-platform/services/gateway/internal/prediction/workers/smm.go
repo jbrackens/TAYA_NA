@@ -83,6 +83,7 @@ package workers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -386,13 +387,16 @@ func (s *SMM) botPositionQtys(ctx context.Context, marketID string) (yes int, no
 	yesPos, err := s.repo.GetPosition(ctx, s.cfg.UserID, marketID, prediction.OrderSideYes)
 	if err == nil && yesPos != nil {
 		yes = yesPos.Quantity
-	} else if err != nil {
+	} else if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		// sql.ErrNoRows simply means the bot holds no YES position on this
+		// market yet — the common case on cold markets, not a failure. Only
+		// a real load error is worth a warning.
 		slog.Warn("smm: get yes position failed", "market_id", marketID, "error", err)
 	}
 	noPos, err := s.repo.GetPosition(ctx, s.cfg.UserID, marketID, prediction.OrderSideNo)
 	if err == nil && noPos != nil {
 		no = noPos.Quantity
-	} else if err != nil {
+	} else if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		slog.Warn("smm: get no position failed", "market_id", marketID, "error", err)
 	}
 	return yes, no
