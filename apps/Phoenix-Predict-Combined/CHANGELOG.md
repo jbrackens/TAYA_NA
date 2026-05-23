@@ -1,5 +1,35 @@
 # Taya NA Predict Changelog
 
+## [Unreleased] - 2026-05-23
+
+### Compliance, payments, liquidity, and notifications build-out
+
+Closes the gap between "the trading engine works" and "the platform can run a real closed beta." Everything below is verified end-to-end against the live stack.
+
+### Added
+
+- **Identity verification (KYC) that survives restarts.** Verification status and documents now persist in PostgreSQL instead of an in-memory map. Submissions queue for back-office review (a compliance operator approves/rejects via a new admin action); an automated vendor (Sumsub/Onfido/Persona) drops in by configuration. Until a vendor is configured the flow fails safe — it never auto-approves.
+- **Crypto (USDC) deposit rail.** New `/api/v1/payments/crypto/config` and `/api/v1/payments/crypto/deposit-address` endpoints behind a clean on-chain adapter. It fails closed (no fake addresses) until you supply an RPC endpoint, the asset contract, and a deposit-address source.
+- **Resolution notifications.** When a market settles or voids, the gateway now sends an out-of-band notification (email when SMTP is configured; recorded to the structured log otherwise) alongside the existing real-time WebSocket push.
+- **Dynamic order-book liquidity.** The synthetic market maker is enabled on the demo with risk caps (per-market depth + a per-side position cap), so every open market keeps a live two-sided book instead of a static seeded one.
+- **Prediction end-to-end tests.** A new Playwright suite (`talon-backoffice/e2e/prediction/`) covers login, market data, order fill, portfolio accounting, the full KYC lifecycle, admin authorization, and the crypto rail's fail-closed contract. 10/10 green against the live stack.
+
+### Changed
+
+- Responsible-gambling limits are now served by the PostgreSQL-backed service (the in-memory mock is only a no-database fallback for tests). It gained a per-user atomic bet-limit gate so concurrent orders cannot collectively slip past a period limit.
+- The demo deployment turns the market maker on and documents off-by-default activation knobs for the crypto rail, KYC vendor, SMTP, and jurisdiction gate in `docker-compose.demo.yml`.
+
+### Fixed
+
+- The market maker no longer floods the logs with a warning for every market on every tick when it holds no position there (a missing position is the normal cold-market case, not an error).
+
+### For contributors
+
+- Removed ~47 stale root-level planning/primer/audit documents; the audit findings live in code, not in those files.
+- New gateway packages: `internal/notify` (notification channel), plus `compliance/kyc_postgres.go` + `compliance/idv.go` (DB-backed KYC + verification-provider seam) and `payments/crypto_rail.go` (on-chain rail seam). The compliance and crypto tables self-create on startup via `CREATE TABLE IF NOT EXISTS`, so no migration is required.
+
+---
+
 ## [2.0.0] - 2026-04-16
 
 ### Prediction-Market Fork

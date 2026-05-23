@@ -152,6 +152,10 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 - `internal/http/prediction_handlers.go` — public + authenticated prediction routes
 - `internal/http/bot_handlers.go` — bot API with API-key auth
 - `internal/http/prediction_wallet_adapter.go` — bridges `wallet.Service` → `prediction.WalletAdapter`
+- `internal/compliance/kyc_postgres.go` + `idv.go` — DB-backed KYC + pluggable IDV provider (manual review default; vendor seam)
+- `internal/compliance/rg_postgres.go` — DB-backed responsible-gambling limits + atomic bet-limit gate
+- `internal/payments/crypto_rail.go` — on-chain (USDC) deposit/withdrawal adapter (fails closed until configured)
+- `internal/notify/notify.go` — out-of-band notification channel (SMTP + log fallback)
 
 ## Local Development
 
@@ -281,6 +285,18 @@ GATEWAY_DB_DRIVER=postgres
 REDIS_URL=redis://localhost:6380/0
 AUTH_SERVICE_URL=http://localhost:18081
 AUTH_COOKIE_SECURE=false        # required for localhost HTTP
+
+# Gateway — build-out activation knobs (all default OFF / fail-closed; the
+# commented block in docker-compose.demo.yml is the canonical reference)
+SMM_ENABLED=true                # synthetic market maker: dynamic two-sided liquidity
+KYC_IDV_PROVIDER=               # ''/'manual' = back-office review; else a vendor (needs KYC_IDV_API_KEY)
+KYC_ENFORCEMENT=                # 'true' gates withdrawals above KYC_WITHDRAWAL_THRESHOLD_CENTS
+KYC_REQUIRED_FOR_TRADING=       # 'true' requires verified identity to trade
+CRYPTO_RPC_URL=                 # crypto rail stays fail-closed until RPC + contract + address source are set
+CRYPTO_ASSET_CONTRACT=
+CRYPTO_DEPOSIT_ADDRESS_SOURCE=
+GEO_GATE_ENABLED=               # 'true' enforces jurisdiction (needs an edge country header, e.g. CF-IPCountry)
+SMTP_HOST=                      # set to send resolution emails; otherwise notifications log
 ```
 
 ## Public API Prefixes

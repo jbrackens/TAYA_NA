@@ -27,7 +27,7 @@ Open `http://localhost:3010/predict`.
 | --- | --- | --- |
 | Player app | `http://localhost:3010/predict` | Market discovery, market detail, trade ticket, portfolio |
 | Backoffice | `http://localhost:3001` | Market creation, lifecycle, settlement, risk |
-| Gateway API | `http://localhost:18080/api/v1` | Prediction, orders, portfolio, wallet, auth proxy |
+| Gateway API | `http://localhost:18080/api/v1` | Prediction, orders, portfolio, wallet, payments (incl. crypto rail), compliance/KYC, auth proxy |
 | Auth service | `http://localhost:18081` | Login, refresh, session management |
 | PostgreSQL | `localhost:5434` | Database `predict`, user `predict`, password `localdev` |
 | Redis | `localhost:6380` | Cache and pub/sub |
@@ -88,6 +88,13 @@ cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Comb
 go test ./modules/platform/... ./services/gateway/... ./services/auth/...
 ```
 
+Prediction end-to-end tests (against the running stack):
+
+```bash
+cd /Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict/apps/Phoenix-Predict-Combined/talon-backoffice
+PREDICT_BASE_URL=http://localhost:8080 npx playwright test --config playwright.prediction.config.ts
+```
+
 Migrations and seeds:
 
 ```bash
@@ -102,6 +109,8 @@ go run ./cmd/seed
 
 ## Documentation
 
+- [Architecture overview](./ARCHITECTURE.md)
+- [Deployment guide](./DEPLOYMENT.md)
 - [Developer setup](./DEVELOPMENT.md)
 - [API examples](./API_EXAMPLES.md)
 - [Error and debugging guide](./ERRORS.md)
