@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	stdhttp "net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -93,6 +94,63 @@ func registerWalletRoutes(mux *stdhttp.ServeMux, service *wallet.Service) {
 
 		return httpx.NotFound("wallet resource not found")
 	}))
+
+	// Play-money starter grant (faucet). OFF by default — active only when
+	// STARTER_GRANT_CENTS > 0, which a real-value deployment leaves at 0. This
+	// is the one deliberate, bounded exception to "a session never moves funds"
+	// above: it credits ONLY the session user, the amount is operator-configured
+	// (not user-supplied), and it is idempotent (one grant per user via the key
+	// starter_grant:<uid>). It makes a freshly-registered player immediately
+	// tradeable on a play-money beta. A real-money deploy MUST keep
+	// STARTER_GRANT_CENTS=0 (the default), where this endpoint never credits.
+	mux.Handle("/api/v1/wallet/starter-grant", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		userID := httpx.UserIDFromContext(r.Context())
+		if userID == "" {
+			return httpx.Forbidden("authentication required")
+		}
+		grant := starterGrantCents()
+		if grant <= 0 {
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"enabled":      false,
+				"balanceCents": service.Balance(userID),
+			})
+		}
+		_, err := service.Credit(wallet.MutationRequest{
+			UserID:         userID,
+			AmountCents:    grant,
+			IdempotencyKey: "starter_grant:" + userID,
+			Reason:         "play-money starter grant",
+		})
+		// An idempotency conflict means the user already claimed their grant
+		// (same key, since-changed amount). That is success, not an error —
+		// they keep their original grant.
+		if err != nil && !errors.Is(err, wallet.ErrIdempotencyConflict) {
+			return mapWalletError(err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+			"enabled":      true,
+			"grantCents":   grant,
+			"balanceCents": service.Balance(userID),
+		})
+	}))
+}
+
+// starterGrantCents reads the play-money starter-grant amount from the
+// environment. 0 (the default, and any non-numeric/negative value) disables the
+// faucet — which is the required posture for a real-value deployment.
+func starterGrantCents() int64 {
+	raw := strings.TrimSpace(os.Getenv("STARTER_GRANT_CENTS"))
+	if raw == "" {
+		return 0
+	}
+	n, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil || n < 0 {
+		return 0
+	}
+	return n
 }
 
 func decodeWalletMutationRequest(r *stdhttp.Request) (walletMutationRequest, error) {

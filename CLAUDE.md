@@ -289,6 +289,7 @@ AUTH_COOKIE_SECURE=false        # required for localhost HTTP
 # Gateway — build-out activation knobs (all default OFF / fail-closed; the
 # commented block in docker-compose.demo.yml is the canonical reference)
 SMM_ENABLED=true                # synthetic market maker: dynamic two-sided liquidity
+STARTER_GRANT_CENTS=            # >0 enables the play-money faucet (one grant/user); MUST be 0 for real money
 KYC_IDV_PROVIDER=               # ''/'manual' = back-office review; else a vendor (needs KYC_IDV_API_KEY)
 KYC_ENFORCEMENT=                # 'true' gates withdrawals above KYC_WITHDRAWAL_THRESHOLD_CENTS
 KYC_REQUIRED_FOR_TRADING=       # 'true' requires verified identity to trade

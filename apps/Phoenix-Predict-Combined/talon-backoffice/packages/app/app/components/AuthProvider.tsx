@@ -6,10 +6,12 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 import { apiClient } from "../lib/api/client";
 import { login as authLogin, getSession } from "../lib/api/auth-client";
 import { getCoolOffStatus } from "../lib/api/compliance-client";
+import { claimStarterGrant } from "../lib/api/wallet-client";
 import { IdleActivityMonitor } from "./IdleActivityMonitor";
 import { useToast } from "./ToastProvider";
 import { logger } from "../lib/logger";
@@ -78,6 +80,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<Error | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const toast = useToast();
+
+  // Play-money starter grant: when a session is established (login or restore),
+  // claim the one-time faucet so a freshly-registered player is immediately
+  // tradeable. The endpoint is idempotent and a no-op when the faucet is
+  // disabled server-side (STARTER_GRANT_CENTS=0), so firing once per session is
+  // safe. Best-effort — it never blocks auth.
+  const starterGrantClaimed = useRef(false);
+  useEffect(() => {
+    if (!user || starterGrantClaimed.current) return;
+    starterGrantClaimed.current = true;
+    void claimStarterGrant(user.id).then((res) => {
+      if (res?.enabled) {
+        logger.info("Wallet", "starter grant applied", res.balanceCents);
+      }
+    });
+  }, [user]);
 
   // Check for existing session on mount
   useEffect(() => {

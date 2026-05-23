@@ -65,6 +65,12 @@ services:
       SMM_HALF_SPREAD_CENTS: "3"
       SMM_MAX_POSITION_QTY: "500"
       SMM_TICK_INTERVAL: "30s"
+      # Play-money faucet: a freshly-registered player can claim a one-time
+      # starter balance ($10,000 here) so they are immediately tradeable. The
+      # grant is idempotent (one per user) and credits only the session user.
+      # A REAL-MONEY deployment MUST leave this at 0 (the default) — see the
+      # POST /api/v1/wallet/starter-grant handler.
+      STARTER_GRANT_CENTS: "1000000"
       # --- Activation knobs for wired-but-unconfigured features (off by ---
       # --- default; uncomment + supply real values to take each live). ---
       # Crypto (USDC) on-chain rail — needs an RPC, the asset contract, and a

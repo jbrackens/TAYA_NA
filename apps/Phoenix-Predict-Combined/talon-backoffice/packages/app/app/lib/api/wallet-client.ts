@@ -502,3 +502,32 @@ export async function getTransactions(
     totalPages: Math.max(1, Math.ceil(filtered.length / limit)),
   };
 }
+
+interface StarterGrantResult {
+  enabled: boolean;
+  grantCents?: number;
+  balanceCents?: number;
+}
+
+/**
+ * Claims the one-time play-money starter grant for the session user. The
+ * gateway is idempotent (one grant per user) and the endpoint is a no-op when
+ * the faucet is disabled (STARTER_GRANT_CENTS=0), so this is safe to call on
+ * every login/restore. On a real grant the user's balance cache is cleared so
+ * the next balance read reflects it. Best-effort: returns null on failure.
+ */
+export async function claimStarterGrant(
+  userId: string,
+): Promise<StarterGrantResult | null> {
+  try {
+    const res = await apiClient.post<StarterGrantResult>(
+      "/api/v1/wallet/starter-grant",
+    );
+    if (res?.enabled) {
+      balanceCache.delete(userId);
+    }
+    return res;
+  } catch {
+    return null;
+  }
+}
