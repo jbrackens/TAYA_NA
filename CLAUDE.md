@@ -38,9 +38,8 @@ Taya_Na_Predict/
 │   └── docker-compose.yml                 ← PostgreSQL (5434) + Redis (6380) + services
 ├── reference/v2-prediction/               ← Old v2 prediction prototype kept for reference
 ├── CLAUDE.md                              ← this file
-├── DESIGN.md                              ← prediction design system (P8: warm-cream backdrop + chart-paper grid + Inter + IBM Plex Mono + mint emerald accent + AA contrast) — governs BOTH player app and backoffice as of 2026-04-28. READ BEFORE ANY UI CHANGE.
-├── DESIGN-SPORTSBOOK.md                   ← ARCHIVED legacy sportsbook spec — kept for git-blame context only, do NOT read for new work
-└── PRIMER.md                              ← session primer (older — parts are out of date)
+├── PRODUCT-USER-JOURNEYS.md               ← product spec: implemented user journeys
+└── DESIGN.md                              ← prediction design system (P8: warm-cream backdrop + chart-paper grid + Inter + IBM Plex Mono + mint emerald accent + AA contrast) — governs BOTH player app and backoffice as of 2026-04-28. READ BEFORE ANY UI CHANGE.
 ```
 
 ## GitHub Repo
