@@ -17,9 +17,8 @@ import { redirect } from "next/navigation";
  * tracked as the next follow-up.
  */
 export default function RiskManagementIndex() {
-  // /prediction-admin/risk ships in PR #48 (feat/risk-dashboard-v1).
-  // Until that lands, redirect to /dashboard so /risk-management never
-  // shows the sportsbook subtree. After PR #48 merges, change the
-  // target to "/prediction-admin/risk".
-  redirect("/dashboard");
+  // The prediction-native risk dashboard (feat/risk-dashboard-v1) now exists
+  // at /prediction-admin/risk, so the legacy /risk-management URL forwards
+  // there instead of /dashboard. The old sportsbook subtree is never shown.
+  redirect("/prediction-admin/risk");
 }

@@ -208,7 +208,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// sportsbook registerAdminRoutes in admin_handlers.go stays unwired.
 	if predSQLRepo != nil {
 		registerPredictionAdminRoutes(mux, predSQLRepo, walletService)
-		slog.Info("prediction: admin read routes registered (punters, audit-logs)")
+		registerPredictionRiskRoutes(mux, predSQLRepo)
+		slog.Info("prediction: admin read routes registered (punters, audit-logs, risk)")
 	}
 
 	// --- Feed Adapters & Background Workers ---

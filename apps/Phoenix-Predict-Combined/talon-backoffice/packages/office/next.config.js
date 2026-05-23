@@ -57,7 +57,7 @@ module.exports = {
     return [
       {
         source: "/risk-management/:path*",
-        destination: "/dashboard",
+        destination: "/prediction-admin/risk",
         permanent: false,
       },
     ];
