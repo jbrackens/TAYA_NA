@@ -175,9 +175,33 @@ func NewAuthService() *AuthService {
 		}
 	}
 	sessionStorePath := os.Getenv("AUTH_SESSION_STORE_FILE")
+	// Session store backend selection. Redis is preferred: it is durable across
+	// an auth-service restart AND shared across instances, so the service scales
+	// horizontally (the file-backed store is per-process — a second instance
+	// cannot validate a token the first minted, and a restart drops every
+	// session unless a single file happens to be mounted). AUTH_SESSION_REDIS_URL
+	// takes precedence; absent that we reuse AUTH_REDIS_URL (the same Redis
+	// already used for rate limiting). With neither set, fall back to the
+	// single-instance file-backed store for local dev.
+	sessionRedisURL := strings.TrimSpace(os.Getenv("AUTH_SESSION_REDIS_URL"))
+	if sessionRedisURL == "" {
+		sessionRedisURL = strings.TrimSpace(os.Getenv("AUTH_REDIS_URL"))
+	}
 	isProduction := env == "production" || env == "staging"
-	if isProduction && sessionStorePath == "" {
-		log.Fatalf("FATAL: AUTH_SESSION_STORE_FILE must be set in production; sessions would be lost on restart")
+	if isProduction && sessionStorePath == "" && sessionRedisURL == "" {
+		log.Fatalf("FATAL: set AUTH_SESSION_REDIS_URL (preferred — enables multi-instance) or AUTH_SESSION_STORE_FILE in %s; sessions would otherwise be lost on restart", env)
+	}
+	var sessionStore SessionStore
+	if sessionRedisURL != "" {
+		opts, sErr := redis.ParseURL(sessionRedisURL)
+		if sErr != nil {
+			log.Fatalf("FATAL: session Redis URL is invalid: %v", sErr)
+		}
+		sessionStore = NewRedisSessionStore(redis.NewClient(opts))
+		slog.Info("auth: session store backed by Redis (restart-durable, multi-instance)")
+	} else {
+		sessionStore = NewFileBackedSessionStore(sessionStorePath)
+		slog.Info("auth: session store file-backed (single-instance only)", "path", sessionStorePath)
 	}
 
 	// Hash seed passwords with bcrypt for consistency
@@ -227,7 +251,7 @@ func NewAuthService() *AuthService {
 	svc := &AuthService{
 		usersByUsername:  users,
 		twoFactorEnabled: map[string]bool{},
-		store:            NewFileBackedSessionStore(sessionStorePath),
+		store:            sessionStore,
 		audit:            &structuredAuditLogger{logger: log.Default()},
 		accessTTL:        durationFromEnvSeconds("AUTH_ACCESS_TTL_SECONDS", defaultAccessTokenTTL),
 		refreshTTL:       durationFromEnvSeconds("AUTH_REFRESH_TTL_SECONDS", defaultRefreshTokenTTL),
