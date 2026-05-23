@@ -99,9 +99,11 @@ func (r *jsonDefaultRepo) ListAPIKeys(context.Context, string) ([]APIKey, error)
 func (r *jsonDefaultRepo) GetAPIKeyByPrefix(context.Context, string) (*APIKey, error) {
 	return nil, errors.New("not found")
 }
-func (r *jsonDefaultRepo) CreateAPIKey(context.Context, *APIKey) error       { return nil }
-func (r *jsonDefaultRepo) DeactivateAPIKey(context.Context, string) error    { return nil }
-func (r *jsonDefaultRepo) TouchAPIKeyLastUsed(context.Context, string) error { return nil }
+func (r *jsonDefaultRepo) CreateArticleSource(context.Context, *ArticleSource) error { return nil }
+func (r *jsonDefaultRepo) LogAIGeneration(context.Context, *AIGenerationLog) error   { return nil }
+func (r *jsonDefaultRepo) CreateAPIKey(context.Context, *APIKey) error               { return nil }
+func (r *jsonDefaultRepo) DeactivateAPIKey(context.Context, string) error            { return nil }
+func (r *jsonDefaultRepo) TouchAPIKeyLastUsed(context.Context, string) error         { return nil }
 func (r *jsonDefaultRepo) GetPortfolioSummary(context.Context, string) (*PortfolioSummary, error) {
 	return nil, errors.New("not found")
 }
@@ -161,5 +163,45 @@ func TestResolveMarketDefaultsAttestationDataToJSONObject(t *testing.T) {
 	}
 	if string(repo.capturedSettlement.AttestationData) != "{}" {
 		t.Fatalf("expected attestation data to default to {}, got %q", string(repo.capturedSettlement.AttestationData))
+	}
+}
+
+func TestCreateMarketSetsArticleSourceID(t *testing.T) {
+	repo := &jsonDefaultRepo{}
+	svc := NewService(repo, NoopWallet{})
+	srcID := "src-xyz"
+
+	_, err := svc.CreateMarket(context.Background(), CreateMarketRequest{
+		EventID:             "evt-asid",
+		Ticker:              "QA-ASID",
+		Title:               "QA Article Source Link",
+		SettlementSourceKey: "admin-manual",
+		SettlementRule:      "binary_outcome",
+		CloseAt:             time.Now().UTC().Add(time.Hour),
+		AMMLiquidityParam:   100,
+		ArticleSourceID:     &srcID,
+	})
+	if err != nil {
+		t.Fatalf("create market: %v", err)
+	}
+	if repo.createdMarket == nil || repo.createdMarket.ArticleSourceID == nil {
+		t.Fatalf("expected created market with an article source id")
+	}
+	if *repo.createdMarket.ArticleSourceID != srcID {
+		t.Fatalf("expected article source id %q, got %q", srcID, *repo.createdMarket.ArticleSourceID)
+	}
+}
+
+func TestCreateArticleSourceRequiresTextHash(t *testing.T) {
+	svc := NewService(&jsonDefaultRepo{}, NoopWallet{})
+	if _, err := svc.CreateArticleSource(context.Background(), &ArticleSource{}); err == nil {
+		t.Fatalf("expected error for empty textHash")
+	}
+}
+
+func TestLogAIGenerationRequiresStage(t *testing.T) {
+	svc := NewService(&jsonDefaultRepo{}, NoopWallet{})
+	if err := svc.LogAIGeneration(context.Background(), &AIGenerationLog{}); err == nil {
+		t.Fatalf("expected error for empty stage")
 	}
 }

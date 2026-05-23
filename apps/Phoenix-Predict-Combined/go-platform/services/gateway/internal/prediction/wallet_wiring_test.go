@@ -334,6 +334,8 @@ func (r *memRepo) UpdateEventStatus(context.Context, string, EventStatus) error 
 func (r *memRepo) ListMarkets(context.Context, MarketFilter) ([]Market, int, error) {
 	return nil, 0, nil
 }
+func (r *memRepo) CreateArticleSource(context.Context, *ArticleSource) error      { return nil }
+func (r *memRepo) LogAIGeneration(context.Context, *AIGenerationLog) error        { return nil }
 func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error)     { return nil, nil }
 func (r *memRepo) CreateMarket(context.Context, *Market) error                    { return nil }
 func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
@@ -342,12 +344,12 @@ func (r *memRepo) ListMarketsToSettle(context.Context) ([]Market, error)        
 func (r *memRepo) ListRestingOrdersOnInactiveMarkets(context.Context, int) ([]Order, error) {
 	return nil, nil
 }
-func (r *memRepo) ListOrders(context.Context, OrderFilter) ([]Order, int, error)  { return nil, 0, nil }
-func (r *memRepo) GetOrder(context.Context, string) (*Order, error)               { return nil, nil }
-func (r *memRepo) UpdateOrder(context.Context, *Order) error                      { return nil }
-func (r *memRepo) ListPositions(context.Context, string) ([]Position, error)      { return nil, nil }
-func (r *memRepo) ListTrades(context.Context, string, int) ([]Trade, error)       { return nil, nil }
-func (r *memRepo) GetSettlement(context.Context, string) (*Settlement, error)     { return nil, nil }
+func (r *memRepo) ListOrders(context.Context, OrderFilter) ([]Order, int, error) { return nil, 0, nil }
+func (r *memRepo) GetOrder(context.Context, string) (*Order, error)              { return nil, nil }
+func (r *memRepo) UpdateOrder(context.Context, *Order) error                     { return nil }
+func (r *memRepo) ListPositions(context.Context, string) ([]Position, error)     { return nil, nil }
+func (r *memRepo) ListTrades(context.Context, string, int) ([]Trade, error)      { return nil, nil }
+func (r *memRepo) GetSettlement(context.Context, string) (*Settlement, error)    { return nil, nil }
 func (r *memRepo) ListLifecycleEvents(context.Context, string) ([]LifecycleEvent, error) {
 	return nil, nil
 }

@@ -129,6 +129,10 @@ type Market struct {
 	UpdatedAt           time.Time       `json:"updatedAt" db:"updated_at"`
 	ImagePath           string          `json:"imagePath,omitempty" db:"image_path"`
 
+	// ArticleSourceID links an AI-drafted market to its source article
+	// (migration 024). Nil for markets created by hand.
+	ArticleSourceID *string `json:"articleSourceId,omitempty" db:"article_source_id"`
+
 	// Exchange engine fields (migration 019).
 	ExecutionMode          ExecutionMode `json:"executionMode" db:"execution_mode"`
 	CollateralPoolCents    int64         `json:"collateralPoolCents" db:"collateral_pool_cents"`
@@ -491,6 +495,70 @@ type CreateMarketRequest struct {
 	FeeRateBps          int             `json:"feeRateBps"`
 	AMMLiquidityParam   float64         `json:"ammLiquidityParam"`
 	AMMSubsidyCents     int64           `json:"ammSubsidyCents"`
+	ArticleSourceID     *string         `json:"articleSourceId,omitempty"`
+}
+
+// ArticleSource is the provenance record for an AI-drafted market's source
+// article (migration 024). Only an excerpt + AI summary + a SHA-256 of the
+// article text are stored, never the full copyrighted body.
+type ArticleSource struct {
+	ID           string          `json:"id" db:"id"`
+	SourceURL    *string         `json:"sourceUrl,omitempty" db:"source_url"`
+	SourceName   *string         `json:"sourceName,omitempty" db:"source_name"`
+	Title        *string         `json:"title,omitempty" db:"title"`
+	Author       *string         `json:"author,omitempty" db:"author"`
+	PublishedAt  *time.Time      `json:"publishedAt,omitempty" db:"published_at"`
+	Language     string          `json:"language" db:"language"`
+	Jurisdiction json.RawMessage `json:"jurisdiction,omitempty" db:"jurisdiction"`
+	Excerpt      *string         `json:"excerpt,omitempty" db:"excerpt"`
+	Summary      *string         `json:"summary,omitempty" db:"summary"`
+	TextHash     string          `json:"textHash" db:"text_hash"`
+	CreatedBy    *string         `json:"createdBy,omitempty" db:"created_by"`
+	CreatedAt    time.Time       `json:"createdAt" db:"created_at"`
+	UpdatedAt    time.Time       `json:"updatedAt" db:"updated_at"`
+}
+
+// AIGenerationLog is one model call in the market-drafting pipeline
+// (migration 024), stored for audit, legal defensibility, and model
+// evaluation. InputJSON is redacted/truncated upstream — it must never carry
+// the full copyrighted article body.
+type AIGenerationLog struct {
+	ID                string          `json:"id" db:"id"`
+	ArticleSourceID   *string         `json:"articleSourceId,omitempty" db:"article_source_id"`
+	MarketID          *string         `json:"marketId,omitempty" db:"market_id"`
+	Stage             string          `json:"stage" db:"stage"`
+	Tier              *string         `json:"tier,omitempty" db:"tier"`
+	ModelProvider     *string         `json:"modelProvider,omitempty" db:"model_provider"`
+	ModelName         *string         `json:"modelName,omitempty" db:"model_name"`
+	InferenceEndpoint *string         `json:"inferenceEndpoint,omitempty" db:"inference_endpoint"`
+	PromptVersion     *string         `json:"promptVersion,omitempty" db:"prompt_version"`
+	InputJSON         json.RawMessage `json:"inputJson,omitempty" db:"input_json"`
+	OutputJSON        json.RawMessage `json:"outputJson,omitempty" db:"output_json"`
+	RiskLevel         *string         `json:"riskLevel,omitempty" db:"risk_level"`
+	ValidatorResult   json.RawMessage `json:"validatorResult,omitempty" db:"validator_result"`
+	Blocked           bool            `json:"blocked" db:"blocked"`
+	LatencyMs         *int            `json:"latencyMs,omitempty" db:"latency_ms"`
+	InputTokens       *int            `json:"inputTokens,omitempty" db:"input_tokens"`
+	OutputTokens      *int            `json:"outputTokens,omitempty" db:"output_tokens"`
+	CostMicros        *int64          `json:"costMicros,omitempty" db:"cost_micros"`
+	CreatedBy         *string         `json:"createdBy,omitempty" db:"created_by"`
+	RequestID         *string         `json:"requestId,omitempty" db:"request_id"`
+	ErrorMessage      *string         `json:"errorMessage,omitempty" db:"error_message"`
+	CreatedAt         time.Time       `json:"createdAt" db:"created_at"`
+}
+
+// CreateMarketSourceRequest is the admin request to persist AI-drafting
+// provenance: the source article (deduped on TextHash) plus the generation-log
+// entries that produced the draft. Server-set fields on Source (ID, CreatedAt,
+// UpdatedAt) are ignored.
+type CreateMarketSourceRequest struct {
+	Source         ArticleSource     `json:"source"`
+	GenerationLogs []AIGenerationLog `json:"generationLogs,omitempty"`
+}
+
+// CreateMarketSourceResponse returns the (deduped) article source id.
+type CreateMarketSourceResponse struct {
+	ArticleSourceID string `json:"articleSourceId"`
 }
 
 // ResolveMarketRequest is the admin request to settle a market.

@@ -1280,6 +1280,7 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	if req.FallbackSourceKey != nil {
 		market.FallbackSourceKey = req.FallbackSourceKey
 	}
+	market.ArticleSourceID = req.ArticleSourceID
 
 	if err := s.repo.CreateMarket(ctx, market); err != nil {
 		return nil, fmt.Errorf("create market: %w", err)
@@ -1293,6 +1294,29 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	})
 
 	return market, nil
+}
+
+// CreateArticleSource persists (deduped on TextHash) the provenance record for
+// an AI-drafted market and returns the canonical row with its id set.
+func (s *Service) CreateArticleSource(ctx context.Context, src *ArticleSource) (*ArticleSource, error) {
+	if strings.TrimSpace(src.TextHash) == "" {
+		return nil, fmt.Errorf("article source requires textHash")
+	}
+	if err := s.repo.CreateArticleSource(ctx, src); err != nil {
+		return nil, fmt.Errorf("create article source: %w", err)
+	}
+	return src, nil
+}
+
+// LogAIGeneration records one AI model call in the drafting pipeline for audit.
+func (s *Service) LogAIGeneration(ctx context.Context, entry *AIGenerationLog) error {
+	if strings.TrimSpace(entry.Stage) == "" {
+		return fmt.Errorf("ai generation log requires stage")
+	}
+	if err := s.repo.LogAIGeneration(ctx, entry); err != nil {
+		return fmt.Errorf("log ai generation: %w", err)
+	}
+	return nil
 }
 
 // reservationTTL computes the wallet hold expiry for a placed order. Old

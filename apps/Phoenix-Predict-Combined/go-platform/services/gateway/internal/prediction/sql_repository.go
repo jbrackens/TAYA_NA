@@ -283,8 +283,9 @@ func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
 		  amm_yes_shares, amm_no_shares,
 		  amm_liquidity_param, amm_subsidy_cents,
 		  settlement_source_key, settlement_cutoff_at, settlement_rule, settlement_params,
-		  fallback_source_key, fee_rate_bps, maker_rebate_bps, open_at, close_at, image_path)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
+		  fallback_source_key, fee_rate_bps, maker_rebate_bps, open_at, close_at, image_path,
+		  article_source_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)
 		 RETURNING id, created_at, updated_at`,
 		m.EventID, m.Ticker, m.Title, nullStr(m.Description), m.Status, resultArg,
 		m.YesPriceCents, m.NoPriceCents, m.LastTradePriceCents,
@@ -293,7 +294,43 @@ func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
 		m.AMMLiquidityParam, m.AMMSubsidyCents,
 		m.SettlementSourceKey, m.SettlementCutoffAt, m.SettlementRule, m.SettlementParams,
 		m.FallbackSourceKey, m.FeeRateBps, m.MakerRebateBps, m.OpenAt, m.CloseAt, nullStr(m.ImagePath),
+		m.ArticleSourceID,
 	).Scan(&m.ID, &m.CreatedAt, &m.UpdatedAt)
+}
+
+func (r *SQLRepository) CreateArticleSource(ctx context.Context, src *ArticleSource) error {
+	lang := src.Language
+	if lang == "" {
+		lang = "en"
+	}
+	// Dedupe on text_hash. The no-op DO UPDATE (bump updated_at) makes
+	// RETURNING fire on conflict, so callers always get the canonical id back.
+	return r.db.QueryRowContext(ctx,
+		`INSERT INTO prediction_article_sources
+		 (source_url, source_name, title, author, published_at, language,
+		  jurisdiction, excerpt, summary, text_hash, created_by)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+		 ON CONFLICT (text_hash) DO UPDATE SET updated_at = now()
+		 RETURNING id, created_at, updated_at`,
+		src.SourceURL, src.SourceName, src.Title, src.Author, src.PublishedAt, lang,
+		nullJSONArg(src.Jurisdiction), src.Excerpt, src.Summary, src.TextHash, src.CreatedBy,
+	).Scan(&src.ID, &src.CreatedAt, &src.UpdatedAt)
+}
+
+func (r *SQLRepository) LogAIGeneration(ctx context.Context, entry *AIGenerationLog) error {
+	return r.db.QueryRowContext(ctx,
+		`INSERT INTO prediction_ai_generation_logs
+		 (article_source_id, market_id, stage, tier, model_provider, model_name,
+		  inference_endpoint, prompt_version, input_json, output_json, risk_level,
+		  validator_result, blocked, latency_ms, input_tokens, output_tokens,
+		  cost_micros, created_by, request_id, error_message)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+		 RETURNING id, created_at`,
+		entry.ArticleSourceID, entry.MarketID, entry.Stage, entry.Tier, entry.ModelProvider, entry.ModelName,
+		entry.InferenceEndpoint, entry.PromptVersion, nullJSONArg(entry.InputJSON), nullJSONArg(entry.OutputJSON), entry.RiskLevel,
+		nullJSONArg(entry.ValidatorResult), entry.Blocked, entry.LatencyMs, entry.InputTokens, entry.OutputTokens,
+		entry.CostMicros, entry.CreatedBy, entry.RequestID, entry.ErrorMessage,
+	).Scan(&entry.ID, &entry.CreatedAt)
 }
 
 func (r *SQLRepository) UpdateMarket(ctx context.Context, m *Market) error {
@@ -1225,7 +1262,8 @@ func marketSelectQuery() string {
 	               m.open_at, m.close_at, m.created_at, m.updated_at, m.image_path,
 	               m.execution_mode, m.collateral_pool_cents, m.settled_payout_pool_cents,
 	               m.best_yes_bid_cents, m.best_yes_ask_cents,
-	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at
+	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at,
+	               m.article_source_id
 	        FROM prediction_markets m`
 }
 
@@ -1243,6 +1281,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	// populated by the post-match refresher; null until first match.
 	var bestYesBid, bestYesAsk, bestNoBid, bestNoAsk sql.NullInt64
 	var lastQuoteAt sql.NullTime
+	var articleSourceID sql.NullString
 
 	err := row.Scan(&m.ID, &m.EventID, &m.Ticker, &m.Title, &desc, &m.Status, &result,
 		&m.YesPriceCents, &m.NoPriceCents, &lastTradePrice,
@@ -1252,7 +1291,8 @@ func scanMarketRow(row scannable) (*Market, error) {
 		&fallback, &m.FeeRateBps, &m.MakerRebateBps,
 		&openAt, &m.CloseAt, &m.CreatedAt, &m.UpdatedAt, &imagePath,
 		&m.ExecutionMode, &m.CollateralPoolCents, &m.SettledPayoutPoolCents,
-		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt)
+		&bestYesBid, &bestYesAsk, &bestNoBid, &bestNoAsk, &lastQuoteAt,
+		&articleSourceID)
 	if err != nil {
 		return nil, err
 	}
@@ -1295,6 +1335,9 @@ func scanMarketRow(row scannable) (*Market, error) {
 	}
 	if lastQuoteAt.Valid {
 		m.LastQuoteAt = &lastQuoteAt.Time
+	}
+	if articleSourceID.Valid {
+		m.ArticleSourceID = &articleSourceID.String
 	}
 	return &m, nil
 }
@@ -1462,6 +1505,15 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 		return "", nil
 	}
 	return " WHERE " + strings.Join(conds, " AND "), args
+}
+
+// nullJSONArg returns nil for empty JSON so a nullable jsonb column stores
+// NULL rather than failing on an empty string.
+func nullJSONArg(b []byte) interface{} {
+	if len(b) == 0 {
+		return nil
+	}
+	return b
 }
 
 func nullStr(s string) sql.NullString {

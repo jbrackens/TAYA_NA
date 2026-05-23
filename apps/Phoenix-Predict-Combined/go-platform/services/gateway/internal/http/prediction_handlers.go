@@ -656,6 +656,46 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, market)
 	}))
 
+	// Admin: persist AI-drafting provenance — the source article (deduped on a
+	// SHA-256 of the article text) plus the generation-log entries that produced
+	// the draft. Returns the article source id, which the caller then passes as
+	// CreateMarketRequest.ArticleSourceID when creating the market.
+	mux.Handle("/api/v1/admin/market-sources", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+
+		var req prediction.CreateMarketSourceRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+
+		// Attribute provenance to the acting admin; never trust client-sent ids.
+		actor := actorIDPointer(userIDFromRequest(r))
+		req.Source.CreatedBy = actor
+
+		src, err := svc.CreateArticleSource(r.Context(), &req.Source)
+		if err != nil {
+			return httpx.BadRequest(err.Error(), nil)
+		}
+
+		for i := range req.GenerationLogs {
+			entry := req.GenerationLogs[i]
+			entry.ArticleSourceID = &src.ID
+			entry.CreatedBy = actor
+			if err := svc.LogAIGeneration(r.Context(), &entry); err != nil {
+				return httpx.Internal("failed to record ai generation log", err)
+			}
+		}
+
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, prediction.CreateMarketSourceResponse{
+			ArticleSourceID: src.ID,
+		})
+	}))
+
 	// Admin: Market lifecycle transitions
 	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {

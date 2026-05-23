@@ -194,6 +194,17 @@ func (r *predictionAdminRepo) CreateLifecycleEvent(_ context.Context, event *pre
 	return nil
 }
 
+func (r *predictionAdminRepo) CreateArticleSource(_ context.Context, src *prediction.ArticleSource) error {
+	if src.ID == "" {
+		src.ID = "src-admin-test-1"
+	}
+	return nil
+}
+
+func (r *predictionAdminRepo) LogAIGeneration(context.Context, *prediction.AIGenerationLog) error {
+	return nil
+}
+
 func (r *predictionAdminRepo) ListAPIKeys(context.Context, string) ([]prediction.APIKey, error) {
 	return nil, nil
 }
@@ -270,6 +281,60 @@ func TestPredictionAdminCreateMarketWorksWithNormalizedTrailingSlash(t *testing.
 	}
 	if market.Status != prediction.MarketStatusUnopened {
 		t.Fatalf("expected new market to start unopened, got %s", market.Status)
+	}
+}
+
+func TestPredictionAdminCreateMarketSource(t *testing.T) {
+	// Force the dev anon-admin bypass off so the admin-gate assertion is
+	// deterministic regardless of the ambient environment.
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "false")
+
+	repo := newPredictionAdminRepo()
+	svc := prediction.NewService(repo, predictionAdminWallet{})
+
+	mux := http.NewServeMux()
+	registerSettlementRoutes(mux, svc)
+	handler := httpx.Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mux.ServeHTTP(w, r)
+		}),
+		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
+	)
+
+	body := `{"source":{"textHash":"abc123","title":"News","summary":"sum"},"generationLogs":[{"stage":"draft","tier":"hard"}]}`
+
+	// Admin happy path -> 201 with the (deduped) article source id.
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/market-sources", strings.NewReader(body))
+	req = req.WithContext(httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d body=%s", res.Code, res.Body.String())
+	}
+	var resp prediction.CreateMarketSourceResponse
+	if err := json.Unmarshal(res.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if resp.ArticleSourceID == "" {
+		t.Fatalf("expected non-empty articleSourceId")
+	}
+
+	// Missing textHash -> 400 (service validation surfaces as bad request).
+	bad := httptest.NewRequest(http.MethodPost, "/api/v1/admin/market-sources", strings.NewReader(`{"source":{"title":"x"}}`))
+	bad = bad.WithContext(httpx.WithTestUser(bad.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	badRes := httptest.NewRecorder()
+	handler.ServeHTTP(badRes, bad)
+	if badRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for missing textHash, got %d", badRes.Code)
+	}
+
+	// No admin role -> must not create.
+	anon := httptest.NewRequest(http.MethodPost, "/api/v1/admin/market-sources", strings.NewReader(body))
+	anonRes := httptest.NewRecorder()
+	handler.ServeHTTP(anonRes, anon)
+	if anonRes.Code == http.StatusCreated {
+		t.Fatalf("expected non-admin request to be rejected, got 201")
 	}
 }
 

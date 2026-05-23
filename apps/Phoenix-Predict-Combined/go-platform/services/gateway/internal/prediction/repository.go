@@ -67,6 +67,10 @@ type Repository interface {
 	ListLifecycleEvents(ctx context.Context, marketID string) ([]LifecycleEvent, error)
 	CreateLifecycleEvent(ctx context.Context, e *LifecycleEvent) error
 
+	// AI market drafting (migration 024)
+	CreateArticleSource(ctx context.Context, src *ArticleSource) error
+	LogAIGeneration(ctx context.Context, entry *AIGenerationLog) error
+
 	// API Keys
 	ListAPIKeys(ctx context.Context, userID string) ([]APIKey, error)
 	GetAPIKeyByPrefix(ctx context.Context, prefix string) (*APIKey, error)
