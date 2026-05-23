@@ -184,6 +184,117 @@ WHERE user_id = $1`, userID)
 	return true, "", nil
 }
 
+// CheckAndRecordBet performs the bet-limit check and the committed-stake record
+// as ONE atomic per-user critical section, implementing the optional
+// AtomicBetGate capability the prediction order path prefers. A transaction-
+// scoped advisory lock serializes concurrent same-user orders, so their
+// aggregate committed stake cannot exceed the period bet-limit (closes the
+// check-then-record TOCTOU — codex round-1 #4). The stake is recorded only on a
+// clean allow; a denial or error records nothing. pg_advisory_xact_lock is
+// cluster-wide and auto-releases on commit/rollback, so this is correct across
+// multiple gateway instances. Mirrors the mock's semantics with DB durability,
+// and reuses the same advisory-lock pattern as payments.InitiateGatedWithdrawal.
+func (s *PostgresResponsibleGamblingService) CheckAndRecordBet(ctx context.Context, userID string, stakeCents int64) (bool, string, error) {
+	if userID == "" {
+		return false, "", ErrInvalidUserID
+	}
+
+	// Restriction checks (self-exclusion / cool-off / blocked) carry no
+	// cumulative-stake TOCTOU; evaluate them before taking the lock.
+	restrictions, err := s.GetPlayerRestrictions(ctx, userID)
+	if err != nil {
+		return false, "", err
+	}
+	if restrictions.IsBlocked {
+		return false, "account_blocked", nil
+	}
+	if restrictions.IsExcluded {
+		return false, "self_excluded", nil
+	}
+	if restrictions.IsOnCoolOff {
+		return false, "cool_off_active", nil
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, rgDBTimeout)
+	defer cancel()
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, "", fmt.Errorf("begin bet gate tx: %w", err)
+	}
+	committed := false
+	defer func() {
+		if !committed {
+			_ = tx.Rollback()
+		}
+	}()
+
+	// Per-user lock for the tx duration: serializes the sum→decide→insert
+	// critical section against other concurrent bets for this user.
+	if _, err = tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, userID); err != nil {
+		return false, "", fmt.Errorf("acquire bet gate lock: %w", err)
+	}
+
+	// Read every configured bet limit, then evaluate committed usage under the
+	// lock so a concurrent insert cannot slip a second order past the limit.
+	rows, err := tx.QueryContext(ctx, `SELECT period, limit_cents FROM player_bet_limits WHERE user_id = $1`, userID)
+	if err != nil {
+		return false, "", err
+	}
+	type betLimit struct {
+		period string
+		limit  int64
+	}
+	var limits []betLimit
+	for rows.Next() {
+		var l betLimit
+		if err = rows.Scan(&l.period, &l.limit); err != nil {
+			rows.Close()
+			return false, "", err
+		}
+		limits = append(limits, l)
+	}
+	rows.Close()
+	if err = rows.Err(); err != nil {
+		return false, "", err
+	}
+
+	for _, l := range limits {
+		var used sql.NullInt64
+		if err = tx.QueryRowContext(ctx, `
+SELECT COALESCE(SUM(amount_cents), 0)
+FROM player_activity_log
+WHERE user_id = $1 AND activity_type = 'bet' AND created_at >= $2`,
+			userID, periodStart(l.period)).Scan(&used); err != nil {
+			return false, "", err
+		}
+		u := int64(0)
+		if used.Valid && used.Int64 > 0 {
+			u = used.Int64
+		}
+		if u+stakeCents > l.limit {
+			return false, fmt.Sprintf("%s_bet_limit_exceeded", l.period), nil
+		}
+	}
+
+	// Clean allow: record the committed stake inside the same tx so the next
+	// serialized caller observes it. Sells / zero-stake gate-only orders record
+	// nothing (matches the non-atomic RecordBet contract).
+	if stakeCents > 0 {
+		if _, err = tx.ExecContext(ctx, `
+INSERT INTO player_activity_log (user_id, activity_type, amount_cents)
+VALUES ($1, 'bet', $2)`, userID, stakeCents); err != nil {
+			return false, "", err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return false, "", fmt.Errorf("commit bet gate: %w", err)
+	}
+	committed = true
+	return true, "", nil
+}
+
 // ── Deposit Limits ────────────────────────────────────────────────
 
 func (s *PostgresResponsibleGamblingService) SetDepositLimit(ctx context.Context, userID string, period string, amountCents int64) error {
