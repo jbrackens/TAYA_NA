@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	stdhttp "net/http"
 	"net/http/httputil"
@@ -16,6 +17,7 @@ import (
 	"phoenix-revival/gateway/internal/events"
 	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
+	"phoenix-revival/gateway/internal/notify"
 	"phoenix-revival/gateway/internal/payments"
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/prediction/feed"
@@ -182,6 +184,13 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	// promote — they all flow through Service.TransitionMarketStatus and
 	// SettlementEngine.{ResolveMarket,VoidMarket}). Fire-and-forget; a
 	// dropped push is recoverable on the client by refetching market state.
+	// Out-of-band notification channel (email today; SMS/push later). Reaches
+	// users/ops even when not connected to the WebSocket. Defaults to a
+	// structured-log transport until SMTP_HOST is configured, so resolution
+	// events are recorded rather than dropped.
+	resolutionNotifier := notify.NewFromEnv()
+	resolutionRecipients := notify.ResolutionRecipients()
+	slog.Info("notifications: resolution channel ready", "transport", resolutionNotifier.Name(), "recipients", len(resolutionRecipients))
 	predictionService.SetMarketLifecycleHandler(func(market *prediction.Market, _ prediction.LifecycleEvent) {
 		payload := buildMarketUpdatePayload(market)
 		wsHub.NotifyPredictionMarketUpdate(market.ID, payload)
@@ -195,6 +204,19 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 			prediction.MarketStatusSettled,
 			prediction.MarketStatusVoided:
 			wsHub.NotifyResolutionUpdate(market.ID, string(market.Status), payload)
+		}
+		// Terminal resolutions (settled / voided) also fire an out-of-band
+		// notification so users/ops are reached off-WebSocket. Fire-and-forget
+		// in its own goroutine with a bounded timeout.
+		if market.Status == prediction.MarketStatusSettled || market.Status == prediction.MarketStatusVoided {
+			go func(m prediction.Market) {
+				nctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				subject, body := resolutionMessage(&m)
+				if err := resolutionNotifier.Notify(nctx, resolutionRecipients, subject, body); err != nil {
+					slog.Warn("notify: resolution notification failed", "market_id", m.ID, "error", err)
+				}
+			}(*market)
 		}
 	})
 	registerPredictionRoutes(mux, predictionService)
@@ -298,9 +320,40 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 	// --- Compliance Routes ---
 	geoComplianceService := compliance.NewMockGeoComplianceServiceFromEnv()
-	kycService := compliance.NewMockKYCService()
+	// KYC + responsible-gambling are DB-backed (persistent across restarts) when
+	// a database is wired; in-memory mock otherwise (tests / local dev without a
+	// DB). DB-backed KYC routes identity decisions through a pluggable IDV
+	// provider — default is back-office manual review (operable, never
+	// auto-approves); a real vendor (Sumsub/Onfido/Persona) drops in via
+	// KYC_IDV_PROVIDER + KYC_IDV_API_KEY without touching this wiring.
+	var kycService compliance.KYCService
+	var rgService compliance.ResponsibleGamblingService
+	var pgKYC *compliance.PostgresKYCService
+	if complianceDB := walletService.DB(); complianceDB != nil {
+		if svc, err := compliance.NewPostgresKYCService(complianceDB, compliance.NewIDVProviderFromEnv()); err != nil {
+			slog.Warn("compliance: Postgres KYC init failed, falling back to mock", "error", err)
+			kycService = compliance.NewMockKYCService()
+		} else {
+			pgKYC = svc
+			kycService = svc
+			slog.Info("compliance: Postgres KYC service initialized", "idv_provider", svc.ProviderName())
+		}
+		if svc, err := compliance.NewPostgresResponsibleGamblingService(complianceDB); err != nil {
+			slog.Warn("compliance: Postgres RG init failed, falling back to mock", "error", err)
+			rgService = compliance.NewMockResponsibleGamblingService()
+		} else {
+			rgService = svc
+			slog.Info("compliance: Postgres responsible-gambling service initialized")
+		}
+	} else {
+		kycService = compliance.NewMockKYCService()
+		rgService = compliance.NewMockResponsibleGamblingService()
+	}
 	profileKYCProvider = kycService // UAT D-8: profile reports real KYC status
-	rgService := compliance.NewMockResponsibleGamblingService()
+	if pgKYC != nil {
+		// Back-office KYC approve/reject (the operable half of manual review).
+		registerKYCAdminRoutes(mux, pgKYC)
+	}
 	compliance.RegisterComplianceRoutes(mux, geoComplianceService, kycService, rgService)
 	// Pre-trade jurisdiction + KYC gates (launch policy: crypto-native, outside
 	// US). Both default OFF — wired here so a single env flag activates them
@@ -337,6 +390,20 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	payments.DepositComplianceChecker = rgService
 	payments.KYCGate = kycService // LC-22/D-8 KYC just-in-time withdrawal gate
 	payments.RegisterPaymentRoutes(mux, paymentService)
+	// Crypto (USDC) on-chain rail — launch policy is crypto-native. Wired behind
+	// a clean adapter that fails CLOSED until CRYPTO_RPC_URL +
+	// CRYPTO_ASSET_CONTRACT + CRYPTO_DEPOSIT_ADDRESS_SOURCE are configured
+	// (no faked addresses). Exposes /api/v1/payments/crypto/{config,deposit-address};
+	// on-chain deposit detection drives the existing payments webhook to credit
+	// the wallet after N confirmations.
+	if walletDB := walletService.DB(); walletDB != nil {
+		if err := payments.EnsureCryptoSchema(walletDB); err != nil {
+			slog.Warn("payments: crypto schema init failed", "error", err)
+		}
+		cryptoRail := payments.NewCryptoRailFromEnv(walletDB)
+		payments.RegisterCryptoRoutes(mux, cryptoRail)
+		slog.Info("payments: crypto rail registered", "network", cryptoRail.Network(), "asset", cryptoRail.Asset(), "configured", cryptoRail.Configured())
+	}
 
 	// --- Loyalty / Rewards ---
 	// Prefer the Predict-native Postgres-backed service when a DB is wired.
@@ -431,4 +498,19 @@ func registerAuthProxy(mux *stdhttp.ServeMux) {
 	mux.HandleFunc("/api/v1/auth/", authHandler)
 	mux.HandleFunc("/auth/", authHandler)
 	slog.Info("auth proxy registered", "target", authURL)
+}
+
+// resolutionMessage renders the subject + body for a market-resolution
+// notification (settled or voided).
+func resolutionMessage(m *prediction.Market) (subject, body string) {
+	if m.Status == prediction.MarketStatusVoided {
+		return fmt.Sprintf("Market voided: %s", m.Ticker),
+			fmt.Sprintf("Market %q (%s) was voided. Stakes are refunded at entry cost.", m.Title, m.Ticker)
+	}
+	result := "—"
+	if m.Result != nil {
+		result = strings.ToUpper(string(*m.Result))
+	}
+	return fmt.Sprintf("Market resolved %s: %s", result, m.Ticker),
+		fmt.Sprintf("Market %q (%s) resolved %s. Winning positions pay 100¢/contract.", m.Title, m.Ticker, result)
 }

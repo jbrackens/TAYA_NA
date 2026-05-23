@@ -54,6 +54,48 @@ services:
       LOG_LEVEL: "info"
       # no JWT_SECRET here (gateway delegates token validation to auth);
       # no GATEWAY_CORS_ORIGINS (single origin — CORS never triggers).
+      # Synthetic Market Maker: dynamic two-sided liquidity on every open
+      # order_book market so the CLOB is tradeable before external MMs sign.
+      # Risk-bounded: $10 committed per side per market + 500-share per-side
+      # position cap (worst-case ~$250 one-sided exposure per market). The bot
+      # cancels stale quotes and re-quotes around the moving mid each tick, so
+      # liquidity is self-healing (unlike the static demo-seed book it replaces).
+      SMM_ENABLED: "true"
+      SMM_DEPTH_CENTS: "1000"
+      SMM_HALF_SPREAD_CENTS: "3"
+      SMM_MAX_POSITION_QTY: "500"
+      SMM_TICK_INTERVAL: "30s"
+      # --- Activation knobs for wired-but-unconfigured features (off by ---
+      # --- default; uncomment + supply real values to take each live). ---
+      # Crypto (USDC) on-chain rail — needs an RPC, the asset contract, and a
+      # deposit-address source (HD xpub / KMS / custody provider). Fails closed
+      # until all three are set. See internal/payments/crypto_rail.go.
+      # CRYPTO_NETWORK: "base"
+      # CRYPTO_ASSET: "USDC"
+      # CRYPTO_RPC_URL: ""
+      # CRYPTO_ASSET_CONTRACT: ""
+      # CRYPTO_DEPOSIT_ADDRESS_SOURCE: ""
+      # CRYPTO_CONFIRMATIONS: "12"
+      # Automated KYC vendor (manual back-office review works without these).
+      # KYC_IDV_PROVIDER: "sumsub"   # or onfido / persona
+      # KYC_IDV_API_KEY: ""
+      # KYC just-in-time gates (manual review + admin approval already enforce).
+      # KYC_ENFORCEMENT: "true"            # gate withdrawals above threshold
+      # KYC_REQUIRED_FOR_TRADING: "true"   # require verified identity to trade
+      # KYC_WITHDRAWAL_THRESHOLD_CENTS: "250000"
+      # Jurisdiction gate (launch policy: outside-US). Needs an edge that sets
+      # the country header (e.g. Cloudflare CF-IPCountry) or the gate fails
+      # closed for everyone. See internal/compliance/geo_gate.go.
+      # GEO_GATE_ENABLED: "true"
+      # GEO_ALLOWED_COUNTRIES: "PH,ID,TH,VN,MY,SG"
+      # GEO_COUNTRY_HEADER: "CF-IPCountry"
+      # Email notifications (resolution/payout). Logs until SMTP_HOST is set.
+      # SMTP_HOST: ""
+      # SMTP_PORT: "587"
+      # SMTP_USER: ""
+      # SMTP_PASSWORD: ""
+      # SMTP_FROM: "no-reply@hulana.app"
+      # NOTIFY_RESOLUTION_TO: "ops@hulana.app"
 
   player:
     image: predict-frontend:app-slim
