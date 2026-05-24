@@ -59,6 +59,35 @@ Carried over from the independent Codex review; these apply to any on-chain rail
 
 ---
 
+## Implementation status (updated 2026-05-24)
+
+The deposit **detect → credit** path is built and tested (unit + Postgres
+integration + real-ledger E2E). Everything stays **fail-closed** until ops
+configure the rail. All Go code is in `internal/payments/`.
+
+**Built:**
+- `usdt_conversion.go` — USDT↔cents at the rail boundary (18-dec landmine isolated; truncates sub-cent dust).
+- `crypto_deposits.go` / `crypto_deposits_query.go` — `crypto_deposits` table (self-managed in `EnsureCryptoSchema`) + `CryptoDepositStore`; DB-enforced exactly-once via a partial unique index.
+- `evm_rpc.go` — std-lib JSON-RPC client (chainId, blockNumber, decimals, getLogs) + ERC-20 Transfer decode (no go-ethereum dependency).
+- `deposit_watcher.go` — `DepositWatcher.Sync`: detect → record → credit at finality via `wallet.Credit`, idempotent on `crypto_deposit:<chainId>:<tx>:<log>`; reorged logs roll the pending row back; sub-cent dust credits nothing.
+- `token_decimals.go` — `VerifyTokenDecimals` startup guard (fail-closed on a decimals mismatch).
+- `deposit_watcher_factory.go` — `NewDepositWatcherFromEnv`, returns disabled when unconfigured.
+- `docs/cashier/RUNBOOKS.md`, `docs/cashier/DECISIONS.md`.
+
+**Tests** (integration tests skip cleanly when no DB is set):
+```
+WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disable" \
+  go test ./internal/payments/...
+```
+
+**Not yet built (fail-closed / deferred):**
+- Gateway wiring — mount `RegisterCryptoRoutes` + `EnsureCryptoSchema` and start the watcher loop. Deferred (needs a full gateway+auth run to verify); see DECISIONS.md D3.
+- Deposit-address derivation + withdrawal signer — blocked on the custody-source decision below.
+- Symbiosis TRC-20 bridge intake — spike-gated.
+- Admin pause, sanctions screening, deposit UI — pending.
+
+---
+
 ## Open decisions (to confirm before the dependent code)
 
 1. **Deposit-address custody source** (`CRYPTO_DEPOSIT_ADDRESS_SOURCE`):
