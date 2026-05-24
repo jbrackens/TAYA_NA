@@ -4,26 +4,26 @@
  * MarketCard — P8 composition (DESIGN.md §6).
  *
  *   ┌─────────────────────────────────────────────────────┐
- *   │ [CATEGORY]                              [⊙ image]   │
- *   │ Title clamped to 2 lines                            │
+ *   │ Title clamped to 2 lines               [⊙ image]    │
  *   ├─────────────────────────────────────────────────────┤
- *   │ ▢ Volume                              $25K          │
- *   │ ▢ Closes                       Dec 31, 2026         │
- *   │ ▢ Open interest                  37.94 NO           │
+ *   │ ▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  7%    93%   │
  *   ├─────────────────────────────────────────────────────┤
- *   │ ▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  7%    93%  │
+ *   │ [ YES   7¢ ]            [ NO   93¢ ]                 │
  *   ├─────────────────────────────────────────────────────┤
- *   │ [ YES   7¢ ]            [ NO   93¢ ]                │
+ *   │ Volume  $25K                 Closes  Dec 31, 2026   │
  *   └─────────────────────────────────────────────────────┘
  *
- * Replaces the post-P3 sparkline + dual-mono-prices + delta-pill card.
- * The bar shows the visual split; the pills show the execution price —
- * mathematically the same number for binary contracts but different jobs.
+ * Header is title + corner image only (no category eyebrow — category is
+ * implied by the surface the card sits on). The bar shows the visual
+ * YES/NO split; the pills show the execution price — the same number for
+ * binary contracts, but different jobs. Secondary stats (volume, close
+ * date) drop to a quiet footer below the pills so the card reads
+ * title → probability → trade affordance without metadata competing.
  *
- * Min-segment-width rule (DESIGN.md §6, from 2026-04-28 amendment): when
- * a side is ≤5% the corresponding bar segment renders at min-width 12px
- * (anything narrower disappears + can't carry overlaid text). The %
- * label moves above the bar instead of being overlaid on a sliver.
+ * Min-segment-width rule (DESIGN.md §6, from 2026-04-28 amendment): when a
+ * side is ≤5% the corresponding bar segment is boosted to MIN_SEGMENT_PX so
+ * its % label stays readable inside the segment; the dominant segment
+ * shrinks to absorb the difference.
  */
 
 import Link from "next/link";
@@ -36,7 +36,6 @@ interface MarketCardProps {
   yesPriceCents: number;
   noPriceCents: number;
   volumeCents: number;
-  openInterestCents?: number;
   liquidityCents?: number;
   closeAt: string;
   status: string;
@@ -65,28 +64,16 @@ function formatCloseAt(iso: string): string {
   });
 }
 
-function formatOpenInterest(
-  openInterestCents: number | undefined,
-  yesLeads: boolean,
-): string {
-  if (!openInterestCents) return "—";
-  // Show as "$X NO" or "$X YES" — leading-side label gives a quick read of
-  // which side has more conviction (Robinhood convention).
-  return `${formatCompactUsd(openInterestCents)} ${yesLeads ? "YES" : "NO"}`;
-}
-
 export function MarketCard({
   ticker,
   title,
   yesPriceCents,
   noPriceCents,
   volumeCents,
-  openInterestCents,
   closeAt,
   categoryLabel,
   imagePath,
 }: MarketCardProps) {
-  const cat = (categoryLabel || ticker.split("-")[0]).toUpperCase();
   const yesLeads = yesPriceCents >= noPriceCents;
 
   const yesIsExtreme = yesPriceCents <= SMALL_THRESHOLD_PCT;
@@ -109,7 +96,6 @@ export function MarketCard({
         >
           <div className="mkt-head">
             <div className="mkt-head-text">
-              <span className="mkt-cat">{cat}</span>
               <h3 className="mkt-title">{title}</h3>
             </div>
             {image.kind === "image" ? (
@@ -127,25 +113,6 @@ export function MarketCard({
                 {image.monogram}
               </span>
             )}
-          </div>
-
-          <div className="mkt-stats">
-            <div className="mkt-stat-row">
-              <span className="mkt-stat-label">Volume</span>
-              <span className="mkt-stat-value">
-                {formatCompactUsd(volumeCents)}
-              </span>
-            </div>
-            <div className="mkt-stat-row">
-              <span className="mkt-stat-label">Closes</span>
-              <span className="mkt-stat-value">{formatCloseAt(closeAt)}</span>
-            </div>
-            <div className="mkt-stat-row">
-              <span className="mkt-stat-label">Open interest</span>
-              <span className="mkt-stat-value">
-                {formatOpenInterest(openInterestCents, yesLeads)}
-              </span>
-            </div>
           </div>
 
           {/* Bar segments always carry their % label inside. When a side is
@@ -205,6 +172,21 @@ export function MarketCard({
             <span className="mkt-pill-price">{noPriceCents}¢</span>
           </Link>
         </div>
+
+        {/* Secondary stats sit in a quiet footer below the bar + pills.
+         * Plain text, not a link — the body link above owns navigation. */}
+        <div className="mkt-stats">
+          <div className="mkt-stat">
+            <span className="mkt-stat-label">Volume</span>
+            <span className="mkt-stat-value">
+              {formatCompactUsd(volumeCents)}
+            </span>
+          </div>
+          <div className="mkt-stat">
+            <span className="mkt-stat-label">Closes</span>
+            <span className="mkt-stat-value">{formatCloseAt(closeAt)}</span>
+          </div>
+        </div>
       </article>
     </>
   );
@@ -252,13 +234,6 @@ function MarketCardStyles() {
         flex-direction: column;
         gap: 8px;
       }
-      .mkt-cat {
-        align-self: flex-start;
-        color: var(--t2);
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-      }
       .mkt-title {
         font-size: 16px;
         font-weight: 600;
@@ -303,16 +278,16 @@ function MarketCardStyles() {
 
       .mkt-stats {
         display: flex;
-        flex-direction: column;
-        gap: 6px;
-        padding-top: 2px;
-      }
-      .mkt-stat-row {
-        display: flex;
         align-items: baseline;
         justify-content: space-between;
         gap: 12px;
+      }
+      .mkt-stat {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
         font-size: 12px;
+        white-space: nowrap;
       }
       .mkt-stat-label {
         color: var(--t3);

@@ -32,7 +32,6 @@ export function MarketGrid({ markets }: Props) {
             yesPriceCents={m.yesPriceCents}
             noPriceCents={m.noPriceCents}
             volumeCents={m.volumeCents}
-            openInterestCents={m.openInterestCents}
             liquidityCents={m.liquidityCents}
             closeAt={m.closeAt}
             status={m.status}

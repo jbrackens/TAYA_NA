@@ -142,12 +142,13 @@ describe("MarketCard: style hoisted outside Link", () => {
 // ── Bug F: P8 MarketCard invariants ───────────────────────────────
 //
 // Replaces the Phase-4 / Robinhood-P3 era assertions. P8 (light theme,
-// landed 2026-04-28) composes MarketCard from: corner image, three stat
-// rows, a probability bar with overlaid % segments, and YES/NO pills as
-// siblings of the body link. The probability bar uses leading-side
-// modifier classes (mkt-bar-yes-leads / mkt-bar-no-leads) to align the
-// overlaid % per side and a 36px min-segment width so labels never
-// fall outside the colored segment.
+// landed 2026-04-28; layout remodeled 2026-05-24) composes MarketCard
+// from: corner image + title, a probability bar with overlaid % segments,
+// YES/NO pills as siblings of the body link, then a Volume / Closes stat
+// footer below the pills. The probability bar uses leading-side modifier
+// classes (mkt-bar-yes-leads / mkt-bar-no-leads) to align the overlaid %
+// per side and a 36px min-segment width so labels never fall outside the
+// colored segment.
 
 describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
