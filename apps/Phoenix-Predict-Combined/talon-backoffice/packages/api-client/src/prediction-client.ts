@@ -184,6 +184,31 @@ export class PredictionApiClient {
     return this.request(`/api/v1/markets${qs ? "?" + qs : ""}`);
   }
 
+  /**
+   * Admin market list — includes pre-launch `unopened` drafts that the public
+   * getMarkets() hides. The gateway only returns `unopened` markets to
+   * admin-authenticated callers via this endpoint, so the backoffice uses it to
+   * review and open AI-drafted / not-yet-published markets.
+   */
+  async getAdminMarkets(params?: {
+    eventId?: string;
+    categoryId?: string;
+    status?: string;
+    ticker?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<PaginatedResponse<PredictionMarket>> {
+    const query = new URLSearchParams();
+    if (params?.eventId) query.set("eventId", params.eventId);
+    if (params?.categoryId) query.set("categoryId", params.categoryId);
+    if (params?.status) query.set("status", params.status);
+    if (params?.ticker) query.set("ticker", params.ticker);
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.pageSize) query.set("pageSize", String(params.pageSize));
+    const qs = query.toString();
+    return this.request(`/api/v1/admin/markets${qs ? "?" + qs : ""}`);
+  }
+
   async getMarket(tickerOrId: string): Promise<PredictionMarket> {
     return this.request(`/api/v1/markets/${tickerOrId}`);
   }

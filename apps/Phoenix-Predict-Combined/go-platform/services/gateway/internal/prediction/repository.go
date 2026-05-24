@@ -227,6 +227,12 @@ type MarketFilter struct {
 	CloseBefore *time.Time
 	Page        int
 	PageSize    int
+	// IncludeUnopened opts IN to returning markets in the pre-publication
+	// `unopened` state. Default false: list queries exclude `unopened` so a
+	// not-yet-approved market (e.g. an AI draft awaiting admin review) is never
+	// exposed on player-facing endpoints. Only admin-authenticated callers set
+	// this true. Safe-by-default — a caller that forgets it cannot leak drafts.
+	IncludeUnopened bool
 }
 
 // OrderFilter provides filtering options for listing orders.

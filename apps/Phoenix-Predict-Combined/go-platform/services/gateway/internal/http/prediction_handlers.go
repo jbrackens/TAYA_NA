@@ -171,6 +171,12 @@ func registerPredictionRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 				return httpx.NotFound("market not found")
 			}
 		}
+		// Publication gate: pre-launch `unopened` markets are not public. This is
+		// a public route (no admin context), so 404 them for everyone — the
+		// backoffice views drafts via the admin list, never this endpoint.
+		if market.Status == prediction.MarketStatusUnopened {
+			return httpx.NotFound("market not found")
+		}
 		switch sub {
 		case "":
 			return httpx.WriteJSON(w, stdhttp.StatusOK, market)
@@ -636,13 +642,50 @@ func registerPortfolioRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 }
 
 func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
-	// Admin: Create market
+	// Admin: list markets (GET — includes unopened drafts) + create market (POST)
 	mux.Handle("/api/v1/admin/markets", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {
 			return err
 		}
+
+		// GET: admin market list. Unlike the public /api/v1/markets, this includes
+		// pre-launch `unopened` drafts so the backoffice can review and open them.
+		if r.Method == stdhttp.MethodGet {
+			filter := prediction.MarketFilter{
+				Page:            intQueryParam(r, "page", 1),
+				PageSize:        intQueryParam(r, "pageSize", 20),
+				IncludeUnopened: true,
+			}
+			if eid := r.URL.Query().Get("eventId"); eid != "" {
+				filter.EventID = &eid
+			}
+			if cid := r.URL.Query().Get("categoryId"); cid != "" {
+				filter.CategoryID = &cid
+			}
+			if status := r.URL.Query().Get("status"); status != "" {
+				s := prediction.MarketStatus(status)
+				filter.Status = &s
+			}
+			if ticker := r.URL.Query().Get("ticker"); ticker != "" {
+				filter.Ticker = &ticker
+			}
+			markets, total, err := svc.ListMarkets(r.Context(), filter)
+			if err != nil {
+				return httpx.Internal("failed to fetch data", err)
+			}
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]interface{}{
+				"data": markets,
+				"meta": prediction.PageMeta{
+					Page:     filter.Page,
+					PageSize: filter.PageSize,
+					Total:    total,
+					HasNext:  filter.Page*filter.PageSize < total,
+				},
+			})
+		}
+
 		if r.Method != stdhttp.MethodPost {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
 
 		var req prediction.CreateMarketRequest

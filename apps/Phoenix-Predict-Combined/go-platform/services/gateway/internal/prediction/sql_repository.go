@@ -1480,6 +1480,16 @@ func buildMarketWhere(f MarketFilter) (string, []interface{}) {
 	var args []interface{}
 	idx := 1
 
+	// Safe-by-default publication gate: never return pre-launch `unopened`
+	// markets unless the caller explicitly opts in (admin-authenticated views).
+	// Keeps not-yet-approved markets (e.g. AI drafts) off every player-facing
+	// list/by-event query regardless of any client `status` param
+	// (status='unopened' AND status<>'unopened' yields nothing). Literal
+	// condition — no bound parameter, so idx is unaffected.
+	if !f.IncludeUnopened {
+		conds = append(conds, "status <> 'unopened'")
+	}
+
 	if f.EventID != nil {
 		conds = append(conds, fmt.Sprintf("event_id = $%d", idx))
 		args = append(args, *f.EventID)

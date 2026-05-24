@@ -90,7 +90,9 @@ export default function PredictionMarketsContainer() {
     setLoading(true);
     try {
       const [mkts, cats, evts] = await Promise.all([
-        predictionClient.getMarkets({ pageSize: 100 }),
+        // Admin list: includes pre-launch `unopened` drafts (the public endpoint
+        // hides them) so admins can review + open AI-drafted / unopened markets.
+        predictionClient.getAdminMarkets({ pageSize: 100 }),
         predictionClient.getCategories(),
         predictionClient.getEvents({ pageSize: 100 }),
       ]);
