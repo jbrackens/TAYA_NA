@@ -419,8 +419,8 @@ decision-independent pieces (office test runner is **vitest**, not the broken le
    OpenAI endpoint ignores `json_schema`). Structured output constrained at the serving engine +
    zod net + at most one repair-retry.
 
-Still open (separate from the 3 above): §13 item 1 — whether AI/news markets must use the
-propose→challenge→finalize window vs. allowing direct admin resolution.
+Resolved (separate from the 3 above): §13 item 1 — AI/news markets use **direct admin resolve
+(Option B)**, no propose→challenge→finalize window. See the decision record in §19.
 
 ## 17. Phase B build complete (2026-05-24, office-side)
 
@@ -461,6 +461,22 @@ Supersedes the "not started" / "required before live" notes above.
 1. A live end-to-end run (LLM endpoint + key + running gateway) — the whole AI path is unit/integration-tested with mocks but never run against a real model.
 2. The redirect/DNS-rebinding SSRF integration test (needs a controlled server + DNS harness).
 3. `cost_micros` population via a per-model price map (the spend cap uses tokens today; `cost_micros` is logged-but-empty for reporting).
-4. §13 item 1: challenge-window vs. direct admin resolve for AI/news markets.
 
 Test footprint: 87 office vitest tests (14 files) + the gateway Go suite (AI provenance, budget, create-event, plus DB-backed dedupe/log integration tests).
+
+## 19. Decision record — §13 item 1 (resolved 2026-05-24)
+
+**Decision:** AI/news markets resolve via **direct admin resolve (Option B)** — no
+propose→challenge→finalize window.
+
+**Rationale:** We only offer markets with a clear, unambiguous resolution, so a public
+challenge window adds latency without buying safety. The safety net shifts entirely
+**pre-publication**: mandatory human review on every AI draft plus the AI risk/ambiguity
+flags (both already enforced) gate what ever reaches `open`. The windowed flow (mig 023,
+propose→challenge→finalize, dual-control) remains available in the gateway and is unaffected.
+
+**Code impact:** none. The gateway already supports direct `ResolveMarket` on `closed`
+markets; nothing forces the window for `article_source_id != nil` markets.
+
+**Revisit if:** we introduce contested/ambiguous AI markets — at that point, enforce the
+windowed flow specifically for markets with `article_source_id != nil`.
