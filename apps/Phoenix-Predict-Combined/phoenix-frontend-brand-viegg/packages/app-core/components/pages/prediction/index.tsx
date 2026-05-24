@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { message } from "antd";
+import { useTranslation } from "i18n";
 import { defaultNamespaces } from "../defaults";
 import { markPredictionMarketVisited, selectPredictionSelection, selectPredictionOutcome } from "../../../lib/slices/predictionSlice";
 import { selectIsLoggedIn } from "../../../lib/slices/authSlice";
@@ -90,13 +91,14 @@ const MarketCard: React.FC<{
   activeOutcomeId?: string;
   onOpen: () => void;
   onSelectOutcome: (outcomeId: string) => void;
-}> = ({ market, activeOutcomeId, onOpen, onSelectOutcome }) => (
+  t: (key: string, options?: Record<string, any>) => string;
+}> = ({ market, activeOutcomeId, onOpen, onSelectOutcome, t }) => (
   <PredictionMarketCard>
     <PredictionMarketCardHead>
       <PredictionBadgeRow>
         <PredictionBadge>{market.categoryLabel}</PredictionBadge>
-        {market.featured ? <PredictionBadge>Featured</PredictionBadge> : null}
-        {market.live ? <PredictionBadge $live>Live</PredictionBadge> : null}
+        {market.featured ? <PredictionBadge>{t("FEATURED")}</PredictionBadge> : null}
+        {market.live ? <PredictionBadge $live>{t("LIVE")}</PredictionBadge> : null}
       </PredictionBadgeRow>
     </PredictionMarketCardHead>
     <PredictionMarketTitleButton type="button" onClick={onOpen}>
@@ -105,15 +107,15 @@ const MarketCard: React.FC<{
     <PredictionMarketSummary>{market.summary}</PredictionMarketSummary>
     <PredictionMarketMetaGrid>
       <PredictionMetaCard>
-        <PredictionMetaLabel>Volume</PredictionMetaLabel>
+        <PredictionMetaLabel>{t("VOLUME")}</PredictionMetaLabel>
         <PredictionMetaValue>${market.volumeUsd.toLocaleString()}</PredictionMetaValue>
       </PredictionMetaCard>
       <PredictionMetaCard>
-        <PredictionMetaLabel>Liquidity</PredictionMetaLabel>
+        <PredictionMetaLabel>{t("LIQUIDITY")}</PredictionMetaLabel>
         <PredictionMetaValue>${market.liquidityUsd.toLocaleString()}</PredictionMetaValue>
       </PredictionMetaCard>
       <PredictionMetaCard>
-        <PredictionMetaLabel>Participants</PredictionMetaLabel>
+        <PredictionMetaLabel>{t("PARTICIPANTS")}</PredictionMetaLabel>
         <PredictionMetaValue>{market.participants.toLocaleString()}</PredictionMetaValue>
       </PredictionMetaCard>
     </PredictionMarketMetaGrid>
@@ -143,6 +145,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
   namespacesRequired?: string[];
 } = ({ view }) => {
   const router = useRouter();
+  const { t } = useTranslation(["prediction"]);
   const dispatch = useDispatch();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const selection = useSelector(selectPredictionSelection);
@@ -190,7 +193,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         if (view === "home") {
           const response = await fetch("/api/prediction/overview");
           if (!response.ok) {
-            throw new Error("Failed to load prediction overview");
+            throw new Error(t("ERROR_LOAD_OVERVIEW"));
           }
           const payload = (await response.json()) as PredictionOverview;
           if (isMounted) {
@@ -204,7 +207,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         if (view === "detail") {
           const response = await fetch(`/api/prediction/markets/${encodeURIComponent(`${marketId || ""}`)}`);
           if (!response.ok) {
-            throw new Error("Failed to load prediction market");
+            throw new Error(t("ERROR_LOAD_MARKET"));
           }
           const payload = (await response.json()) as MarketDetailResponse;
           if (isMounted) {
@@ -225,7 +228,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         }
         const response = await fetch(`/api/prediction/markets${query.toString() ? `?${query.toString()}` : ""}`);
         if (!response.ok) {
-          throw new Error("Failed to load prediction markets");
+          throw new Error(t("ERROR_LOAD_MARKETS"));
         }
         const payload = (await response.json()) as MarketsResponse;
         if (isMounted) {
@@ -235,7 +238,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         }
       } catch (requestError) {
         if (isMounted) {
-          setError(requestError instanceof Error ? requestError.message : "Prediction request failed");
+          setError(requestError instanceof Error ? requestError.message : t("ERROR_REQUEST_FAILED"));
         }
       } finally {
         if (isMounted) {
@@ -248,7 +251,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
     return () => {
       isMounted = false;
     };
-  }, [view, categoryKey, marketId, statusFilter, dispatch, isLoggedIn, refetchOrders]);
+  }, [view, categoryKey, marketId, statusFilter, dispatch, isLoggedIn, refetchOrders, t]);
 
   useEffect(() => {
     if (view !== "activity") {
@@ -263,27 +266,27 @@ const PredictionPage: React.FC<PredictionPageProps> & {
       return;
     }
     if (ordersError) {
-      setError("Failed to load prediction activity");
+      setError(t("ERROR_LOAD_ACTIVITY"));
       setIsLoading(false);
     }
-  }, [view, ordersData, ordersError, ordersLoading]);
+  }, [view, ordersData, ordersError, ordersLoading, t]);
 
   useEffect(() => {
     if (!cancelOrderMutation.isSuccess || !cancelOrderMutation.data) {
       return;
     }
-    message.success("Prediction order cancelled.");
+    message.success(t("ORDER_CANCELLED_TOAST"));
     setPendingCancelOrderId(null);
     refetchOrders();
-  }, [cancelOrderMutation.isSuccess, cancelOrderMutation.data, statusFilter, refetchOrders]);
+  }, [cancelOrderMutation.isSuccess, cancelOrderMutation.data, statusFilter, refetchOrders, t]);
 
   useEffect(() => {
     if (!cancelOrderMutation.error) {
       return;
     }
-    message.error("Unable to cancel that prediction order.");
+    message.error(t("ORDER_CANCEL_ERROR_TOAST"));
     setPendingCancelOrderId(null);
-  }, [cancelOrderMutation.error]);
+  }, [cancelOrderMutation.error, t]);
 
   const activeOutcomeId = useMemo(() => {
     if (!selection) {
@@ -326,7 +329,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
     if (!isLoggedIn) {
       return (
         <PredictionSurface>
-          {renderEmpty("Log in to view your prediction trades and manage open orders.")}
+          {renderEmpty(t("ACTIVITY_LOGIN_EMPTY"))}
         </PredictionSurface>
       );
     }
@@ -336,22 +339,22 @@ const PredictionPage: React.FC<PredictionPageProps> & {
       <PredictionSurface>
         <PredictionHero>
           <PredictionHeroContent>
-            <PredictionHeroEyebrow>Prediction Activity</PredictionHeroEyebrow>
-            <PredictionHeroTitle>Track prediction orders as a separate product ledger.</PredictionHeroTitle>
+            <PredictionHeroEyebrow>{t("ACTIVITY_EYEBROW")}</PredictionHeroEyebrow>
+            <PredictionHeroTitle>{t("ACTIVITY_TITLE")}</PredictionHeroTitle>
             <PredictionHeroCopy>
-              Sportsbook bets and prediction trades are intentionally distinct. This activity view keeps prediction-native orders visible inside the module without pushing users into sportsbook-first account flows.
+              {t("ACTIVITY_COPY")}
             </PredictionHeroCopy>
             <PredictionHeroStatRow>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Total trades</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("TOTAL_TRADES")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{ordersData?.totalCount || 0}</PredictionHeroStatValue>
               </PredictionHeroStat>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Open trades</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("OPEN_TRADES")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{orders.filter((order) => order.status === "open").length}</PredictionHeroStatValue>
               </PredictionHeroStat>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Cancelled</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("CANCELLED")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{orders.filter((order) => order.status === "cancelled").length}</PredictionHeroStatValue>
               </PredictionHeroStat>
             </PredictionHeroStatRow>
@@ -362,14 +365,14 @@ const PredictionPage: React.FC<PredictionPageProps> & {
               onClick={() => router.push(buildPredictionMarketsPath())}
             >
               <PredictionBadgeRow>
-                <PredictionBadge>Prediction</PredictionBadge>
-                <PredictionBadge>{orders.filter((order) => order.status === "open").length} Open</PredictionBadge>
+                <PredictionBadge>{t("PREDICTION")}</PredictionBadge>
+                <PredictionBadge>{t("OPEN_COUNT", { count: orders.filter((order) => order.status === "open").length })}</PredictionBadge>
               </PredictionBadgeRow>
               <PredictionHeroTitle style={{ fontSize: "28px", marginTop: "12px" }}>
-                Return to the market board
+                {t("RETURN_TO_MARKET_BOARD")}
               </PredictionHeroTitle>
               <PredictionHeroCopy>
-                Review more markets, price fresh outcomes, and place the next trade without leaving the prediction module.
+                {t("RETURN_TO_MARKET_BOARD_COPY")}
               </PredictionHeroCopy>
             </PredictionHeroMarketCard>
           </PredictionHeroSpotlight>
@@ -378,10 +381,10 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         <PredictionSection>
           <PredictionSectionHeader>
             <PredictionSectionTitleBlock>
-              <PredictionSectionEyebrow>Order Ledger</PredictionSectionEyebrow>
-              <PredictionSectionTitle>My Trades</PredictionSectionTitle>
+              <PredictionSectionEyebrow>{t("ORDER_LEDGER")}</PredictionSectionEyebrow>
+              <PredictionSectionTitle>{t("MY_TRADES")}</PredictionSectionTitle>
               <PredictionSectionCopy>
-                Open orders stay actionable here; cancelled orders remain visible for product-aware auditability.
+                {t("MY_TRADES_COPY")}
               </PredictionSectionCopy>
             </PredictionSectionTitleBlock>
             <PredictionFilterRow>
@@ -390,34 +393,34 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                 $active={!statusFilter}
                 onClick={() => router.push(buildPredictionActivityPath())}
               >
-                All
+                {t("ALL")}
               </PredictionFilterPill>
               <PredictionFilterPill
                 type="button"
                 $active={statusFilter === "open"}
                 onClick={() => router.push(`${buildPredictionActivityPath()}?status=open`)}
               >
-                Open
+                {t("OPEN")}
               </PredictionFilterPill>
               <PredictionFilterPill
                 type="button"
                 $active={statusFilter === "settled"}
                 onClick={() => router.push(`${buildPredictionActivityPath()}?status=settled`)}
               >
-                Settled
+                {t("SETTLED")}
               </PredictionFilterPill>
               <PredictionFilterPill
                 type="button"
                 $active={statusFilter === "cancelled"}
                 onClick={() => router.push(`${buildPredictionActivityPath()}?status=cancelled`)}
               >
-                Cancelled
+                {t("CANCELLED")}
               </PredictionFilterPill>
             </PredictionFilterRow>
           </PredictionSectionHeader>
 
           {orders.length === 0 ? (
-            renderEmpty("No prediction trades match the current filter.")
+            renderEmpty(t("NO_TRADES_FILTER"))
           ) : (
             <PredictionActivityGrid>
               {orders.map((order) => (
@@ -435,36 +438,36 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                       type="button"
                       onClick={() => router.push(buildPredictionMarketPath(order.marketId))}
                     >
-                      Open Market
+                      {t("OPEN_MARKET")}
                     </PredictionInlineAction>
                   </PredictionActivityHeader>
                   <PredictionActivityTitle>{order.marketTitle}</PredictionActivityTitle>
                   <PredictionActivityMeta>
-                    {order.outcomeLabel} at {order.priceCents}c · placed{" "}
+                    {t("ORDER_META", { outcome: order.outcomeLabel, price: order.priceCents })}{" "}
                     {new Date(order.createdAt).toLocaleString()}
                   </PredictionActivityMeta>
                   <PredictionMarketMetaGrid>
                     <PredictionMetaCard>
-                      <PredictionMetaLabel>Stake</PredictionMetaLabel>
+                      <PredictionMetaLabel>{t("STAKE")}</PredictionMetaLabel>
                       <PredictionMetaValue>${Number(order.stakeUsd || 0).toFixed(2)}</PredictionMetaValue>
                     </PredictionMetaCard>
                     <PredictionMetaCard>
-                      <PredictionMetaLabel>Shares</PredictionMetaLabel>
+                      <PredictionMetaLabel>{t("SHARES")}</PredictionMetaLabel>
                       <PredictionMetaValue>{Number(order.shares || 0).toFixed(2)}</PredictionMetaValue>
                     </PredictionMetaCard>
                     <PredictionMetaCard>
-                      <PredictionMetaLabel>Max payout</PredictionMetaLabel>
+                      <PredictionMetaLabel>{t("MAX_PAYOUT")}</PredictionMetaLabel>
                       <PredictionMetaValue>${Number(order.maxPayoutUsd || 0).toFixed(2)}</PredictionMetaValue>
                     </PredictionMetaCard>
                     {order.marketStatus ? (
                       <PredictionMetaCard>
-                        <PredictionMetaLabel>Market status</PredictionMetaLabel>
+                        <PredictionMetaLabel>{t("MARKET_STATUS")}</PredictionMetaLabel>
                         <PredictionMetaValue>{order.marketStatus}</PredictionMetaValue>
                       </PredictionMetaCard>
                     ) : null}
                     {order.winningOutcomeLabel ? (
                       <PredictionMetaCard>
-                        <PredictionMetaLabel>Resolved to</PredictionMetaLabel>
+                        <PredictionMetaLabel>{t("RESOLVED_TO")}</PredictionMetaLabel>
                         <PredictionMetaValue>{order.winningOutcomeLabel}</PredictionMetaValue>
                       </PredictionMetaCard>
                     ) : null}
@@ -476,17 +479,17 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                   order.previousSettledAmountUsd !== undefined ||
                   order.settledAt ? (
                     <PredictionActivityMeta>
-                      {order.settlementReason ? `Reason: ${order.settlementReason}` : null}
+                      {order.settlementReason ? t("SETTLEMENT_REASON", { reason: order.settlementReason }) : null}
                       {order.settlementReason && order.settlementActor ? " · " : null}
-                      {order.settlementActor ? `Settled by ${order.settlementActor}` : null}
+                      {order.settlementActor ? t("SETTLED_BY", { actor: order.settlementActor }) : null}
                       {(order.settlementReason || order.settlementActor) && order.previousSettlementStatus ? " · " : null}
-                      {order.previousSettlementStatus ? `Previous status ${order.previousSettlementStatus}` : null}
+                      {order.previousSettlementStatus ? t("PREVIOUS_STATUS", { status: order.previousSettlementStatus }) : null}
                       {(order.settlementReason || order.settlementActor || order.previousSettlementStatus) &&
                       order.previousSettledAt
                         ? " · "
                         : null}
                       {order.previousSettledAt
-                        ? `Previously settled ${new Date(order.previousSettledAt).toLocaleString()}`
+                        ? t("PREVIOUSLY_SETTLED", { date: new Date(order.previousSettledAt).toLocaleString() })
                         : null}
                       {(order.settlementReason ||
                         order.settlementActor ||
@@ -496,7 +499,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                         ? " · "
                         : null}
                       {order.previousSettledAmountUsd !== undefined
-                        ? `Previous amount $${Number(order.previousSettledAmountUsd || 0).toFixed(2)}`
+                        ? t("PREVIOUS_AMOUNT", { amount: Number(order.previousSettledAmountUsd || 0).toFixed(2) })
                         : null}
                       {(order.settlementReason ||
                         order.settlementActor ||
@@ -506,7 +509,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                       order.settledAt
                         ? " · "
                         : null}
-                      {order.settledAt ? `Updated ${new Date(order.settledAt).toLocaleString()}` : null}
+                      {order.settledAt ? t("UPDATED_AT", { date: new Date(order.settledAt).toLocaleString() }) : null}
                     </PredictionActivityMeta>
                   ) : null}
                   <PredictionActivityActions>
@@ -516,14 +519,14 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                         onClick={() => cancelOrder(order.orderId)}
                         disabled={pendingCancelOrderId === order.orderId}
                       >
-                        {pendingCancelOrderId === order.orderId ? "Cancelling..." : "Cancel Order"}
+                        {pendingCancelOrderId === order.orderId ? t("CANCELLING") : t("CANCEL_ORDER")}
                       </PredictionInlineAction>
                     ) : null}
                     <PredictionInlineAction
                       type="button"
                       onClick={() => router.push(buildPredictionMarketPath(order.marketId))}
                     >
-                      Trade Again
+                      {t("TRADE_AGAIN")}
                     </PredictionInlineAction>
                   </PredictionActivityActions>
                 </PredictionActivityCard>
@@ -541,22 +544,22 @@ const PredictionPage: React.FC<PredictionPageProps> & {
       <PredictionSurface>
         <PredictionHero>
           <PredictionHeroContent>
-            <PredictionHeroEyebrow>Prediction Markets</PredictionHeroEyebrow>
-            <PredictionHeroTitle>Price the next headline, not just the next match.</PredictionHeroTitle>
+            <PredictionHeroEyebrow>{t("HOME_EYEBROW")}</PredictionHeroEyebrow>
+            <PredictionHeroTitle>{t("HOME_TITLE")}</PredictionHeroTitle>
             <PredictionHeroCopy>
-              Prediction is a separate player module inside Phoenix. Browse live event-driven markets, move through categories, and stage a ticket without dropping back into sportsbook assumptions.
+              {t("HOME_COPY")}
             </PredictionHeroCopy>
             <PredictionHeroStatRow>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Featured</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("FEATURED")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{overview.featuredMarkets.length}</PredictionHeroStatValue>
               </PredictionHeroStat>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Live</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("LIVE")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{overview.liveMarkets.length}</PredictionHeroStatValue>
               </PredictionHeroStat>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Categories</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("CATEGORIES")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{overview.categories.length}</PredictionHeroStatValue>
               </PredictionHeroStat>
             </PredictionHeroStatRow>
@@ -566,7 +569,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
               <PredictionHeroMarketCard type="button" onClick={() => router.push(buildPredictionMarketPath(spotlight.marketId))}>
                 <PredictionBadgeRow>
                   <PredictionBadge>{spotlight.categoryLabel}</PredictionBadge>
-                  {spotlight.live ? <PredictionBadge $live>Live</PredictionBadge> : null}
+                  {spotlight.live ? <PredictionBadge $live>{t("LIVE")}</PredictionBadge> : null}
                 </PredictionBadgeRow>
                 <PredictionHeroTitle style={{ fontSize: "28px", marginTop: "12px" }}>
                   {spotlight.shortTitle}
@@ -578,7 +581,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                     <PredictionHeroStatValue>{spotlight.heroMetricValue}</PredictionHeroStatValue>
                   </PredictionHeroStat>
                   <PredictionHeroStat>
-                    <PredictionHeroStatLabel>Volume</PredictionHeroStatLabel>
+                    <PredictionHeroStatLabel>{t("VOLUME")}</PredictionHeroStatLabel>
                     <PredictionHeroStatValue>${Math.round(spotlight.volumeUsd / 1000)}k</PredictionHeroStatValue>
                   </PredictionHeroStat>
                 </PredictionHeroStatRow>
@@ -590,9 +593,9 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         <PredictionSection>
           <PredictionSectionHeader>
             <PredictionSectionTitleBlock>
-              <PredictionSectionEyebrow>Discovery</PredictionSectionEyebrow>
-              <PredictionSectionTitle>Browse by Category</PredictionSectionTitle>
-              <PredictionSectionCopy>Structure mirrors a dedicated prediction product, not a sportsbook left-column taxonomy.</PredictionSectionCopy>
+              <PredictionSectionEyebrow>{t("DISCOVERY")}</PredictionSectionEyebrow>
+              <PredictionSectionTitle>{t("BROWSE_BY_CATEGORY")}</PredictionSectionTitle>
+              <PredictionSectionCopy>{t("BROWSE_BY_CATEGORY_COPY")}</PredictionSectionCopy>
             </PredictionSectionTitleBlock>
           </PredictionSectionHeader>
           <PredictionCategoryGrid>
@@ -613,9 +616,9 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         <PredictionSection>
           <PredictionSectionHeader>
             <PredictionSectionTitleBlock>
-              <PredictionSectionEyebrow>Featured Board</PredictionSectionEyebrow>
-              <PredictionSectionTitle>Featured and Live</PredictionSectionTitle>
-              <PredictionSectionCopy>High-signal cards surface marquee markets first, with live candidates pulled to the top.</PredictionSectionCopy>
+              <PredictionSectionEyebrow>{t("FEATURED_BOARD")}</PredictionSectionEyebrow>
+              <PredictionSectionTitle>{t("FEATURED_AND_LIVE")}</PredictionSectionTitle>
+              <PredictionSectionCopy>{t("FEATURED_AND_LIVE_COPY")}</PredictionSectionCopy>
             </PredictionSectionTitleBlock>
           </PredictionSectionHeader>
           <PredictionMarketGrid>
@@ -626,6 +629,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                 activeOutcomeId={selection?.marketId === market.marketId ? activeOutcomeId : undefined}
                 onOpen={() => router.push(buildPredictionMarketPath(market.marketId))}
                 onSelectOutcome={(outcomeId) => selectOutcome(market, outcomeId)}
+                t={t}
               />
             ))}
           </PredictionMarketGrid>
@@ -640,7 +644,7 @@ const PredictionPage: React.FC<PredictionPageProps> & {
       <PredictionSurface>
         <PredictionHero>
           <PredictionHeroContent>
-            <PredictionHeroEyebrow>{market.categoryLabel} Market</PredictionHeroEyebrow>
+            <PredictionHeroEyebrow>{t("CATEGORY_MARKET", { category: market.categoryLabel })}</PredictionHeroEyebrow>
             <PredictionHeroTitle>{market.title}</PredictionHeroTitle>
             <PredictionHeroCopy>{market.insight}</PredictionHeroCopy>
             <PredictionHeroStatRow>
@@ -649,15 +653,15 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                 <PredictionHeroStatValue>{market.heroMetricValue}</PredictionHeroStatValue>
               </PredictionHeroStat>
               <PredictionHeroStat>
-                <PredictionHeroStatLabel>Resolution source</PredictionHeroStatLabel>
+                <PredictionHeroStatLabel>{t("RESOLUTION_SOURCE")}</PredictionHeroStatLabel>
                 <PredictionHeroStatValue>{market.resolutionSource}</PredictionHeroStatValue>
               </PredictionHeroStat>
             </PredictionHeroStatRow>
           </PredictionHeroContent>
           <PredictionHeroSpotlight>
             <PredictionHeroMarketCard type="button" onClick={() => router.push(buildPredictionMarketsPath())}>
-              <PredictionHeroEyebrow>Market Navigation</PredictionHeroEyebrow>
-              <PredictionHeroCopy>Return to the board or move through related markets without falling back to sportsbook routing patterns.</PredictionHeroCopy>
+              <PredictionHeroEyebrow>{t("MARKET_NAVIGATION")}</PredictionHeroEyebrow>
+              <PredictionHeroCopy>{t("MARKET_NAVIGATION_COPY")}</PredictionHeroCopy>
             </PredictionHeroMarketCard>
           </PredictionHeroSpotlight>
         </PredictionHero>
@@ -665,8 +669,8 @@ const PredictionPage: React.FC<PredictionPageProps> & {
         <PredictionDetailGrid>
           <PredictionDetailCard>
             <PredictionSectionTitleBlock>
-              <PredictionSectionEyebrow>Trade Board</PredictionSectionEyebrow>
-              <PredictionSectionTitle>Choose an Outcome</PredictionSectionTitle>
+              <PredictionSectionEyebrow>{t("TRADE_BOARD")}</PredictionSectionEyebrow>
+              <PredictionSectionTitle>{t("CHOOSE_OUTCOME")}</PredictionSectionTitle>
             </PredictionSectionTitleBlock>
             <PredictionOutcomeRow>
               {market.outcomes.map((outcome) => (
@@ -693,8 +697,8 @@ const PredictionPage: React.FC<PredictionPageProps> & {
           </PredictionDetailCard>
           <PredictionDetailCard>
             <PredictionSectionTitleBlock>
-              <PredictionSectionEyebrow>Related Markets</PredictionSectionEyebrow>
-              <PredictionSectionTitle>Keep Exploring</PredictionSectionTitle>
+              <PredictionSectionEyebrow>{t("RELATED_MARKETS")}</PredictionSectionEyebrow>
+              <PredictionSectionTitle>{t("KEEP_EXPLORING")}</PredictionSectionTitle>
             </PredictionSectionTitleBlock>
             {detailPayload.relatedMarkets.length ? (
               detailPayload.relatedMarkets.map((relatedMarket) => (
@@ -704,10 +708,11 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                   activeOutcomeId={selection?.marketId === relatedMarket.marketId ? activeOutcomeId : undefined}
                   onOpen={() => router.push(buildPredictionMarketPath(relatedMarket.marketId))}
                   onSelectOutcome={(outcomeId) => selectOutcome(relatedMarket, outcomeId)}
+                  t={t}
                 />
               ))
             ) : (
-              renderEmpty("No related markets are currently available.")
+              renderEmpty(t("NO_RELATED_MARKETS"))
             )}
           </PredictionDetailCard>
         </PredictionDetailGrid>
@@ -718,29 +723,29 @@ const PredictionPage: React.FC<PredictionPageProps> & {
   const listMarkets = marketsPayload?.markets || [];
   const listTitle =
     view === "category"
-      ? `Category: ${categoryKey}`
+      ? t("CATEGORY_TITLE", { category: categoryKey })
       : statusFilter === "live"
-      ? "Live prediction markets"
-      : "All prediction markets";
+      ? t("LIVE_MARKETS_TITLE")
+      : t("ALL_MARKETS_TITLE");
 
   return (
     <PredictionSurface>
       <PredictionSection>
         <PredictionSectionHeader>
           <PredictionSectionTitleBlock>
-            <PredictionSectionEyebrow>Market Board</PredictionSectionEyebrow>
+            <PredictionSectionEyebrow>{t("MARKET_BOARD")}</PredictionSectionEyebrow>
             <PredictionSectionTitle>{listTitle}</PredictionSectionTitle>
-            <PredictionSectionCopy>Dedicated browse surface with category-led discovery and contract-first card density.</PredictionSectionCopy>
+            <PredictionSectionCopy>{t("MARKET_BOARD_COPY")}</PredictionSectionCopy>
           </PredictionSectionTitleBlock>
           <PredictionFilterRow>
             <PredictionFilterPill type="button" $active={!statusFilter} onClick={() => router.push(view === "category" && categoryKey ? buildPredictionCategoryPath(categoryKey) : buildPredictionMarketsPath())}>
-              All
+              {t("ALL")}
             </PredictionFilterPill>
             <PredictionFilterPill type="button" $active={statusFilter === "live"} onClick={() => router.push(`${view === "category" && categoryKey ? buildPredictionCategoryPath(categoryKey) : buildPredictionMarketsPath()}?status=live`)}>
-              Live
+              {t("LIVE")}
             </PredictionFilterPill>
             <PredictionFilterPill type="button" $active={statusFilter === "open"} onClick={() => router.push(`${view === "category" && categoryKey ? buildPredictionCategoryPath(categoryKey) : buildPredictionMarketsPath()}?status=open`)}>
-              Open
+              {t("OPEN")}
             </PredictionFilterPill>
           </PredictionFilterRow>
         </PredictionSectionHeader>
@@ -753,17 +758,18 @@ const PredictionPage: React.FC<PredictionPageProps> & {
                 activeOutcomeId={selection?.marketId === market.marketId ? activeOutcomeId : undefined}
                 onOpen={() => router.push(buildPredictionMarketPath(market.marketId))}
                 onSelectOutcome={(outcomeId) => selectOutcome(market, outcomeId)}
+                t={t}
               />
             ))}
           </PredictionMarketGrid>
         ) : (
-          renderEmpty("No prediction markets match the current filter.")
+          renderEmpty(t("NO_MARKETS_FILTER"))
         )}
       </PredictionSection>
     </PredictionSurface>
   );
 };
 
-PredictionPage.namespacesRequired = defaultNamespaces;
+PredictionPage.namespacesRequired = [...defaultNamespaces, "prediction"];
 
 export default PredictionPage;

@@ -4,6 +4,7 @@ import { StyledComponent, ThemeContext } from "styled-components";
 import { BaseSelect, StyledOptionContent } from "./index.styled";
 
 type CoreSelectProps = {
+  "aria-label"?: string;
   className?: string;
   allowClear?: boolean;
   autoClearSearchValue?: boolean;
@@ -68,6 +69,7 @@ const CoreSelect: React.FC<CoreSelectProps> & {
   Option: any;
   OptionContent: StyledComponent<"div", any, {}, never>;
 } = ({
+  "aria-label": ariaLabel,
   allowClear,
   autoClearSearchValue,
   autoFocus,
@@ -127,6 +129,7 @@ const CoreSelect: React.FC<CoreSelectProps> & {
 
   return (
     <BaseSelect
+      aria-label={ariaLabel}
       allowClear={allowClear}
       autoClearSearchValue={autoClearSearchValue}
       autoFocus={autoFocus}

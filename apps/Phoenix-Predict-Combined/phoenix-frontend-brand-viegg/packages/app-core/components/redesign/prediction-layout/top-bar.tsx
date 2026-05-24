@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
+import { useTranslation } from "i18n";
 import { ModeToggle } from "../../layout/header/mode-toggle/ModeToggle";
 import {
   PredictionTopNav,
@@ -12,15 +13,16 @@ const {
 } = require("next/config").default().publicRuntimeConfig;
 
 const predictionLinks = [
-  { id: "featured", label: "Featured", href: "/prediction" },
-  { id: "live", label: "Live", href: "/prediction/markets?status=live" },
-  { id: "markets", label: "All Markets", href: "/prediction/markets" },
-  { id: "activity", label: "My Activity", href: "/prediction/activity" },
-  { id: "account", label: "Account", href: "/account/transactions" },
+  { id: "featured", labelKey: "NAV_FEATURED", href: "/prediction" },
+  { id: "live", labelKey: "NAV_LIVE", href: "/prediction/markets?status=live" },
+  { id: "markets", labelKey: "NAV_ALL_MARKETS", href: "/prediction/markets" },
+  { id: "activity", labelKey: "NAV_MY_ACTIVITY", href: "/prediction/activity" },
+  { id: "account", labelKey: "NAV_ACCOUNT", href: "/account/transactions" },
 ];
 
 export const PredictionTopBarNav: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation(["prediction"]);
 
   return (
     <PredictionTopNavGroup>
@@ -41,7 +43,7 @@ export const PredictionTopBarNav: React.FC = () => {
               $active={isActive}
               onClick={() => router.push(item.href)}
             >
-              {item.label}
+              {t(item.labelKey)}
             </PredictionTopNavButton>
           );
         })}

@@ -11,6 +11,7 @@ import {
   LogoContainer,
   MobileLinks,
   MobileLink,
+  MobileLanguageSelectorContainer,
   StyledBadge,
   SidebarBrandTitle,
 } from "./index.styled";
@@ -36,6 +37,7 @@ import {
   resolveSportRouteKey,
 } from "../../../../lib/sports-routing";
 import { motion } from "framer-motion";
+import { LanguageSelectorComponent } from "../../header/language-selector";
 
 type SidebarMenuProps = {
   isCollapsed: boolean;
@@ -384,6 +386,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = memo(
                   {th("PROMOTIONS_LINK")}
                 </MobileLink>
               </MobileLinks>
+              <MobileLanguageSelectorContainer>
+                <LanguageSelectorComponent source="mobile_menu" />
+              </MobileLanguageSelectorContainer>
               <Collapse
                 activeKey={
                   resolvedGameFilter &&

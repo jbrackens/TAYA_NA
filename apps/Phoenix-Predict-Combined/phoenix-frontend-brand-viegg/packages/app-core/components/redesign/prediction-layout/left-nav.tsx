@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
+import { useTranslation } from "i18n";
 import {
   Activity,
   BarChart3,
@@ -26,22 +27,22 @@ import {
 } from "./index.styled";
 
 const primaryItems = [
-  { id: "home", label: "Featured", href: "/prediction", icon: Flame },
+  { id: "home", labelKey: "NAV_FEATURED", href: "/prediction", icon: Flame },
   {
     id: "live",
-    label: "Live Markets",
+    labelKey: "LIVE_MARKETS",
     href: "/prediction/markets?status=live",
     icon: Activity,
   },
   {
     id: "all-markets",
-    label: "All Markets",
+    labelKey: "NAV_ALL_MARKETS",
     href: buildPredictionMarketsPath(),
     icon: LayoutGrid,
   },
   {
     id: "activity",
-    label: "My Activity",
+    labelKey: "NAV_MY_ACTIVITY",
     href: buildPredictionActivityPath(),
     icon: Wallet,
   },
@@ -58,6 +59,7 @@ const categoryIcons: Record<string, React.ComponentType<{ size?: number }>> = {
 
 export const PredictionLeftNav: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation(["prediction"]);
   const currentCategory = Array.isArray(router.query.categoryKey)
     ? router.query.categoryKey[0]
     : router.query.categoryKey;
@@ -65,7 +67,7 @@ export const PredictionLeftNav: React.FC = () => {
   return (
     <PredictionRail>
       <PredictionRailSection>
-        <PredictionRailLabel>Browse</PredictionRailLabel>
+        <PredictionRailLabel>{t("BROWSE")}</PredictionRailLabel>
         {primaryItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -83,13 +85,13 @@ export const PredictionLeftNav: React.FC = () => {
               <PredictionRailIcon>
                 <Icon size={16} />
               </PredictionRailIcon>
-              {item.label}
+              {t(item.labelKey)}
             </PredictionRailItem>
           );
         })}
       </PredictionRailSection>
       <PredictionRailSection>
-        <PredictionRailLabel>Categories</PredictionRailLabel>
+        <PredictionRailLabel>{t("CATEGORIES")}</PredictionRailLabel>
         {predictionCategories.map((category) => {
           const Icon = categoryIcons[category.key] || Rocket;
           return (

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import { Trophy, LineChart, Lock } from "lucide-react";
+import { useTranslation } from "i18n";
 import {
   buildProductHomePath,
   resolvePlayerProductFromPath,
@@ -21,6 +22,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
   className,
 }) => {
   const router = useRouter();
+  const { t } = useTranslation(["header"]);
   const [showTooltip, setShowTooltip] = useState(false);
   const mode = useMemo(
     () => resolvePlayerProductFromPath(router.asPath || router.pathname),
@@ -103,7 +105,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
         aria-pressed={isSportsbook}
       >
         <Trophy size={16} strokeWidth={2.25} />
-        <span>Sportsbook</span>
+        <span>{t("SPORTSBOOK")}</span>
       </button>
 
       <div
@@ -126,12 +128,12 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
           aria-disabled={!isPredictionEnabled}
           aria-label={
             isPredictionEnabled
-              ? "Switch to Prediction Markets"
-              : "Prediction Markets coming soon"
+              ? t("SWITCH_TO_PREDICTION_MARKETS")
+              : t("PREDICTION_MARKETS_COMING_SOON")
           }
         >
           <LineChart size={16} strokeWidth={2.25} />
-          <span>Prediction Markets</span>
+          <span>{t("PREDICTION_MARKETS")}</span>
           <motion.span
             className="rounded-full bg-[#2f4553] px-1.5 py-[2px] text-[10px] font-extrabold tracking-wide text-[#c4ffd6] animate-pulse"
             animate={{ opacity: [0.7, 1, 0.7], scale: [0.98, 1.04, 0.98] }}
@@ -147,7 +149,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
               letterSpacing: 0.6,
             }}
           >
-            NEW
+            {t("NEW")}
           </motion.span>
           {!isPredictionEnabled ? <Lock size={13} strokeWidth={2.4} /> : null}
         </button>
@@ -173,7 +175,7 @@ export const ModeToggle: React.FC<ModeToggleProps> = ({
               boxShadow: "0 10px 30px rgba(0, 0, 0, 0.35)",
             }}
           >
-            Coming Soon
+            {t("COMING_SOON")}
           </div>
         ) : null}
       </div>

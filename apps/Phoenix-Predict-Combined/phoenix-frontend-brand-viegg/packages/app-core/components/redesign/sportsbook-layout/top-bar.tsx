@@ -1,11 +1,13 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
+import { useTranslation } from "i18n";
 import { showAuthModal, selectIsLoggedIn } from "../../../lib/slices/authSlice";
 import { showCashierDrawer } from "../../../lib/slices/cashierSlice";
 import { CurrentBalanceComponent } from "../../current-balance";
 import { useLogout } from "../../../hooks/useLogout";
 import { ModeToggle } from "../../layout/header/mode-toggle/ModeToggle";
+import { LanguageSelectorComponent } from "../../layout/header/language-selector";
 import {
   SportsbookActionButton,
   SportsbookBalancePill,
@@ -20,13 +22,14 @@ const {
 } = require("next/config").default().publicRuntimeConfig;
 
 const topLinks = [
-  { id: "live", label: "Live", href: "/sports/in-play" },
-  { id: "promos", label: "Promotions", href: "/promotions" },
-  { id: "bets", label: "My Bets", href: "/account/bet-history" },
+  { id: "live", labelKey: "LIVE", href: "/sports/in-play" },
+  { id: "promos", labelKey: "PROMOTIONS_LINK", href: "/promotions" },
+  { id: "bets", labelKey: "MY_BETS", href: "/account/bet-history" },
 ];
 
 export const SportsbookTopBarNav: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation(["header"]);
 
   return (
     <SportsbookTopNavGroup>
@@ -41,7 +44,7 @@ export const SportsbookTopBarNav: React.FC = () => {
             $active={router.asPath.startsWith(item.href)}
             onClick={() => router.push(item.href)}
           >
-            {item.label}
+            {t(item.labelKey)}
           </SportsbookTopNavButton>
         ))}
       </SportsbookTopNav>
@@ -54,16 +57,18 @@ export const SportsbookTopBarActions: React.FC = () => {
   const router = useRouter();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const { logOutAndRemoveToken } = useLogout();
+  const { t } = useTranslation(["header"]);
 
   if (!isLoggedIn) {
     return (
       <SportsbookTopActions>
+        <LanguageSelectorComponent source="header" />
         <SportsbookActionButton
           type="button"
           $accent
           onClick={() => dispatch(showAuthModal())}
         >
-          Login
+          {t("LOGIN_LINK")}
         </SportsbookActionButton>
       </SportsbookTopActions>
     );
@@ -71,6 +76,7 @@ export const SportsbookTopBarActions: React.FC = () => {
 
   return (
     <SportsbookTopActions>
+      <LanguageSelectorComponent source="header" />
       <SportsbookBalancePill
         type="button"
         onClick={() => dispatch(showCashierDrawer())}
@@ -81,10 +87,10 @@ export const SportsbookTopBarActions: React.FC = () => {
         type="button"
         onClick={() => router.push("/account")}
       >
-        Account
+        {t("ACCOUNT")}
       </SportsbookActionButton>
       <SportsbookActionButton type="button" onClick={logOutAndRemoveToken}>
-        Logout
+        {t("LOGOUT_LINK")}
       </SportsbookActionButton>
     </SportsbookTopActions>
   );

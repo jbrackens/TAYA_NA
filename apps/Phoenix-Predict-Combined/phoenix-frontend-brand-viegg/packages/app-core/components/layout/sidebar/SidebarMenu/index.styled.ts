@@ -239,6 +239,23 @@ export const MobileLinks = styled.div`
   height: 50px;
 `;
 
+export const MobileLanguageSelectorContainer = styled.div`
+  @media (min-width: 1200px) {
+    display: none;
+  }
+  display: flex;
+  padding: 0 14px 12px;
+
+  form {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .ant-select {
+    width: 100%;
+  }
+`;
+
 type MobileLinkProps = {
   isSelected?: boolean;
 };

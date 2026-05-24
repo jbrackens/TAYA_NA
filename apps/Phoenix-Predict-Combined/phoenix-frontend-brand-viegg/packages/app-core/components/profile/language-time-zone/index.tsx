@@ -23,6 +23,14 @@ import {
 import { CoreSelect } from "../../ui/select";
 import { SelectContainer } from "../../ui/form/index.styled";
 import { message } from "antd";
+import {
+  normalizeLocale,
+  supportedLocales,
+} from "../../../lib/i18n/locales";
+import {
+  persistLocale,
+  readPersistedLocale,
+} from "../../../lib/i18n/locale-persistence";
 
 const {
   SHOW_FOR_SUBMISSION,
@@ -45,7 +53,7 @@ const LanguageTimeZoneComponent: React.FC<LanguageTimeZoneComponentProps> = () =
   const currentTimezone =
     typeof localStorage !== "undefined" ? getTimezone() : "";
   const dispatch = useDispatch();
-  const [language, setLanguage] = useState(i18n.language);
+  const [language, setLanguage] = useState(() => readPersistedLocale());
   const [timezone, setTimezone] = useState(currentTimezone);
   const currentOddsFormat = useSelector(selectOddsFormat);
   const [oddsFormat, setOddsFormat] = useState(currentOddsFormat);
@@ -59,7 +67,7 @@ const LanguageTimeZoneComponent: React.FC<LanguageTimeZoneComponentProps> = () =
     ));
 
   const handleLanguageChange = (value: any) => {
-    setLanguage(value);
+    setLanguage(normalizeLocale(value));
   };
 
   const handleTimezoneChange = (value: any) => {
@@ -71,7 +79,8 @@ const LanguageTimeZoneComponent: React.FC<LanguageTimeZoneComponentProps> = () =
   };
 
   const updateSettings = () => {
-    i18n.changeLanguage(language);
+    const nextLocale = persistLocale(language);
+    i18n.changeLanguage(nextLocale);
     saveTimezone(timezone);
     dispatch(setOddsFormatAction(oddsFormat));
     saveOddsFormat(oddsFormat);
@@ -80,7 +89,7 @@ const LanguageTimeZoneComponent: React.FC<LanguageTimeZoneComponentProps> = () =
 
   const isButtonDisabled =
     timezone === currentTimezone &&
-    language === i18n.language &&
+    language === normalizeLocale(i18n.language) &&
     oddsFormat === currentOddsFormat;
 
   return (
@@ -101,14 +110,13 @@ const LanguageTimeZoneComponent: React.FC<LanguageTimeZoneComponentProps> = () =
                     onChange={handleLanguageChange}
                     value={language}
                   >
-                    <Option value="en">
-                      <OptionContent role={"englishOption"}>
-                        {t("ENGLISH")}
-                      </OptionContent>
-                    </Option>
-                    <Option value="de">
-                      <OptionContent>{t("DEUTSCH")}</OptionContent>
-                    </Option>
+                    {supportedLocales.map((locale) => (
+                      <Option value={locale.code} key={locale.code}>
+                        <OptionContent role={`${locale.code}Option`}>
+                          {locale.label}
+                        </OptionContent>
+                      </Option>
+                    ))}
                   </CoreSelect>
                 </SelectContainer>
               </ValueCol>

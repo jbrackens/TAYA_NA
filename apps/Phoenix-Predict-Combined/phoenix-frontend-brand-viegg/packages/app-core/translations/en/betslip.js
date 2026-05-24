@@ -1,5 +1,9 @@
 module.exports = {
   BETSLIP: "Betslip",
+  OPEN_BETSLIP: "Open Betslip",
+  SELECTIONS_READY: "{{count}} selection ready",
+  SELECTIONS_READY_plural: "{{count}} selections ready",
+  POTENTIAL_RETURN: "Potential return {{value}}",
   OPEN_BETS: "Open Bets",
   SINGLE: "Single",
   MULTI: "Multi",

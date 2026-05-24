@@ -3,7 +3,8 @@ import { CoreForm } from "../../../ui/form";
 import { CoreSelect } from "../../../ui/select";
 
 export const CustomSelect = styled(CoreSelect)`
-  width: ${(props) => 6.5 * props.theme.baseGutter}px;
+  width: ${(props) => 17 * props.theme.baseGutter}px;
+  min-width: 150px;
   margin-right: ${(props) => 1.5 * props.theme.baseGutter}px;
   align-self: center;
 `;
@@ -11,7 +12,8 @@ export const CustomSelect = styled(CoreSelect)`
 export const CustomFormForLanguageSelector = styled(CoreForm)`
   padding: 0;
   align-self: center;
-  width: ${(props) => 6 * props.theme.baseGutter}px;
+  width: ${(props) => 17 * props.theme.baseGutter}px;
+  min-width: 150px;
   margin-right: ${(props) => 1.5 * props.theme.baseGutter}px;
 
   & .ant-select-selector {

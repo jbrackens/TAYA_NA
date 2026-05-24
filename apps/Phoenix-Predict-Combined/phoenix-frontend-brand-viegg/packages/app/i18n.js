@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = new NextI18Next({
   defaultLanguage: "en",
   shallowRender: true,
-  otherLanguages: ["de"],
+  otherLanguages: ["zh-Hans", "zh-Hant", "tl", "ms", "id"],
   browserLanguageDetection: true,
   serverLanguageDetection: false,
   localePath: path.resolve("./public/static/locales"),

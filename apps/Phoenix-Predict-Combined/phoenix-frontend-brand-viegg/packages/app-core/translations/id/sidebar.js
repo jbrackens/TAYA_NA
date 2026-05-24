@@ -1,0 +1,17 @@
+module.exports = {
+  ...require("../en/sidebar.js"),
+  HOME: "Beranda",
+  BROWSE: "Jelajah",
+  ALL_GAMES: "Semua Game",
+  FAVOURITE: "Favorit",
+  ACCOUNT: "Akun",
+  IN_PLAY: "Sedang Berlangsung",
+  UPCOMING: "Akan Datang",
+  NOTIFICATIONS: "Notifikasi",
+  SETTINGS: "Pengaturan",
+  LIMITS: "Bermain Bertanggung Jawab",
+  SECURITY: "Keamanan",
+  TRANSACTIONS: "Transaksi",
+  BET_HISTORY: "Riwayat Bet",
+  RG_HISTORY: "Riwayat RG",
+};

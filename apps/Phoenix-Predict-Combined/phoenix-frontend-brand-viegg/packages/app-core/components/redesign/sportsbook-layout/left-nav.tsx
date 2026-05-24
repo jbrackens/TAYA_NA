@@ -1,6 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
+import { useTranslation } from "i18n";
 import { Clock3, Home, Megaphone, Trophy } from "lucide-react";
 import { selectSports } from "../../../lib/slices/sportSlice";
 import { dedupeSportLikeItems } from "../../../lib/sports-routing";
@@ -13,13 +14,14 @@ import {
 } from "./index.styled";
 
 const primaryItems = [
-  { id: "home", label: "Home", href: "/sports/home", icon: Home },
-  { id: "live", label: "In-Play", href: "/sports/in-play", icon: Clock3 },
-  { id: "promotions", label: "Promotions", href: "/promotions", icon: Megaphone },
+  { id: "home", labelKey: "HOME", href: "/sports/home", icon: Home },
+  { id: "live", labelKey: "IN_PLAY", href: "/sports/in-play", icon: Clock3 },
+  { id: "promotions", labelKey: "PROMOTIONS_LINK", href: "/promotions", icon: Megaphone },
 ];
 
 export const SportsbookLeftNav: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation(["header", "sidebar"]);
   const sports = useSelector(selectSports);
   const visibleSports = dedupeSportLikeItems(
     sports.filter((sport) => sport.displayToPunters !== false),
@@ -28,7 +30,7 @@ export const SportsbookLeftNav: React.FC = () => {
   return (
     <SportsbookRail>
       <SportsbookRailSection>
-        <SportsbookRailLabel>Browse</SportsbookRailLabel>
+        <SportsbookRailLabel>{t("sidebar:BROWSE")}</SportsbookRailLabel>
         {primaryItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -41,13 +43,13 @@ export const SportsbookLeftNav: React.FC = () => {
               <SportsbookRailIcon>
                 <Icon size={16} />
               </SportsbookRailIcon>
-              {item.label}
+              {t(item.labelKey)}
             </SportsbookRailItem>
           );
         })}
       </SportsbookRailSection>
       <SportsbookRailSection>
-        <SportsbookRailLabel>Sports</SportsbookRailLabel>
+        <SportsbookRailLabel>{t("SPORTS")}</SportsbookRailLabel>
         {visibleSports.map((sport) => (
           <SportsbookRailItem
             key={sport.abbreviation}

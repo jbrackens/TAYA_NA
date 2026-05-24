@@ -37,6 +37,10 @@ const nextConfiguration = {
     SPORTSBOOK_FIXTURE_OVERLAYS: process.env.SPORTSBOOK_FIXTURE_OVERLAYS || "",
     PREDICTION_MARKETS_ENABLED:
       process.env.PREDICTION_MARKETS_ENABLED || "1",
+    I18N_ENABLED: process.env.I18N_ENABLED || "true",
+    DEFAULT_LOCALE: process.env.DEFAULT_LOCALE || "en",
+    SUPPORTED_LOCALES:
+      process.env.SUPPORTED_LOCALES || "en,zh-Hans,zh-Hant,tl,ms,id",
     localeSubpaths,
     env: process.env.ENV_NAME,
     staticFolder: "/static",

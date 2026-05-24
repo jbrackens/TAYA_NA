@@ -1,6 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
+import { useTranslation } from "i18n";
 import { Activity, Home, LineChart, Ticket, Wallet } from "lucide-react";
 import { BottomNavItem } from "../app-shell";
 import {
@@ -27,6 +28,7 @@ export const PredictionMobileActionBar: React.FC<MobileActionBarProps> = ({
   onOpenTradeRail,
 }) => {
   const selection = useSelector(selectPredictionSelection);
+  const { t } = useTranslation(["prediction"]);
 
   if (!selection) {
     return null;
@@ -35,13 +37,13 @@ export const PredictionMobileActionBar: React.FC<MobileActionBarProps> = ({
   return (
     <>
       <PredictionMobileActionContent>
-        <PredictionMobileActionTitle>Prediction ticket ready</PredictionMobileActionTitle>
+        <PredictionMobileActionTitle>{t("MOBILE_TICKET_READY")}</PredictionMobileActionTitle>
         <PredictionMobileActionMeta>
-          Review the selected market and outcome from the trade rail.
+          {t("MOBILE_TICKET_READY_COPY")}
         </PredictionMobileActionMeta>
       </PredictionMobileActionContent>
       <PredictionMobileActionButton type="button" onClick={onOpenTradeRail}>
-        Open Ticket
+        {t("OPEN_TICKET")}
       </PredictionMobileActionButton>
     </>
   );
@@ -52,13 +54,14 @@ export const PredictionMobileBottomNav: React.FC<MobileBottomNavProps> = ({
 }) => {
   const router = useRouter();
   const selection = useSelector(selectPredictionSelection);
+  const { t } = useTranslation(["prediction"]);
 
   const navItems = [
-    { id: "sports", label: "Sports", href: "/sports/home", icon: Home },
-    { id: "prediction", label: "Prediction", href: "/prediction", icon: LineChart },
-    { id: "live", label: "Live", href: "/prediction/markets?status=live", icon: Activity },
-    { id: "ticket", label: "Ticket", href: null, icon: Ticket },
-    { id: "activity", label: "Activity", href: "/prediction/activity", icon: Wallet },
+    { id: "sports", labelKey: "MOBILE_NAV_SPORTS", href: "/sports/home", icon: Home },
+    { id: "prediction", labelKey: "MOBILE_NAV_PREDICTION", href: "/prediction", icon: LineChart },
+    { id: "live", labelKey: "NAV_LIVE", href: "/prediction/markets?status=live", icon: Activity },
+    { id: "ticket", labelKey: "MOBILE_NAV_TICKET", href: null, icon: Ticket },
+    { id: "activity", labelKey: "MOBILE_NAV_ACTIVITY", href: "/prediction/activity", icon: Wallet },
   ] as const;
 
   return (
@@ -88,7 +91,7 @@ export const PredictionMobileBottomNav: React.FC<MobileBottomNavProps> = ({
           >
             <PredictionBottomNavItemContent>
               <Icon size={16} />
-              <span>{item.label}</span>
+              <span>{t(item.labelKey)}</span>
               {item.id === "ticket" && selection ? (
                 <PredictionBottomNavBadge>1</PredictionBottomNavBadge>
               ) : null}

@@ -1,6 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { useSelector } from "react-redux";
+import { useTranslation } from "i18n";
 import { Clock3, Home, LineChart, Ticket, User } from "lucide-react";
 import { BottomNavItem } from "../app-shell";
 import {
@@ -31,6 +32,7 @@ export const SportsbookMobileActionBar: React.FC<MobileActionBarProps> = ({
   const bets = useSelector(selectBets);
   const summaryValues = useSelector(selectSummaryValues);
   const { formatCurrencyValue } = useCurrency();
+  const { t } = useTranslation(["betslip"]);
 
   if (!bets.length) {
     return null;
@@ -40,14 +42,16 @@ export const SportsbookMobileActionBar: React.FC<MobileActionBarProps> = ({
     <>
       <SportsbookMobileActionContent>
         <SportsbookMobileActionTitle>
-          {bets.length} selection{bets.length === 1 ? "" : "s"} ready
+          {t("SELECTIONS_READY", { count: bets.length })}
         </SportsbookMobileActionTitle>
         <SportsbookMobileActionMeta>
-          Potential return {formatCurrencyValue(summaryValues.possibleReturn || 0)}
+          {t("POTENTIAL_RETURN", {
+            value: formatCurrencyValue(summaryValues.possibleReturn || 0),
+          })}
         </SportsbookMobileActionMeta>
       </SportsbookMobileActionContent>
       <SportsbookMobileActionButton type="button" onClick={onOpenBetslip}>
-        Open Betslip
+        {t("OPEN_BETSLIP")}
       </SportsbookMobileActionButton>
     </>
   );
@@ -58,13 +62,14 @@ export const SportsbookMobileBottomNav: React.FC<MobileBottomNavProps> = ({
 }) => {
   const router = useRouter();
   const bets = useSelector(selectBets);
+  const { t } = useTranslation(["header", "betslip"]);
 
   const navItems = [
-    { id: "sports", label: "Sports", href: "/sports/home", icon: Home },
-    { id: "prediction", label: "Prediction", href: "/prediction", icon: LineChart },
-    { id: "live", label: "Live", href: "/sports/in-play", icon: Clock3 },
-    { id: "betslip", label: "Betslip", href: null, icon: Ticket },
-    { id: "account", label: "Account", href: "/account", icon: User },
+    { id: "sports", labelKey: "SPORTS", href: "/sports/home", icon: Home },
+    { id: "prediction", labelKey: "PREDICTION", href: "/prediction", icon: LineChart },
+    { id: "live", labelKey: "LIVE", href: "/sports/in-play", icon: Clock3 },
+    { id: "betslip", labelKey: "betslip:BETSLIP", href: null, icon: Ticket },
+    { id: "account", labelKey: "ACCOUNT", href: "/account", icon: User },
   ] as const;
 
   return (
@@ -91,7 +96,7 @@ export const SportsbookMobileBottomNav: React.FC<MobileBottomNavProps> = ({
           >
             <SportsbookBottomNavItemContent>
               <Icon size={16} />
-              <span>{item.label}</span>
+              <span>{t(item.labelKey)}</span>
               {item.id === "betslip" && bets.length > 0 ? (
                 <SportsbookBottomNavBadge>{bets.length}</SportsbookBottomNavBadge>
               ) : null}

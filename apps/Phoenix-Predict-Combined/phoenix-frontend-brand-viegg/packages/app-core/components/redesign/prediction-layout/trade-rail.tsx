@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { message } from "antd";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "i18n";
 import { CurrentBalanceComponent } from "../../current-balance";
 import { showAuthModal, selectIsLoggedIn } from "../../../lib/slices/authSlice";
 import { usePlacePredictionOrder, usePredictionOrders } from "../../../services/go-api";
@@ -45,26 +46,27 @@ type PreviewResponse = {
 
 const quickStakeOptions = [10, 25, 50, 100];
 
-const resolvePredictionTradeError = (error?: {
+const resolvePredictionTradeErrorKey = (error?: {
   payload?: { errors?: Array<{ errorCode?: string }> };
 }) => {
   const errorCode = error?.payload?.errors?.[0]?.errorCode;
   switch (errorCode) {
     case "predictionStakeInvalid":
-      return "Enter a valid stake before placing the trade.";
+      return "TRADE_ERROR_INVALID_STAKE";
     case "predictionMarketNotOpen":
-      return "This prediction market is no longer open for new orders.";
+      return "TRADE_ERROR_MARKET_CLOSED";
     case "marketNotFound":
-      return "That prediction market could not be found.";
+      return "TRADE_ERROR_MARKET_NOT_FOUND";
     case "selectionNotFound":
-      return "That prediction outcome is no longer available.";
+      return "TRADE_ERROR_SELECTION_NOT_FOUND";
     default:
-      return "Unable to place the prediction trade.";
+      return "TRADE_ERROR_GENERIC";
   }
 };
 
 export const PredictionTradeRail: React.FC = () => {
   const router = useRouter();
+  const { t } = useTranslation(["prediction"]);
   const dispatch = useDispatch();
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const selection = useSelector(selectPredictionSelection);
@@ -113,7 +115,7 @@ export const PredictionTradeRail: React.FC = () => {
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error("Failed to preview prediction ticket");
+          throw new Error(t("TRADE_ERROR_PREVIEW"));
         }
         return response.json();
       })
@@ -142,45 +144,45 @@ export const PredictionTradeRail: React.FC = () => {
     if (!placeOrderMutation.isSuccess || !placeOrderMutation.data) {
       return;
     }
-    message.success("Prediction trade submitted.");
+    message.success(t("TRADE_SUBMITTED_TOAST"));
     dispatch(clearPredictionSelection());
     refetchOrders();
-  }, [dispatch, placeOrderMutation.isSuccess, placeOrderMutation.data, refetchOrders]);
+  }, [dispatch, placeOrderMutation.isSuccess, placeOrderMutation.data, refetchOrders, t]);
 
   useEffect(() => {
     if (!placeOrderMutation.error) {
       return;
     }
-    message.error(resolvePredictionTradeError(placeOrderMutation.error as any));
-  }, [placeOrderMutation.error]);
+    message.error(t(resolvePredictionTradeErrorKey(placeOrderMutation.error as any)));
+  }, [placeOrderMutation.error, t]);
 
   return (
     <PredictionActionPanel>
       <PredictionActionCard>
         <PredictionActionCardHeader>
-          <PredictionActionEyebrow>Shared Wallet</PredictionActionEyebrow>
-          <PredictionActionTitle>Trade Ticket</PredictionActionTitle>
+          <PredictionActionEyebrow>{t("SHARED_WALLET")}</PredictionActionEyebrow>
+          <PredictionActionTitle>{t("TRADE_TICKET")}</PredictionActionTitle>
         </PredictionActionCardHeader>
         <PredictionActionBody>
           <PredictionBalanceStrip>
-            <span>Available balance</span>
+            <span>{t("AVAILABLE_BALANCE")}</span>
             <CurrentBalanceComponent />
           </PredictionBalanceStrip>
 
           {!selection || !selectedMarket || !selectedOutcome ? (
             <PredictionMutedCard>
-              Select a market outcome to open the prediction ticket. The ticket stays separate from the sportsbook betslip and keeps its own state as you browse.
+              {t("TRADE_EMPTY")}
             </PredictionMutedCard>
           ) : (
             <>
               <PredictionSelectionBadge>
-                {selectedOutcome.label} at {selectedOutcome.priceCents}c
+                {t("OUTCOME_AT_PRICE", { outcome: selectedOutcome.label, price: selectedOutcome.priceCents })}
               </PredictionSelectionBadge>
               <PredictionSelectionTitle>
                 {selectedMarket.shortTitle}
               </PredictionSelectionTitle>
               <PredictionSelectionMeta>
-                {selectedMarket.categoryLabel} · closes {new Date(selectedMarket.closesAt).toLocaleString()}
+                {t("MARKET_CLOSES_AT", { category: selectedMarket.categoryLabel, date: new Date(selectedMarket.closesAt).toLocaleString() })}
               </PredictionSelectionMeta>
               <PredictionStakeInput
                 type="number"
@@ -188,8 +190,8 @@ export const PredictionTradeRail: React.FC = () => {
                 step="1"
                 value={stakeUsd}
                 onChange={(event) => dispatch(setPredictionStake(event.target.value))}
-                aria-label="Prediction stake"
-                placeholder="Stake in USD"
+                aria-label={t("PREDICTION_STAKE")}
+                placeholder={t("STAKE_IN_USD")}
               />
               <PredictionStakeQuickRow>
                 {quickStakeOptions.map((amount) => (
@@ -205,35 +207,35 @@ export const PredictionTradeRail: React.FC = () => {
                   type="button"
                   onClick={() => dispatch(clearPredictionSelection())}
                 >
-                  Clear
+                  {t("CLEAR")}
                 </PredictionStakeQuickButton>
               </PredictionStakeQuickRow>
               {preview ? (
                 <PredictionPreviewGrid>
                   <PredictionPreviewCard>
-                    <PredictionPreviewLabel>Shares</PredictionPreviewLabel>
+                    <PredictionPreviewLabel>{t("SHARES")}</PredictionPreviewLabel>
                     <PredictionPreviewValue>{preview.shares.toFixed(2)}</PredictionPreviewValue>
                   </PredictionPreviewCard>
                   <PredictionPreviewCard>
-                    <PredictionPreviewLabel>Max payout</PredictionPreviewLabel>
+                    <PredictionPreviewLabel>{t("MAX_PAYOUT")}</PredictionPreviewLabel>
                     <PredictionPreviewValue>${preview.maxPayoutUsd.toFixed(2)}</PredictionPreviewValue>
                   </PredictionPreviewCard>
                   <PredictionPreviewCard>
-                    <PredictionPreviewLabel>Max profit</PredictionPreviewLabel>
+                    <PredictionPreviewLabel>{t("MAX_PROFIT")}</PredictionPreviewLabel>
                     <PredictionPreviewValue $positive>
                       ${preview.maxProfitUsd.toFixed(2)}
                     </PredictionPreviewValue>
                   </PredictionPreviewCard>
                   <PredictionPreviewCard>
-                    <PredictionPreviewLabel>Avg price</PredictionPreviewLabel>
+                    <PredictionPreviewLabel>{t("AVG_PRICE")}</PredictionPreviewLabel>
                     <PredictionPreviewValue>{preview.priceCents}c</PredictionPreviewValue>
                   </PredictionPreviewCard>
                 </PredictionPreviewGrid>
               ) : (
                 <PredictionMutedCard>
                   {isLoadingPreview
-                    ? "Refreshing trade preview..."
-                    : "Enter a stake to calculate a live trade preview."}
+                    ? t("REFRESHING_TRADE_PREVIEW")
+                    : t("ENTER_STAKE_PREVIEW")}
                 </PredictionMutedCard>
               )}
               <PredictionActionButton
@@ -248,7 +250,7 @@ export const PredictionTradeRail: React.FC = () => {
                   }
                   const stakeValue = Number(stakeUsd || 0);
                   if (!Number.isFinite(stakeValue) || stakeValue <= 0) {
-                    message.error("Enter a valid stake before placing the trade.");
+                    message.error(t("TRADE_ERROR_INVALID_STAKE"));
                     return;
                   }
                   placeOrderMutation.mutate({
@@ -261,9 +263,9 @@ export const PredictionTradeRail: React.FC = () => {
               >
                 {isLoggedIn
                   ? placeOrderMutation.isLoading
-                    ? "Submitting Trade..."
-                    : "Place Trade"
-                  : "Login to Trade"}
+                    ? t("SUBMITTING_TRADE")
+                    : t("PLACE_TRADE")
+                  : t("LOGIN_TO_TRADE")}
               </PredictionActionButton>
               {isLoggedIn ? (
                 <PredictionStakeQuickRow>
@@ -271,7 +273,7 @@ export const PredictionTradeRail: React.FC = () => {
                     type="button"
                     onClick={() => router.push(buildPredictionActivityPath())}
                   >
-                    View Activity
+                    {t("VIEW_ACTIVITY")}
                   </PredictionStakeQuickButton>
                 </PredictionStakeQuickRow>
               ) : null}
@@ -283,9 +285,9 @@ export const PredictionTradeRail: React.FC = () => {
       {recentOrders.length > 0 || recentMarkets.length > 0 ? (
         <PredictionActionCard>
           <PredictionActionCardHeader>
-            <PredictionActionEyebrow>Module Activity</PredictionActionEyebrow>
+            <PredictionActionEyebrow>{t("MODULE_ACTIVITY")}</PredictionActionEyebrow>
             <PredictionActionTitle>
-              {recentOrders.length > 0 ? "Open Orders" : "Recently Viewed"}
+              {recentOrders.length > 0 ? t("OPEN_ORDERS") : t("RECENTLY_VIEWED")}
             </PredictionActionTitle>
           </PredictionActionCardHeader>
           <PredictionActionBody>
@@ -301,7 +303,7 @@ export const PredictionTradeRail: React.FC = () => {
                   <PredictionMutedCard key={market!.marketId}>
                     <strong style={{ color: "#fff" }}>{market!.shortTitle}</strong>
                     <br />
-                    {market!.categoryLabel} · {market!.probabilityPercent}% implied YES
+                    {t("RECENT_MARKET_META", { category: market!.categoryLabel, probability: market!.probabilityPercent })}
                   </PredictionMutedCard>
                 ))}
           </PredictionActionBody>

@@ -69,22 +69,22 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
   const quickLinks = [
     {
-      label: "Sportsbook",
+      label: t("SPORTSBOOK"),
       href: buildSportsSportPath("home"),
       active: router.pathname.includes("/sports") || router.pathname.includes("/esports-bets"),
     },
     {
-      label: "Live",
+      label: t("LIVE"),
       href: buildSportsSportPath("in-play"),
       active: router.asPath.includes("/in-play"),
     },
     {
-      label: "Promotions",
+      label: t("PROMOTIONS_LINK"),
       href: "/promotions",
       active: router.pathname.includes("/promotions"),
     },
     {
-      label: "My Bets",
+      label: t("MY_BETS"),
       href: "/account/bet-history",
       active: router.pathname.includes("/account/bet-history"),
     },

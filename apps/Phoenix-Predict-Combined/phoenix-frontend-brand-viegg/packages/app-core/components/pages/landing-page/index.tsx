@@ -13,7 +13,6 @@ import {
   BottomFade,
   Brand,
   BrandWordmark,
-  BrandText,
   ContentColumn,
   FeatureCard,
   FeatureGrid,

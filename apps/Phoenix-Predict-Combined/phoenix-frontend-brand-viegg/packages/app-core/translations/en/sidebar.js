@@ -1,5 +1,6 @@
 module.exports = {
   HOME: "Home",
+  BROWSE: "Browse",
   ALL_GAMES: "All Games",
   FAVOURITE: "Favourite",
   ACCOUNT: "Account",

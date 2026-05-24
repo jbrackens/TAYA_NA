@@ -1,0 +1,17 @@
+module.exports = {
+  ...require("../en/sidebar.js"),
+  HOME: "首頁",
+  BROWSE: "瀏覽",
+  ALL_GAMES: "全部遊戲",
+  FAVOURITE: "收藏",
+  ACCOUNT: "帳戶",
+  IN_PLAY: "進行中",
+  UPCOMING: "即將開始",
+  NOTIFICATIONS: "通知",
+  SETTINGS: "設定",
+  LIMITS: "負責任博彩",
+  SECURITY: "安全",
+  TRANSACTIONS: "交易",
+  BET_HISTORY: "投注記錄",
+  RG_HISTORY: "責任博彩記錄",
+};
