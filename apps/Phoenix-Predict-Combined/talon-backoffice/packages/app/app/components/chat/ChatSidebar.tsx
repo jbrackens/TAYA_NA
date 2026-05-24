@@ -21,6 +21,34 @@ const LOAD_TIMEOUT_MS = 5000;
 const DEFAULT_ROOM_ID = "general";
 
 type LoadState = "idle" | "loading" | "ready" | "unavailable";
+type ChatMessage = {
+  username: string;
+  timestamp: string;
+  content: string;
+};
+
+const MOCK_CHAT_MESSAGES: ChatMessage[] = [
+  {
+    username: "marketmaker23",
+    timestamp: "2m",
+    content: "BTC above $100K is holding 62c. Anyone fading this before CPI?",
+  },
+  {
+    username: "island_alpha",
+    timestamp: "5m",
+    content: "Barcelona CL market moved after the injury update. YES feels thin at 14c.",
+  },
+  {
+    username: "oddswatcher",
+    timestamp: "8m",
+    content: "Solana Q2 just ticked up again. Liquidity on NO is finally improving.",
+  },
+  {
+    username: "mod_malia",
+    timestamp: "12m",
+    content: "Reminder: discuss the market, not other traders. Keep links clean.",
+  },
+];
 
 export function ChatSidebar() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -29,6 +57,7 @@ export function ChatSidebar() {
   const [state, setState] = useState<LoadState>("idle");
   const [embedUrl, setEmbedUrl] = useState("");
   const [roomId, setRoomId] = useState(DEFAULT_ROOM_ID);
+  const [messages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
   const [message, setMessage] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
   const [reportEnabled, setReportEnabled] = useState(false);
@@ -68,14 +97,9 @@ export function ChatSidebar() {
       setReportEnabled(false);
       setEmbedUrl("");
       if (!isAuthenticated) {
-        if (publicGlobalUrl) {
-          setRoomId(DEFAULT_ROOM_ID);
-          setEmbedUrl(publicGlobalUrl);
-          setState("ready");
-        } else {
-          setState("unavailable");
-          setMessage("Chat is not available right now");
-        }
+        setRoomId(DEFAULT_ROOM_ID);
+        setEmbedUrl(publicGlobalUrl);
+        setState("ready");
         return;
       }
       try {
@@ -149,6 +173,7 @@ export function ChatSidebar() {
             state={state}
             embedUrl={embedUrl}
             message={message}
+            messages={messages}
             readOnly={!isAuthenticated}
           />
           {isAuthenticated && reportEnabled && (
@@ -251,11 +276,13 @@ function ChatFrame({
   state,
   embedUrl,
   message,
+  messages,
   readOnly,
 }: {
   state: LoadState;
   embedUrl: string;
   message: string;
+  messages: ChatMessage[];
   readOnly: boolean;
 }) {
   const [timedOut, setTimedOut] = useState(false);
@@ -271,6 +298,10 @@ function ChatFrame({
 
   if (state === "loading" || state === "idle") {
     return <div className="chat-state">Loading chat...</div>;
+  }
+
+  if (readOnly) {
+    return <ReadOnlyChatStream messages={messages} />;
   }
 
   if (state === "unavailable" || !embedUrl || (timedOut && !loaded)) {
@@ -303,6 +334,27 @@ function ChatFrame({
           Login to chat
         </a>
       )}
+    </div>
+  );
+}
+
+function ReadOnlyChatStream({ messages }: { messages: ChatMessage[] }) {
+  return (
+    <div className="chat-public-stream" aria-label="Community chat">
+      <div className="chat-message-list">
+        {messages.map((chatMessage) => (
+          <article className="chat-message" key={chatMessage.username}>
+            <div className="chat-message-meta">
+              <span className="chat-message-user">{chatMessage.username}</span>
+              <time>{chatMessage.timestamp}</time>
+            </div>
+            <p>{chatMessage.content}</p>
+          </article>
+        ))}
+      </div>
+      <a className="chat-readonly-composer" href="/auth/login">
+        Login to chat
+      </a>
     </div>
   );
 }
