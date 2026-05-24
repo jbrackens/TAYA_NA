@@ -73,3 +73,64 @@ func TestSQLCreateArticleSourceDedupesOnTextHash(t *testing.T) {
 		t.Fatalf("expected a distinct id for a different text_hash, got %q", src3.ID)
 	}
 }
+
+// TestSQLLogAIGeneration exercises SQLRepository.LogAIGeneration against a real
+// Postgres: it must insert a row (with the nullable jsonb columns handled) and
+// return id + created_at. Skipped unless GATEWAY_DB_DSN is set.
+func TestSQLLogAIGeneration(t *testing.T) {
+	dsn := os.Getenv("GATEWAY_DB_DSN")
+	if dsn == "" {
+		t.Skip("set GATEWAY_DB_DSN to run the ai-generation-log integration test")
+	}
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatalf("open db: %v", err)
+	}
+	defer db.Close()
+	if err := db.PingContext(context.Background()); err != nil {
+		t.Skipf("GATEWAY_DB_DSN set but db not reachable: %v", err)
+	}
+
+	repo := NewSQLRepository(db)
+	ctx := context.Background()
+
+	const marker = "test-ailog"
+	t.Cleanup(func() {
+		if _, err := db.ExecContext(ctx,
+			`DELETE FROM prediction_ai_generation_logs WHERE created_by = $1`, marker); err != nil {
+			t.Logf("cleanup logs: %v", err)
+		}
+		if _, err := db.ExecContext(ctx,
+			`DELETE FROM prediction_article_sources WHERE text_hash LIKE 'test-ailog-%'`); err != nil {
+			t.Logf("cleanup sources: %v", err)
+		}
+	})
+
+	hash := "test-ailog-" + time.Now().UTC().Format("20060102150405.000000000")
+	src := &ArticleSource{TextHash: hash}
+	if err := repo.CreateArticleSource(ctx, src); err != nil {
+		t.Fatalf("create article source: %v", err)
+	}
+
+	stage := "draft"
+	tier := "hard"
+	createdBy := marker
+	entry := &AIGenerationLog{
+		ArticleSourceID: &src.ID,
+		Stage:           stage,
+		Tier:            &tier,
+		CreatedBy:       &createdBy,
+		OutputJSON:      []byte(`{"candidates":1}`),
+		// InputJSON intentionally nil -> exercises the nullJSONArg NULL path.
+	}
+	if err := repo.LogAIGeneration(ctx, entry); err != nil {
+		t.Fatalf("log ai generation: %v", err)
+	}
+	if entry.ID == "" {
+		t.Fatalf("expected a generation-log id")
+	}
+	if entry.CreatedAt.IsZero() {
+		t.Fatalf("expected created_at to be set")
+	}
+}
