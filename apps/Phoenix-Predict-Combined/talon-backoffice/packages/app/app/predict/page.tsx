@@ -15,6 +15,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TrendingSidebar } from "../components/prediction/TrendingSidebar";
 import { AllMarketsSection } from "../components/prediction/AllMarketsSection";
 import { SectionHead } from "../components/prediction/SectionHead";
@@ -46,6 +47,7 @@ function rankByVolume(markets: PredictionMarket[]): PredictionMarket[] {
 }
 
 export default function PredictDiscoveryPage() {
+  const { t } = useTranslation("prediction");
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredSlides, setFeaturedSlides] = useState<FeaturedSlide[]>([]);
@@ -146,7 +148,7 @@ export default function PredictDiscoveryPage() {
           textAlign: "center",
         }}
       >
-        Loading markets…
+        {t("LOADING_MARKETS")}
       </div>
     );
   }
@@ -181,7 +183,7 @@ export default function PredictDiscoveryPage() {
 
       {featuredRest.length > 0 && (
         <>
-          <SectionHead title="Featured markets" count={featuredRest.length} />
+          <SectionHead title={t("FEATURED_MARKETS")} count={featuredRest.length} />
           <MarketGrid markets={featuredRest} />
         </>
       )}

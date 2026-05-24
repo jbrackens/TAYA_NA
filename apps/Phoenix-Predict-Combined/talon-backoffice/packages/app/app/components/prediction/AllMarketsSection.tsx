@@ -16,6 +16,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import type {
@@ -29,8 +30,8 @@ const PAGE_SIZE = 12;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
 
-const TIME_PILLS: { value: DateWindow; label: string }[] = [
-  { value: "all", label: "All" },
+const TIME_PILLS: { value: DateWindow; labelKey?: string; label?: string }[] = [
+  { value: "all", labelKey: "ALL" },
   { value: "24h", label: "1D" },
   { value: "7d", label: "1W" },
   { value: "30d", label: "1M" },
@@ -47,6 +48,7 @@ interface Props {
 }
 
 export function AllMarketsSection({ categories }: Props) {
+  const { t } = useTranslation("prediction");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
@@ -248,7 +250,7 @@ export function AllMarketsSection({ categories }: Props) {
         <nav
           className="ams-categories"
           role="tablist"
-          aria-label="Filter by category"
+          aria-label={t("FILTER_BY_CATEGORY")}
         >
           <button
             type="button"
@@ -257,7 +259,7 @@ export function AllMarketsSection({ categories }: Props) {
             className={`ams-cat-pill ${categorySlug === "all" ? "is-active" : ""}`}
             onClick={() => setCategorySlug("all")}
           >
-            All
+            {t("ALL")}
           </button>
           {categories.map((c) => {
             const isActive = categorySlug === c.slug;
@@ -278,7 +280,7 @@ export function AllMarketsSection({ categories }: Props) {
         <div
           className="ams-time-pills"
           role="tablist"
-          aria-label="Filter by closing window"
+          aria-label={t("FILTER_BY_CLOSING_WINDOW")}
         >
           {TIME_PILLS.map((pill) => {
             const isActive = dateWindow === pill.value;
@@ -291,7 +293,7 @@ export function AllMarketsSection({ categories }: Props) {
                 className={`ams-time-pill ${isActive ? "is-active" : ""}`}
                 onClick={() => setDateWindow(pill.value)}
               >
-                {pill.label}
+                {pill.labelKey ? t(pill.labelKey) : pill.label}
               </button>
             );
           })}
@@ -307,25 +309,25 @@ export function AllMarketsSection({ categories }: Props) {
             textAlign: "center",
           }}
         >
-          Loading markets…
+          {t("LOADING_MARKETS")}
         </div>
       ) : error && markets.length === 0 ? (
         <div className="ams-empty">
           <p style={{ margin: 0, color: "var(--t2)", fontSize: 13 }}>
-            Couldn't load markets. {error}
+            {t("COULD_NOT_LOAD_MARKETS")} {error}
           </p>
         </div>
       ) : !loading && markets.length === 0 ? (
         <div className="ams-empty">
           <h3>
             {filtered
-              ? "No markets match these filters."
-              : "No markets are currently open."}
+              ? t("NO_FILTER_MATCH")
+              : t("NO_OPEN_MARKETS")}
           </h3>
           <p>
             {filtered
-              ? "Try a different category or a wider time window."
-              : "Check back soon — new markets are posted continuously."}
+              ? t("TRY_DIFFERENT_FILTER")
+              : t("CHECK_BACK_SOON")}
           </p>
         </div>
       ) : (
@@ -339,7 +341,7 @@ export function AllMarketsSection({ categories }: Props) {
                 onClick={loadMore}
                 disabled={loadingMore}
               >
-                {loadingMore ? "Loading…" : "Load more markets"}
+                {loadingMore ? t("LOADING") : t("LOAD_MORE_MARKETS")}
               </button>
             </div>
           )}

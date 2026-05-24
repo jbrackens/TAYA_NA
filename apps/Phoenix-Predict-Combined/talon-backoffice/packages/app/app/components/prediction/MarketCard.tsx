@@ -27,6 +27,7 @@
  */
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { formatCompactUsd } from "./market-display";
 import { getMarketImageProps } from "./utils/marketImage";
 
@@ -74,6 +75,7 @@ export function MarketCard({
   categoryLabel,
   imagePath,
 }: MarketCardProps) {
+  const { t } = useTranslation("prediction");
   const yesLeads = yesPriceCents >= noPriceCents;
 
   const yesIsExtreme = yesPriceCents <= SMALL_THRESHOLD_PCT;
@@ -92,7 +94,11 @@ export function MarketCard({
         <Link
           href={`/market/${ticker}`}
           className="mkt-body"
-          aria-label={`${title}, YES ${yesPriceCents} cents, NO ${noPriceCents} cents`}
+          aria-label={t("MARKET_CARD_LABEL", {
+            title,
+            yes: yesPriceCents,
+            no: noPriceCents,
+          })}
         >
           <div className="mkt-head">
             <div className="mkt-head-text">
@@ -125,7 +131,10 @@ export function MarketCard({
           <div
             className={`mkt-bar mkt-bar-${yesLeads ? "yes-leads" : "no-leads"}`}
             role="img"
-            aria-label={`${yesPriceCents} percent YES, ${noPriceCents} percent NO`}
+            aria-label={t("MARKET_BAR_LABEL", {
+              yes: yesPriceCents,
+              no: noPriceCents,
+            })}
           >
             <span
               className="mkt-bar-yes"
@@ -158,17 +167,17 @@ export function MarketCard({
           <Link
             href={`/market/${ticker}?side=yes`}
             className="mkt-pill mkt-pill-yes"
-            aria-label={`Buy YES at ${yesPriceCents} cents`}
+            aria-label={t("BUY_YES_AT", { price: yesPriceCents })}
           >
-            <span className="mkt-pill-label">YES</span>
+            <span className="mkt-pill-label">{t("YES")}</span>
             <span className="mkt-pill-price">{yesPriceCents}¢</span>
           </Link>
           <Link
             href={`/market/${ticker}?side=no`}
             className="mkt-pill mkt-pill-no"
-            aria-label={`Buy NO at ${noPriceCents} cents`}
+            aria-label={t("BUY_NO_AT", { price: noPriceCents })}
           >
-            <span className="mkt-pill-label">NO</span>
+            <span className="mkt-pill-label">{t("NO")}</span>
             <span className="mkt-pill-price">{noPriceCents}¢</span>
           </Link>
         </div>
@@ -177,13 +186,13 @@ export function MarketCard({
          * Plain text, not a link — the body link above owns navigation. */}
         <div className="mkt-stats">
           <div className="mkt-stat">
-            <span className="mkt-stat-label">Volume</span>
+            <span className="mkt-stat-label">{t("VOLUME")}</span>
             <span className="mkt-stat-value">
               {formatCompactUsd(volumeCents)}
             </span>
           </div>
           <div className="mkt-stat">
-            <span className="mkt-stat-label">Closes</span>
+            <span className="mkt-stat-label">{t("CLOSES")}</span>
             <span className="mkt-stat-value">{formatCloseAt(closeAt)}</span>
           </div>
         </div>

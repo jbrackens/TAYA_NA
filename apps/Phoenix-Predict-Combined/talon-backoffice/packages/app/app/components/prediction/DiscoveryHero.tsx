@@ -9,6 +9,7 @@
  */
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { deterministicDelta, heroChartPath } from "./utils/spark";
 import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
@@ -45,6 +46,7 @@ export function DiscoveryHero({
   market: PredictionMarket | null;
   categoryName?: string;
 }) {
+  const { t } = useTranslation("prediction");
   if (!market) {
     return (
       <section
@@ -57,7 +59,7 @@ export function DiscoveryHero({
           color: "var(--t3)",
         }}
       >
-        Loading a featured market…
+        {t("LOADING_MARKETS")}
       </section>
     );
   }
@@ -227,13 +229,13 @@ export function DiscoveryHero({
           .rh-stats { grid-template-columns: repeat(2, 1fr); gap: 16px; }
         }
       `}</style>
-      <section className="rh-hero" aria-label="Featured market">
+      <section className="rh-hero" aria-label={t("FEATURED_MARKET")}>
         <header className="rh-hero-eyebrow">
           {market.status === "open" && (
             <>
               <span className="live">
                 <span className="rh-hero-dot" aria-hidden="true" />
-                LIVE
+                {t("LIVE")}
               </span>
               <span aria-hidden="true">·</span>
             </>
@@ -255,7 +257,7 @@ export function DiscoveryHero({
           {isUp ? "+" : ""}
           {delta}¢ ({isUp ? "+" : ""}
           {pct.toFixed(1)}%)
-          <span className="label">Today</span>
+          <span className="label">{t("TODAY")}</span>
         </div>
 
         <div className="rh-chart">
@@ -286,28 +288,28 @@ export function DiscoveryHero({
 
         <div className="rh-actions">
           <Link href={`/market/${market.ticker}`} className="rh-buy-yes">
-            Buy YES · {yes}¢
+            {t("BUY_YES")} · {yes}¢
           </Link>
           <Link href={`/market/${market.ticker}`} className="rh-buy-no">
-            Buy NO · {no}¢
+            {t("BUY_NO")} · {no}¢
           </Link>
         </div>
 
         <div className="rh-stats">
           <div>
-            <div className="rh-stat-label">24h volume</div>
+            <div className="rh-stat-label">{t("24H_VOLUME")}</div>
             <div className="rh-stat-value">{volumeLabel}</div>
           </div>
           <div>
-            <div className="rh-stat-label">Open interest</div>
+            <div className="rh-stat-label">{t("OPEN_INTEREST")}</div>
             <div className="rh-stat-value">{oiLabel}</div>
           </div>
           <div>
-            <div className="rh-stat-label">Traders</div>
+            <div className="rh-stat-label">{t("TRADERS")}</div>
             <div className="rh-stat-value">—</div>
           </div>
           <div>
-            <div className="rh-stat-label">Closes</div>
+            <div className="rh-stat-label">{t("CLOSES")}</div>
             <div className="rh-stat-value">{closesLabel}</div>
           </div>
         </div>

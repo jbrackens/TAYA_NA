@@ -19,6 +19,7 @@
  */
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { deterministicDelta, sparklinePath } from "./utils/spark";
 
@@ -52,6 +53,7 @@ function categoryFromTicker(ticker: string): string {
 }
 
 export function TrendingSidebar({ markets, limit = 6 }: Props) {
+  const { t } = useTranslation("prediction");
   if (!markets || markets.length === 0) return null;
   const rows = markets.slice(0, limit);
 
@@ -153,9 +155,9 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
         }
         .tm-foot a:hover { text-decoration: underline; }
       `}</style>
-      <aside className="tm" aria-label="Top movers">
+      <aside className="tm" aria-label={t("TOP_MOVERS")}>
         <div className="tm-h">
-          <h3>Top movers</h3>
+          <h3>{t("TOP_MOVERS")}</h3>
           <span className="live">
             <span className="tm-dot" aria-hidden="true" />
             24H
@@ -202,7 +204,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
           })}
         </ul>
         <div className="tm-foot">
-          <a href="/discover">View all trending →</a>
+          <a href="/discover">{t("VIEW_ALL_TRENDING")} →</a>
         </div>
       </aside>
     </>
