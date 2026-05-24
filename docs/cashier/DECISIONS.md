@@ -26,6 +26,10 @@ The deposit watcher is a self-contained, tested component. I did not start it fr
 editing the shared gateway bootstrap unattended — when I can't run the full stack
 (auth service, etc.) to verify — is a risk I won't take overnight. Wiring is a
 small, guarded follow-up: start the watcher only when `rail.Configured()` is true.
+**UPDATE 2026-05-24: now wired + boot-verified (with you present) — RegisterRoutes
+mounts the rail, runs EnsureCryptoSchema, and starts the watcher fail-closed;
+/healthz 200, rail mounted configured=false network=bsc asset=USDT, watcher
+disabled. Also aligned the rail's default network/asset to bsc/USDT.**
 
 ## D4 — snake-game analyzed for reuse: nothing reusable (different chain/custody/auth/decimals)
 You asked me to check `/Users/john/Sandbox/snake-game` (doraresearch/snake-game)
