@@ -142,5 +142,14 @@
   "CAROUSEL_COUNT": "{{index}} / {{count}}",
   "MARKET_UNAVAILABLE": "市場不可用",
   "MARKET_OPEN_ERROR": "無法開啟這個市場",
-  "BACK_TO_MARKETS": "返回市場"
+  "BACK_TO_MARKETS": "返回市場",
+  "DISCOVER_LOADING": "正在載入發現頁...",
+  "DISCOVER_LOAD_ERROR_TITLE": "無法載入發現頁",
+  "DISCOVER_EMPTY_TITLE": "暫時沒有內容",
+  "DISCOVER_EMPTY_COPY": "熱門和即將結束的列表會在市場有活動後自動更新。",
+  "DISCOVER_EYEBROW": "發現",
+  "DISCOVER_TITLE": "現在正在變化的市場",
+  "DISCOVER_SUBTITLE": "按24小時活躍度和最早結束時間排序的市場。",
+  "DISCOVER_TRENDING": "熱門",
+  "DISCOVER_CLOSING_SOON": "即將結束"
 }

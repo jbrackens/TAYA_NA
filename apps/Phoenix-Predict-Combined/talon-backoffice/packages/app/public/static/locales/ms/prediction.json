@@ -142,5 +142,14 @@
   "CAROUSEL_COUNT": "{{index}} daripada {{count}}",
   "MARKET_UNAVAILABLE": "Pasaran tidak tersedia",
   "MARKET_OPEN_ERROR": "Kami tidak dapat membuka pasaran itu",
-  "BACK_TO_MARKETS": "Kembali ke Pasaran"
+  "BACK_TO_MARKETS": "Kembali ke Pasaran",
+  "DISCOVER_LOADING": "Memuatkan Discover...",
+  "DISCOVER_LOAD_ERROR_TITLE": "Tidak dapat memuatkan Discover",
+  "DISCOVER_EMPTY_TITLE": "Belum ada apa-apa untuk dipaparkan",
+  "DISCOVER_EMPTY_COPY": "Senarai trending dan hampir tutup akan muncul apabila pasaran mula mendapat aktiviti.",
+  "DISCOVER_EYEBROW": "Discover",
+  "DISCOVER_TITLE": "Apa yang sedang bergerak sekarang",
+  "DISCOVER_SUBTITLE": "Pasaran disusun mengikut aktiviti 24 jam dan kontrak yang paling hampir tutup.",
+  "DISCOVER_TRENDING": "Trending",
+  "DISCOVER_CLOSING_SOON": "Hampir tutup"
 }

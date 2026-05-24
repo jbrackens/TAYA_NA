@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SectionHead } from "../components/prediction/SectionHead";
 import { MarketGrid } from "../components/prediction/MarketGrid";
 import type { DiscoveryResponse } from "@phoenix-ui/api-client/src/prediction-types";
@@ -18,6 +19,7 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 const api = createPredictionClient();
 
 export default function DiscoverPage() {
+  const { t } = useTranslation("prediction");
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function DiscoverPage() {
           textAlign: "center",
         }}
       >
-        Loading discovery…
+        {t("DISCOVER_LOADING")}
       </div>
     );
   }
@@ -76,7 +78,7 @@ export default function DiscoverPage() {
             color: "var(--t1)",
           }}
         >
-          Couldn't load discovery
+          {t("DISCOVER_LOAD_ERROR_TITLE")}
         </h2>
         <p style={{ margin: "8px 0 0", color: "var(--t3)", fontSize: 13 }}>
           {error}
@@ -108,10 +110,10 @@ export default function DiscoverPage() {
             color: "var(--t1)",
           }}
         >
-          Nothing to show yet
+          {t("DISCOVER_EMPTY_TITLE")}
         </h2>
         <p style={{ margin: "8px 0 0", color: "var(--t3)", fontSize: 13 }}>
-          Trending and closing-soon lists populate as markets attract activity.
+          {t("DISCOVER_EMPTY_COPY")}
         </p>
       </div>
     );
@@ -147,23 +149,26 @@ export default function DiscoverPage() {
         }
       `}</style>
       <header className="pred-discover-intro">
-        <p className="pred-discover-eyebrow">Discover</p>
-        <h1 className="pred-discover-title">What's moving right now</h1>
+        <p className="pred-discover-eyebrow">{t("DISCOVER_EYEBROW")}</p>
+        <h1 className="pred-discover-title">{t("DISCOVER_TITLE")}</h1>
         <p className="pred-discover-sub">
-          Markets ranked by 24h activity and the contracts closing soonest.
+          {t("DISCOVER_SUBTITLE")}
         </p>
       </header>
 
       {trending.length > 0 && (
         <>
-          <SectionHead title="Trending" count={trending.length} />
+          <SectionHead title={t("DISCOVER_TRENDING")} count={trending.length} />
           <MarketGrid markets={trending} />
         </>
       )}
 
       {closingSoon.length > 0 && (
         <>
-          <SectionHead title="Closing soon" count={closingSoon.length} />
+          <SectionHead
+            title={t("DISCOVER_CLOSING_SOON")}
+            count={closingSoon.length}
+          />
           <MarketGrid markets={closingSoon} />
         </>
       )}

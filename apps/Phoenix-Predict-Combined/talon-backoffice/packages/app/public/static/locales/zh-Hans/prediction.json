@@ -142,5 +142,14 @@
   "CAROUSEL_COUNT": "{{index}} / {{count}}",
   "MARKET_UNAVAILABLE": "市场不可用",
   "MARKET_OPEN_ERROR": "无法打开这个市场",
-  "BACK_TO_MARKETS": "返回市场"
+  "BACK_TO_MARKETS": "返回市场",
+  "DISCOVER_LOADING": "正在加载发现页...",
+  "DISCOVER_LOAD_ERROR_TITLE": "无法加载发现页",
+  "DISCOVER_EMPTY_TITLE": "暂时没有内容",
+  "DISCOVER_EMPTY_COPY": "热门和即将结束的列表会在市场有活动后自动更新。",
+  "DISCOVER_EYEBROW": "发现",
+  "DISCOVER_TITLE": "现在正在变化的市场",
+  "DISCOVER_SUBTITLE": "按24小时活跃度和最早结束时间排序的市场。",
+  "DISCOVER_TRENDING": "热门",
+  "DISCOVER_CLOSING_SOON": "即将结束"
 }

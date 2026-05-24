@@ -144,5 +144,14 @@
   "CAROUSEL_COUNT": "{{index}} of {{count}}",
   "MARKET_UNAVAILABLE": "Market unavailable",
   "MARKET_OPEN_ERROR": "We couldn't open that market",
-  "BACK_TO_MARKETS": "Back to Markets"
+  "BACK_TO_MARKETS": "Back to Markets",
+  "DISCOVER_LOADING": "Loading discovery...",
+  "DISCOVER_LOAD_ERROR_TITLE": "Couldn't load discovery",
+  "DISCOVER_EMPTY_TITLE": "Nothing to show yet",
+  "DISCOVER_EMPTY_COPY": "Trending and closing-soon lists populate as markets attract activity.",
+  "DISCOVER_EYEBROW": "Discover",
+  "DISCOVER_TITLE": "What's moving right now",
+  "DISCOVER_SUBTITLE": "Markets ranked by 24h activity and the contracts closing soonest.",
+  "DISCOVER_TRENDING": "Trending",
+  "DISCOVER_CLOSING_SOON": "Closing soon"
 }

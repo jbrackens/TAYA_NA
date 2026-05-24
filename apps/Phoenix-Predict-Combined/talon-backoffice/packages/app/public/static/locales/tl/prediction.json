@@ -144,5 +144,14 @@
   "CAROUSEL_COUNT": "{{index}} sa {{count}}",
   "MARKET_UNAVAILABLE": "Hindi available ang market",
   "MARKET_OPEN_ERROR": "Hindi namin mabuksan ang market na iyon",
-  "BACK_TO_MARKETS": "Bumalik sa Markets"
+  "BACK_TO_MARKETS": "Bumalik sa Markets",
+  "DISCOVER_LOADING": "Naglo-load ng Discover...",
+  "DISCOVER_LOAD_ERROR_TITLE": "Hindi ma-load ang Discover",
+  "DISCOVER_EMPTY_TITLE": "Wala pang ipapakita",
+  "DISCOVER_EMPTY_COPY": "Lalabas dito ang trending at malapit nang magsarang markets kapag may activity na.",
+  "DISCOVER_EYEBROW": "Discover",
+  "DISCOVER_TITLE": "Ano ang gumagalaw ngayon",
+  "DISCOVER_SUBTITLE": "Mga market na naka-rank ayon sa 24h activity at kung alin ang pinakamalapit magsara.",
+  "DISCOVER_TRENDING": "Trending",
+  "DISCOVER_CLOSING_SOON": "Malapit magsara"
 }

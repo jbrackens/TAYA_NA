@@ -142,5 +142,14 @@
   "CAROUSEL_COUNT": "{{index}} dari {{count}}",
   "MARKET_UNAVAILABLE": "Pasar tidak tersedia",
   "MARKET_OPEN_ERROR": "Kami tidak bisa membuka pasar itu",
-  "BACK_TO_MARKETS": "Kembali ke Pasar"
+  "BACK_TO_MARKETS": "Kembali ke Pasar",
+  "DISCOVER_LOADING": "Memuat Discover...",
+  "DISCOVER_LOAD_ERROR_TITLE": "Tidak bisa memuat Discover",
+  "DISCOVER_EMPTY_TITLE": "Belum ada yang ditampilkan",
+  "DISCOVER_EMPTY_COPY": "Daftar trending dan yang segera tutup akan muncul saat pasar mulai aktif.",
+  "DISCOVER_EYEBROW": "Discover",
+  "DISCOVER_TITLE": "Yang sedang bergerak sekarang",
+  "DISCOVER_SUBTITLE": "Pasar diurutkan berdasarkan aktivitas 24 jam dan kontrak yang paling cepat tutup.",
+  "DISCOVER_TRENDING": "Trending",
+  "DISCOVER_CLOSING_SOON": "Segera tutup"
 }
