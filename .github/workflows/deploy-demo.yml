@@ -149,6 +149,43 @@ jobs:
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d rocketchat'
 
+      - name: Configure Rocket.Chat public read
+        # Existing Rocket.Chat volumes can keep an older admin password, so the
+        # REST login below is not a reliable place to enforce public-read
+        # posture. Write the two launch-critical settings directly to Mongo and
+        # restart Rocket.Chat so anonymous visitors can read #global while
+        # anonymous posting stays disabled.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            export JWT_SECRET=unused &&
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              exec -T rocketchat-mongo mongosh --quiet rocketchat --eval "
+                db.rocketchat_settings.updateOne(
+                  {_id: \"Accounts_AllowAnonymousRead\"},
+                  {\$set: {value: true}},
+                  {upsert: false}
+                );
+                db.rocketchat_settings.updateOne(
+                  {_id: \"Accounts_AllowAnonymousWrite\"},
+                  {\$set: {value: false}},
+                  {upsert: false}
+                );
+                printjson(db.rocketchat_settings.find(
+                  {_id: {\$in: [\"Accounts_AllowAnonymousRead\", \"Accounts_AllowAnonymousWrite\"]}},
+                  {_id: 1, value: 1}
+                ).toArray());
+              " &&
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml restart rocketchat &&
+            for i in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:3002/api/info || echo 000)
+              [ "$code" = "200" ] && { echo "Rocket.Chat restarted with public-read settings"; exit 0; }
+              echo "attempt $i: Rocket.Chat /api/info=$code after settings restart, retrying..."; sleep 5
+            done
+            echo "Rocket.Chat did not return 200 after public-read settings restart"
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 80 rocketchat || true
+            exit 1'
+
       - name: Provision Rocket.Chat global room
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
