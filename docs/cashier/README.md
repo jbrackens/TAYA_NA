@@ -82,7 +82,7 @@ WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disabl
 
 **Also built (2026-05-24):**
 - Gateway wiring — `RegisterRoutes` mounts the rail, runs `EnsureCryptoSchema`, and starts the watcher (all fail-closed); boot-verified (`/healthz` 200, rail mounted `configured=false network=bsc asset=USDT`, watcher disabled).
-- Deposit UI shell — `CryptoDepositCard` + `crypto-client` wired into the cashier Crypto tab, fail-closed ("coming soon" until configured); typechecks clean. **Visual QA pending; QR is a follow-up (add qrcode.react).**
+- Deposit UI — `CryptoDepositCard` + `crypto-client` wired into the cashier Crypto tab, fail-closed ("coming soon" until configured). **Visual-QA'd in the worktree dev server**: the ready state renders QR (`qrcode.react`) + address + copy + the wrong-token/network warning.
 
 **Not yet built (blocked / deferred):**
 - Deposit-address derivation + withdrawal signer — blocked on the custody-source decision below.

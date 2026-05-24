@@ -12,11 +12,11 @@ import { QRCodeSVG } from "qrcode.react";
 
 type LoadState = "loading" | "coming-soon" | "ready" | "error";
 
-// Deposit UI shell for the custodial BSC USDT rail. Wires to the real
+// Deposit card for the custodial BSC USDT rail. Wires to the real
 // /api/v1/payments/crypto/* endpoints and is fail-closed: when the rail is not
-// configured it shows "coming soon" rather than a fake address.
-// VISUAL QA PENDING — typechecked, not yet visually verified. A QR of `address`
-// is a flagged follow-up (add qrcode.react) to confirm layout during QA.
+// configured it shows "coming soon" rather than a fake address. Visual-QA'd in
+// the worktree dev server — the ready state renders QR + address + copy + the
+// wrong-token/network warning.
 export default function CryptoDepositCard() {
   const [state, setState] = useState<LoadState>("loading");
   const [config, setConfig] = useState<CryptoRailConfig | null>(null);
