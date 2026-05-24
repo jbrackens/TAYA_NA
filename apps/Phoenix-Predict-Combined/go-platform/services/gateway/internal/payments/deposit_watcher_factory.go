@@ -34,6 +34,7 @@ func NewDepositWatcherFromEnv(deps WatcherDeps) (*DepositWatcher, bool, error) {
 		TokenContract: contract,
 		TokenDecimals: int(envInt64("CRYPTO_ASSET_DECIMALS", 18)),
 		Confirmations: int(envInt64("CRYPTO_CONFIRMATIONS", 12)),
+		MaxBlockRange: envInt64("CRYPTO_MAX_BLOCK_RANGE", 0),
 	}
 	w := NewDepositWatcher(cfg, NewEVMClient(rpc), NewCryptoDepositStore(deps.DB), deps.Ledger)
 	return w, true, nil

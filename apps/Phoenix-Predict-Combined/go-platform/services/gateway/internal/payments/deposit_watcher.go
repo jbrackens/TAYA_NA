@@ -24,7 +24,12 @@ type WatcherConfig struct {
 	TokenContract string
 	TokenDecimals int
 	Confirmations int
+	MaxBlockRange int64 // max blocks per eth_getLogs window; 0 -> defaultMaxBlockRange
 }
+
+// defaultMaxBlockRange caps each eth_getLogs window. Most RPC providers reject
+// wide ranges, so a cold start or long downtime must be scanned in chunks.
+const defaultMaxBlockRange = 2000
 
 // DepositWatcher detects ERC-20 transfers to user deposit addresses and credits
 // the cents ledger exactly once, after finality. Fail-closed: it credits only
@@ -56,16 +61,29 @@ func (w *DepositWatcher) Sync(ctx context.Context, fromBlock int64) (int64, erro
 		return fromBlock, fmt.Errorf("deposit owners: %w", err)
 	}
 	if len(owners) > 0 {
-		logs, err := w.chain.GetLogs(ctx, LogFilter{
-			FromBlock: fromBlock,
-			ToBlock:   head,
-			Address:   w.cfg.TokenContract,
-			Topics:    []any{erc20TransferTopic, nil, addressTopics(owners)},
-		})
-		if err != nil {
-			return fromBlock, fmt.Errorf("get logs: %w", err)
+		topics := []any{erc20TransferTopic, nil, addressTopics(owners)}
+		maxRange := w.cfg.MaxBlockRange
+		if maxRange <= 0 {
+			maxRange = defaultMaxBlockRange
 		}
-		w.recordTransfers(ctx, logs, owners)
+		for start := fromBlock; start <= head; start += maxRange {
+			end := start + maxRange - 1
+			if end > head {
+				end = head
+			}
+			logs, err := w.chain.GetLogs(ctx, LogFilter{
+				FromBlock: start,
+				ToBlock:   end,
+				Address:   w.cfg.TokenContract,
+				Topics:    topics,
+			})
+			if err != nil {
+				// Return start so the cursor (if any) is not advanced past the
+				// unscanned chunk; the next cycle retries from here.
+				return start, fmt.Errorf("get logs [%d,%d]: %w", start, end, err)
+			}
+			w.recordTransfers(ctx, logs, owners)
+		}
 	}
 	w.creditFinalized(ctx, head)
 	return head + 1, nil

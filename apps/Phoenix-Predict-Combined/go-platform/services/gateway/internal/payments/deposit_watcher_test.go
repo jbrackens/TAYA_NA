@@ -10,12 +10,16 @@ import (
 )
 
 type fakeChain struct {
-	head int64
-	logs []Log
+	head   int64
+	logs   []Log
+	ranges [][2]int64 // (from,to) of each GetLogs call, for chunk assertions
 }
 
-func (f *fakeChain) BlockNumber(context.Context) (int64, error)        { return f.head, nil }
-func (f *fakeChain) GetLogs(context.Context, LogFilter) ([]Log, error) { return f.logs, nil }
+func (f *fakeChain) BlockNumber(context.Context) (int64, error) { return f.head, nil }
+func (f *fakeChain) GetLogs(_ context.Context, filt LogFilter) ([]Log, error) {
+	f.ranges = append(f.ranges, [2]int64{filt.FromBlock, filt.ToBlock})
+	return f.logs, nil
+}
 
 // fakeCrediter mimics wallet.Service.Credit: idempotent on key (a replay returns
 // the original entry without re-recording), so len(calls) is the count of
