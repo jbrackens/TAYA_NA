@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/phoenixbot/phoenix-gateway/internal/config"
@@ -39,6 +40,16 @@ func main() {
 	})
 	defer redisClient.Close()
 
+	var auditDB *pgxpool.Pool
+	if cfg.Database.URL != "" {
+		auditDB, err = pgxpool.New(context.Background(), cfg.Database.URL)
+		if err != nil {
+			logger.Error("failed to create database pool", slog.Any("error", err))
+			os.Exit(1)
+		}
+		defer auditDB.Close()
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	if err := redisClient.Ping(ctx).Err(); err != nil {
 		cancel()
@@ -50,7 +61,7 @@ func main() {
 	routeRepo := repository.NewStaticRouteRepository()
 	rateLimitRepo := repository.NewRedisRateLimitRepository(redisClient)
 	gatewayService := service.NewGatewayService(logger, cfg, routeRepo, rateLimitRepo)
-	h := handlers.NewHandlers(logger, redisClient, gatewayService)
+	h := handlers.NewHandlers(logger, redisClient, auditDB, gatewayService)
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.RealIP)
@@ -81,6 +92,8 @@ func main() {
 	r.Get("/api/v1/prediction/markets", h.ProxyAuthRequest)
 	r.Get("/api/v1/prediction/markets/{marketID}", h.ProxyAuthRequest)
 	r.Post("/api/v1/prediction/ticket/preview", h.ProxyAuthRequest)
+	r.Get("/api/v1/chat/rooms/resolve", h.ResolveChatRoom)
+	r.Get("/api/v1/chat/rooms/resolve/", h.ResolveChatRoom)
 	r.Get("/terms", h.ProxyAuthRequest)
 	r.Get("/api/v1/terms/current", h.ProxyAuthRequest)
 	r.Get("/api/v1/users/{userID}/profile", h.ProxyAuthRequest)
@@ -103,6 +116,10 @@ func main() {
 		r.Use(middleware.JWTAuth(logger, cfg.Auth.JWTSecretKey, cfg.Auth.JWTIssuer, cfg.Auth.JWTAudience))
 		r.With(middleware.FixedRateLimit(logger, gatewayService, "auth-refresh")).Post("/auth/refresh", h.ProxyAuthRequest)
 		r.With(middleware.FixedRateLimit(logger, gatewayService, "auth-logout")).Post("/auth/logout", h.ProxyAuthRequest)
+		r.With(middleware.FixedRateLimit(logger, gatewayService, "chat-session")).Post("/api/v1/chat/session", h.CreateChatSession)
+		r.With(middleware.FixedRateLimit(logger, gatewayService, "chat-session")).Post("/api/v1/chat/session/", h.CreateChatSession)
+		r.With(middleware.FixedRateLimit(logger, gatewayService, "chat-report")).Post("/api/v1/chat/report", h.ReportChatMessage)
+		r.With(middleware.FixedRateLimit(logger, gatewayService, "chat-report")).Post("/api/v1/chat/report/", h.ReportChatMessage)
 
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireRoles("admin"))
@@ -110,6 +127,8 @@ func main() {
 			r.With(middleware.FixedRateLimit(logger, gatewayService, "admin")).Get("/api/v1/rate-limits", h.GetRateLimits)
 			r.With(middleware.FixedRateLimit(logger, gatewayService, "admin")).Get("/api/v1/metrics", h.GetMetrics)
 			r.With(middleware.FixedRateLimit(logger, gatewayService, "admin")).Get("/api/v1/config", h.GetConfig)
+			r.With(middleware.FixedRateLimit(logger, gatewayService, "admin")).Post("/api/v1/chat/users/{userID}/deactivate", h.DeactivateChatUser)
+			r.With(middleware.FixedRateLimit(logger, gatewayService, "admin")).Post("/api/v1/chat/users/{userID}/deactivate/", h.DeactivateChatUser)
 		})
 
 		r.HandleFunc("/*", h.ProxyRequest)

@@ -2,8 +2,8 @@
   "$schema": "phoenix-feature-manifest-v1",
   "generated": "2026-04-13",
   "summary": {
-    "total_features": 98,
-    "real": 98,
+    "total_features": 100,
+    "real": 100,
     "stubbed": 0,
     "missing": 0
   },
@@ -177,6 +177,12 @@
     }
   ],
   "components": [
+    {
+      "name": "ChatSidebar",
+      "status": "REAL",
+      "module": "chat",
+      "notes": "Feature-gated Rocket.Chat iframe shell with desktop collapse, mobile external open, provider unavailable state, and Hula-owned report form"
+    },
     {
       "legacy_path": "components/auth/login",
       "app_equivalent": "app/components/LoginForm.tsx",
@@ -551,6 +557,12 @@
     }
   ],
   "services": [
+    {
+      "name": "chat-client",
+      "status": "REAL",
+      "module": "chat",
+      "notes": "Gateway-backed room resolution, session creation, and report submission client"
+    },
     {
       "legacy_path": "services/api/api-service",
       "app_equivalent": "app/lib/api/ (multiple clients)",

@@ -67,3 +67,13 @@ export const FEATURE_KYC = process.env.NEXT_PUBLIC_FEATURE_KYC === "true";
  *     already gated by FEATURE_RG.
  */
 export const FEATURE_LIMITS = process.env.NEXT_PUBLIC_FEATURE_LIMITS === "true";
+
+/**
+ * Community chat surface. Off by default until the Rocket.Chat feasibility
+ * spike proves iframe/session/cookie behavior and moderation controls.
+ */
+export const FEATURE_CHAT = process.env.NEXT_PUBLIC_FEATURE_CHAT === "true";
+
+export const CHAT_PUBLIC_URL = (
+  process.env.NEXT_PUBLIC_CHAT_PUBLIC_URL || ""
+).replace(/\/$/, "");

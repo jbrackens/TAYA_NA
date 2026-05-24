@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/phoenixbot/phoenix-gateway/internal/middleware"
@@ -21,11 +22,12 @@ import (
 type Handlers struct {
 	logger      *slog.Logger
 	redisClient *redis.Client
+	auditDB     *pgxpool.Pool
 	service     *service.GatewayService
 }
 
-func NewHandlers(logger *slog.Logger, redisClient *redis.Client, gatewayService *service.GatewayService) *Handlers {
-	return &Handlers{logger: logger, redisClient: redisClient, service: gatewayService}
+func NewHandlers(logger *slog.Logger, redisClient *redis.Client, auditDB *pgxpool.Pool, gatewayService *service.GatewayService) *Handlers {
+	return &Handlers{logger: logger, redisClient: redisClient, auditDB: auditDB, service: gatewayService}
 }
 
 func (h *Handlers) RootLanding(w http.ResponseWriter, r *http.Request) {

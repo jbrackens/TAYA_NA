@@ -10,7 +10,7 @@ import (
 )
 
 func TestRootLandingReturnsPublicDemoPage(t *testing.T) {
-	h := NewHandlers(slog.New(slog.NewTextHandler(io.Discard, nil)), nil, nil)
+	h := NewHandlers(slog.New(slog.NewTextHandler(io.Discard, nil)), nil, nil, nil)
 	req := httptest.NewRequest(http.MethodGet, "https://demo.99rtp.io/", nil)
 	rec := httptest.NewRecorder()
 
@@ -36,7 +36,7 @@ func TestRootLandingReturnsPublicDemoPage(t *testing.T) {
 }
 
 func TestRootLandingSupportsHeadRequests(t *testing.T) {
-	h := NewHandlers(slog.New(slog.NewTextHandler(io.Discard, nil)), nil, nil)
+	h := NewHandlers(slog.New(slog.NewTextHandler(io.Discard, nil)), nil, nil, nil)
 	req := httptest.NewRequest(http.MethodHead, "https://demo.99rtp.io/", nil)
 	rec := httptest.NewRecorder()
 

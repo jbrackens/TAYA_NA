@@ -234,6 +234,10 @@ func (s *GatewayService) AuthConfig() config.AuthConfig {
 	return s.cfg.Auth
 }
 
+func (s *GatewayService) ChatConfig() config.ChatConfig {
+	return s.cfg.Chat
+}
+
 func (s *GatewayService) Environment() string {
 	return s.cfg.Server.Environment
 }

@@ -2,8 +2,42 @@ const path = require("path");
 // i18n config removed — incompatible with Next.js 13.5 App Router
 // const { i18n } = require("./next-i18next.config");
 
+const chatOrigin = (() => {
+  const raw = process.env.NEXT_PUBLIC_CHAT_PUBLIC_URL || "";
+  try {
+    return raw ? new URL(raw).origin : "";
+  } catch {
+    return "";
+  }
+})();
+const realtimeOrigin = (() => {
+  const raw = process.env.NEXT_PUBLIC_WS_URL || "";
+  try {
+    return raw ? new URL(raw).origin : "";
+  } catch {
+    return "";
+  }
+})();
+
+const frameSrc = ["'self'", "https://www.googletagmanager.com"];
+const connectSrc = ["'self'"];
+if (chatOrigin) {
+  frameSrc.push(chatOrigin);
+  connectSrc.push(chatOrigin, chatOrigin.replace(/^http/, "ws"));
+}
+if (realtimeOrigin) {
+  connectSrc.push(realtimeOrigin);
+}
+
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "frame-ancestors 'self'",
+      `frame-src ${frameSrc.join(" ")}`,
+      `connect-src ${connectSrc.join(" ")}`,
+    ].join("; "),
+  },
 ];
 
 module.exports = {

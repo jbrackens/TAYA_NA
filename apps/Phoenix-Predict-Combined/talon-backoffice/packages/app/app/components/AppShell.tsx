@@ -22,6 +22,7 @@ import { TopBar } from "./prediction/TopBar";
 import { PredictFooter } from "./prediction/PredictFooter";
 import { BackendStatusBanner } from "./BackendStatusBanner";
 import MobileTabBar from "./MobileTabBar";
+import { ChatSidebar } from "./chat/ChatSidebar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -50,6 +51,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   </main>
                   <PredictFooter />
                   <MobileTabBar />
+                  <ChatSidebar />
                 </div>
               )}
             </AuthProvider>

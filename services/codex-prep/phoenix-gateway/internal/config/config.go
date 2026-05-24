@@ -10,10 +10,12 @@ import (
 
 type Config struct {
 	Server     ServerConfig
+	Database   DatabaseConfig
 	Redis      RedisConfig
 	Auth       AuthConfig
 	Services   map[string]ServiceConfig
 	Realtime   ServiceConfig
+	Chat       ChatConfig
 	Features   FeatureFlags
 	Limits     PlatformLimits
 	RateLimits map[string]RateLimitPolicy
@@ -29,6 +31,10 @@ type ServerConfig struct {
 	HTTPAllowedOrigins      []string
 	WebsocketAllowedOrigins []string
 	WebsocketRealtimeProxy  bool
+}
+
+type DatabaseConfig struct {
+	URL string
 }
 
 type RedisConfig struct {
@@ -49,6 +55,18 @@ type ServiceConfig struct {
 	Name       string `json:"name"`
 	BaseURL    string `json:"base_url"`
 	HealthPath string `json:"health_path"`
+}
+
+type ChatConfig struct {
+	Enabled                  bool
+	Provider                 string
+	PublicURL                string
+	InternalURL              string
+	DefaultRoom              string
+	IframePath               string
+	RocketChatAdminUserID    string
+	RocketChatAdminAuthToken string
+	SessionTokenTTL          time.Duration
 }
 
 type FeatureFlags struct {
@@ -81,6 +99,9 @@ func Load() (*Config, error) {
 			HTTPAllowedOrigins:      httpAllowedOrigins(getEnvCSV("HTTP_ALLOWED_ORIGINS"), getEnv("ENVIRONMENT", "development")),
 			WebsocketAllowedOrigins: getEnvCSV("WEBSOCKET_ALLOWED_ORIGINS"),
 			WebsocketRealtimeProxy:  getEnvBool("WEBSOCKET_REALTIME_PROXY_ENABLED", false),
+		},
+		Database: DatabaseConfig{
+			URL: getEnv("DATABASE_URL", ""),
 		},
 		Redis: RedisConfig{
 			Addr:         getEnv("REDIS_ADDR", fmt.Sprintf("%s:%d", getEnv("REDIS_HOST", "localhost"), getEnvInt("REDIS_PORT", 6379))),
@@ -124,11 +145,24 @@ func Load() (*Config, error) {
 			"phoenix-config":         serviceConfig("PHOENIX_CONFIG_URL", "http://localhost:8017"),
 		},
 		Realtime: serviceConfig("PHOENIX_REALTIME_URL", "http://localhost:8018"),
+		Chat: ChatConfig{
+			Enabled:                  getEnvBool("CHAT_ENABLED", false),
+			Provider:                 getEnv("CHAT_PROVIDER", "rocketchat"),
+			PublicURL:                strings.TrimRight(getEnv("CHAT_PUBLIC_URL", ""), "/"),
+			InternalURL:              strings.TrimRight(getEnv("CHAT_INTERNAL_URL", getEnv("CHAT_PUBLIC_URL", "")), "/"),
+			DefaultRoom:              getEnv("CHAT_DEFAULT_ROOM", "global"),
+			IframePath:               getEnv("CHAT_IFRAME_PATH", "/channel/%s?layout=embedded"),
+			RocketChatAdminUserID:    getEnv("ROCKETCHAT_ADMIN_USER_ID", ""),
+			RocketChatAdminAuthToken: getEnv("ROCKETCHAT_ADMIN_AUTH_TOKEN", ""),
+			SessionTokenTTL:          getEnvDuration("CHAT_SESSION_TOKEN_TTL", time.Hour),
+		},
 		RateLimits: map[string]RateLimitPolicy{
 			"auth-login":   {Name: "auth-login", Requests: 5, Window: time.Minute},
 			"auth-refresh": {Name: "auth-refresh", Requests: 20, Window: time.Minute},
 			"auth-logout":  {Name: "auth-logout", Requests: 20, Window: time.Minute},
 			"admin":        {Name: "admin", Requests: 60, Window: time.Minute},
+			"chat-session": {Name: "chat-session", Requests: 12, Window: time.Hour},
+			"chat-report":  {Name: "chat-report", Requests: 20, Window: time.Hour},
 			"proxy":        {Name: "proxy", Requests: 300, Window: time.Minute},
 		},
 	}

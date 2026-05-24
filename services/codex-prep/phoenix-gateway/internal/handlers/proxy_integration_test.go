@@ -159,7 +159,7 @@ func buildGatewayRouter(t *testing.T, marketURL, walletURL, bettingURL, configUR
 	routeRepo := repository.NewStaticRouteRepository()
 	rateLimitRepo := repository.NewMemoryRateLimitRepository()
 	gatewayService := service.NewGatewayService(logger, cfg, routeRepo, rateLimitRepo)
-	h := NewHandlers(logger, nil, gatewayService)
+	h := NewHandlers(logger, nil, nil, gatewayService)
 
 	r := chi.NewRouter()
 	r.Use(chiMiddleware.RealIP)
