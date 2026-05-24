@@ -400,10 +400,24 @@ decision-independent pieces (office test runner is **vitest**, not the broken le
 - `app/api/market-bot/draft/route.ts` (App Router; self-authenticating per §7.3 using the
   `adminFetch`/cookie+CSRF pattern) — needs the seam + can't be e2e-tested without LLM keys.
 
-**Default decisions taken (confirm or override before resuming Phase B):**
-1. Provider layer = Vercel AI SDK (`createOpenAICompatible` + `@ai-sdk/anthropic`), per research.
-2. SSRF approach = in-process `request-filtering-agent` + `got` + per-redirect re-validation
-   (no egress proxy exists in the dev setup); revisit if an egress proxy becomes available.
-3. Routine tier = local OSS via Ollama (e.g. `qwen2.5`) at `http://localhost:11434/v1`; hard
-   tier = `claude-sonnet-4-6`. All via env (`AI_ROUTINE_*` / `AI_HARD_*`).
-Risk classification + the block gate stay on the hard tier (never the cheap tier).
+**LOCKED decisions — John approved, Codex-concurred 2026-05-24 (supersedes §13 items 2 & 3):**
+1. **Provider layer = Vercel AI SDK** (`createOpenAICompatible` + `@ai-sdk/anthropic`,
+   `createProviderRegistry`/`customProvider`, `wrapLanguageModel` audit middleware,
+   `generateObject`). Caveat: pin exact provider/model IDs, centralize registry config, keep
+   audit logging non-blocking but failure-visible.
+2. **SSRF (dev/Phase B) = in-process** `request-filtering-agent` + `got` + per-redirect
+   re-validation with the connection pinned to the resolved IP; scheme allowlist, redirect
+   cap, timeout, max-bytes; `got` isolated to the urlFetch module.
+   **RELEASE GATE (Codex):** this is NOT production egress isolation — server-side URL fetch
+   must be blocked/degraded in production until an isolated egress proxy exists, and the
+   redirect + DNS-pinning paths need integration tests before prod.
+3. **Tiers:** routine (extraction only) = local/self-hosted OSS, default `qwen2.5` via Ollama
+   at `http://localhost:11434/v1`; hard (drafting + risk classification + block/publish gate +
+   QA) = `claude-sonnet-4-6`; env-configured (`AI_ROUTINE_*` / `AI_HARD_*`). Risk + block gate
+   NEVER on the cheap tier. Caveat: pin exact OSS model/version, allowlist the routine
+   endpoint, and handle Ollama native `format` vs OpenAI `response_format` explicitly (Ollama's
+   OpenAI endpoint ignores `json_schema`). Structured output constrained at the serving engine +
+   zod net + at most one repair-retry.
+
+Still open (separate from the 3 above): §13 item 1 — whether AI/news markets must use the
+propose→challenge→finalize window vs. allowing direct admin resolution.
