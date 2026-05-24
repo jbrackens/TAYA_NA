@@ -34,7 +34,11 @@ RUN yarn install --frozen-lockfile
 
 ARG module_name
 ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_FEATURE_CHAT
+ARG NEXT_PUBLIC_CHAT_PUBLIC_URL
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NEXT_PUBLIC_FEATURE_CHAT=$NEXT_PUBLIC_FEATURE_CHAT
+ENV NEXT_PUBLIC_CHAT_PUBLIC_URL=$NEXT_PUBLIC_CHAT_PUBLIC_URL
 # Builds workspace deps (utils, api-client) then the target package.
 RUN yarn lerna run build --scope @phoenix-ui/$module_name --include-dependencies
 

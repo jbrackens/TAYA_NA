@@ -32,6 +32,7 @@ export function ChatSidebar() {
   const [roomId, setRoomId] = useState("global");
   const [message, setMessage] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
+  const [reportEnabled, setReportEnabled] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -54,12 +55,18 @@ export function ChatSidebar() {
     }
   };
 
+  const publicGlobalUrl = useMemo(() => {
+    if (!CHAT_PUBLIC_URL) return "";
+    return `${CHAT_PUBLIC_URL}/channel/global`;
+  }, []);
+
   useEffect(() => {
     if (!FEATURE_CHAT || collapsed || !isDesktop || isLoading) return;
     let cancelled = false;
     const load = async () => {
       setState("loading");
       setMessage("");
+      setReportEnabled(false);
       try {
         const room = await resolveChatRoom();
         if (cancelled) return;
@@ -78,24 +85,30 @@ export function ChatSidebar() {
         const session = await createChatSession();
         if (cancelled) return;
         setEmbedUrl(session.embedUrl);
+        setReportEnabled(true);
         setState("ready");
       } catch (err) {
         if (cancelled) return;
         logger.warn("Chat", "chat initialization failed", err);
-        setState("unavailable");
-        setMessage("Chat unavailable");
+        if (publicGlobalUrl) {
+          setRoomId("global");
+          setEmbedUrl(publicGlobalUrl);
+          setState("ready");
+        } else {
+          setState("unavailable");
+          setMessage("Chat unavailable");
+        }
       }
     };
     void load();
     return () => {
       cancelled = true;
     };
-  }, [collapsed, isAuthenticated, isDesktop, isLoading]);
+  }, [collapsed, isAuthenticated, isDesktop, isLoading, publicGlobalUrl]);
 
   const mobileChatUrl = useMemo(() => {
-    if (!CHAT_PUBLIC_URL) return "";
-    return `${CHAT_PUBLIC_URL}/channel/global`;
-  }, []);
+    return publicGlobalUrl;
+  }, [publicGlobalUrl]);
 
   if (!FEATURE_CHAT) return null;
 
@@ -143,7 +156,7 @@ export function ChatSidebar() {
             </button>
           </div>
           <ChatFrame state={state} embedUrl={embedUrl} message={message} />
-          {isAuthenticated && (
+          {isAuthenticated && reportEnabled && (
             <>
               <button
                 className="chat-report-toggle"

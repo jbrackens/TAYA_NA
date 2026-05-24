@@ -93,7 +93,12 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
-          printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY" | \
+          {
+            printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY"
+            printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
+            printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
+            printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
+          } | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
 
@@ -137,6 +142,40 @@ jobs:
             docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 gateway || true
             exit 1'
 
+      - name: Start Rocket.Chat
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d rocketchat'
+
+      - name: Provision Rocket.Chat global room
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            set -a && . ./.env && set +a &&
+            for i in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:3002/api/info || echo 000)
+              [ "$code" = "200" ] && break
+              echo "attempt $i: Rocket.Chat /api/info=$code, retrying..."; sleep 5
+            done
+            curl -fsS http://localhost:3002/api/info >/dev/null
+            login=$(curl -fsS -X POST http://localhost:3002/api/v1/login \
+              -H "Content-Type: application/json" \
+              -d "{\"user\":\"hula-admin\",\"password\":\"$ROCKETCHAT_ADMIN_PASSWORD\"}" || true)
+            if ! printf "%s" "$login" | grep -q "\"status\":\"success\""; then
+              echo "Rocket.Chat admin login did not succeed. Continuing because this may be an existing volume with an older admin password."
+              exit 0
+            fi
+            uid=$(printf "%s" "$login" | node -e "const fs=require(\"fs\"); const d=JSON.parse(fs.readFileSync(0,\"utf8\")); process.stdout.write(d.data.userId)")
+            token=$(printf "%s" "$login" | node -e "const fs=require(\"fs\"); const d=JSON.parse(fs.readFileSync(0,\"utf8\")); process.stdout.write(d.data.authToken)")
+            curl -sS -X POST http://localhost:3002/api/v1/channels.create \
+              -H "Content-Type: application/json" \
+              -H "X-User-Id: $uid" \
+              -H "X-Auth-Token: $token" \
+              -d "{\"name\":\"global\"}" || true
+          '
+
       - name: Build player image on the box
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
@@ -144,6 +183,8 @@ jobs:
             docker build -f docker/frontend.Dockerfile \
               --build-arg module_name=app \
               --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+              --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
+              --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
               -t predict-frontend:app-slim .'
 
       - name: Recreate player container
