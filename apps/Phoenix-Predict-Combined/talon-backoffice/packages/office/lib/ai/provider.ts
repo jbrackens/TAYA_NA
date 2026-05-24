@@ -47,10 +47,16 @@ function resolveModel(cfg: TierConfig): LanguageModel {
     return createAnthropic({ apiKey: cfg.apiKey })(cfg.model);
   }
   // openai-compatible covers OpenAI + Ollama / vLLM / LM Studio via baseURL.
+  // supportsStructuredOutputs makes generateObject use strict json_schema mode,
+  // which conveys our EXACT field names to the model (json_object mode lets the
+  // model invent snake_case names). Our LLM schemas (schemas.ts) are written to
+  // be OpenAI-strict-compatible: every property required, optionals expressed as
+  // .nullable(), no .default()/.min()/.max()/record (unsupported by strict mode).
   return createOpenAICompatible({
     name: cfg.provider,
     baseURL: cfg.endpoint ?? "http://localhost:11434/v1",
     apiKey: cfg.apiKey ?? "not-needed",
+    supportsStructuredOutputs: true,
   })(cfg.model);
 }
 

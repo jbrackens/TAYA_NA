@@ -152,9 +152,11 @@ services:
       AI_HARD_API_KEY: "${OPENROUTER_API_KEY:-}"
       AI_ROUTINE_PROVIDER: "openai-compatible"
       AI_ROUTINE_ENDPOINT: "https://openrouter.ai/api/v1"
-      # OSS routine model — confirm the exact ID + that it supports structured
-      # outputs (generateObject) on openrouter.ai/models; verify in the smoke test.
-      AI_ROUTINE_MODEL: "qwen/qwen-2.5-72b-instruct"
+      # Routine (extraction) model. NOTE: OSS models on OpenRouter (qwen/llama)
+      # do NOT support the strict structured-output mode generateObject needs
+      # (verified — qwen returns unparseable output), so we use gpt-4o-mini here:
+      # cheap and reliable for extraction. Both tiers verified via live smoke test.
+      AI_ROUTINE_MODEL: "openai/gpt-4o-mini"
       AI_ROUTINE_API_KEY: "${OPENROUTER_API_KEY:-}"
     depends_on: [gateway]
     networks: [predict_network]
