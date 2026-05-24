@@ -77,6 +77,17 @@ func (s *Service) GetPriceHistory(ctx context.Context, marketID string, rng Pric
 	if err != nil {
 		return nil, fmt.Errorf("fetch price buckets: %w", err)
 	}
+	if !pricePointsHaveMovement(raw) {
+		if importedRepo, ok := s.repo.(ImportedPriceHistoryReader); ok {
+			importedRaw, err := importedRepo.ListImportedPriceBuckets(ctx, market.Ticker, since, until, bucketSec)
+			if err != nil {
+				return nil, fmt.Errorf("fetch imported price buckets: %w", err)
+			}
+			if len(importedRaw) > 0 {
+				raw = mergePriceBuckets(importedRaw, raw, bucketSec)
+			}
+		}
+	}
 	points := fillPriceHistory(raw, since, until, bucketSec, market.YesPriceCents)
 	return &PriceHistoryResponse{
 		MarketID:  market.ID,
@@ -94,6 +105,53 @@ func (s *Service) GetPriceHistory(ctx context.Context, marketID string, rng Pric
 // keep rendering in test mode.
 type PriceHistoryReader interface {
 	ListPriceBuckets(ctx context.Context, marketID string, since, until time.Time, bucketSec int) ([]PricePoint, error)
+}
+
+// ImportedPriceHistoryReader is an optional SQL-only capability. Imported
+// markets are repriced by the hourly source sync even when nobody has traded
+// them locally, so /prices should prefer those snapshots over a flat
+// carry-forward line when trade buckets do not show movement.
+type ImportedPriceHistoryReader interface {
+	ListImportedPriceBuckets(ctx context.Context, ticker string, since, until time.Time, bucketSec int) ([]PricePoint, error)
+}
+
+func pricePointsHaveMovement(points []PricePoint) bool {
+	if len(points) < 2 {
+		return false
+	}
+	first := points[0].YesPriceCents
+	for _, p := range points[1:] {
+		if p.YesPriceCents != first {
+			return true
+		}
+	}
+	return false
+}
+
+func mergePriceBuckets(imported, trades []PricePoint, bucketSec int) []PricePoint {
+	if len(imported) == 0 {
+		return trades
+	}
+	if len(trades) == 0 {
+		return imported
+	}
+	byBucket := make(map[int64]PricePoint, len(imported)+len(trades))
+	for _, p := range imported {
+		byBucket[bucketAlign(p.BucketStart, bucketSec)] = p
+	}
+	for _, p := range trades {
+		byBucket[bucketAlign(p.BucketStart, bucketSec)] = p
+	}
+	out := make([]PricePoint, 0, len(byBucket))
+	for _, p := range byBucket {
+		out = append(out, p)
+	}
+	for i := 1; i < len(out); i++ {
+		for j := i; j > 0 && out[j].BucketStart.Before(out[j-1].BucketStart); j-- {
+			out[j], out[j-1] = out[j-1], out[j]
+		}
+	}
+	return out
 }
 
 // fillPriceHistory pads a sparse bucket sequence with carry-forward

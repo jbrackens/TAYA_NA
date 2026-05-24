@@ -121,6 +121,44 @@ func TestFillPriceHistoryEmptyRaw(t *testing.T) {
 	}
 }
 
+func TestMergePriceBucketsTradesOverrideImported(t *testing.T) {
+	since := time.Date(2026, 5, 15, 0, 0, 0, 0, time.UTC)
+	bucketSec := 3600
+	imported := []PricePoint{
+		{BucketStart: since, YesPriceCents: 40},
+		{BucketStart: since.Add(time.Hour), YesPriceCents: 45},
+	}
+	trades := []PricePoint{
+		{BucketStart: since.Add(time.Hour), YesPriceCents: 60, TradeCount: 2},
+	}
+
+	got := mergePriceBuckets(imported, trades, bucketSec)
+	if len(got) != 2 {
+		t.Fatalf("len = %d, want 2", len(got))
+	}
+	if got[0].YesPriceCents != 40 {
+		t.Errorf("first bucket = %d, want imported 40", got[0].YesPriceCents)
+	}
+	if got[1].YesPriceCents != 60 {
+		t.Errorf("second bucket = %d, want trade override 60", got[1].YesPriceCents)
+	}
+	if got[1].TradeCount != 2 {
+		t.Errorf("second bucket trade_count = %d, want 2", got[1].TradeCount)
+	}
+}
+
+func TestPricePointsHaveMovement(t *testing.T) {
+	if pricePointsHaveMovement(nil) {
+		t.Fatal("nil points should not have movement")
+	}
+	if pricePointsHaveMovement([]PricePoint{{YesPriceCents: 50}, {YesPriceCents: 50}}) {
+		t.Fatal("flat points should not have movement")
+	}
+	if !pricePointsHaveMovement([]PricePoint{{YesPriceCents: 50}, {YesPriceCents: 51}}) {
+		t.Fatal("changed points should have movement")
+	}
+}
+
 func TestBucketAlignAlignsOnHour(t *testing.T) {
 	t1 := time.Date(2026, 5, 15, 12, 37, 41, 0, time.UTC)
 	got := bucketAlign(t1, 3600)

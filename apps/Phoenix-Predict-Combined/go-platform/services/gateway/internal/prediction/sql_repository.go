@@ -1714,3 +1714,63 @@ func (r *SQLRepository) ListPriceBuckets(ctx context.Context, marketID string, s
 	}
 	return out, nil
 }
+
+// ListImportedPriceBuckets reads hourly source snapshots for promoted
+// imported markets. Promotion tickers are IMP-<first 8 hex chars of
+// imported_markets.external_hash>, so the lookup deliberately matches that
+// prefix instead of exposing source IDs through the public prediction tables.
+func (r *SQLRepository) ListImportedPriceBuckets(ctx context.Context, ticker string, since, until time.Time, bucketSec int) ([]PricePoint, error) {
+	if bucketSec <= 0 {
+		return nil, fmt.Errorf("bucketSec must be > 0")
+	}
+	prefix := strings.TrimPrefix(strings.ToUpper(strings.TrimSpace(ticker)), "IMP-")
+	if prefix == "" || prefix == strings.ToUpper(strings.TrimSpace(ticker)) {
+		return nil, nil
+	}
+
+	rows, err := r.db.QueryContext(ctx, `
+		WITH snapshot_prices AS (
+		  SELECT
+		    to_timestamp(floor(extract(epoch from observed_at) / $4) * $4) AS bucket_start,
+		    observed_at,
+		    LEAST(99, GREATEST(1, ROUND(((prices->>0)::numeric) * 100)))::int AS yes_price_cents
+		  FROM imported_market_price_snapshots
+		  WHERE upper(substr(external_hash, 1, 8)) = $1
+		    AND observed_at >= $2
+		    AND observed_at <  $3
+		    AND jsonb_typeof(prices) = 'array'
+		    AND jsonb_array_length(prices) > 0
+		    AND (prices->>0) ~ '^-?[0-9]+(\.[0-9]+)?$'
+		),
+		latest_per_bucket AS (
+		  SELECT
+		    bucket_start,
+		    yes_price_cents,
+		    row_number() OVER (PARTITION BY bucket_start ORDER BY observed_at DESC) AS rn
+		  FROM snapshot_prices
+		)
+		SELECT bucket_start, yes_price_cents
+		FROM latest_per_bucket
+		WHERE rn = 1
+		ORDER BY bucket_start ASC
+	`, prefix, since, until, bucketSec)
+	if err != nil {
+		return nil, fmt.Errorf("query imported price buckets: %w", err)
+	}
+	defer rows.Close()
+
+	var out []PricePoint
+	for rows.Next() {
+		var p PricePoint
+		var bucketStart time.Time
+		if err := rows.Scan(&bucketStart, &p.YesPriceCents); err != nil {
+			return nil, fmt.Errorf("scan imported price bucket: %w", err)
+		}
+		p.BucketStart = bucketStart.UTC()
+		out = append(out, p)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate imported price buckets: %w", err)
+	}
+	return out, nil
+}

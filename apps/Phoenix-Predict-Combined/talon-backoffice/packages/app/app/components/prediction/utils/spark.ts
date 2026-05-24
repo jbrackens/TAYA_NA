@@ -73,7 +73,7 @@ export function heroChartPath(
   points?: number[],
 ): { line: string; fill: string } {
   let values: number[];
-  if (points && points.length >= 2) {
+  if (points && points.length >= 2 && points.some((p) => p !== points[0])) {
     values = points;
   } else {
     const pts = walk(ticker, currentCents, 24);

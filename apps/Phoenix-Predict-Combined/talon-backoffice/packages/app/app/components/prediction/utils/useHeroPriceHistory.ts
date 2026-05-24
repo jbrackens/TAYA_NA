@@ -16,6 +16,11 @@ import { logger } from "../../../lib/logger";
 
 const api = createPredictionClient();
 
+function hasMovement(points: number[]): boolean {
+  if (points.length < 2) return false;
+  return points.some((p) => p !== points[0]);
+}
+
 export function useHeroPriceHistory(ticker: string): number[] | null {
   const [points, setPoints] = useState<number[] | null>(null);
 
@@ -30,6 +35,10 @@ export function useHeroPriceHistory(ticker: string): number[] | null {
         // long flat tail at the fallback price. Always keep at least
         // 8 points so the line has visible shape.
         const all = h.points.map((p) => p.yesPriceCents);
+        if (!hasMovement(all)) {
+          setPoints(null);
+          return;
+        }
         if (all.length <= 8) {
           setPoints(all);
           return;

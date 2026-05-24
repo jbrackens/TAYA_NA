@@ -88,6 +88,11 @@ function buildPath(values: number[], width: number, height: number): string {
     .join(" ");
 }
 
+function hasMovement(values: number[]): boolean {
+  if (values.length < 2) return false;
+  return values.some((v) => v !== values[0]);
+}
+
 export default function MarketChart({
   ticker,
   yesPriceCents,
@@ -126,10 +131,11 @@ export default function MarketChart({
 
   const values = useMemo(() => {
     if (history && history.points.length > 0) {
-      return history.points.map((p) => p.yesPriceCents);
+      const realValues = history.points.map((p) => p.yesPriceCents);
+      if (hasMovement(realValues)) return realValues;
     }
     // Fallback: deterministic synthetic walk while the fetch is in
-    // flight, or if it failed, or if the market has no history yet.
+    // flight, or if it failed, or if the market has no moving history yet.
     return samplePath(ticker, range, yesPriceCents);
   }, [history, ticker, range, yesPriceCents]);
   const width = 800;
