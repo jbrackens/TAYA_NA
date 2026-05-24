@@ -5,10 +5,11 @@
 //
 // INTEGRATION-PENDING: the live path calls the configured LLM (needs a reachable
 // endpoint + key) and the gateway (needs it running). It is type-checked and its
-// pure helpers (validation, auth, drafter via mock) are unit-tested, but the
-// end-to-end path is not exercised offline. Before enabling in production, add:
-// per-admin rate limiting + model spend caps (shared store), and the SSRF
-// production egress gate (plan §16).
+// pure helpers (validation, auth, budget pre-flight, drafter via mock) are
+// unit-tested, but the end-to-end path is not exercised offline. The SSRF
+// production egress gate (§17b) and the per-admin rate-limit + daily token cap
+// (§17c) are in place; remaining before go-live: a live e2e run + the LLM eval
+// suite (lib/ai/evals).
 
 import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
