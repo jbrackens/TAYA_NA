@@ -24,6 +24,8 @@ import type {
   MarketLifecycleAction,
   CollateralDriftAlert,
 } from "@phoenix-ui/api-client/src/prediction-types";
+import DraftFromArticleModal from "./DraftFromArticleModal";
+import type { MarketCandidate } from "../../lib/ai/types";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -42,11 +44,27 @@ const statusColors: Record<string, string> = {
 const formatUsd = (cents: number) =>
   `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
+// Suggest a ticker from a title: uppercase slug + a short random suffix so the
+// operator gets a unique-ish starting point (the gateway enforces uniqueness).
+function suggestTicker(title: string): string {
+  const slug = title
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+  const suffix = Math.random().toString(36).slice(2, 5).toUpperCase();
+  return `${slug || "MKT"}-${suffix}`;
+}
+
 export default function PredictionMarketsContainer() {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [draftOpen, setDraftOpen] = useState(false);
+  const [articleSourceId, setArticleSourceId] = useState<string | undefined>(
+    undefined,
+  );
   // Drift alerts keyed by marketId so the table render can lookup in O(1).
   // Empty until first load completes; treated as "no drift" until then.
   const [driftByMarket, setDriftByMarket] = useState<
@@ -117,9 +135,11 @@ export default function PredictionMarketsContainer() {
         closeAt: values.closeAt as string,
         ammLiquidityParam: (values.ammLiquidityParam as number) || 100,
         feeRateBps: (values.feeRateBps as number) || 0,
+        articleSourceId,
       });
       message.success("Market created");
       setCreateOpen(false);
+      setArticleSourceId(undefined);
       form.resetFields();
       loadData();
     } catch (err: unknown) {
@@ -129,6 +149,36 @@ export default function PredictionMarketsContainer() {
         err instanceof Error ? err.message : "Failed to create market";
       message.error(detail);
     }
+  }
+
+  // Prefill the existing Create-Market form from an AI-drafted candidate, then
+  // open the create modal so the operator reviews/edits before submitting.
+  // News markets resolve manually, so source/rule are fixed to admin-manual;
+  // the AI resolution criteria/sources ride along in settlementParams.
+  function prefillFromCandidate(candidate: MarketCandidate, sourceId?: string) {
+    setDraftOpen(false);
+    setArticleSourceId(sourceId);
+    form.setFieldsValue({
+      title: candidate.marketTitle,
+      description: candidate.marketQuestion,
+      ticker: suggestTicker(candidate.marketTitle),
+      settlementSourceKey: "admin-manual",
+      settlementRule: "binary_outcome",
+      settlementParams: JSON.stringify(
+        {
+          resolutionCriteria: candidate.resolutionCriteria,
+          resolutionSources: candidate.resolutionSources,
+          riskLevel: candidate.riskLevel,
+          riskFlags: candidate.riskFlags,
+          qualityScores: candidate.qualityScores,
+        },
+        null,
+        2,
+      ),
+      // datetime-local wants "YYYY-MM-DDTHH:mm" — trim the ISO string.
+      closeAt: candidate.proposedCloseTime.slice(0, 16),
+    });
+    setCreateOpen(true);
   }
 
   async function handleLifecycle(
@@ -389,9 +439,14 @@ export default function PredictionMarketsContainer() {
             <Text type="secondary">{markets.length} markets</Text>
           </Col>
           <Col>
-            <Button type="primary" onClick={() => setCreateOpen(true)}>
-              Create Market
-            </Button>
+            <Space>
+              <Button onClick={() => setDraftOpen(true)}>
+                Draft from article
+              </Button>
+              <Button type="primary" onClick={() => setCreateOpen(true)}>
+                Create Market
+              </Button>
+            </Space>
           </Col>
         </Row>
         <Table
@@ -501,6 +556,12 @@ export default function PredictionMarketsContainer() {
           </Row>
         </Form>
       </Modal>
+
+      <DraftFromArticleModal
+        open={draftOpen}
+        onClose={() => setDraftOpen(false)}
+        onUse={prefillFromCandidate}
+      />
     </>
   );
 }

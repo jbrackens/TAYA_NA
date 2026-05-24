@@ -335,6 +335,7 @@ export interface CreateMarketRequest {
   feeRateBps?: number;
   ammLiquidityParam?: number;
   ammSubsidyCents?: number;
+  articleSourceId?: string;
 }
 
 export type MarketLifecycleAction = "open" | "halt" | "close" | "void";
