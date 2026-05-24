@@ -36,6 +36,7 @@
   "MARKET_BAR_LABEL": "{{yes}} peratus Ya, {{no}} peratus Tidak",
   "TIME_RANGE": "Julat masa",
   "YES_PRICE_CHART": "Carta harga Ya untuk {{ticker}}",
+  "NO_PRICE_CHART": "Carta harga Tidak untuk {{ticker}}",
   "IMPLIED_PROBABILITY": "Kebarangkalian tersirat",
   "24H_RANGE": "Julat 24 jam",
   "TRADE": "Dagangan",

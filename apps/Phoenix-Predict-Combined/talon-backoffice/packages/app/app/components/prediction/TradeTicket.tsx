@@ -21,7 +21,7 @@
  * here for Phase 4 wire-up.
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import type {
@@ -84,6 +84,7 @@ interface TradeTicketProps {
     quantity: number,
     opts?: TradeTicketSubmitOptions,
   ) => Promise<PlaceOrderResponse | void>;
+  onSideChange?: (side: OrderSide) => void;
 }
 
 const QUICK_AMOUNTS = [5, 25, 100] as const;
@@ -138,6 +139,7 @@ export function TradeTicket({
   availableNoShares = 0,
   onPreview: _onPreview,
   onSubmit,
+  onSideChange,
 }: TradeTicketProps) {
   const { t } = useTranslation("prediction");
   const [side, setSide] = useState<OrderSide>(defaultSide);
@@ -152,6 +154,11 @@ export function TradeTicket({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
+
+  useEffect(() => {
+    setSide(defaultSide);
+    onSideChange?.(defaultSide);
+  }, [defaultSide, onSideChange]);
 
   const isOpen = market.status === "open";
   const isExchange = market.executionMode === "order_book";
@@ -361,6 +368,7 @@ export function TradeTicket({
 
   const setSideAndReset = (s: OrderSide) => {
     setSide(s);
+    onSideChange?.(s);
     setError(null);
   };
 

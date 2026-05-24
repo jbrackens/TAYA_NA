@@ -36,6 +36,7 @@
   "MARKET_BAR_LABEL": "{{yes}}% 是，{{no}}% 否",
   "TIME_RANGE": "時間範圍",
   "YES_PRICE_CHART": "{{ticker}} 的「是」價格圖",
+  "NO_PRICE_CHART": "{{ticker}} 的「否」價格圖",
   "IMPLIED_PROBABILITY": "隱含概率",
   "24H_RANGE": "24小時區間",
   "TRADE": "交易",

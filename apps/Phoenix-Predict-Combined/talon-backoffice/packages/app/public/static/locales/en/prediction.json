@@ -36,6 +36,7 @@
   "MARKET_BAR_LABEL": "{{yes}} percent YES, {{no}} percent NO",
   "TIME_RANGE": "Time range",
   "YES_PRICE_CHART": "YES price chart for {{ticker}}",
+  "NO_PRICE_CHART": "NO price chart for {{ticker}}",
   "IMPLIED_PROBABILITY": "Implied probability",
   "24H_RANGE": "24h range",
   "TRADE": "Trade",

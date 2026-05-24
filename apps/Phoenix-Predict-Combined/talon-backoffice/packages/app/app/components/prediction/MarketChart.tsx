@@ -34,7 +34,9 @@ const RANGE_TO_API: Record<TimeRange, "1h" | "1d" | "1w" | "1m" | "all"> = {
 
 interface MarketChartProps {
   ticker: string;
+  side?: "yes" | "no";
   yesPriceCents: number;
+  noPriceCents?: number;
   previousPriceCents?: number;
   impliedProbability?: number;
   range24hLowCents?: number;
@@ -95,7 +97,9 @@ function hasMovement(values: number[]): boolean {
 
 export default function MarketChart({
   ticker,
+  side = "yes",
   yesPriceCents,
+  noPriceCents,
   previousPriceCents,
   impliedProbability,
   range24hLowCents,
@@ -106,6 +110,14 @@ export default function MarketChart({
   const { t } = useTranslation("prediction");
   const [range, setRange] = useState<TimeRange>("1D");
   const [history, setHistory] = useState<MarketPriceHistory | null>(null);
+  const activePriceCents =
+    side === "no" ? (noPriceCents ?? 100 - yesPriceCents) : yesPriceCents;
+  const activePreviousPriceCents =
+    typeof previousPriceCents === "number"
+      ? side === "no"
+        ? 100 - previousPriceCents
+        : previousPriceCents
+      : undefined;
 
   // Fetch real price history from /api/v1/markets/:ticker/prices?range=N
   // whenever the ticker or range changes. Falls back to the deterministic
@@ -131,26 +143,31 @@ export default function MarketChart({
 
   const values = useMemo(() => {
     if (history && history.points.length > 0) {
-      const realValues = history.points.map((p) => p.yesPriceCents);
+      const realValues = history.points.map((p) =>
+        side === "no" ? 100 - p.yesPriceCents : p.yesPriceCents,
+      );
       if (hasMovement(realValues)) return realValues;
     }
     // Fallback: deterministic synthetic walk while the fetch is in
     // flight, or if it failed, or if the market has no moving history yet.
-    return samplePath(ticker, range, yesPriceCents);
-  }, [history, ticker, range, yesPriceCents]);
+    return samplePath(`${ticker}-${side}`, range, activePriceCents);
+  }, [history, ticker, side, range, activePriceCents]);
   const width = 800;
   const height = 320;
   const line = buildPath(values, width, height);
   const area = `${line} L ${width} ${height} L 0 ${height} Z`;
-  const markerY = height - (yesPriceCents / 100) * height;
+  const markerY = height - (activePriceCents / 100) * height;
 
   const deltaCents =
-    typeof previousPriceCents === "number"
-      ? yesPriceCents - previousPriceCents
+    typeof activePreviousPriceCents === "number"
+      ? activePriceCents - activePreviousPriceCents
       : 0;
   const deltaPct =
-    typeof previousPriceCents === "number" && previousPriceCents > 0
-      ? ((yesPriceCents - previousPriceCents) / previousPriceCents) * 100
+    typeof activePreviousPriceCents === "number" &&
+    activePreviousPriceCents > 0
+      ? ((activePriceCents - activePreviousPriceCents) /
+          activePreviousPriceCents) *
+        100
       : 0;
   const deltaStr = `${deltaCents >= 0 ? "+" : ""}${deltaCents}¢ · ${deltaCents >= 0 ? "+" : ""}${deltaPct.toFixed(1)}% 24h`;
   const isUp = deltaCents >= 0;
@@ -160,15 +177,19 @@ export default function MarketChart({
   const lineColor = isUp ? "var(--yes-text)" : "var(--no-text)";
 
   const prob =
-    typeof impliedProbability === "number" ? impliedProbability : yesPriceCents;
+    typeof impliedProbability === "number"
+      ? side === "no"
+        ? 100 - impliedProbability
+        : impliedProbability
+      : activePriceCents;
   const rangeLow =
     typeof range24hLowCents === "number"
       ? range24hLowCents
-      : Math.max(0, yesPriceCents - 4);
+      : Math.max(0, activePriceCents - 4);
   const rangeHigh =
     typeof range24hHighCents === "number"
       ? range24hHighCents
-      : Math.min(100, yesPriceCents + 2);
+      : Math.min(100, activePriceCents + 2);
   const vol24h = typeof volume24hCents === "number" ? volume24hCents : 0;
   const oi = typeof openInterestShares === "number" ? openInterestShares : 0;
 
@@ -277,7 +298,7 @@ export default function MarketChart({
       <section className="mc-card">
         <div className="mc-head">
           <div className="mc-price-row">
-            <div className="mc-price">{yesPriceCents}¢</div>
+            <div className="mc-price">{activePriceCents}¢</div>
             {typeof previousPriceCents === "number" && (
               <div className={`mc-delta ${deltaCents < 0 ? "down" : ""}`}>
                 {deltaStr}
@@ -303,7 +324,9 @@ export default function MarketChart({
           className="mc-svg"
           viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="none"
-          aria-label={t("YES_PRICE_CHART", { ticker })}
+          aria-label={t(side === "no" ? "NO_PRICE_CHART" : "YES_PRICE_CHART", {
+            ticker,
+          })}
         >
           <defs>
             <linearGradient

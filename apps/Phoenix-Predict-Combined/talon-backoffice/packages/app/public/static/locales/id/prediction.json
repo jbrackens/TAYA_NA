@@ -36,6 +36,7 @@
   "MARKET_BAR_LABEL": "{{yes}} persen Ya, {{no}} persen Tidak",
   "TIME_RANGE": "Rentang waktu",
   "YES_PRICE_CHART": "Grafik harga Ya untuk {{ticker}}",
+  "NO_PRICE_CHART": "Grafik harga Tidak untuk {{ticker}}",
   "IMPLIED_PROBABILITY": "Probabilitas tersirat",
   "24H_RANGE": "Rentang 24 jam",
   "TRADE": "Trading",

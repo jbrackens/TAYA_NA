@@ -156,6 +156,7 @@ export default function MarketDetailPage() {
   // TradeTicket received availableYes/NoShares = 0 and the Sell button was
   // permanently disabled even for users holding hundreds of contracts.
   const [positions, setPositions] = useState<Position[]>([]);
+  const [selectedSide, setSelectedSide] = useState<OrderSide>(initialSide);
   const balance = useAppSelector(selectCurrentBalance);
   const dispatch = useAppDispatch();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
@@ -678,7 +679,9 @@ export default function MarketDetailPage() {
             />
             <MarketChart
               ticker={market.ticker}
+              side={selectedSide}
               yesPriceCents={market.yesPriceCents}
+              noPriceCents={market.noPriceCents}
               previousPriceCents={market.lastTradePriceCents ?? undefined}
               impliedProbability={market.yesPriceCents}
               volume24hCents={market.volumeCents}
@@ -724,6 +727,7 @@ export default function MarketDetailPage() {
               balance={typeof balance === "number" ? balance : undefined}
               defaultSide={initialSide}
               defaultAmount={initialAmount}
+              onSideChange={setSelectedSide}
               isAuthenticated={isAuthenticated}
               authLoading={authLoading}
               // Available = quantity minus reserved (already-spoken-for in
