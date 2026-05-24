@@ -18,6 +18,7 @@ import { logger } from "../../lib/logger";
 
 const STORAGE_KEY = "hula_chat_collapsed";
 const LOAD_TIMEOUT_MS = 5000;
+const DEFAULT_ROOM_ID = "general";
 
 type LoadState = "idle" | "loading" | "ready" | "unavailable";
 
@@ -27,7 +28,7 @@ export function ChatSidebar() {
   const [collapsed, setCollapsed] = useState(true);
   const [state, setState] = useState<LoadState>("idle");
   const [embedUrl, setEmbedUrl] = useState("");
-  const [roomId, setRoomId] = useState("global");
+  const [roomId, setRoomId] = useState(DEFAULT_ROOM_ID);
   const [message, setMessage] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
   const [reportEnabled, setReportEnabled] = useState(false);
@@ -55,7 +56,7 @@ export function ChatSidebar() {
 
   const publicGlobalUrl = useMemo(() => {
     if (!CHAT_PUBLIC_URL) return "";
-    return `${CHAT_PUBLIC_URL}/channel/global`;
+    return `${CHAT_PUBLIC_URL}/channel/${DEFAULT_ROOM_ID}`;
   }, []);
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export function ChatSidebar() {
       setEmbedUrl("");
       if (!isAuthenticated) {
         if (publicGlobalUrl) {
-          setRoomId("global");
+          setRoomId(DEFAULT_ROOM_ID);
           setEmbedUrl(publicGlobalUrl);
           setState("ready");
         } else {

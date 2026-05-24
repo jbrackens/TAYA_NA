@@ -111,6 +111,7 @@ services:
       WALLET_DB_MAX_OPEN_CONNS: "20"             # local PG max_conns=100; only real knob
       WALLET_DB_MAX_IDLE_CONNS: "4"
       LOG_LEVEL: "info"
+      CHAT_DEFAULT_ROOM: "general"
       # no JWT_SECRET here (gateway delegates token validation to auth);
       # no GATEWAY_CORS_ORIGINS (single origin — CORS never triggers).
       # Synthetic Market Maker: dynamic two-sided liquidity on every open
