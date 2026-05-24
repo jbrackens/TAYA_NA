@@ -1,10 +1,13 @@
 package payments
 
 import (
+	"context"
 	"database/sql"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // WatcherDeps are the runtime dependencies the deposit watcher needs that are
@@ -50,4 +53,46 @@ func envInt64(key string, def int64) int64 {
 		return def
 	}
 	return n
+}
+
+// StartDepositWatcher builds the watcher from env and, ONLY if the rail is
+// configured, verifies the token's on-chain decimals and starts a background
+// loop driving RunCycle on a ticker. When unconfigured it logs and returns
+// without starting a goroutine — fail-closed. Returns whether it started.
+func StartDepositWatcher(ctx context.Context, deps WatcherDeps) bool {
+	w, enabled, err := NewDepositWatcherFromEnv(deps)
+	if err != nil {
+		slog.Error("deposit watcher: config error", "err", err)
+		return false
+	}
+	if !enabled {
+		slog.Info("deposit watcher: disabled (rail not configured)")
+		return false
+	}
+	// Verify on-chain decimals before crediting anything (fail-closed).
+	client := NewEVMClient(strings.TrimSpace(os.Getenv("CRYPTO_RPC_URL")))
+	vctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	if err := VerifyTokenDecimals(vctx, client, w.cfg.TokenContract, w.cfg.TokenDecimals); err != nil {
+		slog.Error("deposit watcher: on-chain decimals check failed, NOT starting", "err", err)
+		return false
+	}
+	startBlock := envInt64("CRYPTO_START_BLOCK", 0)
+	interval := time.Duration(envInt64("CRYPTO_POLL_INTERVAL_SECONDS", 15)) * time.Second
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		slog.Info("deposit watcher: started", "network", w.cfg.Network, "asset", w.cfg.Asset, "interval", interval.String())
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				if err := w.RunCycle(ctx, startBlock); err != nil {
+					slog.Error("deposit watcher: cycle error", "err", err)
+				}
+			}
+		}
+	}()
+	return true
 }

@@ -61,7 +61,7 @@ type evmUSDCRail struct {
 	confirmations int
 }
 
-func (r *evmUSDCRail) Name() string       { return "evm-usdc" }
+func (r *evmUSDCRail) Name() string       { return "bsc-usdt" }
 func (r *evmUSDCRail) Network() string    { return r.network }
 func (r *evmUSDCRail) Asset() string      { return r.asset }
 func (r *evmUSDCRail) Confirmations() int { return r.confirmations }
@@ -120,9 +120,12 @@ func NewCryptoRailFromEnv(db *sql.DB) CryptoRail {
 		}
 	}
 	return &evmUSDCRail{
-		db:            db,
-		network:       cryptoEnvOr("CRYPTO_NETWORK", "base"),
-		asset:         cryptoEnvOr("CRYPTO_ASSET", "USDC"),
+		db: db,
+		// Defaults target the Hula Na cashier (BSC USDT); override via env. Kept
+		// in lockstep with the deposit watcher's defaults so a partial env config
+		// can't make the rail and watcher disagree on (network, asset).
+		network:       cryptoEnvOr("CRYPTO_NETWORK", "bsc"),
+		asset:         cryptoEnvOr("CRYPTO_ASSET", "USDT"),
 		rpcURL:        strings.TrimSpace(os.Getenv("CRYPTO_RPC_URL")),
 		assetContract: strings.TrimSpace(os.Getenv("CRYPTO_ASSET_CONTRACT")),
 		addrSource:    strings.TrimSpace(os.Getenv("CRYPTO_DEPOSIT_ADDRESS_SOURCE")),
