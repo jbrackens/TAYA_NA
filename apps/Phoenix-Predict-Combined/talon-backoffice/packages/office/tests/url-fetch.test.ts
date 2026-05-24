@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { extractArticle, fetchAndExtractArticle } from "../lib/ingest/urlFetch";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  assertUrlFetchAllowed,
+  extractArticle,
+  fetchAndExtractArticle,
+} from "../lib/ingest/urlFetch";
 import { SSRFError } from "../lib/ingest/ssrfGuard";
 
 const SAMPLE_HTML = `<!DOCTYPE html><html><head><title>ICC Warrants Expected</title></head><body>
@@ -41,5 +45,29 @@ describe("fetchAndExtractArticle SSRF pre-check", () => {
     await expect(
       fetchAndExtractArticle("http://127.0.0.1:9200/"),
     ).rejects.toBeInstanceOf(SSRFError);
+  });
+});
+
+describe("assertUrlFetchAllowed (production egress gate)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("allows fetch in development", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    expect(() => assertUrlFetchAllowed()).not.toThrow();
+  });
+
+  it("blocks fetch in production unless explicitly enabled", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    expect(() => assertUrlFetchAllowed()).toThrow(SSRFError);
+    vi.stubEnv("AI_URL_FETCH_ENABLED", "true");
+    expect(() => assertUrlFetchAllowed()).not.toThrow();
+  });
+
+  it("kill switch blocks fetch everywhere", () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("AI_URL_FETCH_DISABLED", "true");
+    expect(() => assertUrlFetchAllowed()).toThrow(SSRFError);
   });
 });

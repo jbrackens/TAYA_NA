@@ -17,6 +17,26 @@ import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 import { assertSafeRequestURL, SSRFError } from "./ssrfGuard";
 
+// Production egress gate (plan §16 / §17b). Server-side URL fetch is OFF by
+// default in production: the in-process SSRF guard is a best-effort boundary,
+// not network egress isolation. An operator enables it (AI_URL_FETCH_ENABLED)
+// only once the deploy egresses through an isolated/allowlisted proxy. The kill
+// switch (AI_URL_FETCH_DISABLED) blocks it everywhere.
+export function assertUrlFetchAllowed(): void {
+  if (process.env.AI_URL_FETCH_DISABLED === "true") {
+    throw new SSRFError("server-side URL fetch is disabled");
+  }
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.AI_URL_FETCH_ENABLED !== "true"
+  ) {
+    throw new SSRFError(
+      "server-side URL fetch is disabled in production — paste the article text, " +
+        "or set AI_URL_FETCH_ENABLED=true once egress isolation is in place",
+    );
+  }
+}
+
 export interface ExtractedArticle {
   title?: string;
   byline?: string;
@@ -46,6 +66,8 @@ export async function fetchAndExtractArticle(
   rawUrl: string,
   opts: FetchOptions = {},
 ): Promise<ExtractedArticle & { finalUrl: string }> {
+  // (0) Production egress gate — off by default in production.
+  assertUrlFetchAllowed();
   // (1) Synchronous pre-check — throws before any network I/O for blocked URLs.
   assertSafeRequestURL(rawUrl);
 
