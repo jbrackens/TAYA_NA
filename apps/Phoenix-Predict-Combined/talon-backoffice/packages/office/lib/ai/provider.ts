@@ -10,6 +10,7 @@
 import { generateObject, type LanguageModel } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createAnthropic } from "@ai-sdk/anthropic";
+import type { z } from "zod";
 import type {
   GenerateObjectParams,
   GenerateObjectResult,
@@ -59,14 +60,23 @@ export function createAISDKProvider(): ModelProvider {
       params: GenerateObjectParams<T>,
     ): Promise<GenerateObjectResult<T>> {
       const cfg = tierConfigFromEnv(params.tier);
+      // The Vercel AI SDK's generateObject is heavily generic-overloaded.
+      // Letting it infer the output type from our zod v4 schemas makes
+      // `next build`'s type-check worker instantiate a union so large it
+      // overflows TypeScript (TS2590 "union too complex" / a "Call retries
+      // were exceeded" worker OOM) — even though plain `tsc` survives via lazy
+      // evaluation. Erase the schema's element type at the SDK boundary and
+      // restore it on return: the public ModelProvider<T> contract stays
+      // precise for callers, and runtime is unchanged (the real zod schema is
+      // still passed and validates the model output).
       const result = await generateObject({
         model: resolveModel(cfg),
-        schema: params.schema,
+        schema: params.schema as z.ZodType<unknown>,
         system: params.system,
         prompt: params.prompt,
       });
       return {
-        object: result.object,
+        object: result.object as T,
         usage: {
           inputTokens: result.usage?.inputTokens,
           outputTokens: result.usage?.outputTokens,
