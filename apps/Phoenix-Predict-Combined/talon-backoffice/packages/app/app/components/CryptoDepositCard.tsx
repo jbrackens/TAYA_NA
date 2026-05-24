@@ -8,6 +8,7 @@ import {
 } from "../lib/api/crypto-client";
 import { ApiError } from "../lib/api/client";
 import { logger } from "../lib/logger";
+import { QRCodeSVG } from "qrcode.react";
 
 type LoadState = "loading" | "coming-soon" | "ready" | "error";
 
@@ -102,6 +103,24 @@ export default function CryptoDepositCard() {
       <label className="cashier-label">
         Your {asset} deposit address ({network})
       </label>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "0.75rem",
+        }}
+      >
+        <div
+          style={{
+            background: "#fff",
+            padding: "0.75rem",
+            borderRadius: "0.5rem",
+            border: "1px solid #e5ddc9",
+          }}
+        >
+          <QRCodeSVG value={address} size={168} />
+        </div>
+      </div>
       <div
         style={{
           fontFamily: "monospace",
