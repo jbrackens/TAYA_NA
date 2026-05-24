@@ -6,13 +6,16 @@
  */
 
 import { MarketCard } from "./MarketCard";
+import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import { localizedMarket } from "./market-content";
 
 interface Props {
   markets: PredictionMarket[];
 }
 
 export function MarketGrid({ markets }: Props) {
+  const { t } = useTranslation("market-content");
   if (!markets || markets.length === 0) return null;
   return (
     <>
@@ -24,20 +27,23 @@ export function MarketGrid({ markets }: Props) {
         }
       `}</style>
       <div className="pred-grid">
-        {markets.map((m) => (
-          <MarketCard
-            key={m.id}
-            ticker={m.ticker}
-            title={m.title}
-            yesPriceCents={m.yesPriceCents}
-            noPriceCents={m.noPriceCents}
-            volumeCents={m.volumeCents}
-            liquidityCents={m.liquidityCents}
-            closeAt={m.closeAt}
-            status={m.status}
-            imagePath={m.imagePath}
-          />
-        ))}
+        {markets.map((market) => {
+          const m = localizedMarket(t, market);
+          return (
+            <MarketCard
+              key={m.id}
+              ticker={m.ticker}
+              title={m.title}
+              yesPriceCents={m.yesPriceCents}
+              noPriceCents={m.noPriceCents}
+              volumeCents={m.volumeCents}
+              liquidityCents={m.liquidityCents}
+              closeAt={m.closeAt}
+              status={m.status}
+              imagePath={m.imagePath}
+            />
+          );
+        })}
       </div>
     </>
   );

@@ -14,7 +14,9 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
+import { categoryLabel, localizedMarket } from "./market-content";
 
 interface MarketHeadProps {
   market: PredictionMarket;
@@ -22,23 +24,33 @@ interface MarketHeadProps {
   tradersCount?: number;
 }
 
-function formatCountdown(deltaMs: number): string {
-  if (deltaMs <= 0) return "Closed";
+function formatCountdown(
+  deltaMs: number,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
+  if (deltaMs <= 0) return t("CLOSED");
   const totalSec = Math.floor(deltaMs / 1000);
   const days = Math.floor(totalSec / 86400);
   const hours = Math.floor((totalSec % 86400) / 3600);
   const mins = Math.floor((totalSec % 3600) / 60);
   if (days > 0)
-    return `Closes in ${days}d ${hours.toString().padStart(2, "0")}h ${mins.toString().padStart(2, "0")}m`;
+    return t("CLOSES_IN_DHM", {
+      days,
+      hours: hours.toString().padStart(2, "0"),
+      minutes: mins.toString().padStart(2, "0"),
+    });
   if (hours > 0)
-    return `Closes in ${hours}h ${mins.toString().padStart(2, "0")}m`;
-  return `Closes in ${mins}m`;
+    return t("CLOSES_IN_HM", {
+      hours,
+      minutes: mins.toString().padStart(2, "0"),
+    });
+  return t("CLOSES_IN_M", { minutes: mins });
 }
 
 function formatVolume(cents: number): string {
   const dollars = cents / 100;
-  if (dollars >= 1000) return `$${(dollars / 1000).toFixed(1)}K vol`;
-  return `$${dollars.toFixed(0)} vol`;
+  if (dollars >= 1000) return `$${(dollars / 1000).toFixed(1)}K`;
+  return `$${dollars.toFixed(0)}`;
 }
 
 function formatCloseDate(iso: string): string {
@@ -55,9 +67,15 @@ export default function MarketHead({
   categoryName,
   tradersCount,
 }: MarketHeadProps) {
+  const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
+  const displayMarket = localizedMarket(contentT, market);
+  const displayCategory = categoryName
+    ? categoryLabel(contentT, categoryName)
+    : "";
   const closeAtMs = useMemo(
-    () => new Date(market.closeAt).getTime(),
-    [market.closeAt],
+    () => new Date(displayMarket.closeAt).getTime(),
+    [displayMarket.closeAt],
   );
   const [now, setNow] = useState<number>(() => Date.now());
 
@@ -66,19 +84,19 @@ export default function MarketHead({
     return () => clearInterval(t);
   }, []);
 
-  const countdown = formatCountdown(closeAtMs - now);
-  const isLive = market.status === "open";
-  const isSettled = market.status === "settled";
+  const countdown = formatCountdown(closeAtMs - now, t);
+  const isLive = displayMarket.status === "open";
+  const isSettled = displayMarket.status === "settled";
   // Settled markets surface the resolved outcome instead of a live countdown.
   // Without this, the hero kept saying "Closes in 172d" for a market that
   // resolved weeks ago, contradicting the "Trading is paused" banner in the
   // ticket and confusing investors during walkthroughs.
   const settledLabel = isSettled
-    ? market.result === "yes"
-      ? "YES wins"
-      : market.result === "no"
-        ? "NO wins"
-        : "Settled"
+    ? displayMarket.result === "yes"
+      ? t("SETTLED_YES_WINS")
+      : displayMarket.result === "no"
+        ? t("SETTLED_NO_WINS")
+        : t("SETTLED")
     : null;
 
   return (
@@ -192,32 +210,40 @@ export default function MarketHead({
             {isLive && (
               <span className="mh-live">
                 <span className="mh-live-dot" aria-hidden="true" />
-                LIVE
+                {t("LIVE")}
               </span>
             )}
             {isSettled && settledLabel && (
               <span className="mh-settled">
-                SETTLED
+                {t("SETTLED")}
                 <span className="mh-settled-outcome">· {settledLabel}</span>
               </span>
             )}
-            {categoryName && (
-              <span className="mh-pill cat">{categoryName}</span>
+            {displayCategory && (
+              <span className="mh-pill cat">{displayCategory}</span>
             )}
-            <span className="mh-pill">{formatVolume(market.volumeCents)}</span>
+            <span className="mh-pill">
+              {t("VOLUME_VALUE", {
+                value: formatVolume(displayMarket.volumeCents),
+              })}
+            </span>
             {typeof tradersCount === "number" && (
-              <span className="mh-pill">{tradersCount} traders</span>
+              <span className="mh-pill">
+                {t("TRADER_COUNT", { count: tradersCount })}
+              </span>
             )}
-            <span className="mh-pill">{market.ticker}</span>
+            <span className="mh-pill">{displayMarket.ticker}</span>
           </div>
           <span className="mh-countdown">
-            {isSettled ? "Closed" : countdown}
+            {isSettled ? t("CLOSED") : countdown}
             <span className="sep">·</span>
-            {formatCloseDate(market.closeAt)}
+            {formatCloseDate(displayMarket.closeAt)}
           </span>
         </div>
-        <h1 className="mh-q">{market.title}</h1>
-        {market.description && <p className="mh-desc">{market.description}</p>}
+        <h1 className="mh-q">{displayMarket.title}</h1>
+        {displayMarket.description && (
+          <p className="mh-desc">{displayMarket.description}</p>
+        )}
       </section>
     </>
   );

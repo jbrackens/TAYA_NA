@@ -9,7 +9,9 @@
  */
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import type { Category } from "@phoenix-ui/api-client/src/prediction-types";
+import { categoryName } from "./market-content";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   politics: "\u{1F3DB}\u{FE0F}",
@@ -31,6 +33,8 @@ export function CategoryPills({
   activeSlug,
   onSelect,
 }: CategoryPillsProps) {
+  const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   return (
     <div className="sport-pills">
       <button
@@ -39,7 +43,7 @@ export function CategoryPills({
         className={`sport-pill${!activeSlug ? " active" : ""}`}
       >
         <span className="sport-pill-icon">{"\u{2728}"}</span>
-        All
+        {t("ALL")}
       </button>
       {categories.map((cat) => {
         const active = activeSlug === cat.slug;
@@ -58,7 +62,7 @@ export function CategoryPills({
             <span className="sport-pill-icon">
               {CATEGORY_EMOJI[cat.slug] ?? "\u{2022}"}
             </span>
-            {cat.name}
+            {categoryName(contentT, cat)}
           </Link>
         );
       })}

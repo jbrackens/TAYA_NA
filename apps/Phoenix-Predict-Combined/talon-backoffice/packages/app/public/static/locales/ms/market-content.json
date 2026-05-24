@@ -1,0 +1,87 @@
+{
+  "categories": {
+    "politics": "Politik",
+    "crypto": "Kripto",
+    "sports": "Sukan",
+    "entertainment": "Hiburan",
+    "tech": "Teknologi",
+    "technology": "Teknologi",
+    "economics": "Ekonomi",
+    "general": "Umum",
+    "fed": "Fed",
+    "senate": "Senat"
+  },
+  "markets": {
+    "FED-CUT-MAY26": {
+      "title": "Adakah Fed akan potong kadar pada FOMC Mei?",
+      "description": "Diselesaikan YA jika Federal Reserve menurunkan kadar dana persekutuan pada mesyuarat FOMC 6-7 Mei 2026."
+    },
+    "FED-HOLD-MAY26": {
+      "title": "Adakah Fed akan kekalkan kadar pada FOMC Mei?",
+      "description": "Diselesaikan YA jika Federal Reserve mengekalkan kadar tidak berubah pada mesyuarat FOMC Mei 2026."
+    },
+    "IMP-A416E3EB": {
+      "title": "Adakah Kejohanan PGA 2026 perlukan playoff untuk tentukan pemenang?"
+    },
+    "IMP-B2CCBDF6": {
+      "title": "Adakah turnover James Harden lebih banyak daripada FG dalam Game 7?"
+    },
+    "IMP-90ECE69C": {
+      "title": "Loteri percuma (katalog Messier)"
+    },
+    "IMP-53A0583B": {
+      "title": "Adakah lebih 100 cerita Hacker News dipos dalam 24 jam?"
+    },
+    "IMP-11BBE02A": {
+      "title": "Adakah tuna lebih sedap daripada salmon?"
+    },
+    "IMP-D62B8DE2": {
+      "title": "Adakah Thomas Massie menang atau kalah dengan beza 5.00% atau kurang?"
+    },
+    "IMP-92961559": {
+      "title": "Jumlah larian Chicago C vs Chicago WS?",
+      "description": "Jika Chicago C dan Chicago WS menjaringkan lebih daripada 15.5 larian keseluruhan dalam perlawanan besbol profesional yang asalnya dijadualkan pada 17 Mei 2026, 2:10 PM EDT, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-F062F749": {
+      "title": "Mitch Garver: 5+ hits + runs + RBIs?",
+      "description": "Jika Mitch Garver mencatat 5+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-C835E14E": {
+      "title": "Miguel Andujar: 5+ hits + runs + RBIs?",
+      "description": "Jika Miguel Andujar mencatat 5+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-A034BE5A": {
+      "title": "Ramon Laureano: 5+ hits + runs + RBIs?",
+      "description": "Jika Ramon Laureano mencatat 5+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-48582BD0": {
+      "title": "Leo Rivas: 4+ hits + runs + RBIs?",
+      "description": "Jika Leo Rivas mencatat 4+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-AFE15878": {
+      "title": "Xander Bogaerts: 5+ hits + runs + RBIs?",
+      "description": "Jika Xander Bogaerts mencatat 5+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-D9BA0998": {
+      "title": "Ty France: 5+ hits + runs + RBIs?",
+      "description": "Jika Ty France mencatat 5+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-31FF8AA3": {
+      "title": "Luke Raley: 5+ hits + runs + RBIs?",
+      "description": "Jika Luke Raley mencatat 5+ jumlah hits + runs + RBIs dalam perlawanan besbol profesional San Diego vs Seattle, pasaran ini diselesaikan sebagai Ya."
+    },
+    "IMP-128920D1": {
+      "title": "Adakah Ukraine menawan lebih banyak wilayah daripada yang hilang minggu ini, menurut pemetaan pro-Ukraine?"
+    },
+    "IMP-3BE8DF30": {
+      "title": "Adakah Hope (arah. Na Hong-jin) menang Palme d'Or Cannes 2026?"
+    },
+    "IMP-B6E6D4BE": {
+      "title": "Adakah SPY ditutup bawah $720 pada Jumaat, 29 Mei 2026?"
+    },
+    "UCL-REAL-2526": {
+      "title": "Adakah Real Madrid menang Champions League 2025/26?",
+      "description": "Diselesaikan YA jika Real Madrid memenangi final UEFA Champions League 2025/26."
+    }
+  }
+}

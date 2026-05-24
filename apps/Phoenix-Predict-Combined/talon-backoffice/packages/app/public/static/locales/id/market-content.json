@@ -1,0 +1,87 @@
+{
+  "categories": {
+    "politics": "Politik",
+    "crypto": "Kripto",
+    "sports": "Olahraga",
+    "entertainment": "Hiburan",
+    "tech": "Teknologi",
+    "technology": "Teknologi",
+    "economics": "Ekonomi",
+    "general": "Umum",
+    "fed": "Fed",
+    "senate": "Senat"
+  },
+  "markets": {
+    "FED-CUT-MAY26": {
+      "title": "Apakah Fed akan memangkas suku bunga di FOMC Mei?",
+      "description": "Diselesaikan YA jika Federal Reserve menurunkan federal funds rate pada rapat FOMC 6-7 Mei 2026."
+    },
+    "FED-HOLD-MAY26": {
+      "title": "Apakah Fed akan menahan suku bunga di FOMC Mei?",
+      "description": "Diselesaikan YA jika Federal Reserve mempertahankan suku bunga pada rapat FOMC Mei 2026."
+    },
+    "IMP-A416E3EB": {
+      "title": "Apakah PGA Championship 2026 perlu playoff untuk menentukan pemenang?"
+    },
+    "IMP-B2CCBDF6": {
+      "title": "Apakah turnover James Harden lebih banyak dari FG di Game 7?"
+    },
+    "IMP-90ECE69C": {
+      "title": "Undian gratis (katalog Messier)"
+    },
+    "IMP-53A0583B": {
+      "title": "Apakah ada 100+ cerita Hacker News dalam 24 jam?"
+    },
+    "IMP-11BBE02A": {
+      "title": "Apakah tuna lebih enak dari salmon?"
+    },
+    "IMP-D62B8DE2": {
+      "title": "Apakah Thomas Massie menang atau kalah dengan selisih 5,00% atau kurang?"
+    },
+    "IMP-92961559": {
+      "title": "Total run Chicago C vs Chicago WS?",
+      "description": "Jika Chicago C dan Chicago WS mencetak total lebih dari 15,5 run dalam pertandingan bisbol profesional yang awalnya dijadwalkan pada 17 Mei 2026 pukul 2:10 PM EDT, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-F062F749": {
+      "title": "Mitch Garver: 5+ hits + runs + RBI?",
+      "description": "Jika Mitch Garver mencatat total 5+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-C835E14E": {
+      "title": "Miguel Andujar: 5+ hits + runs + RBI?",
+      "description": "Jika Miguel Andujar mencatat total 5+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-A034BE5A": {
+      "title": "Ramon Laureano: 5+ hits + runs + RBI?",
+      "description": "Jika Ramon Laureano mencatat total 5+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-48582BD0": {
+      "title": "Leo Rivas: 4+ hits + runs + RBI?",
+      "description": "Jika Leo Rivas mencatat total 4+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-AFE15878": {
+      "title": "Xander Bogaerts: 5+ hits + runs + RBI?",
+      "description": "Jika Xander Bogaerts mencatat total 5+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-D9BA0998": {
+      "title": "Ty France: 5+ hits + runs + RBI?",
+      "description": "Jika Ty France mencatat total 5+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-31FF8AA3": {
+      "title": "Luke Raley: 5+ hits + runs + RBI?",
+      "description": "Jika Luke Raley mencatat total 5+ hits + runs + RBI dalam pertandingan bisbol profesional San Diego vs Seattle, pasar ini diselesaikan sebagai Ya."
+    },
+    "IMP-128920D1": {
+      "title": "Apakah Ukraina merebut lebih banyak wilayah daripada yang hilang minggu ini, menurut pemetaan pro-Ukraina?"
+    },
+    "IMP-3BE8DF30": {
+      "title": "Apakah Hope (sutradara Na Hong-jin) menang Palme d'Or Cannes 2026?"
+    },
+    "IMP-B6E6D4BE": {
+      "title": "Apakah SPY ditutup di bawah $720 pada Jumat, 29 Mei 2026?"
+    },
+    "UCL-REAL-2526": {
+      "title": "Apakah Real Madrid menang Champions League 2025/26?",
+      "description": "Diselesaikan YA jika Real Madrid memenangi final UEFA Champions League 2025/26."
+    }
+  }
+}

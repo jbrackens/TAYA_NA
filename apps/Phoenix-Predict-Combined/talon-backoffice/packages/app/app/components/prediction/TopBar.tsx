@@ -37,6 +37,7 @@ import {
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
 import { LanguageSelector } from "../i18n/LanguageSelector";
+import { localizedMarket } from "./market-content";
 
 const api = createPredictionClient();
 
@@ -54,6 +55,7 @@ const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] = 
 
 export function TopBar() {
   const { t } = useTranslation("header");
+  const { t: contentT } = useTranslation("market-content");
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isLoading, user, logout } = useAuth();
@@ -116,8 +118,8 @@ export function TopBar() {
   }, [allMarkets.length]);
 
   const searchResults = useMemo(
-    () => searchMarkets(allMarkets, query, 8),
-    [query, allMarkets],
+    () => searchMarkets(allMarkets.map((m) => localizedMarket(contentT, m)), query, 8),
+    [query, allMarkets, contentT],
   );
 
   useEffect(() => {

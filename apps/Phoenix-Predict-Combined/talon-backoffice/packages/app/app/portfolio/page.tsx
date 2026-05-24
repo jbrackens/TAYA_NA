@@ -19,6 +19,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
 import type {
   Position,
@@ -35,6 +36,7 @@ import {
   type LeaderboardEntry,
 } from "../lib/api/leaderboards-client";
 import { useToast } from "../components/ToastProvider";
+import { localizedMarket } from "../components/prediction/market-content";
 
 const api = createPredictionClient();
 
@@ -661,13 +663,15 @@ function MarketCell({
   market: PredictionMarket | undefined;
   fallback: string;
 }) {
+  const { t } = useTranslation("market-content");
   if (!market) {
     return <span className="pf-dim mono">{fallback.slice(0, 8)}…</span>;
   }
+  const displayMarket = localizedMarket(t, market);
   return (
     <div className="pf-market">
-      <span className="pf-market-title">{market.title}</span>
-      <span className="pf-market-ticker mono">{market.ticker}</span>
+      <span className="pf-market-title">{displayMarket.title}</span>
+      <span className="pf-market-ticker mono">{displayMarket.ticker}</span>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { deterministicDelta, heroChartPath } from "./utils/spark";
 import { useHeroPriceHistory } from "./utils/useHeroPriceHistory";
+import { categoryLabel, localizedMarket } from "./market-content";
 
 function formatHeroVolume(cents: number): string {
   const dollars = cents / 100;
@@ -47,6 +48,7 @@ export function DiscoveryHero({
   categoryName?: string;
 }) {
   const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   if (!market) {
     return (
       <section
@@ -64,27 +66,31 @@ export function DiscoveryHero({
     );
   }
 
-  const yes = market.yesPriceCents;
-  const no = market.noPriceCents;
-  const { delta, pct } = deterministicDelta(market.ticker, yes);
+  const displayMarket = localizedMarket(contentT, market);
+  const displayCategory = categoryName
+    ? categoryLabel(contentT, categoryName)
+    : "";
+  const yes = displayMarket.yesPriceCents;
+  const no = displayMarket.noPriceCents;
+  const { delta, pct } = deterministicDelta(displayMarket.ticker, yes);
   const isUp = delta >= 0;
   // Real backend-fetched series when available; falls back to the
   // deterministic walk during the fetch window or on failure (the
   // hook returns null in those cases and heroChartPath handles that).
-  const heroPoints = useHeroPriceHistory(market.ticker);
+  const heroPoints = useHeroPriceHistory(displayMarket.ticker);
   const chart = heroChartPath(
-    market.ticker,
+    displayMarket.ticker,
     yes,
     800,
     140,
     heroPoints ?? undefined,
   );
-  const volumeLabel = formatHeroVolume(market.volumeCents);
+  const volumeLabel = formatHeroVolume(displayMarket.volumeCents);
   const oiLabel =
-    market.openInterestCents != null
-      ? formatHeroVolume(market.openInterestCents)
+    displayMarket.openInterestCents != null
+      ? formatHeroVolume(displayMarket.openInterestCents)
       : "—";
-  const closesLabel = formatHeroCloseLeft(market.closeAt);
+  const closesLabel = formatHeroCloseLeft(displayMarket.closeAt);
 
   return (
     <>
@@ -231,7 +237,7 @@ export function DiscoveryHero({
       `}</style>
       <section className="rh-hero" aria-label={t("FEATURED_MARKET")}>
         <header className="rh-hero-eyebrow">
-          {market.status === "open" && (
+          {displayMarket.status === "open" && (
             <>
               <span className="live">
                 <span className="rh-hero-dot" aria-hidden="true" />
@@ -241,12 +247,12 @@ export function DiscoveryHero({
             </>
           )}
           <span>
-            {categoryName ? `${categoryName.toUpperCase()} · ` : ""}
-            {market.ticker}
+            {displayCategory ? `${displayCategory.toUpperCase()} · ` : ""}
+            {displayMarket.ticker}
           </span>
         </header>
 
-        <h1 className="rh-hero-q">{market.title}</h1>
+        <h1 className="rh-hero-q">{displayMarket.title}</h1>
 
         <div className="rh-bigprice" aria-label={`Yes price ${yes} cents`}>
           {yes}
@@ -287,10 +293,10 @@ export function DiscoveryHero({
         </div>
 
         <div className="rh-actions">
-          <Link href={`/market/${market.ticker}`} className="rh-buy-yes">
+          <Link href={`/market/${displayMarket.ticker}`} className="rh-buy-yes">
             {t("BUY_YES")} · {yes}¢
           </Link>
-          <Link href={`/market/${market.ticker}`} className="rh-buy-no">
+          <Link href={`/market/${displayMarket.ticker}`} className="rh-buy-no">
             {t("BUY_NO")} · {no}¢
           </Link>
         </div>

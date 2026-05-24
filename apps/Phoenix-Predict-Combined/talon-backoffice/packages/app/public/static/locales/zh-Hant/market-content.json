@@ -1,0 +1,87 @@
+{
+  "categories": {
+    "politics": "政治",
+    "crypto": "加密貨幣",
+    "sports": "體育",
+    "entertainment": "娛樂",
+    "tech": "科技",
+    "technology": "科技",
+    "economics": "經濟",
+    "general": "綜合",
+    "fed": "聯準會",
+    "senate": "參議院"
+  },
+  "markets": {
+    "FED-CUT-MAY26": {
+      "title": "聯準會會在5月FOMC降息嗎？",
+      "description": "如果聯準會在2026年5月6日至7日的FOMC會議上下調聯邦基金利率，則結算為「是」。"
+    },
+    "FED-HOLD-MAY26": {
+      "title": "聯準會會在5月FOMC維持利率不變嗎？",
+      "description": "如果聯準會在2026年5月FOMC會議上維持利率不變，則結算為「是」。"
+    },
+    "IMP-A416E3EB": {
+      "title": "2026年PGA錦標賽冠軍會需要加賽決出嗎？"
+    },
+    "IMP-B2CCBDF6": {
+      "title": "James Harden在第7場的失誤會比進球數更多嗎？"
+    },
+    "IMP-90ECE69C": {
+      "title": "免費抽獎（梅西耶星表）"
+    },
+    "IMP-53A0583B": {
+      "title": "Hacker News在24小時內會發出100篇以上故事嗎？"
+    },
+    "IMP-11BBE02A": {
+      "title": "鮪魚比鮭魚更好嗎？"
+    },
+    "IMP-D62B8DE2": {
+      "title": "Thomas Massie會以5.00%以內的差距贏或輸嗎？"
+    },
+    "IMP-92961559": {
+      "title": "Chicago C 對 Chicago WS 總得分？",
+      "description": "如果Chicago C和Chicago WS在原定於2026年5月17日美東時間下午2:10進行的職業棒球比賽中合計得分超過15.5分，則該市場結算為「是」。"
+    },
+    "IMP-F062F749": {
+      "title": "Mitch Garver：安打+得分+打點會達到5個以上嗎？",
+      "description": "如果Mitch Garver在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到5個以上，則結算為「是」。"
+    },
+    "IMP-C835E14E": {
+      "title": "Miguel Andujar：安打+得分+打點會達到5個以上嗎？",
+      "description": "如果Miguel Andujar在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到5個以上，則結算為「是」。"
+    },
+    "IMP-A034BE5A": {
+      "title": "Ramon Laureano：安打+得分+打點會達到5個以上嗎？",
+      "description": "如果Ramon Laureano在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到5個以上，則結算為「是」。"
+    },
+    "IMP-48582BD0": {
+      "title": "Leo Rivas：安打+得分+打點會達到4個以上嗎？",
+      "description": "如果Leo Rivas在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到4個以上，則結算為「是」。"
+    },
+    "IMP-AFE15878": {
+      "title": "Xander Bogaerts：安打+得分+打點會達到5個以上嗎？",
+      "description": "如果Xander Bogaerts在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到5個以上，則結算為「是」。"
+    },
+    "IMP-D9BA0998": {
+      "title": "Ty France：安打+得分+打點會達到5個以上嗎？",
+      "description": "如果Ty France在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到5個以上，則結算為「是」。"
+    },
+    "IMP-31FF8AA3": {
+      "title": "Luke Raley：安打+得分+打點會達到5個以上嗎？",
+      "description": "如果Luke Raley在San Diego對Seattle的職業棒球比賽中，安打+得分+打點合計達到5個以上，則結算為「是」。"
+    },
+    "IMP-128920D1": {
+      "title": "按親烏克蘭地圖製作者統計，烏克蘭本週奪回的領土會多於失去的嗎？"
+    },
+    "IMP-3BE8DF30": {
+      "title": "羅泓軫執導的《Hope》會贏得2026年坎城金棕櫚嗎？"
+    },
+    "IMP-B6E6D4BE": {
+      "title": "SPY會在2026年5月29日星期五收於720美元以下嗎？"
+    },
+    "UCL-REAL-2526": {
+      "title": "皇家馬德里會贏得2025/26歐冠嗎？",
+      "description": "如果皇家馬德里贏得2025/26賽季歐洲冠軍聯賽決賽，則結算為「是」。"
+    }
+  }
+}

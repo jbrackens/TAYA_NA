@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { MarketCard } from "../../components/prediction/MarketCard";
+import {
+  categoryName,
+  localizedMarket,
+} from "../../components/prediction/market-content";
 import { logger } from "../../lib/logger";
 import type {
   PredictionMarket,
@@ -13,6 +18,8 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 const api = createPredictionClient();
 
 export default function CategoryPage() {
+  const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   const params = useParams() ?? {};
   const slug = (params.slug as string | undefined) ?? "";
 
@@ -61,7 +68,7 @@ export default function CategoryPage() {
           textAlign: "center",
         }}
       >
-        Loading…
+        {t("LOADING_MARKETS")}
       </div>
     );
   }
@@ -109,30 +116,35 @@ export default function CategoryPage() {
       `}</style>
       <div>
         <header className="cat-head">
-          <h1 className="cat-title">{category?.name || slug}</h1>
+          <h1 className="cat-title">
+            {category ? categoryName(contentT, category) : slug}
+          </h1>
           <p className="cat-sub">
-            {markets.length} open market{markets.length !== 1 ? "s" : ""}
+            {t("OPEN_MARKET_COUNT", { count: markets.length })}
           </p>
         </header>
 
         {markets.length === 0 ? (
-          <div className="cat-empty">No open markets in this category yet.</div>
+          <div className="cat-empty">{t("NO_OPEN_MARKETS_IN_CATEGORY")}</div>
         ) : (
           <div className="cat-grid">
-            {markets.map((m) => (
-              <MarketCard
-                key={m.id}
-                ticker={m.ticker}
-                title={m.title}
-                yesPriceCents={m.yesPriceCents}
-                noPriceCents={m.noPriceCents}
-                volumeCents={m.volumeCents}
-                liquidityCents={m.liquidityCents}
-                closeAt={m.closeAt}
-                status={m.status}
-                imagePath={m.imagePath}
-              />
-            ))}
+            {markets.map((market) => {
+              const m = localizedMarket(contentT, market);
+              return (
+                <MarketCard
+                  key={m.id}
+                  ticker={m.ticker}
+                  title={m.title}
+                  yesPriceCents={m.yesPriceCents}
+                  noPriceCents={m.noPriceCents}
+                  volumeCents={m.volumeCents}
+                  liquidityCents={m.liquidityCents}
+                  closeAt={m.closeAt}
+                  status={m.status}
+                  imagePath={m.imagePath}
+                />
+              );
+            })}
           </div>
         )}
       </div>

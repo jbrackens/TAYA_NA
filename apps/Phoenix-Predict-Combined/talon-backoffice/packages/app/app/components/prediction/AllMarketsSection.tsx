@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { categoryName } from "./market-content";
 import type {
   Category,
   PredictionMarket,
@@ -49,6 +50,7 @@ interface Props {
 
 export function AllMarketsSection({ categories }: Props) {
   const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
@@ -272,7 +274,7 @@ export function AllMarketsSection({ categories }: Props) {
                 className={`ams-cat-pill ${isActive ? "is-active" : ""}`}
                 onClick={() => setCategorySlug(c.slug)}
               >
-                {c.name}
+                {categoryName(contentT, c)}
               </button>
             );
           })}

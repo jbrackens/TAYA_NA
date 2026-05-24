@@ -1,0 +1,87 @@
+{
+  "categories": {
+    "politics": "Politics",
+    "crypto": "Crypto",
+    "sports": "Sports",
+    "entertainment": "Entertainment",
+    "tech": "Tech",
+    "technology": "Tech",
+    "economics": "Economics",
+    "general": "General",
+    "fed": "Fed",
+    "senate": "Senate"
+  },
+  "markets": {
+    "FED-CUT-MAY26": {
+      "title": "Magka-cut ba ng rates ang Fed sa May FOMC?",
+      "description": "Magre-resolve sa YES kung babawasan ng Federal Reserve ang federal funds rate sa May 6-7, 2026 FOMC meeting."
+    },
+    "FED-HOLD-MAY26": {
+      "title": "Iho-hold ba ng Fed ang rates sa May FOMC?",
+      "description": "Magre-resolve sa YES kung pananatiliin ng Federal Reserve ang rates sa May 2026 FOMC meeting."
+    },
+    "IMP-A416E3EB": {
+      "title": "Kailangan ba ng playoff para malaman ang winner ng 2026 PGA Championship?"
+    },
+    "IMP-B2CCBDF6": {
+      "title": "Mas marami ba ang turnovers ni James Harden kaysa made FGs sa Game 7?"
+    },
+    "IMP-90ECE69C": {
+      "title": "Free Lottery (Messier catalogue)"
+    },
+    "IMP-53A0583B": {
+      "title": "May 100+ Hacker News stories ba sa loob ng 24h?"
+    },
+    "IMP-11BBE02A": {
+      "title": "Mas masarap ba ang tuna kaysa salmon?"
+    },
+    "IMP-D62B8DE2": {
+      "title": "Mananalo o matatalo ba si Thomas Massie sa loob ng 5.00% margin?"
+    },
+    "IMP-92961559": {
+      "title": "Chicago C vs Chicago WS total runs?",
+      "description": "Kung ang Chicago C at Chicago WS ay maka-score ng higit sa 15.5 total runs sa professional baseball game na orihinal na naka-schedule noong May 17, 2026, 2:10 PM EDT, magre-resolve ang market sa Yes."
+    },
+    "IMP-F062F749": {
+      "title": "Mitch Garver: 5+ hits + runs + RBIs?",
+      "description": "Kung si Mitch Garver ay makakuha ng 5+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game na orihinal na naka-schedule noong May 17, 2026, 7:20 PM EDT, magre-resolve ang market sa Yes."
+    },
+    "IMP-C835E14E": {
+      "title": "Miguel Andujar: 5+ hits + runs + RBIs?",
+      "description": "Kung si Miguel Andujar ay makakuha ng 5+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game, magre-resolve ang market sa Yes."
+    },
+    "IMP-A034BE5A": {
+      "title": "Ramon Laureano: 5+ hits + runs + RBIs?",
+      "description": "Kung si Ramon Laureano ay makakuha ng 5+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game, magre-resolve ang market sa Yes."
+    },
+    "IMP-48582BD0": {
+      "title": "Leo Rivas: 4+ hits + runs + RBIs?",
+      "description": "Kung si Leo Rivas ay makakuha ng 4+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game, magre-resolve ang market sa Yes."
+    },
+    "IMP-AFE15878": {
+      "title": "Xander Bogaerts: 5+ hits + runs + RBIs?",
+      "description": "Kung si Xander Bogaerts ay makakuha ng 5+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game, magre-resolve ang market sa Yes."
+    },
+    "IMP-D9BA0998": {
+      "title": "Ty France: 5+ hits + runs + RBIs?",
+      "description": "Kung si Ty France ay makakuha ng 5+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game, magre-resolve ang market sa Yes."
+    },
+    "IMP-31FF8AA3": {
+      "title": "Luke Raley: 5+ hits + runs + RBIs?",
+      "description": "Kung si Luke Raley ay makakuha ng 5+ total hits + runs + RBIs sa San Diego vs Seattle professional baseball game, magre-resolve ang market sa Yes."
+    },
+    "IMP-128920D1": {
+      "title": "Mas marami bang territory ang makukuha ng Ukraine kaysa mawawala ngayong linggo, ayon sa pro-Ukraine mappers?"
+    },
+    "IMP-3BE8DF30": {
+      "title": "Mananalo ba ang Hope (dir. Na Hong-jin) ng 2026 Cannes Palme d'Or?"
+    },
+    "IMP-B6E6D4BE": {
+      "title": "Magsasara ba ang SPY below $720 sa Friday, May 29, 2026?"
+    },
+    "UCL-REAL-2526": {
+      "title": "Mananalo ba ang Real Madrid sa Champions League 2025/26?",
+      "description": "Magre-resolve sa YES kung mananalo ang Real Madrid sa 2025/26 UEFA Champions League final."
+    }
+  }
+}

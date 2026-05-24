@@ -22,6 +22,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { deterministicDelta, sparklinePath } from "./utils/spark";
+import { categoryLabel, localizedMarket } from "./market-content";
 
 interface Props {
   markets: PredictionMarket[];
@@ -54,8 +55,9 @@ function categoryFromTicker(ticker: string): string {
 
 export function TrendingSidebar({ markets, limit = 6 }: Props) {
   const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   if (!markets || markets.length === 0) return null;
-  const rows = markets.slice(0, limit);
+  const rows = markets.slice(0, limit).map((m) => localizedMarket(contentT, m));
 
   return (
     <>
@@ -169,7 +171,7 @@ export function TrendingSidebar({ markets, limit = 6 }: Props) {
             const leadingPrice = yesLeads ? m.yesPriceCents : m.noPriceCents;
             const { pct, up } = deterministicDelta(m.ticker, leadingPrice);
             const sparkColor = up ? "var(--yes-text)" : "var(--no-text)";
-            const cat = categoryFromTicker(m.ticker);
+            const cat = categoryLabel(contentT, categoryFromTicker(m.ticker));
             return (
               <li key={m.id}>
                 <Link

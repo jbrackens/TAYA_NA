@@ -31,6 +31,7 @@ import type {
   PredictionMarket,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
+import { categoryName } from "../components/prediction/market-content";
 
 const api = createPredictionClient();
 
@@ -48,6 +49,7 @@ function rankByVolume(markets: PredictionMarket[]): PredictionMarket[] {
 
 export default function PredictDiscoveryPage() {
   const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   const [discovery, setDiscovery] = useState<DiscoveryResponse | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredSlides, setFeaturedSlides] = useState<FeaturedSlide[]>([]);
@@ -103,7 +105,7 @@ export default function PredictDiscoveryPage() {
         const slides: FeaturedSlide[] = [];
         const used = new Set<string>();
         if (allTop) {
-          slides.push({ key: "all", label: "All", market: allTop });
+          slides.push({ key: "all", label: t("ALL"), market: allTop });
           used.add(allTop.id);
         }
         for (const cl of catLists) {
@@ -113,9 +115,9 @@ export default function PredictDiscoveryPage() {
           used.add(pick.id);
           slides.push({
             key: cl.category.slug,
-            label: cl.category.name,
+            label: categoryName(contentT, cl.category),
             market: pick,
-            categoryName: cl.category.name,
+            categoryName: categoryName(contentT, cl.category),
           });
         }
         setFeaturedSlides(slides);
@@ -130,7 +132,7 @@ export default function PredictDiscoveryPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [contentT, t]);
 
   const trending = discovery?.trending ?? [];
   const featured = discovery?.featured ?? [];

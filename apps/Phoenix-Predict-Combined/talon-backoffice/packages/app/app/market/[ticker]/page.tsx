@@ -22,6 +22,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import MarketHead from "../../components/prediction/MarketHead";
 import MarketChart from "../../components/prediction/MarketChart";
 import OrderBook from "../../components/prediction/OrderBook";
@@ -56,6 +57,10 @@ import {
   resolveIdempotencyKey,
   type PendingIdempotency,
 } from "../../lib/orderIdempotency";
+import {
+  categoryName,
+  localizedMarket,
+} from "../../components/prediction/market-content";
 
 const api = createPredictionClient();
 
@@ -123,6 +128,8 @@ function adaptBookForDisplay(book: ApiOrderBook): {
 }
 
 export default function MarketDetailPage() {
+  const { t } = useTranslation("prediction");
+  const { t: contentT } = useTranslation("market-content");
   const params = useParams() ?? {};
   const ticker = (params.ticker as string | undefined) ?? "";
   // MarketCard's YES/NO pills deep-link here with `?side=yes` or
@@ -435,12 +442,14 @@ export default function MarketDetailPage() {
     if (!market || !event) return undefined;
     return categories.find((c) => c.id === event.categoryId);
   }, [market, event, categories]);
+  const displayMarket = market ? localizedMarket(contentT, market) : null;
+  const displayCategory = category ? categoryName(contentT, category) : "";
 
   if (loading) {
-    return <PageState>Loading market…</PageState>;
+    return <PageState>{t("LOADING_MARKET")}</PageState>;
   }
   if (error || !market) {
-    return <PageState tone="error">{error || "Market not found"}</PageState>;
+    return <PageState tone="error">{error || t("MARKET_NOT_FOUND")}</PageState>;
   }
 
   // Real book wins when populated (exchange-mode markets); fall back to
@@ -639,23 +648,23 @@ export default function MarketDetailPage() {
       `}</style>
 
       <nav className="md-crumb" aria-label="Breadcrumb">
-        <Link href="/predict">Markets</Link>
+        <Link href="/predict">{t("MARKETS_TITLE")}</Link>
         {category && (
           <>
             <span className="sep">›</span>
-            <Link href={`/category/${category.slug}`}>{category.name}</Link>
+            <Link href={`/category/${category.slug}`}>{displayCategory}</Link>
           </>
         )}
         <span className="sep">›</span>
-        <span>{market.title}</span>
+        <span>{displayMarket?.title}</span>
       </nav>
 
       <div className="md-grid">
         <div className="md-main">
           <section className="md-hero">
             <MarketHead
-              market={market}
-              categoryName={category?.name}
+              market={displayMarket ?? market}
+              categoryName={displayCategory}
               tradersCount={tradersCount}
             />
             <MarketChart
@@ -674,17 +683,26 @@ export default function MarketDetailPage() {
           </div>
 
           <section className="md-details">
-            <h3>Market details & resolution</h3>
-            {market.description && <p>{market.description}</p>}
+            <h3>{t("MARKET_DETAILS_RESOLUTION")}</h3>
+            {displayMarket?.description && <p>{displayMarket.description}</p>}
             <ul className="md-rules">
-              <li>Settlement source: {market.settlementSourceKey}.</li>
-              <li>Resolution rule: {market.settlementRule}.</li>
               <li>
-                Fees: {(market.feeRateBps / 100).toFixed(2)}% on all fills.
+                {t("SETTLEMENT_SOURCE", {
+                  source: market.settlementSourceKey,
+                })}
               </li>
               <li>
-                Closes {new Date(market.closeAt).toUTCString().slice(5, -4)}{" "}
-                UTC.
+                {t("RESOLUTION_RULE", { rule: market.settlementRule })}
+              </li>
+              <li>
+                {t("FEES_ON_FILLS", {
+                  fee: (market.feeRateBps / 100).toFixed(2),
+                })}
+              </li>
+              <li>
+                {t("CLOSES_AT_UTC", {
+                  date: new Date(market.closeAt).toUTCString().slice(5, -4),
+                })}
               </li>
             </ul>
           </section>
@@ -722,29 +740,36 @@ export default function MarketDetailPage() {
             />
           </div>
 
-          <aside className="md-related" aria-label="Related markets">
-            <h3>Related markets</h3>
+          <aside className="md-related" aria-label={t("RELATED_MARKETS")}>
+            <h3>{t("RELATED_MARKETS")}</h3>
             {related.length === 0 ? (
               <p style={{ color: "var(--t3)", fontSize: 12 }}>
-                No related markets open right now.
+                {t("NO_RELATED_MARKETS")}
               </p>
             ) : (
               <div className="md-related-list">
-                {related.map((m) => (
-                  <Link
-                    key={m.id}
-                    href={`/market/${m.ticker}`}
-                    className="md-related-row"
-                  >
-                    <div className="md-related-q">{m.title}</div>
-                    <div className="md-related-line">
-                      <span className="md-related-yes">
-                        YES {m.yesPriceCents}¢
-                      </span>
-                      <span>${(m.volumeCents / 100).toFixed(0)} vol</span>
-                    </div>
-                  </Link>
-                ))}
+                {related.map((market) => {
+                  const m = localizedMarket(contentT, market);
+                  return (
+                    <Link
+                      key={m.id}
+                      href={`/market/${m.ticker}`}
+                      className="md-related-row"
+                    >
+                      <div className="md-related-q">{m.title}</div>
+                      <div className="md-related-line">
+                        <span className="md-related-yes">
+                          {t("YES")} {m.yesPriceCents}¢
+                        </span>
+                        <span>
+                          {t("VOLUME_VALUE", {
+                            value: `$${(m.volumeCents / 100).toFixed(0)}`,
+                          })}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </aside>

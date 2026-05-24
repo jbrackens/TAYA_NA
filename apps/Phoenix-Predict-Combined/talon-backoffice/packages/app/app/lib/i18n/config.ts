@@ -48,6 +48,7 @@ const NAMESPACES = [
   "bonus",
   "content",
   "prediction",
+  "market-content",
 ];
 
 const SUPPORTED_LANGUAGES = ["en", "zh-Hans", "zh-Hant", "tl", "ms", "id"];
