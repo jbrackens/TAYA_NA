@@ -15,6 +15,11 @@
 
 # ---- Player (public demo) ----
 demo.99rtp.io {
+	@chatApi path /chat/api/*
+	handle @chatApi {
+		uri strip_prefix /chat
+		reverse_proxy predict_rocketchat:3000
+	}
 	@chatRoot path /chat /chat/
 	redir @chatRoot /chat/channel/global 302
 	@chat path /chat/*
