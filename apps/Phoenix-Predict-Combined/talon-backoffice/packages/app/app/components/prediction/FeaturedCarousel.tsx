@@ -7,8 +7,10 @@
  * All / Sports / Crypto / Politics), each rendered as the full DiscoveryHero
  * so the carousel inherits the hero's design language with zero visual
  * divergence (DESIGN.md §7 "Hero owns the page"). The active slide is the
- * emphasized big hero; a control bar below carries prev/next arrows and
- * labeled chips that double as position indicators and jump controls.
+ * emphasized big hero; the carousel control is overlaid in the card's
+ * top-right (Kalshi-style): a neutral "N of M" counter flanked by prev/next
+ * arrows. Each slide's eyebrow carries the category, so the control stays
+ * category-agnostic.
  *
  * Behavior: gentle auto-advance (paused on hover/focus, disabled under
  * prefers-reduced-motion or with a single slide) and keyboard nav (← / →).
@@ -20,6 +22,7 @@
 
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { DiscoveryHero } from "./DiscoveryHero";
 
@@ -99,6 +102,7 @@ export function FeaturedCarousel({
   loading?: boolean;
   error?: boolean;
 }) {
+  const { t } = useTranslation("prediction");
   const [active, setActive] = useState(0);
   const [dir, setDir] = useState<"next" | "prev">("next");
   const [paused, setPaused] = useState(false);
@@ -136,8 +140,8 @@ export function FeaturedCarousel({
     return (
       <CarouselMessage>
         {error
-          ? "Couldn’t load featured markets. Refresh to try again."
-          : "No featured markets right now."}
+          ? t("COULD_NOT_LOAD_FEATURED_MARKETS")
+          : t("NO_FEATURED_MARKETS")}
       </CarouselMessage>
     );
   }
@@ -151,7 +155,7 @@ export function FeaturedCarousel({
         className="fc"
         role="region"
         aria-roledescription="carousel"
-        aria-label="Featured markets"
+        aria-label={t("FEATURED_MARKETS")}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -167,52 +171,54 @@ export function FeaturedCarousel({
           }
         }}
       >
-        {/* Only the active slide is mounted (one chart + one price-history
-         * fetch at a time); the key restarts the enter animation per change. */}
-        <div className={`fc-stage fc-in-${dir}`} key={slide.key}>
-          <DiscoveryHero
-            market={slide.market}
-            categoryName={slide.categoryName}
-          />
-        </div>
-
-        {count > 1 && (
-          <div className="fc-controls">
-            <button
-              type="button"
-              className="fc-arrow"
-              aria-label="Previous featured market"
-              onClick={prev}
-            >
-              <Chevron left />
-            </button>
-            <div
-              className="fc-chips"
-              role="group"
-              aria-label="Choose a featured market"
-            >
-              {slides.map((s, i) => (
-                <button
-                  key={s.key}
-                  type="button"
-                  className={`fc-chip${i === active ? " is-active" : ""}`}
-                  aria-current={i === active ? "true" : undefined}
-                  onClick={() => goTo(i)}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="fc-arrow"
-              aria-label="Next featured market"
-              onClick={next}
-            >
-              <Chevron />
-            </button>
+        <div className="fc-viewport">
+          {/* Only the active slide is mounted (one chart + one price-history
+           * fetch at a time); the key restarts the enter animation per change. */}
+          <div
+            className={`fc-stage fc-in-${dir}`}
+            key={slide.key}
+            aria-roledescription="slide"
+            aria-label={t("FEATURED_MARKET_SLIDE_LABEL", {
+              label: slide.label,
+              index: active + 1,
+              count,
+            })}
+          >
+            <DiscoveryHero
+              market={slide.market}
+              categoryName={slide.categoryName}
+            />
           </div>
-        )}
+
+          {/* Kalshi-style control: overlaid in the card's top-right as a
+           * neutral "N of M" counter flanked by prev/next arrows. The slide's
+           * eyebrow carries the category, so the control stays category-
+           * agnostic; the eyebrow reserves right-padding (scoped CSS) so it
+           * never runs under the control. */}
+          {count > 1 && (
+            <div className="fc-nav">
+              <button
+                type="button"
+                className="fc-arrow"
+                aria-label={t("PREVIOUS_FEATURED_MARKET")}
+                onClick={prev}
+              >
+                <Chevron left />
+              </button>
+              <span className="fc-nav-count">
+                {t("CAROUSEL_COUNT", { index: active + 1, count })}
+              </span>
+              <button
+                type="button"
+                className="fc-arrow"
+                aria-label={t("NEXT_FEATURED_MARKET")}
+                onClick={next}
+              >
+                <Chevron />
+              </button>
+            </div>
+          )}
+        </div>
       </section>
     </>
   );
@@ -234,37 +240,39 @@ function FeaturedCarouselStyles() {
       .fc-in-next { animation: fc-slide-next 300ms ease both; }
       .fc-in-prev { animation: fc-slide-prev 300ms ease both; }
 
-      .fc-controls {
-        display: flex; align-items: center; justify-content: center;
-        gap: 12px; margin-top: 16px; flex-wrap: wrap;
+      .fc-viewport { position: relative; }
+      /* Reserve room at the eyebrow's right edge so the overlaid control never
+       * overlaps the LIVE · CATEGORY · TICKER line (scoped to the carousel). */
+      .fc-viewport .rh-hero-eyebrow { padding-right: 104px; }
+
+      .fc-nav {
+        position: absolute; top: 22px; right: 24px; z-index: 2;
+        display: inline-flex; align-items: center; gap: 6px;
+      }
+      .fc-nav-count {
+        min-width: 46px; text-align: center;
+        font-size: 12px; font-weight: 500; color: var(--t3);
+        font-variant-numeric: tabular-nums;
       }
       .fc-arrow {
         flex: 0 0 auto;
-        width: 36px; height: 36px; border-radius: 50%;
+        width: 30px; height: 30px; border-radius: 50%;
         display: inline-flex; align-items: center; justify-content: center;
-        background: var(--surface-1); color: var(--t2);
+        background: var(--surface-2); color: var(--t2);
         border: 1px solid var(--border-1); cursor: pointer;
         transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
       }
       .fc-arrow:hover {
-        color: var(--t1); background: var(--surface-2); border-color: var(--border-2);
+        color: var(--t1); background: var(--surface-1); border-color: var(--border-2);
       }
       .fc-arrow:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+      .fc-arrow svg { width: 16px; height: 16px; }
 
-      .fc-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-      .fc-chip {
-        font-family: inherit; font-size: 12px; font-weight: 600;
-        padding: 7px 15px; border-radius: var(--r-pill);
-        background: var(--surface-2); color: var(--t3);
-        border: 1px solid var(--border-1); cursor: pointer;
-        transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+      @media (max-width: 720px) {
+        .fc-viewport .rh-hero-eyebrow { padding-right: 92px; }
+        .fc-nav { top: 18px; right: 18px; }
+        .fc-arrow { width: 28px; height: 28px; }
       }
-      .fc-chip:hover { color: var(--t1); }
-      .fc-chip.is-active {
-        background: var(--accent-soft); color: var(--accent);
-        border-color: transparent;
-      }
-      .fc-chip:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
       @media (prefers-reduced-motion: reduce) {
         .fc-in-next, .fc-in-prev { animation: none; }
