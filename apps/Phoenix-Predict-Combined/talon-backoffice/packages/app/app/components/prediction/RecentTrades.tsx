@@ -8,6 +8,7 @@
  * price colors, alternating row tint for legibility at high density.
  */
 
+import { useTranslation } from "react-i18next";
 import type { Trade } from "@phoenix-ui/api-client/src/prediction-types";
 
 interface RecentTradesProps {
@@ -78,6 +79,7 @@ export default function RecentTrades({
   trades,
   limit = 12,
 }: RecentTradesProps) {
+  const { t } = useTranslation("prediction");
   const collapsed = collapseTrades(trades);
   const visible = collapsed.slice(0, limit);
 
@@ -152,15 +154,17 @@ export default function RecentTrades({
           padding: 20px 0;
         }
       `}</style>
-      <section className="rt-card" aria-label="Recent trades">
+      <section className="rt-card" aria-label={t("RECENT_TRADES")}>
         <div className="rt-head">
-          <span className="rt-title">Recent trades</span>
+          <span className="rt-title">{t("RECENT_TRADES")}</span>
           <span className="rt-sub">
-            {visible.length > 0 ? `Last ${visible.length}` : "Tape"}
+            {visible.length > 0
+              ? t("LAST_COUNT", { count: visible.length })
+              : t("TAPE")}
           </span>
         </div>
         {visible.length === 0 ? (
-          <div className="rt-empty">No recent trades.</div>
+          <div className="rt-empty">{t("NO_RECENT_TRADES")}</div>
         ) : (
           <div className="rt-tape">
             {visible.map((row) => {
@@ -179,9 +183,9 @@ export default function RecentTrades({
                         background: "var(--accent-soft)",
                         color: "var(--accent)",
                       }}
-                      title="Complementary issuance — both sides minted from collateral"
+                      title={t("MINT_TITLE")}
                     >
-                      MINT
+                      {t("MINT")}
                     </span>
                     <span className="rt-px">
                       <span className="rt-px yes">{yPx}¢</span>
@@ -197,18 +201,19 @@ export default function RecentTrades({
                   </div>
                 );
               }
-              const t = row.trade;
-              const sideKey = t.side === "yes" ? "yes" : "no";
-              const px = t.side === "yes" ? t.priceCents : 100 - t.priceCents;
-              const size = (t.quantity * px) / 100;
+              const trade = row.trade;
+              const sideKey = trade.side === "yes" ? "yes" : "no";
+              const px =
+                trade.side === "yes" ? trade.priceCents : 100 - trade.priceCents;
+              const size = (trade.quantity * px) / 100;
               return (
-                <div key={t.id} className="rt-row">
+                <div key={trade.id} className="rt-row">
                   <span className={`rt-side ${sideKey}`}>
-                    {t.side.toUpperCase()}
+                    {t(trade.side === "yes" ? "YES" : "NO")}
                   </span>
                   <span className={`rt-px ${sideKey}`}>{px}¢</span>
                   <span className="rt-sz">${size.toFixed(2)}</span>
-                  <span className="rt-t">{timeAgo(t.tradedAt)}</span>
+                  <span className="rt-t">{timeAgo(trade.tradedAt)}</span>
                 </div>
               );
             })}

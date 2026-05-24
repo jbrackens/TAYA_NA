@@ -23,6 +23,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import type {
   PredictionMarket,
   OrderSide,
@@ -97,20 +98,25 @@ type TicketMode = "market" | "limit";
  * projection as a tradeable quote. The dedicated body shows only the
  * outcome and a one-line explanation.
  */
-function renderSettledTicket(market: PredictionMarket) {
+function renderSettledTicket(
+  market: PredictionMarket,
+  t: (key: string, values?: Record<string, unknown>) => string,
+) {
   const isSettled = market.status === "settled";
   const outcomeLabel = isSettled
     ? market.result === "yes"
-      ? "Settled · YES wins"
+      ? t("SETTLED_YES_WINS")
       : market.result === "no"
-        ? "Settled · NO wins"
-        : "Settled"
-    : `Market ${market.status}`;
+        ? t("SETTLED_NO_WINS")
+        : t("SETTLED")
+    : t("MARKET_STATUS", { status: market.status });
   const explainer = isSettled
     ? market.result
-      ? `This market resolved ${market.result.toUpperCase()}. Winners paid 100¢ per share; losers 0¢.`
-      : "This market is settled. Trading is closed."
-    : `This market is ${market.status}. Trading is paused.`;
+      ? t("MARKET_RESOLVED_EXPLAINER", {
+          result: market.result.toUpperCase(),
+        })
+      : t("MARKET_SETTLED_CLOSED")
+    : t("MARKET_PAUSED_EXPLAINER", { status: market.status });
   return (
     <>
       <div className="tt-head">
@@ -133,6 +139,7 @@ export function TradeTicket({
   onPreview: _onPreview,
   onSubmit,
 }: TradeTicketProps) {
+  const { t } = useTranslation("prediction");
   const [side, setSide] = useState<OrderSide>(defaultSide);
   const [amount, setAmount] = useState(defaultAmount);
   const [mode, setMode] = useState<TicketMode>("market");
@@ -182,7 +189,7 @@ export function TradeTicket({
     if (!isAuthenticated || authLoading || !isOpen) return;
     if (insufficientFunds || insufficientShares) return;
     if (quantity < 1) {
-      setError("Amount too small — minimum 1 share per trade.");
+      setError(t("AMOUNT_TOO_SMALL"));
       return;
     }
     setSubmitting(true);
@@ -237,8 +244,12 @@ export function TradeTicket({
         // Legacy onSubmit returning void (tests/mocks). Don't claim a
         // fill we can't confirm; just acknowledge.
         toast.info(
-          "Order submitted",
-          `${qty} ${sideLabel} on ${market.ticker}`,
+          t("ORDER_SUBMITTED"),
+          t("ORDER_SUBMITTED_BODY", {
+            quantity: qty,
+            side: sideLabel,
+            ticker: market.ticker,
+          }),
         );
       } else if (filled > 0) {
         // ANYTHING with a non-zero fill counts as a success toast,
@@ -250,25 +261,39 @@ export function TradeTicket({
         // shares. Order of clauses matters: check filled first.
         if (filled === qty) {
           // Full fill — clean success toast.
-          const verb = action === "sell" ? "Sold" : "Bought";
           toast.success(
-            `${verb} ${filled} ${sideLabel} share${filled === 1 ? "" : "s"}`,
-            `$${amount.toFixed(2)} on ${market.ticker}`,
+            t(action === "sell" ? "SOLD_SHARES" : "BOUGHT_SHARES", {
+              quantity: filled,
+              side: sideLabel,
+              plural: filled === 1 ? "" : "s",
+            }),
+            t("ORDER_AMOUNT_ON_MARKET", {
+              amount: amount.toFixed(2),
+              ticker: market.ticker,
+            }),
           );
         } else {
           // Partial — explain what happened to the remainder. IOC
           // market orders cancel the rest; resting limit orders book it.
           const verb =
-            action === "sell" ? "Partially sold" : "Partially filled";
+            action === "sell" ? t("PARTIALLY_SOLD") : t("PARTIALLY_FILLED");
           const remainderFate =
             status === "open"
-              ? "resting on the book"
+              ? t("RESTING_ON_BOOK")
               : status === "partial" && mode === "limit"
-                ? "resting on the book"
-                : "cancelled (no more liquidity)";
+                ? t("RESTING_ON_BOOK")
+                : t("CANCELLED_NO_LIQUIDITY");
           toast.success(
-            `${verb}: ${filled} of ${qty} ${sideLabel}`,
-            `Remainder ${qty - filled} ${remainderFate}`,
+            t("PARTIAL_FILL_SUMMARY", {
+              verb,
+              filled,
+              quantity: qty,
+              side: sideLabel,
+            }),
+            t("REMAINDER_STATUS", {
+              remainder: qty - filled,
+              status: remainderFate,
+            }),
           );
         }
       } else if (status === "open") {
@@ -277,8 +302,12 @@ export function TradeTicket({
         const priceLabel =
           mode === "limit" ? `${limitPriceCents}¢` : `${price}¢`;
         toast.info(
-          `Order resting on the book`,
-          `${qty} ${sideLabel} @ ${priceLabel} — waiting for a match`,
+          t("ORDER_RESTING"),
+          t("ORDER_RESTING_BODY", {
+            quantity: qty,
+            side: sideLabel,
+            price: priceLabel,
+          }),
         );
       } else if (status === "cancelled" || status === "rejected") {
         // Zero-fill cancellation/rejection. failureReason is one of the
@@ -287,18 +316,27 @@ export function TradeTicket({
           ? failureReason.replace(/_/g, " ")
           : "no matching liquidity";
         toast.error(
-          `Order ${status}`,
-          `${qty} ${sideLabel} on ${market.ticker} — ${why}`,
+          t("ORDER_STATUS", { status }),
+          t("ORDER_STATUS_BODY", {
+            quantity: qty,
+            side: sideLabel,
+            ticker: market.ticker,
+            reason: why,
+          }),
         );
       } else {
         // pending/expired/unknown: don't pretend it worked.
         toast.info(
-          `Order ${status || "submitted"}`,
-          `${qty} ${sideLabel} on ${market.ticker}`,
+          t("ORDER_STATUS", { status: status || t("SUBMITTED") }),
+          t("ORDER_SUBMITTED_BODY", {
+            quantity: qty,
+            side: sideLabel,
+            ticker: market.ticker,
+          }),
         );
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Order failed");
+      setError(err instanceof Error ? err.message : t("ORDER_FAILED"));
     } finally {
       setSubmitting(false);
     }
@@ -318,6 +356,7 @@ export function TradeTicket({
     amount,
     market.ticker,
     toast,
+    t,
   ]);
 
   const setSideAndReset = (s: OrderSide) => {
@@ -609,20 +648,20 @@ export function TradeTicket({
         }
       `}</style>
 
-      <section className="tt" aria-label="Trade ticket">
-        {!isOpen && renderSettledTicket(market)}
+      <section className="tt" aria-label={t("TRADE_TICKET")}>
+        {!isOpen && renderSettledTicket(market, t)}
         {isOpen && (
           <>
             <div className="tt-head">
-              <span className="tt-title">Trade</span>
-              <div className="tt-mode" role="tablist" aria-label="Order type">
+              <span className="tt-title">{t("TRADE")}</span>
+              <div className="tt-mode" role="tablist" aria-label={t("ORDER_TYPE")}>
                 <button
                   role="tab"
                   aria-selected={mode === "market"}
                   className={mode === "market" ? "is-active" : ""}
                   onClick={() => setMode("market")}
                 >
-                  Market
+                  {t("MARKET_ORDER")}
                 </button>
                 <button
                   role="tab"
@@ -632,11 +671,11 @@ export function TradeTicket({
                   disabled={!isExchange}
                   title={
                     isExchange
-                      ? "Limit order — set your max buy / min sell price"
-                      : "Limit orders require an exchange-mode market"
+                      ? t("LIMIT_ORDER_TITLE")
+                      : t("LIMIT_ORDER_DISABLED_TITLE")
                   }
                 >
-                  Limit
+                  {t("LIMIT_ORDER")}
                 </button>
               </div>
             </div>
@@ -648,7 +687,7 @@ export function TradeTicket({
               <div
                 className="tt-mode"
                 role="tablist"
-                aria-label="Action"
+                aria-label={t("ACTION")}
                 style={{ marginBottom: 14, alignSelf: "flex-start" }}
               >
                 <button
@@ -657,7 +696,7 @@ export function TradeTicket({
                   className={action === "buy" ? "is-active" : ""}
                   onClick={() => setAction("buy")}
                 >
-                  Buy
+                  {t("BUY")}
                 </button>
                 <button
                   role="tab"
@@ -667,28 +706,31 @@ export function TradeTicket({
                   disabled={availableShares === 0}
                   title={
                     availableShares === 0
-                      ? "You don't have shares on this side to sell"
-                      : `Sell up to ${availableShares} ${side.toUpperCase()} shares`
+                      ? t("NO_SHARES_TO_SELL")
+                      : t("SELL_UP_TO_SHARES", {
+                          quantity: availableShares,
+                          side: side.toUpperCase(),
+                        })
                   }
                 >
-                  Sell
+                  {t("SELL")}
                 </button>
               </div>
             )}
 
-            <div className="tt-sides" role="tablist" aria-label="Side">
+            <div className="tt-sides" role="tablist" aria-label={t("SIDE")}>
               <button
                 role="tab"
                 aria-selected={side === "yes"}
                 onClick={() => setSideAndReset("yes")}
                 className={`tt-side yes ${side === "yes" ? "is-selected" : ""}`}
               >
-                <span className="tt-side-label">YES</span>
+                <span className="tt-side-label">{t("YES")}</span>
                 <span className="tt-side-price">{market.yesPriceCents}¢</span>
                 <span className="tt-side-sub">
                   {market.yesPriceCents >= 50 ? "+" : "−"}
                   {Math.abs(market.yesPriceCents - 50)} · {market.yesPriceCents}
-                  % prob
+                  % {t("PROB")}
                 </span>
               </button>
               <button
@@ -697,12 +739,12 @@ export function TradeTicket({
                 onClick={() => setSideAndReset("no")}
                 className={`tt-side no ${side === "no" ? "is-selected" : ""}`}
               >
-                <span className="tt-side-label">NO</span>
+                <span className="tt-side-label">{t("NO")}</span>
                 <span className="tt-side-price">{market.noPriceCents}¢</span>
                 <span className="tt-side-sub">
                   {market.noPriceCents >= 50 ? "+" : "−"}
                   {Math.abs(market.noPriceCents - 50)} · {market.noPriceCents}%
-                  prob
+                  {t("PROB")}
                 </span>
               </button>
             </div>
@@ -714,13 +756,15 @@ export function TradeTicket({
               <div
                 className="tt-amount"
                 style={{ marginBottom: 14 }}
-                aria-label="Limit price"
+                aria-label={t("LIMIT_PRICE")}
               >
                 <div className="tt-amt-head">
                   <span className="tt-amt-label">
-                    Limit price ({side.toUpperCase()})
+                    {t("LIMIT_PRICE_SIDE", { side: side.toUpperCase() })}
                   </span>
-                  <span className="tt-amt-balance">Mid {marketPrice}¢</span>
+                  <span className="tt-amt-balance">
+                    {t("MID_PRICE", { price: marketPrice })}
+                  </span>
                 </div>
                 <input
                   type="number"
@@ -756,8 +800,8 @@ export function TradeTicket({
                   }}
                 >
                   {action === "buy"
-                    ? `Pays up to ${limitPriceCents}¢/share. Rest unfilled at limit.`
-                    : `Sells at ${limitPriceCents}¢/share or better.`}
+                    ? t("LIMIT_BUY_HELP", { price: limitPriceCents })
+                    : t("LIMIT_SELL_HELP", { price: limitPriceCents })}
                 </p>
               </div>
             )}
@@ -765,12 +809,15 @@ export function TradeTicket({
             <div className="tt-amount">
               <div className="tt-amt-head">
                 <span className="tt-amt-label">
-                  {action === "sell" ? "Shares to sell" : "Amount"}
+                  {action === "sell" ? t("SHARES_TO_SELL") : t("AMOUNT")}
                 </span>
                 <span className="tt-amt-balance">
                   {action === "sell"
-                    ? `Available ${availableShares}`
-                    : `Balance $${typeof balance === "number" ? balance.toFixed(2) : "—"}`}
+                    ? t("AVAILABLE_SHARES", { quantity: availableShares })
+                    : t("BALANCE_AMOUNT", {
+                        amount:
+                          typeof balance === "number" ? balance.toFixed(2) : "—",
+                      })}
                 </span>
               </div>
               <div className="tt-amt-display">
@@ -790,12 +837,12 @@ export function TradeTicket({
                   <span className="tt-amt-affix">.{centsStr}</span>
                 </div>
                 <div className="tt-amt-sub">
-                  {Math.floor(shares)} shares
+                  {t("SHARES_COUNT", { quantity: Math.floor(shares) })}
                   <br />
-                  Payout <span className="win">${payout.toFixed(2)}</span>
+                  {t("PAYOUT")} <span className="win">${payout.toFixed(2)}</span>
                 </div>
               </div>
-              <div className="tt-chips" role="group" aria-label="Quick amount">
+              <div className="tt-chips" role="group" aria-label={t("QUICK_AMOUNT")}>
                 {QUICK_AMOUNTS.map((a) => {
                   const isActive = Math.floor(amount) === a;
                   return (
@@ -829,62 +876,65 @@ export function TradeTicket({
                   className="tt-chip"
                   disabled={typeof balance !== "number" || balance <= 0}
                 >
-                  MAX
+                  {t("MAX")}
                 </button>
               </div>
             </div>
 
             <div className="tt-summary">
               <div className="tt-summary-row">
-                <span className="k">Avg. fill price</span>
+                <span className="k">{t("AVG_FILL_PRICE")}</span>
                 <span className="v">{price}¢</span>
               </div>
               <div className="tt-summary-row">
-                <span className="k">Implied prob</span>
+                <span className="k">{t("IMPLIED_PROB")}</span>
                 <span className="v">{impliedProb}%</span>
               </div>
               <div className="tt-summary-row">
-                <span className="k">Shares</span>
+                <span className="k">{t("SHARES")}</span>
                 <span className="v">{shares.toFixed(2)}</span>
               </div>
               <div className="tt-summary-row">
-                <span className="k">Payout if {side.toUpperCase()}</span>
+                <span className="k">
+                  {t("PAYOUT_IF_SIDE", { side: side.toUpperCase() })}
+                </span>
                 <span className="v accent">${payout.toFixed(2)}</span>
               </div>
             </div>
 
             {authLoading ? (
               <button type="button" className="tt-cta" disabled>
-                Checking session…
+                {t("CHECKING_SESSION")}
               </button>
             ) : !isAuthenticated ? (
               <>
                 <Link href={loginHref} className="tt-cta">
-                  Log in to trade
+                  {t("LOG_IN_TO_TRADE")}
                 </Link>
                 <p className="tt-state-note">
-                  Prices are public. Sign in to place this {side.toUpperCase()}{" "}
-                  order.
+                  {t("SIGN_IN_TO_PLACE_ORDER", { side: side.toUpperCase() })}
                 </p>
               </>
             ) : insufficientFunds ? (
               <>
                 <Link href="/cashier" className="tt-cta">
-                  Add funds
+                  {t("ADD_FUNDS")}
                 </Link>
                 <p className="tt-state-note" role="alert">
-                  Your available balance is below this ${amount.toFixed(2)}{" "}
-                  order.
+                  {t("BALANCE_BELOW_ORDER", { amount: amount.toFixed(2) })}
                 </p>
               </>
             ) : insufficientShares ? (
               <>
                 <button type="button" className="tt-cta" disabled>
-                  Not enough shares
+                  {t("NOT_ENOUGH_SHARES")}
                 </button>
                 <p className="tt-state-note" role="alert">
-                  You have {availableShares} {side.toUpperCase()} shares
-                  available; this sell is for {Math.floor(quantity)}.
+                  {t("NOT_ENOUGH_SHARES_DETAIL", {
+                    available: availableShares,
+                    side: side.toUpperCase(),
+                    quantity: Math.floor(quantity),
+                  })}
                 </p>
               </>
             ) : (
@@ -903,14 +953,15 @@ export function TradeTicket({
                 a stage gotcha during the 2026-05-03 demo dry-run.
               */}
                 {submitting
-                  ? "Placing…"
-                  : `${action === "sell" ? "Sell" : "Place trade"} · $${amount.toFixed(2)}`}
+                  ? t("PLACING")
+                  : t(action === "sell" ? "SELL_AMOUNT" : "PLACE_TRADE_AMOUNT", {
+                      amount: amount.toFixed(2),
+                    })}
               </button>
             )}
 
             <p className="tt-trust">
-              {price}¢ means a {impliedProb}% implied probability. Winning
-              contracts pay $1 each.
+              {t("TRADE_TRUST_NOTE", { price, probability: impliedProb })}
             </p>
 
             {/* Suppress unused-warning: API surface preserved for Phase 4 */}

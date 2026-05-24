@@ -13,6 +13,8 @@
  * arrive the shape won't change.
  */
 
+import { useTranslation } from "react-i18next";
+
 interface BookLevel {
   priceCents: number;
   size: number;
@@ -26,6 +28,7 @@ interface OrderBookProps {
 }
 
 export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
+  const { t } = useTranslation("prediction");
   const bestBid = bids[0]?.priceCents ?? 0;
   const bestAsk = asks[asks.length - 1]?.priceCents ?? 0;
   const mid =
@@ -134,26 +137,26 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
           padding: 16px 0;
         }
       `}</style>
-      <section className="ob-card" aria-label="Order book">
+      <section className="ob-card" aria-label={t("ORDER_BOOK")}>
         <div className="ob-head">
-          <span className="ob-title">Order book</span>
+          <span className="ob-title">{t("ORDER_BOOK")}</span>
           <span className="ob-sub">
-            Aggregated · {asks.length + bids.length} levels
+            {t("AGGREGATED_LEVELS", { count: asks.length + bids.length })}
           </span>
         </div>
 
         {asks.length + bids.length === 0 ? (
-          <div className="ob-empty">No orders resting yet.</div>
+          <div className="ob-empty">{t("NO_RESTING_ORDERS")}</div>
         ) : (
           <>
             {asks.length > 0 && (
               <table className="ob-table">
                 <thead>
                   <tr>
-                    <th>Side</th>
-                    <th className="n">Price</th>
-                    <th className="n">Size</th>
-                    <th className="n">Total</th>
+                    <th>{t("SIDE")}</th>
+                    <th className="n">{t("PRICE")}</th>
+                    <th className="n">{t("SIZE")}</th>
+                    <th className="n">{t("TOTAL")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,7 +171,9 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                         ),
                       }}
                     >
-                      <td className="no-px">NO {100 - l.priceCents}¢</td>
+                      <td className="no-px">
+                        {t("NO")} {100 - l.priceCents}¢
+                      </td>
                       <td className="n">{l.size}</td>
                       <td className="n">
                         {((l.size * (100 - l.priceCents)) / 100).toFixed(2)}
@@ -184,7 +189,7 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
 
             {bestBid > 0 && bestAsk > 0 && (
               <div className="ob-spread">
-                SPREAD · {spread}¢ · MID {mid}¢
+                {t("SPREAD_MID", { spread, mid })}
               </div>
             )}
 
@@ -202,7 +207,9 @@ export default function OrderBook({ bids, asks, maxDepth }: OrderBookProps) {
                         ),
                       }}
                     >
-                      <td className="yes-px">YES {l.priceCents}¢</td>
+                      <td className="yes-px">
+                        {t("YES")} {l.priceCents}¢
+                      </td>
                       <td className="n">{l.size}</td>
                       <td className="n">
                         {((l.size * l.priceCents) / 100).toFixed(2)}

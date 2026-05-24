@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import type { MarketPriceHistory } from "@phoenix-ui/api-client/src/prediction-types";
 import { logger } from "../../lib/logger";
@@ -97,6 +98,7 @@ export default function MarketChart({
   volume24hCents,
   openInterestShares,
 }: MarketChartProps) {
+  const { t } = useTranslation("prediction");
   const [range, setRange] = useState<TimeRange>("1D");
   const [history, setHistory] = useState<MarketPriceHistory | null>(null);
 
@@ -276,7 +278,7 @@ export default function MarketChart({
               </div>
             )}
           </div>
-          <div className="mc-switcher" role="tablist" aria-label="Time range">
+          <div className="mc-switcher" role="tablist" aria-label={t("TIME_RANGE")}>
             {RANGES.map((r) => (
               <button
                 key={r}
@@ -295,7 +297,7 @@ export default function MarketChart({
           className="mc-svg"
           viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="none"
-          aria-label={`YES price chart for ${ticker}`}
+          aria-label={t("YES_PRICE_CHART", { ticker })}
         >
           <defs>
             <linearGradient
@@ -366,22 +368,22 @@ export default function MarketChart({
 
         <div className="mc-foot">
           <div className="mc-stat">
-            <div className="l">Implied probability</div>
+            <div className="l">{t("IMPLIED_PROBABILITY")}</div>
             <div className="v yes">{prob.toFixed(1)}%</div>
           </div>
           <div className="mc-stat">
-            <div className="l">24h range</div>
+            <div className="l">{t("24H_RANGE")}</div>
             <div className="v">
               {rangeLow}¢ – {rangeHigh}¢
             </div>
           </div>
           <div className="mc-stat">
-            <div className="l">24h volume</div>
+            <div className="l">{t("24H_VOLUME")}</div>
             <div className="v">${(vol24h / 100).toFixed(2)}</div>
           </div>
           <div className="mc-stat">
-            <div className="l">Open interest</div>
-            <div className="v">{oi.toLocaleString()} shares</div>
+            <div className="l">{t("OPEN_INTEREST")}</div>
+            <div className="v">{t("SHARES_COUNT", { quantity: oi.toLocaleString() })}</div>
           </div>
         </div>
       </section>
