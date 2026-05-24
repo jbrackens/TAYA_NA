@@ -137,6 +137,30 @@ func (w *DepositWatcher) creditFinalized(ctx context.Context, head int64) {
 	}
 }
 
+// RunCycle reads the persisted cursor (or defaultStartBlock if none), runs one
+// Sync, and persists the advanced cursor. This is the resumable entry point a
+// ticker loop calls; detection + credit are idempotent, so a missed SetCursor
+// only causes a harmless re-scan, never a double credit.
+func (w *DepositWatcher) RunCycle(ctx context.Context, defaultStartBlock int64) error {
+	from, found, err := w.store.GetCursor(ctx, w.cfg.Network, w.cfg.Asset)
+	if err != nil {
+		return fmt.Errorf("get cursor: %w", err)
+	}
+	if !found {
+		from = defaultStartBlock
+	}
+	next, err := w.Sync(ctx, from)
+	if err != nil {
+		return err
+	}
+	if next > from {
+		if err := w.store.SetCursor(ctx, w.cfg.Network, w.cfg.Asset, next); err != nil {
+			return fmt.Errorf("set cursor: %w", err)
+		}
+	}
+	return nil
+}
+
 func depositID(chainID int64, txHash string, logIndex int, blockHash string) string {
 	return fmt.Sprintf("%d:%s:%d:%s", chainID, strings.ToLower(txHash), logIndex, strings.ToLower(blockHash))
 }

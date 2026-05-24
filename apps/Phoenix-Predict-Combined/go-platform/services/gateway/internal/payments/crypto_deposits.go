@@ -51,6 +51,13 @@ var cryptoDepositsDDL = []string{
 	`CREATE UNIQUE INDEX IF NOT EXISTS uq_crypto_deposits_credit ON crypto_deposits (chain_id, tx_hash, log_index) WHERE status = 'credited'`,
 	`CREATE INDEX IF NOT EXISTS idx_crypto_deposits_user ON crypto_deposits (user_id)`,
 	`CREATE INDEX IF NOT EXISTS idx_crypto_deposits_status ON crypto_deposits (status)`,
+	`CREATE TABLE IF NOT EXISTS crypto_watcher_cursor (
+  network            TEXT NOT NULL,
+  asset              TEXT NOT NULL,
+  last_scanned_block BIGINT NOT NULL,
+  updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (network, asset)
+)`,
 }
 
 func ensureCryptoDepositsSchema(ctx context.Context, db *sql.DB) error {

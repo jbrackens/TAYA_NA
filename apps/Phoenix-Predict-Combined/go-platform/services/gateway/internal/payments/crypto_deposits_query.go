@@ -2,6 +2,8 @@ package payments
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"math/big"
 	"strings"
 )
@@ -77,4 +79,33 @@ func (s *CryptoDepositStore) DepositAddressOwners(ctx context.Context, network, 
 		out[strings.ToLower(addr)] = uid
 	}
 	return out, rows.Err()
+}
+
+// GetCursor returns the last block scanned for a (network, asset). found=false
+// means the watcher has never run for this pair (caller uses a default start).
+func (s *CryptoDepositStore) GetCursor(ctx context.Context, network, asset string) (block int64, found bool, err error) {
+	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
+	defer cancel()
+	err = s.db.QueryRowContext(ctx,
+		`SELECT last_scanned_block FROM crypto_watcher_cursor WHERE network = $1 AND asset = $2`,
+		network, asset).Scan(&block)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, false, nil
+	}
+	if err != nil {
+		return 0, false, err
+	}
+	return block, true, nil
+}
+
+// SetCursor upserts the last scanned block for a (network, asset).
+func (s *CryptoDepositStore) SetCursor(ctx context.Context, network, asset string, block int64) error {
+	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx,
+		`INSERT INTO crypto_watcher_cursor (network, asset, last_scanned_block, updated_at)
+VALUES ($1, $2, $3, NOW())
+ON CONFLICT (network, asset) DO UPDATE SET last_scanned_block = EXCLUDED.last_scanned_block, updated_at = NOW()`,
+		network, asset, block)
+	return err
 }

@@ -69,7 +69,7 @@ configure the rail. All Go code is in `internal/payments/`.
 - `usdt_conversion.go` — USDT↔cents at the rail boundary (18-dec landmine isolated; truncates sub-cent dust).
 - `crypto_deposits.go` / `crypto_deposits_query.go` — `crypto_deposits` table (self-managed in `EnsureCryptoSchema`) + `CryptoDepositStore`; DB-enforced exactly-once via a partial unique index.
 - `evm_rpc.go` — std-lib JSON-RPC client (chainId, blockNumber, decimals, getLogs) + ERC-20 Transfer decode (no go-ethereum dependency).
-- `deposit_watcher.go` — `DepositWatcher.Sync`: detect → record → credit at finality via `wallet.Credit`, idempotent on `crypto_deposit:<chainId>:<tx>:<log>`; reorged logs roll the pending row back; sub-cent dust credits nothing.
+- `deposit_watcher.go` — `DepositWatcher.Sync`: detect → record → credit at finality via `wallet.Credit`, idempotent on `crypto_deposit:<chainId>:<tx>:<log>`; reorged logs roll the pending row back; sub-cent dust credits nothing. `RunCycle` resumes from a persisted cursor (`crypto_watcher_cursor`).
 - `token_decimals.go` — `VerifyTokenDecimals` startup guard (fail-closed on a decimals mismatch).
 - `deposit_watcher_factory.go` — `NewDepositWatcherFromEnv`, returns disabled when unconfigured.
 - `docs/cashier/RUNBOOKS.md`, `docs/cashier/DECISIONS.md`.

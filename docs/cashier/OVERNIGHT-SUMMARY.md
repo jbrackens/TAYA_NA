@@ -54,6 +54,7 @@ WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disabl
 
 ## Known limitations / TODOs noted in code
 
-- Watcher cursor isn't persisted yet (restart re-scans from a configured start
-  block; safe because detect+credit are idempotent). Persist before production.
-- `eth_getLogs` isn't chunked for huge ranges yet (fine for incremental scans).
+- Watcher cursor IS persisted now (`crypto_watcher_cursor` + `RunCycle`): a
+  restart resumes from the last scanned block.
+- `eth_getLogs` isn't chunked for huge ranges yet (fine for incremental scans;
+  chunk a cold-start backfill before production).
