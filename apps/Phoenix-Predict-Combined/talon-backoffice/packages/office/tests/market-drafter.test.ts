@@ -72,6 +72,11 @@ describe("draftMarketsFromArticle", () => {
     expect(r.drafts).toHaveLength(1);
     expect(r.drafts[0].candidate.requiresHumanReview).toBe(true);
     expect(r.drafts[0].validation.ok).toBe(true);
+    // Audit: one generation-log entry per tier (routine extract + hard draft).
+    expect(r.generationLogs).toHaveLength(2);
+    expect(r.generationLogs[0].tier).toBe("routine");
+    expect(r.generationLogs[1].tier).toBe("hard");
+    expect(r.generationLogs[1].provider).toBe("mock");
   });
 
   it("surfaces a blocked-risk candidate via validation (not eligible)", async () => {

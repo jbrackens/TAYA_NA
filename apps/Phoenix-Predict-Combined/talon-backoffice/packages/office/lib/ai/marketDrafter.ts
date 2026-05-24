@@ -31,11 +31,22 @@ export interface DraftedMarket {
   validation: ValidationResult;
 }
 
+export interface GenerationLogEntry {
+  stage: string;
+  tier: "routine" | "hard";
+  provider: string;
+  model: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  promptVersion: string;
+}
+
 export interface DraftResult {
   analysis: ArticleAnalysis;
   drafts: DraftedMarket[];
   injectionDetected: boolean;
   blockReason?: string;
+  generationLogs: GenerationLogEntry[];
 }
 
 export interface DraftOptions {
@@ -117,6 +128,11 @@ export async function draftMarketsFromArticle(
     schemaName: "MarketCandidates",
   });
 
+  const generationLogs: GenerationLogEntry[] = [
+    logEntry("extract", "routine", analysisRes),
+    logEntry("draft", "hard", draftRes),
+  ];
+
   // Injection tripwire: the canary must never surface in model output.
   if (JSON.stringify(draftRes.object).includes(canary)) {
     return {
@@ -125,6 +141,7 @@ export async function draftMarketsFromArticle(
       injectionDetected: true,
       blockReason:
         "prompt-injection detected (canary token leaked into model output)",
+      generationLogs,
     };
   }
 
@@ -138,7 +155,27 @@ export async function draftMarketsFromArticle(
     },
   );
 
-  return { analysis, drafts, injectionDetected: false };
+  return { analysis, drafts, injectionDetected: false, generationLogs };
+}
+
+function logEntry(
+  stage: string,
+  tier: "routine" | "hard",
+  res: {
+    provider: string;
+    model: string;
+    usage: { inputTokens?: number; outputTokens?: number };
+  },
+): GenerationLogEntry {
+  return {
+    stage,
+    tier,
+    provider: res.provider,
+    model: res.model,
+    inputTokens: res.usage.inputTokens,
+    outputTokens: res.usage.outputTokens,
+    promptVersion: PROMPT_VERSION,
+  };
 }
 
 function randomToken(): string {

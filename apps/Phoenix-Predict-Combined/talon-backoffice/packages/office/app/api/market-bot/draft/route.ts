@@ -18,10 +18,7 @@ import {
   type AdminAuth,
 } from "../../../../lib/market-bot/validation";
 import { fetchAndExtractArticle } from "../../../../lib/ingest/urlFetch";
-import {
-  draftMarketsFromArticle,
-  PROMPT_VERSION,
-} from "../../../../lib/ai/marketDrafter";
+import { draftMarketsFromArticle } from "../../../../lib/ai/marketDrafter";
 import { createAISDKProvider } from "../../../../lib/ai/provider";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -99,7 +96,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         excerpt: articleText.slice(0, 500),
         textHash,
       },
-      generationLogs: [{ stage: "draft", promptVersion: PROMPT_VERSION }],
+      generationLogs: result.generationLogs.map((g) => ({
+        stage: g.stage,
+        tier: g.tier,
+        modelProvider: g.provider,
+        modelName: g.model,
+        inputTokens: g.inputTokens,
+        outputTokens: g.outputTokens,
+        promptVersion: g.promptVersion,
+      })),
     });
   } catch (err) {
     return NextResponse.json(
@@ -125,7 +130,15 @@ interface ProvenancePayload {
     excerpt?: string;
     textHash: string;
   };
-  generationLogs: Array<{ stage: string; promptVersion: string }>;
+  generationLogs: Array<{
+    stage: string;
+    tier?: string;
+    modelProvider?: string;
+    modelName?: string;
+    inputTokens?: number;
+    outputTokens?: number;
+    promptVersion: string;
+  }>;
 }
 
 async function persistProvenance(
