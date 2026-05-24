@@ -15,6 +15,10 @@
 
 # ---- Player (public demo) ----
 demo.99rtp.io {
+	@chat path /chat /chat/*
+	handle @chat {
+		reverse_proxy predict_rocketchat:3000
+	}
 	@backend path /api/* /admin/* /ws /ws/*
 	handle @backend {
 		reverse_proxy predict_gateway:18080
@@ -22,11 +26,6 @@ demo.99rtp.io {
 	handle {
 		reverse_proxy predict_player:3000
 	}
-}
-
-# ---- Community Chat ----
-chat.99rtp.io {
-	reverse_proxy predict_rocketchat:3000
 }
 
 # ---- Backoffice (basic-auth gated; keeps it out of crawlers/uninvited eyes) ----

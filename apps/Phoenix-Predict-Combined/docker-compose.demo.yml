@@ -76,7 +76,7 @@ services:
     ports:
       - "3002:3000"
     environment:
-      ROOT_URL: "${CHAT_PUBLIC_URL:-https://chat.99rtp.io}"
+      ROOT_URL: "${CHAT_PUBLIC_URL:-https://demo.99rtp.io/chat}"
       PORT: "3000"
       MONGO_URL: "mongodb://rocketchat-mongo:27017/rocketchat?replicaSet=rs0"
       MONGO_OPLOG_URL: "mongodb://rocketchat-mongo:27017/local?replicaSet=rs0"
