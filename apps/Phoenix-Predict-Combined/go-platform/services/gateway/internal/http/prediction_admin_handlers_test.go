@@ -210,6 +210,10 @@ func (r *predictionAdminRepo) LogAIGeneration(context.Context, *prediction.AIGen
 	return nil
 }
 
+func (r *predictionAdminRepo) AIUsage(context.Context, string, time.Time) (int, int64, error) {
+	return 0, 0, nil
+}
+
 func (r *predictionAdminRepo) ListAPIKeys(context.Context, string) ([]prediction.APIKey, error) {
 	return nil, nil
 }
@@ -402,6 +406,48 @@ func TestPredictionAdminCreateEvent(t *testing.T) {
 	handler.ServeHTTP(anonRes, anon)
 	if anonRes.Code == http.StatusCreated {
 		t.Fatalf("expected non-admin request to be rejected, got 201")
+	}
+}
+
+func TestPredictionAdminAIBudget(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "false")
+	repo := newPredictionAdminRepo()
+	svc := prediction.NewService(repo, predictionAdminWallet{})
+
+	mux := http.NewServeMux()
+	registerSettlementRoutes(mux, svc)
+	handler := httpx.Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mux.ServeHTTP(w, r)
+		}),
+		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
+	)
+
+	// Admin GET -> 200 with allowed=true at zero usage.
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/admin/ai-budget", nil)
+	req = req.WithContext(
+		httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"),
+	)
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", res.Code, res.Body.String())
+	}
+	var status prediction.AIBudgetStatus
+	if err := json.Unmarshal(res.Body.Bytes(), &status); err != nil {
+		t.Fatalf("decode budget: %v", err)
+	}
+	if !status.Allowed {
+		t.Fatalf("expected allowed with zero usage")
+	}
+
+	// No admin role -> rejected.
+	anon := httptest.NewRequest(http.MethodGet, "/api/v1/admin/ai-budget", nil)
+	anonRes := httptest.NewRecorder()
+	handler.ServeHTTP(anonRes, anon)
+	if anonRes.Code == http.StatusOK {
+		t.Fatalf("expected non-admin request to be rejected")
 	}
 }
 

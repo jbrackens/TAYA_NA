@@ -716,6 +716,21 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, event)
 	}))
 
+	// Admin: AI-drafting budget pre-flight (per-admin rate + daily token cap).
+	mux.Handle("/api/v1/admin/ai-budget", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodGet {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		}
+		status, err := svc.CheckAIBudget(r.Context(), userIDFromRequest(r))
+		if err != nil {
+			return httpx.Internal("failed to check ai budget", err)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusOK, status)
+	}))
+
 	// Admin: Market lifecycle transitions
 	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {

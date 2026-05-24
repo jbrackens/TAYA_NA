@@ -334,6 +334,9 @@ func (r *memRepo) UpdateEventStatus(context.Context, string, EventStatus) error 
 func (r *memRepo) ListMarkets(context.Context, MarketFilter) ([]Market, int, error) {
 	return nil, 0, nil
 }
+func (r *memRepo) AIUsage(context.Context, string, time.Time) (int, int64, error) {
+	return 0, 0, nil
+}
 func (r *memRepo) CreateArticleSource(context.Context, *ArticleSource) error      { return nil }
 func (r *memRepo) LogAIGeneration(context.Context, *AIGenerationLog) error        { return nil }
 func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error)     { return nil, nil }

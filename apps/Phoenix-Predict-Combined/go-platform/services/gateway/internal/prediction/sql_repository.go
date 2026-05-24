@@ -333,6 +333,20 @@ func (r *SQLRepository) LogAIGeneration(ctx context.Context, entry *AIGeneration
 	).Scan(&entry.ID, &entry.CreatedAt)
 }
 
+func (r *SQLRepository) AIUsage(ctx context.Context, createdBy string, since time.Time) (int, int64, error) {
+	var draftCount int
+	var totalTokens int64
+	err := r.db.QueryRowContext(ctx,
+		`SELECT
+		   COUNT(*) FILTER (WHERE stage = 'draft'),
+		   COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0)
+		 FROM prediction_ai_generation_logs
+		 WHERE created_by = $1 AND created_at >= $2`,
+		createdBy, since,
+	).Scan(&draftCount, &totalTokens)
+	return draftCount, totalTokens, err
+}
+
 func (r *SQLRepository) UpdateMarket(ctx context.Context, m *Market) error {
 	return r.updateMarketWithExec(ctx, r.db, m)
 }

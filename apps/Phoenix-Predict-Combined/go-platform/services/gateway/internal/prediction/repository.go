@@ -70,6 +70,9 @@ type Repository interface {
 	// AI market drafting (migration 024)
 	CreateArticleSource(ctx context.Context, src *ArticleSource) error
 	LogAIGeneration(ctx context.Context, entry *AIGenerationLog) error
+	// AIUsage returns, for one admin since `since`: the number of 'draft'-stage
+	// generations (for rate limiting) and the total tokens (for the spend cap).
+	AIUsage(ctx context.Context, createdBy string, since time.Time) (draftCount int, totalTokens int64, err error)
 
 	// API Keys
 	ListAPIKeys(ctx context.Context, userID string) ([]APIKey, error)

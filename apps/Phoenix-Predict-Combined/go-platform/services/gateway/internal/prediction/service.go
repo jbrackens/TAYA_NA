@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -1347,6 +1348,59 @@ func (s *Service) LogAIGeneration(ctx context.Context, entry *AIGenerationLog) e
 		return fmt.Errorf("log ai generation: %w", err)
 	}
 	return nil
+}
+
+// CheckAIBudget enforces per-admin AI-drafting limits (plan §17c): a
+// requests-per-minute rate limit and a daily token cap, both summed from the
+// generation logs (DB-backed, correct across instances). Caps come from env.
+func (s *Service) CheckAIBudget(ctx context.Context, createdBy string) (AIBudgetStatus, error) {
+	ratePerMin := aiEnvInt("AI_DRAFT_RATE_PER_MIN", 10)
+	dailyTokenCap := aiEnvInt64("AI_DRAFT_DAILY_TOKEN_CAP", 2_000_000)
+	now := time.Now().UTC()
+
+	recent, _, err := s.repo.AIUsage(ctx, createdBy, now.Add(-time.Minute))
+	if err != nil {
+		return AIBudgetStatus{}, fmt.Errorf("ai budget (rate): %w", err)
+	}
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	_, tokensToday, err := s.repo.AIUsage(ctx, createdBy, startOfDay)
+	if err != nil {
+		return AIBudgetStatus{}, fmt.Errorf("ai budget (spend): %w", err)
+	}
+
+	status := AIBudgetStatus{
+		Allowed:            true,
+		RequestsLastMinute: recent,
+		RatePerMinute:      ratePerMin,
+		TokensToday:        tokensToday,
+		DailyTokenCap:      dailyTokenCap,
+	}
+	if recent >= ratePerMin {
+		status.Allowed = false
+		status.Reason = "rate limit exceeded — too many drafts in the last minute"
+	} else if tokensToday >= dailyTokenCap {
+		status.Allowed = false
+		status.Reason = "daily AI token budget exhausted"
+	}
+	return status, nil
+}
+
+func aiEnvInt(key string, def int) int {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			return n
+		}
+	}
+	return def
+}
+
+func aiEnvInt64(key string, def int64) int64 {
+	if v := os.Getenv(key); v != "" {
+		if n, err := strconv.ParseInt(v, 10, 64); err == nil && n > 0 {
+			return n
+		}
+	}
+	return def
 }
 
 // reservationTTL computes the wallet hold expiry for a placed order. Old

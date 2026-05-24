@@ -39,6 +39,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
+  // Pre-flight budget check (§17c) — fail before any fetch/LLM spend. The
+  // gateway is authoritative (DB-backed rate + daily token cap per admin).
+  const budget = await checkBudget(auth.auth);
+  if (budget) {
+    return NextResponse.json(
+      { error: budget.reason },
+      { status: budget.status },
+    );
+  }
+
   // Ingest: prefer pasted text; otherwise SSRF-guarded fetch + extraction.
   let articleText = parsed.value.articleText ?? "";
   let sourceUrl = parsed.value.sourceUrl;
@@ -139,6 +149,40 @@ interface ProvenancePayload {
     outputTokens?: number;
     promptVersion: string;
   }>;
+}
+
+// Returns null if the admin is within budget; otherwise the {status, reason} to
+// return to the client. Fails closed (503) if the gateway can't be reached —
+// don't spend on the LLM when we can't verify the cap.
+async function checkBudget(
+  auth: AdminAuth,
+): Promise<{ status: number; reason: string } | null> {
+  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
+  const cookie =
+    `access_token=${auth.accessToken}` +
+    (auth.csrfToken ? `; csrf_token=${auth.csrfToken}` : "");
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api/v1/admin/ai-budget`, {
+      headers: { Cookie: cookie },
+    });
+  } catch {
+    return {
+      status: 503,
+      reason: "could not verify AI budget (gateway unreachable)",
+    };
+  }
+  if (!res.ok) {
+    return {
+      status: 503,
+      reason: `could not verify AI budget (${res.status})`,
+    };
+  }
+  const data = (await res.json()) as { allowed?: boolean; reason?: string };
+  if (data.allowed === false) {
+    return { status: 429, reason: data.reason || "AI budget exceeded" };
+  }
+  return null;
 }
 
 async function persistProvenance(

@@ -11,6 +11,8 @@ type jsonDefaultRepo struct {
 	createdMarket      *Market
 	capturedSettlement *Settlement
 	market             *Market
+	aiDraftCount       int
+	aiTokens           int64
 }
 
 func (r *jsonDefaultRepo) ListCategories(context.Context, bool) ([]Category, error) { return nil, nil }
@@ -50,6 +52,9 @@ func (r *jsonDefaultRepo) CreateMarket(_ context.Context, m *Market) error {
 	clone := *m
 	r.createdMarket = &clone
 	return nil
+}
+func (r *jsonDefaultRepo) AIUsage(_ context.Context, _ string, _ time.Time) (int, int64, error) {
+	return r.aiDraftCount, r.aiTokens, nil
 }
 func (r *jsonDefaultRepo) UpdateMarket(context.Context, *Market) error                    { return nil }
 func (r *jsonDefaultRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
@@ -222,5 +227,24 @@ func TestCreateEventValidation(t *testing.T) {
 	}
 	if _, err := svc.CreateEvent(ctx, CreateEventRequest{Title: "t", CategoryID: "c", CloseAt: future}); err != nil {
 		t.Fatalf("unexpected error for a valid event: %v", err)
+	}
+}
+
+func TestCheckAIBudget(t *testing.T) {
+	ctx := context.Background()
+
+	within := NewService(&jsonDefaultRepo{}, NoopWallet{})
+	if s, err := within.CheckAIBudget(ctx, "admin-1"); err != nil || !s.Allowed {
+		t.Fatalf("expected allowed within limits, got allowed=%v err=%v", s.Allowed, err)
+	}
+
+	rateLimited := NewService(&jsonDefaultRepo{aiDraftCount: 1000}, NoopWallet{})
+	if s, _ := rateLimited.CheckAIBudget(ctx, "admin-1"); s.Allowed {
+		t.Fatalf("expected rate-limited when recent drafts exceed the cap")
+	}
+
+	tokenCapped := NewService(&jsonDefaultRepo{aiTokens: 1_000_000_000}, NoopWallet{})
+	if s, _ := tokenCapped.CheckAIBudget(ctx, "admin-1"); s.Allowed {
+		t.Fatalf("expected token-capped when daily tokens exceed the cap")
 	}
 }

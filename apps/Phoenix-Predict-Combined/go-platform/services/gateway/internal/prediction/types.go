@@ -575,6 +575,19 @@ type CreateMarketSourceResponse struct {
 	ArticleSourceID string `json:"articleSourceId"`
 }
 
+// AIBudgetStatus is the per-admin AI-drafting budget check (plan §17c). Rate is
+// requests/minute; the spend cap is token-based (a robust, price-drift-free
+// proxy summed from the generation logs). Caps come from env
+// (AI_DRAFT_RATE_PER_MIN, AI_DRAFT_DAILY_TOKEN_CAP).
+type AIBudgetStatus struct {
+	Allowed            bool   `json:"allowed"`
+	Reason             string `json:"reason,omitempty"`
+	RequestsLastMinute int    `json:"requestsLastMinute"`
+	RatePerMinute      int    `json:"ratePerMinute"`
+	TokensToday        int64  `json:"tokensToday"`
+	DailyTokenCap      int64  `json:"dailyTokenCap"`
+}
+
 // ResolveMarketRequest is the admin request to settle a market.
 type ResolveMarketRequest struct {
 	Result            MarketResult    `json:"result" validate:"required,oneof=yes no"`
