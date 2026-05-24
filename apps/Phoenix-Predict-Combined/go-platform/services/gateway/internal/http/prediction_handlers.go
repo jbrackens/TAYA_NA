@@ -696,6 +696,26 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		})
 	}))
 
+	// Admin: Create event (the parent an AI-drafted or hand-made market attaches to).
+	mux.Handle("/api/v1/admin/events", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var req prediction.CreateEventRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		req.CreatedBy = actorIDPointer(userIDFromRequest(r))
+		event, err := svc.CreateEvent(r.Context(), req)
+		if err != nil {
+			return httpx.BadRequest(err.Error(), nil)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, event)
+	}))
+
 	// Admin: Market lifecycle transitions
 	mux.Handle("/api/v1/admin/markets/", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
 		if err := requireAdminRole(r); err != nil {

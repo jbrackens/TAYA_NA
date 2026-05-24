@@ -18,6 +18,7 @@ import type {
   PlaceOrderResponse,
   PaginatedResponse,
   CreateMarketRequest,
+  CreateEventRequest,
   MarketLifecycleAction,
   SettleMarketRequest,
   SettleMarketResponse,
@@ -285,6 +286,13 @@ export class PredictionApiClient {
 
   async createMarket(req: CreateMarketRequest): Promise<PredictionMarket> {
     return this.request("/api/v1/admin/markets", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  }
+
+  async createEvent(req: CreateEventRequest): Promise<PredictionEvent> {
+    return this.request("/api/v1/admin/events", {
       method: "POST",
       body: JSON.stringify(req),
     });

@@ -339,6 +339,17 @@ export interface CreateMarketRequest {
   articleSourceId?: string;
 }
 
+export interface CreateEventRequest {
+  seriesId?: string;
+  title: string;
+  description?: string;
+  categoryId: string;
+  featured?: boolean;
+  openAt?: string;
+  closeAt: string;
+  metadata?: Record<string, unknown>;
+}
+
 export type MarketLifecycleAction = "open" | "halt" | "close" | "void";
 
 export type MarketResult = "yes" | "no";

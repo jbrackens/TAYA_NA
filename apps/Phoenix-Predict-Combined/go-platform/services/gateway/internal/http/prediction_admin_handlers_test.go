@@ -56,7 +56,12 @@ func (r *predictionAdminRepo) GetEvent(context.Context, string) (*prediction.Eve
 	return nil, errors.New("not found")
 }
 
-func (r *predictionAdminRepo) CreateEvent(context.Context, *prediction.Event) error { return nil }
+func (r *predictionAdminRepo) CreateEvent(_ context.Context, e *prediction.Event) error {
+	if e.ID == "" {
+		e.ID = "evt-admin-test-1"
+	}
+	return nil
+}
 
 func (r *predictionAdminRepo) UpdateEventStatus(context.Context, string, prediction.EventStatus) error {
 	return nil
@@ -331,6 +336,68 @@ func TestPredictionAdminCreateMarketSource(t *testing.T) {
 
 	// No admin role -> must not create.
 	anon := httptest.NewRequest(http.MethodPost, "/api/v1/admin/market-sources", strings.NewReader(body))
+	anonRes := httptest.NewRecorder()
+	handler.ServeHTTP(anonRes, anon)
+	if anonRes.Code == http.StatusCreated {
+		t.Fatalf("expected non-admin request to be rejected, got 201")
+	}
+}
+
+func TestPredictionAdminCreateEvent(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "false")
+	repo := newPredictionAdminRepo()
+	svc := prediction.NewService(repo, predictionAdminWallet{})
+
+	mux := http.NewServeMux()
+	registerSettlementRoutes(mux, svc)
+	handler := httpx.Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mux.ServeHTTP(w, r)
+		}),
+		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
+	)
+
+	body := `{"title":"May 2026 FOMC","categoryId":"cat-1","closeAt":"2026-07-31T23:59:00Z"}`
+
+	// Admin happy path -> 201 with an event id and default draft status.
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/events", strings.NewReader(body))
+	req = req.WithContext(
+		httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"),
+	)
+	res := httptest.NewRecorder()
+	handler.ServeHTTP(res, req)
+	if res.Code != http.StatusCreated {
+		t.Fatalf("expected 201, got %d body=%s", res.Code, res.Body.String())
+	}
+	var event prediction.Event
+	if err := json.Unmarshal(res.Body.Bytes(), &event); err != nil {
+		t.Fatalf("decode event: %v", err)
+	}
+	if event.ID == "" {
+		t.Fatalf("expected an event id")
+	}
+	if event.Status != prediction.EventStatusDraft {
+		t.Fatalf("expected draft status, got %s", event.Status)
+	}
+
+	// Missing title -> 400.
+	bad := httptest.NewRequest(
+		http.MethodPost,
+		"/api/v1/admin/events",
+		strings.NewReader(`{"categoryId":"cat-1","closeAt":"2026-07-31T23:59:00Z"}`),
+	)
+	bad = bad.WithContext(
+		httpx.WithTestUser(bad.Context(), "admin-1", "admin@phoenix.local", "admin"),
+	)
+	badRes := httptest.NewRecorder()
+	handler.ServeHTTP(badRes, bad)
+	if badRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400 for missing title, got %d", badRes.Code)
+	}
+
+	// No admin role -> rejected.
+	anon := httptest.NewRequest(http.MethodPost, "/api/v1/admin/events", strings.NewReader(body))
 	anonRes := httptest.NewRecorder()
 	handler.ServeHTTP(anonRes, anon)
 	if anonRes.Code == http.StatusCreated {

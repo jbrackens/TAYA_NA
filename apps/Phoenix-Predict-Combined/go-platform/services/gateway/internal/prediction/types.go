@@ -480,6 +480,20 @@ type DiscoveryResponse struct {
 	Recent      []Market `json:"recent"`
 }
 
+// CreateEventRequest is the admin request to create a new event. New events
+// start in 'draft' status. CreatedBy is server-set from the session (json:"-").
+type CreateEventRequest struct {
+	SeriesID    *string         `json:"seriesId,omitempty"`
+	Title       string          `json:"title" validate:"required"`
+	Description string          `json:"description,omitempty"`
+	CategoryID  string          `json:"categoryId" validate:"required"`
+	Featured    bool            `json:"featured"`
+	OpenAt      *time.Time      `json:"openAt,omitempty"`
+	CloseAt     time.Time       `json:"closeAt" validate:"required"`
+	Metadata    json.RawMessage `json:"metadata,omitempty"`
+	CreatedBy   *string         `json:"-"`
+}
+
 // CreateMarketRequest is the admin request to create a new market.
 type CreateMarketRequest struct {
 	EventID             string          `json:"eventId" validate:"required"`

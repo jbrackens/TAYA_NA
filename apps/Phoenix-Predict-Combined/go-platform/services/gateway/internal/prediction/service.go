@@ -1238,6 +1238,36 @@ func (s *Service) TransitionMarketStatus(ctx context.Context, marketID string, t
 
 // --- Admin: Create Market ---
 
+func (s *Service) CreateEvent(ctx context.Context, req CreateEventRequest) (*Event, error) {
+	if strings.TrimSpace(req.Title) == "" {
+		return nil, fmt.Errorf("event title is required")
+	}
+	if strings.TrimSpace(req.CategoryID) == "" {
+		return nil, fmt.Errorf("event categoryId is required")
+	}
+	if req.CloseAt.IsZero() {
+		return nil, fmt.Errorf("event closeAt is required")
+	}
+	event := &Event{
+		SeriesID:    req.SeriesID,
+		Title:       req.Title,
+		Description: req.Description,
+		CategoryID:  req.CategoryID,
+		Status:      EventStatusDraft,
+		Featured:    req.Featured,
+		OpenAt:      req.OpenAt,
+		CloseAt:     req.CloseAt,
+		Metadata:    defaultJSONObject(req.Metadata),
+		CreatedBy:   req.CreatedBy,
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
+	}
+	if err := s.repo.CreateEvent(ctx, event); err != nil {
+		return nil, fmt.Errorf("create event: %w", err)
+	}
+	return event, nil
+}
+
 func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*Market, error) {
 	b := req.AMMLiquidityParam
 	if b <= 0 {

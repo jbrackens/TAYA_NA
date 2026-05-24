@@ -205,3 +205,22 @@ func TestLogAIGenerationRequiresStage(t *testing.T) {
 		t.Fatalf("expected error for empty stage")
 	}
 }
+
+func TestCreateEventValidation(t *testing.T) {
+	svc := NewService(&jsonDefaultRepo{}, NoopWallet{})
+	ctx := context.Background()
+	future := time.Now().UTC().Add(time.Hour)
+
+	if _, err := svc.CreateEvent(ctx, CreateEventRequest{CategoryID: "c", CloseAt: future}); err == nil {
+		t.Fatalf("expected error for missing title")
+	}
+	if _, err := svc.CreateEvent(ctx, CreateEventRequest{Title: "t", CloseAt: future}); err == nil {
+		t.Fatalf("expected error for missing categoryId")
+	}
+	if _, err := svc.CreateEvent(ctx, CreateEventRequest{Title: "t", CategoryID: "c"}); err == nil {
+		t.Fatalf("expected error for missing closeAt")
+	}
+	if _, err := svc.CreateEvent(ctx, CreateEventRequest{Title: "t", CategoryID: "c", CloseAt: future}); err != nil {
+		t.Fatalf("unexpected error for a valid event: %v", err)
+	}
+}

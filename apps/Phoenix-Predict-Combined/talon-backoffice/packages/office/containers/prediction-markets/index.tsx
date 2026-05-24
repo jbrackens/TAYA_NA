@@ -26,6 +26,7 @@ import type {
   CollateralDriftAlert,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import DraftFromArticleModal from "./DraftFromArticleModal";
+import CreateEventModal from "./CreateEventModal";
 import type { MarketCandidate } from "../../lib/ai/types";
 
 const { Text } = Typography;
@@ -61,8 +62,9 @@ function suggestTicker(title: string): string {
 
 export default function PredictionMarketsContainer() {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
-  const [, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [events, setEvents] = useState<PredictionEvent[]>([]);
+  const [createEventOpen, setCreateEventOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [draftOpen, setDraftOpen] = useState(false);
@@ -185,6 +187,12 @@ export default function PredictionMarketsContainer() {
       closeAt: candidate.proposedCloseTime.slice(0, 16),
     });
     setCreateOpen(true);
+  }
+
+  function handleEventCreated(event: PredictionEvent) {
+    setCreateEventOpen(false);
+    setEvents((prev) => [event, ...prev]);
+    form.setFieldsValue({ eventId: event.id });
   }
 
   async function handleLifecycle(
@@ -479,9 +487,17 @@ export default function PredictionMarketsContainer() {
               placeholder="Select the parent event"
               optionFilterProp="label"
               options={events.map((e) => ({ value: e.id, label: e.title }))}
-              notFoundContent="No events — create one in Events first"
+              notFoundContent="No events yet — use Create new event below"
             />
           </Form.Item>
+          <Button
+            type="link"
+            size="small"
+            style={{ padding: 0, marginTop: -8, marginBottom: 8 }}
+            onClick={() => setCreateEventOpen(true)}
+          >
+            + Create new event
+          </Button>
           <Form.Item name="ticker" label="Ticker" rules={[{ required: true }]}>
             <Input placeholder="e.g., BTC-100K-APR26" />
           </Form.Item>
@@ -569,6 +585,13 @@ export default function PredictionMarketsContainer() {
         open={draftOpen}
         onClose={() => setDraftOpen(false)}
         onUse={prefillFromCandidate}
+      />
+
+      <CreateEventModal
+        open={createEventOpen}
+        onClose={() => setCreateEventOpen(false)}
+        categories={categories}
+        onCreated={handleEventCreated}
       />
     </>
   );
