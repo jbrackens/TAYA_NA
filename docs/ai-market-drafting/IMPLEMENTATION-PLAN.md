@@ -421,3 +421,28 @@ decision-independent pieces (office test runner is **vitest**, not the broken le
 
 Still open (separate from the 3 above): §13 item 1 — whether AI/news markets must use the
 propose→challenge→finalize window vs. allowing direct admin resolution.
+
+## 17. Phase B build complete (2026-05-24, office-side)
+
+Built on `feat/ai-market-drafting` per the locked decisions. All new modules are
+`tsc --strict` clean; 45 vitest tests pass.
+
+- `lib/ai/schemas.ts` — zod schemas for LLM output (`requiresHumanReview` excluded; model can't set it).
+- `lib/ai/provider-types.ts` + `lib/ai/provider.ts` — `ModelProvider` seam + Vercel AI SDK v6 adapter, env-routed tiers (`AI_ROUTINE_*` / `AI_HARD_*`).
+- `lib/ai/marketDrafter.ts` — two-tier orchestration (routine extract → hard draft/risk/block), article spotlighting + canary injection tripwire, deterministic validator integration, MVP forces human review.
+- `lib/ingest/urlFetch.ts` — SSRF-guarded fetch (request-filtering-agent + got + per-redirect re-validation) + Readability/jsdom extraction.
+- `lib/market-bot/validation.ts` + `app/api/market-bot/draft/route.ts` — `POST /api/market-bot/draft`: self-auth, validation, ingest, draft, persist provenance to the gateway.
+- Tests: market-quality-validator, ssrf-guard, ai-schemas, market-drafter (mock provider), ai-provider (env), url-fetch (extract + SSRF pre-check), draft-validation.
+
+**Verified offline:** validation, SSRF classification + URL pre-check, schema parsing, drafter orchestration (mock provider incl. canary block), env routing, Readability extraction.
+
+**NOT yet verified (integration-pending — needs an LLM endpoint + key + a running gateway/auth):**
+the live `generateObject` calls, the real URL fetch/redirect path, and the gateway provenance round-trip. These are type-checked only.
+
+**Required before enabling live (carry-over from §16 + Codex):**
+1. Per-admin rate limiting + model spend caps (needs a shared store) on the draft route.
+2. Production SSRF egress isolation gate (block/degrade URL fetch until an isolated egress exists) + redirect/DNS-pin integration tests.
+3. Surface per-call provider/model/usage/cost from the drafter into the gateway generation log (currently a minimal stage-only log) for the audit trail + spend caps.
+4. An LLM eval suite (golden articles) before trusting drafting quality.
+
+**Phase C (not started):** office UI — "Draft from article" entry in the create-market modal, candidate cards, prefill; event picker/create-event; resolution UI rendering the typed `settlement_params` criteria + adding `proposed_resolution`/`disputed` to the status map.
