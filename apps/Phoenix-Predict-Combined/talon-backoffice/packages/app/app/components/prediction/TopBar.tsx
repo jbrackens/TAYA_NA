@@ -3,7 +3,7 @@
 /**
  * TopBar — sticky 64px glass-med strip (DESIGN.md §6 shell structure).
  *
- * Layout: BrandMark + brand wordmark · horizontal nav links · search +
+ * Layout: brand lockup · horizontal nav links · search +
  * balance pill + avatar. No category strip — categories moved into the
  * /predict page body as a horizontal chip strip.
  *
@@ -13,7 +13,6 @@
  */
 
 import Link from "next/link";
-import BrandMark from "../BrandMark";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -517,9 +516,9 @@ export function TopBar() {
         @media (max-width: 900px) {
           .tb-inner { gap: 12px; padding: 0 16px; height: 64px; }
           .tb-brand { font-size: 24px; gap: 7px; }
-          /* Cap brand-asset height (mark 28px + wordmark 22px) so they
-             never swallow the right rail / compress the balance at 375px. */
-          .tb-brand img { max-height: 28px; }
+          /* Cap brand-lockup height so it never swallows the right rail /
+             compresses the balance at 375px. */
+          .tb-brand img { max-height: 34px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
           .lang-select-wrap { max-width: 56px; padding: 0 12px; }
@@ -534,13 +533,12 @@ export function TopBar() {
             className="tb-brand"
             aria-label="Hula Na! — home"
           >
-            <BrandMark size={28} />
             <img
-              src="/brand/wordmark.png"
-              alt="Hula Na!"
-              width={91}
-              height={22}
-              style={{ display: "block", height: 22, width: "auto" }}
+              src="/brand/logo-lockup.png"
+              alt=""
+              aria-hidden="true"
+              height={40}
+              style={{ display: "block", height: 40, width: "auto" }}
             />
           </Link>
 

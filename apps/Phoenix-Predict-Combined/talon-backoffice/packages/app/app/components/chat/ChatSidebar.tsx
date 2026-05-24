@@ -30,23 +30,73 @@ type ChatMessage = {
 const MOCK_CHAT_MESSAGES: ChatMessage[] = [
   {
     username: "marketmaker23",
-    timestamp: "2m",
-    content: "BTC above $100K is holding 62c. Anyone fading this before CPI?",
+    timestamp: "now",
+    content: "BTC above $100K just ticked to 63c. Feels like the book is pricing in a soft CPI print.",
+  },
+  {
+    username: "linewatcher",
+    timestamp: "1m",
+    content: "I grabbed NO on Lakers finals at 41c. Schedule spot looks brutal if Denver closes tonight.",
   },
   {
     username: "island_alpha",
-    timestamp: "5m",
-    content: "Barcelona CL market moved after the injury update. YES feels thin at 14c.",
+    timestamp: "3m",
+    content: "Barcelona CL market moved after the injury update. YES at 14c is finally interesting.",
   },
   {
     username: "oddswatcher",
-    timestamp: "8m",
-    content: "Solana Q2 just ticked up again. Liquidity on NO is finally improving.",
+    timestamp: "4m",
+    content: "Solana Q2 just ticked up again. NO side has real liquidity now instead of dust.",
+  },
+  {
+    username: "macro_mina",
+    timestamp: "6m",
+    content: "Fed cut by September is stuck around 48c. Waiting for payrolls before adding.",
+  },
+  {
+    username: "propdesk",
+    timestamp: "7m",
+    content: "Someone swept the YES side on oil above $90. Either headline risk or a very confident punt.",
+  },
+  {
+    username: "chalk_eater",
+    timestamp: "9m",
+    content: "Election turnout market is moving faster than the polls. Watch the county-level updates.",
+  },
+  {
+    username: "arb_hunter",
+    timestamp: "11m",
+    content: "NBA MVP spread is wider here than on the other venue. Not huge, but worth tracking.",
+  },
+  {
+    username: "quant_kai",
+    timestamp: "13m",
+    content: "If ETH ETF approval stays above 70c into close, I expect weekend liquidity to get weird.",
+  },
+  {
+    username: "sportsbook_sam",
+    timestamp: "15m",
+    content: "Weather delay could matter for the grand prix market. Rain probability jumped again.",
+  },
+  {
+    username: "creator_lani",
+    timestamp: "18m",
+    content: "New market idea: will the first debate get over 50M viewers? Resolution source feels clean.",
+  },
+  {
+    username: "vol_trader",
+    timestamp: "21m",
+    content: "The Metacritic market is quiet, but one review batch could move it 20 points.",
+  },
+  {
+    username: "risk_check",
+    timestamp: "24m",
+    content: "Reminder to size positions like they can go to zero. These thin markets can gap hard.",
   },
   {
     username: "mod_malia",
-    timestamp: "12m",
-    content: "Reminder: discuss the market, not other traders. Keep links clean.",
+    timestamp: "27m",
+    content: "Keep it to market discussion. No personal attacks, no phishing links, no fake screenshots.",
   },
 ];
 
