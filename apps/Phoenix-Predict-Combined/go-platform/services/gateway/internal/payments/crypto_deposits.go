@@ -180,26 +180,12 @@ WHERE id = $1 AND status = 'pending'`, id)
 	return nil
 }
 
-// GetByID loads a deposit. amount_base/dust_base come back as decimal strings
-// (via ::text) and are parsed to *big.Int.
+// GetByID loads a deposit by id.
 func (s *CryptoDepositStore) GetByID(ctx context.Context, id string) (CryptoDeposit, error) {
 	ctx, cancel := context.WithTimeout(ctx, paymentDBTimeout)
 	defer cancel()
-	var d CryptoDeposit
-	var amountStr, dustStr string
-	err := s.db.QueryRowContext(ctx, `
-SELECT id, user_id, network, asset, chain_id, tx_hash, log_index, block_hash, block_number,
-       from_address, to_address, amount_base::text, amount_cents, dust_base::text, status,
-       COALESCE(ledger_entry_id, '')
-FROM crypto_deposits WHERE id = $1`, id).Scan(
-		&d.ID, &d.UserID, &d.Network, &d.Asset, &d.ChainID, &d.TxHash, &d.LogIndex, &d.BlockHash, &d.BlockNumber,
-		&d.FromAddress, &d.ToAddress, &amountStr, &d.AmountCents, &dustStr, &d.Status, &d.LedgerEntryID)
-	if err != nil {
-		return CryptoDeposit{}, err
-	}
-	d.AmountBase, _ = new(big.Int).SetString(amountStr, 10)
-	d.DustBase, _ = new(big.Int).SetString(dustStr, 10)
-	return d, nil
+	return scanCryptoDeposit(s.db.QueryRowContext(ctx,
+		`SELECT `+cryptoDepositColumns+` FROM crypto_deposits WHERE id = $1`, id))
 }
 
 // bigToNumeric renders a *big.Int as the decimal string Postgres NUMERIC accepts
