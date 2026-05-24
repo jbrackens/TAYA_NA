@@ -40,6 +40,8 @@ WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disabl
 - **D2** std-lib JSON-RPC client, no go-ethereum dependency.
 - **D3** built the watcher as a component but did **not** edit the gateway
   bootstrap unattended (couldn't run the full stack to verify).
+- **D4** analyzed `snake-game` for reuse — **not reusable** (Solana + Privy +
+  non-custodial, USDT 6-dec); no code adopted. See DECISIONS.md D4.
 
 ## What needs YOU (in priority order)
 
@@ -56,5 +58,5 @@ WALLET_DB_DSN="postgres://predict:localdev@localhost:5434/predict?sslmode=disabl
 
 - Watcher cursor IS persisted now (`crypto_watcher_cursor` + `RunCycle`): a
   restart resumes from the last scanned block.
-- `eth_getLogs` isn't chunked for huge ranges yet (fine for incremental scans;
-  chunk a cold-start backfill before production).
+- `eth_getLogs` is chunked (`CRYPTO_MAX_BLOCK_RANGE`, default 2000) so cold-start
+  and long-downtime scans stay within RPC provider range caps.
