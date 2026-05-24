@@ -7,7 +7,7 @@
 # public — typically a few hundred MB.
 #
 # Build-debt fixes baked in (the original Dockerfile + plan A0 were off by 6):
-#  - node:14 -> node:20-bookworm-slim
+#  - node:14 -> node:20 -> node:22-bookworm-slim (got@15 in office needs Node >=22; Node 20 is EOL)
 #  - no private-Nexus .npmrc secret mount (deps are yarn-workspace-resolved;
 #    yarn.lock has zero @phoenix-ui / flipsports entries)
 #  - NO `yarn bootstrap` (lerna bootstrap EEXISTs on @babel/.bin under node:20
@@ -23,7 +23,7 @@
 # single origin, so the Next rewrite never fires in production.
 
 # ---- Stage 1: builder (full toolchain) ----
-FROM node:20-bookworm-slim AS builder
+FROM node:22-bookworm-slim AS builder
 WORKDIR /usr/src
 
 COPY . .
@@ -39,7 +39,7 @@ ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 RUN yarn lerna run build --scope @phoenix-ui/$module_name --include-dependencies
 
 # ---- Stage 2: runtime (standalone closure only) ----
-FROM node:20-bookworm-slim AS runtime
+FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 # Standalone server binds HOSTNAME (default localhost — would be unreachable
