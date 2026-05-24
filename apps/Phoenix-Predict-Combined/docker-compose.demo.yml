@@ -133,6 +133,29 @@ services:
       # name `auth`. Same name the gateway uses (see docker-compose.yml
       # AUTH_SERVICE_URL).
       NEXT_PUBLIC_AUTH_URL: "http://auth:18081"
+      # --- AI market drafting (plan §16) ---
+      # The draft API route (app/api/market-bot/draft/route.ts) runs SERVER-SIDE
+      # in this container, so it can't use NEXT_PUBLIC_API_URL="" (same-origin is
+      # browser-only). It reaches the gateway at this internal service URL — same
+      # pattern as NEXT_PUBLIC_AUTH_URL above. Without it, the budget pre-flight
+      # hits the office container's own localhost:18080 and fails closed (503).
+      GATEWAY_INTERNAL_URL: "http://gateway:18080"
+      # LLM tiers via OpenRouter (OpenAI-compatible). Both tiers share one key,
+      # written to /opt/phoenix/.env at deploy from the OPENROUTER_API_KEY secret
+      # (see deploy-demo.yml) — never committed here. AI_HARD_PROVIDER MUST be
+      # openai-compatible to route through OpenRouter (the code default is
+      # "anthropic", which would bypass the endpoint). URL fetch stays OFF at
+      # launch (paste-text only): AI_URL_FETCH_ENABLED is intentionally unset.
+      AI_HARD_PROVIDER: "openai-compatible"
+      AI_HARD_ENDPOINT: "https://openrouter.ai/api/v1"
+      AI_HARD_MODEL: "openai/gpt-4o"
+      AI_HARD_API_KEY: "${OPENROUTER_API_KEY:-}"
+      AI_ROUTINE_PROVIDER: "openai-compatible"
+      AI_ROUTINE_ENDPOINT: "https://openrouter.ai/api/v1"
+      # OSS routine model — confirm the exact ID + that it supports structured
+      # outputs (generateObject) on openrouter.ai/models; verify in the smoke test.
+      AI_ROUTINE_MODEL: "qwen/qwen-2.5-72b-instruct"
+      AI_ROUTINE_API_KEY: "${OPENROUTER_API_KEY:-}"
     depends_on: [gateway]
     networks: [predict_network]
 

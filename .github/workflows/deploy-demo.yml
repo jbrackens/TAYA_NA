@@ -81,6 +81,22 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
 
+      - name: Inject OpenRouter key into box .env (compose substitution)
+        # The office AI-drafting route reads AI_HARD_API_KEY / AI_ROUTINE_API_KEY
+        # at runtime; docker-compose.demo.yml maps both to ${OPENROUTER_API_KEY}.
+        # Write it to /opt/phoenix/.env (compose auto-reads ./.env from the project
+        # dir) via stdin, so the secret never appears in a command line / process
+        # list — same posture as the Caddyfile step above. MUST run after the rsync
+        # (which --deletes a pre-existing .env), so it is re-written every deploy.
+        # If the secret is unset we write an empty value: drafting then fails closed
+        # (the rest of the app is unaffected), so a missing key never breaks deploy.
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY" | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
+
       - name: Build gateway image on the box
         # The Go gateway uses compose's `build:` directive (context
         # ./go-platform, dockerfile services/gateway/Dockerfile) rather than

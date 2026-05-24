@@ -21,6 +21,7 @@ import {
 import { fetchAndExtractArticle } from "../../../../lib/ingest/urlFetch";
 import { draftMarketsFromArticle } from "../../../../lib/ai/marketDrafter";
 import { createAISDKProvider } from "../../../../lib/ai/provider";
+import { gatewayBaseUrl } from "../../../../lib/market-bot/gatewayUrl";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = extractAdminAuth((name) => request.cookies.get(name)?.value);
@@ -158,7 +159,7 @@ interface ProvenancePayload {
 async function checkBudget(
   auth: AdminAuth,
 ): Promise<{ status: number; reason: string } | null> {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
+  const base = gatewayBaseUrl();
   const cookie =
     `access_token=${auth.accessToken}` +
     (auth.csrfToken ? `; csrf_token=${auth.csrfToken}` : "");
@@ -190,7 +191,7 @@ async function persistProvenance(
   auth: AdminAuth,
   payload: ProvenancePayload,
 ): Promise<string | undefined> {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:18080";
+  const base = gatewayBaseUrl();
   const cookie =
     `access_token=${auth.accessToken}` +
     (auth.csrfToken ? `; csrf_token=${auth.csrfToken}` : "");
