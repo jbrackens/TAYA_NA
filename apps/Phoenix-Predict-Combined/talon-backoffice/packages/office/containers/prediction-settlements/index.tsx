@@ -282,6 +282,26 @@ export default function PredictionSettlementsContainer() {
             </Text>
           </div>
         )}
+        {selectedMarket?.settlementParams?.resolutionCriteria != null && (
+          <Alert
+            type="info"
+            style={{ marginBottom: 16 }}
+            message="AI resolution criteria"
+            description={
+              <pre style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: 12 }}>
+                {JSON.stringify(
+                  {
+                    criteria:
+                      selectedMarket.settlementParams.resolutionCriteria,
+                    sources: selectedMarket.settlementParams.resolutionSources,
+                  },
+                  null,
+                  2,
+                )}
+              </pre>
+            }
+          />
+        )}
         {driftOnSelected && (
           <Alert
             type="warning"

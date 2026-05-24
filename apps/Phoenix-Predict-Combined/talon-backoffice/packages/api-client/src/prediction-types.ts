@@ -63,6 +63,7 @@ export interface PredictionMarket {
   liquidityCents: number;
   settlementSourceKey: string;
   settlementRule: string;
+  settlementParams?: Record<string, unknown>;
   feeRateBps: number;
   closeAt: string;
   createdAt: string;

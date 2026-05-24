@@ -21,6 +21,7 @@ import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-cl
 import type {
   Category,
   PredictionMarket,
+  PredictionEvent,
   MarketLifecycleAction,
   CollateralDriftAlert,
 } from "@phoenix-ui/api-client/src/prediction-types";
@@ -39,6 +40,8 @@ const statusColors: Record<string, string> = {
   closed: "orange",
   settled: "success",
   voided: "error",
+  proposed_resolution: "purple",
+  disputed: "volcano",
 };
 
 const formatUsd = (cents: number) =>
@@ -59,6 +62,7 @@ function suggestTicker(title: string): string {
 export default function PredictionMarketsContainer() {
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
   const [, setCategories] = useState<Category[]>([]);
+  const [events, setEvents] = useState<PredictionEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [draftOpen, setDraftOpen] = useState(false);
@@ -83,12 +87,14 @@ export default function PredictionMarketsContainer() {
   async function loadData() {
     setLoading(true);
     try {
-      const [mkts, cats] = await Promise.all([
+      const [mkts, cats, evts] = await Promise.all([
         predictionClient.getMarkets({ pageSize: 100 }),
         predictionClient.getCategories(),
+        predictionClient.getEvents({ pageSize: 100 }),
       ]);
       setMarkets(mkts.data || []);
       setCategories(cats || []);
+      setEvents(evts.data || []);
     } catch (err: unknown) {
       // Surface the gateway error verbatim so admins can act on it
       // (auth expired, schema mismatch, etc.) instead of guessing
@@ -467,12 +473,14 @@ export default function PredictionMarketsContainer() {
         width={600}
       >
         <Form form={form} layout="vertical" onFinish={handleCreate}>
-          <Form.Item
-            name="eventId"
-            label="Event ID"
-            rules={[{ required: true }]}
-          >
-            <Input placeholder="UUID of the parent event" />
+          <Form.Item name="eventId" label="Event" rules={[{ required: true }]}>
+            <Select
+              showSearch
+              placeholder="Select the parent event"
+              optionFilterProp="label"
+              options={events.map((e) => ({ value: e.id, label: e.title }))}
+              notFoundContent="No events — create one in Events first"
+            />
           </Form.Item>
           <Form.Item name="ticker" label="Ticker" rules={[{ required: true }]}>
             <Input placeholder="e.g., BTC-100K-APR26" />
