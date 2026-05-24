@@ -15,7 +15,9 @@
 
 # ---- Player (public demo) ----
 demo.99rtp.io {
-	@chat path /chat /chat/*
+	@chatRoot path /chat /chat/
+	redir @chatRoot /chat/channel/global 302
+	@chat path /chat/*
 	handle @chat {
 		reverse_proxy predict_rocketchat:3000
 	}

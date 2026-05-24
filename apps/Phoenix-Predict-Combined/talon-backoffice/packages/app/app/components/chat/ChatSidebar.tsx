@@ -138,6 +138,7 @@ export function ChatSidebar() {
           onClick={() => persistCollapsed(false)}
         >
           <PanelRightOpen size={20} aria-hidden="true" />
+          <span>Chat</span>
         </button>
       ) : (
         <>
