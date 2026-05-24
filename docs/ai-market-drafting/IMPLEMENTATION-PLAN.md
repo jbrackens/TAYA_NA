@@ -377,3 +377,33 @@ odds/probability, browsable candidate table, semantic dedup (pgvector + embeddin
 start with text_hash + ticker/title uniqueness + normalized (entity, direction, deadline) key; add
 embeddings only when real duplicate volume appears), non-English, lower-role drafting, prompt-injection
 classifier as a control (telemetry only).
+
+## 16. Phase B — autonomous progress (2026-05-24)
+
+Done overnight, on `feat/ai-market-drafting`, scoped to verifiable, zero-new-dependency,
+decision-independent pieces (office test runner is **vitest**, not the broken legacy jest):
+
+- `office/lib/ai/types.ts` — `MarketCandidate` and related shapes.
+- `office/lib/ai/marketQualityValidator.ts` — deterministic §17 validation. The model's
+  risk verdict is advisory; this code computes `requiresHumanReview` and the publish gate.
+- `office/lib/ingest/ssrfGuard.ts` — pure SSRF core: scheme allowlist + blocked-IP ranges
+  (v4/v6, incl. `169.254.169.254` + AWS IMDS v6 + ULA/link-local/CGNAT/mapped-v4).
+- `office/tests/market-quality-validator.test.ts` + `office/tests/ssrf-guard.test.ts` —
+  17 vitest tests, all green; the lib files are `tsc --strict` clean.
+
+**Deferred — needs decisions, new deps, and/or live API keys (do NOT start blind):**
+- Provider seam (Vercel AI SDK) — needs `ai` + adapters installed; assumed default per §6.
+- SSRF **fetch wiring** (DNS-resolve + connection-pin + redirect re-validation) — needs the
+  egress-proxy-vs-in-process decision (§13.3) + `got` + `request-filtering-agent`; the pure
+  classifier above is the testable core, the network layer is the open part.
+- Article extraction (`@mozilla/readability` + `jsdom`) — needs deps.
+- `app/api/market-bot/draft/route.ts` (App Router; self-authenticating per §7.3 using the
+  `adminFetch`/cookie+CSRF pattern) — needs the seam + can't be e2e-tested without LLM keys.
+
+**Default decisions taken (confirm or override before resuming Phase B):**
+1. Provider layer = Vercel AI SDK (`createOpenAICompatible` + `@ai-sdk/anthropic`), per research.
+2. SSRF approach = in-process `request-filtering-agent` + `got` + per-redirect re-validation
+   (no egress proxy exists in the dev setup); revisit if an egress proxy becomes available.
+3. Routine tier = local OSS via Ollama (e.g. `qwen2.5`) at `http://localhost:11434/v1`; hard
+   tier = `claude-sonnet-4-6`. All via env (`AI_ROUTINE_*` / `AI_HARD_*`).
+Risk classification + the block gate stay on the hard tier (never the cheap tier).
