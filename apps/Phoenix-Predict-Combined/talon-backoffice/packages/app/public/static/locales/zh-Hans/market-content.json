@@ -82,6 +82,78 @@
     "UCL-REAL-2526": {
       "title": "皇家马德里会赢得2025/26欧冠吗？",
       "description": "如果皇家马德里赢得2025/26赛季欧洲冠军联赛决赛，则结算为“是”。"
+    },
+    "UCL-BARCA-2526": {
+      "title": "巴塞罗那会赢得2025/26欧冠吗？",
+      "description": "如果巴塞罗那赢得2025/26赛季欧冠决赛，则结算为YES。"
+    },
+    "IMP-EF6CF271": {
+      "title": "ARML 2026最高团队分数会超过235吗？"
+    },
+    "IMP-379D8671": {
+      "title": "GTA VI会在2026年6月前发布吗？",
+      "description": "如果Grand Theft Auto VI在2026年5月31日前于美国正式发布，则结算为YES。抢先体验、测试版、泄露或其他预发布形式不计入。"
+    },
+    "IMP-414F72B2": {
+      "title": "5月底前会有新的大语言模型发布吗？"
+    },
+    "BTC-100K-APR26": {
+      "title": "比特币会在4月30日前突破10万美元吗？",
+      "description": "如果BTC/USD在2026年4月30日23:59 UTC前于任何主要交易所达到或超过100,000美元，则结算为YES。"
+    },
+    "IMP-CFD8F644": {
+      "title": "5月剩下时间里，我会每周至少去健身房2次吗？"
+    },
+    "IMP-5CFF0A78": {
+      "title": "NVDA会在2026年6月5日星期五收于250美元以上吗？"
+    },
+    "IMP-23AD5D16": {
+      "title": "《亢奋》第三季Metacritic最终评分会达到70或更高吗？"
+    },
+    "IMP-AFC9D763": {
+      "title": "苹果会在WWDC 2026主题演讲中提到Anthropic或Claude吗？"
+    },
+    "IMP-089D22B9": {
+      "title": "2026年法网男单决赛会以直落盘结束吗？"
+    },
+    "IMP-F4C02A8F": {
+      "title": "SpaceX IPO（代码SPCX）会在2026年6月11日或之前定价吗？"
+    },
+    "IMP-6570BEFD": {
+      "title": "Julia Letlow会赢得路易斯安那州共和党参议院初选吗？"
+    },
+    "IMP-FB7DFF17": {
+      "title": "普京和泽连斯基会在2026年6月14日前线下会面吗？"
+    },
+    "IMP-5B93BDF8": {
+      "title": "Restore Britain在Makerfield补选中会拿到至少4%吗？"
+    },
+    "IMP-7AC91349": {
+      "title": "SPCX上市首日收盘价会比IPO发行价高出30%以上吗？"
+    },
+    "SOL-300-Q2": {
+      "title": "Solana会在第二季度末前突破300美元吗？",
+      "description": "如果SOL/USD在2026年7月1日前达到或超过300美元，则结算为YES。"
+    },
+    "IMP-9B0E8C46": {
+      "title": "蒙特利尔 Canadiens 会赢得2026年NHL斯坦利杯吗？",
+      "description": "如果蒙特利尔 Canadiens 赢得2026年NHL斯坦利杯，则结算为YES；如果根据NHL规则他们已不可能夺冠，则结算为NO。"
+    },
+    "IMP-FC28782E": {
+      "title": "Buffalo Sabres 会赢得2026年NHL斯坦利杯吗？",
+      "description": "如果 Buffalo Sabres 赢得2026年NHL斯坦利杯，则结算为YES；如果根据NHL规则他们已不可能夺冠，则结算为NO。"
+    },
+    "IMP-9C2875EF": {
+      "title": "Carolina Hurricanes 会赢得2026年NHL斯坦利杯吗？",
+      "description": "如果 Carolina Hurricanes 赢得2026年NHL斯坦利杯，则结算为YES；如果根据NHL规则他们已不可能夺冠，则结算为NO。"
+    },
+    "IMP-48527FF8": {
+      "title": "沙特阿拉伯会赢得2026年FIFA世界杯吗？",
+      "description": "根据沙特阿拉伯是否赢得2026年FIFA世界杯结算。如果沙特阿拉伯已不可能夺冠，则结算为NO。"
+    },
+    "IMP-2A0DF30C": {
+      "title": "乌兹别克斯坦会赢得2026年FIFA世界杯吗？",
+      "description": "根据乌兹别克斯坦是否赢得2026年FIFA世界杯结算。如果乌兹别克斯坦已不可能夺冠，则结算为NO。"
     }
   }
 }

@@ -141,5 +141,8 @@
   "FEATURED_MARKET_SLIDE_LABEL": "{{label}}: featured market {{index}} of {{count}}",
   "PREVIOUS_FEATURED_MARKET": "Previous featured market",
   "NEXT_FEATURED_MARKET": "Next featured market",
-  "CAROUSEL_COUNT": "{{index}} of {{count}}"
+  "CAROUSEL_COUNT": "{{index}} of {{count}}",
+  "MARKET_UNAVAILABLE": "Market unavailable",
+  "MARKET_OPEN_ERROR": "We couldn't open that market",
+  "BACK_TO_MARKETS": "Back to Markets"
 }

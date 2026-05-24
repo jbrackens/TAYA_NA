@@ -31,7 +31,10 @@ import type {
   PredictionMarket,
 } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
-import { categoryName } from "../components/prediction/market-content";
+import {
+  categoryName,
+  localizedMarket,
+} from "../components/prediction/market-content";
 
 const api = createPredictionClient();
 
@@ -105,7 +108,11 @@ export default function PredictDiscoveryPage() {
         const slides: FeaturedSlide[] = [];
         const used = new Set<string>();
         if (allTop) {
-          slides.push({ key: "all", label: t("ALL"), market: allTop });
+          slides.push({
+            key: "all",
+            label: t("ALL"),
+            market: localizedMarket(contentT, allTop),
+          });
           used.add(allTop.id);
         }
         for (const cl of catLists) {
@@ -116,7 +123,7 @@ export default function PredictDiscoveryPage() {
           slides.push({
             key: cl.category.slug,
             label: categoryName(contentT, cl.category),
-            market: pick,
+            market: localizedMarket(contentT, pick),
             categoryName: categoryName(contentT, cl.category),
           });
         }

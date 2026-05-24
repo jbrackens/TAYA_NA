@@ -139,5 +139,8 @@
   "FEATURED_MARKET_SLIDE_LABEL": "{{label}}：精選市場 {{index}} / {{count}}",
   "PREVIOUS_FEATURED_MARKET": "上一個精選市場",
   "NEXT_FEATURED_MARKET": "下一個精選市場",
-  "CAROUSEL_COUNT": "{{index}} / {{count}}"
+  "CAROUSEL_COUNT": "{{index}} / {{count}}",
+  "MARKET_UNAVAILABLE": "市場不可用",
+  "MARKET_OPEN_ERROR": "無法開啟這個市場",
+  "BACK_TO_MARKETS": "返回市場"
 }

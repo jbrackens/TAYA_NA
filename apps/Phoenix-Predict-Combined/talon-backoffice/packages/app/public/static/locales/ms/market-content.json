@@ -82,6 +82,78 @@
     "UCL-REAL-2526": {
       "title": "Adakah Real Madrid menang Champions League 2025/26?",
       "description": "Diselesaikan YA jika Real Madrid memenangi final UEFA Champions League 2025/26."
+    },
+    "UCL-BARCA-2526": {
+      "title": "Adakah Barcelona akan menang Champions League 2025/26?",
+      "description": "Diselesaikan sebagai YES jika Barcelona menang final UEFA Champions League 2025/26."
+    },
+    "IMP-EF6CF271": {
+      "title": "Adakah skor pasukan tertinggi ARML 2026 melebihi 235?"
+    },
+    "IMP-379D8671": {
+      "title": "Adakah GTA VI dikeluarkan sebelum Jun 2026?",
+      "description": "Diselesaikan sebagai YES jika Grand Theft Auto VI dikeluarkan secara rasmi di AS sebelum 31 Mei 2026. Akses awal, beta, kebocoran, atau akses pra-keluaran lain tidak dikira."
+    },
+    "IMP-414F72B2": {
+      "title": "Adakah model LLM baharu akan dilancarkan sebelum akhir Mei?"
+    },
+    "BTC-100K-APR26": {
+      "title": "Bitcoin melebihi $100K sebelum 30 April",
+      "description": "Diselesaikan sebagai YES jika BTC/USD didagangkan pada atau melebihi $100,000 di mana-mana bursa utama sebelum 30 April 2026 23:59 UTC."
+    },
+    "IMP-CFD8F644": {
+      "title": "Adakah saya akan pergi gim sekurang-kurangnya 2 kali seminggu untuk baki bulan Mei?"
+    },
+    "IMP-5CFF0A78": {
+      "title": "Adakah NVDA ditutup melebihi $250 pada Jumaat, 5 Jun 2026?"
+    },
+    "IMP-23AD5D16": {
+      "title": "Adakah Euphoria Musim 3 berakhir dengan skor Metacritic 70 atau lebih?"
+    },
+    "IMP-AFC9D763": {
+      "title": "Adakah Apple menyebut Anthropic atau Claude dalam keynote WWDC 2026?"
+    },
+    "IMP-089D22B9": {
+      "title": "Adakah final perseorangan lelaki French Open 2026 dimenangi straight sets?"
+    },
+    "IMP-F4C02A8F": {
+      "title": "Adakah IPO SpaceX (ticker SPCX) ditetapkan harga pada atau sebelum 11 Jun 2026?"
+    },
+    "IMP-6570BEFD": {
+      "title": "Adakah Julia Letlow menang primary Republican Louisiana untuk Senat?"
+    },
+    "IMP-FB7DFF17": {
+      "title": "Adakah Vladimir Putin dan Volodymyr Zelenskyy bertemu secara bersemuka sebelum 14 Jun 2026?"
+    },
+    "IMP-5B93BDF8": {
+      "title": "Adakah Restore Britain mendapat sekurang-kurangnya 4% dalam pilihan raya kecil Makerfield?"
+    },
+    "IMP-7AC91349": {
+      "title": "Adakah SPCX ditutup lebih 30% atas harga IPO pada hari dagangan pertamanya?"
+    },
+    "SOL-300-Q2": {
+      "title": "Solana melebihi $300 menjelang akhir Q2",
+      "description": "Diselesaikan sebagai YES jika SOL/USD didagangkan pada atau melebihi $300 sebelum 1 Julai 2026."
+    },
+    "IMP-9B0E8C46": {
+      "title": "Adakah Montreal Canadiens menang NHL Stanley Cup 2026?",
+      "description": "Diselesaikan sebagai YES jika Montreal Canadiens menang NHL Stanley Cup 2026. Diselesaikan sebagai NO jika mereka mustahil menang mengikut peraturan NHL."
+    },
+    "IMP-FC28782E": {
+      "title": "Adakah Buffalo Sabres menang NHL Stanley Cup 2026?",
+      "description": "Diselesaikan sebagai YES jika Buffalo Sabres menang NHL Stanley Cup 2026. Diselesaikan sebagai NO jika mereka mustahil menang mengikut peraturan NHL."
+    },
+    "IMP-9C2875EF": {
+      "title": "Adakah Carolina Hurricanes menang NHL Stanley Cup 2026?",
+      "description": "Diselesaikan sebagai YES jika Carolina Hurricanes menang NHL Stanley Cup 2026. Diselesaikan sebagai NO jika mereka mustahil menang mengikut peraturan NHL."
+    },
+    "IMP-48527FF8": {
+      "title": "Adakah Arab Saudi menang FIFA World Cup 2026?",
+      "description": "Diselesaikan berdasarkan sama ada Arab Saudi menang FIFA World Cup 2026. Jika mustahil untuk Arab Saudi menang, pasaran diselesaikan sebagai NO."
+    },
+    "IMP-2A0DF30C": {
+      "title": "Adakah Uzbekistan menang FIFA World Cup 2026?",
+      "description": "Diselesaikan berdasarkan sama ada Uzbekistan menang FIFA World Cup 2026. Jika mustahil untuk Uzbekistan menang, pasaran diselesaikan sebagai NO."
     }
   }
 }

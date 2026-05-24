@@ -139,5 +139,8 @@
   "FEATURED_MARKET_SLIDE_LABEL": "{{label}}: pasaran pilihan {{index}} daripada {{count}}",
   "PREVIOUS_FEATURED_MARKET": "Pasaran pilihan sebelumnya",
   "NEXT_FEATURED_MARKET": "Pasaran pilihan seterusnya",
-  "CAROUSEL_COUNT": "{{index}} daripada {{count}}"
+  "CAROUSEL_COUNT": "{{index}} daripada {{count}}",
+  "MARKET_UNAVAILABLE": "Pasaran tidak tersedia",
+  "MARKET_OPEN_ERROR": "Kami tidak dapat membuka pasaran itu",
+  "BACK_TO_MARKETS": "Kembali ke Pasaran"
 }

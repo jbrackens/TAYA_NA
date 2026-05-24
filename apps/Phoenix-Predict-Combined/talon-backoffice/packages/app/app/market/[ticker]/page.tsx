@@ -446,10 +446,19 @@ export default function MarketDetailPage() {
   const displayCategory = category ? categoryName(contentT, category) : "";
 
   if (loading) {
-    return <PageState>{t("LOADING_MARKET")}</PageState>;
+    return <PageState loadingLabel={t("LOADING")}>{t("LOADING_MARKET")}</PageState>;
   }
   if (error || !market) {
-    return <PageState tone="error">{error || t("MARKET_NOT_FOUND")}</PageState>;
+    return (
+      <PageState
+        actionLabel={t("BACK_TO_MARKETS")}
+        errorLabel={t("MARKET_UNAVAILABLE")}
+        errorTitle={t("MARKET_OPEN_ERROR")}
+        tone="error"
+      >
+        {error || t("MARKET_NOT_FOUND")}
+      </PageState>
+    );
   }
 
   // Real book wins when populated (exchange-mode markets); fall back to
@@ -781,9 +790,17 @@ export default function MarketDetailPage() {
 
 function PageState({
   children,
+  actionLabel,
+  errorLabel,
+  errorTitle,
+  loadingLabel,
   tone = "muted",
 }: {
   children: React.ReactNode;
+  actionLabel?: string;
+  errorLabel?: string;
+  errorTitle?: string;
+  loadingLabel?: string;
   tone?: "muted" | "error";
 }) {
   const isError = tone === "error";
@@ -863,19 +880,18 @@ function PageState({
       <div className="md-state">
         <section className="glass md-state-card" aria-live="polite">
           <div className="md-state-eyebrow">
-            {isError ? "Market unavailable" : "Loading"}
+            {isError ? errorLabel : loadingLabel}
           </div>
           <h1 className="md-state-title">
-            {isError ? "We couldn't open that market" : children}
+            {isError ? errorTitle : children}
           </h1>
           {isError && (
             <>
               <p className="md-state-copy">
-                {children}. Check the market ticker or return to the market list
-                and open one of the available contracts.
+                {children}
               </p>
               <Link href="/predict" className="md-state-action">
-                Back to Markets
+                {actionLabel}
               </Link>
             </>
           )}

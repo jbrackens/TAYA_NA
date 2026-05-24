@@ -1,13 +1,13 @@
 {
   "categories": {
-    "politics": "Politics",
+    "politics": "Pulitika",
     "crypto": "Crypto",
     "sports": "Sports",
-    "entertainment": "Entertainment",
+    "entertainment": "Aliwan",
     "tech": "Tech",
     "technology": "Tech",
-    "economics": "Economics",
-    "general": "General",
+    "economics": "Ekonomiya",
+    "general": "Pangkalahatan",
     "fed": "Fed",
     "senate": "Senate"
   },
@@ -79,9 +79,81 @@
     "IMP-B6E6D4BE": {
       "title": "Magsasara ba ang SPY below $720 sa Friday, May 29, 2026?"
     },
+    "UCL-BARCA-2526": {
+      "title": "Mananalo ba ang Barcelona sa Champions League 2025/26?",
+      "description": "Magre-resolve sa YES kung mananalo ang Barcelona sa 2025/26 UEFA Champions League final."
+    },
+    "IMP-EF6CF271": {
+      "title": "Lalampas ba sa 235 ang top team score sa ARML 2026?"
+    },
+    "IMP-379D8671": {
+      "title": "Mare-release ba ang GTA VI bago mag-June 2026?",
+      "description": "Magre-resolve sa YES kung opisyal na mare-release ang Grand Theft Auto VI sa US bago matapos ang May 31, 2026. Hindi kasama ang early access, beta, leaks, o ibang pre-release access."
+    },
+    "IMP-414F72B2": {
+      "title": "May bagong LLM release ba bago matapos ang May?"
+    },
+    "BTC-100K-APR26": {
+      "title": "Aakyat ba ang Bitcoin sa higit $100K bago April 30?",
+      "description": "Magre-resolve sa YES kung ang BTC/USD ay mag-trade sa $100,000 o mas mataas sa kahit anong major exchange bago ang April 30, 2026 23:59 UTC."
+    },
+    "IMP-CFD8F644": {
+      "title": "Makakapag-gym ba ako nang hindi bababa sa 2 beses kada linggo sa natitirang May?"
+    },
+    "IMP-5CFF0A78": {
+      "title": "Magsasara ba ang NVDA above $250 sa Friday, June 5, 2026?"
+    },
+    "IMP-23AD5D16": {
+      "title": "Tatapusin ba ng Euphoria Season 3 ang Metacritic score na 70 o mas mataas?"
+    },
+    "IMP-AFC9D763": {
+      "title": "Babanggitin ba ng Apple ang Anthropic o Claude sa WWDC 2026 keynote?"
+    },
+    "IMP-089D22B9": {
+      "title": "Matatapos ba ang 2026 French Open men's singles final sa straight sets?"
+    },
+    "IMP-F4C02A8F": {
+      "title": "Magpe-price ba ang SpaceX IPO (ticker SPCX) sa o bago June 11, 2026?"
+    },
+    "IMP-6570BEFD": {
+      "title": "Mananalo ba si Julia Letlow sa Louisiana Republican primary para sa Senado?"
+    },
+    "IMP-FB7DFF17": {
+      "title": "Magkikita ba nang personal sina Vladimir Putin at Volodymyr Zelenskyy bago June 14, 2026?"
+    },
+    "IMP-5B93BDF8": {
+      "title": "Makakakuha ba ang Restore Britain ng hindi bababa sa 4% sa Makerfield by-election?"
+    },
+    "IMP-7AC91349": {
+      "title": "Magsasara ba ang SPCX nang higit 30% above sa IPO price nito sa unang trading day?"
+    },
+    "SOL-300-Q2": {
+      "title": "Aakyat ba ang Solana above $300 bago matapos ang Q2?",
+      "description": "Magre-resolve sa YES kung ang SOL/USD ay mag-trade sa $300 o mas mataas bago ang July 1, 2026."
+    },
     "UCL-REAL-2526": {
       "title": "Mananalo ba ang Real Madrid sa Champions League 2025/26?",
       "description": "Magre-resolve sa YES kung mananalo ang Real Madrid sa 2025/26 UEFA Champions League final."
+    },
+    "IMP-9B0E8C46": {
+      "title": "Mananalo ba ang Montreal Canadiens sa 2026 NHL Stanley Cup?",
+      "description": "Magre-resolve sa YES kung mananalo ang Montreal Canadiens sa 2026 NHL Stanley Cup. Magiging NO kung imposible na silang manalo batay sa NHL rules."
+    },
+    "IMP-FC28782E": {
+      "title": "Mananalo ba ang Buffalo Sabres sa 2026 NHL Stanley Cup?",
+      "description": "Magre-resolve sa YES kung mananalo ang Buffalo Sabres sa 2026 NHL Stanley Cup. Magiging NO kung imposible na silang manalo batay sa NHL rules."
+    },
+    "IMP-9C2875EF": {
+      "title": "Mananalo ba ang Carolina Hurricanes sa 2026 NHL Stanley Cup?",
+      "description": "Magre-resolve sa YES kung mananalo ang Carolina Hurricanes sa 2026 NHL Stanley Cup. Magiging NO kung imposible na silang manalo batay sa NHL rules."
+    },
+    "IMP-48527FF8": {
+      "title": "Mananalo ba ang Saudi Arabia sa 2026 FIFA World Cup?",
+      "description": "Magre-resolve ayon sa kung mananalo ang Saudi Arabia sa 2026 FIFA World Cup. Kung imposible na silang manalo, magiging NO ang market."
+    },
+    "IMP-2A0DF30C": {
+      "title": "Mananalo ba ang Uzbekistan sa 2026 FIFA World Cup?",
+      "description": "Magre-resolve ayon sa kung mananalo ang Uzbekistan sa 2026 FIFA World Cup. Kung imposible na silang manalo, magiging NO ang market."
     }
   }
 }

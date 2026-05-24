@@ -139,5 +139,8 @@
   "FEATURED_MARKET_SLIDE_LABEL": "{{label}}: pasar pilihan {{index}} dari {{count}}",
   "PREVIOUS_FEATURED_MARKET": "Pasar pilihan sebelumnya",
   "NEXT_FEATURED_MARKET": "Pasar pilihan berikutnya",
-  "CAROUSEL_COUNT": "{{index}} dari {{count}}"
+  "CAROUSEL_COUNT": "{{index}} dari {{count}}",
+  "MARKET_UNAVAILABLE": "Pasar tidak tersedia",
+  "MARKET_OPEN_ERROR": "Kami tidak bisa membuka pasar itu",
+  "BACK_TO_MARKETS": "Kembali ke Pasar"
 }

@@ -82,6 +82,78 @@
     "UCL-REAL-2526": {
       "title": "Real Madrid wins Champions League 2025/26",
       "description": "Resolves YES if Real Madrid wins the 2025/26 UEFA Champions League final."
+    },
+    "UCL-BARCA-2526": {
+      "title": "Barcelona wins Champions League 2025/26",
+      "description": "Resolves YES if Barcelona wins the 2025/26 UEFA Champions League final."
+    },
+    "IMP-EF6CF271": {
+      "title": "Top team score for ARML 2026 greater than 235?"
+    },
+    "IMP-379D8671": {
+      "title": "GTA VI released before June 2026?",
+      "description": "Resolves YES if Grand Theft Auto VI is officially released in the US by May 31, 2026. Early access, beta versions, leaks, or other pre-release access do not count."
+    },
+    "IMP-414F72B2": {
+      "title": "Will there be a new LLM release by the end of May?"
+    },
+    "BTC-100K-APR26": {
+      "title": "Bitcoin above $100K by April 30",
+      "description": "Resolves YES if BTC/USD trades at or above $100,000 on any major exchange before April 30, 2026 23:59 UTC."
+    },
+    "IMP-CFD8F644": {
+      "title": "Will I go to the gym at least 2 times per week for the rest of May?"
+    },
+    "IMP-5CFF0A78": {
+      "title": "Will NVDA close above $250 on Friday, June 5, 2026?"
+    },
+    "IMP-23AD5D16": {
+      "title": "Will Euphoria Season 3 finish at 70 or above on Metacritic?"
+    },
+    "IMP-AFC9D763": {
+      "title": "Will Apple mention Anthropic or Claude in its WWDC 2026 keynote?"
+    },
+    "IMP-089D22B9": {
+      "title": "Will the 2026 French Open men's singles final be won in straight sets?"
+    },
+    "IMP-F4C02A8F": {
+      "title": "Will SpaceX's IPO (ticker SPCX) price on or before June 11, 2026?"
+    },
+    "IMP-6570BEFD": {
+      "title": "Will Julia Letlow win the Louisiana Republican primary for senate?"
+    },
+    "IMP-FB7DFF17": {
+      "title": "Will Vladimir Putin and Volodymyr Zelenskyy meet in person by June 14, 2026?"
+    },
+    "IMP-5B93BDF8": {
+      "title": "Restore Britain >=4% in Makerfield by-election?"
+    },
+    "IMP-7AC91349": {
+      "title": "Will SPCX close more than 30% above its IPO offering price on its first trading day?"
+    },
+    "SOL-300-Q2": {
+      "title": "Solana above $300 by Q2 end",
+      "description": "Resolves YES if SOL/USD trades at or above $300 before July 1, 2026."
+    },
+    "IMP-9B0E8C46": {
+      "title": "Will the Montreal Canadiens win the 2026 NHL Stanley Cup?",
+      "description": "Resolves YES if the Montreal Canadiens win the 2026 NHL Stanley Cup. Resolves NO if it becomes impossible for them to win under NHL rules."
+    },
+    "IMP-FC28782E": {
+      "title": "Will the Buffalo Sabres win the 2026 NHL Stanley Cup?",
+      "description": "Resolves YES if the Buffalo Sabres win the 2026 NHL Stanley Cup. Resolves NO if it becomes impossible for them to win under NHL rules."
+    },
+    "IMP-9C2875EF": {
+      "title": "Will the Carolina Hurricanes win the 2026 NHL Stanley Cup?",
+      "description": "Resolves YES if the Carolina Hurricanes win the 2026 NHL Stanley Cup. Resolves NO if it becomes impossible for them to win under NHL rules."
+    },
+    "IMP-48527FF8": {
+      "title": "Will Saudi Arabia win the 2026 FIFA World Cup?",
+      "description": "Resolves according to whether Saudi Arabia wins the 2026 FIFA World Cup. If it becomes impossible for Saudi Arabia to win, the market resolves NO."
+    },
+    "IMP-2A0DF30C": {
+      "title": "Will Uzbekistan win the 2026 FIFA World Cup?",
+      "description": "Resolves according to whether Uzbekistan wins the 2026 FIFA World Cup. If it becomes impossible for Uzbekistan to win, the market resolves NO."
     }
   }
 }

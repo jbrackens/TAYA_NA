@@ -82,6 +82,78 @@
     "UCL-REAL-2526": {
       "title": "Apakah Real Madrid menang Champions League 2025/26?",
       "description": "Diselesaikan YA jika Real Madrid memenangi final UEFA Champions League 2025/26."
+    },
+    "UCL-BARCA-2526": {
+      "title": "Apakah Barcelona menang Champions League 2025/26?",
+      "description": "Berakhir YES jika Barcelona menang final UEFA Champions League 2025/26."
+    },
+    "IMP-EF6CF271": {
+      "title": "Apakah skor tim tertinggi ARML 2026 lebih dari 235?"
+    },
+    "IMP-379D8671": {
+      "title": "Apakah GTA VI rilis sebelum Juni 2026?",
+      "description": "Berakhir YES jika Grand Theft Auto VI resmi dirilis di AS sebelum 31 Mei 2026. Early access, beta, bocoran, atau akses pra-rilis lain tidak dihitung."
+    },
+    "IMP-414F72B2": {
+      "title": "Apakah ada rilis LLM baru sebelum akhir Mei?"
+    },
+    "BTC-100K-APR26": {
+      "title": "Bitcoin di atas $100K sebelum 30 April",
+      "description": "Berakhir YES jika BTC/USD diperdagangkan pada atau di atas $100.000 di exchange besar mana pun sebelum 30 April 2026 23:59 UTC."
+    },
+    "IMP-CFD8F644": {
+      "title": "Apakah saya pergi ke gym minimal 2 kali per minggu selama sisa Mei?"
+    },
+    "IMP-5CFF0A78": {
+      "title": "Apakah NVDA ditutup di atas $250 pada Jumat, 5 Juni 2026?"
+    },
+    "IMP-23AD5D16": {
+      "title": "Apakah Euphoria Season 3 berakhir dengan skor Metacritic 70 atau lebih?"
+    },
+    "IMP-AFC9D763": {
+      "title": "Apakah Apple menyebut Anthropic atau Claude di keynote WWDC 2026?"
+    },
+    "IMP-089D22B9": {
+      "title": "Apakah final tunggal putra French Open 2026 dimenangkan straight set?"
+    },
+    "IMP-F4C02A8F": {
+      "title": "Apakah IPO SpaceX (ticker SPCX) priced pada atau sebelum 11 Juni 2026?"
+    },
+    "IMP-6570BEFD": {
+      "title": "Apakah Julia Letlow menang primary Republican Louisiana untuk Senat?"
+    },
+    "IMP-FB7DFF17": {
+      "title": "Apakah Vladimir Putin dan Volodymyr Zelenskyy bertemu langsung sebelum 14 Juni 2026?"
+    },
+    "IMP-5B93BDF8": {
+      "title": "Apakah Restore Britain mendapat minimal 4% di by-election Makerfield?"
+    },
+    "IMP-7AC91349": {
+      "title": "Apakah SPCX ditutup lebih dari 30% di atas harga IPO pada hari trading pertamanya?"
+    },
+    "SOL-300-Q2": {
+      "title": "Solana di atas $300 pada akhir Q2",
+      "description": "Berakhir YES jika SOL/USD diperdagangkan pada atau di atas $300 sebelum 1 Juli 2026."
+    },
+    "IMP-9B0E8C46": {
+      "title": "Apakah Montreal Canadiens menang NHL Stanley Cup 2026?",
+      "description": "Berakhir YES jika Montreal Canadiens menang NHL Stanley Cup 2026. Berakhir NO jika mereka sudah tidak mungkin menang berdasarkan aturan NHL."
+    },
+    "IMP-FC28782E": {
+      "title": "Apakah Buffalo Sabres menang NHL Stanley Cup 2026?",
+      "description": "Berakhir YES jika Buffalo Sabres menang NHL Stanley Cup 2026. Berakhir NO jika mereka sudah tidak mungkin menang berdasarkan aturan NHL."
+    },
+    "IMP-9C2875EF": {
+      "title": "Apakah Carolina Hurricanes menang NHL Stanley Cup 2026?",
+      "description": "Berakhir YES jika Carolina Hurricanes menang NHL Stanley Cup 2026. Berakhir NO jika mereka sudah tidak mungkin menang berdasarkan aturan NHL."
+    },
+    "IMP-48527FF8": {
+      "title": "Apakah Arab Saudi menang FIFA World Cup 2026?",
+      "description": "Berakhir berdasarkan apakah Arab Saudi menang FIFA World Cup 2026. Jika Arab Saudi sudah tidak mungkin menang, pasar berakhir NO."
+    },
+    "IMP-2A0DF30C": {
+      "title": "Apakah Uzbekistan menang FIFA World Cup 2026?",
+      "description": "Berakhir berdasarkan apakah Uzbekistan menang FIFA World Cup 2026. Jika Uzbekistan sudah tidak mungkin menang, pasar berakhir NO."
     }
   }
 }

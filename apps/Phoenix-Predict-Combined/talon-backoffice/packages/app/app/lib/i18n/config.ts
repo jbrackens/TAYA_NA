@@ -98,6 +98,8 @@ const INIT_NAMESPACES = [
   "footer",
   "landing",
   "rewards",
+  "prediction",
+  "market-content",
 ];
 
 // Only initialize once
