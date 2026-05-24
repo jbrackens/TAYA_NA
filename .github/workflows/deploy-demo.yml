@@ -96,7 +96,7 @@ jobs:
           {
             printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY"
             printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
-            printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
+            printf 'CHAT_PUBLIC_URL=https://chat.99rtp.io\n'
             printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
           } | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
@@ -167,8 +167,8 @@ jobs:
               echo "Rocket.Chat admin login did not succeed. Continuing because this may be an existing volume with an older admin password."
               exit 0
             fi
-            uid=$(printf "%s" "$login" | node -e "const fs=require(\"fs\"); const d=JSON.parse(fs.readFileSync(0,\"utf8\")); process.stdout.write(d.data.userId)")
-            token=$(printf "%s" "$login" | node -e "const fs=require(\"fs\"); const d=JSON.parse(fs.readFileSync(0,\"utf8\")); process.stdout.write(d.data.authToken)")
+            uid=$(printf "%s" "$login" | python3 -c "import json,sys; print(json.load(sys.stdin)[\"data\"][\"userId\"], end=\"\")")
+            token=$(printf "%s" "$login" | python3 -c "import json,sys; print(json.load(sys.stdin)[\"data\"][\"authToken\"], end=\"\")")
             curl -sS -X POST http://localhost:3002/api/v1/channels.create \
               -H "Content-Type: application/json" \
               -H "X-User-Id: $uid" \
@@ -184,7 +184,7 @@ jobs:
               --build-arg module_name=app \
               --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
               --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
-              --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
+              --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://chat.99rtp.io \
               -t predict-frontend:app-slim .'
 
       - name: Recreate player container
