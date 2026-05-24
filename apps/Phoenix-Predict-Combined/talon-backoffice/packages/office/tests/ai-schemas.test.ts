@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  articleAnalysisSchema,
   candidatesEnvelopeSchema,
   draftedCandidateSchema,
 } from "../lib/ai/schemas";
@@ -30,15 +29,6 @@ const validDraft = {
   resolutionSources: { primary: ["ICC official website"], secondary: [] },
   riskLevel: "high",
   riskFlags: null,
-};
-
-const validAnalysis = {
-  articleSummary: "x",
-  entities: { people: [], organizations: [], locations: [], legalBodies: [] },
-  confirmedFacts: [],
-  reportedClaims: [],
-  futureUncertainEvents: [],
-  alreadyResolvedEvents: [],
 };
 
 describe("draftedCandidateSchema", () => {
@@ -78,30 +68,27 @@ describe("draftedCandidateSchema", () => {
 });
 
 describe("candidatesEnvelopeSchema", () => {
-  it("parses a list of candidates", () => {
-    const env = candidatesEnvelopeSchema.parse({ candidates: [validDraft] });
+  it("parses a summary + list of candidates", () => {
+    const env = candidatesEnvelopeSchema.parse({
+      articleSummary: "x",
+      candidates: [validDraft],
+    });
     expect(env.candidates).toHaveLength(1);
+    expect(env.articleSummary).toBe("x");
+  });
+
+  it("requires articleSummary (produced in the same call)", () => {
+    expect(() =>
+      candidatesEnvelopeSchema.parse({ candidates: [validDraft] }),
+    ).toThrow();
   });
 
   // Count bounds (1..7) are enforced in marketDrafter, not the schema (strict
   // structured outputs can't carry min/maxItems), so the schema accepts any count.
   it("accepts an empty list at the schema level (bounds enforced in code)", () => {
     expect(
-      candidatesEnvelopeSchema.parse({ candidates: [] }).candidates,
+      candidatesEnvelopeSchema.parse({ articleSummary: "x", candidates: [] })
+        .candidates,
     ).toEqual([]);
-  });
-});
-
-describe("articleAnalysisSchema", () => {
-  it("parses a full analysis object", () => {
-    const a = articleAnalysisSchema.parse(validAnalysis);
-    expect(a.entities.people).toEqual([]);
-    expect(a.futureUncertainEvents).toEqual([]);
-  });
-
-  it("rejects missing required fields (no defaults under strict mode)", () => {
-    expect(() =>
-      articleAnalysisSchema.parse({ articleSummary: "x" }),
-    ).toThrow();
   });
 });

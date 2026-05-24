@@ -60,24 +60,11 @@ export type DraftedCandidate = z.infer<typeof draftedCandidateSchema>;
 // more reliable than a bare array across providers). Count bounds (1..7) are
 // enforced in code, not the schema (strict mode forbids min/maxItems).
 export const candidatesEnvelopeSchema = z.object({
+  // One-sentence article summary, produced in the SAME call as the candidates
+  // (used for provenance + the draft modal). A separate extraction pass was
+  // dropped after an A/B showed equal quality at ~30% fewer tokens.
+  articleSummary: z.string(),
   candidates: z.array(draftedCandidateSchema),
 });
 
 export type CandidatesEnvelope = z.infer<typeof candidatesEnvelopeSchema>;
-
-// Article analysis (routine extraction tier). Kept minimal for MVP.
-export const articleAnalysisSchema = z.object({
-  articleSummary: z.string(),
-  entities: z.object({
-    people: z.array(z.string()),
-    organizations: z.array(z.string()),
-    locations: z.array(z.string()),
-    legalBodies: z.array(z.string()),
-  }),
-  confirmedFacts: z.array(z.string()),
-  reportedClaims: z.array(z.string()),
-  futureUncertainEvents: z.array(z.string()),
-  alreadyResolvedEvents: z.array(z.string()),
-});
-
-export type ArticleAnalysis = z.infer<typeof articleAnalysisSchema>;

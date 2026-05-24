@@ -25,19 +25,7 @@ const candidate: MarketCandidate = {
 
 function goodResult(): DraftResult {
   return {
-    analysis: {
-      articleSummary: "s",
-      entities: {
-        people: [],
-        organizations: [],
-        locations: [],
-        legalBodies: [],
-      },
-      confirmedFacts: [],
-      reportedClaims: [],
-      futureUncertainEvents: [],
-      alreadyResolvedEvents: [],
-    },
+    analysis: { articleSummary: "s" },
     drafts: [
       {
         candidate: structuredClone(candidate),
@@ -87,14 +75,14 @@ describe("evaluateDraft", () => {
 });
 
 function mockProvider(): ModelProvider {
-  const analysis = goodResult().analysis;
   return {
     async generateObject<T>(
-      params: GenerateObjectParams<T>,
+      _params: GenerateObjectParams<T>,
     ): Promise<GenerateObjectResult<T>> {
-      const object = (params.schemaName === "ArticleAnalysis"
-        ? analysis
-        : { candidates: [structuredClone(candidate)] }) as unknown as T;
+      const object = {
+        articleSummary: "s",
+        candidates: [structuredClone(candidate)],
+      } as unknown as T;
       return { object, usage: {}, provider: "mock", model: "mock" };
     },
   };

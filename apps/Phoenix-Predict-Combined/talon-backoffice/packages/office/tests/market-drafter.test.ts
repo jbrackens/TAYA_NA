@@ -8,20 +8,6 @@ import type {
 
 const NOW = new Date("2026-05-24T00:00:00Z");
 
-const analysisObj = {
-  articleSummary: "summary",
-  entities: {
-    people: [],
-    organizations: [],
-    locations: [],
-    legalBodies: [],
-  },
-  confirmedFacts: [],
-  reportedClaims: [],
-  futureUncertainEvents: [],
-  alreadyResolvedEvents: [],
-};
-
 function validCandidate(overrides: Record<string, unknown> = {}) {
   return {
     marketTitle: "Will the ICC confirm a warrant before July 31?",
@@ -42,16 +28,17 @@ function validCandidate(overrides: Record<string, unknown> = {}) {
   };
 }
 
-// Mock provider: returns canned analysis for the routine tier and canned
-// candidates for the hard tier. No vendor SDK, no network.
+// Mock provider: returns a canned summary + candidates for the single draft
+// call. No vendor SDK, no network.
 function mockProvider(candidates: unknown[]): ModelProvider {
   return {
     async generateObject<T>(
-      params: GenerateObjectParams<T>,
+      _params: GenerateObjectParams<T>,
     ): Promise<GenerateObjectResult<T>> {
-      const object = (params.schemaName === "ArticleAnalysis"
-        ? analysisObj
-        : { candidates }) as unknown as T;
+      const object = {
+        articleSummary: "summary",
+        candidates,
+      } as unknown as T;
       return { object, usage: {}, provider: "mock", model: "mock" };
     },
   };
@@ -72,11 +59,10 @@ describe("draftMarketsFromArticle", () => {
     expect(r.drafts).toHaveLength(1);
     expect(r.drafts[0].candidate.requiresHumanReview).toBe(true);
     expect(r.drafts[0].validation.ok).toBe(true);
-    // Audit: one generation-log entry per tier (routine extract + hard draft).
-    expect(r.generationLogs).toHaveLength(2);
-    expect(r.generationLogs[0].tier).toBe("routine");
-    expect(r.generationLogs[1].tier).toBe("hard");
-    expect(r.generationLogs[1].provider).toBe("mock");
+    // Audit: one generation-log entry (single hard-tier draft call).
+    expect(r.generationLogs).toHaveLength(1);
+    expect(r.generationLogs[0].tier).toBe("hard");
+    expect(r.generationLogs[0].provider).toBe("mock");
   });
 
   it("surfaces a blocked-risk candidate via validation (not eligible)", async () => {
