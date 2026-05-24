@@ -446,3 +446,21 @@ the live `generateObject` calls, the real URL fetch/redirect path, and the gatew
 4. An LLM eval suite (golden articles) before trusting drafting quality.
 
 **Phase C (not started):** office UI — "Draft from article" entry in the create-market modal, candidate cards, prefill; event picker/create-event; resolution UI rendering the typed `settlement_params` criteria + adding `proposed_resolution`/`disputed` to the status map.
+
+## 18. Phase C + §17 hardening complete (2026-05-24)
+
+Supersedes the "not started" / "required before live" notes above.
+
+- **Phase C shipped:** Draft-from-article modal + candidate cards + prefill; event picker; inline create-event (gateway `POST /api/v1/admin/events` + UI); resolution UI (`proposed_resolution`/`disputed` statuses + AI criteria rendered in the settle modal).
+- **§17a** — richer audit logging: per-call provider/model/tokens flow into the gateway generation log. ✓
+- **§17b** — production SSRF egress gate: URL fetch off by default in prod (`AI_URL_FETCH_ENABLED` to opt in; `AI_URL_FETCH_DISABLED` kill switch). ✓
+- **§17c** — per-admin rate-limit + daily token cap: gateway-enforced + DB-backed via `GET /api/v1/admin/ai-budget`; office pre-flight fails closed. ✓
+- **§17d** — LLM eval harness + golden fixtures (`lib/ai/evals`) with a tested property checker; real-model run via `runEval(createAISDKProvider())` when a key is set. ✓
+
+**Still genuinely remaining (need a key/infra; not buildable offline):**
+1. A live end-to-end run (LLM endpoint + key + running gateway) — the whole AI path is unit/integration-tested with mocks but never run against a real model.
+2. The redirect/DNS-rebinding SSRF integration test (needs a controlled server + DNS harness).
+3. `cost_micros` population via a per-model price map (the spend cap uses tokens today; `cost_micros` is logged-but-empty for reporting).
+4. §13 item 1: challenge-window vs. direct admin resolve for AI/news markets.
+
+Test footprint: 87 office vitest tests (14 files) + the gateway Go suite (AI provenance, budget, create-event, plus DB-backed dedupe/log integration tests).
