@@ -115,6 +115,15 @@ jobs:
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               build gateway'
 
+      - name: Apply gateway migrations
+        # Keep DB schema ahead of the recreated gateway. The gateway image
+        # carries the same migration files as source, plus the migrate helper.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              run --rm --no-deps -e MIGRATIONS_DIR=/app/migrations gateway ./migrate up'
+
       - name: Recreate gateway container
         run: |
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '

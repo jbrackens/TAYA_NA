@@ -124,14 +124,23 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		}
 
 		row := Row{
-			ID:          ur.ID,
-			Title:       m.Title,
-			Description: m.Description,
-			ImagePath:   imagePath,
-			EndTime:     m.EndTime,
-			Volume:      m.Volume,
-			Outcomes:    m.Outcomes,
-			Prices:      m.Prices,
+			ID:                ur.ID,
+			ExternalHash:      hash,
+			Title:             m.Title,
+			Description:       m.Description,
+			SourceURL:         m.SourceURL,
+			UpstreamStatus:    m.Status,
+			UpstreamUpdatedAt: m.UpdatedAt,
+			RulesText:         m.RulesText,
+			EventGroup:        m.EventGroup,
+			Tags:              m.Tags,
+			ImagePath:         imagePath,
+			EndTime:           m.EndTime,
+			Volume:            m.Volume,
+			Volume24h:         m.Volume24h,
+			Liquidity:         m.Liquidity,
+			Outcomes:          m.Outcomes,
+			Prices:            m.Prices,
 		}
 		if err := repo.Update(ctx, ur.ID, row); err != nil {
 			slog.Warn("discover update failed", "src", m.Source, "row_id", ur.ID, "err", err)

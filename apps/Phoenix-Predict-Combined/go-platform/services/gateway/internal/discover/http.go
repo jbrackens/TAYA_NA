@@ -66,3 +66,87 @@ func msToTime(v any) *time.Time {
 	t := time.UnixMilli(int64(f)).UTC()
 	return &t
 }
+
+func firstNonNil(values ...any) any {
+	for _, v := range values {
+		switch x := v.(type) {
+		case nil:
+			continue
+		case string:
+			if x == "" {
+				continue
+			}
+		}
+		return v
+	}
+	return nil
+}
+
+func firstTime(values ...any) *time.Time {
+	for _, v := range values {
+		if t := parseISO(v); t != nil {
+			return t
+		}
+		if t := msToTime(v); t != nil {
+			return t
+		}
+	}
+	return nil
+}
+
+func firstFloat(values ...any) float64 {
+	for _, v := range values {
+		if f := toFloat(v); f != 0 {
+			return f
+		}
+	}
+	return 0
+}
+
+func firstString(values ...any) string {
+	for _, v := range values {
+		if s := strs(v); s != "" {
+			return s
+		}
+	}
+	return ""
+}
+
+func compactStrings(values ...string) []string {
+	out := []string{}
+	seen := map[string]bool{}
+	for _, v := range values {
+		if v == "" || seen[v] {
+			continue
+		}
+		seen[v] = true
+		out = append(out, v)
+	}
+	return out
+}
+
+func stringSlice(v any) []string {
+	switch x := v.(type) {
+	case []string:
+		return compactStrings(x...)
+	case []any:
+		out := make([]string, 0, len(x))
+		for _, item := range x {
+			if s := strs(item); s != "" {
+				out = append(out, s)
+			}
+		}
+		return compactStrings(out...)
+	}
+	return nil
+}
+
+func manifoldStatus(m map[string]any) string {
+	if resolved, _ := m["isResolved"].(bool); resolved {
+		return "resolved"
+	}
+	if t := msToTime(m["closeTime"]); t != nil && t.Before(time.Now().UTC()) {
+		return "closed"
+	}
+	return "open"
+}

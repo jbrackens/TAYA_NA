@@ -55,13 +55,20 @@ func FetchManifold(limit int) ([]Market, error) {
 				ExternalID:  strs(m["id"]),
 				Title:       strs(m["question"]),
 				Description: strs(m["textDescription"]),
+				SourceURL:   strs(m["url"]),
 				ImageURL:    strs(m["coverImageUrl"]),
 				EndTime:     msToTime(m["closeTime"]),
+				UpdatedAt:   msToTime(firstNonNil(m["lastUpdatedTime"], m["lastBetTime"], m["createdTime"])),
 				Volume:      toFloat(m["volume"]),
+				Volume24h:   toFloat(m["volume24Hours"]),
 				Liquidity:   toFloat(m["totalLiquidity"]),
 				Outcomes:    outcomes,
 				Prices:      prices,
 				Category:    "", // not available in list endpoint; classifier fills
+				Status:      manifoldStatus(m),
+				RulesText:   strs(m["description"]),
+				EventGroup:  firstString(m["groupSlug"], m["groupId"]),
+				Tags:        stringSlice(m["groupSlugs"]),
 			}
 
 			// Resolution: isResolved=true + resolution field.

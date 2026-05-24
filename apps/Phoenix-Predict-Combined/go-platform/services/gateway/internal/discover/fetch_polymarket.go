@@ -51,19 +51,43 @@ func FetchPolymarket(limit int) ([]Market, error) {
 				image = strs(m["icon"])
 			}
 			endTime := parseISO(m["endDate"])
+			slug := strs(m["slug"])
+			eventSlug := strs(m["groupSlug"])
+			if eventSlug == "" {
+				eventSlug = strs(m["eventSlug"])
+			}
+			sourceURL := ""
+			if eventSlug != "" {
+				sourceURL = "https://polymarket.com/event/" + eventSlug
+			} else if slug != "" {
+				sourceURL = "https://polymarket.com/market/" + slug
+			}
+			status := "open"
+			if closed, _ := m["closed"].(bool); closed {
+				status = "closed"
+			} else if active, ok := m["active"].(bool); ok && !active {
+				status = "inactive"
+			}
 
 			market := Market{
 				Source:      "polymarket",
 				ExternalID:  strs(m["id"]),
 				Title:       strs(m["question"]),
 				Description: strs(m["description"]),
+				SourceURL:   sourceURL,
 				ImageURL:    image,
 				EndTime:     endTime,
+				UpdatedAt:   firstTime(m["updatedAt"], m["updated_at"], m["lastUpdated"]),
 				Volume:      toFloat(m["volume"]),
+				Volume24h:   firstFloat(m["volume24hr"], m["volume24h"], m["volume24hrClob"]),
 				Liquidity:   toFloat(m["liquidity"]),
 				Outcomes:    outcomes,
 				Prices:      prices,
 				Category:    strs(m["category"]),
+				Status:      status,
+				RulesText:   firstString(m["rules"], m["resolutionSource"], m["description"]),
+				EventGroup:  eventSlug,
+				Tags:        stringSlice(m["tags"]),
 			}
 
 			// Resolution: Polymarket sets `closed=true` and the winning side's

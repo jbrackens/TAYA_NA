@@ -12,14 +12,23 @@ import (
 // Row is the persisted shape — the user-safe subset of Market plus our own
 // UUID. This is what the public API serves.
 type Row struct {
-	ID          string
-	Title       string
-	Description string
-	ImagePath   *string
-	EndTime     *time.Time
-	Volume      float64
-	Outcomes    []string
-	Prices      []float64
+	ID                string
+	ExternalHash      string
+	Title             string
+	Description       string
+	SourceURL         string
+	UpstreamStatus    string
+	UpstreamUpdatedAt *time.Time
+	RulesText         string
+	EventGroup        string
+	Tags              []string
+	ImagePath         *string
+	EndTime           *time.Time
+	Volume            float64
+	Volume24h         float64
+	Liquidity         float64
+	Outcomes          []string
+	Prices            []float64
 }
 
 // Repository persists imported markets and serves the read endpoint. SQL
@@ -77,6 +86,10 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 	if err != nil {
 		prices = []byte("[]")
 	}
+	tags, err := json.Marshal(row.Tags)
+	if err != nil {
+		tags = []byte("[]")
+	}
 	_, err = r.db.ExecContext(ctx, `
 		UPDATE imported_markets SET
 			title = $2,
@@ -86,6 +99,14 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 			volume = $6,
 			outcomes = $7::jsonb,
 			prices = $8::jsonb,
+			source_url = $9,
+			upstream_status = $10,
+			upstream_updated_at = $11,
+			rules_text = $12,
+			event_group = $13,
+			tags = $14::jsonb,
+			volume_24h = $15,
+			liquidity = $16,
 			updated_at = now()
 		WHERE id = $1
 	`,
@@ -97,9 +118,44 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		row.Volume,
 		string(outcomes),
 		string(prices),
+		nullableText(row.SourceURL),
+		nullableText(row.UpstreamStatus),
+		row.UpstreamUpdatedAt,
+		nullableText(row.RulesText),
+		nullableText(row.EventGroup),
+		string(tags),
+		row.Volume24h,
+		row.Liquidity,
 	)
 	if err != nil {
 		return fmt.Errorf("update: %w", err)
+	}
+	if err := r.RecordSnapshot(ctx, id, row); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *Repository) RecordSnapshot(ctx context.Context, id string, row Row) error {
+	prices, err := json.Marshal(row.Prices)
+	if err != nil {
+		prices = []byte("[]")
+	}
+	_, err = r.db.ExecContext(ctx, `
+		INSERT INTO imported_market_price_snapshots
+			(imported_market_id, external_hash, prices, volume, volume_24h, liquidity, upstream_status)
+		VALUES ($1, $2, $3::jsonb, $4, $5, $6, $7)
+	`,
+		id,
+		row.ExternalHash,
+		string(prices),
+		row.Volume,
+		row.Volume24h,
+		row.Liquidity,
+		nullableText(row.UpstreamStatus),
+	)
+	if err != nil {
+		return fmt.Errorf("record snapshot: %w", err)
 	}
 	return nil
 }
@@ -155,11 +211,11 @@ func (r *Repository) List(ctx context.Context, q string, limit int, cursor strin
 	out := make([]Row, 0, limit)
 	for rows.Next() {
 		var (
-			row             Row
-			imagePath       sql.NullString
-			endTime         sql.NullTime
-			outcomesB       []byte
-			pricesB         []byte
+			row       Row
+			imagePath sql.NullString
+			endTime   sql.NullTime
+			outcomesB []byte
+			pricesB   []byte
 		)
 		if err := rows.Scan(&row.ID, &row.Title, &row.Description,
 			&imagePath, &endTime, &row.Volume, &outcomesB, &pricesB); err != nil {

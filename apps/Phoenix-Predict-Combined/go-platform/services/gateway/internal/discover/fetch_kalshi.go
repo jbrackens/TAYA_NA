@@ -107,19 +107,28 @@ func FetchKalshi(limit int) ([]Market, error) {
 				if volume == 0 {
 					volume = toFloat(m["volume_24h_fp"])
 				}
+				eventTicker := strs(m["event_ticker"])
+				ticker := strs(m["ticker"])
 
 				market := Market{
 					Source:      "kalshi",
-					ExternalID:  strs(m["ticker"]),
+					ExternalID:  ticker,
 					Title:       title,
 					Description: description,
+					SourceURL:   fmt.Sprintf("https://kalshi.com/markets/%s/%s", eventTicker, ticker),
 					ImageURL:    "",
 					EndTime:     parseISO(m["close_time"]),
+					UpdatedAt:   firstTime(m["last_updated_ts"], m["updated_time"], m["updated_at"]),
 					Volume:      volume,
+					Volume24h:   toFloat(m["volume_24h_fp"]),
 					Liquidity:   toFloat(m["liquidity_dollars"]),
 					Outcomes:    []string{"Yes", "No"},
 					Prices:      prices,
 					Category:    strs(m["category"]),
+					Status:      strs(m["status"]),
+					RulesText:   strs(m["rules_primary"]),
+					EventGroup:  eventTicker,
+					Tags:        compactStrings(strs(m["category"]), strs(m["market_type"])),
 				}
 
 				// Resolution: status=="settled" + result field set.

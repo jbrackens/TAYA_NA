@@ -2,18 +2,21 @@ package http
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log/slog"
 	stdhttp "net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"phoenix-revival/gateway/internal/bonus"
 	"phoenix-revival/gateway/internal/compliance"
 	"phoenix-revival/gateway/internal/content"
+	"phoenix-revival/gateway/internal/discover"
 	"phoenix-revival/gateway/internal/events"
 	"phoenix-revival/gateway/internal/leaderboards"
 	"phoenix-revival/gateway/internal/loyalty"
@@ -277,6 +280,8 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		reconciler.SetMetrics(predictionMetrics)
 		go reconciler.Run(context.Background())
 
+		startHourlyMarketSyncWorker(walletService.DB(), predSQLRepo, predictionService)
+
 		// Synthetic Market Maker (SMM) — provides resting two-sided
 		// liquidity on order_book markets so users can actually trade
 		// against a CLOB before external MMs sign. Disabled by default
@@ -466,6 +471,113 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 
 func registerWebSocketRoutes(mux *stdhttp.ServeMux, hub *ws.Hub) {
 	mux.HandleFunc("/ws", ws.NewHandler(hub))
+}
+
+func startHourlyMarketSyncWorker(db *sql.DB, repo discover.PredictionRepo, svc discover.Service) {
+	if db == nil || repo == nil || svc == nil {
+		return
+	}
+	if strings.EqualFold(strings.TrimSpace(os.Getenv("MARKET_SYNC_ENABLED")), "false") {
+		slog.Info("market sync worker disabled", "env", "MARKET_SYNC_ENABLED=false")
+		return
+	}
+
+	interval := time.Hour
+	if raw := strings.TrimSpace(os.Getenv("MARKET_SYNC_INTERVAL")); raw != "" {
+		if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 {
+			interval = parsed
+		} else {
+			slog.Warn("market sync: invalid MARKET_SYNC_INTERVAL, using default", "value", raw, "default", interval)
+		}
+	}
+
+	limits := map[string]int{
+		"polymarket": intEnv("MARKET_SYNC_POLYMARKET_LIMIT", 200),
+		"kalshi":     intEnv("MARKET_SYNC_KALSHI_LIMIT", 200),
+		"manifold":   intEnv("MARKET_SYNC_MANIFOLD_LIMIT", 100),
+	}
+
+	publicRoot := marketImagePublicRoot()
+	var rehoster *discover.ImageRehoster
+	if publicRoot != "" {
+		rehoster = discover.NewImageRehoster(publicRoot)
+	} else {
+		slog.Warn("market sync: image rehosting disabled; set MARKET_IMAGE_PUBLIC_ROOT")
+	}
+
+	repoImport := discover.NewRepository(db)
+	run := func(ctx context.Context) {
+		t0 := time.Now()
+		res, deduped, err := discover.Sync(ctx, repoImport, rehoster, limits)
+		if err != nil {
+			slog.Warn("market sync failed", "elapsed", time.Since(t0).Round(time.Millisecond), "error", err)
+			return
+		}
+		promoteRes, err := discover.Promote(ctx, db, repo, svc, deduped)
+		if err != nil {
+			slog.Warn("market sync promote failed", "elapsed", time.Since(t0).Round(time.Millisecond), "error", err)
+			return
+		}
+		slog.Info("market sync complete",
+			"elapsed", time.Since(t0).Round(time.Millisecond),
+			"fetched_polymarket", res.FetchedPolymarket,
+			"fetched_kalshi", res.FetchedKalshi,
+			"fetched_manifold", res.FetchedManifold,
+			"after_dedupe", res.AfterDedupe,
+			"created", promoteRes.Created,
+			"resolved", promoteRes.Resolved+promoteRes.ResolvedExisting,
+			"skipped", promoteRes.Skipped,
+			"failed", promoteRes.Failed,
+		)
+	}
+
+	go func() {
+		slog.Info("market sync worker started", "interval", interval, "limits", limits)
+		run(context.Background())
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for range ticker.C {
+			run(context.Background())
+		}
+	}()
+}
+
+func intEnv(key string, fallback int) int {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return fallback
+	}
+	var out int
+	if _, err := fmt.Sscanf(raw, "%d", &out); err != nil || out < 0 {
+		slog.Warn("invalid integer env, using default", "key", key, "value", raw, "default", fallback)
+		return fallback
+	}
+	return out
+}
+
+func marketImagePublicRoot() string {
+	if root := strings.TrimSpace(os.Getenv("MARKET_IMAGE_PUBLIC_ROOT")); root != "" {
+		return root
+	}
+	cwd, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
+	candidates := []string{
+		filepath.Join(cwd, "talon-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "..", "..", "..", "talon-backoffice", "packages", "app", "public"),
+		filepath.Join(cwd, "..", "..", "talon-backoffice", "packages", "app", "public"),
+	}
+	for _, candidate := range candidates {
+		abs, err := filepath.Abs(candidate)
+		if err != nil {
+			continue
+		}
+		if info, err := os.Stat(abs); err == nil && info.IsDir() {
+			return abs
+		}
+	}
+	return ""
 }
 
 func registerAuthProxy(mux *stdhttp.ServeMux) {

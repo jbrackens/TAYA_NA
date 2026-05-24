@@ -19,13 +19,20 @@ type Market struct {
 	ExternalID  string
 	Title       string
 	Description string
+	SourceURL   string
 	ImageURL    string // upstream URL — used at ingest only, never persisted
 	EndTime     *time.Time
+	UpdatedAt   *time.Time
 	Volume      float64
+	Volume24h   float64
 	Liquidity   float64
 	Outcomes    []string
 	Prices      []float64
 	Category    string // upstream-provided when available; classifier fills otherwise
+	Status      string
+	RulesText   string
+	EventGroup  string
+	Tags        []string
 	Resolution  *Resolution
 }
 
