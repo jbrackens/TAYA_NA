@@ -467,8 +467,12 @@ export default function MarketDetailPage() {
   const { bids, asks } = orderBook
     ? adaptBookForDisplay(orderBook)
     : synthesizeBook(market);
-  const tradersCount =
-    trades.length >= 2 ? new Set(trades.map((t) => t.buyerId)).size : undefined;
+  const traders = new Set<string>();
+  for (const trade of trades) {
+    if (trade.buyerId) traders.add(trade.buyerId);
+    if (trade.sellerId) traders.add(trade.sellerId);
+  }
+  const tradersCount = traders.size;
 
   return (
     <div className="md-wrap">

@@ -1269,7 +1269,9 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 func marketSelectQuery() string {
 	return `SELECT m.id, m.event_id, m.ticker, m.title, m.description, m.status, m.result,
 	               m.yes_price_cents, m.no_price_cents, m.last_trade_price_cents,
-	               m.volume_cents, m.open_interest_cents, m.liquidity_cents,
+	               GREATEST(m.volume_cents, COALESCE(ROUND(im.volume * 100), 0)::bigint) AS volume_cents,
+	               m.open_interest_cents,
+	               GREATEST(m.liquidity_cents, COALESCE(ROUND(im.liquidity * 100), 0)::bigint) AS liquidity_cents,
 	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_cents,
 	               m.settlement_source_key, m.settlement_cutoff_at, m.settlement_rule, m.settlement_params,
 	               m.fallback_source_key, m.fee_rate_bps, m.maker_rebate_bps,
@@ -1278,7 +1280,15 @@ func marketSelectQuery() string {
 	               m.best_yes_bid_cents, m.best_yes_ask_cents,
 	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at,
 	               m.article_source_id
-	        FROM prediction_markets m`
+	        FROM prediction_markets m
+	        LEFT JOIN LATERAL (
+	            SELECT volume, liquidity
+	            FROM imported_markets im
+	            WHERE m.ticker LIKE 'IMP-%'
+	              AND upper(substr(im.external_hash, 1, 8)) = upper(substr(m.ticker, 5, 8))
+	            ORDER BY im.volume DESC
+	            LIMIT 1
+	        ) im ON true`
 }
 
 type scannable interface {
