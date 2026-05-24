@@ -16,6 +16,7 @@ import { setCurrentBalance } from "../lib/store/cashierSlice";
 import { useToast } from "../components/ToastProvider";
 import { useAuth } from "../hooks/useAuth";
 import DepositThresholdModal from "../components/DepositThresholdModal";
+import CryptoDepositCard from "../components/CryptoDepositCard";
 
 const QUICK_AMOUNTS = ["10", "25", "50", "100", "250", "500"];
 const PAYMENT_METHODS = [
@@ -445,6 +446,12 @@ export default function CashierPage() {
                 ))}
               </div>
             </div>
+
+            {/* Crypto deposit: show the on-chain deposit address (fail-closed)
+                instead of an amount form when Crypto is selected on Deposit. */}
+            {activeTab === "deposit" && selectedPayment === "crypto" && (
+              <CryptoDepositCard />
+            )}
 
             {/* Messages */}
             {pendingTxId && (
