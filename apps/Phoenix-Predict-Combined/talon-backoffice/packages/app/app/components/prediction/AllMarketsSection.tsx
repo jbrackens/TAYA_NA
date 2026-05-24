@@ -246,6 +246,55 @@ export function AllMarketsSection({ categories }: Props) {
           color: var(--t3);
           font-size: 13px;
         }
+
+        @media (max-width: 768px) {
+          .ams-head {
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 10px;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            margin: 24px 0 16px;
+          }
+          .ams-categories {
+            flex: 0 0 auto;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 8px;
+            width: calc(100% + 32px);
+            margin: 0 -16px;
+            padding: 0 16px 2px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+          }
+          .ams-categories::-webkit-scrollbar {
+            display: none;
+          }
+          .ams-cat-pill {
+            flex: 0 0 auto;
+            white-space: nowrap;
+            padding: 9px 16px;
+          }
+          .ams-time-pills {
+            align-self: flex-start;
+            max-width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+          }
+          .ams-time-pills::-webkit-scrollbar {
+            display: none;
+          }
+          .ams-time-pill {
+            flex: 0 0 auto;
+            white-space: nowrap;
+          }
+        }
       `}</style>
 
       <header className="ams-head">
