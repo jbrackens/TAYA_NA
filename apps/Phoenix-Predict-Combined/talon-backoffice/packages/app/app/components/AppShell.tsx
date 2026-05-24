@@ -5,10 +5,10 @@
  *
  * Layout (Liquid Glass shell, DESIGN.md §6):
  *   [TopBar]                ← sticky 64px glass-med strip
- *   [page content]          ← max-width centered, transparent wrapper
+ *   [ChatSidebar][content]  ← app-level shell body on desktop
  *
- * No left sidebar, no top ticker band. BackdropScene is mounted higher
- * up in layout.tsx so it sits behind every route.
+ * BackdropScene is mounted higher up in layout.tsx so it sits behind every
+ * route. Chat remains a leaf panel so provider failures cannot block markets.
  */
 
 import React from "react";
@@ -37,21 +37,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               {isAuthRoute ? (
                 <div className="predict-auth-layout">{children}</div>
               ) : (
-                <div style={{ minHeight: "100vh", background: "transparent" }}>
+                <div className="app-shell">
                   <TopBar />
                   <BackendStatusBanner />
-                  <main
-                    style={{
-                      maxWidth: 1280,
-                      margin: "0 auto",
-                      padding: "28px 32px 80px",
-                    }}
-                  >
-                    {children}
-                  </main>
-                  <PredictFooter />
+                  <div className="app-shell-body">
+                    <ChatSidebar />
+                    <div className="app-shell-content">
+                      <main className="app-shell-main">{children}</main>
+                      <PredictFooter />
+                    </div>
+                  </div>
                   <MobileTabBar />
-                  <ChatSidebar />
                 </div>
               )}
             </AuthProvider>

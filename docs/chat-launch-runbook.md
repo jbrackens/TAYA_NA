@@ -3,9 +3,10 @@
 ## Scope
 
 V1 is global community chat only. Rocket.Chat is isolated behind the gateway
-chat adapter and the Next.js chat leaf UI. Market-specific rooms, embedded
-mobile chat, file uploads, rich previews, and broad provider-swapping are out
-of scope for v1.
+chat adapter and the Next.js app-shell chat leaf UI. Public visitors can read
+the global conversation in real time, but posting requires a Hula session.
+Market-specific rooms, embedded mobile chat, file uploads, rich previews, and
+broad provider-swapping are out of scope for v1.
 
 ## Phase 0: Blocking Feasibility
 
@@ -81,6 +82,9 @@ Required go/no-go checks:
   browser bundle, browser network response, or application logs.
 - Confirm the feature can be fully disabled with `CHAT_ENABLED=false` and
   `NEXT_PUBLIC_FEATURE_CHAT=false`.
+- Confirm anonymous visitors can read `#global`, anonymous writes are disabled,
+  and the signed-out Hula composer is greyed out with the exact text
+  `Login to chat`.
 
 Do not enable public chat until all Phase 0 checks pass.
 
@@ -101,8 +105,11 @@ backlog can be included with `REQUIRE_OPTIONAL_POST_V1=true`.
 
 Implemented:
 
-- Desktop right-side collapsible panel mounted outside the main market content.
+- Desktop Duel-style left-side sticky sidebar mounted in the app shell beside
+  the main market content, with a compact collapsed rail.
 - Open/collapsed state persisted in `localStorage`.
+- Signed-out visitors load the public global room and see a disabled composer
+  labeled `Login to chat`.
 - Mobile shows an external "Chat" action instead of embedding the iframe.
 - Provider load timeout and unavailable state.
 - Chat is hidden unless `NEXT_PUBLIC_FEATURE_CHAT=true`.
@@ -111,6 +118,8 @@ QA checklist:
 
 - Market pages remain usable with chat open and closed.
 - Trade, wallet, and confirmation controls are not obscured on desktop.
+- Chat remains available while navigating market listing, market detail,
+  portfolio, account, and other app-shell routes.
 - Mobile opens `${NEXT_PUBLIC_CHAT_PUBLIC_URL}/channel/global` in a new tab.
 - Chat provider outage never blocks market rendering or actions.
 
@@ -143,9 +152,17 @@ Frontend env:
 - `NEXT_PUBLIC_FEATURE_CHAT`
 - `NEXT_PUBLIC_CHAT_PUBLIC_URL`
 
+Rocket.Chat public-read settings:
+
+- `OVERWRITE_SETTING_Accounts_AllowAnonymousRead=true`
+- `OVERWRITE_SETTING_Accounts_AllowAnonymousWrite=false`
+
 Security checks:
 
 - `POST /api/v1/chat/session` must reject unauthenticated users.
+- Unauthenticated users must still be able to view the public global room
+  through the configured public chat origin; they must not receive a Hula-owned
+  provider session token.
 - Suspended, deactivated, disabled, inactive, banned, or closed Hula users must
   be denied and the matching Rocket.Chat user must be deactivated when present.
 - Hula suspension/deactivation flows should call
@@ -207,7 +224,8 @@ services/codex-prep/scripts/chat-launch-gate-check.sh
 
 Manual QA:
 
-- Signed-out user sees allowed read-only behavior or unavailable state.
+- Signed-out user sees live public global chat and a greyed-out
+  `Login to chat` composer; posting is unavailable.
 - Signed-in user can establish a chat session without admin credential exposure.
 - Suspended/deactivated user is denied and provider access is deactivated.
 - Iframe timeout shows a non-blocking unavailable state.

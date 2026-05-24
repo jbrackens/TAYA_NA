@@ -5,8 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Flag,
   MessageCircle,
-  PanelRightClose,
-  PanelRightOpen,
   X,
 } from "lucide-react";
 import { CHAT_PUBLIC_URL, FEATURE_CHAT } from "../../lib/features";
@@ -67,6 +65,18 @@ export function ChatSidebar() {
       setState("loading");
       setMessage("");
       setReportEnabled(false);
+      setEmbedUrl("");
+      if (!isAuthenticated) {
+        if (publicGlobalUrl) {
+          setRoomId("global");
+          setEmbedUrl(publicGlobalUrl);
+          setState("ready");
+        } else {
+          setState("unavailable");
+          setMessage("Chat is not available right now");
+        }
+        return;
+      }
       try {
         const room = await resolveChatRoom();
         if (cancelled) return;
@@ -76,12 +86,6 @@ export function ChatSidebar() {
           return;
         }
         setRoomId(room.room?.id || "global");
-        if (!isAuthenticated) {
-          setEmbedUrl(room.embedUrl || "");
-          setState(room.embedUrl ? "ready" : "unavailable");
-          setMessage(room.embedUrl ? "" : "Chat unavailable");
-          return;
-        }
         const session = await createChatSession();
         if (cancelled) return;
         setEmbedUrl(session.embedUrl);
@@ -90,14 +94,8 @@ export function ChatSidebar() {
       } catch (err) {
         if (cancelled) return;
         logger.warn("Chat", "chat initialization failed", err);
-        if (publicGlobalUrl) {
-          setRoomId("global");
-          setEmbedUrl(publicGlobalUrl);
-          setState("ready");
-        } else {
-          setState("unavailable");
-          setMessage("Chat unavailable");
-        }
+        setState("unavailable");
+        setMessage("Chat is not available right now");
       }
     };
     void load();
@@ -137,26 +135,21 @@ export function ChatSidebar() {
           aria-label="Open chat"
           onClick={() => persistCollapsed(false)}
         >
-          <PanelRightOpen size={20} aria-hidden="true" />
+          <MessageCircle size={20} aria-hidden="true" />
           <span>Chat</span>
         </button>
       ) : (
         <>
-          <div className="chat-header">
-            <div>
-              <div className="chat-title">Global Chat</div>
-              <div className="chat-subtitle">Community</div>
-            </div>
-            <button
-              className="chat-icon-button"
-              type="button"
-              aria-label="Collapse chat"
-              onClick={() => persistCollapsed(true)}
-            >
-              <PanelRightClose size={18} aria-hidden="true" />
-            </button>
+          <div className="chat-status-row">
+            <span className="chat-online-dot" aria-hidden="true" />
+            <span>Community online</span>
           </div>
-          <ChatFrame state={state} embedUrl={embedUrl} message={message} />
+          <ChatFrame
+            state={state}
+            embedUrl={embedUrl}
+            message={message}
+            readOnly={!isAuthenticated}
+          />
           {isAuthenticated && reportEnabled && (
             <>
               <button
@@ -257,10 +250,12 @@ function ChatFrame({
   state,
   embedUrl,
   message,
+  readOnly,
 }: {
   state: LoadState;
   embedUrl: string;
   message: string;
+  readOnly: boolean;
 }) {
   const [timedOut, setTimedOut] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -294,12 +289,19 @@ function ChatFrame({
   }
 
   return (
-    <iframe
-      className="chat-frame"
-      title="Hula Na community chat"
-      src={embedUrl}
-      onLoad={() => setLoaded(true)}
-      sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-    />
+    <div className="chat-frame-wrap">
+      <iframe
+        className="chat-frame"
+        title="Hula Na community chat"
+        src={embedUrl}
+        onLoad={() => setLoaded(true)}
+        sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+      />
+      {readOnly && (
+        <a className="chat-readonly-composer" href="/auth/login">
+          Login to chat
+        </a>
+      )}
+    </div>
   );
 }

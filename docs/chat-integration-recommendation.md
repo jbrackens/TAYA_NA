@@ -7,6 +7,9 @@ a blocking feasibility spike before product launch. The implementation in this
 repo is fail-closed: chat remains disabled unless `CHAT_ENABLED=true`,
 `NEXT_PUBLIC_FEATURE_CHAT=true`, a same-site chat origin, and Rocket.Chat admin
 credentials are explicitly configured.
+The v1 product rule is public read and authenticated write: any visitor can
+watch the global conversation in real time, while the signed-out composer is
+disabled and displays `Login to chat`.
 
 Launch runbook: see `docs/chat-launch-runbook.md`.
 Launch evidence gate: see `docs/chat-launch-evidence.md`.
@@ -35,9 +38,10 @@ only embedding control.
   `apps/Phoenix-Predict-Combined/talon-backoffice/packages/app`, running Next
   16 and React 19. The older React 17 branded app remains in the repo but is
   not the first v1 target.
-- Shell: the prediction app uses a top nav and centered `main` content. Chat is
-  implemented as a right-side leaf overlay so a provider outage cannot block
-  market, wallet, or trade actions.
+- Shell: the prediction app uses a top nav and centered market content inside a
+  persistent app shell. Chat is implemented as a left-side sticky leaf panel on
+  desktop so it feels like product UI while still keeping provider failures from
+  blocking market, wallet, or trade actions.
 - Auth: the web app restores sessions through HttpOnly cookies plus a readable
   CSRF cookie. The gateway validates bearer JWTs and exposes user claims to
   protected handlers.
@@ -96,6 +100,11 @@ Integration notes:
 - Required frontend env:
   - `NEXT_PUBLIC_FEATURE_CHAT`
   - `NEXT_PUBLIC_CHAT_PUBLIC_URL`
+- Required provider public-read posture:
+  - `Accounts_AllowAnonymousRead=true`
+  - `Accounts_AllowAnonymousWrite=false`
+  - Signed-out users use the public room URL only; Hula-owned session tokens are
+    issued only to authenticated, unrestricted users.
 
 ## Option B: Converse.js + XMPP
 
@@ -110,6 +119,106 @@ Cons:
   moderation workflow, retention, and room provisioning.
 - XMPP operational expertise becomes a production dependency.
 - V1 moderation readiness is weaker than Rocket.Chat unless scope expands.
+
+## Duel-Style Chat Architecture Requirement
+
+Hula Na! community chat should follow the persistent left-side community chat
+pattern common in Duel-style sportsbook/casino interfaces, adapted to a
+prediction market surface. The chat should live in the application shell beside
+markets, portfolio, account, and wallet controls rather than as a support
+widget or standalone page.
+
+Desktop layout:
+
+- Mount chat at the app-shell level, before the primary prediction-market
+  content area.
+- Use a predictable sidebar width of roughly 320px, with a compact collapsed
+  rail allowed when the user hides chat.
+- Keep the panel sticky or fixed for the current viewport so it remains
+  available across route transitions.
+- Do not allow chat to cover order entry, wallet controls, market resolution
+  information, or confirmation actions.
+
+Mobile layout:
+
+- Do not reserve permanent horizontal space for chat.
+- Use a mobile action, slide-over drawer, bottom-nav entry, or market-page tab.
+- For v1, opening the approved chat origin externally is acceptable until the
+  embedded mobile UX is explicitly designed and QA'd.
+
+Realtime and storage expectations:
+
+- V1 should use provider-managed realtime transport, fan-out, durable history,
+  presence, rate limits, and moderation controls where possible.
+- Rocket.Chat satisfies this through its realtime and room infrastructure if
+  the launch spike confirms edition, iframe, auth, and moderation behavior.
+- Converse.js/XMPP can satisfy realtime and presence through XMPP MUC, but Hula
+  would likely own more role sync, report UX, admin tooling, and audit workflow.
+- A custom WebSocket/Postgres/Redis/queue stack remains a fallback only after
+  Rocket.Chat and Converse.js/XMPP are shown to be unsuitable.
+
+Message metadata mapping:
+
+```json
+{
+  "messageId": "...",
+  "userId": "...",
+  "username": "player123",
+  "rank": "regular",
+  "avatar": "...",
+  "message": "...",
+  "createdAt": "...",
+  "room": "global"
+}
+```
+
+Hula rank should map from existing user/account state where available:
+
+- `regular`: authenticated user without elevated status.
+- `verified`: future KYC/profile verification mapping when exposed to the
+  prediction app.
+- `market_creator`: future creator identity when market creation is user-owned.
+- `moderator`: Hula moderator role synced to the provider.
+- `admin`: Hula admin role synced to the provider.
+- `vip` or community tier: future loyalty, token, NFT, or community role.
+
+Moderation baseline:
+
+- Chat identity must come from Hula auth, not provider self-registration.
+- Visitors can read public global chat before login, but the message composer
+  must be disabled and display `Login to chat`.
+- Suspended, banned, muted, deactivated, disabled, inactive, or closed Hula
+  users must not be able to create new chat sessions.
+- Required workflows are client-side validation, server-side profanity/spam
+  filtering hooks, rate limits, mute, ban, moderator roles, message deletion,
+  reporting, and Hula-owned audit records.
+- Moderation policy must account for spam, phishing and wallet-drainer links,
+  market manipulation attempts, coordinated brigading, harassment, illegal
+  content, active-market misinformation, and abuse of creators or moderators.
+
+Provider fit against Duel-style requirements:
+
+| Requirement | Rocket.Chat | Converse.js/XMPP |
+| --- | --- | --- |
+| Persistent sidebar embed | Strong via iframe if CSP/cookie behavior passes | Strong client embed, more UI customization work |
+| App-shell integration | Strong as isolated iframe leaf panel | Strong as embedded JS client |
+| WebSocket/realtime support | Built-in realtime infrastructure | XMPP BOSH/WebSocket depending server config |
+| Hula Na! auth mapping | REST user sync plus iframe/session handoff | Custom auth bridge and XMPP account sync |
+| Message metadata mapping | User custom fields/roles can map rank/badges | XMPP vCard/roles/plugins likely needed |
+| Global room support | Native channels | Native MUC |
+| Market-specific room support | Native channels plus provisioning API | MUC rooms plus custom provisioning |
+| Moderator roles | Mature built-in roles | Server/MUC roles; less turnkey admin UX |
+| Mute/ban controls | Built-in | Available through MUC/admin controls, varies by server |
+| Message deletion | Built-in | Supported with MAM/moderation extensions, varies |
+| Rate limits | Built-in settings plus gateway limits | Server modules plus gateway limits |
+| Profanity/spam filtering hooks | Provider apps/settings plus gateway/reporting hooks | Server modules/plugins/custom hooks |
+| Durable message history | MongoDB-backed provider history | MAM archive with Prosody/ejabberd storage |
+| Audit logs | Provider audit plus Hula report audit; gaps must be documented | More custom audit work likely |
+| Presence | Built-in | Protocol-native |
+| Redis/pub-sub or equivalent fan-out | Provider-managed realtime fan-out | XMPP server-managed fan-out |
+| Admin tooling | Strongest v1 fit | More operational/admin build-out |
+| Mobile adaptation | External or iframe/drawer after QA | Embedded/drawer possible with custom styling |
+| Operational complexity | MongoDB plus Rocket.Chat operations | XMPP server operations and custom admin UX |
 
 ## Recommendation
 
@@ -129,7 +238,9 @@ Implementation plan:
    `CHAT_ENABLED=true`.
 4. Enable the frontend with `NEXT_PUBLIC_FEATURE_CHAT=true` and
    `NEXT_PUBLIC_CHAT_PUBLIC_URL`.
-5. Launch v1 with global chat only. Do not launch market rooms until compliance
+5. Configure Rocket.Chat for anonymous read and no anonymous writes, then verify
+   signed-out users can read `#global` without receiving provider credentials.
+6. Launch v1 with global chat only. Do not launch market rooms until compliance
    signs off on content policy, room lifecycle, and manipulation risk.
 
 Fallback plan:

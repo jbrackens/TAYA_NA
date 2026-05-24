@@ -87,6 +87,8 @@ services:
       ADMIN_EMAIL: "chat-admin@99rtp.io"
       ADMIN_PASS: "${ROCKETCHAT_ADMIN_PASSWORD:-change-me-before-demo}"
       OVERWRITE_SETTING_FileUpload_Enabled: "false"
+      OVERWRITE_SETTING_Accounts_AllowAnonymousRead: "true"
+      OVERWRITE_SETTING_Accounts_AllowAnonymousWrite: "false"
       OVERWRITE_SETTING_Accounts_iframe_enabled: "true"
       OVERWRITE_SETTING_Iframe_Integration_send_enable: "true"
       OVERWRITE_SETTING_Iframe_Integration_receive_enable: "true"

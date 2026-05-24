@@ -230,18 +230,19 @@ export function TopBar() {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         .tb-inner {
-          /* Match page main's 1280px max-width so the header brand /
-             nav / search line up with the page content at wide
-             viewports. Previously .tb used full-bleed padding: 0 32px
-             which left the brand floating ~80px to the left of the
-             page content on 1440+ screens. */
-          max-width: 1280px;
+          /* Match the app-shell row that contains the community chat panel
+             plus the prediction market area. This keeps brand/nav aligned
+             to the chat panel's left edge and the utility controls aligned
+             to the market area's right edge. */
+          width: 100%;
+          max-width: 1588px;
           margin: 0 auto;
           height: 64px;
           display: flex;
           align-items: center;
           gap: 24px;
-          padding: 0 32px;
+          padding: 0 24px;
+          box-sizing: border-box;
         }
         .tb-brand {
           display: inline-flex;

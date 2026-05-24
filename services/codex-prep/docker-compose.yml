@@ -200,6 +200,8 @@ services:
       ADMIN_EMAIL: ${ROCKETCHAT_ADMIN_EMAIL:-chat-admin@hulana.local}
       ADMIN_PASS: ${ROCKETCHAT_ADMIN_PASSWORD:-ChangeMe123!}
       OVERWRITE_SETTING_FileUpload_Enabled: ${ROCKETCHAT_FILE_UPLOAD_ENABLED:-false}
+      OVERWRITE_SETTING_Accounts_AllowAnonymousRead: ${ROCKETCHAT_ALLOW_ANONYMOUS_READ:-true}
+      OVERWRITE_SETTING_Accounts_AllowAnonymousWrite: ${ROCKETCHAT_ALLOW_ANONYMOUS_WRITE:-false}
       OVERWRITE_SETTING_Accounts_iframe_enabled: ${ROCKETCHAT_ACCOUNTS_IFRAME_ENABLED:-true}
       OVERWRITE_SETTING_Iframe_Integration_send_enable: ${ROCKETCHAT_IFRAME_SEND_ENABLED:-true}
       OVERWRITE_SETTING_Iframe_Integration_receive_enable: ${ROCKETCHAT_IFRAME_RECEIVE_ENABLED:-true}

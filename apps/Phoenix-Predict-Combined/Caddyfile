@@ -24,7 +24,10 @@ demo.99rtp.io {
 	redir @chatRoot /chat/channel/global 302
 	@chat path /chat/*
 	handle @chat {
-		reverse_proxy predict_rocketchat:3000
+		reverse_proxy predict_rocketchat:3000 {
+			header_down -X-Frame-Options
+			header_down +Content-Security-Policy "frame-ancestors 'self' https://demo.99rtp.io"
+		}
 	}
 	@backend path /api/* /admin/* /ws /ws/*
 	handle @backend {
