@@ -3,6 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './config';
+import {
+  legacyLocaleStorageKey,
+  localeStorageKey,
+  normalizeLocale,
+} from './locales';
 
 interface I18nProviderProps {
   children: React.ReactNode;
@@ -28,7 +33,10 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const storedLanguage = localStorage.getItem('phoenix_language');
+    const storedLanguage = normalizeLocale(
+      localStorage.getItem(localeStorageKey) ||
+        localStorage.getItem(legacyLocaleStorageKey),
+    );
 
     if (storedLanguage && storedLanguage !== i18n.language) {
       void i18n.changeLanguage(storedLanguage);

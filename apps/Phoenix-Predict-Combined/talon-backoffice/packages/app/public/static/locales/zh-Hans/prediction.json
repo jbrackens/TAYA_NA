@@ -1,0 +1,10 @@
+{
+  "MARKETS_TITLE": "预测市场",
+  "YES": "是",
+  "NO": "否",
+  "VOLUME": "交易量",
+  "LIQUIDITY": "流动性",
+  "ACTIVE": "进行中",
+  "RESOLVED": "已结算",
+  "CLOSED": "已关闭"
+}

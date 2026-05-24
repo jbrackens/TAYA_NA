@@ -17,6 +17,12 @@ import { useToast } from "../components/ToastProvider";
 import { useTranslation } from "react-i18next";
 import { logger } from "../lib/logger";
 import { FEATURE_KYC, FEATURE_LIMITS } from "../lib/features";
+import {
+  legacyLocaleStorageKey,
+  localeStorageKey,
+  normalizeLocale,
+  supportedLocales,
+} from "../lib/i18n/locales";
 
 type TabType = "settings" | "limits" | "verification" | "security";
 
@@ -131,13 +137,6 @@ const btnStyle = {
   cursor: "pointer",
 };
 
-const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "de", label: "German" },
-  { code: "es", label: "Spanish" },
-  { code: "fr", label: "French" },
-];
-
 const TIMEZONES = [
   "UTC",
   "America/New_York",
@@ -176,7 +175,10 @@ export default function ProfilePage() {
   // Preferences state
   const [prefLanguage, setPrefLanguage] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("phoenix_language") || "en";
+      return normalizeLocale(
+        localStorage.getItem(localeStorageKey) ||
+          localStorage.getItem(legacyLocaleStorageKey),
+      );
     }
     return "en";
   });
@@ -303,8 +305,10 @@ export default function ProfilePage() {
   const handleSavePreferences = useCallback(() => {
     try {
       if (typeof window !== "undefined") {
-        localStorage.setItem("phoenix_language", prefLanguage);
+        localStorage.setItem(localeStorageKey, prefLanguage);
+        localStorage.setItem(legacyLocaleStorageKey, prefLanguage);
         localStorage.setItem("phoenix_timezone", prefTimezone);
+        document.cookie = `${localeStorageKey}=${encodeURIComponent(prefLanguage)}; Max-Age=31536000; Path=/; SameSite=Lax`;
       }
       i18n.changeLanguage(prefLanguage);
       logger.info("Profile", "Preferences saved", {
@@ -545,10 +549,10 @@ export default function ProfilePage() {
                 <label style={labelStyle}>Language</label>
                 <select
                   value={prefLanguage}
-                  onChange={(e) => setPrefLanguage(e.target.value)}
+                  onChange={(e) => setPrefLanguage(normalizeLocale(e.target.value))}
                   style={inputStyle}
                 >
-                  {LANGUAGES.map((lang) => (
+                  {supportedLocales.map((lang) => (
                     <option key={lang.code} value={lang.code}>
                       {lang.label}
                     </option>

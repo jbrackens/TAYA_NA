@@ -47,9 +47,10 @@ const NAMESPACES = [
   "home",
   "bonus",
   "content",
+  "prediction",
 ];
 
-const SUPPORTED_LANGUAGES = ["en", "de"];
+const SUPPORTED_LANGUAGES = ["en", "zh-Hans", "zh-Hant", "tl", "ms", "id"];
 
 /**
  * Dynamically load a namespace JSON from the public folder.
@@ -106,6 +107,7 @@ if (!i18n.isInitialized) {
     .init({
       lng: "en",
       fallbackLng: "en",
+      load: "currentOnly",
       supportedLngs: SUPPORTED_LANGUAGES,
       ns: INIT_NAMESPACES,
       defaultNS: "common",

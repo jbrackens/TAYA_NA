@@ -23,6 +23,7 @@ import {
   Settings,
   Wallet,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { PredictionMarket } from "@phoenix-ui/api-client/src/prediction-types";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { logger } from "../../lib/logger";
@@ -35,6 +36,7 @@ import {
 } from "../../lib/store/cashierSlice";
 import { getBalance } from "../../lib/api/wallet-client";
 import { TierPill } from "./TierPill";
+import { LanguageSelector } from "../i18n/LanguageSelector";
 
 const api = createPredictionClient();
 
@@ -42,15 +44,16 @@ const api = createPredictionClient();
 // they would either land on a sign-in wall (Portfolio) or render with an
 // empty / placeholder state (Leaderboards, Rewards), neither of which makes
 // sense as a discoverable destination before login.
-const NAV_LINKS: { href: string; label: string; requiresAuth?: boolean }[] = [
-  { href: "/predict", label: "Markets" },
-  { href: "/discover", label: "Discover" },
-  { href: "/portfolio", label: "Portfolio", requiresAuth: true },
-  { href: "/leaderboards", label: "Leaderboards", requiresAuth: true },
-  { href: "/rewards", label: "Rewards", requiresAuth: true },
+const NAV_LINKS: { href: string; labelKey: string; requiresAuth?: boolean }[] = [
+  { href: "/predict", labelKey: "NAV_MARKETS" },
+  { href: "/discover", labelKey: "NAV_DISCOVER" },
+  { href: "/portfolio", labelKey: "NAV_PORTFOLIO", requiresAuth: true },
+  { href: "/leaderboards", labelKey: "NAV_LEADERBOARDS", requiresAuth: true },
+  { href: "/rewards", labelKey: "NAV_REWARDS", requiresAuth: true },
 ];
 
 export function TopBar() {
+  const { t } = useTranslation("header");
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isLoading, user, logout } = useAuth();
@@ -295,6 +298,44 @@ export function TopBar() {
           gap: 10px;
           flex-shrink: 0;
         }
+        .lang-select-wrap {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          min-height: 40px;
+          max-width: 190px;
+          padding: 0 10px;
+          border-radius: var(--r-pill);
+          border: 1px solid var(--border-1);
+          background: var(--surface-1);
+          color: var(--t1);
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .lang-select {
+          position: absolute;
+          inset: 0;
+          opacity: 0;
+          cursor: pointer;
+        }
+        .lang-current {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
         .tb-search-wrap { position: relative; }
         .tb-search-label {
           position: relative;
@@ -478,6 +519,8 @@ export function TopBar() {
           .tb-brand img { max-height: 28px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
+          .lang-select-wrap { max-width: 56px; padding: 0 12px; }
+          .lang-current { display: none; }
         }
       `}</style>
 
@@ -507,7 +550,7 @@ export function TopBar() {
                     href={l.href}
                     className={`tb-link ${isActive(l.href) ? "is-active" : ""}`}
                   >
-                    {l.label}
+                    {t(l.labelKey)}
                   </Link>
                 ),
               )}
@@ -534,8 +577,8 @@ export function TopBar() {
                   ref={searchInputRef}
                   type="search"
                   className="tb-search"
-                  placeholder="Search markets, candidates, teams…"
-                  aria-label="Search markets"
+                  placeholder={t("SEARCH_MARKETS_PLACEHOLDER")}
+                  aria-label={t("SEARCH_MARKETS")}
                   aria-autocomplete="list"
                   aria-controls="tb-search-listbox"
                   value={query}
@@ -558,7 +601,7 @@ export function TopBar() {
                 >
                   {searchResults.length === 0 ? (
                     <li className="tb-search-empty" aria-live="polite">
-                      No markets match “{query.trim()}”
+                      {t("SEARCH_NO_MARKETS", { query: query.trim() })}
                     </li>
                   ) : (
                     searchResults.map((m, i) => (
@@ -576,7 +619,10 @@ export function TopBar() {
                       >
                         <span className="tb-search-hit-title">{m.title}</span>
                         <span className="tb-search-hit-meta mono">
-                          {m.ticker} · {m.yesPriceCents}¢ YES
+                          {t("SEARCH_RESULT_META", {
+                            ticker: m.ticker,
+                            price: m.yesPriceCents,
+                          })}
                         </span>
                       </li>
                     ))
@@ -586,9 +632,10 @@ export function TopBar() {
             </div>
 
             {isAuthenticated && <TierPill />}
+            <LanguageSelector source={isDesktop ? "header" : "mobile_menu"} />
             {isAuthenticated && (
               <div className="tb-balance">
-                <span className="lbl">BAL</span>
+                <span className="lbl">{t("BALANCE_LABEL")}</span>
                 <span>
                   {/*
                   Render a placeholder when the balance is undefined
@@ -614,7 +661,7 @@ export function TopBar() {
                   onClick={() => setUserMenuOpen((o) => !o)}
                   aria-haspopup="menu"
                   aria-expanded={userMenuOpen}
-                  aria-label="User menu"
+                  aria-label={t("USER_MENU")}
                 >
                   {initial}
                 </button>
@@ -624,19 +671,19 @@ export function TopBar() {
                       href="/account"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <UserIcon size={14} /> Account
+                      <UserIcon size={14} /> {t("NAV_ACCOUNT")}
                     </Link>
                     <Link
                       href="/portfolio"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <Wallet size={14} /> Portfolio
+                      <Wallet size={14} /> {t("NAV_PORTFOLIO")}
                     </Link>
                     <Link
                       href="/account/settings"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <Settings size={14} /> Settings
+                      <Settings size={14} /> {t("NAV_SETTINGS")}
                     </Link>
                     <div
                       style={{
@@ -650,7 +697,7 @@ export function TopBar() {
                       onClick={handleLogout}
                       style={{ color: "var(--no)" }}
                     >
-                      <LogOut size={14} /> Log out
+                      <LogOut size={14} /> {t("LOG_OUT")}
                     </button>
                   </div>
                 )}
@@ -658,10 +705,10 @@ export function TopBar() {
             ) : (
               <>
                 <Link href="/auth/login" className="tb-btn tb-btn-ghost">
-                  Log in
+                  {t("LOG_IN")}
                 </Link>
                 <Link href="/auth/register" className="tb-btn tb-btn-accent">
-                  Sign up
+                  {t("SIGN_UP")}
                 </Link>
               </>
             )}

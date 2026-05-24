@@ -30,5 +30,22 @@
   "SEARCH_STATUS_FT": "FT",
   "SEARCH_STATUS_UPCOMING": "Upcoming",
   "SEARCH_NO_RESULTS": "No results for \"{{query}}\"",
-  "SEARCH_TRY_DIFFERENT": "Try a different search term"
+  "SEARCH_TRY_DIFFERENT": "Try a different search term",
+  "NAV_MARKETS": "Markets",
+  "NAV_DISCOVER": "Discover",
+  "NAV_PORTFOLIO": "Portfolio",
+  "NAV_LEADERBOARDS": "Leaderboards",
+  "NAV_REWARDS": "Rewards",
+  "NAV_BOARDS": "Boards",
+  "NAV_ACCOUNT": "Account",
+  "NAV_SETTINGS": "Settings",
+  "SEARCH_MARKETS": "Search markets",
+  "SEARCH_MARKETS_PLACEHOLDER": "Search markets, candidates, teams...",
+  "SEARCH_NO_MARKETS": "No markets match \"{{query}}\"",
+  "SEARCH_RESULT_META": "{{ticker}} · {{price}}¢ YES",
+  "BALANCE_LABEL": "BAL",
+  "USER_MENU": "User menu",
+  "LOG_IN": "Log in",
+  "SIGN_UP": "Sign up",
+  "LOG_OUT": "Log out"
 }

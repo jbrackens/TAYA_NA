@@ -1,0 +1,14 @@
+{
+  "DATE_FORMAT": "MM/DD/YYYY",
+  "TIME_FORMAT": "HH:mm:ss",
+  "DATE_TIME_FORMAT": "MM/DD/YYYY, HH:mm:ss",
+  "PASSWORD_REGEX": "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~])(?=.{8,})",
+  "VS": "vs",
+  "HOME_LABEL": "Home",
+  "DRAW_LABEL": "Draw",
+  "AWAY_LABEL": "Away",
+  "ERROR_MESSAGE": "Error: {{message}}",
+  "PREVIOUS": "Previous",
+  "NEXT": "Next",
+  "PAGE_OF": "Page {{current}} of {{total}}"
+}

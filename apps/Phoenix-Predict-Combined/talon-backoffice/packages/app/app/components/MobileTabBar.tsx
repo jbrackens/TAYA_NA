@@ -18,10 +18,11 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type TabDef = {
   href: string;
-  label: string;
+  labelKey: string;
   Icon: typeof LayoutGrid;
   matchPrefixes?: string[];
 };
@@ -29,16 +30,16 @@ type TabDef = {
 const TABS: TabDef[] = [
   {
     href: "/predict",
-    label: "Markets",
+    labelKey: "NAV_MARKETS",
     Icon: LayoutGrid,
     matchPrefixes: ["/predict", "/category/", "/market/"],
   },
-  { href: "/portfolio", label: "Portfolio", Icon: PieChart },
-  { href: "/leaderboards", label: "Boards", Icon: Trophy },
-  { href: "/rewards", label: "Rewards", Icon: Gift },
+  { href: "/portfolio", labelKey: "NAV_PORTFOLIO", Icon: PieChart },
+  { href: "/leaderboards", labelKey: "NAV_BOARDS", Icon: Trophy },
+  { href: "/rewards", labelKey: "NAV_REWARDS", Icon: Gift },
   {
     href: "/account",
-    label: "Account",
+    labelKey: "NAV_ACCOUNT",
     Icon: UserIcon,
     matchPrefixes: ["/account"],
   },
@@ -56,6 +57,7 @@ function matches(pathname: string | null, tab: TabDef): boolean {
 
 export default function MobileTabBar() {
   const pathname = usePathname();
+  const { t } = useTranslation("header");
 
   // Render only on mobile. Desktop uses TopBar's nav links.
   const [isMobile, setIsMobile] = useState(false);
@@ -119,18 +121,18 @@ export default function MobileTabBar() {
         }
       `}</style>
       <nav className="mtb" aria-label="Primary (mobile)">
-        {TABS.map((t) => {
-          const active = matches(pathname, t);
-          const Icon = t.Icon;
+        {TABS.map((tab) => {
+          const active = matches(pathname, tab);
+          const Icon = tab.Icon;
           return (
             <Link
-              key={t.href}
-              href={t.href}
+              key={tab.href}
+              href={tab.href}
               className={`mtb-item ${active ? "is-active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
               <Icon size={18} className="mtb-icon" aria-hidden="true" />
-              <span>{t.label}</span>
+              <span>{t(tab.labelKey)}</span>
             </Link>
           );
         })}

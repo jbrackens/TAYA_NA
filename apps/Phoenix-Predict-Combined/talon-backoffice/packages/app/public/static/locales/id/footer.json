@@ -1,0 +1,23 @@
+{
+  "COMPANY": "Company",
+  "ABOUT": "About",
+  "TERMS_OF_SERVICE": "Terms of Service",
+  "PRIVACY_POLICY": "Privacy Policy",
+  "TERMS_AND_CONDITIONS": "Terms & Conditions",
+  "HELP": "Help",
+  "BONUS_RULES": "Bonus Rules",
+  "BETTING_RULES": "Betting and House Rules",
+  "RESPONSIBLE_GAMING": "Responsible Gaming",
+  "PROMOTIONS": "Promotions",
+  "CONTACT_US": "Contact Us",
+  "DESC_1": "Vie.gg is operated by GMBL New Jersey, Inc. Registration number is 0450491712., having its registered address at 820 BEAR TAVERN ROAD WEST TRENTON, NEW JERSEY 08628, phone number: +1 (855) 944-3578 and is licensed and regulated by New Jersey Division of Gaming Enforcement.",
+  "LOWER_FOOTER_CONTENT": "© GMBL New Jersey, Inc {{year}}",
+  "HOME": "HOME",
+  "IN_PLAY": "IN PLAY",
+  "MY_BETS": "MY BETS",
+  "ACCOUNT": "ACCOUNT",
+  "DEPOSIT": "Deposit",
+  "DEPOSIT_MESSAGE": "Visa and cash at Bally's casino",
+  "WITHDRAWALS": "Withdrawals",
+  "WITHDRAWAL_MESSAGE": "by check and at Bally's casino"
+}
