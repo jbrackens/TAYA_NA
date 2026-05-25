@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "id": "happy-source-confirmed",
+      "description": "Happy path source transaction detected.",
+      "eventFixture": "relay-source-detected.json"
+    },
+    {
+      "id": "signed-callback-source-confirmed",
+      "description": "Signed callback source confirmation includes raw-body verification evidence.",
+      "eventFixture": "relay-callback-source-detected.json"
+    },
+    {
+      "id": "happy-destination-confirmed",
+      "description": "Happy path destination settlement confirmed.",
+      "eventFixture": "relay-destination-confirmed.json"
+    },
+    {
+      "id": "duplicate-callback-replay",
+      "description": "Duplicate callback normalizes to the same idempotency key.",
+      "eventFixture": "relay-duplicate-callback-replay.json"
+    },
+    {
+      "id": "invalid-callback-signature",
+      "description": "Invalid raw-body signature is rejected before a bridge event is created.",
+      "securityLogOnly": true
+    },
+    {
+      "id": "unknown-provider-request",
+      "description": "Unknown provider request quarantines without crediting funds.",
+      "eventFixture": "relay-quarantined-unknown-request.json"
+    },
+    {
+      "id": "under-minimum-source-amount",
+      "description": "Under-minimum source funds are routed to recovery.",
+      "eventFixture": "relay-quarantined-under-minimum.json"
+    },
+    {
+      "id": "expired-quote-late-source",
+      "description": "Expired quote with late source transaction goes to recovery.",
+      "eventFixture": "relay-failed-expired-quote.json"
+    },
+    {
+      "id": "destination-wallet-mismatch",
+      "description": "Destination wallet mismatch quarantines the route.",
+      "eventFixture": "relay-quarantined-destination-mismatch.json"
+    },
+    {
+      "id": "provider-failed-after-source",
+      "description": "Provider failure after source detection does not auto-credit.",
+      "eventFixture": "relay-failed-after-source-detection.json"
+    },
+    {
+      "id": "missing-destination-evidence",
+      "description": "Provider success without destination chain evidence quarantines.",
+      "eventFixture": "relay-quarantined-missing-destination-evidence.json"
+    },
+    {
+      "id": "sanctions-manual-review",
+      "description": "Sanctions/manual-review source is quarantined.",
+      "eventFixture": "relay-quarantined-sanctions-review.json"
+    }
+  ]
+}

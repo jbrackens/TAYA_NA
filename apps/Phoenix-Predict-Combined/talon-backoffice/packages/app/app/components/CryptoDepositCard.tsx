@@ -1,48 +1,24 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import {
-  getCryptoConfig,
-  getCryptoDepositAddress,
-  type CryptoRailConfig,
-} from "../lib/api/crypto-client";
-import { ApiError } from "../lib/api/client";
+import { getCryptoConfig, type CryptoRailConfig } from "../lib/api/crypto-client";
 import { logger } from "../lib/logger";
-import { QRCodeSVG } from "qrcode.react";
 
 type LoadState = "loading" | "coming-soon" | "ready" | "error";
 
-// Deposit card for the custodial BSC USDT rail. Wires to the real
-// /api/v1/payments/crypto/* endpoints and is fail-closed: when the rail is not
-// configured it shows "coming soon" rather than a fake address. Visual-QA'd in
-// the worktree dev server — the ready state renders QR + address + copy + the
-// wrong-token/network warning.
+// Non-custodial crypto deposits are not live yet. The legacy custodial
+// /api/v1/payments/crypto/deposit-address endpoint is intentionally not called
+// from this card; production also blocks that rail at gateway startup.
 export default function CryptoDepositCard() {
   const [state, setState] = useState<LoadState>("loading");
   const [config, setConfig] = useState<CryptoRailConfig | null>(null);
-  const [address, setAddress] = useState<string>("");
-  const [copied, setCopied] = useState<boolean>(false);
 
   const load = useCallback(async () => {
     setState("loading");
     try {
       const cfg = await getCryptoConfig();
       setConfig(cfg);
-      if (!cfg.configured) {
-        setState("coming-soon");
-        return;
-      }
-      try {
-        const dep = await getCryptoDepositAddress();
-        setAddress(dep.address);
-        setState("ready");
-      } catch (err: unknown) {
-        if (err instanceof ApiError && err.status === 503) {
-          setState("coming-soon");
-          return;
-        }
-        throw err;
-      }
+      setState(cfg.configured ? "ready" : "coming-soon");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error("CryptoDeposit", "Failed to load crypto deposit", message);
@@ -54,22 +30,8 @@ export default function CryptoDepositCard() {
     load();
   }, [load]);
 
-  const copyAddress = useCallback(async () => {
-    if (!address) return;
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      logger.warn("CryptoDeposit", "Clipboard copy failed", message);
-    }
-  }, [address]);
-
-  const network = (config?.network ?? "bsc").toUpperCase();
+  const network = (config?.network ?? "tron").toUpperCase();
   const asset = config?.asset ?? "USDT";
-  const confirmations = config?.confirmations ?? 12;
-  const tokenStandard = network === "BSC" ? "BEP-20" : network;
 
   if (state === "loading") {
     return <div className="cashier-section">Loading crypto deposit…</div>;
@@ -92,7 +54,8 @@ export default function CryptoDepositCard() {
     return (
       <div className="cashier-section">
         <div className="cashier-msg pending">
-          {asset} deposits on {network} are coming soon.
+          {asset} deposits are moving to the non-custodial cashier and are not
+          live yet.
         </div>
       </div>
     );
@@ -100,50 +63,15 @@ export default function CryptoDepositCard() {
 
   return (
     <div className="cashier-section">
-      <label className="cashier-label">
-        Your {asset} deposit address ({network})
-      </label>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "0.75rem",
-        }}
-      >
-        <div
-          style={{
-            background: "#fff",
-            padding: "0.75rem",
-            borderRadius: "0.5rem",
-            border: "1px solid #e5ddc9",
-          }}
-        >
-          <QRCodeSVG value={address} size={168} />
-        </div>
+      <label className="cashier-label">{asset} deposits ({network})</label>
+      <div className="cashier-msg pending">
+        Crypto deposits are being moved to the non-custodial cashier. We will
+        show a Tron USDT deposit address here once the new bridge-backed rail is
+        live.
       </div>
-      <div
-        style={{
-          fontFamily: "monospace",
-          wordBreak: "break-all",
-          padding: "0.75rem",
-          borderRadius: "0.5rem",
-          background: "rgba(0,0,0,0.04)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        {address}
-      </div>
-      <button className="cashier-quick-btn" onClick={copyAddress}>
-        {copied ? "Copied!" : "Copy address"}
-      </button>
       <p className="cashier-balance-sub" style={{ marginTop: "0.75rem" }}>
-        Send only{" "}
-        <strong>
-          {asset} ({tokenStandard})
-        </strong>{" "}
-        on {network} to this address. Funds appear after {confirmations}{" "}
-        confirmations. Sending the wrong token or network will result in loss of
-        funds.
+        Do not send funds to any old Hula Na! custodial BSC address. V1 crypto
+        deposits must be non-custodial and bridge into your user wallet.
       </p>
     </div>
   );

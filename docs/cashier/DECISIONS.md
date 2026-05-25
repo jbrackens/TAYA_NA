@@ -59,3 +59,27 @@ RPC URL with an account identifier in the subdomain is hardcoded in client code
 shipped to browsers; worth rotating + proxying there.
 
 Net: **plan unchanged**; no Solana/Privy code added to the cashier.
+
+## D5 — Architecture pivot: non-custodial EVM wallet + Tron-first deposits
+After revisiting the product goal ("mirror Polymarket") and the Asian funding
+reality, we are adopting a **non-custodial** cashier again. Tron is the primary
+funding rail for Maria from Manila, but the market wallet/trading layer remains
+EVM.
+
+What changes:
+- The existing custodial Go `payments`/`wallet.Credit` crypto rail is now
+  prototype/reference code only. Keep it fail-closed; do not wire it to real funds.
+- Drop custodial HD deposit-address derivation, KMS withdrawal signing, and sweep-gas
+  work from the V1 cashier path.
+- Restore smart-wallet, collateral, gas sponsorship, bridge-watcher, and SDK work.
+- Run provider spikes for passive per-user TRC-20 USDT deposit addresses that bridge
+  into a user's EVM smart wallet. If the user must do a multi-step TronLink bridge
+  flow, that provider fails the Maria UX bar.
+
+Why:
+- BSC-only custodial is expedient but not Polymarket-like.
+- TRC-20 USDT is the strongest retail stablecoin funding rail for Southeast Asia.
+- EVM remains the right execution layer for account abstraction, audits, market
+  contracts, and gasless trading.
+
+Updated source of truth: `docs/cashier/README.md`.

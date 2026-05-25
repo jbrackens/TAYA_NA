@@ -81,11 +81,18 @@ class ApiClient {
     return res.json();
   }
 
-  async post<T>(path: string, body?: Record<string, unknown>): Promise<T> {
+  async post<T>(
+    path: string,
+    body?: Record<string, unknown>,
+    headers?: Record<string, string>,
+  ): Promise<T> {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl ? `${this.baseUrl}${normalizedPath}` : normalizedPath;
     const res = await fetch(url, {
-      method: 'POST', headers: this.getHeaders(true), credentials: 'include', body: body ? JSON.stringify(body) : undefined
+      method: 'POST',
+      headers: { ...this.getHeaders(true), ...headers },
+      credentials: 'include',
+      body: body ? JSON.stringify(body) : undefined
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
     if (res.status === 204 || res.headers.get('content-length') === '0') return undefined as T;

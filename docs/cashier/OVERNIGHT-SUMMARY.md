@@ -1,5 +1,10 @@
 # Cashier — overnight build summary (2026-05-23 → 24)
 
+> **Historical note (superseded 2026-05-25):** this summary describes the
+> custodial BSC prototype that was built before the architecture pivot. The
+> approved path is now non-custodial EVM wallet + Tron-first deposits. See
+> `docs/cashier/README.md` and `docs/cashier/DECISIONS.md` D5.
+
 You said "continue uninterrupted for 8h." Here's what landed while you slept. All
 work is on **`feat/hula-na-cashier`** in the dedicated worktree
 `/Users/john/Sandbox/Taya_NA_Predict/Taya_Na_Predict-cashier`. **Nothing pushed.**

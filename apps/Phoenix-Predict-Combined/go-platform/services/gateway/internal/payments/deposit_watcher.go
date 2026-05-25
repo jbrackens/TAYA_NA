@@ -31,6 +31,10 @@ type WatcherConfig struct {
 // wide ranges, so a cold start or long downtime must be scanned in chunks.
 const defaultMaxBlockRange = 2000
 
+// Prototype-only after the 2026-05-25 cashier pivot: this watcher credits the
+// legacy custodial cents ledger. Keep it as reference for finality, reorg, and
+// idempotency logic; do not use it as the production cashier source of truth.
+//
 // DepositWatcher detects ERC-20 transfers to user deposit addresses and credits
 // the cents ledger exactly once, after finality. Fail-closed: it credits only
 // transfers it has fully verified (decoded, mapped to a known deposit address,

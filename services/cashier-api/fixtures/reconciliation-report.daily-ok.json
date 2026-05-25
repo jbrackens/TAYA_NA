@@ -1,0 +1,21 @@
+{
+  "id": "recon_2026_05_25",
+  "businessDate": "2026-05-25",
+  "generatedAt": "2026-05-25T23:59:00.000Z",
+  "generatedBy": "system",
+  "items": [
+    {
+      "id": "recon_item_001",
+      "subjectType": "deposit",
+      "subjectId": "dep_test_001",
+      "expectedUnits": "24900000",
+      "observedUnits": "24900000",
+      "asset": "hUSD",
+      "chain": "settlement",
+      "status": "matched",
+      "providerRequestId": "relay_req_test_001",
+      "sourceTxHash": "tron_tx_test_001",
+      "destinationTxHash": "0x2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ]
+}

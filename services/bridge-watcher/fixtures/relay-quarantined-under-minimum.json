@@ -1,0 +1,20 @@
+{
+  "id": "evt_test_007",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_003",
+  "depositIntentId": "dep_test_003",
+  "status": "quarantined",
+  "idempotencyKey": "deposit:relay:tron:tron_tx_test_003:under_minimum",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_003",
+  "sourceAddress": "TMockMariaSourceAddress111111111111111",
+  "depositAddress": "TMockUnderMinimumDeposit1111111111111",
+  "amount": {
+    "asset": "USDT",
+    "chain": "tron",
+    "decimals": 6,
+    "units": "1000000"
+  },
+  "recoveryReason": "under_minimum",
+  "observedAt": "2026-05-25T00:10:00.000Z"
+}

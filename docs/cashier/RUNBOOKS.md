@@ -1,5 +1,12 @@
 # Cashier runbooks
 
+> **Superseded for production design (2026-05-25):** these runbooks describe the
+> custodial BSC prototype only. The approved cashier architecture is now
+> non-custodial EVM wallet + Tron-first deposits; see `docs/cashier/README.md`.
+> Keep these notes for prototype debugging and for lessons on finality,
+> idempotency, and decimal handling. Do not treat them as production launch
+> runbooks for real user funds.
+
 Operational runbooks for the custodial BSC USDT rail + deposit watcher **as built
 so far**. Honest status: the **deposit detect→credit path is implemented and
 tested**; the **withdrawal signer**, **deposit-address derivation**, **Symbiosis

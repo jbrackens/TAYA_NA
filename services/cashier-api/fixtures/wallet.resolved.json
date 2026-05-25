@@ -1,0 +1,8 @@
+{
+  "userId": "user_maria_001",
+  "embeddedWalletAddress": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "smartWalletAddress": "0x1111111111111111111111111111111111111111",
+  "settlementChain": "polygon",
+  "smartWalletProvider": "erc4337",
+  "createdAt": "2026-05-25T00:00:00.000Z"
+}
