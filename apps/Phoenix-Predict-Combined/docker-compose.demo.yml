@@ -103,6 +103,29 @@ services:
       AUTH_COOKIE_SECURE: "true"                 # Caddy terminates TLS; cookie is HTTPS-only
       JWT_SECRET: "${JWT_SECRET:?export a strong JWT_SECRET before up}"
       LOG_LEVEL: "info"
+      # Social OAuth. Client id/secret come from /opt/phoenix/.env (written each
+      # deploy from GitHub Actions secrets); a provider stays OFF until its id is
+      # set (start returns "not configured"). Redirect URIs are public + fixed
+      # for this box and MUST match what is registered in each provider console.
+      AUTH_FRONTEND_URL: "https://demo.99rtp.io"
+      GOOGLE_OAUTH_CLIENT_ID: "${GOOGLE_OAUTH_CLIENT_ID:-}"
+      GOOGLE_OAUTH_CLIENT_SECRET: "${GOOGLE_OAUTH_CLIENT_SECRET:-}"
+      GOOGLE_OAUTH_REDIRECT_URI: "https://demo.99rtp.io/api/v1/auth/oauth/google/callback"
+      DISCORD_OAUTH_CLIENT_ID: "${DISCORD_OAUTH_CLIENT_ID:-}"
+      DISCORD_OAUTH_CLIENT_SECRET: "${DISCORD_OAUTH_CLIENT_SECRET:-}"
+      DISCORD_OAUTH_REDIRECT_URI: "https://demo.99rtp.io/api/v1/auth/oauth/discord/callback"
+      FACEBOOK_OAUTH_CLIENT_ID: "${FACEBOOK_OAUTH_CLIENT_ID:-}"
+      FACEBOOK_OAUTH_CLIENT_SECRET: "${FACEBOOK_OAUTH_CLIENT_SECRET:-}"
+      FACEBOOK_OAUTH_REDIRECT_URI: "https://demo.99rtp.io/api/v1/auth/oauth/facebook/callback"
+      TWITTER_OAUTH_CLIENT_ID: "${TWITTER_OAUTH_CLIENT_ID:-}"
+      TWITTER_OAUTH_CLIENT_SECRET: "${TWITTER_OAUTH_CLIENT_SECRET:-}"
+      TWITTER_OAUTH_REDIRECT_URI: "https://demo.99rtp.io/api/v1/auth/oauth/twitter/callback"
+      TIKTOK_OAUTH_CLIENT_KEY: "${TIKTOK_OAUTH_CLIENT_KEY:-}"
+      TIKTOK_OAUTH_CLIENT_SECRET: "${TIKTOK_OAUTH_CLIENT_SECRET:-}"
+      TIKTOK_OAUTH_REDIRECT_URI: "https://demo.99rtp.io/api/v1/auth/oauth/tiktok/callback"
+      REDDIT_OAUTH_CLIENT_ID: "${REDDIT_OAUTH_CLIENT_ID:-}"
+      REDDIT_OAUTH_CLIENT_SECRET: "${REDDIT_OAUTH_CLIENT_SECRET:-}"
+      REDDIT_OAUTH_REDIRECT_URI: "https://demo.99rtp.io/api/v1/auth/oauth/reddit/callback"
 
   gateway:
     restart: unless-stopped

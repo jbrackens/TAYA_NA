@@ -81,23 +81,47 @@ jobs:
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
 
-      - name: Inject OpenRouter key into box .env (compose substitution)
-        # The office AI-drafting route reads AI_HARD_API_KEY / AI_ROUTINE_API_KEY
-        # at runtime; docker-compose.demo.yml maps both to ${OPENROUTER_API_KEY}.
-        # Write it to /opt/phoenix/.env (compose auto-reads ./.env from the project
-        # dir) via stdin, so the secret never appears in a command line / process
-        # list — same posture as the Caddyfile step above. MUST run after the rsync
+      - name: Inject runtime secrets into box .env (compose substitution)
+        # docker-compose.demo.yml substitutes ${VAR} from /opt/phoenix/.env. We
+        # write it via stdin so secrets never appear in a command line / process
+        # list (same posture as the Caddyfile step). MUST run after the rsync
         # (which --deletes a pre-existing .env), so it is re-written every deploy.
-        # If the secret is unset we write an empty value: drafting then fails closed
-        # (the rest of the app is unaffected), so a missing key never breaks deploy.
+        # Unset secrets are written empty: the dependent feature fails closed
+        # (e.g. drafting; an OAuth provider stays "not configured"), so a missing
+        # key never breaks the deploy. Social OAuth client ids/secrets land here;
+        # the auth service maps them via ${..:-} in docker-compose.demo.yml.
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+          DISCORD_OAUTH_CLIENT_ID: ${{ secrets.DISCORD_OAUTH_CLIENT_ID }}
+          DISCORD_OAUTH_CLIENT_SECRET: ${{ secrets.DISCORD_OAUTH_CLIENT_SECRET }}
+          FACEBOOK_OAUTH_CLIENT_ID: ${{ secrets.FACEBOOK_OAUTH_CLIENT_ID }}
+          FACEBOOK_OAUTH_CLIENT_SECRET: ${{ secrets.FACEBOOK_OAUTH_CLIENT_SECRET }}
+          TWITTER_OAUTH_CLIENT_ID: ${{ secrets.TWITTER_OAUTH_CLIENT_ID }}
+          TWITTER_OAUTH_CLIENT_SECRET: ${{ secrets.TWITTER_OAUTH_CLIENT_SECRET }}
+          TIKTOK_OAUTH_CLIENT_KEY: ${{ secrets.TIKTOK_OAUTH_CLIENT_KEY }}
+          TIKTOK_OAUTH_CLIENT_SECRET: ${{ secrets.TIKTOK_OAUTH_CLIENT_SECRET }}
+          REDDIT_OAUTH_CLIENT_ID: ${{ secrets.REDDIT_OAUTH_CLIENT_ID }}
+          REDDIT_OAUTH_CLIENT_SECRET: ${{ secrets.REDDIT_OAUTH_CLIENT_SECRET }}
         run: |
           {
             printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY"
             printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
             printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
             printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
+            printf 'GOOGLE_OAUTH_CLIENT_ID=%s\n' "$GOOGLE_OAUTH_CLIENT_ID"
+            printf 'GOOGLE_OAUTH_CLIENT_SECRET=%s\n' "$GOOGLE_OAUTH_CLIENT_SECRET"
+            printf 'DISCORD_OAUTH_CLIENT_ID=%s\n' "$DISCORD_OAUTH_CLIENT_ID"
+            printf 'DISCORD_OAUTH_CLIENT_SECRET=%s\n' "$DISCORD_OAUTH_CLIENT_SECRET"
+            printf 'FACEBOOK_OAUTH_CLIENT_ID=%s\n' "$FACEBOOK_OAUTH_CLIENT_ID"
+            printf 'FACEBOOK_OAUTH_CLIENT_SECRET=%s\n' "$FACEBOOK_OAUTH_CLIENT_SECRET"
+            printf 'TWITTER_OAUTH_CLIENT_ID=%s\n' "$TWITTER_OAUTH_CLIENT_ID"
+            printf 'TWITTER_OAUTH_CLIENT_SECRET=%s\n' "$TWITTER_OAUTH_CLIENT_SECRET"
+            printf 'TIKTOK_OAUTH_CLIENT_KEY=%s\n' "$TIKTOK_OAUTH_CLIENT_KEY"
+            printf 'TIKTOK_OAUTH_CLIENT_SECRET=%s\n' "$TIKTOK_OAUTH_CLIENT_SECRET"
+            printf 'REDDIT_OAUTH_CLIENT_ID=%s\n' "$REDDIT_OAUTH_CLIENT_ID"
+            printf 'REDDIT_OAUTH_CLIENT_SECRET=%s\n' "$REDDIT_OAUTH_CLIENT_SECRET"
           } | \
             ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
               'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
