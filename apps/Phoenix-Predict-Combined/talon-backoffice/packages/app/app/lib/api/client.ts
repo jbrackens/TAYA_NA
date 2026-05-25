@@ -165,14 +165,18 @@ class ApiClient {
     return res.json();
   }
 
-  async post<T>(path: string, body?: object): Promise<T> {
+  async post<T>(
+    path: string,
+    body?: object,
+    headers?: Record<string, string>,
+  ): Promise<T> {
     const normalizedPath = this.normalizePath(path);
     const url = this.baseUrl
       ? `${this.baseUrl}${normalizedPath}`
       : normalizedPath;
     const res = await this.fetchWithRetry(url, {
       method: "POST",
-      headers: this.getHeaders(true),
+      headers: { ...this.getHeaders(true), ...headers },
       credentials: "include",
       body: body ? JSON.stringify(body) : undefined,
     });

@@ -20,6 +20,10 @@ import (
 // a placeholder that looks real.
 var ErrRailNotConfigured = errors.New("crypto rail not configured")
 
+// Prototype-only after the 2026-05-25 cashier pivot: this is the legacy custodial
+// BSC rail seam. It remains fail-closed for local/reference use and must not be
+// configured for production funds. See docs/cashier/README.md.
+//
 // CryptoRail abstracts an on-chain deposit/withdrawal rail (e.g. USDC on an EVM
 // chain). The launch policy is crypto-native; this seam keeps the internal
 // ledger + payment state machine (DBPaymentService) unchanged while a real

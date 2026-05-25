@@ -1,0 +1,20 @@
+{
+  "id": "evt_test_004",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_002",
+  "depositIntentId": "dep_test_002",
+  "status": "quarantined",
+  "idempotencyKey": "deposit:relay:tron:tron_tx_test_002:expired_quote",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_002",
+  "sourceAddress": "TMockMariaSourceAddress111111111111111",
+  "depositAddress": "TMockExpiredDepositAddress111111111111",
+  "amount": {
+    "asset": "USDT",
+    "chain": "tron",
+    "decimals": 6,
+    "units": "10000000"
+  },
+  "recoveryReason": "expired_quote",
+  "observedAt": "2026-05-25T01:00:00.000Z"
+}

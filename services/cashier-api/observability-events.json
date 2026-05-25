@@ -1,0 +1,60 @@
+{
+  "events": [
+    {
+      "name": "cashier.deposit_intent.created",
+      "requiredFields": ["depositIntentId", "userId", "rail", "settlementChain", "idempotencyKey"]
+    },
+    {
+      "name": "cashier.provider_callback.received",
+      "requiredFields": ["provider", "rawBodySha256", "receivedAt"]
+    },
+    {
+      "name": "cashier.provider_callback.verified",
+      "requiredFields": ["provider", "rawBodySha256", "signatureVersion", "verifierKeyId"]
+    },
+    {
+      "name": "cashier.provider_callback.rejected",
+      "requiredFields": ["provider", "rawBodySha256", "reason", "receivedAt"]
+    },
+    {
+      "name": "cashier.bridge_event.inserted",
+      "requiredFields": ["bridgeEventId", "provider", "status", "idempotencyKey"]
+    },
+    {
+      "name": "cashier.deposit_intent.transitioned",
+      "requiredFields": ["depositIntentId", "fromStatus", "toStatus", "bridgeEventId"]
+    },
+    {
+      "name": "cashier.recovery_case.created",
+      "requiredFields": ["recoveryCaseId", "subjectType", "subjectId", "recoveryReason"]
+    },
+    {
+      "name": "cashier.recovery_case.approval_recorded",
+      "requiredFields": ["recoveryCaseId", "operatorId", "approvalType", "decision"]
+    },
+    {
+      "name": "cashier.withdrawal_intent.created",
+      "requiredFields": ["withdrawalIntentId", "userId", "settlementChain", "idempotencyKey"]
+    },
+    {
+      "name": "cashier.relayer.policy_denied",
+      "requiredFields": ["submissionId", "userId", "reasons"]
+    },
+    {
+      "name": "cashier.relayer.submitted",
+      "requiredFields": ["submissionId", "settlementChain", "submittedTxHash"]
+    },
+    {
+      "name": "cashier.compliance.decision",
+      "requiredFields": ["decisionId", "subjectType", "subjectId", "decision", "reasons"]
+    },
+    {
+      "name": "cashier.runtime_flag.changed",
+      "requiredFields": ["flagKey", "enabled", "reason", "updatedBy"]
+    },
+    {
+      "name": "cashier.reconciliation.completed",
+      "requiredFields": ["reportId", "businessDate", "generatedBy", "itemCount", "mismatchCount"]
+    }
+  ]
+}

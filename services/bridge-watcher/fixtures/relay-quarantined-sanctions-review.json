@@ -1,0 +1,20 @@
+{
+  "id": "evt_test_010",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_006",
+  "depositIntentId": "dep_test_006",
+  "status": "quarantined",
+  "idempotencyKey": "deposit:relay:tron:tron_tx_test_006:sanctions_review",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_006",
+  "sourceAddress": "TMockSanctionsReviewAddress111111111111",
+  "depositAddress": "TMockSanctionsDeposit111111111111111",
+  "amount": {
+    "asset": "USDT",
+    "chain": "tron",
+    "decimals": 6,
+    "units": "25000000"
+  },
+  "recoveryReason": "sanctions_review",
+  "observedAt": "2026-05-25T00:16:00.000Z"
+}
