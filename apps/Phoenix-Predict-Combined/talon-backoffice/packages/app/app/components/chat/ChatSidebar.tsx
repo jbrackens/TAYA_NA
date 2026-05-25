@@ -9,15 +9,12 @@ import {
 } from "lucide-react";
 import { CHAT_PUBLIC_URL, FEATURE_CHAT } from "../../lib/features";
 import {
-  createChatSession,
   reportChatMessage,
-  resolveChatRoom,
 } from "../../lib/api/chat-client";
 import { useAuth } from "../../hooks/useAuth";
 import { logger } from "../../lib/logger";
 
 const STORAGE_KEY = "hula_chat_collapsed";
-const LOAD_TIMEOUT_MS = 5000;
 const DEFAULT_ROOM_ID = "general";
 
 type LoadState = "idle" | "loading" | "ready" | "unavailable";
@@ -101,13 +98,12 @@ const MOCK_CHAT_MESSAGES: ChatMessage[] = [
 ];
 
 export function ChatSidebar() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const [state, setState] = useState<LoadState>("idle");
-  const [embedUrl, setEmbedUrl] = useState("");
   const [roomId, setRoomId] = useState(DEFAULT_ROOM_ID);
-  const [messages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
   const [message, setMessage] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
   const [reportEnabled, setReportEnabled] = useState(false);
@@ -140,44 +136,24 @@ export function ChatSidebar() {
 
   useEffect(() => {
     if (!FEATURE_CHAT || collapsed || !isDesktop || isLoading) return;
-    let cancelled = false;
-    const load = async () => {
-      setState("loading");
-      setMessage("");
-      setReportEnabled(false);
-      setEmbedUrl("");
-      if (!isAuthenticated) {
-        setRoomId(DEFAULT_ROOM_ID);
-        setEmbedUrl(publicGlobalUrl);
-        setState("ready");
-        return;
-      }
-      try {
-        const room = await resolveChatRoom();
-        if (cancelled) return;
-        if (!room.enabled) {
-          setState("unavailable");
-          setMessage(room.reason || "Chat unavailable");
-          return;
-        }
-        setRoomId(room.room?.id || "global");
-        const session = await createChatSession();
-        if (cancelled) return;
-        setEmbedUrl(session.embedUrl);
-        setReportEnabled(true);
-        setState("ready");
-      } catch (err) {
-        if (cancelled) return;
-        logger.warn("Chat", "chat initialization failed", err);
-        setState("unavailable");
-        setMessage("Chat is not available right now");
-      }
-    };
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [collapsed, isAuthenticated, isDesktop, isLoading, publicGlobalUrl]);
+    setRoomId(DEFAULT_ROOM_ID);
+    setMessage("");
+    setReportEnabled(isAuthenticated);
+    setState("ready");
+  }, [collapsed, isAuthenticated, isDesktop, isLoading]);
+
+  const handleSendMessage = (content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed || !isAuthenticated) return;
+    setMessages((current) => [
+      {
+        username: user?.username || "you",
+        timestamp: "now",
+        content: trimmed,
+      },
+      ...current,
+    ]);
+  };
 
   const mobileChatUrl = useMemo(() => {
     return publicGlobalUrl;
@@ -221,10 +197,10 @@ export function ChatSidebar() {
           </div>
           <ChatFrame
             state={state}
-            embedUrl={embedUrl}
             message={message}
             messages={messages}
             readOnly={!isAuthenticated}
+            onSend={handleSendMessage}
           />
           {isAuthenticated && reportEnabled && (
             <>
@@ -324,76 +300,58 @@ function ChatReportForm({
 
 function ChatFrame({
   state,
-  embedUrl,
   message,
   messages,
   readOnly,
+  onSend,
 }: {
   state: LoadState;
-  embedUrl: string;
   message: string;
   messages: ChatMessage[];
   readOnly: boolean;
+  onSend: (message: string) => void;
 }) {
-  const [timedOut, setTimedOut] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setTimedOut(false);
-    setLoaded(false);
-    if (state !== "ready") return;
-    const timeout = window.setTimeout(() => setTimedOut(true), LOAD_TIMEOUT_MS);
-    return () => window.clearTimeout(timeout);
-  }, [embedUrl, state]);
-
   if (state === "loading" || state === "idle") {
     return <div className="chat-state">Loading chat...</div>;
   }
 
-  if (readOnly) {
-    return <ReadOnlyChatStream messages={messages} />;
-  }
-
-  if (state === "unavailable" || !embedUrl || (timedOut && !loaded)) {
+  if (state === "unavailable") {
     return (
       <div className="chat-state">
-        <button
-          className="chat-dismiss"
-          type="button"
-          aria-label="Dismiss chat error"
-          onClick={() => setTimedOut(false)}
-        >
-          <X size={16} aria-hidden="true" />
-        </button>
         {message || "Chat unavailable"}
       </div>
     );
   }
 
-  return (
-    <div className="chat-frame-wrap">
-      <iframe
-        className="chat-frame"
-        title="Hula Na community chat"
-        src={embedUrl}
-        onLoad={() => setLoaded(true)}
-        sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-      />
-      {readOnly && (
-        <a className="chat-readonly-composer" href="/auth/login">
-          Login to chat
-        </a>
-      )}
-    </div>
-  );
+  return <NativeChatStream messages={messages} readOnly={readOnly} onSend={onSend} />;
 }
 
-function ReadOnlyChatStream({ messages }: { messages: ChatMessage[] }) {
+function NativeChatStream({
+  messages,
+  readOnly,
+  onSend,
+}: {
+  messages: ChatMessage[];
+  readOnly: boolean;
+  onSend: (message: string) => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (readOnly || !draft.trim()) return;
+    onSend(draft);
+    setDraft("");
+  };
+
   return (
     <div className="chat-public-stream" aria-label="Community chat">
       <div className="chat-message-list">
         {messages.map((chatMessage) => (
-          <article className="chat-message" key={chatMessage.username}>
+          <article
+            className="chat-message"
+            key={`${chatMessage.username}-${chatMessage.timestamp}-${chatMessage.content}`}
+          >
             <div className="chat-message-meta">
               <span className="chat-message-user">{chatMessage.username}</span>
               <time>{chatMessage.timestamp}</time>
@@ -402,9 +360,24 @@ function ReadOnlyChatStream({ messages }: { messages: ChatMessage[] }) {
           </article>
         ))}
       </div>
-      <a className="chat-readonly-composer" href="/auth/login">
-        Login to chat
-      </a>
+      {readOnly ? (
+        <a className="chat-readonly-composer" href="/auth/login">
+          Login to chat
+        </a>
+      ) : (
+        <form className="chat-composer" onSubmit={submit}>
+          <input
+            aria-label="Chat message"
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Message community"
+            maxLength={500}
+          />
+          <button type="submit" disabled={!draft.trim()}>
+            Send
+          </button>
+        </form>
+      )}
     </div>
   );
 }
