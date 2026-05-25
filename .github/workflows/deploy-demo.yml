@@ -1,0 +1,320 @@
+name: Deploy demo (Hetzner)
+
+# Auto-deploy the live demo (https://demo.99rtp.io player +
+# https://office.99rtp.io office) on push.
+#
+# Mirrors the validated manual flow exactly: rsync the app dir to the box,
+# rebuild the gateway, player AND office images ON the box, recreate each
+# container. The gateway (Go backend) is built+recreated FIRST so the
+# player/office health checks below validate end-to-end against the new
+# backend; if the gateway build or health check fails the run aborts before
+# touching the frontends. Go builds are layer-cache-friendly (deps cached
+# when go.mod/go.sum are unchanged) so the gateway step is typically far
+# shorter than the two ~15-20 min Next.js builds; total bounded by
+# `concurrency` and `timeout-minutes` below.
+# Does NOT run migrate/seed/sync-markets — those are one-time data ops, not
+# per-deploy. Market thumbnails live on the `market_images` Docker volume,
+# so `rsync --delete` is safe (it can't touch the volume).
+#
+# Requires repo secret DEPLOY_SSH_KEY = the private key whose public half is
+# in the box's root authorized_keys (a DEDICATED, revocable deploy key —
+# not an admin key). Note: anyone who can run/modify this workflow or has
+# repo admin can reach root on the demo box. Acceptable for a throwaway
+# 2-6 week demo box; rotate/lock down (non-root deploy user) for anything
+# longer-lived.
+
+on:
+  push:
+    branches: [feat/binary-exchange-engine]   # the deployed branch; change here to retarget
+    paths: ['apps/Phoenix-Predict-Combined/**']
+  workflow_dispatch: {}                        # manual "Run workflow" button
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false   # serialize: a 2-vCPU box can't take two builds; let one finish
+
+env:
+  BOX: 91.98.118.132
+  SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90   # gateway (Go, usually cached/fast) + two Next.js builds (~15-20 min each) on this small box
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up deploy SSH key
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "$BOX" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync app dir to the box
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/deploy $SSH_OPTS" \
+            --exclude node_modules --exclude .next --exclude .git --exclude '*.log' \
+            --exclude test-results --exclude playwright-report --exclude coverage \
+            apps/Phoenix-Predict-Combined/ root@"$BOX":/opt/phoenix/
+
+      - name: Patch Caddyfile basic_auth hash on box
+        # The committed Caddyfile keeps `admin REPLACE_WITH_BCRYPT_HASH` so the
+        # bcrypt hash never lives in source control. The rsync above clobbers
+        # the live file with that placeholder; restore the real hash from the
+        # BACKOFFICE_BASIC_AUTH_HASH secret here BEFORE anything triggers a
+        # Caddy reload. If the secret is missing we hard-fail rather than risk
+        # the next reload reading the placeholder and breaking basic_auth.
+        env:
+          BACKOFFICE_BASIC_AUTH_HASH: ${{ secrets.BACKOFFICE_BASIC_AUTH_HASH }}
+        run: |
+          if [ -z "$BACKOFFICE_BASIC_AUTH_HASH" ]; then
+            echo "::error::BACKOFFICE_BASIC_AUTH_HASH secret is unset — aborting before Caddy goes stale."
+            echo "Generate the hash with:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'"
+            echo "Then add it to repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          # Pipe the hash via stdin (no shell expansion of $ etc.); python
+          # does literal str.replace (bcrypt hashes contain $/. which are
+          # painful for sed). Fails loudly if the placeholder isn't present.
+          printf '%s' "$BACKOFFICE_BASIC_AUTH_HASH" | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'python3 -c "import sys; h=sys.stdin.read().strip(); p=\"/opt/phoenix/Caddyfile\"; src=open(p).read(); assert \"REPLACE_WITH_BCRYPT_HASH\" in src, \"placeholder missing in /opt/phoenix/Caddyfile — schema drift or already patched out-of-band\"; open(p,\"w\").write(src.replace(\"REPLACE_WITH_BCRYPT_HASH\", h)); print(\"Caddyfile basic_auth hash patched\")"'
+
+      - name: Inject OpenRouter key into box .env (compose substitution)
+        # The office AI-drafting route reads AI_HARD_API_KEY / AI_ROUTINE_API_KEY
+        # at runtime; docker-compose.demo.yml maps both to ${OPENROUTER_API_KEY}.
+        # Write it to /opt/phoenix/.env (compose auto-reads ./.env from the project
+        # dir) via stdin, so the secret never appears in a command line / process
+        # list — same posture as the Caddyfile step above. MUST run after the rsync
+        # (which --deletes a pre-existing .env), so it is re-written every deploy.
+        # If the secret is unset we write an empty value: drafting then fails closed
+        # (the rest of the app is unaffected), so a missing key never breaks deploy.
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          {
+            printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY"
+            printf 'ROCKETCHAT_ADMIN_PASSWORD=%s\n' "$(openssl rand -hex 24)"
+            printf 'CHAT_PUBLIC_URL=https://demo.99rtp.io/chat\n'
+            printf 'CHAT_PARENT_ORIGIN=https://demo.99rtp.io\n'
+          } | \
+            ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" \
+              'cat > /opt/phoenix/.env && chmod 600 /opt/phoenix/.env && echo ".env written ($(wc -c < /opt/phoenix/.env) bytes)"'
+
+      - name: Build gateway image on the box
+        # The Go gateway uses compose's `build:` directive (context
+        # ./go-platform, dockerfile services/gateway/Dockerfile) rather than
+        # a pre-tagged image like the frontends, so `docker compose build`
+        # is the right call. Built FIRST so the player/office health checks
+        # downstream validate against the new backend; a gateway compile
+        # failure aborts the whole run before any frontend is recreated.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              build gateway'
+
+      - name: Apply gateway migrations
+        # Keep DB schema ahead of the recreated gateway. The gateway image
+        # carries the same migration files as source, plus the migrate helper.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              run --rm --no-deps \
+                -e MIGRATIONS_DIR=/app/migrations \
+                -e MIGRATE_ALLOW_MISSING=true \
+                gateway ./migrate up'
+
+      - name: Recreate gateway container
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate gateway'
+
+      - name: Health check (gateway)
+        run: |
+          # Probe the gateway directly on the box's published port (18080)
+          # rather than through Caddy — proves the Go process is actually
+          # serving, not just that the container is "running". The gateway
+          # needs longer than a frontend to come up (DB connect + workers),
+          # so allow ~120s. JWT_SECRET=unused is required for the compose
+          # `logs` call (it interpolates services.auth.environment.JWT_SECRET).
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            export JWT_SECRET=unused &&
+            for i in $(seq 1 24); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:18080/healthz || echo 000)
+              [ "$code" = "200" ] && { echo "gateway OK ($code)"; exit 0; }
+              echo "attempt $i: gateway /healthz=$code, retrying…"; sleep 5
+            done
+            echo "gateway did not return 200 from /healthz after recreate"
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 gateway || true
+            exit 1'
+
+      - name: Start Rocket.Chat
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d rocketchat'
+
+      - name: Configure Rocket.Chat public read
+        # Existing Rocket.Chat volumes can keep an older admin password, so the
+        # REST login below is not a reliable place to enforce public-read
+        # posture. Write the two launch-critical settings directly to Mongo and
+        # restart Rocket.Chat so anonymous visitors can read #global while
+        # anonymous posting stays disabled.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            export JWT_SECRET=unused &&
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              exec -T rocketchat-mongo mongosh --quiet rocketchat --eval "
+                db.rocketchat_settings.updateOne(
+                  {_id: \"Accounts_AllowAnonymousRead\"},
+                  {\$set: {value: true}},
+                  {upsert: false}
+                );
+                db.rocketchat_settings.updateOne(
+                  {_id: \"Accounts_AllowAnonymousWrite\"},
+                  {\$set: {value: false}},
+                  {upsert: false}
+                );
+                printjson(db.rocketchat_settings.find(
+                  {_id: {\$in: [\"Accounts_AllowAnonymousRead\", \"Accounts_AllowAnonymousWrite\"]}},
+                  {_id: 1, value: 1}
+                ).toArray());
+              " &&
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml restart rocketchat &&
+            for i in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:3002/api/info || echo 000)
+              [ "$code" = "200" ] && { echo "Rocket.Chat restarted with public-read settings"; exit 0; }
+              echo "attempt $i: Rocket.Chat /api/info=$code after settings restart, retrying..."; sleep 5
+            done
+            echo "Rocket.Chat did not return 200 after public-read settings restart"
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 80 rocketchat || true
+            exit 1'
+
+      - name: Provision Rocket.Chat global room
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            set -a && . ./.env && set +a &&
+            for i in $(seq 1 60); do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:3002/api/info || echo 000)
+              [ "$code" = "200" ] && break
+              echo "attempt $i: Rocket.Chat /api/info=$code, retrying..."; sleep 5
+            done
+            curl -fsS http://localhost:3002/api/info >/dev/null
+            login=$(curl -fsS -X POST http://localhost:3002/api/v1/login \
+              -H "Content-Type: application/json" \
+              -d "{\"user\":\"hula-admin\",\"password\":\"$ROCKETCHAT_ADMIN_PASSWORD\"}" || true)
+            if ! printf "%s" "$login" | grep -q "\"status\":\"success\""; then
+              echo "Rocket.Chat admin login did not succeed. Continuing because this may be an existing volume with an older admin password."
+              exit 0
+            fi
+            uid=$(printf "%s" "$login" | python3 -c "import json,sys; print(json.load(sys.stdin)[\"data\"][\"userId\"], end=\"\")")
+            token=$(printf "%s" "$login" | python3 -c "import json,sys; print(json.load(sys.stdin)[\"data\"][\"authToken\"], end=\"\")")
+            curl -sS -X POST http://localhost:3002/api/v1/channels.create \
+              -H "Content-Type: application/json" \
+              -H "X-User-Id: $uid" \
+              -H "X-Auth-Token: $token" \
+              -d "{\"name\":\"global\"}" || true
+          '
+
+      - name: Build player image on the box
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix/talon-backoffice &&
+            docker build -f docker/frontend.Dockerfile \
+              --build-arg module_name=app \
+              --build-arg NEXT_PUBLIC_WS_URL=wss://demo.99rtp.io/ws \
+              --build-arg NEXT_PUBLIC_FEATURE_CHAT=true \
+              --build-arg NEXT_PUBLIC_CHAT_PUBLIC_URL=https://demo.99rtp.io/chat \
+              -t predict-frontend:app-slim .'
+
+      - name: Recreate player container
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate player'
+
+      - name: Health check (player)
+        run: |
+          # Player is the live demo and the priority — verify it BEFORE the
+          # office steps so an office-side problem can never skip this check.
+          # Use the markets API: returns 200 directly (the player pages
+          # 308-redirect due to next trailingSlash) and also proves the
+          # Caddy -> gateway path, not just that Caddy serves a redirect.
+          for i in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://demo.99rtp.io/api/v1/markets?limit=1" || echo 000)
+            [ "$code" = "200" ] && { echo "live OK ($code)"; exit 0; }
+            echo "attempt $i: $code, retrying…"; sleep 10
+          done
+          echo "demo did not return 200 after deploy"; exit 1
+
+      - name: Build office image on the box
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix/talon-backoffice &&
+            docker build -f docker/frontend.Dockerfile \
+              --build-arg module_name=office \
+              --build-arg NEXT_PUBLIC_WS_URL=wss://office.99rtp.io/ws \
+              -t predict-frontend:office-slim .'
+
+      - name: Recreate office container
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate office'
+
+      - name: Office container health
+        run: |
+          # office.99rtp.io sits behind Caddy basic_auth, so an external
+          # HTTP probe either 401s before reaching the app (proves nothing
+          # about the office upstream) or requires baking the basic-auth
+          # password into this committed file (credential in source — no).
+          # Instead assert on the box that the recreated office container is
+          # actually up and not crash-looping. Retry to allow Next start.
+          # JWT_SECRET=unused is mandatory for ANY `docker compose` call here:
+          # the compose config interpolates services.auth.environment.JWT_SECRET,
+          # so `ps`/`logs` error out (and the run false-fails) without it —
+          # the same prefix the recreate steps already use.
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            export JWT_SECRET=unused &&
+            for i in $(seq 1 12); do
+              state=$(docker inspect -f "{{.State.Status}}/{{.State.Restarting}}" \
+                "$(docker compose -f docker-compose.yml -f docker-compose.demo.yml ps -q office)" 2>/dev/null || echo "missing/true")
+              echo "attempt $i: office=$state"
+              [ "$state" = "running/false" ] && { echo "office OK"; exit 0; }
+              sleep 10
+            done
+            echo "office container not healthy after recreate"
+            docker compose -f docker-compose.yml -f docker-compose.demo.yml logs --tail 50 office || true
+            exit 1'
+
+      - name: Recreate Caddy with new config
+        # `caddy reload` is NOT enough here. Caddy's volume mount is a
+        # single-file bind: `./Caddyfile:/etc/caddy/Caddyfile`. rsync writes
+        # via temp-file + atomic rename, which gives the host file a new
+        # inode every deploy. Docker single-file bind mounts pin to the
+        # ORIGINAL inode at container-start time — the container keeps
+        # reading the orphaned old inode forever, even though the host path
+        # points elsewhere. `caddy reload` then re-reads the stale file and
+        # says "config is unchanged" → routing changes silently never
+        # activate. Force-recreating Caddy re-binds to the current host
+        # inode and applies the new config. ~5 s of downtime per deploy;
+        # acceptable for the demo. The proper structural fix would be to
+        # bind-mount the parent directory instead of the file, but that
+        # touches docker-compose.demo.yml + the in-place file layout.
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            cd /opt/phoenix &&
+            JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
+              up -d --no-deps --force-recreate caddy'
