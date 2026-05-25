@@ -499,6 +499,58 @@ button {
   font-weight: 700;
   box-shadow: 0 10px 28px rgba(60, 50, 30, 0.18);
 }
+.chat-mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+  justify-content: stretch;
+  padding: 0 10px max(10px, env(safe-area-inset-bottom));
+  background: rgba(18, 16, 12, 0.28);
+}
+.chat-mobile-sheet {
+  width: 100%;
+  height: min(78vh, 680px);
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border-1);
+  border-radius: 16px;
+  background: var(--surface-2);
+  box-shadow: 0 18px 48px rgba(40, 35, 22, 0.24);
+}
+.chat-mobile-header {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px 0 14px;
+  border-bottom: 1px solid var(--border-1);
+  background: var(--surface-1);
+}
+.chat-mobile-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--t1);
+  font-size: 13px;
+  font-weight: 800;
+}
+.chat-mobile-close {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--r-rh-sm);
+  color: var(--t2);
+  background: var(--surface-2);
+  cursor: pointer;
+}
 .chat-report-toggle {
   display: inline-flex;
   align-items: center;
