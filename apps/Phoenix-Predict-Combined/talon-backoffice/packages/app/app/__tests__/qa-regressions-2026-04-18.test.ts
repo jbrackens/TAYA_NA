@@ -196,3 +196,27 @@ describe("MarketCard P8 composition", () => {
     );
   });
 });
+
+describe("MarketChart side colors", () => {
+  const marketChartSource = read("components/prediction/MarketChart.tsx");
+
+  it("colors the chart line by selected YES/NO side, not price movement", () => {
+    assert.ok(
+      /const\s+lineColor\s*=\s*side\s*===\s*"no"\s*\?\s*"var\(--no-text\)"\s*:\s*"var\(--yes-text\)"/.test(
+        marketChartSource,
+      ),
+      "MarketChart line color should match the selected side button",
+    );
+    assert.ok(
+      !/const\s+lineColor\s*=\s*isUp\s*\?/.test(marketChartSource),
+      "MarketChart line color should not switch to YES/NO based on movement",
+    );
+  });
+
+  it("colors implied probability with the selected side token", () => {
+    assert.ok(
+      /className=\{`v \$\{side\}`\}/.test(marketChartSource),
+      "MarketChart implied probability should use the selected side color",
+    );
+  });
+});

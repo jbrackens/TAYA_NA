@@ -170,11 +170,9 @@ export default function MarketChart({
         100
       : 0;
   const deltaStr = `${deltaCents >= 0 ? "+" : ""}${deltaCents}¢ · ${deltaCents >= 0 ? "+" : ""}${deltaPct.toFixed(1)}% 24h`;
-  const isUp = deltaCents >= 0;
-  // Chart stroke uses --yes-text / --no-text on light surfaces (P8): the
-  // saturated --yes seafoam (1.9:1 on white) and --no coral (2.8:1) fail
-  // AA. The darker text variants clear AA on cream + white.
-  const lineColor = isUp ? "var(--yes-text)" : "var(--no-text)";
+  // Keep the chart series tied to the selected contract side so NO matches
+  // the NO button even when the NO price is moving up.
+  const lineColor = side === "no" ? "var(--no-text)" : "var(--yes-text)";
 
   const prob =
     typeof impliedProbability === "number"
@@ -398,7 +396,7 @@ export default function MarketChart({
         <div className="mc-foot">
           <div className="mc-stat">
             <div className="l">{t("IMPLIED_PROBABILITY")}</div>
-            <div className="v yes">{prob.toFixed(1)}%</div>
+            <div className={`v ${side}`}>{prob.toFixed(1)}%</div>
           </div>
           <div className="mc-stat">
             <div className="l">{t("24H_RANGE")}</div>
