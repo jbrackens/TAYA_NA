@@ -382,6 +382,25 @@ describe("Static informational pages", () => {
   });
 });
 
+describe("Social auth feature gate", () => {
+  const featuresSource = read("lib/features.ts");
+
+  it("keeps social OAuth buttons hidden unless provider credentials are enabled", () => {
+    assert.ok(
+      featuresSource.includes("FEATURE_SOCIAL_AUTH") &&
+        featuresSource.includes("NEXT_PUBLIC_FEATURE_SOCIAL_AUTH"),
+      "social auth should have an explicit public feature flag",
+    );
+    for (const file of ["auth/login/page.tsx", "auth/register/page.tsx"]) {
+      assert.ok(
+        read(file).includes("FEATURE_SOCIAL_AUTH") &&
+          read(file).includes("<SocialAuthButtons />"),
+        `${file} should gate social buttons behind FEATURE_SOCIAL_AUTH`,
+      );
+    }
+  });
+});
+
 describe("Market copy localization", () => {
   const marketContentSource = read("components/prediction/market-content.ts");
   const predictionTypesSource = read(

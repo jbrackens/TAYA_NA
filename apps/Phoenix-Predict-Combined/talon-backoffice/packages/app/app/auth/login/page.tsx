@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
+import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 export default function LoginPage() {
@@ -124,13 +125,17 @@ export default function LoginPage() {
           </aside>
         )}
 
-        <div className="la-divider">
-          <span>or continue with</span>
-        </div>
+        {FEATURE_SOCIAL_AUTH && (
+          <>
+            <div className="la-divider">
+              <span>or continue with</span>
+            </div>
 
-        <div className="la-social">
-          <SocialAuthButtons />
-        </div>
+            <div className="la-social">
+              <SocialAuthButtons />
+            </div>
+          </>
+        )}
 
         <footer className="la-foot">
           New to Predict?{" "}
