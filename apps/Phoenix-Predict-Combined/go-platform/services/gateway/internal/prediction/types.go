@@ -104,6 +104,7 @@ type Market struct {
 	Ticker              string          `json:"ticker" db:"ticker"`
 	Title               string          `json:"title" db:"title"`
 	Description         string          `json:"description,omitempty" db:"description"`
+	Translations        json.RawMessage `json:"translations,omitempty" db:"translations"`
 	Status              MarketStatus    `json:"status" db:"status"`
 	Result              *MarketResult   `json:"result,omitempty" db:"result"`
 	YesPriceCents       int             `json:"yesPriceCents" db:"yes_price_cents"`
@@ -500,6 +501,7 @@ type CreateMarketRequest struct {
 	Ticker              string          `json:"ticker" validate:"required"`
 	Title               string          `json:"title" validate:"required"`
 	Description         string          `json:"description,omitempty"`
+	Translations        json.RawMessage `json:"translations,omitempty"`
 	SettlementSourceKey string          `json:"settlementSourceKey" validate:"required"`
 	SettlementRule      string          `json:"settlementRule" validate:"required"`
 	SettlementParams    json.RawMessage `json:"settlementParams,omitempty"`

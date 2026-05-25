@@ -1293,6 +1293,7 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 		Ticker:              req.Ticker,
 		Title:               req.Title,
 		Description:         req.Description,
+		Translations:        defaultJSONObject(req.Translations),
 		Status:              MarketStatusUnopened,
 		YesPriceCents:       50,
 		NoPriceCents:        50,

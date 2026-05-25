@@ -2,6 +2,7 @@ package prediction
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -143,6 +144,35 @@ func TestCreateMarketDefaultsSettlementParamsToJSONObject(t *testing.T) {
 	}
 	if string(repo.createdMarket.SettlementParams) != "{}" {
 		t.Fatalf("expected settlement params to default to {}, got %q", string(repo.createdMarket.SettlementParams))
+	}
+	if string(repo.createdMarket.Translations) != "{}" {
+		t.Fatalf("expected translations to default to {}, got %q", string(repo.createdMarket.Translations))
+	}
+}
+
+func TestCreateMarketPreservesTranslations(t *testing.T) {
+	repo := &jsonDefaultRepo{}
+	svc := NewService(repo, NoopWallet{})
+	translations := json.RawMessage(`{"zh-Hans":{"title":"中文标题","description":"中文说明"}}`)
+
+	_, err := svc.CreateMarket(context.Background(), CreateMarketRequest{
+		EventID:             "evt-translations",
+		Ticker:              "QA-TRANSLATIONS",
+		Title:               "QA Translations",
+		Translations:        translations,
+		SettlementSourceKey: "manual",
+		SettlementRule:      "binary",
+		CloseAt:             time.Now().UTC().Add(time.Hour),
+		AMMLiquidityParam:   100,
+	})
+	if err != nil {
+		t.Fatalf("create market: %v", err)
+	}
+	if repo.createdMarket == nil {
+		t.Fatalf("expected created market capture")
+	}
+	if string(repo.createdMarket.Translations) != string(translations) {
+		t.Fatalf("expected translations %s, got %s", translations, repo.createdMarket.Translations)
 	}
 }
 

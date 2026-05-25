@@ -380,3 +380,39 @@ describe("Static informational pages", () => {
     );
   });
 });
+
+describe("Market copy localization", () => {
+  const marketContentSource = read("components/prediction/market-content.ts");
+  const predictionTypesSource = read(
+    "../../api-client/src/prediction-types.ts",
+  );
+
+  it("models API-provided market translations", () => {
+    assert.ok(
+      predictionTypesSource.includes("export interface MarketTranslation") &&
+        predictionTypesSource.includes(
+          "translations?: Record<string, MarketTranslation>",
+        ),
+      "PredictionMarket should expose API-provided localized title/description copy",
+    );
+  });
+
+  it("prefers API-provided localized copy before static fallback files", () => {
+    assert.ok(
+      marketContentSource.includes("market.translations"),
+      "market-content should read dynamic translations from the market payload",
+    );
+    assert.ok(
+      marketContentSource.indexOf('localizedCopy(market, "title")') <
+        marketContentSource.indexOf("t(`markets.${market.ticker}.title`"),
+      "marketTitle should prefer API translations before bundled market-content fallbacks",
+    );
+    assert.ok(
+      marketContentSource.indexOf('localizedCopy(market, "description")') <
+        marketContentSource.indexOf(
+          "t(`markets.${market.ticker}.description`",
+        ),
+      "marketDescription should prefer API translations before bundled market-content fallbacks",
+    );
+  });
+});

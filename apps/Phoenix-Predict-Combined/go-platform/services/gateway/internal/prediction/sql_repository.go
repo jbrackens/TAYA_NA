@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -277,7 +278,7 @@ func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
 	}
 	return r.db.QueryRowContext(ctx,
 		`INSERT INTO prediction_markets
-		 (event_id, ticker, title, description, status, result,
+		 (event_id, ticker, title, description, translations, status, result,
 		  yes_price_cents, no_price_cents, last_trade_price_cents,
 		  volume_cents, liquidity_cents,
 		  amm_yes_shares, amm_no_shares,
@@ -285,9 +286,9 @@ func (r *SQLRepository) CreateMarket(ctx context.Context, m *Market) error {
 		  settlement_source_key, settlement_cutoff_at, settlement_rule, settlement_params,
 		  fallback_source_key, fee_rate_bps, maker_rebate_bps, open_at, close_at, image_path,
 		  article_source_id)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
 		 RETURNING id, created_at, updated_at`,
-		m.EventID, m.Ticker, m.Title, nullStr(m.Description), m.Status, resultArg,
+		m.EventID, m.Ticker, m.Title, nullStr(m.Description), nullJSONArg(defaultJSONObject(m.Translations)), m.Status, resultArg,
 		m.YesPriceCents, m.NoPriceCents, m.LastTradePriceCents,
 		m.VolumeCents, m.LiquidityCents,
 		m.AMMYesShares, m.AMMNoShares,
@@ -1267,7 +1268,9 @@ func (r *SQLRepository) GetDiscovery(ctx context.Context) (*DiscoveryResponse, e
 // --- Helpers ---
 
 func marketSelectQuery() string {
-	return `SELECT m.id, m.event_id, m.ticker, m.title, m.description, m.status, m.result,
+	return `SELECT m.id, m.event_id, m.ticker, m.title, m.description,
+	               COALESCE(m.translations, '{}'::jsonb) AS translations,
+	               m.status, m.result,
 	               m.yes_price_cents, m.no_price_cents, m.last_trade_price_cents,
 	               GREATEST(m.volume_cents, COALESCE(ROUND(im.volume * 100), 0)::bigint) AS volume_cents,
 	               m.open_interest_cents,
@@ -1298,6 +1301,7 @@ type scannable interface {
 func scanMarketRow(row scannable) (*Market, error) {
 	var m Market
 	var desc sql.NullString
+	var translations []byte
 	var result, fallback, imagePath sql.NullString
 	var lastTradePrice sql.NullInt64
 	var settleCutoff, openAt sql.NullTime
@@ -1307,7 +1311,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 	var lastQuoteAt sql.NullTime
 	var articleSourceID sql.NullString
 
-	err := row.Scan(&m.ID, &m.EventID, &m.Ticker, &m.Title, &desc, &m.Status, &result,
+	err := row.Scan(&m.ID, &m.EventID, &m.Ticker, &m.Title, &desc, &translations, &m.Status, &result,
 		&m.YesPriceCents, &m.NoPriceCents, &lastTradePrice,
 		&m.VolumeCents, &m.OpenInterestCents, &m.LiquidityCents,
 		&m.AMMYesShares, &m.AMMNoShares, &m.AMMLiquidityParam, &m.AMMSubsidyCents,
@@ -1321,6 +1325,7 @@ func scanMarketRow(row scannable) (*Market, error) {
 		return nil, err
 	}
 	m.Description = desc.String
+	m.Translations = defaultJSONObject(json.RawMessage(translations))
 	if result.Valid {
 		r := MarketResult(result.String)
 		m.Result = &r

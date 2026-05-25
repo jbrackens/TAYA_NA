@@ -47,12 +47,18 @@ export type EventStatus =
   | "settled"
   | "voided";
 
+export interface MarketTranslation {
+  title?: string;
+  description?: string;
+}
+
 export interface PredictionMarket {
   id: string;
   eventId: string;
   ticker: string;
   title: string;
   description?: string;
+  translations?: Record<string, MarketTranslation>;
   status: MarketStatus;
   result?: "yes" | "no";
   yesPriceCents: number;
