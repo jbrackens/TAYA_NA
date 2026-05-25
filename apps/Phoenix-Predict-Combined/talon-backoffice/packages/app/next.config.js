@@ -7,6 +7,7 @@ const securityHeaders = [
 ];
 
 module.exports = {
+  output: "standalone",
   compress: true,
   allowedDevOrigins: ["127.0.0.1"],
   // Transpile workspace packages that expose raw TypeScript source

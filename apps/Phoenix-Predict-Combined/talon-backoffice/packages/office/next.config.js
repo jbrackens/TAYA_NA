@@ -7,6 +7,7 @@ const securityHeaders = [
 ];
 
 module.exports = {
+  output: "standalone",
   // Transpile workspace packages that expose raw TypeScript source
   outputFileTracingRoot: path.join(__dirname, "../.."),
   transpilePackages: [
