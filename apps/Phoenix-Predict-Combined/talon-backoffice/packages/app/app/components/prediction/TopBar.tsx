@@ -267,6 +267,16 @@ export function TopBar() {
           margin-left: 4px;
           text-shadow: 0 0 12px rgba(37, 235, 42, 0.18);
         }
+        .tb-wm {
+          font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+          font-weight: 700;
+          font-size: 23px;
+          letter-spacing: -0.01em;
+          line-height: 1;
+          color: var(--t1);
+          white-space: nowrap;
+        }
+        .tb-wm .tb-bang { color: var(--accent); margin-left: 1px; }
 
         .tb-nav {
           display: flex;
@@ -516,9 +526,9 @@ export function TopBar() {
         @media (max-width: 900px) {
           .tb-inner { gap: 12px; padding: 0 16px; height: 64px; }
           .tb-brand { font-size: 24px; gap: 7px; }
-          /* Cap brand-lockup height so it never swallows the right rail /
-             compresses the balance at 375px. */
-          .tb-brand img { max-height: 34px; }
+          /* Slightly smaller wordmark on mobile so it never crowds the
+             right rail / compresses the balance at 375px. */
+          .tb-wm { font-size: 20px; }
           .tb-nav { display: none; }
           .tb-search-wrap { display: none; }
           .lang-select-wrap { max-width: 56px; padding: 0 12px; }
@@ -533,13 +543,9 @@ export function TopBar() {
             className="tb-brand"
             aria-label="Hula Na! — home"
           >
-            <img
-              src="/brand/logo-lockup.png"
-              alt=""
-              aria-hidden="true"
-              height={40}
-              style={{ display: "block", height: 40, width: "auto" }}
-            />
+            <span className="tb-wm">
+              Hula Na<span className="tb-bang">!</span>
+            </span>
           </Link>
 
           {isDesktop && (
