@@ -94,7 +94,7 @@ func (r *Repository) Update(ctx context.Context, id string, row Row) error {
 		UPDATE imported_markets SET
 			title = $2,
 			description = $3,
-			image_path = $4,
+			image_path = COALESCE($4, image_path),
 			end_time = $5,
 			volume = $6,
 			outcomes = $7::jsonb,

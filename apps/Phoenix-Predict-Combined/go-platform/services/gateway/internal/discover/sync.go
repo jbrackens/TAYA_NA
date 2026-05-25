@@ -111,7 +111,7 @@ func Sync(ctx context.Context, repo *Repository, rehoster *ImageRehoster,
 		}
 
 		var imagePath *string
-		if rehoster != nil && m.ImageURL != "" && m.Source == "polymarket" {
+		if rehoster != nil && m.ImageURL != "" {
 			path, err := rehoster.Rehost(ur.ID, m.ImageURL)
 			if err != nil {
 				res.ImagesFailed++

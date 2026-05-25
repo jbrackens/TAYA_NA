@@ -1278,14 +1278,14 @@ func marketSelectQuery() string {
 	               m.amm_yes_shares, m.amm_no_shares, m.amm_liquidity_param, m.amm_subsidy_cents,
 	               m.settlement_source_key, m.settlement_cutoff_at, m.settlement_rule, m.settlement_params,
 	               m.fallback_source_key, m.fee_rate_bps, m.maker_rebate_bps,
-	               m.open_at, m.close_at, m.created_at, m.updated_at, m.image_path,
+	               m.open_at, m.close_at, m.created_at, m.updated_at, COALESCE(m.image_path, im.image_path) AS image_path,
 	               m.execution_mode, m.collateral_pool_cents, m.settled_payout_pool_cents,
 	               m.best_yes_bid_cents, m.best_yes_ask_cents,
 	               m.best_no_bid_cents, m.best_no_ask_cents, m.last_quote_at,
 	               m.article_source_id
 	        FROM prediction_markets m
 	        LEFT JOIN LATERAL (
-	            SELECT volume, liquidity
+	            SELECT volume, liquidity, image_path
 	            FROM imported_markets im
 	            WHERE m.ticker LIKE 'IMP-%'
 	              AND upper(substr(im.external_hash, 1, 8)) = upper(substr(m.ticker, 5, 8))
