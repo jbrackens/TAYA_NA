@@ -1,0 +1,10 @@
+{
+  "id": "approval_test_001",
+  "recoveryCaseId": "rec_test_001",
+  "operatorId": "ops_alex",
+  "approvalType": "release_above_beta_cap",
+  "decision": "approve",
+  "evidenceSha256": "1f3d4ea70a81ec778fbb25f0df5dd1781d70bdb9c635a346d6a2f2058d6ea111",
+  "note": "Destination mismatch confirmed; release requires second approval.",
+  "createdAt": "2026-05-25T00:15:00.000Z"
+}

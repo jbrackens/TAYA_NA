@@ -1,0 +1,16 @@
+{
+  "name": "@hula-na/cashier-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "rm -rf .tmp-test-dist && tsc -p tsconfig.build.json && node --test test/*.test.mjs && rm -rf .tmp-test-dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.3.3"
+  }
+}

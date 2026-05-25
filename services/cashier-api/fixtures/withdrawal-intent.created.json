@@ -1,0 +1,20 @@
+{
+  "id": "wd_test_001",
+  "userId": "user_maria_001",
+  "status": "user_authorized",
+  "settlementChain": "polygon",
+  "sourceWalletAddress": "0x1111111111111111111111111111111111111111",
+  "destinationAddress": "0x7777777777777777777777777777777777777777",
+  "amount": {
+    "asset": "hUSD",
+    "chain": "settlement",
+    "decimals": 6,
+    "units": "10000000"
+  },
+  "idempotencyKey": "withdrawal:user_maria_001:0x7777777777777777777777777777777777777777:10000000:0x8888888888888888888888888888888888888888888888888888888888888888",
+  "userAuthorizationHash": "0x8888888888888888888888888888888888888888888888888888888888888888",
+  "userAuthorizationNonce": "withdrawal:user_maria_001:000001",
+  "userAuthorizationExpiresAt": "2026-05-25T00:30:00.000Z",
+  "createdAt": "2026-05-25T00:20:00.000Z",
+  "updatedAt": "2026-05-25T00:20:00.000Z"
+}

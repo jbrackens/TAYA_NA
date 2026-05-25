@@ -1,0 +1,14 @@
+{
+  "id": "rec_test_001",
+  "subjectType": "deposit",
+  "subjectId": "dep_test_001",
+  "status": "triage",
+  "recoveryReason": "ambiguous_source",
+  "userId": "user_maria_001",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_001",
+  "sourceTxHash": "tron_tx_test_001",
+  "destinationTxHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+  "openedAt": "2026-05-25T00:09:31.000Z",
+  "updatedAt": "2026-05-25T00:09:31.000Z"
+}

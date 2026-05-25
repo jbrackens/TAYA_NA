@@ -1,0 +1,15 @@
+{
+  "id": "dep_test_002",
+  "userId": "user_maria_001",
+  "rail": "evm-stablecoin-direct",
+  "status": "created",
+  "sourceChain": "bsc",
+  "sourceAsset": "USDT",
+  "sourceDecimals": 18,
+  "settlementChain": "bsc",
+  "settlementAsset": "USDT",
+  "destinationWalletAddress": "0x1111111111111111111111111111111111111111",
+  "idempotencyKey": "deposit-intent:user_maria_001:evm-stablecoin-direct:bsc:2026-05-25T00:01:00.000Z",
+  "createdAt": "2026-05-25T00:01:00.000Z",
+  "updatedAt": "2026-05-25T00:01:00.000Z"
+}

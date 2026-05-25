@@ -1,0 +1,14 @@
+{
+  "id": "audit_test_001",
+  "subjectType": "deposit",
+  "subjectId": "dep_test_001",
+  "eventType": "recovery_case_created",
+  "eventPayload": {
+    "recoveryReason": "ambiguous_source",
+    "providerRequestId": "relay_req_test_001",
+    "sourceTxHash": "tron_tx_test_001"
+  },
+  "payloadSha256": "9e3d4ea70a81ec778fbb25f0df5dd1781d70bdb9c635a346d6a2f2058d6ea9e5",
+  "actorType": "system",
+  "createdAt": "2026-05-25T00:09:31.000Z"
+}

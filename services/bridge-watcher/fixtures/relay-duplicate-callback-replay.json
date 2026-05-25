@@ -1,0 +1,11 @@
+{
+  "id": "evt_test_005",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_001",
+  "depositIntentId": "dep_test_001",
+  "status": "ignored_duplicate",
+  "idempotencyKey": "deposit:relay:tron:tron_tx_test_001:0",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_001",
+  "observedAt": "2026-05-25T00:05:30.000Z"
+}

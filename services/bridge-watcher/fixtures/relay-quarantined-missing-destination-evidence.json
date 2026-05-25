@@ -1,0 +1,19 @@
+{
+  "id": "evt_test_009",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_005",
+  "depositIntentId": "dep_test_005",
+  "status": "quarantined",
+  "idempotencyKey": "deposit:relay:polygon:relay_req_test_005:missing_destination",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_005",
+  "destinationChain": "polygon",
+  "amount": {
+    "asset": "hUSD",
+    "chain": "settlement",
+    "decimals": 6,
+    "units": "24900000"
+  },
+  "recoveryReason": "provider_failed",
+  "observedAt": "2026-05-25T00:14:00.000Z"
+}

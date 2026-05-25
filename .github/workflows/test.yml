@@ -7,6 +7,32 @@ on:
     branches: [main]
 
 jobs:
+  cashier-guards:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: apps/Phoenix-Predict-Combined/talon-backoffice/yarn.lock
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Install shell dependencies
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Install frontend workspace dependencies
+        working-directory: apps/Phoenix-Predict-Combined/talon-backoffice
+        run: yarn install --frozen-lockfile
+
+      - name: Run cashier guard checks
+        run: scripts/check-cashier-all.sh
+
   frontend-tests:
     runs-on: ubuntu-latest
     defaults:

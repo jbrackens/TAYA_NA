@@ -1,0 +1,18 @@
+{
+  "id": "dep_test_001",
+  "userId": "user_maria_001",
+  "rail": "tron-usdt-deposit-address",
+  "status": "address_issued",
+  "sourceChain": "tron",
+  "sourceAsset": "USDT",
+  "sourceDecimals": 6,
+  "settlementChain": "polygon",
+  "settlementAsset": "hUSD",
+  "destinationWalletAddress": "0x1111111111111111111111111111111111111111",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_001",
+  "depositAddress": "TMockDepositAddressForMaria11111111111111",
+  "idempotencyKey": "deposit-intent:user_maria_001:tron-usdt-deposit-address:polygon:2026-05-25T00:00:00.000Z",
+  "createdAt": "2026-05-25T00:00:00.000Z",
+  "updatedAt": "2026-05-25T00:00:00.000Z"
+}
