@@ -27,7 +27,12 @@ on:
   push:
     branches: [feat/binary-exchange-engine]   # the deployed branch; change here to retarget
     paths: ['apps/Phoenix-Predict-Combined/**']
-  workflow_dispatch: {}                        # manual "Run workflow" button
+  workflow_dispatch: # manual "Run workflow" button
+    inputs:
+      sync_catalog:
+        description: "Run one-shot imported-market catalog sync and thumbnail rehost"
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-demo
@@ -256,6 +261,29 @@ jobs:
             cd /opt/phoenix &&
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               up -d --no-deps --force-recreate player'
+
+      - name: Optional catalog sync and thumbnail rehost
+        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.sync_catalog) || contains(github.event.head_commit.message, '[sync-catalog]') }}
+        run: |
+          ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
+            set -euo pipefail
+            cd /opt/phoenix
+            NET=$(docker inspect predict_postgres --format "{{range \$k,\$v := .NetworkSettings.Networks}}{{\$k}}{{end}}")
+            VOL=$(docker volume ls --format "{{.Name}}" | grep -E "market_images$" | head -1)
+            if [ -z "$VOL" ]; then
+              echo "market_images volume not found"
+              exit 1
+            fi
+            docker run --rm --network "$NET" \
+              -e GATEWAY_DB_DSN=postgres://predict:localdev@postgres:5432/predict?sslmode=disable \
+              -v /opt/phoenix/go-platform:/w \
+              -v "$VOL":/pub/images/markets \
+              -w /w/services/gateway \
+              golang:1.25 \
+              go run ./cmd/sync-markets -polymarket 200 -kalshi 200 -manifold 100 -timeout 240 -public-root /pub
+            docker run --rm -v "$VOL":/v alpine sh -c "chmod -R a+rX /v"
+            docker restart predict_player
+          '
 
       - name: Health check (player)
         run: |

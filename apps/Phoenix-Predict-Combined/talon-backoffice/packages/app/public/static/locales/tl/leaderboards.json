@@ -1,21 +1,21 @@
 {
   "kicker": "Leaderboards",
-  "title": "Rankings",
+  "title": "Mga ranking",
   "viewTier": "Tingnan ang tier mo",
-  "boardsAria": "Boards",
-  "categoryChampions": "Category Champions",
+  "boardsAria": "Mga board",
+  "categoryChampions": "Mga Champion ng Category",
   "chooseCategory": "Pumili ng category",
   "errors": {
-    "loadBoards": "Hindi ma-load ang leaderboards",
-    "loadStandings": "Hindi ma-load ang standings"
+    "loadBoards": "Hindi na-load ang leaderboards",
+    "loadStandings": "Hindi na-load ang standings"
   },
   "state": {
-    "loading": "Loading leaderboards…",
-    "backToPortfolio": "Back to portfolio",
-    "none": "Wala pang leaderboards na naka-set up.",
-    "browseMarkets": "Browse markets",
+    "loading": "Nilo-load ang leaderboards…",
+    "backToPortfolio": "Bumalik sa portfolio",
+    "none": "Wala pang naka-set up na leaderboards.",
+    "browseMarkets": "Mag-browse ng markets",
     "pickBoard": "Pumili ng board para makita ang rankings.",
-    "loadingRankings": "Loading rankings…",
+    "loadingRankings": "Nilo-load ang rankings…",
     "noQualified": "Wala pang qualified sa board na ito."
   },
   "windows": {
@@ -24,15 +24,15 @@
   },
   "boards": {
     "accuracy": {
-      "name": "Accuracy",
+      "name": "Katumpakan",
       "description": "Mga trader na niraranggo ayon sa prediction accuracy."
     },
     "pnlWeekly": {
-      "name": "Weekly P&L",
+      "name": "Lingguhang P&L",
       "description": "Mga trader na niraranggo ayon sa realized profit ngayong linggo."
     },
     "sharpness": {
-      "name": "Sharpness",
+      "name": "Sharpness score",
       "description": "Mga trader na niraranggo ayon sa return on risk."
     },
     "category": {
@@ -41,10 +41,10 @@
     }
   },
   "metrics": {
-    "accuracy": "Accuracy",
-    "pnl": "P&L",
-    "sharpness": "Sharpness",
-    "category": "Profit"
+    "accuracy": "Katumpakan",
+    "pnl": "P&L score",
+    "sharpness": "Sharpness score",
+    "category": "Kita"
   },
   "qualification": {
     "accuracy": "Mag-settle ng sapat na markets para mag-qualify sa accuracy rankings.",
@@ -53,18 +53,18 @@
     "category": "Mag-settle ng markets sa category na ito para mag-qualify."
   },
   "categories": {
-    "crypto": "Crypto",
-    "politics": "Politics",
-    "sports": "Sports",
-    "culture": "Culture",
-    "finance": "Finance"
+    "crypto": "Crypto markets",
+    "politics": "Pulitika",
+    "sports": "Sports markets",
+    "culture": "Kultura",
+    "finance": "Finance markets"
   },
   "table": {
-    "rankingsAria": "{{board}} rankings",
-    "caption": "{{board}} rankings — {{window}}",
-    "rank": "Rank",
-    "trader": "Trader",
-    "settled": "Settled",
+    "rankingsAria": "{{board}} na rankings",
+    "caption": "{{board}} rankings - {{window}}",
+    "rank": "Ranggo",
+    "trader": "Trader name",
+    "settled": "Settled markets",
     "youRank": "#{{rank}} Ikaw",
     "viewerRow": "#{{rank}} Ikaw · {{metric}}"
   }

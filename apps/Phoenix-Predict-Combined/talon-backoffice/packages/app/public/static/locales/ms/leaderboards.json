@@ -1,71 +1,71 @@
 {
-  "kicker": "Papan kedudukan",
+  "kicker": "Leaderboard",
   "title": "Kedudukan",
-  "viewTier": "Lihat tahap anda",
-  "boardsAria": "Boards",
-  "categoryChampions": "Category Champions",
-  "chooseCategory": "Choose a category",
+  "viewTier": "Lihat tier anda",
+  "boardsAria": "Papan",
+  "categoryChampions": "Juara Kategori",
+  "chooseCategory": "Pilih kategori",
   "errors": {
-    "loadBoards": "Failed to load leaderboards",
-    "loadStandings": "Failed to load standings"
+    "loadBoards": "Gagal memuatkan leaderboard",
+    "loadStandings": "Gagal memuatkan kedudukan"
   },
   "state": {
-    "loading": "Loading leaderboards…",
-    "backToPortfolio": "Back to portfolio",
-    "none": "No leaderboards have been set up yet.",
-    "browseMarkets": "Browse markets",
-    "pickBoard": "Pick a board to see rankings.",
-    "loadingRankings": "Loading rankings…",
-    "noQualified": "Nobody has qualified for this board yet."
+    "loading": "Memuatkan leaderboard…",
+    "backToPortfolio": "Kembali ke portfolio",
+    "none": "Belum ada leaderboard disediakan.",
+    "browseMarkets": "Lihat pasaran",
+    "pickBoard": "Pilih papan untuk melihat kedudukan.",
+    "loadingRankings": "Memuatkan kedudukan…",
+    "noQualified": "Belum ada yang layak untuk papan ini."
   },
   "windows": {
-    "weekly": "This week",
-    "rolling30d": "Last 30 days"
+    "weekly": "Minggu ini",
+    "rolling30d": "30 hari lalu"
   },
   "boards": {
     "accuracy": {
-      "name": "Accuracy",
-      "description": "Traders ranked by prediction accuracy."
+      "name": "Ketepatan",
+      "description": "Trader disenaraikan mengikut ketepatan ramalan."
     },
     "pnlWeekly": {
-      "name": "Weekly P&L",
-      "description": "Traders ranked by realized profit this week."
+      "name": "P&L Mingguan",
+      "description": "Trader disenaraikan mengikut keuntungan direalisasi minggu ini."
     },
     "sharpness": {
       "name": "Sharpness",
-      "description": "Traders ranked by return on risk."
+      "description": "Trader disenaraikan mengikut pulangan atas risiko."
     },
     "category": {
-      "name": "{{category}} Champions",
-      "description": "Top traders in {{category}} markets."
+      "name": "Juara {{category}}",
+      "description": "Trader teratas dalam pasaran {{category}}."
     }
   },
   "metrics": {
-    "accuracy": "Accuracy",
+    "accuracy": "Ketepatan",
     "pnl": "P&L",
     "sharpness": "Sharpness",
-    "category": "Profit"
+    "category": "Keuntungan"
   },
   "qualification": {
-    "accuracy": "Settle enough markets to qualify for accuracy rankings.",
-    "pnlWeekly": "Settle markets this week to qualify.",
-    "sharpness": "Settle enough markets to qualify for sharpness rankings.",
-    "category": "Settle markets in this category to qualify."
+    "accuracy": "Selesaikan cukup pasaran untuk layak dalam ranking ketepatan.",
+    "pnlWeekly": "Selesaikan pasaran minggu ini untuk layak.",
+    "sharpness": "Selesaikan cukup pasaran untuk layak dalam ranking sharpness.",
+    "category": "Selesaikan pasaran dalam kategori ini untuk layak."
   },
   "categories": {
-    "crypto": "Crypto",
-    "politics": "Politics",
-    "sports": "Sports",
-    "culture": "Culture",
-    "finance": "Finance"
+    "crypto": "Kripto",
+    "politics": "Politik",
+    "sports": "Sukan",
+    "culture": "Budaya",
+    "finance": "Kewangan"
   },
   "table": {
-    "rankingsAria": "{{board}} rankings",
-    "caption": "{{board}} rankings — {{window}}",
+    "rankingsAria": "Kedudukan {{board}}",
+    "caption": "Kedudukan {{board}} — {{window}}",
     "rank": "Rank",
     "trader": "Trader",
-    "settled": "Settled",
-    "youRank": "#{{rank}} You",
-    "viewerRow": "#{{rank}} You · {{metric}}"
+    "settled": "Selesai",
+    "youRank": "#{{rank}} Anda",
+    "viewerRow": "#{{rank}} Anda · {{metric}}"
   }
 }

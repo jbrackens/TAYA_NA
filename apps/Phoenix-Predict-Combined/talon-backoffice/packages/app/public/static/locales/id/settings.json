@@ -3,26 +3,26 @@
   "subtitle": "Preferensi bahasa dan zona waktu untuk akun Anda.",
   "back": "Kembali",
   "flash": {
-    "languageUpdated": "Language updated",
-    "timezoneUpdated": "Timezone updated"
+    "languageUpdated": "Bahasa diperbarui",
+    "timezoneUpdated": "Zona waktu diperbarui"
   },
   "language": {
-    "title": "Language",
-    "description": "Translations apply across the app immediately, and persist for future sessions on this device.",
-    "display": "Display language"
+    "title": "Bahasa",
+    "description": "Terjemahan berlaku langsung di seluruh aplikasi dan disimpan untuk sesi berikutnya di perangkat ini.",
+    "display": "Bahasa tampilan"
   },
   "timezone": {
-    "title": "Timezone",
-    "description": "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
-    "display": "Display timezone",
+    "title": "Zona waktu",
+    "description": "Digunakan untuk menampilkan waktu tutup market dan riwayat trading dalam waktu lokal Anda. Default mengikuti zona waktu browser",
+    "display": "Zona waktu tampilan",
     "browser": "browser",
-    "preview": "Preview"
+    "preview": "Pratinjau"
   },
   "footer": {
-    "beforeLinks": "Need security, password, or notification settings? Find them in",
-    "security": "Security",
-    "alerts": "Alerts",
-    "and": "and",
-    "account": "Account"
+    "beforeLinks": "Butuh pengaturan keamanan, kata sandi, atau notifikasi? Temukan di",
+    "security": "Keamanan",
+    "alerts": "Peringatan",
+    "and": "dan",
+    "account": "Akun"
   }
 }

@@ -1,66 +1,66 @@
 {
-  "TITLE": "User Profile",
-  "PERSONAL_DETAILS": "Personal Details",
-  "WALLET_AND_INVENTORY": "Wallet and Inventory",
-  "SECURITY": "Security",
-  "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
-  "SELF_EXCLUSION": "Self Exclusion",
-  "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits",
+  "TITLE": "Profile ng User",
+  "PERSONAL_DETAILS": "Personal na detalye",
+  "WALLET_AND_INVENTORY": "Wallet at imbentaryo",
+  "SECURITY": "Seguridad",
+  "LANGUAGE_AND_TIME_ZONE": "Wika at time zone",
+  "SELF_EXCLUSION": "Self-exclusion",
+  "EMAIL_SETTINGS": "Mga setting ng email",
+  "DEPOSIT_LIMITS": "Mga limitasyon sa deposito",
   "hub": {
-    "title": "Account",
-    "subtitle": "Profile, wallet, security, at notification preferences.",
-    "availableBalance": "Available balance"
+    "title": "Account mo",
+    "subtitle": "Mga preference sa profile, wallet, seguridad, at notification.",
+    "availableBalance": "Available na balanse"
   },
   "actions": {
     "profile": {
-      "title": "Profile",
-      "desc": "I-update ang detalye at setup ng account"
+      "title": "Profile mo",
+      "desc": "I-update ang detalye at setup ng account mo"
     },
     "portfolio": {
-      "title": "Portfolio",
+      "title": "Portfolio mo",
       "desc": "Open positions, orders, at settled history"
     },
     "cashier": {
-      "title": "Cashier",
-      "desc": "Deposits at withdrawals"
+      "title": "Cashier mo",
+      "desc": "Mga deposito at withdrawal"
     },
     "walletActivity": {
-      "title": "Wallet activity",
-      "desc": "Ledger entries at transaction history"
+      "title": "Aktibidad ng wallet",
+      "desc": "Ledger entries at history ng transaksyon"
     },
     "security": {
-      "title": "Security",
-      "desc": "Password, sessions, at sign-in protection"
+      "title": "Seguridad",
+      "desc": "Password, sessions, at proteksyon sa sign-in"
     },
     "alerts": {
-      "title": "Alerts",
+      "title": "Mga alert",
       "desc": "Kontrolin ang market at account notifications"
     },
     "responsible": {
-      "title": "Play responsibly",
+      "title": "Maglaro nang responsable",
       "desc": "Deposit limits, cool-offs, at self-exclusion"
     }
   },
   "privacy": {
-    "kicker": "Privacy",
-    "title": "Pagpapakita sa public boards",
-    "label": "Magpakita nang anonymous sa leaderboards",
+    "kicker": "Privacy settings",
+    "title": "Itsura sa public boards",
+    "label": "Lumabas nang anonymous sa leaderboards",
     "descriptionBeforeRank": "Kapag naka-on, nakatago ang username mo sa public boards at papalitan ng rank mo (hal.",
     "rankExample": "Trader #14",
-    "descriptionAfterRank": "). Makikita pa rin ang rank at stats; handle lang ang nakatago.",
-    "saveError": "Hindi ma-save ang pagbabago"
+    "descriptionAfterRank": "). Makikita pa rin ang rank at stats mo; handle lang ang nakatago.",
+    "saveError": "Hindi na-save ang pagbabagong iyon"
   },
   "portfolio": {
-    "kicker": "Portfolio",
+    "kicker": "Portfolio mo",
     "title": "Mabilisang tingin sa positions mo",
     "open": "Buksan ang portfolio"
   },
   "stats": {
-    "invested": "Invested",
-    "realizedPnl": "Realized P&L",
-    "openPositions": "Open positions",
-    "accuracy": "Accuracy",
+    "invested": "Naka-invest",
+    "realizedPnl": "Na-realize na P&L",
+    "openPositions": "Bukas na posisyon",
+    "accuracy": "Katumpakan",
     "noSettledMarkets": "Wala pang settled markets"
   }
 }

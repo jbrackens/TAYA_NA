@@ -420,6 +420,43 @@ describe("Market copy localization", () => {
 
 describe("Full-page translation coverage", () => {
   const i18nConfigSource = read("lib/i18n/config.ts");
+  const criticalPageNamespaces = [
+    "account",
+    "portfolio",
+    "rewards",
+    "settings",
+    "leaderboards",
+  ];
+
+  function flattenStrings(
+    value: unknown,
+    prefix = "",
+    output: Record<string, string> = {},
+  ): Record<string, string> {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return output;
+    }
+    for (const [key, child] of Object.entries(value)) {
+      const nextKey = prefix ? `${prefix}.${key}` : key;
+      if (child && typeof child === "object" && !Array.isArray(child)) {
+        flattenStrings(child, nextKey, output);
+      } else if (typeof child === "string") {
+        output[nextKey] = child;
+      }
+    }
+    return output;
+  }
+
+  function readLocale(lang: string, namespace: string): Record<string, string> {
+    const source = readFileSync(
+      resolve(
+        appRoot,
+        `../public/static/locales/${lang}/${namespace}.json`,
+      ),
+      "utf-8",
+    );
+    return flattenStrings(JSON.parse(source));
+  }
 
   it("loads page namespaces for portfolio and leaderboards", () => {
     assert.ok(
@@ -452,6 +489,44 @@ describe("Full-page translation coverage", () => {
             resolve(appRoot, `../public/static/locales/${lang}/${ns}.json`),
           ),
           `${lang}/${ns}.json should exist`,
+        );
+      }
+    }
+  });
+
+  it("does not ship mostly-English fallback copy for SEA full-page locales", () => {
+    const allowedSharedStrings = new Set([
+      "P&L",
+      "ROI",
+      "YES",
+      "NO",
+      "pts",
+      "Portfolio",
+      "Cashier",
+      "Rewards Center",
+      "Leaderboards",
+    ]);
+
+    for (const namespace of criticalPageNamespaces) {
+      const english = readLocale("en", namespace);
+      for (const lang of ["tl", "ms", "id"]) {
+        const localized = readLocale(lang, namespace);
+        const comparable = Object.entries(english).filter(([, value]) => {
+          const trimmed = value.trim();
+          return (
+            trimmed.length >= 3 &&
+            !allowedSharedStrings.has(trimmed) &&
+            !/^{{[^}]+}}/.test(trimmed)
+          );
+        });
+        const identical = comparable.filter(
+          ([key, value]) => localized[key]?.trim() === value.trim(),
+        );
+        const identicalRatio = identical.length / comparable.length;
+
+        assert.ok(
+          identicalRatio <= 0.25,
+          `${lang}/${namespace}.json has too much English fallback copy: ${identical.length}/${comparable.length} identical strings`,
         );
       }
     }
