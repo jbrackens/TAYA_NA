@@ -122,7 +122,10 @@ jobs:
           ssh -i ~/.ssh/deploy $SSH_OPTS root@"$BOX" '
             cd /opt/phoenix &&
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
-              run --rm --no-deps -e MIGRATIONS_DIR=/app/migrations gateway ./migrate up'
+              run --rm --no-deps \
+                -e MIGRATIONS_DIR=/app/migrations \
+                -e MIGRATE_ALLOW_MISSING=true \
+                gateway ./migrate up'
 
       - name: Recreate gateway container
         run: |

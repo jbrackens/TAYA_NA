@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pressly/goose/v3"
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 )
 
 func main() {
@@ -62,6 +62,17 @@ func main() {
 
 	// Set up goose
 	goose.SetDialect(strings.ToLower(driver))
+
+	// Execute migration command. The demo deployment can intentionally receive
+	// out-of-order migrations when a feature branch adds a lower-numbered
+	// migration after the deployed branch has already applied a newer one. Keep
+	// the default strict for local/dev, and require an explicit env opt-in.
+	if command == "up" && strings.EqualFold(strings.TrimSpace(os.Getenv("MIGRATE_ALLOW_MISSING")), "true") {
+		if err := goose.UpContext(context.Background(), db, migrationsDir, goose.WithAllowMissing()); err != nil {
+			log.Fatalf("error: migration command '%s' failed: %v", command, err)
+		}
+		return
+	}
 
 	// Execute migration command
 	args := []string{command}
