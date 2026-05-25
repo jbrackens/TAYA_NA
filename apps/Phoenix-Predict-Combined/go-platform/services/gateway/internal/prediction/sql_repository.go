@@ -238,7 +238,9 @@ func (r *SQLRepository) ListMarkets(ctx context.Context, filter MarketFilter) ([
 	// GetMarket etc. all see it. Earlier inline SELECT here drifted apart
 	// from marketSelectQuery() when image_path was added (migration 018),
 	// breaking ListMarkets with a 500. Don't reintroduce that fork.
-	q := marketSelectQuery() + where + ` ORDER BY close_at ASC`
+	// Public discovery is visual-first: imported catalog rows that have a
+	// rehosted thumbnail should not be buried behind older no-image rows.
+	q := marketSelectQuery() + where + ` ORDER BY (COALESCE(m.image_path, im.image_path) IS NULL), close_at ASC`
 	q += fmt.Sprintf(` LIMIT %d OFFSET %d`, filter.PageSize, (filter.Page-1)*filter.PageSize)
 
 	rows, err := r.db.QueryContext(ctx, q, args...)
