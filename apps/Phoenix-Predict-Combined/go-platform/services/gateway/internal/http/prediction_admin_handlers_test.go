@@ -18,6 +18,7 @@ type predictionAdminRepo struct {
 	markets   map[string]*prediction.Market
 	positions map[string][]prediction.Position
 	lifecycle []prediction.LifecycleEvent
+	aiLogs    []prediction.AIGenerationLog
 	marketSeq int
 }
 
@@ -206,12 +207,83 @@ func (r *predictionAdminRepo) CreateArticleSource(_ context.Context, src *predic
 	return nil
 }
 
-func (r *predictionAdminRepo) LogAIGeneration(context.Context, *prediction.AIGenerationLog) error {
+func (r *predictionAdminRepo) LogAIGeneration(_ context.Context, entry *prediction.AIGenerationLog) error {
+	if entry.ID == "" {
+		entry.ID = "ailog-admin-test-" + string(rune('a'+len(r.aiLogs)))
+	}
+	clone := *entry
+	clone.CreatedAt = time.Now().UTC()
+	r.aiLogs = append(r.aiLogs, clone)
 	return nil
 }
 
-func (r *predictionAdminRepo) AIUsage(context.Context, string, time.Time) (int, int64, error) {
-	return 0, 0, nil
+func (r *predictionAdminRepo) LinkAIGenerationLogsToMarket(_ context.Context, marketID string, logIDs []string, _ *string) error {
+	for _, id := range logIDs {
+		for i := range r.aiLogs {
+			if r.aiLogs[i].ID == id {
+				r.aiLogs[i].MarketID = &marketID
+			}
+		}
+	}
+	return nil
+}
+
+func (r *predictionAdminRepo) AIUsage(_ context.Context, createdBy string, since time.Time) (int, int64, error) {
+	var requests int
+	var tokens int64
+	for _, log := range r.aiLogs {
+		if log.CreatedBy == nil || *log.CreatedBy != createdBy || log.CreatedAt.Before(since) {
+			continue
+		}
+		if log.Stage == "draft_request" {
+			requests++
+		}
+		if log.InputTokens != nil {
+			tokens += int64(*log.InputTokens)
+		}
+		if log.OutputTokens != nil {
+			tokens += int64(*log.OutputTokens)
+		}
+	}
+	return requests, tokens, nil
+}
+
+func (r *predictionAdminRepo) ReserveAIUsage(_ context.Context, createdBy string, estimatedInputTokens int, ratePerMin int, dailyTokenCap int64, now time.Time) (prediction.AIBudgetStatus, error) {
+	recent, tokens, _ := r.AIUsage(context.Background(), createdBy, now.Add(-time.Minute))
+	_, tokensToday, _ := r.AIUsage(context.Background(), createdBy, time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC))
+	if tokensToday > tokens {
+		tokens = tokensToday
+	}
+	status := prediction.AIBudgetStatus{
+		Allowed:            true,
+		RequestsLastMinute: recent,
+		RatePerMinute:      ratePerMin,
+		TokensToday:        tokens,
+		DailyTokenCap:      dailyTokenCap,
+	}
+	if recent+1 > ratePerMin {
+		status.Allowed = false
+		status.Reason = "rate limit exceeded — too many drafts in the last minute"
+		return status, nil
+	}
+	if tokens+int64(estimatedInputTokens) > dailyTokenCap {
+		status.Allowed = false
+		status.Reason = "daily AI token budget exhausted"
+		return status, nil
+	}
+	input := estimatedInputTokens
+	createdByPtr := createdBy
+	if err := r.LogAIGeneration(context.Background(), &prediction.AIGenerationLog{
+		Stage:       "draft_request",
+		InputTokens: &input,
+		CreatedBy:   &createdByPtr,
+		CreatedAt:   now,
+	}); err != nil {
+		return prediction.AIBudgetStatus{}, err
+	}
+	status.RequestsLastMinute++
+	status.TokensToday += int64(estimatedInputTokens)
+	return status, nil
 }
 
 func (r *predictionAdminRepo) ListAPIKeys(context.Context, string) ([]prediction.APIKey, error) {
@@ -327,6 +399,30 @@ func TestPredictionAdminCreateMarketSource(t *testing.T) {
 	}
 	if resp.ArticleSourceID == "" {
 		t.Fatalf("expected non-empty articleSourceId")
+	}
+	if len(resp.AIGenerationLogIDs) != 1 || resp.AIGenerationLogIDs[0] == "" {
+		t.Fatalf("expected one generation log id, got %+v", resp.AIGenerationLogIDs)
+	}
+
+	createBody := `{
+		"eventId":"evt-admin-test-1",
+		"ticker":"QA-AI-LINK",
+		"title":"QA AI Link",
+		"settlementSourceKey":"admin-manual",
+		"settlementRule":"binary_outcome",
+		"closeAt":"2026-07-31T23:59:00Z",
+		"articleSourceId":"` + resp.ArticleSourceID + `",
+		"aiGenerationLogIds":["` + resp.AIGenerationLogIDs[0] + `"]
+	}`
+	createReq := httptest.NewRequest(http.MethodPost, "/api/v1/admin/markets", strings.NewReader(createBody))
+	createReq = createReq.WithContext(httpx.WithTestUser(createReq.Context(), "admin-1", "admin@phoenix.local", "admin"))
+	createRes := httptest.NewRecorder()
+	handler.ServeHTTP(createRes, createReq)
+	if createRes.Code != http.StatusCreated {
+		t.Fatalf("expected market create 201, got %d body=%s", createRes.Code, createRes.Body.String())
+	}
+	if repo.aiLogs[0].MarketID == nil || *repo.aiLogs[0].MarketID == "" {
+		t.Fatalf("expected generation log to be linked to created market")
 	}
 
 	// Missing textHash -> 400 (service validation surfaces as bad request).
@@ -448,6 +544,48 @@ func TestPredictionAdminAIBudget(t *testing.T) {
 	handler.ServeHTTP(anonRes, anon)
 	if anonRes.Code == http.StatusOK {
 		t.Fatalf("expected non-admin request to be rejected")
+	}
+}
+
+func TestPredictionAdminReserveAIBudgetRecordsAttempt(t *testing.T) {
+	t.Setenv("GATEWAY_ALLOW_ADMIN_ANON", "false")
+	t.Setenv("AI_DRAFT_RATE_PER_MIN", "2")
+	repo := newPredictionAdminRepo()
+	svc := prediction.NewService(repo, predictionAdminWallet{})
+
+	mux := http.NewServeMux()
+	registerSettlementRoutes(mux, svc)
+	handler := httpx.Chain(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mux.ServeHTTP(w, r)
+		}),
+		httpx.RequestID(),
+		httpx.NormalizeTrailingSlash("/api/", "/admin/", "/auth/"),
+	)
+
+	for i := 0; i < 2; i++ {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/admin/ai-budget/reserve", strings.NewReader(`{"estimatedInputTokens":100}`))
+		req = req.WithContext(
+			httpx.WithTestUser(req.Context(), "admin-1", "admin@phoenix.local", "admin"),
+		)
+		res := httptest.NewRecorder()
+		handler.ServeHTTP(res, req)
+		if res.Code != http.StatusCreated {
+			t.Fatalf("reserve %d: expected 201, got %d body=%s", i, res.Code, res.Body.String())
+		}
+	}
+	if len(repo.aiLogs) != 2 || repo.aiLogs[0].Stage != "draft_request" {
+		t.Fatalf("expected two draft_request reservation logs, got %+v", repo.aiLogs)
+	}
+
+	third := httptest.NewRequest(http.MethodPost, "/api/v1/admin/ai-budget/reserve", strings.NewReader(`{"estimatedInputTokens":100}`))
+	third = third.WithContext(
+		httpx.WithTestUser(third.Context(), "admin-1", "admin@phoenix.local", "admin"),
+	)
+	thirdRes := httptest.NewRecorder()
+	handler.ServeHTTP(thirdRes, third)
+	if thirdRes.Code != http.StatusTooManyRequests {
+		t.Fatalf("expected 429 after rate budget exhausted, got %d", thirdRes.Code)
 	}
 }
 

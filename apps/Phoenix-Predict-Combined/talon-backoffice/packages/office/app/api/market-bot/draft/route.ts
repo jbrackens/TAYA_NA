@@ -15,6 +15,7 @@ import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import {
   extractAdminAuth,
+  MAX_ARTICLE_TEXT_CHARS,
   parseDraftRequest,
   type AdminAuth,
 } from "../../../../lib/market-bot/validation";
@@ -41,16 +42,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
-  // Pre-flight budget check (§17c) — fail before any fetch/LLM spend. The
-  // gateway is authoritative (DB-backed rate + daily token cap per admin).
-  const budget = await checkBudget(auth.auth);
-  if (budget) {
-    return NextResponse.json(
-      { error: budget.reason },
-      { status: budget.status },
-    );
-  }
-
   // Ingest: prefer pasted text; otherwise SSRF-guarded fetch + extraction.
   let articleText = parsed.value.articleText ?? "";
   let sourceUrl = parsed.value.sourceUrl;
@@ -70,6 +61,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(
       { error: "article text is too short to generate reliable markets" },
       { status: 400 },
+    );
+  }
+  if (articleText.length > MAX_ARTICLE_TEXT_CHARS) {
+    return NextResponse.json(
+      {
+        error: `article text is too long; limit is ${MAX_ARTICLE_TEXT_CHARS} characters`,
+      },
+      { status: 400 },
+    );
+  }
+
+  // Reserve budget after ingest and before LLM spend. The gateway writes a
+  // draft_request log so concurrent office instances contend on one DB ledger.
+  const budget = await reserveBudget(auth.auth, estimateTokens(articleText));
+  if (budget) {
+    return NextResponse.json(
+      { error: budget.reason },
+      { status: budget.status },
     );
   }
 
@@ -100,8 +109,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // enforces a 1MB body limit, plan §16).
   const textHash = createHash("sha256").update(articleText).digest("hex");
   let articleSourceId: string | undefined;
+  let aiGenerationLogIds: string[] = [];
   try {
-    articleSourceId = await persistProvenance(auth.auth, {
+    const persisted = await persistProvenance(auth.auth, {
       source: {
         sourceUrl,
         summary: result.analysis.articleSummary,
@@ -118,6 +128,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         promptVersion: g.promptVersion,
       })),
     });
+    articleSourceId = persisted.articleSourceId;
+    aiGenerationLogIds = persisted.aiGenerationLogIds;
   } catch (err) {
     return NextResponse.json(
       { error: `could not persist provenance: ${errMsg(err)}` },
@@ -127,6 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({
     articleSourceId,
+    aiGenerationLogIds,
     analysis: result.analysis,
     candidates: result.drafts.map((d) => ({
       candidate: d.candidate,
@@ -153,11 +166,12 @@ interface ProvenancePayload {
   }>;
 }
 
-// Returns null if the admin is within budget; otherwise the {status, reason} to
-// return to the client. Fails closed (503) if the gateway can't be reached —
-// don't spend on the LLM when we can't verify the cap.
-async function checkBudget(
+// Returns null if the admin's budget reservation succeeded; otherwise the
+// {status, reason} to return to the client. Fails closed if the gateway can't be
+// reached — don't spend on the LLM when we can't reserve the attempt.
+async function reserveBudget(
   auth: AdminAuth,
+  estimatedInputTokens: number,
 ): Promise<{ status: number; reason: string } | null> {
   const base = gatewayBaseUrl();
   const cookie =
@@ -165,8 +179,14 @@ async function checkBudget(
     (auth.csrfToken ? `; csrf_token=${auth.csrfToken}` : "");
   let res: Response;
   try {
-    res = await fetch(`${base}/api/v1/admin/ai-budget`, {
-      headers: { Cookie: cookie },
+    res = await fetch(`${base}/api/v1/admin/ai-budget/reserve`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+        ...(auth.csrfToken ? { "X-CSRF-Token": auth.csrfToken } : {}),
+      },
+      body: JSON.stringify({ estimatedInputTokens }),
     });
   } catch {
     return {
@@ -174,13 +194,19 @@ async function checkBudget(
       reason: "could not verify AI budget (gateway unreachable)",
     };
   }
+  const data = (await res
+    .json()
+    .catch(() => ({}))) as { allowed?: boolean; reason?: string };
   if (!res.ok) {
     return {
-      status: 503,
-      reason: `could not verify AI budget (${res.status})`,
+      status: res.status === 429 ? 429 : 503,
+      reason:
+        data.reason ||
+        (res.status === 429
+          ? "AI budget exceeded"
+          : `could not verify AI budget (${res.status})`),
     };
   }
-  const data = (await res.json()) as { allowed?: boolean; reason?: string };
   if (data.allowed === false) {
     return { status: 429, reason: data.reason || "AI budget exceeded" };
   }
@@ -190,7 +216,7 @@ async function checkBudget(
 async function persistProvenance(
   auth: AdminAuth,
   payload: ProvenancePayload,
-): Promise<string | undefined> {
+): Promise<{ articleSourceId?: string; aiGenerationLogIds: string[] }> {
   const base = gatewayBaseUrl();
   const cookie =
     `access_token=${auth.accessToken}` +
@@ -207,10 +233,20 @@ async function persistProvenance(
   if (!res.ok) {
     throw new Error(`gateway returned ${res.status}`);
   }
-  const data = (await res.json()) as { articleSourceId?: string };
-  return data.articleSourceId;
+  const data = (await res.json()) as {
+    articleSourceId?: string;
+    aiGenerationLogIds?: string[];
+  };
+  return {
+    articleSourceId: data.articleSourceId,
+    aiGenerationLogIds: data.aiGenerationLogIds ?? [],
+  };
 }
 
 function errMsg(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+function estimateTokens(text: string): number {
+  return Math.max(1, Math.ceil(text.length / 4));
 }

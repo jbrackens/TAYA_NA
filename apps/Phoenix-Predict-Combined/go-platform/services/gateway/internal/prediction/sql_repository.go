@@ -334,18 +334,117 @@ func (r *SQLRepository) LogAIGeneration(ctx context.Context, entry *AIGeneration
 	).Scan(&entry.ID, &entry.CreatedAt)
 }
 
+func (r *SQLRepository) LinkAIGenerationLogsToMarket(ctx context.Context, marketID string, logIDs []string, createdBy *string) error {
+	for _, id := range logIDs {
+		if strings.TrimSpace(id) == "" {
+			continue
+		}
+		var res sql.Result
+		var err error
+		if createdBy != nil && strings.TrimSpace(*createdBy) != "" {
+			res, err = r.db.ExecContext(ctx,
+				`UPDATE prediction_ai_generation_logs
+				    SET market_id = $1
+				  WHERE id = $2 AND created_by = $3`,
+				marketID, id, *createdBy,
+			)
+		} else {
+			res, err = r.db.ExecContext(ctx,
+				`UPDATE prediction_ai_generation_logs
+				    SET market_id = $1
+				  WHERE id = $2`,
+				marketID, id,
+			)
+		}
+		if err != nil {
+			return err
+		}
+		if n, err := res.RowsAffected(); err == nil && n == 0 {
+			return fmt.Errorf("ai generation log %s not found for actor", id)
+		}
+	}
+	return nil
+}
+
 func (r *SQLRepository) AIUsage(ctx context.Context, createdBy string, since time.Time) (int, int64, error) {
 	var draftCount int
 	var totalTokens int64
 	err := r.db.QueryRowContext(ctx,
 		`SELECT
-		   COUNT(*) FILTER (WHERE stage = 'draft'),
+			   COUNT(*) FILTER (WHERE stage = 'draft_request'),
 		   COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0)
 		 FROM prediction_ai_generation_logs
 		 WHERE created_by = $1 AND created_at >= $2`,
 		createdBy, since,
 	).Scan(&draftCount, &totalTokens)
 	return draftCount, totalTokens, err
+}
+
+func (r *SQLRepository) ReserveAIUsage(ctx context.Context, createdBy string, estimatedInputTokens int, ratePerMin int, dailyTokenCap int64, now time.Time) (AIBudgetStatus, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return AIBudgetStatus{}, err
+	}
+	defer tx.Rollback()
+
+	// Serialize reservations per admin so concurrent office instances cannot all
+	// pass the same read-before-insert budget check.
+	if _, err := tx.ExecContext(ctx, `SELECT pg_advisory_xact_lock(hashtext($1))`, "ai-budget:"+createdBy); err != nil {
+		return AIBudgetStatus{}, err
+	}
+
+	recentSince := now.Add(-time.Minute)
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	var recent int
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COUNT(*) FILTER (WHERE stage = 'draft_request')
+		   FROM prediction_ai_generation_logs
+		  WHERE created_by = $1 AND created_at >= $2`,
+		createdBy, recentSince,
+	).Scan(&recent); err != nil {
+		return AIBudgetStatus{}, err
+	}
+	var tokensToday int64
+	if err := tx.QueryRowContext(ctx,
+		`SELECT COALESCE(SUM(COALESCE(input_tokens, 0) + COALESCE(output_tokens, 0)), 0)
+		   FROM prediction_ai_generation_logs
+		  WHERE created_by = $1 AND created_at >= $2`,
+		createdBy, startOfDay,
+	).Scan(&tokensToday); err != nil {
+		return AIBudgetStatus{}, err
+	}
+
+	status := AIBudgetStatus{
+		Allowed:            true,
+		RequestsLastMinute: recent,
+		RatePerMinute:      ratePerMin,
+		TokensToday:        tokensToday,
+		DailyTokenCap:      dailyTokenCap,
+	}
+	if recent+1 > ratePerMin {
+		status.Allowed = false
+		status.Reason = "rate limit exceeded — too many drafts in the last minute"
+		return status, tx.Commit()
+	}
+	if tokensToday+int64(estimatedInputTokens) > dailyTokenCap {
+		status.Allowed = false
+		status.Reason = "daily AI token budget exhausted"
+		return status, tx.Commit()
+	}
+
+	tier := "hard"
+	promptVersion := "market_draft_v1"
+	if _, err := tx.ExecContext(ctx,
+		`INSERT INTO prediction_ai_generation_logs
+		 (stage, tier, prompt_version, input_tokens, created_by, created_at)
+		 VALUES ('draft_request', $1, $2, $3, $4, $5)`,
+		tier, promptVersion, estimatedInputTokens, createdBy, now,
+	); err != nil {
+		return AIBudgetStatus{}, err
+	}
+	status.RequestsLastMinute++
+	status.TokensToday += int64(estimatedInputTokens)
+	return status, tx.Commit()
 }
 
 func (r *SQLRepository) UpdateMarket(ctx context.Context, m *Market) error {

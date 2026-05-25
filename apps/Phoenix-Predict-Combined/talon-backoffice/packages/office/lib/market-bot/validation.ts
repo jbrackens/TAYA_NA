@@ -8,6 +8,8 @@ export interface ParsedDraftRequest {
   userNotes?: string;
 }
 
+export const MAX_ARTICLE_TEXT_CHARS = 120_000;
+
 export type ParseResult =
   | { ok: true; value: ParsedDraftRequest }
   | { ok: false; error: string };
@@ -33,6 +35,12 @@ export function parseDraftRequest(body: unknown): ParseResult {
       ok: false,
       error:
         "articleText must be at least 500 characters, or provide a sourceUrl",
+    };
+  }
+  if (articleText && articleText.length > MAX_ARTICLE_TEXT_CHARS) {
+    return {
+      ok: false,
+      error: `articleText must be at most ${MAX_ARTICLE_TEXT_CHARS} characters`,
     };
   }
   if (userNotes && userNotes.length > 2000) {

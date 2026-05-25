@@ -71,6 +71,7 @@ export default function PredictionMarketsContainer() {
   const [articleSourceId, setArticleSourceId] = useState<string | undefined>(
     undefined,
   );
+  const [aiGenerationLogIds, setAiGenerationLogIds] = useState<string[]>([]);
   // Drift alerts keyed by marketId so the table render can lookup in O(1).
   // Empty until first load completes; treated as "no drift" until then.
   const [driftByMarket, setDriftByMarket] = useState<
@@ -146,10 +147,12 @@ export default function PredictionMarketsContainer() {
         ammLiquidityParam: (values.ammLiquidityParam as number) || 100,
         feeRateBps: (values.feeRateBps as number) || 0,
         articleSourceId,
+        aiGenerationLogIds,
       });
       message.success("Market created");
       setCreateOpen(false);
       setArticleSourceId(undefined);
+      setAiGenerationLogIds([]);
       form.resetFields();
       loadData();
     } catch (err: unknown) {
@@ -165,9 +168,14 @@ export default function PredictionMarketsContainer() {
   // open the create modal so the operator reviews/edits before submitting.
   // News markets resolve manually, so source/rule are fixed to admin-manual;
   // the AI resolution criteria/sources ride along in settlementParams.
-  function prefillFromCandidate(candidate: MarketCandidate, sourceId?: string) {
+  function prefillFromCandidate(
+    candidate: MarketCandidate,
+    sourceId?: string,
+    generationLogIds: string[] = [],
+  ) {
     setDraftOpen(false);
     setArticleSourceId(sourceId);
+    setAiGenerationLogIds(generationLogIds);
     form.setFieldsValue({
       title: candidate.marketTitle,
       description: candidate.marketQuestion,
@@ -459,7 +467,14 @@ export default function PredictionMarketsContainer() {
               <Button onClick={() => setDraftOpen(true)}>
                 Draft from article
               </Button>
-              <Button type="primary" onClick={() => setCreateOpen(true)}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  setArticleSourceId(undefined);
+                  setAiGenerationLogIds([]);
+                  setCreateOpen(true);
+                }}
+              >
                 Create Market
               </Button>
             </Space>
@@ -478,7 +493,11 @@ export default function PredictionMarketsContainer() {
       <Modal
         title="Create Prediction Market"
         open={createOpen}
-        onCancel={() => setCreateOpen(false)}
+        onCancel={() => {
+          setCreateOpen(false);
+          setArticleSourceId(undefined);
+          setAiGenerationLogIds([]);
+        }}
         onOk={() => form.submit()}
         width={600}
       >

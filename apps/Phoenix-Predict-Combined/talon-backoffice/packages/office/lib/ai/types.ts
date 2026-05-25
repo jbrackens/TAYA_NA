@@ -1,9 +1,8 @@
 // Domain types for AI market drafting (Phase B).
-// See docs/ai-market-drafting/IMPLEMENTATION-PLAN.md. MVP supports binary markets;
-// multiple_choice / scalar_bucket are accepted by the type for forward
-// compatibility but are out of MVP scope.
+// See docs/ai-market-drafting/IMPLEMENTATION-PLAN.md. MVP supports binary
+// markets only; broader market types need separate creation/settlement support.
 
-export type MarketType = "binary" | "multiple_choice" | "scalar_bucket";
+export type MarketType = "binary";
 
 export type RiskLevel = "low" | "medium" | "high" | "blocked";
 

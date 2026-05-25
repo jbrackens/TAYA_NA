@@ -692,6 +692,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return httpx.BadRequest("invalid request body", nil)
 		}
+		req.CreatedBy = actorIDPointer(userIDFromRequest(r))
 		market, err := svc.CreateMarket(r.Context(), req)
 		if err != nil {
 			return httpx.BadRequest(err.Error(), nil)
@@ -725,6 +726,7 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			return httpx.BadRequest(err.Error(), nil)
 		}
 
+		logIDs := make([]string, 0, len(req.GenerationLogs))
 		for i := range req.GenerationLogs {
 			entry := req.GenerationLogs[i]
 			entry.ArticleSourceID = &src.ID
@@ -732,11 +734,38 @@ func registerSettlementRoutes(mux *stdhttp.ServeMux, svc *prediction.Service) {
 			if err := svc.LogAIGeneration(r.Context(), &entry); err != nil {
 				return httpx.Internal("failed to record ai generation log", err)
 			}
+			if entry.ID != "" {
+				logIDs = append(logIDs, entry.ID)
+			}
 		}
 
 		return httpx.WriteJSON(w, stdhttp.StatusCreated, prediction.CreateMarketSourceResponse{
-			ArticleSourceID: src.ID,
+			ArticleSourceID:    src.ID,
+			AIGenerationLogIDs: logIDs,
 		})
+	}))
+
+	// Admin: reserve AI budget before invoking the LLM. This records a
+	// draft_request attempt so rate limits are DB-backed and cross-instance.
+	mux.Handle("/api/v1/admin/ai-budget/reserve", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
+		if err := requireAdminRole(r); err != nil {
+			return err
+		}
+		if r.Method != stdhttp.MethodPost {
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodPost)
+		}
+		var req prediction.ReserveAIBudgetRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return httpx.BadRequest("invalid request body", nil)
+		}
+		status, err := svc.ReserveAIBudget(r.Context(), userIDFromRequest(r), req.EstimatedInputTokens)
+		if err != nil {
+			return httpx.Internal("failed to reserve ai budget", err)
+		}
+		if !status.Allowed {
+			return httpx.WriteJSON(w, stdhttp.StatusTooManyRequests, status)
+		}
+		return httpx.WriteJSON(w, stdhttp.StatusCreated, status)
 	}))
 
 	// Admin: Create event (the parent an AI-drafted or hand-made market attaches to).

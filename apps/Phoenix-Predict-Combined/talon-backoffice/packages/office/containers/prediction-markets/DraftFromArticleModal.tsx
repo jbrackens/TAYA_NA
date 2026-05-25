@@ -23,6 +23,7 @@ interface CandidateView {
 
 interface DraftResponse {
   articleSourceId?: string;
+  aiGenerationLogIds?: string[];
   analysis?: { articleSummary?: string };
   candidates?: CandidateView[];
   injectionDetected?: boolean;
@@ -40,7 +41,11 @@ const riskColor: Record<string, string> = {
 export interface DraftFromArticleModalProps {
   open: boolean;
   onClose: () => void;
-  onUse: (candidate: MarketCandidate, articleSourceId?: string) => void;
+  onUse: (
+    candidate: MarketCandidate,
+    articleSourceId?: string,
+    aiGenerationLogIds?: string[],
+  ) => void;
 }
 
 export default function DraftFromArticleModal({
@@ -171,7 +176,9 @@ export default function DraftFromArticleModal({
                 <Button
                   type="primary"
                   disabled={!usable}
-                  onClick={() => onUse(c, result?.articleSourceId)}
+                  onClick={() =>
+                    onUse(c, result?.articleSourceId, result?.aiGenerationLogIds)
+                  }
                 >
                   Use this
                 </Button>

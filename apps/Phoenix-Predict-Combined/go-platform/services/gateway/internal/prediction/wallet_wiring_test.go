@@ -337,8 +337,14 @@ func (r *memRepo) ListMarkets(context.Context, MarketFilter) ([]Market, int, err
 func (r *memRepo) AIUsage(context.Context, string, time.Time) (int, int64, error) {
 	return 0, 0, nil
 }
-func (r *memRepo) CreateArticleSource(context.Context, *ArticleSource) error      { return nil }
-func (r *memRepo) LogAIGeneration(context.Context, *AIGenerationLog) error        { return nil }
+func (r *memRepo) ReserveAIUsage(context.Context, string, int, int, int64, time.Time) (AIBudgetStatus, error) {
+	return AIBudgetStatus{Allowed: true}, nil
+}
+func (r *memRepo) CreateArticleSource(context.Context, *ArticleSource) error { return nil }
+func (r *memRepo) LogAIGeneration(context.Context, *AIGenerationLog) error   { return nil }
+func (r *memRepo) LinkAIGenerationLogsToMarket(context.Context, string, []string, *string) error {
+	return nil
+}
 func (r *memRepo) GetMarketByTicker(context.Context, string) (*Market, error)     { return nil, nil }
 func (r *memRepo) CreateMarket(context.Context, *Market) error                    { return nil }
 func (r *memRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }

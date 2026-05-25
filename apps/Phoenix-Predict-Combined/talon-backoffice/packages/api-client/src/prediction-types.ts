@@ -343,6 +343,7 @@ export interface CreateMarketRequest {
   ammLiquidityParam?: number;
   ammSubsidyCents?: number;
   articleSourceId?: string;
+  aiGenerationLogIds?: string[];
 }
 
 export interface CreateEventRequest {

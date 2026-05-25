@@ -86,21 +86,12 @@ export function validateCandidate(
     errors.push("close_time must be in the future");
 
   // §17.4 — outcomes
-  if (candidate.marketType === "binary") {
-    const o = candidate.outcomes ?? [];
-    if (!(o.length === 2 && o[0] === "Yes" && o[1] === "No"))
-      errors.push('binary market outcomes must be exactly ["Yes","No"]');
-  } else if (
-    candidate.marketType === "multiple_choice" ||
-    candidate.marketType === "scalar_bucket"
-  ) {
-    const o = candidate.outcomes ?? [];
-    if (o.length < 2)
-      errors.push("multiple-choice market needs at least two outcomes");
-    const normalized = o.map((x) => x.trim().toLowerCase());
-    if (new Set(normalized).size !== normalized.length)
-      errors.push("outcomes must be mutually exclusive (no duplicates)");
+  if (candidate.marketType !== "binary") {
+    errors.push("MVP supports binary markets only");
   }
+  const o = candidate.outcomes ?? [];
+  if (!(o.length === 2 && o[0] === "Yes" && o[1] === "No"))
+    errors.push('binary market outcomes must be exactly ["Yes","No"]');
 
   // §17.5 — sources
   if (candidate.resolutionSources) {

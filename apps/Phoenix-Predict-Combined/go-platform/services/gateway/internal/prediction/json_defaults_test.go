@@ -57,6 +57,28 @@ func (r *jsonDefaultRepo) CreateMarket(_ context.Context, m *Market) error {
 func (r *jsonDefaultRepo) AIUsage(_ context.Context, _ string, _ time.Time) (int, int64, error) {
 	return r.aiDraftCount, r.aiTokens, nil
 }
+func (r *jsonDefaultRepo) ReserveAIUsage(_ context.Context, _ string, estimatedInputTokens int, ratePerMin int, dailyTokenCap int64, _ time.Time) (AIBudgetStatus, error) {
+	status := AIBudgetStatus{
+		Allowed:            true,
+		RequestsLastMinute: r.aiDraftCount,
+		RatePerMinute:      ratePerMin,
+		TokensToday:        r.aiTokens,
+		DailyTokenCap:      dailyTokenCap,
+	}
+	if r.aiDraftCount+1 > ratePerMin {
+		status.Allowed = false
+		status.Reason = "rate limit exceeded — too many drafts in the last minute"
+		return status, nil
+	}
+	if r.aiTokens+int64(estimatedInputTokens) > dailyTokenCap {
+		status.Allowed = false
+		status.Reason = "daily AI token budget exhausted"
+		return status, nil
+	}
+	status.RequestsLastMinute++
+	status.TokensToday += int64(estimatedInputTokens)
+	return status, nil
+}
 func (r *jsonDefaultRepo) UpdateMarket(context.Context, *Market) error                    { return nil }
 func (r *jsonDefaultRepo) UpdateMarketStatus(context.Context, string, MarketStatus) error { return nil }
 func (r *jsonDefaultRepo) ListMarketsToClose(context.Context) ([]Market, error)           { return nil, nil }
@@ -107,9 +129,12 @@ func (r *jsonDefaultRepo) GetAPIKeyByPrefix(context.Context, string) (*APIKey, e
 }
 func (r *jsonDefaultRepo) CreateArticleSource(context.Context, *ArticleSource) error { return nil }
 func (r *jsonDefaultRepo) LogAIGeneration(context.Context, *AIGenerationLog) error   { return nil }
-func (r *jsonDefaultRepo) CreateAPIKey(context.Context, *APIKey) error               { return nil }
-func (r *jsonDefaultRepo) DeactivateAPIKey(context.Context, string) error            { return nil }
-func (r *jsonDefaultRepo) TouchAPIKeyLastUsed(context.Context, string) error         { return nil }
+func (r *jsonDefaultRepo) LinkAIGenerationLogsToMarket(context.Context, string, []string, *string) error {
+	return nil
+}
+func (r *jsonDefaultRepo) CreateAPIKey(context.Context, *APIKey) error       { return nil }
+func (r *jsonDefaultRepo) DeactivateAPIKey(context.Context, string) error    { return nil }
+func (r *jsonDefaultRepo) TouchAPIKeyLastUsed(context.Context, string) error { return nil }
 func (r *jsonDefaultRepo) GetPortfolioSummary(context.Context, string) (*PortfolioSummary, error) {
 	return nil, errors.New("not found")
 }

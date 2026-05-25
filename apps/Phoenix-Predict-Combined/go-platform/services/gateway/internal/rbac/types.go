@@ -70,6 +70,12 @@ type CreateUserInput struct {
 	RoleIDs  []string
 }
 
+// CreateRoleInput is the payload for creating a custom (non-system) role.
+type CreateRoleInput struct {
+	Name        string
+	Description string
+}
+
 // Actor is the authenticated caller making a privileged RBAC change. Email maps
 // to an admin_users record so the service can resolve the actor's own effective
 // permissions and refuse to grant anything beyond them. Unconstrained is set

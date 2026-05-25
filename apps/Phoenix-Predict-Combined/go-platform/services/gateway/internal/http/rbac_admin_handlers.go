@@ -180,37 +180,91 @@ func registerRBACUserSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Ser
 	}))
 }
 
-// GET roles + permission catalog.
+// GET roles + permission catalog; POST creates a custom role.
 func registerRBACRolesCollection(mux *stdhttp.ServeMux, path string, svc *rbac.Service) {
 	mux.Handle(path, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if r.Method != stdhttp.MethodGet {
-			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet)
+		switch r.Method {
+		case stdhttp.MethodGet:
+			if err := requireRBACPermission(r, svc, "roles:read"); err != nil {
+				return err
+			}
+			roles, err := svc.ListRoles(r.Context())
+			if err != nil {
+				return writeRBACError(err)
+			}
+			permissions, err := svc.ListPermissions(r.Context())
+			if err != nil {
+				return writeRBACError(err)
+			}
+			// The permission catalog rides along so the Role Matrix can render
+			// its columns without a second request.
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
+				"roles":       roles,
+				"permissions": permissions,
+			})
+
+		case stdhttp.MethodPost:
+			if err := requireRBACPermission(r, svc, "roles:write"); err != nil {
+				return err
+			}
+			var body struct {
+				Name        string `json:"name"`
+				Description string `json:"description"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+				return httpx.BadRequest("invalid request body", nil)
+			}
+			role, err := svc.CreateRole(r.Context(), rbac.CreateRoleInput{
+				Name:        body.Name,
+				Description: body.Description,
+			})
+			if err != nil {
+				return writeRBACError(err)
+			}
+			recordMoneyAuditEntry(rbacActor(r), "rbac.role.create", role.ID, map[string]any{
+				"name": role.Name,
+			})
+			return httpx.WriteJSON(w, stdhttp.StatusCreated, map[string]any{"role": role})
+
+		default:
+			return httpx.MethodNotAllowed(r.Method, stdhttp.MethodGet, stdhttp.MethodPost)
 		}
-		if err := requireRBACPermission(r, svc, "roles:read"); err != nil {
-			return err
-		}
-		roles, err := svc.ListRoles(r.Context())
-		if err != nil {
-			return writeRBACError(err)
-		}
-		permissions, err := svc.ListPermissions(r.Context())
-		if err != nil {
-			return writeRBACError(err)
-		}
-		// The permission catalog rides along so the Role Matrix can render its
-		// columns without a second request.
-		return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{
-			"roles":       roles,
-			"permissions": permissions,
-		})
 	}))
 }
 
-// PUT /roles/{id}/permissions.
+// The /roles/{id} subtree (roles:write):
+//
+//	PUT    /roles/{id}/permissions  -> replace permission set
+//	DELETE /roles/{id}              -> delete a custom (non-system) role
 func registerRBACRoleSubtree(mux *stdhttp.ServeMux, prefix string, svc *rbac.Service) {
 	mux.Handle(prefix, httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		id, action, ok := splitIDAction(r.URL.Path, prefix)
-		if !ok || action != "permissions" {
+		rest := strings.Trim(strings.TrimPrefix(r.URL.Path, prefix), "/")
+		if rest == "" {
+			return httpx.NotFound("not found")
+		}
+		parts := strings.Split(rest, "/")
+		id := parts[0]
+		if id == "" {
+			return httpx.NotFound("not found")
+		}
+
+		// DELETE /roles/{id}
+		if len(parts) == 1 {
+			if r.Method != stdhttp.MethodDelete {
+				return httpx.MethodNotAllowed(r.Method, stdhttp.MethodDelete)
+			}
+			if err := requireRBACPermission(r, svc, "roles:write"); err != nil {
+				return err
+			}
+			if err := svc.DeleteRole(r.Context(), id); err != nil {
+				return writeRBACError(err)
+			}
+			recordMoneyAuditEntry(rbacActor(r), "rbac.role.delete", id, nil)
+			return httpx.WriteJSON(w, stdhttp.StatusOK, map[string]any{"deleted": true})
+		}
+
+		// PUT /roles/{id}/permissions
+		if len(parts) != 2 || parts[1] != "permissions" {
 			return httpx.NotFound("not found")
 		}
 		if r.Method != stdhttp.MethodPut {
@@ -261,7 +315,7 @@ func requireRBACPermission(r *stdhttp.Request, svc *rbac.Service, permission str
 // writeRBACError maps domain errors to HTTP responses.
 func writeRBACError(err error) error {
 	switch {
-	case errors.Is(err, rbac.ErrDuplicateEmail), errors.Is(err, rbac.ErrLastSuperAdmin), errors.Is(err, rbac.ErrCannotTargetSelf):
+	case errors.Is(err, rbac.ErrDuplicateEmail), errors.Is(err, rbac.ErrLastSuperAdmin), errors.Is(err, rbac.ErrCannotTargetSelf), errors.Is(err, rbac.ErrSystemRoleProtected):
 		return httpx.Conflict(err.Error(), nil)
 	case errors.Is(err, rbac.ErrUserNotFound), errors.Is(err, rbac.ErrRoleNotFound):
 		return httpx.NotFound(err.Error())
@@ -296,20 +350,6 @@ func rbacActorObj(r *stdhttp.Request) rbac.Actor {
 		Email:         strings.TrimSpace(httpx.UsernameFromContext(r.Context())),
 		Unconstrained: adminAnonBypassEnabled(),
 	}
-}
-
-// splitIDAction parses "{prefix}{id}/{action}" into (id, action). ok is false
-// unless exactly two non-empty segments follow the prefix.
-func splitIDAction(path, prefix string) (id, action string, ok bool) {
-	rest := strings.Trim(strings.TrimPrefix(path, prefix), "/")
-	if rest == "" {
-		return "", "", false
-	}
-	parts := strings.Split(rest, "/")
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return "", "", false
-	}
-	return parts[0], parts[1], true
 }
 
 func roleIDList(roles []rbac.RoleRef) []string {

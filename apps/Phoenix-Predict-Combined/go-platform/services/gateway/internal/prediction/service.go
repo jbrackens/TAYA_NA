@@ -1317,10 +1317,16 @@ func (s *Service) CreateMarket(ctx context.Context, req CreateMarketRequest) (*M
 	if err := s.repo.CreateMarket(ctx, market); err != nil {
 		return nil, fmt.Errorf("create market: %w", err)
 	}
+	if len(req.AIGenerationLogIDs) > 0 {
+		if err := s.repo.LinkAIGenerationLogsToMarket(ctx, market.ID, req.AIGenerationLogIDs, req.CreatedBy); err != nil {
+			return nil, fmt.Errorf("link ai generation logs: %w", err)
+		}
+	}
 
 	s.repo.CreateLifecycleEvent(ctx, &LifecycleEvent{
 		MarketID:   market.ID,
 		EventType:  "created",
+		ActorID:    req.CreatedBy,
 		ActorType:  "admin",
 		OccurredAt: time.Now().UTC(),
 	})
@@ -1349,6 +1355,21 @@ func (s *Service) LogAIGeneration(ctx context.Context, entry *AIGenerationLog) e
 		return fmt.Errorf("log ai generation: %w", err)
 	}
 	return nil
+}
+
+// ReserveAIBudget performs the authoritative pre-spend rate/budget check and
+// records an attempt before the office route calls the LLM.
+func (s *Service) ReserveAIBudget(ctx context.Context, createdBy string, estimatedInputTokens int) (AIBudgetStatus, error) {
+	if estimatedInputTokens < 1 {
+		estimatedInputTokens = 1
+	}
+	ratePerMin := aiEnvInt("AI_DRAFT_RATE_PER_MIN", 10)
+	dailyTokenCap := aiEnvInt64("AI_DRAFT_DAILY_TOKEN_CAP", 2_000_000)
+	status, err := s.repo.ReserveAIUsage(ctx, createdBy, estimatedInputTokens, ratePerMin, dailyTokenCap, time.Now().UTC())
+	if err != nil {
+		return AIBudgetStatus{}, fmt.Errorf("reserve ai budget: %w", err)
+	}
+	return status, nil
 }
 
 // CheckAIBudget enforces per-admin AI-drafting limits (plan §17c): a

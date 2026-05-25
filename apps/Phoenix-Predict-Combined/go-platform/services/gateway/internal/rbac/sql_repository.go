@@ -350,6 +350,24 @@ func (r *SQLRepository) ListPermissions(ctx context.Context) ([]Permission, erro
 	return out, rows.Err()
 }
 
+func (r *SQLRepository) CreateRole(ctx context.Context, role Role) error {
+	_, err := r.db.ExecContext(ctx,
+		`INSERT INTO roles (id, name, description, is_system) VALUES ($1, $2, $3, false)`,
+		role.ID, role.Name, role.Description)
+	return err
+}
+
+func (r *SQLRepository) DeleteRole(ctx context.Context, roleID string) error {
+	res, err := r.db.ExecContext(ctx, `DELETE FROM roles WHERE id = $1`, roleID)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrRoleNotFound
+	}
+	return nil
+}
+
 func (r *SQLRepository) SetRolePermissions(ctx context.Context, roleID string, permissionIDs []string) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {

@@ -47,6 +47,64 @@ func (s *Service) ListPermissions(ctx context.Context) ([]Permission, error) {
 	return s.repo.ListPermissions(ctx)
 }
 
+var roleSlugSep = regexp.MustCompile(`[^a-z0-9]+`)
+
+func slugifyRole(name string) string {
+	s := roleSlugSep.ReplaceAllString(strings.ToLower(strings.TrimSpace(name)), "-")
+	return strings.Trim(s, "-")
+}
+
+// CreateRole creates a custom (non-system) role with an empty permission set;
+// the id is a slug derived from the name. Permissions are then granted via the
+// Role Matrix.
+func (s *Service) CreateRole(ctx context.Context, in CreateRoleInput) (*RoleWithPermissions, error) {
+	name := strings.TrimSpace(in.Name)
+	if name == "" {
+		return nil, ValidationError{Msg: "role name is required"}
+	}
+	id := slugifyRole(name)
+	if id == "" {
+		return nil, ValidationError{Msg: "role name must contain letters or numbers"}
+	}
+	existing, err := s.repo.ListRolesWithPermissions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range existing {
+		if r.ID == id {
+			return nil, ValidationError{Msg: fmt.Sprintf("a role %q already exists; choose a different name", id)}
+		}
+	}
+	role := Role{ID: id, Name: name, Description: strings.TrimSpace(in.Description), IsSystem: false}
+	if err := s.repo.CreateRole(ctx, role); err != nil {
+		return nil, err
+	}
+	return &RoleWithPermissions{Role: role, Permissions: []string{}}, nil
+}
+
+// DeleteRole removes a custom role (cascading its assignments). Seeded
+// (is_system) roles are protected.
+func (s *Service) DeleteRole(ctx context.Context, roleID string) error {
+	roles, err := s.repo.ListRolesWithPermissions(ctx)
+	if err != nil {
+		return err
+	}
+	var target *RoleWithPermissions
+	for i := range roles {
+		if roles[i].ID == roleID {
+			target = &roles[i]
+			break
+		}
+	}
+	if target == nil {
+		return ErrRoleNotFound
+	}
+	if target.IsSystem {
+		return ErrSystemRoleProtected
+	}
+	return s.repo.DeleteRole(ctx, roleID)
+}
+
 // CreateUser validates input, hashes the temporary password, and persists the
 // user with the requested roles. actor attributes the role grants in the audit
 // columns. Returns ValidationError / ErrDuplicateEmail for client errors.

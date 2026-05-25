@@ -41,6 +41,12 @@ describe("parseDraftRequest", () => {
       }).ok,
     ).toBe(false);
   });
+
+  it("rejects over-long pasted articles", () => {
+    expect(parseDraftRequest({ articleText: "x".repeat(120_001) }).ok).toBe(
+      false,
+    );
+  });
 });
 
 describe("extractAdminAuth", () => {

@@ -512,6 +512,8 @@ type CreateMarketRequest struct {
 	AMMLiquidityParam   float64         `json:"ammLiquidityParam"`
 	AMMSubsidyCents     int64           `json:"ammSubsidyCents"`
 	ArticleSourceID     *string         `json:"articleSourceId,omitempty"`
+	AIGenerationLogIDs  []string        `json:"aiGenerationLogIds,omitempty"`
+	CreatedBy           *string         `json:"-"`
 }
 
 // ArticleSource is the provenance record for an AI-drafted market's source
@@ -574,7 +576,8 @@ type CreateMarketSourceRequest struct {
 
 // CreateMarketSourceResponse returns the (deduped) article source id.
 type CreateMarketSourceResponse struct {
-	ArticleSourceID string `json:"articleSourceId"`
+	ArticleSourceID    string   `json:"articleSourceId"`
+	AIGenerationLogIDs []string `json:"aiGenerationLogIds,omitempty"`
 }
 
 // AIBudgetStatus is the per-admin AI-drafting budget check (plan §17c). Rate is
@@ -588,6 +591,13 @@ type AIBudgetStatus struct {
 	RatePerMinute      int    `json:"ratePerMinute"`
 	TokensToday        int64  `json:"tokensToday"`
 	DailyTokenCap      int64  `json:"dailyTokenCap"`
+}
+
+// ReserveAIBudgetRequest reserves one draft attempt before model spend. The
+// token estimate is conservative and allows the daily cap to fail closed under
+// concurrent requests before provider cost is incurred.
+type ReserveAIBudgetRequest struct {
+	EstimatedInputTokens int `json:"estimatedInputTokens"`
 }
 
 // ResolveMarketRequest is the admin request to settle a market.

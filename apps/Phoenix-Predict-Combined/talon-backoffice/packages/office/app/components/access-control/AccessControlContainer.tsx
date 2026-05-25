@@ -92,6 +92,7 @@ export default function AccessControlContainer() {
               roles={roles}
               permissions={permissions}
               onRolesChange={setRoles}
+              onUsersChanged={refreshUsers}
             />
           ),
         },

@@ -45,6 +45,7 @@ describe("DraftFromArticleModal", () => {
   beforeEach(() => {
     mockDraft({
       articleSourceId: "src-1",
+      aiGenerationLogIds: ["log-1"],
       analysis: { articleSummary: "summary" },
       candidates: [{ candidate, validation: okValidation }],
     });
@@ -68,6 +69,7 @@ describe("DraftFromArticleModal", () => {
     expect(onUse).toHaveBeenCalledWith(
       expect.objectContaining({ marketTitle: candidate.marketTitle }),
       "src-1",
+      ["log-1"],
     );
   });
 

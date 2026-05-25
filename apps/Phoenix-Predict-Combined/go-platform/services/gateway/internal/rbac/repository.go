@@ -23,6 +23,9 @@ var (
 	// ErrCannotTargetSelf is returned when an actor tries to suspend or delete
 	// their own account.
 	ErrCannotTargetSelf = errors.New("you cannot suspend or delete your own account")
+	// ErrSystemRoleProtected is returned when an actor tries to delete a seeded
+	// (is_system) role.
+	ErrSystemRoleProtected = errors.New("system roles cannot be deleted")
 )
 
 // Repository is the persistence boundary for the RBAC domain. The PostgreSQL
@@ -50,6 +53,12 @@ type Repository interface {
 	// Roles & permissions
 	ListRolesWithPermissions(ctx context.Context) ([]RoleWithPermissions, error)
 	ListPermissions(ctx context.Context) ([]Permission, error)
+	// CreateRole inserts a non-system role. Returns ErrDuplicateRole-style
+	// behavior via the service (slug collision is pre-checked).
+	CreateRole(ctx context.Context, role Role) error
+	// DeleteRole removes a role (cascades role_permissions + user_roles). The
+	// service guards system roles before calling this.
+	DeleteRole(ctx context.Context, roleID string) error
 	// SetRolePermissions replaces the role's entire permission set atomically.
 	SetRolePermissions(ctx context.Context, roleID string, permissionIDs []string) error
 

@@ -16,11 +16,7 @@
 import { z } from "zod";
 
 export const riskLevelSchema = z.enum(["low", "medium", "high", "blocked"]);
-export const marketTypeSchema = z.enum([
-  "binary",
-  "multiple_choice",
-  "scalar_bucket",
-]);
+export const marketTypeSchema = z.literal("binary");
 
 export const resolutionCriteriaSchema = z.object({
   yes: z.string().nullable(),

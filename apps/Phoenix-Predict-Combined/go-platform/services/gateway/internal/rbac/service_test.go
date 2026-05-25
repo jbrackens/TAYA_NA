@@ -143,6 +143,21 @@ func (f *fakeRepo) SetRolePermissions(ctx context.Context, roleID string, permis
 	return ErrRoleNotFound
 }
 
+func (f *fakeRepo) CreateRole(ctx context.Context, role Role) error {
+	f.roles = append(f.roles, RoleWithPermissions{Role: role, Permissions: []string{}})
+	return nil
+}
+
+func (f *fakeRepo) DeleteRole(ctx context.Context, roleID string) error {
+	for i := range f.roles {
+		if f.roles[i].ID == roleID {
+			f.roles = append(f.roles[:i], f.roles[i+1:]...)
+			return nil
+		}
+	}
+	return ErrRoleNotFound
+}
+
 func (f *fakeRepo) EffectivePermissions(ctx context.Context, email string) (map[string]struct{}, error) {
 	out := map[string]struct{}{}
 	for id, u := range f.users {
@@ -417,5 +432,47 @@ func TestResetPassword(t *testing.T) {
 	}
 	if bcrypt.CompareHashAndPassword([]byte(repo.hashes[u.ID]), []byte("new-password-2")) != nil {
 		t.Error("password hash was not updated to the new password")
+	}
+}
+
+// --- Custom roles (create / delete) ---
+
+func TestCreateRole(t *testing.T) {
+	svc := NewService(newFakeRepo())
+
+	if _, err := svc.CreateRole(context.Background(), CreateRoleInput{Name: "   "}); err == nil {
+		t.Fatal("want validation error for empty name")
+	}
+	if _, err := svc.CreateRole(context.Background(), CreateRoleInput{Name: "!!!"}); err == nil {
+		t.Fatal("want validation error for a name with no slug characters")
+	}
+
+	got, err := svc.CreateRole(context.Background(), CreateRoleInput{Name: "Risk Analyst", Description: "watches risk"})
+	if err != nil {
+		t.Fatalf("create failed: %v", err)
+	}
+	if got.ID != "risk-analyst" || got.IsSystem || len(got.Permissions) != 0 {
+		t.Errorf("unexpected new role: id=%q isSystem=%v perms=%v", got.ID, got.IsSystem, got.Permissions)
+	}
+
+	if _, err := svc.CreateRole(context.Background(), CreateRoleInput{Name: "Risk  Analyst"}); err == nil {
+		t.Fatal("want validation error for duplicate slug")
+	}
+}
+
+func TestDeleteRole(t *testing.T) {
+	svc := NewService(newFakeRepo())
+
+	// Seeded fake roles are is_system -> protected.
+	if err := svc.DeleteRole(context.Background(), "customer-support"); !errors.Is(err, ErrSystemRoleProtected) {
+		t.Fatalf("want ErrSystemRoleProtected, got %v", err)
+	}
+	if err := svc.DeleteRole(context.Background(), "ghost"); !errors.Is(err, ErrRoleNotFound) {
+		t.Fatalf("want ErrRoleNotFound, got %v", err)
+	}
+
+	created, _ := svc.CreateRole(context.Background(), CreateRoleInput{Name: "Temp Role"})
+	if err := svc.DeleteRole(context.Background(), created.ID); err != nil {
+		t.Fatalf("delete custom role failed: %v", err)
 	}
 }

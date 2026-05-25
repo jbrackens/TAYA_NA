@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   App,
+  Button,
   Checkbox,
   Table,
   Tag,
@@ -11,11 +12,13 @@ import {
   type TableColumnsType,
 } from "antd";
 import {
+  deleteRole,
   setRolePermissions,
   SUPER_ADMIN_ROLE_ID,
   type RbacPermission,
   type RbacRole,
 } from "../../lib/rbac-api";
+import CreateRoleModal from "./CreateRoleModal";
 
 const { Title, Text } = Typography;
 
@@ -46,15 +49,49 @@ interface Props {
   roles: RbacRole[];
   permissions: RbacPermission[];
   onRolesChange: (roles: RbacRole[]) => void;
+  // Refresh the users list after a role is deleted (their role tags may change).
+  onUsersChanged?: () => void | Promise<void>;
 }
 
 export default function RoleMatrix({
   roles,
   permissions,
   onRolesChange,
+  onUsersChanged,
 }: Props) {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+
+  const handleRoleCreated = (role: RbacRole) => {
+    onRolesChange([...roles, { ...role, permissions: role.permissions ?? [] }]);
+    setCreateOpen(false);
+  };
+
+  const confirmDeleteRole = (role: RbacRole) => {
+    modal.confirm({
+      title: `Delete role "${role.name}"?`,
+      content:
+        "This removes the role from any users who have it. This cannot be undone.",
+      okText: "Delete",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await deleteRole(role.id);
+          message.success(`Deleted role "${role.name}"`);
+          onRolesChange(roles.filter((candidate) => candidate.id !== role.id));
+          if (onUsersChanged) {
+            await onUsersChanged();
+          }
+        } catch (err: unknown) {
+          message.error(
+            err instanceof Error ? err.message : "Failed to delete role",
+          );
+          throw err; // keep the dialog open on failure
+        }
+      },
+    });
+  };
 
   const grouped = useMemo(() => {
     const order: string[] = [];
@@ -113,7 +150,19 @@ export default function RoleMatrix({
       render: (_, role) => (
         <div>
           <Text strong>{role.name}</Text>
-          {role.isSystem ? <Tag style={{ marginLeft: 8 }}>system</Tag> : null}
+          {role.isSystem ? (
+            <Tag style={{ marginLeft: 8 }}>system</Tag>
+          ) : (
+            <Button
+              type="link"
+              size="small"
+              danger
+              style={{ paddingLeft: 8 }}
+              onClick={() => confirmDeleteRole(role)}
+            >
+              Delete
+            </Button>
+          )}
           {role.description ? (
             <div>
               <Text type="secondary" style={{ fontSize: 12 }}>
@@ -156,14 +205,26 @@ export default function RoleMatrix({
 
   return (
     <>
-      <div style={{ marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>
-          Role matrix
-        </Title>
-        <Text type="secondary">
-          Toggle a permission to grant or revoke it for a role. Changes save
-          immediately. Super Admin always has full access.
-        </Text>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <div>
+          <Title level={4} style={{ margin: 0 }}>
+            Role matrix
+          </Title>
+          <Text type="secondary">
+            Toggle a permission to grant or revoke it for a role. Changes save
+            immediately. Super Admin always has full access.
+          </Text>
+        </div>
+        <Button type="primary" onClick={() => setCreateOpen(true)}>
+          Create role
+        </Button>
       </div>
       <Table
         rowKey="id"
@@ -172,6 +233,12 @@ export default function RoleMatrix({
         pagination={false}
         bordered
         scroll={{ x: "max-content" }}
+      />
+
+      <CreateRoleModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={handleRoleCreated}
       />
     </>
   );

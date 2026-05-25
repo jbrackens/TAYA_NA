@@ -149,6 +149,24 @@ export async function listRolesAndPermissions(): Promise<{
   return { roles: data.roles ?? [], permissions: data.permissions ?? [] };
 }
 
+export async function createRole(input: {
+  name: string;
+  description?: string;
+}): Promise<RbacRole> {
+  const data = await parseJSON<{ role: RbacRole }>(
+    await adminFetch(`${BASE}/roles`, jsonInit("POST", input)),
+  );
+  return data.role;
+}
+
+export async function deleteRole(roleId: string): Promise<void> {
+  await parseJSON<{ deleted: boolean }>(
+    await adminFetch(`${BASE}/roles/${encodeURIComponent(roleId)}`, {
+      method: "DELETE",
+    }),
+  );
+}
+
 export async function setRolePermissions(
   roleId: string,
   permissionIds: string[],
