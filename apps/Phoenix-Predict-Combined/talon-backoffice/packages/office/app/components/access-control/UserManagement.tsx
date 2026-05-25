@@ -47,10 +47,14 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
     const next = user.status === "active" ? "suspended" : "active";
     try {
       await setUserStatus(user.id, next);
-      message.success(`${user.email} ${next === "active" ? "activated" : "suspended"}`);
+      message.success(
+        `${user.email} ${next === "active" ? "activated" : "suspended"}`,
+      );
       await onChanged();
     } catch (err: unknown) {
-      message.error(err instanceof Error ? err.message : "Failed to update status");
+      message.error(
+        err instanceof Error ? err.message : "Failed to update status",
+      );
     }
   };
 
@@ -66,7 +70,9 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
           message.success(`Deleted ${user.email}`);
           await onChanged();
         } catch (err: unknown) {
-          message.error(err instanceof Error ? err.message : "Failed to delete user");
+          message.error(
+            err instanceof Error ? err.message : "Failed to delete user",
+          );
           throw err; // keep the dialog open on failure
         }
       },
@@ -75,14 +81,23 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
 
   const rowMenu = (user: RbacUser): MenuProps => ({
     items: [
-      { key: "reset", label: "Reset password", onClick: () => setResetUser(user) },
+      {
+        key: "reset",
+        label: "Reset password",
+        onClick: () => setResetUser(user),
+      },
       {
         key: "status",
         label: user.status === "active" ? "Suspend" : "Activate",
         onClick: () => toggleStatus(user),
       },
       { type: "divider" },
-      { key: "delete", label: "Delete", danger: true, onClick: () => confirmDelete(user) },
+      {
+        key: "delete",
+        label: "Delete",
+        danger: true,
+        onClick: () => confirmDelete(user),
+      },
     ],
   });
 
@@ -162,9 +177,7 @@ export default function UserManagement({ users, roles, onChanged }: Props) {
           <Title level={4} style={{ margin: 0 }}>
             Back-office users
           </Title>
-          <Text type="secondary">
-            Staff accounts and their assigned roles.
-          </Text>
+          <Text type="secondary">Staff accounts and their assigned roles.</Text>
         </div>
         <Button type="primary" onClick={() => setCreateOpen(true)}>
           Create user

@@ -113,9 +113,7 @@ export default function RoleMatrix({
       render: (_, role) => (
         <div>
           <Text strong>{role.name}</Text>
-          {role.isSystem ? (
-            <Tag style={{ marginLeft: 8 }}>system</Tag>
-          ) : null}
+          {role.isSystem ? <Tag style={{ marginLeft: 8 }}>system</Tag> : null}
           {role.description ? (
             <div>
               <Text type="secondary" style={{ fontSize: 12 }}>

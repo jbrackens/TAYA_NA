@@ -47,7 +47,9 @@ export default function CreateUserModal({
       form.resetFields();
       await onCreated();
     } catch (err: unknown) {
-      message.error(err instanceof Error ? err.message : "Failed to create user");
+      message.error(
+        err instanceof Error ? err.message : "Failed to create user",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -95,7 +97,10 @@ export default function CreateUserModal({
           ]}
           extra="Share securely with the user; they should change it on first sign-in."
         >
-          <Input.Password placeholder="At least 8 characters" autoComplete="new-password" />
+          <Input.Password
+            placeholder="At least 8 characters"
+            autoComplete="new-password"
+          />
         </Form.Item>
         <Form.Item
           label="Roles"
@@ -105,7 +110,10 @@ export default function CreateUserModal({
           <Select
             mode="multiple"
             placeholder="Select one or more roles"
-            options={roles.map((role) => ({ label: role.name, value: role.id }))}
+            options={roles.map((role) => ({
+              label: role.name,
+              value: role.id,
+            }))}
             optionFilterProp="label"
           />
         </Form.Item>
