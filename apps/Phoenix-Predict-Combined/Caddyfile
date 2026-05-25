@@ -1,0 +1,60 @@
+# Production Caddyfile — Path A single-box, two single-origin hosts.
+# Validated topology (2026-05-17, see DEMO_DEPLOYMENT_PLAN.md):
+#   - Each app is ONE origin. The auth cookie is host-only + SameSite=Lax,
+#     so page + /api + /ws MUST share a hostname or auth/WS break.
+#   - Caddy upgrades /ws to the gateway (Next.js does not proxy WS).
+#   - Caddy auto-provisions Let's Encrypt TLS (needs :80/:443 reachable and
+#     the DNS A records pointing here, DNS-only / grey-cloud at Cloudflare).
+#
+# Container names match docker-compose.yml (predict_gateway:18080) and
+# docker-compose.demo.yml (predict_player:3000, predict_office:3000).
+
+{
+	email ops@99rtp.io
+}
+
+# ---- Player (public demo) ----
+demo.99rtp.io {
+	@chatApi path /chat/api/*
+	handle @chatApi {
+		uri strip_prefix /chat
+		reverse_proxy predict_rocketchat:3000
+	}
+	@chatRoot path /chat /chat/
+	redir @chatRoot /chat/channel/global 302
+	@chat path /chat/*
+	handle @chat {
+		reverse_proxy predict_rocketchat:3000 {
+			header_down -X-Frame-Options
+			header_down +Content-Security-Policy "frame-ancestors 'self' https://demo.99rtp.io"
+		}
+	}
+	@backend path /api/* /admin/* /ws /ws/*
+	handle @backend {
+		reverse_proxy predict_gateway:18080
+	}
+	handle {
+		reverse_proxy predict_player:3000
+	}
+}
+
+# ---- Backoffice (basic-auth gated; keeps it out of crawlers/uninvited eyes) ----
+office.99rtp.io {
+	# Narrowed from /api/* to /api/v1/* so the office's own App Router proxies
+	# under /api/auth/* (and /api/fixtures, etc.) reach predict_office instead
+	# of being intercepted and 401'd by the gateway. Gateway public/admin
+	# routes all live under /api/v1/* (see cmd/gateway/main.go publicPrefixes
+	# + handlers.go) and /admin/*, so this matcher still covers them.
+	@backend path /api/v1/* /admin/* /ws /ws/*
+	handle @backend {
+		reverse_proxy predict_gateway:18080
+	}
+	# Generate the hash on the box:  docker run --rm caddy:2 caddy hash-password --plaintext 'YOURPASS'
+	# then paste it below (Caddy >=2.8 uses `basic_auth`; older uses `basicauth`).
+	basic_auth {
+		admin REPLACE_WITH_BCRYPT_HASH
+	}
+	handle {
+		reverse_proxy predict_office:3000
+	}
+}
