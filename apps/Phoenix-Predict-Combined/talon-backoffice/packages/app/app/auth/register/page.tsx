@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { register as registerUser } from "../../lib/api";
 import { returnUrlSuffix } from "../../lib/safeReturnPath";
+import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 interface FormData {
@@ -189,10 +190,14 @@ export default function RegisterPage() {
 
         {step === 1 && (
           <div className="ra-form">
-            <SocialAuthButtons />
-            <div className="ra-divider">
-              <span>or sign up with email</span>
-            </div>
+            {FEATURE_SOCIAL_AUTH && (
+              <>
+                <SocialAuthButtons />
+                <div className="ra-divider">
+                  <span>or sign up with email</span>
+                </div>
+              </>
+            )}
             <Field
               label="Username"
               value={form.username}

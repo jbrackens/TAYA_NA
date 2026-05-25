@@ -77,3 +77,11 @@ export const FEATURE_CHAT = process.env.NEXT_PUBLIC_FEATURE_CHAT === "true";
 export const CHAT_PUBLIC_URL = (
   process.env.NEXT_PUBLIC_CHAT_PUBLIC_URL || ""
 ).replace(/\/$/, "");
+
+/**
+ * Social OAuth entry points. Off by default because the buttons are only safe
+ * to show when provider client IDs/secrets and redirect URIs are configured
+ * for the current deploy. Otherwise users hit visible 400s from /oauth/start.
+ */
+export const FEATURE_SOCIAL_AUTH =
+  process.env.NEXT_PUBLIC_FEATURE_SOCIAL_AUTH === "true";
