@@ -967,7 +967,17 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 	}
 
 	account, exists := a.lookupUser(username)
-	if !exists || !a.verifyPassword(account, password) {
+	authenticated := exists && a.verifyPassword(account, password)
+	if !authenticated {
+		// Back-office staff fallback: authenticate against the gateway-owned
+		// admin_users directory (the self-contained RBAC staff table). Only
+		// reached when the player/auth_users path did not match, so existing
+		// logins are unaffected.
+		if staff, ok := a.lookupAdminUser(username); ok && a.verifyPassword(staff, password) {
+			account, authenticated = staff, true
+		}
+	}
+	if !authenticated {
 		a.lockout.RecordFailure(username)
 		a.recordAuthMetric("login_failure")
 		a.audit.Event("auth.login.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
@@ -1244,6 +1254,34 @@ WHERE username = $1`, username).Scan(&u.ID, &u.Username, &u.PasswordHash, &u.Rol
 	defer a.mu.RUnlock()
 	account, exists := a.usersByUsername[username]
 	return account, exists
+}
+
+// lookupAdminUser authenticates back-office staff against the gateway-owned
+// admin_users directory (the self-contained RBAC staff table, migration 027).
+// Only active accounts are returned, with role "admin" so they pass the
+// gateway's coarse admin gate; RBAC then narrows by their assigned permissions.
+// Returns false when no DB is wired or the table/row is absent — back-office
+// login is simply unavailable, with no effect on player/auth_users login.
+func (a *AuthService) lookupAdminUser(username string) (user, bool) {
+	if a.db == nil {
+		return user{}, false
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
+	defer cancel()
+	var u user
+	err := a.db.QueryRowContext(ctx, `
+SELECT id::text, email, password_hash
+FROM admin_users
+WHERE lower(email) = lower($1) AND status = 'active'`, username).
+		Scan(&u.ID, &u.Username, &u.PasswordHash)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Printf("warning: admin_users lookup failed for %s: %v", username, err)
+		}
+		return user{}, false
+	}
+	u.Role = "admin"
+	return u, true
 }
 
 func (a *AuthService) IsTwoFactorEnabled(userID string) bool {

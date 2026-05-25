@@ -127,6 +127,43 @@ Prices are **cents, 0–99** — always enforced by CHECK constraints and the in
 - `pages/prediction-admin/settlements.tsx` — settlement queue, manual resolve with attestation
 - Containers: `containers/prediction-markets/` and `containers/prediction-settlements/`
 
+## Back-office RBAC (Access Control)
+
+Staff authorization for the back-office, distinct from `punters` (customers) and
+the auth service's `auth_users` (player login). Schema in migration
+`027_rbac_admin.sql`: `admin_users` (gateway-owned staff directory, bcrypt
+password), `roles`, `permissions`, and the `user_roles` / `role_permissions`
+join tables. Seeded roles: Super Admin, Operations Manager, Customer Support;
+granular permissions like `users:read/write`, `roles:read/write`,
+`markets:read/edit`, `settlements:resolve`, `finances:view`.
+
+- **UI:** `office/app/(dashboard)/access-control/` → `office/app/components/access-control/`
+  (User Management tab: table, Create User, Edit Roles, suspend/activate,
+  reset password, delete; Role Matrix tab: roles × permissions checkbox grid).
+- **API:** `/api/v1/admin/users` (GET/POST), `/api/v1/admin/users/{id}/{roles,status,password}` (PUT),
+  `/api/v1/admin/users/{id}` (DELETE), `/api/v1/admin/roles` (GET),
+  `/api/v1/admin/roles/{id}/permissions` (PUT). Code: `internal/rbac/` +
+  `internal/http/rbac_admin_handlers.go`.
+- **Enforcement:** every endpoint runs `requireAdminRole` (session role==admin)
+  then `requireRBACPermission`, which resolves the caller's email →
+  `admin_users` → roles → permissions (active users only; suspended/unknown get
+  none). Dev bypass: `GATEWAY_ALLOW_ADMIN_ANON=true` (refused at boot in
+  prod/staging).
+- **Login:** the auth service `Login` falls back to authenticating against
+  `admin_users` (active, role=admin), so a staff member created via Create User
+  signs in with their temporary password — no separate `auth_users` row needed
+  (`services/auth/.../handlers.go` `lookupAdminUser`).
+- **Safety invariants:** the `super-admin` role is immutable via the API; an
+  actor can only assign roles / grant permissions within their own set; the last
+  active super-admin cannot be role-stripped, suspended, or deleted; an actor
+  cannot suspend or delete their own account.
+- **Dev bootstrap staff** (dev-only, via `cmd/seed` → `seed_prediction.sql`):
+  `admin@phoenix.local` (Super Admin), `ops@phoenix.local` (Operations Manager),
+  `support@phoenix.local` (Customer Support) — all password `admin123`.
+- **Prod bootstrap** (prod is fail-closed: the migration seeds no staff): run
+  `gateway rbac-bootstrap` once with `RBAC_BOOTSTRAP_EMAIL` +
+  `RBAC_BOOTSTRAP_PASSWORD` (+ `GATEWAY_DB_DSN`) to create the first super-admin.
+
 ## Tech Stack — Go Backend
 
 **Path:** `apps/Phoenix-Predict-Combined/go-platform/services/gateway/`

@@ -274,10 +274,18 @@ func adminActorFromRequest(r *stdhttp.Request) string {
 	return "admin"
 }
 
+// adminAnonBypassEnabled reports whether the dev-only anonymous admin bypass is
+// active. MUST NOT be true in production — deployed environments refuse to boot
+// with it set. Shared by requireAdminRole and the RBAC permission guard so the
+// bypass condition has a single source of truth.
+func adminAnonBypassEnabled() bool {
+	return strings.EqualFold(os.Getenv("GATEWAY_ALLOW_ADMIN_ANON"), "true") &&
+		strings.ToLower(os.Getenv("ENVIRONMENT")) != "production"
+}
+
 func requireAdminRole(r *stdhttp.Request) error {
 	// Dev-only bypass (MUST NOT be used in production)
-	if strings.EqualFold(os.Getenv("GATEWAY_ALLOW_ADMIN_ANON"), "true") &&
-		strings.ToLower(os.Getenv("ENVIRONMENT")) != "production" {
+	if adminAnonBypassEnabled() {
 		return nil
 	}
 	// Admin authority comes only from the validated session role. Never trust a

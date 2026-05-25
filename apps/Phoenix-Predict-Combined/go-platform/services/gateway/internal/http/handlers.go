@@ -25,6 +25,7 @@ import (
 	"phoenix-revival/gateway/internal/prediction"
 	"phoenix-revival/gateway/internal/prediction/feed"
 	"phoenix-revival/gateway/internal/prediction/workers"
+	"phoenix-revival/gateway/internal/rbac"
 	"phoenix-revival/gateway/internal/wallet"
 	"phoenix-revival/gateway/internal/ws"
 	"phoenix-revival/platform/transport/httpx"
@@ -235,6 +236,14 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 		registerPredictionAdminRoutes(mux, predSQLRepo, walletService)
 		registerPredictionRiskRoutes(mux, predSQLRepo)
 		slog.Info("prediction: admin read routes registered (punters, audit-logs, risk)")
+	}
+
+	// Back-office RBAC (Access Control) admin API — staff users, roles, and
+	// granular permissions (migration 027). Independent of the prediction repo;
+	// needs only the shared DB. Permission enforcement maps the session email to
+	// an admin_users record, so it fails closed when no DB is wired.
+	if rbacDB := walletService.DB(); rbacDB != nil {
+		registerRBACAdminRoutes(mux, rbac.NewService(rbac.NewSQLRepository(rbacDB)))
 	}
 
 	// --- Feed Adapters & Background Workers ---

@@ -29,6 +29,8 @@ func main() {
 		switch os.Args[1] {
 		case "migrate-legacy-loyalty":
 			os.Exit(runMigrateLegacyLoyalty(os.Args[2:]))
+		case "rbac-bootstrap":
+			os.Exit(runRBACBootstrap(os.Args[2:]))
 		}
 	}
 
@@ -181,6 +183,15 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	// it disabled in any deployed environment.
 	if strings.EqualFold(strings.TrimSpace(getenv("GATEWAY_AUTH_ENABLED")), "false") && realEnv {
 		return fmt.Errorf("GATEWAY_AUTH_ENABLED=false is not permitted when ENVIRONMENT=%s", env)
+	}
+
+	// The admin anonymous bypass skips BOTH the admin-role check and RBAC
+	// permission enforcement (see requireAdminRole / requireRBACPermission). It
+	// is a local-dev convenience only — refuse to boot with it enabled in any
+	// deployed environment so it can never silently disable back-office
+	// authorization in prod/staging.
+	if strings.EqualFold(strings.TrimSpace(getenv("GATEWAY_ALLOW_ADMIN_ANON")), "true") && realEnv {
+		return fmt.Errorf("GATEWAY_ALLOW_ADMIN_ANON=true is not permitted when ENVIRONMENT=%s", env)
 	}
 
 	// Everything below applies only to deployed environments. Local dev and the

@@ -386,4 +386,26 @@ INSERT INTO prediction_positions (user_id, market_id, side, quantity, avg_price_
   ('user-003', md5('mkt-apple-llm')::uuid, 'yes', 25, 68, 1700)
 ON CONFLICT (user_id, market_id, side) DO NOTHING;
 
+-- Back-office RBAC bootstrap staff — DEV SEED ONLY, never run in production.
+-- These deliberately live here and NOT in migration 027: RBAC authorization
+-- binds by session email, and the auth service auto-seeds admin@phoenix.local,
+-- so seeding a super-admin bound to that email inside a migration would be a
+-- production privilege-escalation. cmd/seed is a dev-only tool, so this gates
+-- the bootstrap to dev. password_hash is bcrypt('admin123') — dev only.
+-- Production provisions its first super-admin out-of-band (see migration 027).
+INSERT INTO admin_users (id, email, name, password_hash, status) VALUES
+  (md5('admin@phoenix.local')::uuid,   'admin@phoenix.local',   'Platform Admin',
+      '$2a$10$HsFKQhoiO8FANifxE56Q.el8owaaBqOLBrZ5SeUw9w4RaYL3A1RzK', 'active'),
+  (md5('ops@phoenix.local')::uuid,     'ops@phoenix.local',     'Operations Manager',
+      '$2a$10$HsFKQhoiO8FANifxE56Q.el8owaaBqOLBrZ5SeUw9w4RaYL3A1RzK', 'active'),
+  (md5('support@phoenix.local')::uuid, 'support@phoenix.local', 'Customer Support',
+      '$2a$10$HsFKQhoiO8FANifxE56Q.el8owaaBqOLBrZ5SeUw9w4RaYL3A1RzK', 'active')
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id, granted_by) VALUES
+  (md5('admin@phoenix.local')::uuid,   'super-admin',        'seed'),
+  (md5('ops@phoenix.local')::uuid,     'operations-manager', 'seed'),
+  (md5('support@phoenix.local')::uuid, 'customer-support',   'seed')
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
 COMMIT;
