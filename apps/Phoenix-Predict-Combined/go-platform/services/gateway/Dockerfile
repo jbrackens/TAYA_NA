@@ -21,12 +21,14 @@ COPY services/gateway/ ./services/gateway/
 # Build the gateway binary
 WORKDIR /build/services/gateway
 RUN CGO_ENABLED=0 GOOS=linux go build -o /gateway ./cmd/gateway
+RUN CGO_ENABLED=0 GOOS=linux go build -o /migrate ./cmd/migrate
 
 # Runtime image
 FROM alpine:3.19
 RUN apk add --no-cache ca-certificates tzdata
 WORKDIR /app
 COPY --from=builder /gateway .
+COPY --from=builder /migrate .
 COPY services/gateway/migrations/ ./migrations/
 
 EXPOSE 18080
