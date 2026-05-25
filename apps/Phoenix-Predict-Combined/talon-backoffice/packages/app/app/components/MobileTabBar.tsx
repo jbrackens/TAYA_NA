@@ -3,27 +3,29 @@
 /**
  * MobileTabBar — fixed bottom navigation on mobile (<900px, per D12).
  *
- * 5 slots matching the desktop TopBar nav plus Account. Uses the same
- * warm-light P8 surface system as TopBar, with 48px tap targets and
- * safe-area spacing. Hidden on desktop (nav lives in TopBar there).
+ * Uses the same primary nav rules as TopBar: public links are visible to
+ * everyone, auth-required links only appear after login. Hidden on desktop
+ * because nav lives in TopBar there.
  */
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Compass,
   LayoutGrid,
   PieChart,
   Trophy,
   Gift,
-  User as UserIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../hooks/useAuth";
 
 type TabDef = {
   href: string;
   labelKey: string;
   Icon: typeof LayoutGrid;
+  requiresAuth?: boolean;
   matchPrefixes?: string[];
 };
 
@@ -34,14 +36,29 @@ const TABS: TabDef[] = [
     Icon: LayoutGrid,
     matchPrefixes: ["/predict", "/category/", "/market/"],
   },
-  { href: "/portfolio", labelKey: "NAV_PORTFOLIO", Icon: PieChart },
-  { href: "/leaderboards", labelKey: "NAV_BOARDS", Icon: Trophy },
-  { href: "/rewards", labelKey: "NAV_REWARDS", Icon: Gift },
   {
-    href: "/account",
-    labelKey: "NAV_ACCOUNT",
-    Icon: UserIcon,
-    matchPrefixes: ["/account"],
+    href: "/discover",
+    labelKey: "NAV_DISCOVER",
+    Icon: Compass,
+    matchPrefixes: ["/discover"],
+  },
+  {
+    href: "/portfolio",
+    labelKey: "NAV_PORTFOLIO",
+    Icon: PieChart,
+    requiresAuth: true,
+  },
+  {
+    href: "/leaderboards",
+    labelKey: "NAV_LEADERBOARDS",
+    Icon: Trophy,
+    requiresAuth: true,
+  },
+  {
+    href: "/rewards",
+    labelKey: "NAV_REWARDS",
+    Icon: Gift,
+    requiresAuth: true,
   },
 ];
 
@@ -58,6 +75,7 @@ function matches(pathname: string | null, tab: TabDef): boolean {
 export default function MobileTabBar() {
   const pathname = usePathname();
   const { t } = useTranslation("header");
+  const { isAuthenticated } = useAuth();
 
   // Render only on mobile. Desktop uses TopBar's nav links.
   const [isMobile, setIsMobile] = useState(false);
@@ -71,6 +89,9 @@ export default function MobileTabBar() {
   }, []);
 
   if (!isMobile) return null;
+  const visibleTabs = TABS.filter(
+    (tab) => !tab.requiresAuth || isAuthenticated,
+  );
 
   return (
     <>
@@ -82,7 +103,7 @@ export default function MobileTabBar() {
           bottom: max(12px, env(safe-area-inset-bottom));
           z-index: 90;
           display: grid;
-          grid-template-columns: repeat(${TABS.length}, 1fr);
+          grid-template-columns: repeat(${visibleTabs.length}, 1fr);
           padding: 6px;
           border-radius: var(--r-rh-xl);
           background: var(--surface-1);
@@ -121,7 +142,7 @@ export default function MobileTabBar() {
         }
       `}</style>
       <nav className="mtb" aria-label="Primary (mobile)">
-        {TABS.map((tab) => {
+        {visibleTabs.map((tab) => {
           const active = matches(pathname, tab);
           const Icon = tab.Icon;
           return (

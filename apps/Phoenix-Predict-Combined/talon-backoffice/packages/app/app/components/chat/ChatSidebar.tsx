@@ -1,13 +1,13 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Flag,
   MessageCircle,
   X,
 } from "lucide-react";
-import { CHAT_PUBLIC_URL, FEATURE_CHAT } from "../../lib/features";
+import { FEATURE_CHAT } from "../../lib/features";
 import {
   reportChatMessage,
 } from "../../lib/api/chat-client";
@@ -101,6 +101,7 @@ export function ChatSidebar() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [isDesktop, setIsDesktop] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [state, setState] = useState<LoadState>("idle");
   const [roomId, setRoomId] = useState(DEFAULT_ROOM_ID);
   const [messages, setMessages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
@@ -129,18 +130,18 @@ export function ChatSidebar() {
     }
   };
 
-  const publicGlobalUrl = useMemo(() => {
-    if (!CHAT_PUBLIC_URL) return "";
-    return `${CHAT_PUBLIC_URL}/channel/${DEFAULT_ROOM_ID}`;
-  }, []);
-
   useEffect(() => {
-    if (!FEATURE_CHAT || collapsed || !isDesktop || isLoading) return;
+    const shouldPrepareChat = isDesktop ? !collapsed : mobileOpen;
+    if (!FEATURE_CHAT || !shouldPrepareChat || isLoading) return;
     setRoomId(DEFAULT_ROOM_ID);
     setMessage("");
     setReportEnabled(isAuthenticated);
     setState("ready");
-  }, [collapsed, isAuthenticated, isDesktop, isLoading]);
+  }, [collapsed, isAuthenticated, isDesktop, isLoading, mobileOpen]);
+
+  useEffect(() => {
+    if (isDesktop) setMobileOpen(false);
+  }, [isDesktop]);
 
   const handleSendMessage = (content: string) => {
     const trimmed = content.trim();
@@ -155,25 +156,85 @@ export function ChatSidebar() {
     ]);
   };
 
-  const mobileChatUrl = useMemo(() => {
-    return publicGlobalUrl;
-  }, [publicGlobalUrl]);
-
   if (!FEATURE_CHAT) return null;
+
+  const renderChatPanel = (showStatus = true) => (
+    <>
+      {showStatus && (
+        <div className="chat-status-row">
+          <span className="chat-online-dot" aria-hidden="true" />
+          <span>Community online</span>
+        </div>
+      )}
+      <ChatFrame
+        state={state}
+        message={message}
+        messages={messages}
+        readOnly={!isAuthenticated}
+        onSend={handleSendMessage}
+      />
+      {isAuthenticated && reportEnabled && (
+        <>
+          <button
+            className="chat-report-toggle"
+            type="button"
+            onClick={() => setReportOpen((open) => !open)}
+          >
+            <Flag size={15} aria-hidden="true" />
+            Report message
+          </button>
+          {reportOpen && (
+            <ChatReportForm
+              roomId={roomId}
+              onClose={() => setReportOpen(false)}
+            />
+          )}
+        </>
+      )}
+    </>
+  );
 
   if (!isDesktop) {
     return (
-      <button
-        className="chat-mobile-button"
-        type="button"
-        aria-label="Open chat"
-        onClick={() => {
-          if (mobileChatUrl) window.open(mobileChatUrl, "_blank", "noopener");
-        }}
-      >
-        <MessageCircle size={20} aria-hidden="true" />
-        <span>Chat</span>
-      </button>
+      <>
+        {!mobileOpen && (
+          <button
+            className="chat-mobile-button"
+            type="button"
+            aria-label="Open chat"
+            onClick={() => setMobileOpen(true)}
+          >
+            <MessageCircle size={20} aria-hidden="true" />
+            <span>Chat</span>
+          </button>
+        )}
+        {mobileOpen && (
+          <div className="chat-mobile-overlay">
+            <section
+              className="chat-mobile-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Community chat"
+            >
+              <div className="chat-mobile-header">
+                <div className="chat-mobile-title">
+                  <span className="chat-online-dot" aria-hidden="true" />
+                  <span>Community chat</span>
+                </div>
+                <button
+                  className="chat-mobile-close"
+                  type="button"
+                  aria-label="Close chat"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </div>
+              {renderChatPanel(false)}
+            </section>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -190,37 +251,7 @@ export function ChatSidebar() {
           <span>Chat</span>
         </button>
       ) : (
-        <>
-          <div className="chat-status-row">
-            <span className="chat-online-dot" aria-hidden="true" />
-            <span>Community online</span>
-          </div>
-          <ChatFrame
-            state={state}
-            message={message}
-            messages={messages}
-            readOnly={!isAuthenticated}
-            onSend={handleSendMessage}
-          />
-          {isAuthenticated && reportEnabled && (
-            <>
-              <button
-                className="chat-report-toggle"
-                type="button"
-                onClick={() => setReportOpen((open) => !open)}
-              >
-                <Flag size={15} aria-hidden="true" />
-                Report message
-              </button>
-              {reportOpen && (
-                <ChatReportForm
-                  roomId={roomId}
-                  onClose={() => setReportOpen(false)}
-                />
-              )}
-            </>
-          )}
-        </>
+        renderChatPanel()
       )}
     </aside>
   );

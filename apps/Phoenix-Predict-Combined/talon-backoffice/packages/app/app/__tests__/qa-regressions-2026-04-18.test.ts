@@ -401,6 +401,43 @@ describe("Social auth feature gate", () => {
   });
 });
 
+describe("Mobile navigation and chat parity", () => {
+  const mobileTabBarSource = read("components/MobileTabBar.tsx");
+  const chatSidebarSource = read("components/chat/ChatSidebar.tsx");
+
+  it("keeps mobile primary nav aligned with desktop auth rules", () => {
+    assert.ok(
+      mobileTabBarSource.includes('href: "/discover"') &&
+        mobileTabBarSource.includes("NAV_DISCOVER"),
+      "mobile nav should expose Discover like the desktop primary nav",
+    );
+    assert.ok(
+      mobileTabBarSource.includes("useAuth()") &&
+        mobileTabBarSource.includes("requiresAuth") &&
+        mobileTabBarSource.includes("isAuthenticated"),
+      "mobile nav should hide auth-required destinations until login",
+    );
+    assert.ok(
+      mobileTabBarSource.includes("NAV_LEADERBOARDS") &&
+        !mobileTabBarSource.includes("NAV_BOARDS"),
+      "mobile nav should use the same Leaderboards label key as desktop",
+    );
+  });
+
+  it("opens mobile chat in the native in-app chat surface", () => {
+    assert.ok(
+      chatSidebarSource.includes("chat-mobile-sheet") &&
+        chatSidebarSource.includes("renderChatPanel(false)") &&
+        chatSidebarSource.includes("<ChatFrame"),
+      "mobile chat should render the same in-app ChatFrame as desktop",
+    );
+    assert.ok(
+      !chatSidebarSource.includes("window.open"),
+      "mobile chat should not send users to a different external chat flow",
+    );
+  });
+});
+
 describe("Market copy localization", () => {
   const marketContentSource = read("components/prediction/market-content.ts");
   const predictionTypesSource = read(
