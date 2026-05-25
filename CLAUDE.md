@@ -298,6 +298,21 @@ CRYPTO_ASSET_CONTRACT=
 CRYPTO_DEPOSIT_ADDRESS_SOURCE=
 GEO_GATE_ENABLED=               # 'true' enforces jurisdiction (needs an edge country header, e.g. CF-IPCountry)
 SMTP_HOST=                      # set to send resolution emails; otherwise notifications log
+
+# Auth service — Social OAuth (full reference: go-platform/services/auth/.env.example).
+# Each provider is OFF until its CLIENT_ID (TikTok: CLIENT_KEY) is set. Google /
+# Discord assert a verified email (auto-link enabled); Facebook returns an email but
+# no verified claim, so it is treated as unverified (isolated account, no auto-link);
+# X / TikTok / Reddit return no email (isolated identity accounts). Each *_REDIRECT_URI must be
+# registered in the provider console and be same-origin with the player app so the
+# session cookies land on the right origin.
+AUTH_FRONTEND_URL=http://localhost:3000   # where OAuth callbacks send the user post-login
+GOOGLE_OAUTH_CLIENT_ID=         # + GOOGLE_OAUTH_CLIENT_SECRET / GOOGLE_OAUTH_REDIRECT_URI
+FACEBOOK_OAUTH_CLIENT_ID=       # + FACEBOOK_OAUTH_CLIENT_SECRET / FACEBOOK_OAUTH_REDIRECT_URI
+DISCORD_OAUTH_CLIENT_ID=        # + DISCORD_OAUTH_CLIENT_SECRET / DISCORD_OAUTH_REDIRECT_URI
+TWITTER_OAUTH_CLIENT_ID=        # X (Twitter), PKCE: + TWITTER_OAUTH_CLIENT_SECRET / TWITTER_OAUTH_REDIRECT_URI
+TIKTOK_OAUTH_CLIENT_KEY=        # TikTok: + TIKTOK_OAUTH_CLIENT_SECRET / TIKTOK_OAUTH_REDIRECT_URI
+REDDIT_OAUTH_CLIENT_ID=         # + REDDIT_OAUTH_CLIENT_SECRET / REDDIT_OAUTH_REDIRECT_URI
 ```
 
 ## Public API Prefixes

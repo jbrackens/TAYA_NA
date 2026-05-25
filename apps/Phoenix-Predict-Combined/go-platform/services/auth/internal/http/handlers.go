@@ -35,6 +35,7 @@ type AuthService struct {
 	mu sync.RWMutex
 
 	usersByUsername  map[string]user
+	oauthIdentities  map[string]string // "provider:subject" -> userID (in-memory fallback when db == nil)
 	twoFactorEnabled map[string]bool
 	db               *sql.DB // nil = in-memory mode
 	store            SessionStore
@@ -250,6 +251,7 @@ func NewAuthService() *AuthService {
 
 	svc := &AuthService{
 		usersByUsername:  users,
+		oauthIdentities:  map[string]string{},
 		twoFactorEnabled: map[string]bool{},
 		store:            sessionStore,
 		audit:            &structuredAuditLogger{logger: log.Default()},
@@ -305,7 +307,7 @@ func NewAuthService() *AuthService {
 func (a *AuthService) ensureUserSchema(db *sql.DB) error {
 	ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
 	defer cancel()
-	_, err := db.ExecContext(ctx, `
+	if _, err := db.ExecContext(ctx, `
 CREATE TABLE IF NOT EXISTS auth_users (
   id VARCHAR(255) PRIMARY KEY,
   username VARCHAR(255) UNIQUE NOT NULL,
@@ -315,6 +317,25 @@ CREATE TABLE IF NOT EXISTS auth_users (
   oauth_subject VARCHAR(255),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`); err != nil {
+		return err
+	}
+
+	// auth_identities maps a social provider's stable subject (its user id) to
+	// a local auth_users row. Identity is keyed by (provider, subject) — NOT by
+	// email — so that two providers asserting the same email only merge when the
+	// email is provider-verified (see resolveOAuthAccount). email_verified is
+	// recorded so the linking decision is auditable after the fact.
+	_, err := db.ExecContext(ctx, `
+CREATE TABLE IF NOT EXISTS auth_identities (
+  id VARCHAR(255) PRIMARY KEY,
+  user_id VARCHAR(255) NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  provider VARCHAR(50) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  email VARCHAR(255),
+  email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (provider, subject)
 )`)
 	return err
 }
@@ -728,227 +749,12 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string, auth *AuthService) {
 	// ─── OAuth Routes ────────────────────────────────────────────
 	frontendURL := getEnvOrDefault("AUTH_FRONTEND_URL", "http://localhost:3000")
 
-	// Google OAuth
-	googleClientID := os.Getenv("GOOGLE_OAUTH_CLIENT_ID")
-	googleClientSecret := os.Getenv("GOOGLE_OAUTH_CLIENT_SECRET")
-	googleRedirectURI := getEnvOrDefault("GOOGLE_OAUTH_REDIRECT_URI", "http://localhost:18081/api/v1/auth/oauth/google/callback")
-
-	mux.Handle("/api/v1/auth/oauth/google/start", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if googleClientID == "" {
-			return httpx.BadRequest("Google OAuth is not configured (set GOOGLE_OAUTH_CLIENT_ID)", nil)
-		}
-		state, err := makeCSRFToken()
-		if err != nil {
-			return httpx.Internal("failed to generate OAuth state", err)
-		}
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name:     "oauth_state",
-			Value:    state,
-			Path:     "/",
-			HttpOnly: true,
-			SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge:   300,
-		})
-		authURL := fmt.Sprintf(
-			"https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=code&scope=openid+email+profile&state=%s",
-			googleClientID, googleRedirectURI, state,
-		)
-		stdhttp.Redirect(w, r, authURL, stdhttp.StatusTemporaryRedirect)
-		return nil
-	}))
-
-	mux.Handle("/api/v1/auth/oauth/google/callback", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		code := r.URL.Query().Get("code")
-		state := r.URL.Query().Get("state")
-		if code == "" || state == "" {
-			return httpx.BadRequest("missing code or state parameter", nil)
-		}
-		// Verify state matches cookie
-		stateCookie, err := r.Cookie("oauth_state")
-		if err != nil || stateCookie.Value != state {
-			return httpx.Forbidden("OAuth state mismatch")
-		}
-		// Clear state cookie
-		stdhttp.SetCookie(w, &stdhttp.Cookie{Name: "oauth_state", Value: "", Path: "/", MaxAge: -1})
-
-		// Exchange code for Google tokens
-		tokenResp, err := exchangeGoogleCode(code, googleClientID, googleClientSecret, googleRedirectURI)
-		if err != nil {
-			log.Printf("Google OAuth token exchange failed: %v", err)
-			return httpx.Internal("Google OAuth token exchange failed", err)
-		}
-
-		// Get user info from Google
-		userInfo, err := getGoogleUserInfo(tokenResp.AccessToken)
-		if err != nil {
-			return httpx.Internal("failed to get Google user info", err)
-		}
-
-		// Find or create user by email
-		email := userInfo.Email
-		account, exists := auth.lookupUser(email)
-		if !exists {
-			// Auto-create user from Google login
-			auth.mu.Lock()
-			newID := fmt.Sprintf("u-google-%s", hex.EncodeToString([]byte(email))[:12])
-			auth.usersByUsername[email] = user{
-				ID:       newID,
-				Username: email,
-				Password: "",
-				Role:     rolePlayer,
-			}
-			account = auth.usersByUsername[email]
-			auth.mu.Unlock()
-			if auth.db != nil {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-				_, dbErr := auth.db.ExecContext(ctx,
-					`INSERT INTO auth_users (id, username, password_hash, role, created_at)
-					 VALUES ($1, $2, '', $3, NOW())
-					 ON CONFLICT (username) DO NOTHING`,
-					newID, email, rolePlayer,
-				)
-				if dbErr != nil {
-					slog.Error("auth: failed to persist Google OAuth user", "email", email, "error", dbErr)
-				}
-			}
-			auth.audit.Event("auth.oauth.google.user_created", map[string]any{"email": email, "userId": newID})
-		}
-
-		// Create session (same as login)
-		s, response, err := newSession(account, auth.accessTTL, auth.refreshTTL)
-		if err != nil {
-			return httpx.Internal("failed to create session", err)
-		}
-		if err := auth.store.Put(s); err != nil {
-			return httpx.Internal("failed to persist session", err)
-		}
-
-		// Set auth cookies
-		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name: "access_token", Value: response.AccessToken,
-			Path: "/", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge: int(auth.accessTTL.Seconds()),
-		})
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name: "refresh_token", Value: response.RefreshToken,
-			Path: "/api/v1/auth/refresh", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge: int(auth.refreshTTL.Seconds()),
-		})
-		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
-
-		auth.audit.Event("auth.oauth.google.login", map[string]any{"email": email, "userId": account.ID})
-
-		// Redirect back to frontend
-		stdhttp.Redirect(w, r, frontendURL+"/", stdhttp.StatusTemporaryRedirect)
-		return nil
-	}))
-
-	// Apple OAuth
-	appleClientID := os.Getenv("APPLE_OAUTH_CLIENT_ID")
-	appleRedirectURI := getEnvOrDefault("APPLE_OAUTH_REDIRECT_URI", "http://localhost:18081/api/v1/auth/oauth/apple/callback")
-
-	mux.Handle("/api/v1/auth/oauth/apple/start", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		if appleClientID == "" {
-			return httpx.BadRequest("Apple OAuth is not configured (set APPLE_OAUTH_CLIENT_ID)", nil)
-		}
-		state, err := makeCSRFToken()
-		if err != nil {
-			return httpx.Internal("failed to generate OAuth state", err)
-		}
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name:     "oauth_state",
-			Value:    state,
-			Path:     "/",
-			HttpOnly: true,
-			SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge:   300,
-		})
-		authURL := fmt.Sprintf(
-			"https://appleid.apple.com/auth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=name+email&response_mode=form_post&state=%s",
-			appleClientID, appleRedirectURI, state,
-		)
-		stdhttp.Redirect(w, r, authURL, stdhttp.StatusTemporaryRedirect)
-		return nil
-	}))
-
-	mux.Handle("/api/v1/auth/oauth/apple/callback", httpx.Handle(func(w stdhttp.ResponseWriter, r *stdhttp.Request) error {
-		// Apple sends callback as POST with form data
-		if err := r.ParseForm(); err != nil {
-			return httpx.BadRequest("invalid form data", nil)
-		}
-		code := r.FormValue("code")
-		state := r.FormValue("state")
-		if code == "" || state == "" {
-			return httpx.BadRequest("missing code or state", nil)
-		}
-		stateCookie, err := r.Cookie("oauth_state")
-		if err != nil || stateCookie.Value != state {
-			return httpx.Forbidden("OAuth state mismatch")
-		}
-		stdhttp.SetCookie(w, &stdhttp.Cookie{Name: "oauth_state", Value: "", Path: "/", MaxAge: -1})
-
-		// Apple user info comes in the initial POST as JSON in the "user" form field
-		email := r.FormValue("email")
-		if email == "" {
-			// For returning users, Apple doesn't send email again — use a placeholder
-			email = fmt.Sprintf("apple-%s@oauth.local", state[:8])
-		}
-
-		account, exists := auth.lookupUser(email)
-		if !exists {
-			auth.mu.Lock()
-			newID := fmt.Sprintf("u-apple-%s", hex.EncodeToString([]byte(email))[:12])
-			auth.usersByUsername[email] = user{
-				ID:       newID,
-				Username: email,
-				Password: "",
-				Role:     rolePlayer,
-			}
-			account = auth.usersByUsername[email]
-			auth.mu.Unlock()
-			if auth.db != nil {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
-				_, dbErr := auth.db.ExecContext(ctx,
-					`INSERT INTO auth_users (id, username, password_hash, role, created_at)
-					 VALUES ($1, $2, '', $3, NOW())
-					 ON CONFLICT (username) DO NOTHING`,
-					newID, email, rolePlayer,
-				)
-				if dbErr != nil {
-					slog.Error("auth: failed to persist Apple OAuth user", "email", email, "error", dbErr)
-				}
-			}
-			auth.audit.Event("auth.oauth.apple.user_created", map[string]any{"email": email, "userId": newID})
-		}
-
-		s, response, err := newSession(account, auth.accessTTL, auth.refreshTTL)
-		if err != nil {
-			return httpx.Internal("failed to create session", err)
-		}
-		if err := auth.store.Put(s); err != nil {
-			return httpx.Internal("failed to persist session", err)
-		}
-
-		secure := os.Getenv("AUTH_COOKIE_SECURE") != "false"
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name: "access_token", Value: response.AccessToken,
-			Path: "/", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge: int(auth.accessTTL.Seconds()),
-		})
-		stdhttp.SetCookie(w, &stdhttp.Cookie{
-			Name: "refresh_token", Value: response.RefreshToken,
-			Path: "/api/v1/auth/refresh", HttpOnly: true, Secure: secure, SameSite: stdhttp.SameSiteLaxMode,
-			MaxAge: int(auth.refreshTTL.Seconds()),
-		})
-		setCSRFCookie(w, secure, int(auth.accessTTL.Seconds()))
-
-		auth.audit.Event("auth.oauth.apple.login", map[string]any{"email": email, "userId": account.ID})
-		stdhttp.Redirect(w, r, frontendURL+"/", stdhttp.StatusTemporaryRedirect)
-		return nil
-	}))
+	// Social OAuth: Google, Facebook, Discord, X (Twitter), TikTok, Reddit.
+	// Generic /start + /callback per provider (see oauth.go). Identity is keyed
+	// by (provider, subject); auto account-linking happens only on a
+	// provider-VERIFIED matching email. This service never provisions wallets or
+	// crypto addresses — those are gateway-owned (lazy + fail-closed).
+	registerSocialOAuthRoutes(mux, auth, frontendURL)
 }
 
 func (a *AuthService) Login(username string, password string) (tokenResponse, error) {
@@ -1049,6 +855,13 @@ func (a *AuthService) Register(username, password, _ string) (user, error) {
 	password = strings.TrimSpace(password)
 	if username == "" {
 		return user{}, httpx.BadRequest("username is required", nil)
+	}
+	// Reserve the ':' namespace used by isolated social accounts
+	// (oauthSyntheticUsername = "<provider>:<subject>"). Without this, a user
+	// could pre-register "twitter:<victimId>" and a later social login for that
+	// subject would adopt the attacker's account.
+	if strings.Contains(username, ":") {
+		return user{}, httpx.BadRequest("username may not contain ':'", nil)
 	}
 	if err := validatePasswordStrength(password); err != nil {
 		return user{}, err
@@ -1393,69 +1206,6 @@ func (l *structuredAuditLogger) Event(name string, fields map[string]any) {
 		return
 	}
 	l.logger.Printf("event=%s fields=%s", name, string(payload))
-}
-
-// ─── Google OAuth Helpers ─────────────────────────────────────
-
-type googleTokenResponse struct {
-	AccessToken string `json:"access_token"`
-	IDToken     string `json:"id_token"`
-	TokenType   string `json:"token_type"`
-	ExpiresIn   int    `json:"expires_in"`
-}
-
-type googleUserInfo struct {
-	Email         string `json:"email"`
-	Name          string `json:"name"`
-	Picture       string `json:"picture"`
-	EmailVerified bool   `json:"email_verified"`
-}
-
-func exchangeGoogleCode(code, clientID, clientSecret, redirectURI string) (*googleTokenResponse, error) {
-	data := fmt.Sprintf(
-		"code=%s&client_id=%s&client_secret=%s&redirect_uri=%s&grant_type=authorization_code",
-		code, clientID, clientSecret, redirectURI,
-	)
-	resp, err := stdhttp.Post(
-		"https://oauth2.googleapis.com/token",
-		"application/x-www-form-urlencoded",
-		strings.NewReader(data),
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	var tokenResp googleTokenResponse
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
-		return nil, err
-	}
-	if tokenResp.AccessToken == "" {
-		return nil, fmt.Errorf("empty access_token from Google")
-	}
-	return &tokenResp, nil
-}
-
-func getGoogleUserInfo(accessToken string) (*googleUserInfo, error) {
-	req, err := stdhttp.NewRequest(stdhttp.MethodGet, "https://www.googleapis.com/oauth2/v2/userinfo", nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	resp, err := (&stdhttp.Client{Timeout: 5 * time.Second}).Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	var info googleUserInfo
-	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
-		return nil, err
-	}
-	if info.Email == "" {
-		return nil, fmt.Errorf("no email in Google user info")
-	}
-	return &info, nil
 }
 
 func extractIP(r *stdhttp.Request) string {

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
+import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -127,13 +128,8 @@ export default function LoginPage() {
           <span>or continue with</span>
         </div>
 
-        <div className="la-oauth">
-          <a className="la-oauth-btn" href="/api/v1/auth/oauth/google/start">
-            Google
-          </a>
-          <a className="la-oauth-btn" href="/api/v1/auth/oauth/apple/start">
-            Apple
-          </a>
+        <div className="la-social">
+          <SocialAuthButtons />
         </div>
 
         <footer className="la-foot">
@@ -308,26 +304,8 @@ function Styles() {
         color: var(--t3);
       }
 
-      .la-oauth {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
+      .la-social {
         margin-bottom: 20px;
-      }
-      .la-oauth-btn {
-        padding: 11px 14px;
-        background: var(--surface-2);
-        border: 1px solid var(--border-1);
-        border-radius: var(--r-rh-md);
-        color: var(--t1);
-        font-size: 13px;
-        font-weight: 600;
-        text-align: center;
-        text-decoration: none;
-        transition: border-color 150ms ease;
-      }
-      .la-oauth-btn:hover {
-        border-color: var(--border-2);
       }
 
       .la-foot {
