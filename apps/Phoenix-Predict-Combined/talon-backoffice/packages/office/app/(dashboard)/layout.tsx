@@ -7,10 +7,12 @@ import { usePathname } from "next/navigation";
 //
 // /users is wired: admin/punters (GW-1) returns prediction-native punter
 // identity + financials (wallet balance, portfolio P&L, positions,
-// accuracy), so the list + detail render real data.
+// accuracy), so the list + detail render real data. /access-control (RBAC)
+// and /audit-logs (merged provider-ops + DB audit stream, incl. RBAC events)
+// are also wired.
 //
 // Still hidden pending verification of their predict-native backends:
-// /content, /campaigns, /loyalty, /leaderboards, /audit-logs, /reports,
+// /content, /campaigns, /loyalty, /leaderboards, /reports,
 // /risk-management. Their UI shells were carried from the sportsbook fork;
 // re-add each here once confirmed it loads without "Failed to load X". The
 // pages still exist under app/(dashboard)/<name>/page.tsx for direct URL
@@ -34,6 +36,7 @@ const navItems = [
     label: "Disputes",
     icon: "shield-alert",
   },
+  { href: "/audit-logs", label: "Audit Logs", icon: "scroll-text" },
 ];
 
 /* Lucide icon SVG paths — inlined to avoid a runtime dependency in the office package */

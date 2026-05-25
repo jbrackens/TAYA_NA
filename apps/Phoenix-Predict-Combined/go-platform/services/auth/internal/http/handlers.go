@@ -813,7 +813,15 @@ func (a *AuthService) Login(username string, password string) (tokenResponse, er
 
 func (a *AuthService) ChangePassword(username string, currentPassword string, newPassword string) error {
 	account, exists := a.lookupUser(username)
-	if !exists || !a.verifyPassword(account, currentPassword) {
+	authenticated := exists && a.verifyPassword(account, currentPassword)
+	isStaff := false
+	if !authenticated {
+		// Back-office staff (admin_users) self-service, mirroring the Login fallback.
+		if staff, ok := a.lookupAdminUser(username); ok && a.verifyPassword(staff, currentPassword) {
+			account, authenticated, isStaff = staff, true, true
+		}
+	}
+	if !authenticated {
 		a.audit.Event("auth.password_change.failed", map[string]any{"username": username, "reason": "invalid_credentials"})
 		return httpx.Unauthorized("current password is incorrect")
 	}
@@ -832,20 +840,26 @@ func (a *AuthService) ChangePassword(username string, currentPassword string, ne
 	if a.db != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), userDBTimeout)
 		defer cancel()
-		if _, err := a.db.ExecContext(ctx, `
-UPDATE auth_users
-SET password_hash = $1, updated_at = NOW()
-WHERE username = $2`, string(hash), username); err != nil {
+		// Staff credentials live in admin_users; regular accounts in auth_users.
+		query := `UPDATE auth_users SET password_hash = $1, updated_at = NOW() WHERE username = $2`
+		if isStaff {
+			query = `UPDATE admin_users SET password_hash = $1, updated_at = now() WHERE lower(email) = lower($2)`
+		}
+		if _, err := a.db.ExecContext(ctx, query, string(hash), username); err != nil {
 			return httpx.Internal("failed to update password", err)
 		}
 	}
 
-	a.mu.Lock()
-	updated := account
-	updated.Password = ""
-	updated.PasswordHash = string(hash)
-	a.usersByUsername[username] = updated
-	a.mu.Unlock()
+	// Staff accounts aren't in the in-memory auth_users map; only refresh it for
+	// regular accounts.
+	if !isStaff {
+		a.mu.Lock()
+		updated := account
+		updated.Password = ""
+		updated.PasswordHash = string(hash)
+		a.usersByUsername[username] = updated
+		a.mu.Unlock()
+	}
 
 	a.audit.Event("auth.password_change.success", map[string]any{"username": username, "userId": account.ID})
 	return nil
