@@ -143,12 +143,10 @@ describe("MarketCard: style hoisted outside Link", () => {
 //
 // Replaces the Phase-4 / Robinhood-P3 era assertions. P8 (light theme,
 // landed 2026-04-28; layout remodeled 2026-05-24) composes MarketCard
-// from: corner image + title, a probability bar with overlaid % segments,
+// from: corner image + title, a probability label row above a slim bar,
 // YES/NO pills as siblings of the body link, then a Volume / Closes stat
-// footer below the pills. The probability bar uses leading-side modifier
-// classes (mkt-bar-yes-leads / mkt-bar-no-leads) to align the overlaid %
-// per side and a 36px min-segment width so labels never fall outside the
-// colored segment.
+// footer below the pills. The percentage labels are outside the colored
+// segments so the bar can stay visually compact and true to the split.
 
 describe("MarketCard P8 composition", () => {
   const marketCardSource = read("components/prediction/MarketCard.tsx");
@@ -160,21 +158,50 @@ describe("MarketCard P8 composition", () => {
     );
   });
 
-  it("emits leading-side modifier classes for label alignment", () => {
+  it("renders percentage labels above the probability bar", () => {
     assert.ok(
-      marketCardSource.includes("mkt-bar-yes-leads"),
-      "MarketCard should toggle .mkt-bar-yes-leads when YES is the leading side",
+      marketCardSource.includes("mkt-bar-labels"),
+      "MarketCard should render a separate label row above the probability bar",
     );
     assert.ok(
-      marketCardSource.includes("mkt-bar-no-leads"),
-      "MarketCard should toggle .mkt-bar-no-leads when NO is the leading side",
+      marketCardSource.includes("mkt-bar-pct-yes") &&
+        marketCardSource.includes("mkt-bar-pct-no"),
+      "MarketCard should expose YES and NO percentage labels outside the bar segments",
     );
   });
 
-  it("enforces a min-segment width so % labels stay inside the bar", () => {
+  it("keeps the probability bar slim and true to percentages", () => {
     assert.ok(
-      /MIN_SEGMENT_PX\s*=\s*\d+/.test(marketCardSource),
-      "MarketCard should declare a MIN_SEGMENT_PX constant (probability-bar safety)",
+      /\.mkt-bar\s*\{[\s\S]*?height:\s*14px/.test(marketCardSource),
+      "MarketCard probability bar should be half-height",
+    );
+    assert.ok(
+      !/MIN_SEGMENT_PX\s*=/.test(marketCardSource),
+      "MarketCard should not inflate tiny bar segments just to fit labels",
+    );
+    assert.ok(
+      /style=\{\{\s*width:\s*`\$\{yesPriceCents\}%`\s*\}\}/.test(marketCardSource) &&
+        /style=\{\{\s*width:\s*`\$\{noPriceCents\}%`\s*\}\}/.test(marketCardSource),
+      "MarketCard bar segments should use the actual YES/NO percentages",
+    );
+  });
+
+  it("keeps YES/NO action pills slimmer without losing tap size", () => {
+    const pillBlock = /\.mkt-pill\s*\{[\s\S]*?\}/.exec(marketCardSource);
+    assert.ok(pillBlock, "MarketCard should style YES/NO pills");
+    assert.ok(
+      pillBlock![0].includes("min-height: 38px"),
+      "YES/NO pills should be slimmer by default",
+    );
+    assert.ok(
+      pillBlock![0].includes("padding: 6px 12px"),
+      "YES/NO pills should use slimmer vertical padding",
+    );
+    assert.ok(
+      /@media\s*\(max-width:\s*768px\)[\s\S]*?\.mkt-pill\s*\{[\s\S]*?min-height:\s*40px/.test(
+        marketCardSource,
+      ),
+      "YES/NO pills should keep a mobile-friendly tap size on small screens",
     );
   });
 

@@ -20,10 +20,8 @@
  * date) drop to a quiet footer below the pills so the card reads
  * title → probability → trade affordance without metadata competing.
  *
- * Min-segment-width rule (DESIGN.md §6, from 2026-04-28 amendment): when a
- * side is ≤5% the corresponding bar segment is boosted to MIN_SEGMENT_PX so
- * its % label stays readable inside the segment; the dominant segment
- * shrinks to absorb the difference.
+ * Percentage labels sit above the bar so the bar itself can stay slim and
+ * true to the actual YES/NO split.
  */
 
 import Link from "next/link";
@@ -43,18 +41,6 @@ interface MarketCardProps {
   categoryLabel?: string;
   imagePath?: string;
 }
-
-// Minimum width for an extreme bar segment. Wide enough to fit the
-// percentage label inside ("5%" or "1%") in IBM Plex Mono 12px with a
-// little padding. Below this width the label gets clipped, so we boost
-// any sub-threshold segment up to MIN_SEGMENT_PX and the dominant
-// segment shrinks correspondingly. The visual misrepresentation
-// (rendering 4% as ~9% of the bar width on a 400px card) is the price
-// for keeping the % readable INSIDE the segment, which is what users
-// expect — pulling it outside creates inconsistency between extreme
-// and non-extreme cards.
-const MIN_SEGMENT_PX = 36;
-const SMALL_THRESHOLD_PCT = 5;
 
 function formatCloseAt(iso: string): string {
   const d = new Date(iso);
@@ -76,10 +62,6 @@ export function MarketCard({
   imagePath,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
-  const yesLeads = yesPriceCents >= noPriceCents;
-
-  const yesIsExtreme = yesPriceCents <= SMALL_THRESHOLD_PCT;
-  const noIsExtreme = noPriceCents <= SMALL_THRESHOLD_PCT;
 
   const image = getMarketImageProps({ ticker, imagePath, categoryLabel });
 
@@ -121,45 +103,32 @@ export function MarketCard({
             )}
           </div>
 
-          {/* Bar segments always carry their % label inside. When a side is
-           * at an extreme (≤5%) its segment is boosted to MIN_SEGMENT_PX
-           * (36px) so the label stays readable; the dominant segment
-           * shrinks correspondingly. Bar segment alignment follows
-           * DESIGN.md §6: YES-leading → both labels meet at the boundary;
-           * NO-leading → NO% pushes to the far right of its big segment,
-           * trailing YES% to the far left of its small segment. */}
-          <div
-            className={`mkt-bar mkt-bar-${yesLeads ? "yes-leads" : "no-leads"}`}
-            role="img"
-            aria-label={t("MARKET_BAR_LABEL", {
-              yes: yesPriceCents,
-              no: noPriceCents,
-            })}
-          >
-            <span
-              className="mkt-bar-yes"
-              style={
-                yesIsExtreme
-                  ? { width: `${MIN_SEGMENT_PX}px` }
-                  : noIsExtreme
-                    ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
-                    : { width: `${yesPriceCents}%` }
-              }
+          <div className="mkt-prob">
+            <div className="mkt-bar-labels" aria-hidden="true">
+              <span className="mkt-bar-pct mkt-bar-pct-yes">
+                {yesPriceCents}%
+              </span>
+              <span className="mkt-bar-pct mkt-bar-pct-no">
+                {noPriceCents}%
+              </span>
+            </div>
+            <div
+              className="mkt-bar"
+              role="img"
+              aria-label={t("MARKET_BAR_LABEL", {
+                yes: yesPriceCents,
+                no: noPriceCents,
+              })}
             >
-              <span className="mkt-bar-pct">{yesPriceCents}%</span>
-            </span>
-            <span
-              className="mkt-bar-no"
-              style={
-                noIsExtreme
-                  ? { width: `${MIN_SEGMENT_PX}px` }
-                  : yesIsExtreme
-                    ? { width: `calc(100% - ${MIN_SEGMENT_PX}px)` }
-                    : { width: `${noPriceCents}%` }
-              }
-            >
-              <span className="mkt-bar-pct">{noPriceCents}%</span>
-            </span>
+              <span
+                className="mkt-bar-yes"
+                style={{ width: `${yesPriceCents}%` }}
+              />
+              <span
+                className="mkt-bar-no"
+                style={{ width: `${noPriceCents}%` }}
+              />
+            </div>
           </div>
         </Link>
 
@@ -310,9 +279,30 @@ function MarketCardStyles() {
         font-size: 13px;
       }
 
+      .mkt-prob {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .mkt-bar-labels {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        line-height: 1;
+      }
+      .mkt-bar-pct {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.01em;
+      }
+      .mkt-bar-pct-yes { color: var(--yes-text); }
+      .mkt-bar-pct-no  { color: var(--no-text); }
+
       .mkt-bar {
         display: flex;
-        height: 28px;
+        height: 14px;
         border-radius: 6px;
         overflow: hidden;
         background: var(--surface-2);
@@ -323,32 +313,9 @@ function MarketCardStyles() {
         align-items: center;
         transition: width 200ms ease;
         min-width: 0;
-        padding: 0 10px;
       }
       .mkt-bar-yes { background: var(--yes-bar); }
       .mkt-bar-no  { background: var(--no-bar); }
-      /* When YES leads (left segment is the larger one), push YES% to its
-       * inner edge (right side, toward boundary) and pull NO% to its inner
-       * edge too (left side, toward boundary). Both labels meet at the
-       * boundary, balanced. */
-      .mkt-bar-yes-leads .mkt-bar-yes { justify-content: flex-end; }
-      .mkt-bar-yes-leads .mkt-bar-no  { justify-content: flex-start; }
-      /* When NO leads (right segment is the larger one), push NO% to the
-       * outer edge of its big segment (far right) and pull the trailing
-       * YES% to the outer edge of its small segment (far left). Opens
-       * breathing room between the two labels instead of crowding them at
-       * the boundary. */
-      .mkt-bar-no-leads .mkt-bar-no  { justify-content: flex-end; }
-      .mkt-bar-no-leads .mkt-bar-yes { justify-content: flex-start; }
-      .mkt-bar-pct {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 12px;
-        font-weight: 700;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.01em;
-      }
-      .mkt-bar-yes .mkt-bar-pct { color: #1A4830; }
-      .mkt-bar-no  .mkt-bar-pct { color: #5C2516; }
 
       .mkt-pills {
         display: flex;
@@ -357,10 +324,11 @@ function MarketCardStyles() {
       .mkt-pill {
         flex: 1 1 0;
         display: inline-flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
         gap: 8px;
-        padding: 10px 14px;
+        min-height: 38px;
+        padding: 6px 12px;
         background: var(--surface-2);
         border: 1px solid var(--border-1);
         border-radius: 999px;
@@ -395,6 +363,12 @@ function MarketCardStyles() {
       .mkt-pill-no .mkt-pill-label,
       .mkt-pill-no .mkt-pill-price {
         color: var(--no-text);
+      }
+      @media (max-width: 768px) {
+        .mkt-pill {
+          min-height: 40px;
+          padding: 7px 12px;
+        }
       }
     `}</style>
   );
