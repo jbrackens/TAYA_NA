@@ -257,7 +257,7 @@ export default function MarketChart({
         .mc-switcher button:hover { color: var(--t1); }
         .mc-switcher button.is-active {
           color: #061a10;
-          background: var(--accent);
+          background: var(--yes);
         }
         .mc-svg {
           width: 100%;

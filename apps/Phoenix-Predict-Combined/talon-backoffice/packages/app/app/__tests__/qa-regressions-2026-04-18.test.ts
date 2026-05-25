@@ -295,3 +295,36 @@ describe("Navigation pill radius", () => {
     );
   });
 });
+
+describe("Navigation pill active colors", () => {
+  const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
+  const topBarSource = read("components/prediction/TopBar.tsx");
+  const marketChartSource = read("components/prediction/MarketChart.tsx");
+  const globalsSource = read("globals.css");
+
+  it("uses seafoam for category and segmented active fills", () => {
+    for (const [label, source, selector] of [
+      ["category active", allMarketsSource, ".ams-cat-pill.is-active"],
+      ["closing-window active", allMarketsSource, ".ams-time-pill.is-active"],
+      ["chart range active", marketChartSource, ".mc-switcher button.is-active"],
+      ["top navigation active", topBarSource, ".tb-link.is-active"],
+    ] as const) {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const block = new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\}`).exec(source);
+      assert.ok(block, `${label} should have a style block`);
+      assert.ok(block![0].includes("background: var(--yes)"), `${label} should use seafoam`);
+      assert.ok(!block![0].includes("background: var(--accent)"), `${label} should not use bright brand green`);
+    }
+  });
+
+  it("uses seafoam tokens for legacy active category pills", () => {
+    const sportActiveBlock = /\.sport-pill\.active\s*\{[\s\S]*?\}/.exec(globalsSource);
+    assert.ok(sportActiveBlock, "Legacy active category pills should have a style block");
+    assert.ok(
+      sportActiveBlock![0].includes("background: var(--yes-soft)") &&
+        sportActiveBlock![0].includes("border-color: var(--yes-border)") &&
+        sportActiveBlock![0].includes("color: var(--yes-text)"),
+      "Legacy active category pills should use seafoam tokens",
+    );
+  });
+});

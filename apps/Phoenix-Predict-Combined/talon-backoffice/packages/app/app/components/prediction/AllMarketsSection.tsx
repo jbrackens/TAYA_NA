@@ -166,7 +166,7 @@ export function AllMarketsSection({ categories }: Props) {
           box-shadow: 0 0 0 2px var(--accent-soft);
         }
         .ams-cat-pill.is-active {
-          background: var(--accent);
+          background: var(--yes);
           color: #061a10;
           font-weight: 600;
         }
@@ -196,7 +196,7 @@ export function AllMarketsSection({ categories }: Props) {
         }
         .ams-time-pill:hover { color: var(--t1); }
         .ams-time-pill.is-active {
-          background: var(--accent);
+          background: var(--yes);
           color: #061a10;
         }
 

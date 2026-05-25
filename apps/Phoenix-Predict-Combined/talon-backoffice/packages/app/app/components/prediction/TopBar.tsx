@@ -290,7 +290,7 @@ export function TopBar() {
         .tb-link:hover { color: var(--t1); background: var(--surface-2); }
         .tb-link.is-active {
           color: #061a10;
-          background: var(--accent);
+          background: var(--yes);
           font-weight: 600;
         }
 

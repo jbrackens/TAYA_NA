@@ -1398,10 +1398,10 @@ button {
   transform: translateY(-1px);
 }
 .sport-pill.active {
-  border-color: rgba(173, 255, 47, 0.28);
-  color: #adff2f;
-  background: rgba(173, 255, 47, 0.1);
-  box-shadow: 0 0 24px rgba(173, 255, 47, 0.12);
+  border-color: var(--yes-border);
+  color: var(--yes-text);
+  background: var(--yes-soft);
+  box-shadow: 0 0 24px rgba(113, 238, 184, 0.12);
 }
 .sport-pill-icon {
   font-size: 15px;
