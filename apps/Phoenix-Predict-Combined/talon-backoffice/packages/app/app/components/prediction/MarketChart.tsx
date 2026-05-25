@@ -239,7 +239,7 @@ export default function MarketChart({
           padding: 3px;
           background: var(--surface-2);
           border: 1px solid var(--border-1);
-          border-radius: var(--r-pill);
+          border-radius: 6px;
         }
         .mc-switcher button {
           background: transparent;
@@ -247,7 +247,7 @@ export default function MarketChart({
           color: var(--t3);
           padding: 6px 14px;
           min-width: 44px;
-          border-radius: var(--r-pill);
+          border-radius: 6px;
           font-family: 'Inter', sans-serif;
           font-size: 12px;
           font-weight: 600;

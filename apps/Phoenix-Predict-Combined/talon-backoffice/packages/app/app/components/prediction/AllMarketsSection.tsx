@@ -149,7 +149,7 @@ export function AllMarketsSection({ categories }: Props) {
           background: rgba(255, 255, 255, 0.05);
           color: var(--t2);
           border: 0;
-          border-radius: var(--r-pill);
+          border-radius: 6px;
           padding: 9px 18px;
           font-family: inherit;
           font-size: 13px;
@@ -176,7 +176,7 @@ export function AllMarketsSection({ categories }: Props) {
           gap: 4px;
           background: rgba(255, 255, 255, 0.04);
           border: 1px solid var(--border-1);
-          border-radius: var(--r-pill);
+          border-radius: 6px;
           padding: 3px;
           flex-shrink: 0;
         }
@@ -185,7 +185,7 @@ export function AllMarketsSection({ categories }: Props) {
           background: transparent;
           color: var(--t3);
           border: 0;
-          border-radius: var(--r-pill);
+          border-radius: 6px;
           padding: 6px 14px;
           min-width: 44px;
           font-family: inherit;

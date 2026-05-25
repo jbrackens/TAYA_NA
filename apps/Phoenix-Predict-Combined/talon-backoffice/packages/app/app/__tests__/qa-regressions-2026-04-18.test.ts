@@ -220,3 +220,51 @@ describe("MarketChart side colors", () => {
     );
   });
 });
+
+describe("Navigation pill radius", () => {
+  const allMarketsSource = read("components/prediction/AllMarketsSection.tsx");
+  const topBarSource = read("components/prediction/TopBar.tsx");
+  const marketChartSource = read("components/prediction/MarketChart.tsx");
+  const globalsSource = read("globals.css");
+
+  it("uses soft rectangular corners for category filter pills", () => {
+    const categoryBlock = /\.ams-cat-pill\s*\{[\s\S]*?\}/.exec(allMarketsSource);
+    assert.ok(categoryBlock, "AllMarketsSection should style category pills");
+    assert.ok(
+      categoryBlock![0].includes("border-radius: 6px"),
+      "Category pills should use 6px corners",
+    );
+    assert.ok(
+      !categoryBlock![0].includes("var(--r-pill)") && !categoryBlock![0].includes("999px"),
+      "Category pills should not use capsule radius",
+    );
+  });
+
+  it("uses soft rectangular corners for active segmented controls", () => {
+    for (const [label, source, selector] of [
+      ["closing-window shell", allMarketsSource, ".ams-time-pills"],
+      ["closing-window button", allMarketsSource, ".ams-time-pill"],
+      ["chart range shell", marketChartSource, ".mc-switcher"],
+      ["chart range button", marketChartSource, ".mc-switcher button"],
+      ["top navigation link", topBarSource, ".tb-link"],
+    ] as const) {
+      const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const block = new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\}`).exec(source);
+      assert.ok(block, `${label} should have a style block`);
+      assert.ok(block![0].includes("border-radius: 6px"), `${label} should use 6px corners`);
+      assert.ok(
+        !block![0].includes("var(--r-pill)") && !block![0].includes("999px"),
+        `${label} should not use capsule radius`,
+      );
+    }
+  });
+
+  it("uses soft rectangular corners for legacy category navigation pills", () => {
+    const sportPillBlock = /\.sport-pill\s*\{[\s\S]*?\}/.exec(globalsSource);
+    assert.ok(sportPillBlock, "Legacy category pills should have a style block");
+    assert.ok(
+      sportPillBlock![0].includes("border-radius: 6px"),
+      "Legacy category pills should use 6px corners",
+    );
+  });
+});

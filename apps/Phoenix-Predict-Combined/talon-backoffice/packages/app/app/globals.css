@@ -1382,7 +1382,7 @@ button {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 700;
   border: 1px solid rgba(42, 49, 80, 0.9);

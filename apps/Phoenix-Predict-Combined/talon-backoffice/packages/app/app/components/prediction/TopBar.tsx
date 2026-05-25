@@ -279,7 +279,7 @@ export function TopBar() {
           align-items: center;
           min-height: 44px;
           padding: 0 14px;
-          border-radius: var(--r-pill);
+          border-radius: 6px;
           font-size: 15px;
           font-weight: 500;
           color: var(--t2);
