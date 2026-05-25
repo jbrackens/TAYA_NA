@@ -1,0 +1,15 @@
+{
+  "id": "relayer_trade_test_001",
+  "status": "queued",
+  "settlementChain": "polygon",
+  "userId": "user_maria_001",
+  "smartWalletAddress": "0x1111111111111111111111111111111111111111",
+  "targetContract": "0x4444444444444444444444444444444444444444",
+  "calldataSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "userAuthorizationHash": "0x5555555555555555555555555555555555555555555555555555555555555555",
+  "userAuthorizationNonce": "trade:user_maria_001:000002",
+  "userAuthorizationExpiresAt": "2026-05-25T00:45:00.000Z",
+  "idempotencyKey": "relayer:polygon:0x1111111111111111111111111111111111111111:0x4444444444444444444444444444444444444444:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc:0x5555555555555555555555555555555555555555555555555555555555555555",
+  "createdAt": "2026-05-25T00:30:00.000Z",
+  "updatedAt": "2026-05-25T00:30:00.000Z"
+}

@@ -1,0 +1,474 @@
+openapi: 3.1.0
+info:
+  title: Hula Na Cashier API
+  version: 0.0.0
+  description: Provider-independent non-custodial cashier contract.
+paths:
+  /v1/cashier/wallet:
+    get:
+      summary: Resolve the current user's non-custodial wallet.
+      security:
+        - UserBearerAuth: []
+      responses:
+        "200":
+          description: Wallet resolved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CashierWallet"
+  /v1/cashier/deposit-intents:
+    post:
+      summary: Create or return an idempotent deposit intent.
+      security:
+        - UserBearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepositIntentRequest"
+      responses:
+        "201":
+          description: Deposit intent created or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepositIntent"
+  /v1/cashier/deposit-intents/{id}:
+    get:
+      summary: Read a user-safe deposit intent status.
+      security:
+        - UserBearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deposit intent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepositIntent"
+  /v1/cashier/withdrawal-intents:
+    post:
+      summary: Create a gasless EVM withdrawal intent.
+      security:
+        - UserBearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWithdrawalIntentRequest"
+      responses:
+        "201":
+          description: Withdrawal intent created or replayed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WithdrawalIntent"
+  /v1/provider-callbacks/{provider}:
+    post:
+      summary: Ingest a signed provider callback using raw-body verification.
+      security:
+        - ProviderSignature: []
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            enum: [relay, symbiosis, lifi, debridge, manual]
+        - name: X-Provider-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-Provider-Timestamp
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Callback accepted or duplicate acknowledged.
+        "401":
+          description: Invalid provider signature.
+  /v1/cashier/recovery-cases/{id}:
+    get:
+      summary: Read an operator-authorized recovery case.
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Recovery case.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+        "403":
+          description: Operator authorization required.
+  /v1/cashier/reconciliation-reports/{businessDate}:
+    get:
+      summary: Read an operator-authorized daily reconciliation report.
+      security:
+        - OperatorBearerAuth: []
+      parameters:
+        - name: businessDate
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Reconciliation report.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReconciliationReport"
+        "403":
+          description: Operator authorization required.
+components:
+  securitySchemes:
+    UserBearerAuth:
+      type: http
+      scheme: bearer
+    OperatorBearerAuth:
+      type: http
+      scheme: bearer
+    ProviderSignature:
+      type: apiKey
+      in: header
+      name: X-Provider-Signature
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+  schemas:
+    SettlementChain:
+      enum: [polygon, bsc, base, arbitrum]
+    AssetSymbol:
+      enum: [USDT, USDC, hUSD]
+    TokenAmount:
+      type: object
+      required: [asset, chain, decimals, units]
+      properties:
+        asset:
+          $ref: "#/components/schemas/AssetSymbol"
+        chain:
+          type: string
+        decimals:
+          type: integer
+        units:
+          type: string
+          pattern: "^(0|[1-9][0-9]*)$"
+    CashierWallet:
+      type: object
+      required:
+        - userId
+        - embeddedWalletAddress
+        - smartWalletAddress
+        - settlementChain
+        - createdAt
+      properties:
+        userId:
+          type: string
+        embeddedWalletAddress:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        smartWalletAddress:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        settlementChain:
+          $ref: "#/components/schemas/SettlementChain"
+        createdAt:
+          type: string
+          format: date-time
+    DepositIntent:
+      type: object
+      required:
+        - id
+        - userId
+        - rail
+        - status
+        - sourceChain
+        - sourceAsset
+        - sourceDecimals
+        - settlementChain
+        - settlementAsset
+        - destinationWalletAddress
+        - idempotencyKey
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        rail:
+          enum: [tron-usdt-deposit-address, evm-stablecoin-direct, manual-recovery]
+        status:
+          $ref: "#/components/schemas/DepositIntentStatus"
+        sourceChain:
+          oneOf:
+            - enum: [tron]
+            - $ref: "#/components/schemas/SettlementChain"
+        sourceAsset:
+          $ref: "#/components/schemas/AssetSymbol"
+        sourceDecimals:
+          type: integer
+        settlementChain:
+          $ref: "#/components/schemas/SettlementChain"
+        settlementAsset:
+          $ref: "#/components/schemas/AssetSymbol"
+        destinationWalletAddress:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        provider:
+          enum: [relay, symbiosis, lifi, debridge, manual]
+        providerRequestId:
+          type: string
+        depositAddress:
+          type: string
+        expectedSourceAmount:
+          $ref: "#/components/schemas/TokenAmount"
+        actualSourceAmount:
+          $ref: "#/components/schemas/TokenAmount"
+        settledAmount:
+          $ref: "#/components/schemas/TokenAmount"
+        sourceTxHash:
+          type: string
+        destinationTxHash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        recoveryReason:
+          $ref: "#/components/schemas/RecoveryReason"
+        idempotencyKey:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateDepositIntentRequest:
+      type: object
+      required: [rail, settlementChain]
+      additionalProperties: false
+      properties:
+        rail:
+          enum: [tron-usdt-deposit-address, evm-stablecoin-direct, manual-recovery]
+        settlementChain:
+          $ref: "#/components/schemas/SettlementChain"
+    DepositIntentStatus:
+      enum:
+        - created
+        - address_issued
+        - source_detected
+        - bridging
+        - settled
+        - recovery_required
+        - failed
+    RecoveryReason:
+      enum:
+        - wrong_token
+        - wrong_chain
+        - under_minimum
+        - expired_quote
+        - provider_failed
+        - ambiguous_source
+        - sanctions_review
+    WithdrawalStatus:
+      enum:
+        - created
+        - user_authorized
+        - policy_approved
+        - submitted
+        - confirmed
+        - recovery_required
+        - failed
+    WithdrawalIntent:
+      type: object
+      required:
+        - id
+        - userId
+        - status
+        - settlementChain
+        - sourceWalletAddress
+        - destinationAddress
+        - amount
+        - userAuthorizationHash
+        - userAuthorizationNonce
+        - userAuthorizationExpiresAt
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        status:
+          $ref: "#/components/schemas/WithdrawalStatus"
+        settlementChain:
+          $ref: "#/components/schemas/SettlementChain"
+        sourceWalletAddress:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        destinationAddress:
+          type: string
+        amount:
+          $ref: "#/components/schemas/TokenAmount"
+        userAuthorizationHash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        userAuthorizationNonce:
+          type: string
+        userAuthorizationExpiresAt:
+          type: string
+          format: date-time
+        relayerSubmissionId:
+          type: string
+        recoveryReason:
+          $ref: "#/components/schemas/RecoveryReason"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateWithdrawalIntentRequest:
+      type: object
+      required:
+        - destinationAddress
+        - amountUnits
+        - asset
+        - settlementChain
+        - userAuthorizationHash
+        - userAuthorizationNonce
+        - userAuthorizationExpiresAt
+      additionalProperties: false
+      properties:
+        destinationAddress:
+          type: string
+        amountUnits:
+          type: string
+          pattern: "^(0|[1-9][0-9]*)$"
+        asset:
+          $ref: "#/components/schemas/AssetSymbol"
+        settlementChain:
+          $ref: "#/components/schemas/SettlementChain"
+        userAuthorizationHash:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        userAuthorizationNonce:
+          type: string
+        userAuthorizationExpiresAt:
+          type: string
+          format: date-time
+    RecoveryCase:
+      type: object
+      required:
+        - id
+        - subjectType
+        - subjectId
+        - status
+        - recoveryReason
+        - openedAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        subjectType:
+          enum: [deposit, withdrawal, bridge_event]
+        subjectId:
+          type: string
+        status:
+          enum:
+            - triage
+            - waiting_on_provider
+            - waiting_on_user
+            - compliance_hold
+            - ready_for_release
+            - closed
+        recoveryReason:
+          $ref: "#/components/schemas/RecoveryReason"
+        userId:
+          type: string
+        assignedOperatorId:
+          type: string
+        openedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type: string
+          format: date-time
+    ReconciliationReport:
+      type: object
+      required: [id, businessDate, generatedAt, generatedBy, items]
+      properties:
+        id:
+          type: string
+        businessDate:
+          type: string
+          format: date
+        generatedAt:
+          type: string
+          format: date-time
+        generatedBy:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReconciliationItem"
+    ReconciliationItem:
+      type: object
+      required:
+        - id
+        - subjectType
+        - subjectId
+        - expectedUnits
+        - observedUnits
+        - asset
+        - chain
+        - status
+      properties:
+        id:
+          type: string
+        subjectType:
+          enum: [deposit, withdrawal, relayer_submission]
+        subjectId:
+          type: string
+        expectedUnits:
+          type: string
+          pattern: "^(0|[1-9][0-9]*)$"
+        observedUnits:
+          type: string
+          pattern: "^(0|[1-9][0-9]*)$"
+        asset:
+          $ref: "#/components/schemas/AssetSymbol"
+        chain:
+          type: string
+        status:
+          enum: [matched, missing_provider, missing_chain, amount_mismatch, quarantined]
+        notes:
+          type: string

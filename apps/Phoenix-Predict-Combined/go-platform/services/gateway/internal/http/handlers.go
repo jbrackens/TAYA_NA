@@ -222,6 +222,22 @@ func RegisterRoutes(mux *stdhttp.ServeMux, service string) {
 	payments.DepositComplianceChecker = rgService
 	payments.RegisterPaymentRoutes(mux, paymentService)
 
+	// --- Cashier crypto rail (BSC USDT deposit/withdraw) ---
+	// Fail-closed: hands out no deposit address and broadcasts no withdrawal until
+	// CRYPTO_RPC_URL / CRYPTO_ASSET_CONTRACT / CRYPTO_DEPOSIT_ADDRESS_SOURCE are
+	// set. Schema (deposit addresses, crypto_deposits, watcher cursor) is
+	// self-managed; the deposit watcher only starts when the rail is configured.
+	if cryptoDB := walletService.DB(); cryptoDB != nil {
+		if err := payments.EnsureCryptoSchema(cryptoDB); err != nil {
+			slog.Warn("cashier: crypto schema init failed", "error", err)
+		} else {
+			rail := payments.NewCryptoRailFromEnv(cryptoDB)
+			payments.RegisterCryptoRoutes(mux, rail)
+			payments.StartDepositWatcher(context.Background(), payments.WatcherDeps{DB: cryptoDB, Ledger: walletService})
+			slog.Info("cashier: crypto rail mounted", "configured", rail.Configured(), "network", rail.Network(), "asset", rail.Asset())
+		}
+	}
+
 	// --- Loyalty / Rewards ---
 	// Prefer the Predict-native Postgres-backed service when a DB is wired.
 	// Fall back to the legacy sportsbook in-memory service otherwise (tests +

@@ -1,0 +1,20 @@
+{
+  "id": "evt_test_002",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_001",
+  "depositIntentId": "dep_test_001",
+  "status": "destination_confirmed",
+  "idempotencyKey": "deposit:relay:polygon:0x2222222222222222222222222222222222222222222222222222222222222222:0",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_001",
+  "destinationChain": "polygon",
+  "destinationTxHash": "0x2222222222222222222222222222222222222222222222222222222222222222",
+  "destinationWalletAddress": "0x1111111111111111111111111111111111111111",
+  "amount": {
+    "asset": "hUSD",
+    "chain": "settlement",
+    "decimals": 6,
+    "units": "24900000"
+  },
+  "observedAt": "2026-05-25T00:08:00.000Z"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "evt_test_006",
+  "provider": "relay",
+  "providerRequestId": "relay_req_unknown",
+  "status": "quarantined",
+  "idempotencyKey": "deposit:relay:unknown:relay_req_unknown:callback",
+  "recoveryReason": "ambiguous_source",
+  "observedAt": "2026-05-25T00:06:00.000Z"
+}

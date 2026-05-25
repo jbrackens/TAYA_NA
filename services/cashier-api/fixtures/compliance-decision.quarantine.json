@@ -1,0 +1,9 @@
+{
+  "id": "comp_test_001",
+  "subjectType": "deposit",
+  "subjectId": "dep_test_001",
+  "decision": "quarantine",
+  "reasons": ["destination_wallet_mismatch", "operator_review_required"],
+  "decidedAt": "2026-05-25T00:09:30.000Z",
+  "decidedBy": "system"
+}

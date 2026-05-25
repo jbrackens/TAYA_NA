@@ -50,6 +50,21 @@ export {
   type GetTransactionsPaginatedResponse,
 } from "./wallet-client";
 
+// Non-custodial cashier client
+export {
+  getCashierWallet,
+  createCashierDepositIntent,
+  getCashierDepositIntent,
+  createCashierWithdrawalIntent,
+  type CashierDepositIntent,
+  type CashierDepositStatus,
+  type CashierSettlementChain,
+  type CashierWallet,
+  type CashierWithdrawalIntent,
+  type CreateCashierDepositIntentRequest,
+  type CreateCashierWithdrawalIntentRequest,
+} from "./noncustodial-cashier-client";
+
 // User client
 export {
   getProfile,

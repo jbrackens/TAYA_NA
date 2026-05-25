@@ -16,6 +16,9 @@ import { setCurrentBalance } from "../lib/store/cashierSlice";
 import { useToast } from "../components/ToastProvider";
 import { useAuth } from "../hooks/useAuth";
 import DepositThresholdModal from "../components/DepositThresholdModal";
+import CryptoDepositCard from "../components/CryptoDepositCard";
+import NonCustodialCashierStatus from "../components/NonCustodialCashierStatus";
+import CashierCanaryPanel from "../components/CashierCanaryPanel";
 
 const QUICK_AMOUNTS = ["10", "25", "50", "100", "250", "500"];
 const PAYMENT_METHODS = [
@@ -47,6 +50,11 @@ export default function CashierPage() {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { user } = useAuth();
+  const isCryptoDeposit =
+    activeTab === "deposit" && selectedPayment === "crypto";
+  const isCryptoWithdrawal =
+    activeTab === "withdrawal" && selectedPayment === "crypto";
+  const isCryptoRail = isCryptoDeposit || isCryptoWithdrawal;
 
   // Load balance on mount — guard against empty userId (before auth resolves).
   // Without the guard, `${userId}` expands to "" and produces malformed URLs
@@ -244,6 +252,10 @@ export default function CashierPage() {
   ]);
 
   const handleSubmit = useCallback(async () => {
+    if (isCryptoRail) {
+      return;
+    }
+
     const numAmount = parseFloat(amount);
     if (!numAmount || numAmount <= 0) {
       setError("Please enter a valid amount");
@@ -331,6 +343,7 @@ export default function CashierPage() {
     amount,
     activeTab,
     selectedPayment,
+    isCryptoRail,
     dispatch,
     toast,
     user,
@@ -392,35 +405,36 @@ export default function CashierPage() {
               </button>
             </div>
 
-            {/* Quick amounts */}
-            <div className="cashier-section">
-              <label className="cashier-label">Amount</label>
-              <div className="cashier-quick-amounts">
-                {QUICK_AMOUNTS.map((val) => (
-                  <button
-                    key={val}
-                    className={`cashier-quick-btn ${
-                      selectedQuick === val ? "active" : ""
-                    }`}
-                    onClick={() => handleQuickAmount(val)}
-                  >
-                    ${val}
-                  </button>
-                ))}
+            {!isCryptoRail && (
+              <div className="cashier-section">
+                <label className="cashier-label">Amount</label>
+                <div className="cashier-quick-amounts">
+                  {QUICK_AMOUNTS.map((val) => (
+                    <button
+                      key={val}
+                      className={`cashier-quick-btn ${
+                        selectedQuick === val ? "active" : ""
+                      }`}
+                      onClick={() => handleQuickAmount(val)}
+                    >
+                      ${val}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="number"
+                  className="cashier-input"
+                  placeholder="Or enter custom amount"
+                  value={amount}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    setSelectedQuick("");
+                  }}
+                  min="1"
+                  step="0.01"
+                />
               </div>
-              <input
-                type="number"
-                className="cashier-input"
-                placeholder="Or enter custom amount"
-                value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
-                  setSelectedQuick("");
-                }}
-                min="1"
-                step="0.01"
-              />
-            </div>
+            )}
 
             {/* Payment methods */}
             <div className="cashier-section">
@@ -446,6 +460,16 @@ export default function CashierPage() {
               </div>
             </div>
 
+            {/* Crypto deposit: show the non-custodial rail status instead of
+                submitting a fiat-style amount form. */}
+            {isCryptoDeposit && <CryptoDepositCard />}
+            {isCryptoRail && (
+              <NonCustodialCashierStatus
+                mode={activeTab}
+                status={isCryptoDeposit ? "address_issued" : "user_authorized"}
+              />
+            )}
+
             {/* Messages */}
             {pendingTxId && (
               <div className="cashier-msg pending">
@@ -456,20 +480,21 @@ export default function CashierPage() {
             {error && <div className="cashier-msg error">{error}</div>}
             {success && <div className="cashier-msg success">{success}</div>}
 
-            {/* Submit */}
-            <button
-              className="cashier-submit"
-              onClick={handleSubmit}
-              disabled={loading || displayAmount <= 0 || !!pendingTxId}
-            >
-              {pendingTxId
-                ? "Processing deposit..."
-                : loading
-                  ? "Processing..."
-                  : activeTab === "deposit"
-                    ? `Deposit $${displayAmount.toFixed(2)}`
-                    : `Withdraw $${displayAmount.toFixed(2)}`}
-            </button>
+            {!isCryptoRail && (
+              <button
+                className="cashier-submit"
+                onClick={handleSubmit}
+                disabled={loading || displayAmount <= 0 || !!pendingTxId}
+              >
+                {pendingTxId
+                  ? "Processing deposit..."
+                  : loading
+                    ? "Processing..."
+                    : activeTab === "deposit"
+                      ? `Deposit $${displayAmount.toFixed(2)}`
+                      : `Withdraw $${displayAmount.toFixed(2)}`}
+              </button>
+            )}
           </div>
 
           {/* Summary sidebar */}
@@ -485,18 +510,29 @@ export default function CashierPage() {
             >
               Summary
             </h3>
-            <div className="cashier-summary-row">
-              <span>Amount</span>
-              <span>${displayAmount.toFixed(2)}</span>
-            </div>
-            <div className="cashier-summary-row">
-              <span>Fee (2%)</span>
-              <span>${fee.toFixed(2)}</span>
-            </div>
-            <div className="cashier-summary-row total">
-              <span>Total</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
+            {isCryptoRail ? (
+              <div className="cashier-summary-row total">
+                <span>
+                  {activeTab === "deposit" ? "Crypto deposit" : "Crypto withdrawal"}
+                </span>
+                <span>{activeTab === "deposit" ? "Address only" : "Signature only"}</span>
+              </div>
+            ) : (
+              <>
+                <div className="cashier-summary-row">
+                  <span>Amount</span>
+                  <span>${displayAmount.toFixed(2)}</span>
+                </div>
+                <div className="cashier-summary-row">
+                  <span>Fee (2%)</span>
+                  <span>${fee.toFixed(2)}</span>
+                </div>
+                <div className="cashier-summary-row total">
+                  <span>Total</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+              </>
+            )}
 
             {/* Recent transactions */}
             {transactions.length > 0 && (
@@ -536,6 +572,7 @@ export default function CashierPage() {
                 ))}
               </>
             )}
+            {isCryptoRail && <CashierCanaryPanel />}
           </div>
         </div>
       </div>
@@ -661,4 +698,45 @@ const cashierStyles = `
     margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--b2); border-bottom: 0;
     font-size: 15px; font-weight: 700; color: var(--accent);
   }
+  .cashier-status-panel {
+    border: 1px solid var(--b1); border-radius: var(--r-sm); padding: 14px; margin-bottom: 18px;
+    background: var(--s2);
+  }
+  .cashier-status-head, .cashier-canary-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .cashier-status-pill {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(43, 228, 128,0.3);
+    border-radius: 999px; padding: 4px 7px; text-transform: uppercase;
+  }
+  .cashier-timeline { display: grid; gap: 10px; }
+  .cashier-timeline-row {
+    display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 10px; align-items: start;
+    color: var(--t3);
+  }
+  .cashier-timeline-row.done, .cashier-timeline-row.active { color: var(--t1); }
+  .cashier-timeline-dot {
+    width: 9px; height: 9px; margin-top: 4px; border-radius: 50%; background: var(--b2);
+    box-shadow: 0 0 0 3px var(--s1);
+  }
+  .cashier-timeline-row.done .cashier-timeline-dot { background: var(--yes); }
+  .cashier-timeline-row.active .cashier-timeline-dot { background: var(--accent); }
+  .cashier-timeline-label { font-size: 13px; font-weight: 700; }
+  .cashier-timeline-detail { margin-top: 2px; font-size: 12px; line-height: 1.45; color: var(--t3); }
+  .cashier-status-note { margin-top: 14px; margin-bottom: 0; }
+  .cashier-canary-panel {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--b1);
+  }
+  .cashier-canary-row {
+    display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 9px; align-items: start; padding: 8px 0;
+    border-bottom: 1px solid var(--b1);
+  }
+  .cashier-canary-row:last-child { border-bottom: 0; }
+  .cashier-canary-dot { width: 8px; height: 8px; margin-top: 5px; border-radius: 50%; background: var(--b2); }
+  .cashier-canary-dot.ok { background: var(--yes); }
+  .cashier-canary-dot.warn { background: #ffd166; }
+  .cashier-canary-dot.blocked { background: var(--no); }
+  .cashier-canary-name { font-size: 12px; font-weight: 700; color: var(--t2); }
+  .cashier-canary-detail { margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--t3); }
 `;

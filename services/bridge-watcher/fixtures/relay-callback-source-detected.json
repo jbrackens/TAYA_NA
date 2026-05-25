@@ -1,0 +1,32 @@
+{
+  "id": "evt_test_011",
+  "provider": "relay",
+  "providerRequestId": "relay_req_test_001",
+  "depositIntentId": "dep_test_001",
+  "status": "source_confirmed",
+  "idempotencyKey": "deposit:relay:tron:tron_tx_test_001:0",
+  "sourceChain": "tron",
+  "sourceTxHash": "tron_tx_test_001",
+  "sourceAddress": "TMockMariaSourceAddress111111111111111",
+  "depositAddress": "TMockDepositAddressForMaria11111111111111",
+  "destinationChain": "polygon",
+  "destinationWalletAddress": "0x1111111111111111111111111111111111111111",
+  "amount": {
+    "asset": "USDT",
+    "chain": "tron",
+    "decimals": 6,
+    "units": "25000000"
+  },
+  "callbackVerification": {
+    "envelope": {
+      "provider": "relay",
+      "receivedAt": "2026-05-25T00:05:00.000Z",
+      "signatureHeader": "sha256=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "rawBodySha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "signatureVersion": "hmac-sha256-v1",
+    "verifiedAt": "2026-05-25T00:05:01.000Z",
+    "verifierKeyId": "relay-key-1"
+  },
+  "observedAt": "2026-05-25T00:05:00.000Z"
+}

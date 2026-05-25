@@ -150,6 +150,7 @@ func gatewayPublicPrefixes() []string {
 		"/api/v1/events",
 		"/api/v1/markets",
 		"/api/v1/payments/webhook",
+		"/v1/provider-callbacks/", // Non-custodial cashier provider callbacks verify raw-body signatures in-handler.
 
 		// Leaderboards — board list + per-board entries are public; the
 		// per-user /api/v1/me/leaderboards endpoint sits outside this prefix
@@ -170,6 +171,7 @@ func gatewayCSRFSkipPrefixes() []string {
 		"/metrics",
 		"/api/v1/status",
 		"/api/v1/payments/webhook",
+		"/v1/provider-callbacks/",
 	}
 }
 
@@ -180,6 +182,11 @@ func validateGatewayRuntimeConfig(getenv func(string) string) error {
 	}
 	if strings.TrimSpace(getenv("PAYMENTS_WEBHOOK_SECRET")) == "" {
 		return fmt.Errorf("PAYMENTS_WEBHOOK_SECRET must be set in production")
+	}
+	for _, key := range []string{"CRYPTO_RPC_URL", "CRYPTO_ASSET_CONTRACT", "CRYPTO_DEPOSIT_ADDRESS_SOURCE"} {
+		if strings.TrimSpace(getenv(key)) != "" {
+			return fmt.Errorf("%s must not be set in production: legacy custodial cashier rail is prototype-only; use non-custodial cashier services instead", key)
+		}
 	}
 	return nil
 }

@@ -1,0 +1,28 @@
+{
+  "id": "canary_test_001",
+  "status": "ok",
+  "startedAt": "2026-05-25T00:30:00.000Z",
+  "finishedAt": "2026-05-25T00:30:12.000Z",
+  "checks": [
+    {
+      "name": "wallet_resolved",
+      "status": "ok",
+      "durationMs": 120
+    },
+    {
+      "name": "deposit_intent_created",
+      "status": "ok",
+      "durationMs": 180
+    },
+    {
+      "name": "bridge_fixture_replayed",
+      "status": "ok",
+      "durationMs": 40
+    },
+    {
+      "name": "relayer_policy_checked",
+      "status": "ok",
+      "durationMs": 20
+    }
+  ]
+}

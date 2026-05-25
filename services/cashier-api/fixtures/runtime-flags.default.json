@@ -1,0 +1,37 @@
+[
+  {
+    "flagKey": "tron_deposits_enabled",
+    "enabled": false,
+    "reason": "default fail-closed until provider testnet evidence is complete",
+    "updatedBy": "migration",
+    "updatedAt": "2026-05-25T00:00:00.000Z"
+  },
+  {
+    "flagKey": "evm_deposits_enabled",
+    "enabled": false,
+    "reason": "default fail-closed until settlement chain is selected",
+    "updatedBy": "migration",
+    "updatedAt": "2026-05-25T00:00:00.000Z"
+  },
+  {
+    "flagKey": "withdrawals_enabled",
+    "enabled": false,
+    "reason": "default fail-closed until relayer policy and testnet withdrawal pass",
+    "updatedBy": "migration",
+    "updatedAt": "2026-05-25T00:00:00.000Z"
+  },
+  {
+    "flagKey": "relayer_enabled",
+    "enabled": false,
+    "reason": "default fail-closed until paymaster and policy checks are configured",
+    "updatedBy": "migration",
+    "updatedAt": "2026-05-25T00:00:00.000Z"
+  },
+  {
+    "flagKey": "provider_callbacks_enabled",
+    "enabled": false,
+    "reason": "default fail-closed until callback signature verification is configured",
+    "updatedBy": "migration",
+    "updatedAt": "2026-05-25T00:00:00.000Z"
+  }
+]
