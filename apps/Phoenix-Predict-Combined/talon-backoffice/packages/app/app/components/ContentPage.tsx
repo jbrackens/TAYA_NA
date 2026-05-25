@@ -12,6 +12,19 @@ interface ContentPageProps {
   fallbackContent?: string;
 }
 
+function ContentArticle({ children }: { children: React.ReactNode }) {
+  return <article className="content-page">{children}</article>;
+}
+
+function ContentBody({ html }: { html: string }) {
+  return (
+    <div
+      className="content-page-body"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 /**
  * Renders a CMS-driven content page by slug.
  * Falls back to provided static content if the CMS page is not found.
@@ -47,29 +60,26 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
 
   if (loading) {
     return (
-      <article className="glass max-w-4xl mx-auto p-8">
-        <div className="h-8 w-64 bg-white/5 rounded animate-pulse mb-4" />
-        <div className="h-4 w-full bg-white/5 rounded animate-pulse mb-2" />
-        <div className="h-4 w-3/4 bg-white/5 rounded animate-pulse mb-2" />
-        <div className="h-4 w-1/2 bg-white/5 rounded animate-pulse" />
-      </article>
+      <ContentArticle>
+        <div className="h-8 w-64 rounded-md animate-pulse mb-4 bg-[var(--surface-2)]" />
+        <div className="h-4 w-full rounded-md animate-pulse mb-2 bg-[var(--surface-2)]" />
+        <div className="h-4 w-3/4 rounded-md animate-pulse mb-2 bg-[var(--surface-2)]" />
+        <div className="h-4 w-1/2 rounded-md animate-pulse bg-[var(--surface-2)]" />
+      </ContentArticle>
     );
   }
 
   // CMS page loaded — render it
   if (page) {
     return (
-      <article className="glass max-w-4xl mx-auto p-8">
-        <h1 className="text-2xl font-bold text-white mb-6 tracking-tight">
+      <ContentArticle>
+        <h1 className="content-page-title">
           {page.title}
         </h1>
 
         {/* Render flat content if no blocks */}
         {(!page.blocks || page.blocks.length === 0) && page.content && (
-          <div
-            className="prose prose-invert max-w-none text-white/70"
-            dangerouslySetInnerHTML={{ __html: page.content }}
-          />
+          <ContentBody html={page.content} />
         )}
 
         {/* Render blocks */}
@@ -79,20 +89,16 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
               switch (block.blockType) {
                 case "text":
                   return (
-                    <div
+                    <ContentBody
                       key={block.blockId}
-                      className="prose prose-invert max-w-none text-white/70"
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          (block.content as Record<string, string>).body || "",
-                      }}
+                      html={(block.content as Record<string, string>).body || ""}
                     />
                   );
                 case "html":
                   return (
                     <div
                       key={block.blockId}
-                      className="text-white/70"
+                      className="content-page-body"
                       dangerouslySetInnerHTML={{
                         __html:
                           (block.content as Record<string, string>).html || "",
@@ -110,12 +116,14 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
                       {faqItems.map((item, idx) => (
                         <details
                           key={idx}
-                          className="bg-black/25 rounded-lg p-4 border border-white/10"
+                          className="rounded-md border border-[var(--border-1)] bg-[var(--surface-1)] p-4"
                         >
-                          <summary className="text-white font-medium cursor-pointer">
+                          <summary className="cursor-pointer font-semibold text-[var(--t1)]">
                             {item.question}
                           </summary>
-                          <p className="text-white/50 mt-2">{item.answer}</p>
+                          <p className="mt-2 text-sm leading-6 text-[var(--t2)]">
+                            {item.answer}
+                          </p>
                         </details>
                       ))}
                     </div>
@@ -127,26 +135,23 @@ export const ContentPageRenderer: React.FC<ContentPageProps> = ({
             })}
           </div>
         )}
-      </article>
+      </ContentArticle>
     );
   }
 
   // Fallback — use static content if CMS page not found
   if (error && fallbackContent) {
     return (
-      <article className="glass max-w-4xl mx-auto p-8">
-        <div
-          className="prose prose-invert max-w-none text-white/70"
-          dangerouslySetInnerHTML={{ __html: fallbackContent }}
-        />
-      </article>
+      <ContentArticle>
+        <ContentBody html={fallbackContent} />
+      </ContentArticle>
     );
   }
 
   // No CMS page and no fallback
   return (
-    <article className="glass max-w-4xl mx-auto p-8 text-center">
-      <p className="text-white/50">{t("contentUnavailable")}</p>
-    </article>
+    <ContentArticle>
+      <p className="text-center text-[var(--t2)]">{t("contentUnavailable")}</p>
+    </ContentArticle>
   );
 };

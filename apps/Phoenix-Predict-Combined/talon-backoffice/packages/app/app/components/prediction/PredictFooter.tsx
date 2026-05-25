@@ -15,7 +15,7 @@ const YEAR = new Date().getFullYear();
 
 const LINKS = [
   { href: "/about", label: "About" },
-  { href: "/terms", label: "Terms of Use" },
+  { href: "/tos", label: "Terms of Use" },
   { href: "/privacy", label: "Privacy" },
   ...(FEATURE_RG
     ? [{ href: "/responsible-gaming", label: "Responsible Gaming" }]

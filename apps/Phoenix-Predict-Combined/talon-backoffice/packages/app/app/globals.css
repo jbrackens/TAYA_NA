@@ -543,6 +543,68 @@ button {
   color: #b3261e;
 }
 
+/* ── Static Content Pages ── */
+.content-page {
+  width: min(100% - 32px, 860px);
+  margin: 48px auto 64px;
+  padding: 40px;
+  color: var(--t1);
+  background: var(--surface-1);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-rh-lg);
+  box-shadow: var(--shadow-soft);
+}
+.content-page-title,
+.content-page-body h1 {
+  margin: 0 0 10px;
+  color: var(--t1);
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.content-page-body {
+  color: var(--t2);
+  font-family: "Inter", "Outfit", sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+}
+.content-page-body h1 + p {
+  color: var(--t3);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 30px;
+}
+.content-page-body h2 {
+  margin: 30px 0 10px;
+  color: var(--t1);
+  font-family: "Inter Tight", "Inter", sans-serif;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+.content-page-body p {
+  margin: 0 0 16px;
+}
+.content-page-body a {
+  color: var(--yes-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.content-page-body a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .content-page {
+    width: min(100% - 24px, 860px);
+    margin: 24px auto 40px;
+    padding: 26px 20px;
+  }
+}
+
 /* ── Shell Layout ── */
 .ps-shell {
   display: flex;

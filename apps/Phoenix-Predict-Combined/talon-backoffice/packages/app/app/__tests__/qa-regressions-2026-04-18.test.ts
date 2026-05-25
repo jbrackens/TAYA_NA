@@ -328,3 +328,55 @@ describe("Navigation pill active colors", () => {
     );
   });
 });
+
+describe("Static informational pages", () => {
+  const contentPageSource = read("components/ContentPage.tsx");
+  const footerSource = read("components/prediction/PredictFooter.tsx");
+  const globalsSource = read("globals.css");
+  const proxySource = read("../proxy.ts");
+  const tosSource = read("tos/page.tsx");
+  const aboutSource = read("about/page.tsx");
+
+  it("exposes /tos as the Terms of Use page and keeps /about content available", () => {
+    assert.ok(
+      tosSource.includes('export { default } from "../terms/page"'),
+      "/tos should render the Terms of Use content",
+    );
+    assert.ok(
+      aboutSource.includes('slug="about-us"') &&
+        aboutSource.includes("About Hula Na!"),
+      "/about should render the About Us fallback content",
+    );
+  });
+
+  it("keeps Terms of Use linked through the public footer and auth proxy", () => {
+    assert.ok(
+      footerSource.includes('href: "/tos"') &&
+        footerSource.includes('label: "Terms of Use"'),
+      "Footer should link Terms of Use to /tos",
+    );
+    assert.ok(
+      proxySource.includes('"/tos"'),
+      "/tos should be listed as a public informational route",
+    );
+  });
+
+  it("uses the light static content page treatment", () => {
+    assert.ok(
+      contentPageSource.includes('className="content-page"') &&
+        contentPageSource.includes('className="content-page-body"'),
+      "ContentPageRenderer should use the static content page classes",
+    );
+    assert.ok(
+      globalsSource.includes(".content-page") &&
+        globalsSource.includes("background: var(--surface-1)") &&
+        globalsSource.includes("color: var(--t1)") &&
+        globalsSource.includes(".content-page-body h2"),
+      "Static pages should use light readable typography styles",
+    );
+    assert.ok(
+      !contentPageSource.includes("prose-invert"),
+      "Static content pages should not use inverted dark prose styling",
+    );
+  });
+});

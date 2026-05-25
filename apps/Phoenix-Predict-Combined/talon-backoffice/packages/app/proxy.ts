@@ -21,6 +21,7 @@ const PUBLIC_ROUTES = [
   "/responsible-gaming",
   "/contact-us",
   "/about",
+  "/tos",
   "/terms",
   "/privacy-policy",
   "/privacy",
