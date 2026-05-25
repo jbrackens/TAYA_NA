@@ -243,7 +243,7 @@ export class PredictionApiClient {
  *   2. Next.js runtime config (publicRuntimeConfig.apiUrl injected at build
  *      time and surfaced via window.__NEXT_DATA__)
  *   3. NEXT_PUBLIC_API_URL (build-time env var, inlined by webpack)
- *   4. localhost fallback for dev
+ *   4. same-origin in browsers, localhost fallback on the server for dev
  */
 interface NextDataRuntimeConfig {
   __NEXT_DATA__?: {
@@ -259,10 +259,12 @@ export function createPredictionClient(baseUrl?: string): PredictionApiClient {
     const w = window as unknown as NextDataRuntimeConfig;
     runtimeUrl = w.__NEXT_DATA__?.runtimeConfig?.apiUrl;
   }
+  const browserFallback =
+    typeof window !== "undefined" ? "" : "http://localhost:18080";
   const url =
-    baseUrl ||
-    runtimeUrl ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:18080";
+    baseUrl ??
+    runtimeUrl ??
+    process.env.NEXT_PUBLIC_API_URL ??
+    browserFallback;
   return new PredictionApiClient(url);
 }
