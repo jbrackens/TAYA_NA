@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { register as registerUser } from "../../lib/api";
 import { returnUrlSuffix } from "../../lib/safeReturnPath";
+import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
 interface FormData {
   username: string;
@@ -188,6 +189,10 @@ export default function RegisterPage() {
 
         {step === 1 && (
           <div className="ra-form">
+            <SocialAuthButtons />
+            <div className="ra-divider">
+              <span>or sign up with email</span>
+            </div>
             <Field
               label="Username"
               value={form.username}
@@ -486,6 +491,26 @@ function Styles() {
         background: var(--accent);
         border-radius: inherit;
         transition: width 0.3s ease;
+      }
+
+      .ra-divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 2px 0;
+      }
+      .ra-divider::before, .ra-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border-1);
+      }
+      .ra-divider span {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--t3);
       }
 
       .ra-banner {
