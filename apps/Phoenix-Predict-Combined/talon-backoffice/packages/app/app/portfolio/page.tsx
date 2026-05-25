@@ -43,6 +43,7 @@ const api = createPredictionClient();
 type TabKey = "positions" | "orders" | "history";
 
 export default function PortfolioPage() {
+  const { t } = useTranslation("portfolio");
   const [positions, setPositions] = useState<Position[]>([]);
   const [orders, setOrders] = useState<PredictionOrder[]>([]);
   const [history, setHistory] = useState<SettledPayout[]>([]);
@@ -162,7 +163,7 @@ export default function PortfolioPage() {
   );
 
   if (loading) {
-    return <PageState>Loading portfolio…</PageState>;
+    return <PageState>{t("state.loading", "Loading portfolio…")}</PageState>;
   }
 
   if (authError && !summary && positions.length === 0 && orders.length === 0) {
@@ -170,10 +171,10 @@ export default function PortfolioPage() {
       <PageState>
         <div style={{ textAlign: "center" }}>
           <p style={{ marginBottom: 12, color: "var(--t2)" }}>
-            Sign in to see your portfolio.
+            {t("state.signIn", "Sign in to see your portfolio.")}
           </p>
           <Link href="/auth/login" className="pf-login-cta">
-            Log in
+            {t("state.login", "Log in")}
           </Link>
         </div>
         <Styles />
@@ -186,9 +187,9 @@ export default function PortfolioPage() {
       <Styles />
 
       <header className="pf-head">
-        <h1 className="pf-title">Portfolio</h1>
+        <h1 className="pf-title">{t("title", "Portfolio")}</h1>
         <p className="pf-sub">
-          Open positions, active orders, settled payouts.
+          {t("subtitle", "Open positions, active orders, settled payouts.")}
         </p>
       </header>
 
@@ -253,33 +254,37 @@ function SummaryStrip({
   summary: PortfolioSummary | null;
   bestRank: LeaderboardEntry | null;
 }) {
+  const { t } = useTranslation("portfolio");
   const s = summary;
   const pnl = s?.realizedPnlCents ?? 0;
   const pnlUp = pnl >= 0;
   return (
     <section className="pf-summary pf-summary-5">
       <StatCard
-        label="Invested"
+        label={t("summary.invested", "Invested")}
         value={s ? formatUSD(s.totalValueCents) : "—"}
       />
       <StatCard
-        label="Realized P&L"
+        label={t("summary.realizedPnl", "Realized P&L")}
         value={s ? `${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}` : "—"}
         tone={s ? (pnlUp ? "gain" : "no") : undefined}
       />
       <StatCard
-        label="Open positions"
+        label={t("summary.openPositions", "Open positions")}
         value={s ? String(s.openPositions) : "—"}
       />
       <StatCard
-        label="Accuracy"
+        label={t("summary.accuracy", "Accuracy")}
         value={
           s && s.totalPredictions > 0 ? `${s.accuracyPct.toFixed(1)}%` : "—"
         }
         sub={
           s && s.totalPredictions > 0
-            ? `${s.correctPredictions}/${s.totalPredictions} correct`
-            : "No settled predictions yet"
+            ? t("summary.correctCount", "{{correct}}/{{total}} correct", {
+                correct: s.correctPredictions,
+                total: s.totalPredictions,
+              })
+            : t("summary.noSettledPredictions", "No settled predictions yet")
         }
         tone={s && s.accuracyPct >= 50 ? "gain" : undefined}
       />
@@ -293,6 +298,7 @@ function SummaryStrip({
 // "pre-qualified" state shows a muted "Not ranked yet" card rather than
 // omitting the slot (keeps the grid stable across users).
 function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
+  const { t } = useTranslation("portfolio");
   const href = entry
     ? `/leaderboards?board=${encodeURIComponent(entry.boardId)}`
     : "/leaderboards";
@@ -303,13 +309,13 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
       aria-label={rankAriaLabel(entry)}
     >
       <span className="pf-stat-label">
-        {entry ? formatBoardLabel(entry.boardId) : "Rank"}
+        {entry ? formatBoardLabel(entry.boardId, t) : t("rank.label", "Rank")}
       </span>
       <span className="pf-stat-value mono">
-        {entry ? `#${entry.rank}` : "Not ranked yet"}
+        {entry ? `#${entry.rank}` : t("rank.notRanked", "Not ranked yet")}
       </span>
       <span className="pf-stat-sub">
-        {entry ? formatBoardMetric(entry) : "Settle more markets to qualify"}
+        {entry ? formatBoardMetric(entry, t) : t("rank.qualify", "Settle more markets to qualify")}
       </span>
     </Link>
   );
@@ -317,36 +323,48 @@ function RankChip({ entry }: { entry: LeaderboardEntry | null }) {
 
 function rankAriaLabel(entry: LeaderboardEntry | null): string {
   if (!entry) return "Not ranked yet. Settle more markets to qualify.";
-  return `Rank ${entry.rank} on ${formatBoardLabel(entry.boardId)}.`;
+  return `Rank ${entry.rank}.`;
 }
 
-function formatBoardLabel(boardId: string): string {
+function formatBoardLabel(
+  boardId: string,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
   if (boardId.startsWith("category:")) {
     const slug = boardId.slice("category:".length);
     return slug.charAt(0).toUpperCase() + slug.slice(1);
   }
   switch (boardId) {
     case "accuracy":
-      return "Accuracy";
+      return t("boards.accuracy", "Accuracy");
     case "pnl_weekly":
-      return "Weekly P&L";
+      return t("boards.pnlWeekly", "Weekly P&L");
     case "sharpness":
-      return "Sharpness";
+      return t("boards.sharpness", "Sharpness");
     default:
       return boardId;
   }
 }
 
-function formatBoardMetric(entry: LeaderboardEntry): string {
+function formatBoardMetric(
+  entry: LeaderboardEntry,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
   switch (entry.boardId) {
     case "accuracy":
-      return `${entry.metricValue.toFixed(1)}% correct`;
+      return t("rank.metricAccuracy", "{{value}}% correct", {
+        value: entry.metricValue.toFixed(1),
+      });
     case "sharpness":
-      return `${(entry.metricValue * 100).toFixed(2)}% ROI`;
+      return t("rank.metricSharpness", "{{value}}% ROI", {
+        value: (entry.metricValue * 100).toFixed(2),
+      });
     case "pnl_weekly":
     default: {
       const sign = entry.metricValue < 0 ? "−" : "+";
-      return `${sign}${formatUSD(Math.abs(entry.metricValue))} P&L`;
+      return t("rank.metricPnl", "{{value}} P&L", {
+        value: `${sign}${formatUSD(Math.abs(entry.metricValue))}`,
+      });
     }
   }
 }
@@ -382,10 +400,11 @@ function TabBar({
   setTab: (t: TabKey) => void;
   counts: { positions: number; orders: number; history: number };
 }) {
+  const { t } = useTranslation("portfolio");
   const tabs: { key: TabKey; label: string; count: number }[] = [
-    { key: "positions", label: "Positions", count: counts.positions },
-    { key: "orders", label: "Open orders", count: counts.orders },
-    { key: "history", label: "History", count: counts.history },
+    { key: "positions", label: t("tabs.positions", "Positions"), count: counts.positions },
+    { key: "orders", label: t("tabs.orders", "Open orders"), count: counts.orders },
+    { key: "history", label: t("tabs.history", "History"), count: counts.history },
   ];
   return (
     <nav className="pf-tabs" role="tablist" aria-label="Portfolio tabs">
@@ -414,13 +433,14 @@ function PositionsTable({
   positions: Position[];
   marketsById: Map<string, PredictionMarket>;
 }) {
+  const { t } = useTranslation("portfolio");
   if (positions.length === 0) {
     return (
       <EmptyState
-        line="No open positions."
+        line={t("positions.empty", "No open positions.")}
         action={
           <Link href="/predict" className="pf-inline-link">
-            Browse markets →
+            {t("positions.browse", "Browse markets")} →
           </Link>
         }
       />
@@ -429,12 +449,12 @@ function PositionsTable({
   return (
     <DataTable
       columns={[
-        { label: "Market", width: "minmax(200px, 2fr)" },
-        { label: "Side", width: "60px", align: "center" },
-        { label: "Qty", width: "60px", align: "right" },
-        { label: "Available", width: "80px", align: "right" },
-        { label: "Avg price", width: "90px", align: "right" },
-        { label: "Cost", width: "90px", align: "right" },
+        { label: t("table.market", "Market"), width: "minmax(200px, 2fr)" },
+        { label: t("table.side", "Side"), width: "60px", align: "center" },
+        { label: t("table.qty", "Qty"), width: "60px", align: "right" },
+        { label: t("table.available", "Available"), width: "80px", align: "right" },
+        { label: t("table.avgPrice", "Avg price"), width: "90px", align: "right" },
+        { label: t("table.cost", "Cost"), width: "90px", align: "right" },
       ]}
       rows={positions.map((p) => {
         const m = marketsById.get(p.marketId);
@@ -492,11 +512,12 @@ function OrdersTable({
   marketsById: Map<string, PredictionMarket>;
   onCancelled: (orderID: string) => void;
 }) {
+  const { t } = useTranslation("portfolio");
   const toast = useToast();
   const [pendingCancel, setPendingCancel] = useState<string | null>(null);
 
   if (orders.length === 0) {
-    return <EmptyState line="No open orders." />;
+    return <EmptyState line={t("orders.empty", "No open orders.")} />;
   }
 
   const handleCancel = async (orderID: string, marketTicker: string) => {
@@ -505,13 +526,15 @@ function OrdersTable({
       await api.cancelOrder(orderID);
       onCancelled(orderID);
       toast.success(
-        "Order cancelled",
-        `Reserved cash released on ${marketTicker}`,
+        t("orders.cancelled", "Order cancelled"),
+        t("orders.released", "Reserved cash released on {{ticker}}", {
+          ticker: marketTicker,
+        }),
       );
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Cancel failed";
+      const message = err instanceof Error ? err.message : t("orders.cancelFailed", "Cancel failed");
       logger.warn("Portfolio", "cancel order failed", message);
-      toast.error("Cancel failed", message);
+      toast.error(t("orders.cancelFailed", "Cancel failed"), message);
     } finally {
       setPendingCancel(null);
     }
@@ -520,12 +543,12 @@ function OrdersTable({
   return (
     <DataTable
       columns={[
-        { label: "Market", width: "minmax(180px, 2fr)" },
-        { label: "Side", width: "60px", align: "center" },
-        { label: "Qty", width: "60px", align: "right" },
-        { label: "Cost", width: "90px", align: "right" },
-        { label: "Status", width: "100px", align: "center" },
-        { label: "Placed", width: "100px", align: "right" },
+        { label: t("table.market", "Market"), width: "minmax(180px, 2fr)" },
+        { label: t("table.side", "Side"), width: "60px", align: "center" },
+        { label: t("table.qty", "Qty"), width: "60px", align: "right" },
+        { label: t("table.cost", "Cost"), width: "90px", align: "right" },
+        { label: t("table.status", "Status"), width: "100px", align: "center" },
+        { label: t("table.placed", "Placed"), width: "100px", align: "right" },
         { label: "", width: "90px", align: "right" },
       ]}
       rows={orders.map((o) => {
@@ -568,7 +591,7 @@ function OrdersTable({
                 void handleCancel(o.id, ticker);
               }}
             >
-              {isCancelling ? "…" : "Cancel"}
+              {isCancelling ? "…" : t("orders.cancel", "Cancel")}
             </button>,
           ],
         };
@@ -588,22 +611,28 @@ function HistoryTable({
   marketsById: Map<string, PredictionMarket>;
   pointsByMarketId: Map<string, number>;
 }) {
+  const { t } = useTranslation("portfolio");
   if (history.length === 0) {
     return (
-      <EmptyState line="Settled positions will appear here after markets resolve." />
+      <EmptyState
+        line={t(
+          "history.empty",
+          "Settled positions will appear here after markets resolve.",
+        )}
+      />
     );
   }
   return (
     <DataTable
       columns={[
-        { label: "Market", width: "minmax(200px, 2fr)" },
-        { label: "Side", width: "60px", align: "center" },
-        { label: "Qty", width: "60px", align: "right" },
-        { label: "Entry", width: "70px", align: "right" },
-        { label: "Exit", width: "70px", align: "right" },
-        { label: "P&L", width: "90px", align: "right" },
-        { label: "Points", width: "70px", align: "right" },
-        { label: "Settled", width: "100px", align: "right" },
+        { label: t("table.market", "Market"), width: "minmax(200px, 2fr)" },
+        { label: t("table.side", "Side"), width: "60px", align: "center" },
+        { label: t("table.qty", "Qty"), width: "60px", align: "right" },
+        { label: t("table.entry", "Entry"), width: "70px", align: "right" },
+        { label: t("table.exit", "Exit"), width: "70px", align: "right" },
+        { label: t("table.pnl", "P&L"), width: "90px", align: "right" },
+        { label: t("table.points", "Points"), width: "70px", align: "right" },
+        { label: t("table.settled", "Settled"), width: "100px", align: "right" },
       ]}
       rows={history.map((h) => {
         const m = marketsById.get(h.marketId);
@@ -638,11 +667,17 @@ function HistoryTable({
               className="mono pf-pts"
               aria-label={
                 pointsDisplay !== null
-                  ? `Earned ${pointsDisplay} points`
+                  ? t("history.earnedPoints", "Earned {{points}} points", {
+                      points: pointsDisplay,
+                    })
                   : undefined
               }
             >
-              {pointsDisplay !== null ? `+${pointsDisplay} pts` : ""}
+              {pointsDisplay !== null
+                ? t("history.pointsShort", "+{{points}} pts", {
+                    points: pointsDisplay,
+                  })
+                : ""}
             </span>,
             <span key="d" className="mono pf-dim">
               {formatDate(h.paidAt)}
@@ -677,8 +712,11 @@ function MarketCell({
 }
 
 function SideChip({ side }: { side: "yes" | "no" }) {
+  const { t } = useTranslation("portfolio");
   return (
-    <span className={`pf-side pf-side-${side}`}>{side.toUpperCase()}</span>
+    <span className={`pf-side pf-side-${side}`}>
+      {side === "yes" ? t("side.yes", "YES") : t("side.no", "NO")}
+    </span>
   );
 }
 

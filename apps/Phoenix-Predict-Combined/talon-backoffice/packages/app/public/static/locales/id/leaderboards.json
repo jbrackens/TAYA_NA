@@ -1,0 +1,71 @@
+{
+  "kicker": "Papan peringkat",
+  "title": "Peringkat",
+  "viewTier": "Lihat tier Anda",
+  "boardsAria": "Boards",
+  "categoryChampions": "Category Champions",
+  "chooseCategory": "Choose a category",
+  "errors": {
+    "loadBoards": "Failed to load leaderboards",
+    "loadStandings": "Failed to load standings"
+  },
+  "state": {
+    "loading": "Loading leaderboards…",
+    "backToPortfolio": "Back to portfolio",
+    "none": "No leaderboards have been set up yet.",
+    "browseMarkets": "Browse markets",
+    "pickBoard": "Pick a board to see rankings.",
+    "loadingRankings": "Loading rankings…",
+    "noQualified": "Nobody has qualified for this board yet."
+  },
+  "windows": {
+    "weekly": "This week",
+    "rolling30d": "Last 30 days"
+  },
+  "boards": {
+    "accuracy": {
+      "name": "Accuracy",
+      "description": "Traders ranked by prediction accuracy."
+    },
+    "pnlWeekly": {
+      "name": "Weekly P&L",
+      "description": "Traders ranked by realized profit this week."
+    },
+    "sharpness": {
+      "name": "Sharpness",
+      "description": "Traders ranked by return on risk."
+    },
+    "category": {
+      "name": "{{category}} Champions",
+      "description": "Top traders in {{category}} markets."
+    }
+  },
+  "metrics": {
+    "accuracy": "Accuracy",
+    "pnl": "P&L",
+    "sharpness": "Sharpness",
+    "category": "Profit"
+  },
+  "qualification": {
+    "accuracy": "Settle enough markets to qualify for accuracy rankings.",
+    "pnlWeekly": "Settle markets this week to qualify.",
+    "sharpness": "Settle enough markets to qualify for sharpness rankings.",
+    "category": "Settle markets in this category to qualify."
+  },
+  "categories": {
+    "crypto": "Crypto",
+    "politics": "Politics",
+    "sports": "Sports",
+    "culture": "Culture",
+    "finance": "Finance"
+  },
+  "table": {
+    "rankingsAria": "{{board}} rankings",
+    "caption": "{{board}} rankings — {{window}}",
+    "rank": "Rank",
+    "trader": "Trader",
+    "settled": "Settled",
+    "youRank": "#{{rank}} You",
+    "viewerRow": "#{{rank}} You · {{metric}}"
+  }
+}

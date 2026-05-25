@@ -1,0 +1,71 @@
+{
+  "kicker": "Leaderboards",
+  "title": "Rankings",
+  "viewTier": "Tingnan ang tier mo",
+  "boardsAria": "Boards",
+  "categoryChampions": "Category Champions",
+  "chooseCategory": "Pumili ng category",
+  "errors": {
+    "loadBoards": "Hindi ma-load ang leaderboards",
+    "loadStandings": "Hindi ma-load ang standings"
+  },
+  "state": {
+    "loading": "Loading leaderboards…",
+    "backToPortfolio": "Back to portfolio",
+    "none": "Wala pang leaderboards na naka-set up.",
+    "browseMarkets": "Browse markets",
+    "pickBoard": "Pumili ng board para makita ang rankings.",
+    "loadingRankings": "Loading rankings…",
+    "noQualified": "Wala pang qualified sa board na ito."
+  },
+  "windows": {
+    "weekly": "Ngayong linggo",
+    "rolling30d": "Huling 30 araw"
+  },
+  "boards": {
+    "accuracy": {
+      "name": "Accuracy",
+      "description": "Mga trader na niraranggo ayon sa prediction accuracy."
+    },
+    "pnlWeekly": {
+      "name": "Weekly P&L",
+      "description": "Mga trader na niraranggo ayon sa realized profit ngayong linggo."
+    },
+    "sharpness": {
+      "name": "Sharpness",
+      "description": "Mga trader na niraranggo ayon sa return on risk."
+    },
+    "category": {
+      "name": "{{category}} Champions",
+      "description": "Top traders sa {{category}} markets."
+    }
+  },
+  "metrics": {
+    "accuracy": "Accuracy",
+    "pnl": "P&L",
+    "sharpness": "Sharpness",
+    "category": "Profit"
+  },
+  "qualification": {
+    "accuracy": "Mag-settle ng sapat na markets para mag-qualify sa accuracy rankings.",
+    "pnlWeekly": "Mag-settle ng markets ngayong linggo para mag-qualify.",
+    "sharpness": "Mag-settle ng sapat na markets para mag-qualify sa sharpness rankings.",
+    "category": "Mag-settle ng markets sa category na ito para mag-qualify."
+  },
+  "categories": {
+    "crypto": "Crypto",
+    "politics": "Politics",
+    "sports": "Sports",
+    "culture": "Culture",
+    "finance": "Finance"
+  },
+  "table": {
+    "rankingsAria": "{{board}} rankings",
+    "caption": "{{board}} rankings — {{window}}",
+    "rank": "Rank",
+    "trader": "Trader",
+    "settled": "Settled",
+    "youRank": "#{{rank}} Ikaw",
+    "viewerRow": "#{{rank}} Ikaw · {{metric}}"
+  }
+}

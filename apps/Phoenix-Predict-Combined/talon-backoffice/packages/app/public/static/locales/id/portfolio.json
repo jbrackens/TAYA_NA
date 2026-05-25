@@ -1,0 +1,70 @@
+{
+  "title": "Portofolio",
+  "subtitle": "Posisi terbuka, order aktif, pembayaran yang selesai.",
+  "state": {
+    "loading": "Loading portfolio…",
+    "signIn": "Sign in to see your portfolio.",
+    "login": "Log in"
+  },
+  "summary": {
+    "invested": "Invested",
+    "realizedPnl": "Realized P&L",
+    "openPositions": "Open positions",
+    "accuracy": "Accuracy",
+    "correctCount": "{{correct}}/{{total}} correct",
+    "noSettledPredictions": "No settled predictions yet"
+  },
+  "rank": {
+    "label": "Rank",
+    "notRanked": "Not ranked yet",
+    "qualify": "Settle more markets to qualify",
+    "metricAccuracy": "{{value}}% correct",
+    "metricSharpness": "{{value}}% ROI",
+    "metricPnl": "{{value}} P&L"
+  },
+  "boards": {
+    "accuracy": "Accuracy",
+    "pnlWeekly": "Weekly P&L",
+    "sharpness": "Sharpness"
+  },
+  "tabs": {
+    "positions": "Positions",
+    "orders": "Open orders",
+    "history": "History"
+  },
+  "positions": {
+    "empty": "No open positions.",
+    "browse": "Browse markets"
+  },
+  "orders": {
+    "empty": "No open orders.",
+    "cancelled": "Order cancelled",
+    "released": "Reserved cash released on {{ticker}}",
+    "cancelFailed": "Cancel failed",
+    "cancel": "Cancel"
+  },
+  "history": {
+    "empty": "Settled positions will appear here after markets resolve.",
+    "earnedPoints": "Earned {{points}} points",
+    "pointsShort": "+{{points}} pts"
+  },
+  "table": {
+    "market": "Market",
+    "side": "Side",
+    "qty": "Qty",
+    "available": "Available",
+    "avgPrice": "Avg price",
+    "cost": "Cost",
+    "status": "Status",
+    "placed": "Placed",
+    "entry": "Entry",
+    "exit": "Exit",
+    "pnl": "P&L",
+    "points": "Points",
+    "settled": "Settled"
+  },
+  "side": {
+    "yes": "YES",
+    "no": "NO"
+  }
+}

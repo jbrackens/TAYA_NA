@@ -53,5 +53,49 @@
   "COMPETITION_EMPTY": "No active competitions right now.",
   "COMPETITION_YOUR_RANK": "Your Rank",
   "COMPETITION_VIEW_ALL": "View All Boards",
-  "BACK_TO_ACCOUNT": "Back to Account"
+  "BACK_TO_ACCOUNT": "Back to Account",
+  "kickerShort": "Rewards",
+  "loyaltyTitle": "Loyalty",
+  "viewLeaderboards": "Tingnan ang leaderboards",
+  "pointsShort": "pts",
+  "errors": {
+    "loadRewards": "Hindi ma-load ang rewards"
+  },
+  "state": {
+    "loading": "Loading rewards…",
+    "signIn": "Mag-sign in para makita ang tier, points balance, at recent activity mo.",
+    "login": "Log in",
+    "backToPortfolio": "Back to portfolio"
+  },
+  "progress": {
+    "pointsTo": "{{points}} pts papuntang",
+    "topTier": "Naabot mo na ang top tier — salamat sa pag-trade."
+  },
+  "ladder": {
+    "aria": "Tier ladder"
+  },
+  "benefits": {
+    "unlocked": "Unlocked"
+  },
+  "prefirst": {
+    "title": "Wala pang activity",
+    "body": "I-settle ang unang trade para magsimulang kumita ng points at umakyat sa tier ladder.",
+    "browse": "Browse markets"
+  },
+  "ledger": {
+    "title": "Recent activity",
+    "entries": "{{count}} entries",
+    "empty": "Wala pang activity — mag-settle ng market para magsimulang kumita.",
+    "caption": "Recent loyalty ledger entries para kay {{name}}",
+    "date": "Date",
+    "event": "Event",
+    "change": "Change",
+    "balance": "Balance",
+    "settledWon": "Settled trade · panalo",
+    "settledLost": "Settled trade · talo",
+    "settledTrade": "Settled trade",
+    "adjustment": "Adjustment",
+    "promotion": "Tier promotion",
+    "migration": "Imported from legacy"
+  }
 }

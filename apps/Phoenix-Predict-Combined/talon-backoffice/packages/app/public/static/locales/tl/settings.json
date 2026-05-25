@@ -1,3 +1,28 @@
 {
-  "TITLE": "Settings"
+  "TITLE": "Settings",
+  "subtitle": "Language at timezone preferences para sa account mo.",
+  "back": "Back",
+  "flash": {
+    "languageUpdated": "Na-update ang language",
+    "timezoneUpdated": "Na-update ang timezone"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Agad na maa-apply ang translations sa app at mase-save sa device na ito.",
+    "display": "Display language"
+  },
+  "timezone": {
+    "title": "Timezone",
+    "description": "Ginagamit para ipakita ang market close times at trade history sa local time mo. Default ang browser timezone",
+    "display": "Display timezone",
+    "browser": "browser",
+    "preview": "Preview"
+  },
+  "footer": {
+    "beforeLinks": "Kailangan ng security, password, o notification settings? Hanapin sa",
+    "security": "Security",
+    "alerts": "Alerts",
+    "and": "at",
+    "account": "Account"
+  }
 }

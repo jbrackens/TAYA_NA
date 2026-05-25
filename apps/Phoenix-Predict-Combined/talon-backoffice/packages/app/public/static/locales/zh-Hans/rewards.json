@@ -53,5 +53,49 @@
   "COMPETITION_EMPTY": "No active competitions right now.",
   "COMPETITION_YOUR_RANK": "Your Rank",
   "COMPETITION_VIEW_ALL": "View All Boards",
-  "BACK_TO_ACCOUNT": "Back to Account"
+  "BACK_TO_ACCOUNT": "Back to Account",
+  "kickerShort": "奖励",
+  "loyaltyTitle": "忠诚度",
+  "viewLeaderboards": "查看排行榜",
+  "pointsShort": "积分",
+  "errors": {
+    "loadRewards": "无法加载奖励"
+  },
+  "state": {
+    "loading": "正在加载奖励…",
+    "signIn": "登录后查看你的等级、积分余额和近期活动。",
+    "login": "登录",
+    "backToPortfolio": "返回投资组合"
+  },
+  "progress": {
+    "pointsTo": "还差 {{points}} 积分到",
+    "topTier": "已达到最高等级，感谢你的交易。"
+  },
+  "ladder": {
+    "aria": "等级阶梯"
+  },
+  "benefits": {
+    "unlocked": "已解锁"
+  },
+  "prefirst": {
+    "title": "暂无活动",
+    "body": "结算你的第一笔交易即可开始赚取积分并提升等级。",
+    "browse": "浏览市场"
+  },
+  "ledger": {
+    "title": "近期活动",
+    "entries": "{{count}} 条记录",
+    "empty": "暂无活动 — 结算一个市场即可开始赚取。",
+    "caption": "{{name}} 的近期忠诚度账本记录",
+    "date": "日期",
+    "event": "事件",
+    "change": "变化",
+    "balance": "余额",
+    "settledWon": "已结算交易 · 赢",
+    "settledLost": "已结算交易 · 输",
+    "settledTrade": "已结算交易",
+    "adjustment": "调整",
+    "promotion": "等级提升",
+    "migration": "从旧系统导入"
+  }
 }

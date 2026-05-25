@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import {
   getLeaderboards,
@@ -24,6 +25,7 @@ import { logger } from "../lib/logger";
 const ENTRIES_LIMIT = 25;
 
 export default function LeaderboardsPage() {
+  const { t } = useTranslation("leaderboards");
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,7 +66,9 @@ export default function LeaderboardsPage() {
       } catch (err) {
         if (cancelled) return;
         const message =
-          err instanceof Error ? err.message : "Failed to load leaderboards";
+          err instanceof Error
+            ? err.message
+            : t("errors.loadBoards", "Failed to load leaderboards");
         logger.error("Leaderboards", "board list fetch failed", message);
         setError(message);
       } finally {
@@ -100,7 +104,9 @@ export default function LeaderboardsPage() {
       } catch (err) {
         if (cancelled) return;
         const message =
-          err instanceof Error ? err.message : "Failed to load standings";
+          err instanceof Error
+            ? err.message
+            : t("errors.loadStandings", "Failed to load standings");
         logger.error("Leaderboards", "entries fetch failed", message);
         setError(message);
       } finally {
@@ -154,21 +160,24 @@ export default function LeaderboardsPage() {
   }, [userStanding]);
 
   if (authLoading || loading) {
-    return <PageState message="Loading leaderboards…" />;
+    return <PageState message={t("state.loading", "Loading leaderboards…")} />;
   }
   if (error && boards.length === 0) {
     return (
       <PageState
         message={error}
-        cta={{ href: "/portfolio", label: "Back to portfolio" }}
+        cta={{
+          href: "/portfolio",
+          label: t("state.backToPortfolio", "Back to portfolio"),
+        }}
       />
     );
   }
   if (boards.length === 0) {
     return (
       <PageState
-        message="No leaderboards have been set up yet."
-        cta={{ href: "/predict", label: "Browse markets" }}
+        message={t("state.none", "No leaderboards have been set up yet.")}
+        cta={{ href: "/predict", label: t("state.browseMarkets", "Browse markets") }}
       />
     );
   }
@@ -178,16 +187,20 @@ export default function LeaderboardsPage() {
       <Styles />
       <header className="lb-head">
         <div>
-          <span className="lb-kicker">Leaderboards</span>
-          <h1 className="lb-title">Rankings</h1>
+          <span className="lb-kicker">{t("kicker", "Leaderboards")}</span>
+          <h1 className="lb-title">{t("title", "Rankings")}</h1>
         </div>
         <Link href="/rewards" className="lb-xlink">
-          View your tier →
+          {t("viewTier", "View your tier")} →
         </Link>
       </header>
 
       <div className="lb-grid">
-        <aside className="lb-sidebar" role="tablist" aria-label="Boards">
+        <aside
+          className="lb-sidebar"
+          role="tablist"
+          aria-label={t("boardsAria", "Boards")}
+        >
           {staticBoards.map((board) => (
             <BoardTab
               key={board.id}
@@ -218,7 +231,9 @@ export default function LeaderboardsPage() {
               currentUserId={user?.id ?? ""}
             />
           ) : (
-            <div className="lb-empty">Pick a board to see rankings.</div>
+            <div className="lb-empty">
+              {t("state.pickBoard", "Pick a board to see rankings.")}
+            </div>
           )}
         </section>
       </div>
@@ -237,6 +252,7 @@ function BoardTab({
   userEntry: LeaderboardEntry | null;
   onClick: () => void;
 }) {
+  const { t } = useTranslation("leaderboards");
   return (
     <button
       type="button"
@@ -245,8 +261,8 @@ function BoardTab({
       className={`lb-tab ${active ? "is-active" : ""}`}
       onClick={onClick}
     >
-      <span className="lb-tab-name">{board.name}</span>
-      <span className="lb-tab-sub">{board.metricLabel}</span>
+      <span className="lb-tab-name">{boardName(board, t)}</span>
+      <span className="lb-tab-sub">{metricLabel(board, t)}</span>
       <span className="lb-tab-rank mono">
         {userEntry ? `#${userEntry.rank}` : "—"}
       </span>
@@ -265,6 +281,7 @@ function CategoryPicker({
   userStanding: Map<string, LeaderboardEntry>;
   onSelect: (id: string) => void;
 }) {
+  const { t } = useTranslation("leaderboards");
   const activeInCategory = boards.some((b) => b.id === selectedId);
   const currentValue = activeInCategory ? selectedId : (boards[0]?.id ?? "");
   const userEntry = userStanding.get(currentValue) ?? null;
@@ -275,18 +292,18 @@ function CategoryPicker({
       role="tab"
       aria-selected={activeInCategory}
     >
-      <span className="lb-tab-name">Category Champions</span>
+      <span className="lb-tab-name">
+        {t("categoryChampions", "Category Champions")}
+      </span>
       <select
         className="lb-category-select"
         value={currentValue}
         onChange={(e) => onSelect(e.target.value)}
-        aria-label="Choose a category"
+        aria-label={t("chooseCategory", "Choose a category")}
       >
         {boards.map((b) => (
           <option key={b.id} value={b.id}>
-            {b.categorySlug
-              ? b.categorySlug.charAt(0).toUpperCase() + b.categorySlug.slice(1)
-              : b.name}
+            {categoryLabel(b, t)}
           </option>
         ))}
       </select>
@@ -310,45 +327,61 @@ function DetailPanel({
   loading: boolean;
   currentUserId: string;
 }) {
+  const { t } = useTranslation("leaderboards");
   return (
     <>
       <header className="lb-detail-head">
         <div>
           <h2 id="lb-detail-title" className="lb-detail-title">
-            {board.name}
+            {boardName(board, t)}
           </h2>
-          <p className="lb-detail-body">{board.description}</p>
+          <p className="lb-detail-body">{boardDescription(board, t)}</p>
         </div>
-        <div className="lb-detail-window mono">{windowLabel(board.window)}</div>
+        <div className="lb-detail-window mono">
+          {windowLabel(board.window, t)}
+        </div>
       </header>
 
       {loading ? (
-        <div className="lb-empty">Loading rankings…</div>
+        <div className="lb-empty">
+          {t("state.loadingRankings", "Loading rankings…")}
+        </div>
       ) : entries.length === 0 ? (
         <div className="lb-empty">
-          <p>{board.qualificationMsg}</p>
+          <p>{qualificationMessage(board, t)}</p>
           {viewerEntry === null && (
             <p className="lb-empty-sub">
-              Nobody has qualified for this board yet.
+              {t(
+                "state.noQualified",
+                "Nobody has qualified for this board yet.",
+              )}
             </p>
           )}
         </div>
       ) : (
-        <table className="lb-table" aria-label={`${board.name} rankings`}>
+        <table
+          className="lb-table"
+          aria-label={t("table.rankingsAria", "{{board}} rankings", {
+            board: boardName(board, t),
+          })}
+        >
           <caption className="sr-only">
-            {board.name} rankings — {windowLabel(board.window)}
+            {t("table.caption", "{{board}} rankings — {{window}}", {
+              board: boardName(board, t),
+              window: windowLabel(board.window, t),
+            })}
           </caption>
           <thead>
             <tr>
               <th scope="col" className="lb-num">
-                Rank
+                {t("table.rank", "Rank")}
               </th>
-              <th scope="col">Trader</th>
+              <th scope="col">{t("table.trader", "Trader")}</th>
               <th scope="col" className="lb-num">
-                {board.metricLabel}
+                {metricLabel(board, t)}
               </th>
               <th scope="col" className="lb-num lb-hide-sm">
-                Settled
+                {t("table.settled", "Settled")}
               </th>
             </tr>
           </thead>
@@ -362,7 +395,9 @@ function DetailPanel({
                   aria-current={isViewer ? "true" : undefined}
                 >
                   <td className="lb-num mono">
-                    {isViewer ? `#${e.rank} You` : `#${e.rank}`}
+                    {isViewer
+                      ? t("table.youRank", "#{{rank}} You", { rank: e.rank })
+                      : `#${e.rank}`}
                   </td>
                   <td className="lb-trader">{e.displayName}</td>
                   <td className="lb-num mono">
@@ -382,8 +417,10 @@ function DetailPanel({
               !entries.some((e) => e.userId === currentUserId) && (
                 <tr className="is-viewer" aria-current="true">
                   <td colSpan={4} className="lb-viewer-row">
-                    #{viewerEntry.rank} You ·{" "}
-                    {formatMetric(board, viewerEntry.metricValue)}
+                    {t("table.viewerRow", "#{{rank}} You · {{metric}}", {
+                      rank: viewerEntry.rank,
+                      metric: formatMetric(board, viewerEntry.metricValue),
+                    })}
                   </td>
                 </tr>
               )}
@@ -416,10 +453,86 @@ function PageState({
   );
 }
 
-function windowLabel(window: string): string {
-  if (window === "weekly") return "This week";
-  if (window === "rolling_30d") return "Last 30 days";
+function windowLabel(
+  window: string,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  if (window === "weekly") return t("windows.weekly", "This week");
+  if (window === "rolling_30d")
+    return t("windows.rolling30d", "Last 30 days");
   return window;
+}
+
+function boardName(
+  board: LeaderboardDefinition,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  if (board.id === "accuracy") return t("boards.accuracy.name", "Accuracy");
+  if (board.id === "pnl_weekly")
+    return t("boards.pnlWeekly.name", "Weekly P&L");
+  if (board.id === "sharpness")
+    return t("boards.sharpness.name", "Sharpness");
+  if (board.id.startsWith("category:")) {
+    return t("boards.category.name", "{{category}} Champions", {
+      category: categoryLabel(board, t),
+    });
+  }
+  return board.name;
+}
+
+function boardDescription(
+  board: LeaderboardDefinition,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  if (board.id === "accuracy")
+    return t("boards.accuracy.description", board.description);
+  if (board.id === "pnl_weekly")
+    return t("boards.pnlWeekly.description", board.description);
+  if (board.id === "sharpness")
+    return t("boards.sharpness.description", board.description);
+  if (board.id.startsWith("category:")) {
+    return t("boards.category.description", board.description, {
+      category: categoryLabel(board, t),
+    });
+  }
+  return board.description;
+}
+
+function metricLabel(
+  board: LeaderboardDefinition,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  if (board.id === "accuracy") return t("metrics.accuracy", "Accuracy");
+  if (board.id === "pnl_weekly") return t("metrics.pnl", "P&L");
+  if (board.id === "sharpness") return t("metrics.sharpness", "Sharpness");
+  if (board.id.startsWith("category:")) return t("metrics.category", "Profit");
+  return board.metricLabel;
+}
+
+function qualificationMessage(
+  board: LeaderboardDefinition,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  if (board.id === "accuracy")
+    return t("qualification.accuracy", board.qualificationMsg);
+  if (board.id === "pnl_weekly")
+    return t("qualification.pnlWeekly", board.qualificationMsg);
+  if (board.id === "sharpness")
+    return t("qualification.sharpness", board.qualificationMsg);
+  if (board.id.startsWith("category:"))
+    return t("qualification.category", board.qualificationMsg);
+  return board.qualificationMsg;
+}
+
+function categoryLabel(
+  board: LeaderboardDefinition,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  const slug = board.categorySlug || board.id.replace("category:", "");
+  const fallback = slug
+    ? slug.charAt(0).toUpperCase() + slug.slice(1)
+    : board.name;
+  return t(`categories.${slug}`, fallback);
 }
 
 function formatMetric(board: LeaderboardDefinition, value: number): string {

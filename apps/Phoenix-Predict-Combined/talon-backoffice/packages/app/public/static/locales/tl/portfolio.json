@@ -1,0 +1,70 @@
+{
+  "title": "Portfolio",
+  "subtitle": "Open positions, active orders, settled payouts.",
+  "state": {
+    "loading": "Loading portfolio…",
+    "signIn": "Mag-sign in para makita ang portfolio mo.",
+    "login": "Log in"
+  },
+  "summary": {
+    "invested": "Invested",
+    "realizedPnl": "Realized P&L",
+    "openPositions": "Open positions",
+    "accuracy": "Accuracy",
+    "correctCount": "{{correct}}/{{total}} tama",
+    "noSettledPredictions": "Wala pang settled predictions"
+  },
+  "rank": {
+    "label": "Rank",
+    "notRanked": "Wala pang rank",
+    "qualify": "Mag-settle ng mas maraming markets para mag-qualify",
+    "metricAccuracy": "{{value}}% tama",
+    "metricSharpness": "{{value}}% ROI",
+    "metricPnl": "{{value}} P&L"
+  },
+  "boards": {
+    "accuracy": "Accuracy",
+    "pnlWeekly": "Weekly P&L",
+    "sharpness": "Sharpness"
+  },
+  "tabs": {
+    "positions": "Positions",
+    "orders": "Open orders",
+    "history": "History"
+  },
+  "positions": {
+    "empty": "Walang open positions.",
+    "browse": "Browse markets"
+  },
+  "orders": {
+    "empty": "Walang open orders.",
+    "cancelled": "Nakansela ang order",
+    "released": "Na-release ang reserved cash sa {{ticker}}",
+    "cancelFailed": "Cancel failed",
+    "cancel": "Cancel"
+  },
+  "history": {
+    "empty": "Lalabas dito ang settled positions pagkatapos ma-resolve ang markets.",
+    "earnedPoints": "Kumita ng {{points}} points",
+    "pointsShort": "+{{points}} pts"
+  },
+  "table": {
+    "market": "Market",
+    "side": "Side",
+    "qty": "Qty",
+    "available": "Available",
+    "avgPrice": "Avg price",
+    "cost": "Cost",
+    "status": "Status",
+    "placed": "Placed",
+    "entry": "Entry",
+    "exit": "Exit",
+    "pnl": "P&L",
+    "points": "Points",
+    "settled": "Settled"
+  },
+  "side": {
+    "yes": "YES",
+    "no": "NO"
+  }
+}

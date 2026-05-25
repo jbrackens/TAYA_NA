@@ -13,11 +13,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import i18n, { SUPPORTED_LANGUAGES } from "../../lib/i18n/config";
 
 const LANGUAGE_LABELS: Record<string, string> = {
   en: "English",
-  de: "Deutsch",
+  "zh-Hans": "简体中文",
+  "zh-Hant": "繁體中文",
+  tl: "Tagalog",
+  ms: "Bahasa Melayu",
+  id: "Bahasa Indonesia",
 };
 
 // A small but reasonable set. Browser default goes at the top.
@@ -44,6 +49,7 @@ function browserTimezone(): string {
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation("settings");
   const [language, setLanguage] = useState<string>("en");
   const [timezone, setTimezone] = useState<string>("UTC");
   const [savedFlash, setSavedFlash] = useState<string | null>(null);
@@ -63,13 +69,13 @@ export default function SettingsPage() {
     setLanguage(next);
     localStorage.setItem("phoenix_language", next);
     void i18n.changeLanguage(next);
-    flash("Language updated");
+    flash(t("flash.languageUpdated", "Language updated"));
   }
 
   function handleTimezoneChange(next: string) {
     setTimezone(next);
     localStorage.setItem("phoenix_timezone", next);
-    flash("Timezone updated");
+    flash(t("flash.timezoneUpdated", "Timezone updated"));
   }
 
   function flash(message: string) {
@@ -97,25 +103,27 @@ export default function SettingsPage() {
       <div className="set-page">
         <div className="set-header">
           <div>
-            <h1>Settings</h1>
-            <p>Language and timezone preferences for your account.</p>
+            <h1>{t("TITLE", "Settings")}</h1>
+            <p>{t("subtitle", "Language and timezone preferences for your account.")}</p>
           </div>
           <Link href="/account" className="set-back">
-            ← Back
+            ← {t("back", "Back")}
           </Link>
         </div>
 
         {savedFlash && <div className="set-flash">{savedFlash}</div>}
 
         <section className="set-card">
-          <h2>Language</h2>
+          <h2>{t("language.title", "Language")}</h2>
           <p className="set-desc">
-            Translations apply across the app immediately, and persist for
-            future sessions on this device.
+            {t(
+              "language.description",
+              "Translations apply across the app immediately, and persist for future sessions on this device.",
+            )}
           </p>
           <div className="set-row">
             <label className="set-label" htmlFor="set-lang">
-              Display language
+              {t("language.display", "Display language")}
             </label>
             <select
               id="set-lang"
@@ -133,15 +141,17 @@ export default function SettingsPage() {
         </section>
 
         <section className="set-card">
-          <h2>Timezone</h2>
+          <h2>{t("timezone.title", "Timezone")}</h2>
           <p className="set-desc">
-            Used to display market close times and trade history in your local
-            time. Defaults to your browser&rsquo;s timezone
+            {t(
+              "timezone.description",
+              "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
+            )}
             {browserTz ? ` (${browserTz})` : ""}.
           </p>
           <div className="set-row">
             <label className="set-label" htmlFor="set-tz">
-              Display timezone
+              {t("timezone.display", "Display timezone")}
             </label>
             <select
               id="set-tz"
@@ -151,22 +161,26 @@ export default function SettingsPage() {
             >
               {tzOptions.map((tz) => (
                 <option key={tz} value={tz}>
-                  {tz === browserTz ? `${tz} (browser)` : tz}
+                  {tz === browserTz ? `${tz} (${t("timezone.browser", "browser")})` : tz}
                 </option>
               ))}
             </select>
           </div>
           <div className="set-preview">
-            <span className="set-preview-label">Preview</span>
+            <span className="set-preview-label">{t("timezone.preview", "Preview")}</span>
             <span className="set-preview-value mono">{zonedExample}</span>
           </div>
         </section>
 
         <p className="set-foot">
-          Need security, password, or notification settings? Find them in{" "}
-          <Link href="/account/security">Security</Link>,{" "}
-          <Link href="/account/notifications">Alerts</Link>, and{" "}
-          <Link href="/account">Account</Link>.
+          {t(
+            "footer.beforeLinks",
+            "Need security, password, or notification settings? Find them in",
+          )}{" "}
+          <Link href="/account/security">{t("footer.security", "Security")}</Link>,{" "}
+          <Link href="/account/notifications">{t("footer.alerts", "Alerts")}</Link>,{" "}
+          {t("footer.and", "and")}{" "}
+          <Link href="/account">{t("footer.account", "Account")}</Link>.
         </p>
       </div>
     </>

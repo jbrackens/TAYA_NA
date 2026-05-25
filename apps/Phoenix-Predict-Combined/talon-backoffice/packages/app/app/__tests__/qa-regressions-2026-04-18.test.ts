@@ -10,6 +10,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 const appRoot = resolve(__dirname, "..");
@@ -414,5 +415,45 @@ describe("Market copy localization", () => {
         ),
       "marketDescription should prefer API translations before bundled market-content fallbacks",
     );
+  });
+});
+
+describe("Full-page translation coverage", () => {
+  const i18nConfigSource = read("lib/i18n/config.ts");
+
+  it("loads page namespaces for portfolio and leaderboards", () => {
+    assert.ok(
+      i18nConfigSource.includes('"portfolio"') &&
+        i18nConfigSource.includes('"leaderboards"'),
+      "i18n config should register the portfolio and leaderboards namespaces",
+    );
+  });
+
+  it("routes requested account surfaces through i18n", () => {
+    for (const file of [
+      "account/page.tsx",
+      "account/settings/page.tsx",
+      "portfolio/page.tsx",
+      "leaderboards/page.tsx",
+      "rewards/page.tsx",
+    ]) {
+      assert.ok(
+        read(file).includes("useTranslation("),
+        `${file} should use i18n for visible page copy`,
+      );
+    }
+  });
+
+  it("ships locale JSON for requested pages in every supported language", () => {
+    for (const lang of ["en", "zh-Hans", "zh-Hant", "tl", "ms", "id"]) {
+      for (const ns of ["portfolio", "leaderboards"]) {
+        assert.ok(
+          existsSync(
+            resolve(appRoot, `../public/static/locales/${lang}/${ns}.json`),
+          ),
+          `${lang}/${ns}.json should exist`,
+        );
+      }
+    }
   });
 });

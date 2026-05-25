@@ -6,5 +6,61 @@
   "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
   "SELF_EXCLUSION": "Self Exclusion",
   "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits"
+  "DEPOSIT_LIMITS": "Deposit Limits",
+  "hub": {
+    "title": "账户",
+    "subtitle": "管理个人资料、钱包、安全和通知偏好。",
+    "availableBalance": "可用余额"
+  },
+  "actions": {
+    "profile": {
+      "title": "个人资料",
+      "desc": "更新资料和账户设置"
+    },
+    "portfolio": {
+      "title": "投资组合",
+      "desc": "持仓、订单和已结算历史"
+    },
+    "cashier": {
+      "title": "收银台",
+      "desc": "存款和提款"
+    },
+    "walletActivity": {
+      "title": "钱包活动",
+      "desc": "账本记录和交易历史"
+    },
+    "security": {
+      "title": "安全",
+      "desc": "密码、会话和登录保护"
+    },
+    "alerts": {
+      "title": "提醒",
+      "desc": "管理市场和账户通知"
+    },
+    "responsible": {
+      "title": "理性参与",
+      "desc": "存款限额、冷静期和自我排除"
+    }
+  },
+  "privacy": {
+    "kicker": "隐私",
+    "title": "公开榜单显示",
+    "label": "在排行榜上匿名显示",
+    "descriptionBeforeRank": "开启后，你的用户名会在公开榜单中隐藏，并替换为你的排名（例如",
+    "rankExample": "交易者 #14",
+    "descriptionAfterRank": "）。你的排名和数据仍会显示；只隐藏昵称。",
+    "saveError": "无法保存该更改"
+  },
+  "portfolio": {
+    "kicker": "投资组合",
+    "title": "你的持仓概览",
+    "open": "打开投资组合"
+  },
+  "stats": {
+    "invested": "已投入",
+    "realizedPnl": "已实现盈亏",
+    "openPositions": "未平仓持仓",
+    "accuracy": "准确率",
+    "noSettledMarkets": "还没有已结算市场"
+  }
 }

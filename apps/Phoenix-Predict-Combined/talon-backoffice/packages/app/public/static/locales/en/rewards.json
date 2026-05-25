@@ -53,5 +53,49 @@
   "COMPETITION_EMPTY": "No active competitions right now.",
   "COMPETITION_YOUR_RANK": "Your Rank",
   "COMPETITION_VIEW_ALL": "View All Boards",
-  "BACK_TO_ACCOUNT": "Back to Account"
+  "BACK_TO_ACCOUNT": "Back to Account",
+  "kickerShort": "Rewards",
+  "loyaltyTitle": "Loyalty",
+  "viewLeaderboards": "View leaderboards",
+  "pointsShort": "pts",
+  "errors": {
+    "loadRewards": "Failed to load rewards"
+  },
+  "state": {
+    "loading": "Loading rewards…",
+    "signIn": "Sign in to view your tier, points balance, and recent activity.",
+    "login": "Log in",
+    "backToPortfolio": "Back to portfolio"
+  },
+  "progress": {
+    "pointsTo": "{{points}} pts to",
+    "topTier": "Top tier reached — thanks for trading with us."
+  },
+  "ladder": {
+    "aria": "Tier ladder"
+  },
+  "benefits": {
+    "unlocked": "Unlocked"
+  },
+  "prefirst": {
+    "title": "No activity yet",
+    "body": "Settle your first trade to start earning points and climb the tier ladder.",
+    "browse": "Browse markets"
+  },
+  "ledger": {
+    "title": "Recent activity",
+    "entries": "{{count}} entries",
+    "empty": "No activity yet — settle a market to start earning.",
+    "caption": "Recent loyalty ledger entries for {{name}}",
+    "date": "Date",
+    "event": "Event",
+    "change": "Change",
+    "balance": "Balance",
+    "settledWon": "Settled trade · won",
+    "settledLost": "Settled trade · lost",
+    "settledTrade": "Settled trade",
+    "adjustment": "Adjustment",
+    "promotion": "Tier promotion",
+    "migration": "Imported from legacy"
+  }
 }

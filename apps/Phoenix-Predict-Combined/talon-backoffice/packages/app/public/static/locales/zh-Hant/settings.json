@@ -1,3 +1,28 @@
 {
-  "TITLE": "Settings"
+  "TITLE": "設定",
+  "subtitle": "帳戶的語言和時區偏好。",
+  "back": "返回",
+  "flash": {
+    "languageUpdated": "语言已更新",
+    "timezoneUpdated": "时区已更新"
+  },
+  "language": {
+    "title": "语言",
+    "description": "翻译会立即应用到整个应用，并保存在此设备以供后续会话使用。",
+    "display": "显示语言"
+  },
+  "timezone": {
+    "title": "时区",
+    "description": "用于按你的本地时间显示市场关闭时间和交易历史。默认使用浏览器时区",
+    "display": "显示时区",
+    "browser": "浏览器",
+    "preview": "预览"
+  },
+  "footer": {
+    "beforeLinks": "需要安全、密码或通知设置？请前往",
+    "security": "安全",
+    "alerts": "提醒",
+    "and": "和",
+    "account": "账户"
+  }
 }

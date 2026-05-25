@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import {
   getLoyaltyStanding,
@@ -22,6 +23,7 @@ import { logger } from "../lib/logger";
 const LEDGER_LIMIT = 20;
 
 export default function RewardsPage() {
+  const { t } = useTranslation("rewards");
   const { user, isLoading: authLoading } = useAuth();
   const [standing, setStanding] = useState<LoyaltyStanding | null>(null);
   const [ledger, setLedger] = useState<LoyaltyLedgerEntry[]>([]);
@@ -55,7 +57,9 @@ export default function RewardsPage() {
       } catch (err) {
         if (cancelled) return;
         const message =
-          err instanceof Error ? err.message : "Failed to load rewards";
+          err instanceof Error
+            ? err.message
+            : t("errors.loadRewards", "Failed to load rewards");
         logger.error("Rewards", "loyalty fetch failed", message);
         setError(message);
       } finally {
@@ -86,13 +90,16 @@ export default function RewardsPage() {
   }, [standing, visibleTiers]);
 
   if (authLoading || loading) {
-    return <PageState message="Loading rewards…" />;
+    return <PageState message={t("state.loading", "Loading rewards…")} />;
   }
   if (!user?.id) {
     return (
       <PageState
-        message="Sign in to view your tier, points balance, and recent activity."
-        cta={{ href: "/auth/login", label: "Log in" }}
+        message={t(
+          "state.signIn",
+          "Sign in to view your tier, points balance, and recent activity.",
+        )}
+        cta={{ href: "/auth/login", label: t("state.login", "Log in") }}
       />
     );
   }
@@ -100,7 +107,10 @@ export default function RewardsPage() {
     return (
       <PageState
         message={error}
-        cta={{ href: "/portfolio", label: "Back to portfolio" }}
+        cta={{
+          href: "/portfolio",
+          label: t("state.backToPortfolio", "Back to portfolio"),
+        }}
       />
     );
   }
@@ -115,11 +125,11 @@ export default function RewardsPage() {
       <Styles />
       <header className="rw-head">
         <div>
-          <span className="rw-kicker">Rewards</span>
-          <h1 className="rw-title">Loyalty</h1>
+          <span className="rw-kicker">{t("kickerShort", "Rewards")}</span>
+          <h1 className="rw-title">{t("loyaltyTitle", "Loyalty")}</h1>
         </div>
         <Link href="/leaderboards" className="rw-xlink">
-          View leaderboards →
+          {t("viewLeaderboards", "View leaderboards")} →
         </Link>
       </header>
 
@@ -133,7 +143,7 @@ export default function RewardsPage() {
             </span>
             <h2 id="rw-tier-title" className="rw-balance mono">
               {formatPoints(standing.pointsBalance)}
-              <span className="rw-balance-unit"> pts</span>
+              <span className="rw-balance-unit"> {t("pointsShort", "pts")}</span>
             </h2>
           </header>
 
@@ -141,7 +151,9 @@ export default function RewardsPage() {
             <div className="rw-progress">
               <div className="rw-progress-head">
                 <span>
-                  {formatPoints(standing.pointsToNextTier)} pts to{" "}
+                  {t("progress.pointsTo", "{{points}} pts to", {
+                    points: formatPoints(standing.pointsToNextTier),
+                  })}{" "}
                   <strong>{standing.nextTierName}</strong>
                 </span>
                 <span className="mono rw-progress-pct">
@@ -157,7 +169,7 @@ export default function RewardsPage() {
             </div>
           ) : (
             <p className="rw-topped-out">
-              Top tier reached — thanks for trading with us.
+              {t("progress.topTier", "Top tier reached — thanks for trading with us.")}
             </p>
           )}
 
@@ -167,28 +179,36 @@ export default function RewardsPage() {
         <section className="rw-ledger" aria-labelledby="rw-ledger-title">
           <header className="rw-ledger-head">
             <h3 id="rw-ledger-title" className="rw-ledger-title">
-              Recent activity
+              {t("ledger.title", "Recent activity")}
             </h3>
-            <span className="rw-ledger-meta">{ledger.length} entries</span>
+            <span className="rw-ledger-meta">
+              {t("ledger.entries", "{{count}} entries", {
+                count: ledger.length,
+              })}
+            </span>
           </header>
           {ledger.length === 0 ? (
             <div className="rw-ledger-empty">
-              No activity yet — settle a market to start earning.
+              {t("ledger.empty", "No activity yet — settle a market to start earning.")}
             </div>
           ) : (
             <table className="rw-ledger-table">
               <caption className="sr-only">
-                Recent loyalty ledger entries for {user.username || user.id}
+                {t(
+                  "ledger.caption",
+                  "Recent loyalty ledger entries for {{name}}",
+                  { name: user.username || user.id },
+                )}
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">Event</th>
+                  <th scope="col">{t("ledger.date", "Date")}</th>
+                  <th scope="col">{t("ledger.event", "Event")}</th>
                   <th scope="col" className="rw-num">
-                    Change
+                    {t("ledger.change", "Change")}
                   </th>
                   <th scope="col" className="rw-num">
-                    Balance
+                    {t("ledger.balance", "Balance")}
                   </th>
                 </tr>
               </thead>
@@ -199,7 +219,7 @@ export default function RewardsPage() {
                       {formatDate(entry.createdAt)}
                     </td>
                     <td>
-                      <div className="rw-event">{labelForEntry(entry)}</div>
+                      <div className="rw-event">{labelForEntry(entry, t)}</div>
                       {shouldShowReason(entry) && (
                         <div className="rw-reason">{entry.reason}</div>
                       )}
@@ -231,8 +251,9 @@ function TierLadder({
   tiers: LoyaltyTier[];
   current: number;
 }) {
+  const { t } = useTranslation("rewards");
   return (
-    <div className="rw-ladder" role="list" aria-label="Tier ladder">
+    <div className="rw-ladder" role="list" aria-label={t("ladder.aria", "Tier ladder")}>
       {tiers.map((t) => {
         const isCurrent = t.tier === current;
         const isPast = t.tier < current;
@@ -263,6 +284,7 @@ function BenefitsList({
   tiers: LoyaltyTier[];
   current: number;
 }) {
+  const { t } = useTranslation("rewards");
   // Benefits are cumulative — show every benefit from tier 1 up through the
   // user's current tier. Matches plan §2.Tiers.
   const rows: Array<{ key: string; tier: number; name: string; copy: string }> =
@@ -282,7 +304,7 @@ function BenefitsList({
   if (rows.length === 0) return null;
   return (
     <div className="rw-benefits">
-      <h3 className="rw-benefits-title">Unlocked</h3>
+      <h3 className="rw-benefits-title">{t("benefits.unlocked", "Unlocked")}</h3>
       <ul className="rw-benefits-list">
         {rows.map((row) => (
           <li key={row.key} className="rw-benefit">
@@ -300,18 +322,21 @@ function BenefitsList({
 }
 
 function PreFirstSettleState() {
+  const { t } = useTranslation("rewards");
   return (
     <div className="rw-prefirst">
       <Styles />
       <div className="rw-prefirst-card">
-        <span className="rw-kicker">Rewards</span>
-        <h1 className="rw-prefirst-title">No activity yet</h1>
+        <span className="rw-kicker">{t("kickerShort", "Rewards")}</span>
+        <h1 className="rw-prefirst-title">{t("prefirst.title", "No activity yet")}</h1>
         <p className="rw-prefirst-body">
-          Settle your first trade to start earning points and climb the tier
-          ladder.
+          {t(
+            "prefirst.body",
+            "Settle your first trade to start earning points and climb the tier ladder.",
+          )}
         </p>
         <Link href="/predict" className="rw-prefirst-cta">
-          Browse markets →
+          {t("prefirst.browse", "Browse markets")} →
         </Link>
       </div>
     </div>
@@ -340,22 +365,25 @@ function PageState({
   );
 }
 
-function labelForEntry(e: LoyaltyLedgerEntry): string {
+function labelForEntry(
+  e: LoyaltyLedgerEntry,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
   switch (e.eventType) {
     case "accrual": {
       // Backend reason is "settled trade (won)" / "settled trade (lost)".
       // Fold the outcome into the label so the reason row doesn't duplicate it.
       const r = e.reason ?? "";
-      if (r.includes("(won)")) return "Settled trade · won";
-      if (r.includes("(lost)")) return "Settled trade · lost";
-      return "Settled trade";
+      if (r.includes("(won)")) return t("ledger.settledWon", "Settled trade · won");
+      if (r.includes("(lost)")) return t("ledger.settledLost", "Settled trade · lost");
+      return t("ledger.settledTrade", "Settled trade");
     }
     case "adjustment":
-      return "Adjustment";
+      return t("ledger.adjustment", "Adjustment");
     case "promotion":
-      return "Tier promotion";
+      return t("ledger.promotion", "Tier promotion");
     case "migration":
-      return "Imported from legacy";
+      return t("ledger.migration", "Imported from legacy");
     default:
       return e.eventType;
   }

@@ -26,6 +26,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { logger } from "../lib/logger";
 import { getBalance } from "../lib/api/wallet-client";
@@ -38,6 +39,7 @@ import { FEATURE_RG } from "../lib/features";
 const api = createPredictionClient();
 
 export default function AccountPage() {
+  const { t } = useTranslation("account");
   const { user } = useAuth();
   const [balance, setBalance] = useState<Balance | null>(null);
   const [summary, setSummary] = useState<PortfolioSummary | null>(null);
@@ -76,9 +78,12 @@ export default function AccountPage() {
       <Styles />
 
       <header className="acct-head">
-        <h1 className="acct-title">Account</h1>
+        <h1 className="acct-title">{t("hub.title", "Account")}</h1>
         <p className="acct-sub">
-          Profile, wallet, security, and notification preferences.
+          {t(
+            "hub.subtitle",
+            "Profile, wallet, security, and notification preferences.",
+          )}
         </p>
       </header>
 
@@ -91,7 +96,9 @@ export default function AccountPage() {
           </div>
         </div>
         <div className="acct-balance">
-          <span className="acct-balance-label">Available balance</span>
+          <span className="acct-balance-label">
+            {t("hub.availableBalance", "Available balance")}
+          </span>
           <span className="acct-balance-value mono">
             {balance ? formatUSD(balance.availableBalance * 100) : "—"}
           </span>
@@ -106,45 +113,45 @@ export default function AccountPage() {
         <ActionCard
           href="/account/security"
           icon={<Settings size={20} />}
-          title="Profile"
-          desc="Update your details and account setup"
+          title={t("actions.profile.title", "Profile")}
+          desc={t("actions.profile.desc", "Update your details and account setup")}
         />
         <ActionCard
           href="/portfolio"
           icon={<TrendingUp size={20} />}
-          title="Portfolio"
-          desc="Open positions, orders, settled history"
+          title={t("actions.portfolio.title", "Portfolio")}
+          desc={t("actions.portfolio.desc", "Open positions, orders, settled history")}
         />
         <ActionCard
           href="/cashier"
           icon={<Wallet size={20} />}
-          title="Cashier"
-          desc="Deposits and withdrawals"
+          title={t("actions.cashier.title", "Cashier")}
+          desc={t("actions.cashier.desc", "Deposits and withdrawals")}
         />
         <ActionCard
           href="/account/transactions"
           icon={<CreditCard size={20} />}
-          title="Wallet activity"
-          desc="Ledger entries and transaction history"
+          title={t("actions.walletActivity.title", "Wallet activity")}
+          desc={t("actions.walletActivity.desc", "Ledger entries and transaction history")}
         />
         <ActionCard
           href="/account/security"
           icon={<Lock size={20} />}
-          title="Security"
-          desc="Password, sessions, and sign-in protection"
+          title={t("actions.security.title", "Security")}
+          desc={t("actions.security.desc", "Password, sessions, and sign-in protection")}
         />
         <ActionCard
           href="/account/notifications"
           icon={<Bell size={20} />}
-          title="Alerts"
-          desc="Control market and account notifications"
+          title={t("actions.alerts.title", "Alerts")}
+          desc={t("actions.alerts.desc", "Control market and account notifications")}
         />
         {FEATURE_RG && (
           <ActionCard
             href="/responsible-gaming"
             icon={<HeartHandshake size={20} />}
-            title="Play responsibly"
-            desc="Deposit limits, cool-offs, and self-exclusion"
+            title={t("actions.responsible.title", "Play responsibly")}
+            desc={t("actions.responsible.desc", "Deposit limits, cool-offs, and self-exclusion")}
           />
         )}
       </section>
@@ -153,6 +160,7 @@ export default function AccountPage() {
 }
 
 function PrivacyCard() {
+  const { t } = useTranslation("account");
   const [displayAnonymous, setDisplayAnonymous] = useState<boolean | null>(
     null,
   );
@@ -190,7 +198,7 @@ function PrivacyCard() {
     } catch (err: unknown) {
       logger.warn("Account", "privacy update failed", err);
       setError(
-        err instanceof Error ? err.message : "Couldn’t save that change",
+        err instanceof Error ? err.message : t("privacy.saveError", "Couldn’t save that change"),
       );
     } finally {
       setSaving(false);
@@ -201,9 +209,9 @@ function PrivacyCard() {
     <section className="acct-privacy" aria-labelledby="acct-privacy-title">
       <div className="acct-privacy-head">
         <div>
-          <span className="acct-kicker">Privacy</span>
+          <span className="acct-kicker">{t("privacy.kicker", "Privacy")}</span>
           <h2 id="acct-privacy-title" className="acct-privacy-title">
-            Appearance on public boards
+            {t("privacy.title", "Appearance on public boards")}
           </h2>
         </div>
       </div>
@@ -216,12 +224,18 @@ function PrivacyCard() {
         />
         <div>
           <div className="acct-privacy-label">
-            Appear anonymously on leaderboards
+            {t("privacy.label", "Appear anonymously on leaderboards")}
           </div>
           <div className="acct-privacy-sub">
-            When on, your username is hidden on public boards and replaced with
-            your rank (e.g. <span className="mono">Trader #14</span>). Your rank
-            and stats still show; only your handle is hidden.
+            {t(
+              "privacy.descriptionBeforeRank",
+              "When on, your username is hidden on public boards and replaced with your rank (e.g.",
+            )}{" "}
+            <span className="mono">{t("privacy.rankExample", "Trader #14")}</span>
+            {t(
+              "privacy.descriptionAfterRank",
+              "). Your rank and stats still show; only your handle is hidden.",
+            )}
           </div>
         </div>
       </label>
@@ -231,29 +245,30 @@ function PrivacyCard() {
 }
 
 function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
+  const { t } = useTranslation("account");
   const pnl = summary.realizedPnlCents;
   const pnlUp = pnl >= 0;
   return (
     <section className="acct-portfolio">
       <header className="acct-portfolio-head">
         <div>
-          <span className="acct-kicker">Portfolio</span>
-          <h2 className="acct-portfolio-title">Your positions at a glance</h2>
+          <span className="acct-kicker">{t("portfolio.kicker", "Portfolio")}</span>
+          <h2 className="acct-portfolio-title">{t("portfolio.title", "Your positions at a glance")}</h2>
         </div>
         <Link href="/portfolio" className="acct-portfolio-link">
-          Open portfolio →
+          {t("portfolio.open", "Open portfolio")} →
         </Link>
       </header>
       <div className="acct-portfolio-stats">
-        <Stat label="Invested" value={formatUSD(summary.totalValueCents)} />
+        <Stat label={t("stats.invested", "Invested")} value={formatUSD(summary.totalValueCents)} />
         <Stat
-          label="Realized P&L"
+          label={t("stats.realizedPnl", "Realized P&L")}
           value={`${pnlUp ? "+" : "−"}${formatUSD(Math.abs(pnl))}`}
           tone={pnlUp ? "gain" : "no"}
         />
-        <Stat label="Open positions" value={String(summary.openPositions)} />
+        <Stat label={t("stats.openPositions", "Open positions")} value={String(summary.openPositions)} />
         <Stat
-          label="Accuracy"
+          label={t("stats.accuracy", "Accuracy")}
           value={
             summary.totalPredictions > 0
               ? `${summary.accuracyPct.toFixed(1)}%`
@@ -262,7 +277,7 @@ function PortfolioStrip({ summary }: { summary: PortfolioSummary }) {
           sub={
             summary.totalPredictions > 0
               ? `${summary.correctPredictions}/${summary.totalPredictions}`
-              : "No settled markets yet"
+              : t("stats.noSettledMarkets", "No settled markets yet")
           }
           tone={summary.accuracyPct >= 50 ? "gain" : undefined}
         />

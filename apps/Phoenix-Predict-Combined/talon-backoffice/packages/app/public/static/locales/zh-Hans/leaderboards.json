@@ -1,0 +1,71 @@
+{
+  "kicker": "排行榜",
+  "title": "排名",
+  "viewTier": "查看你的等级",
+  "boardsAria": "榜单",
+  "categoryChampions": "分类冠军",
+  "chooseCategory": "选择分类",
+  "errors": {
+    "loadBoards": "无法加载排行榜",
+    "loadStandings": "无法加载排名"
+  },
+  "state": {
+    "loading": "正在加载排行榜…",
+    "backToPortfolio": "返回投资组合",
+    "none": "尚未设置排行榜。",
+    "browseMarkets": "浏览市场",
+    "pickBoard": "选择一个榜单查看排名。",
+    "loadingRankings": "正在加载排名…",
+    "noQualified": "此榜单还没有符合资格的用户。"
+  },
+  "windows": {
+    "weekly": "本周",
+    "rolling30d": "最近 30 天"
+  },
+  "boards": {
+    "accuracy": {
+      "name": "准确率",
+      "description": "按预测准确率排名交易者。"
+    },
+    "pnlWeekly": {
+      "name": "每周盈亏",
+      "description": "按本周已实现利润排名交易者。"
+    },
+    "sharpness": {
+      "name": "敏锐度",
+      "description": "按风险回报率排名交易者。"
+    },
+    "category": {
+      "name": "{{category}} 冠军",
+      "description": "{{category}} 市场中的顶尖交易者。"
+    }
+  },
+  "metrics": {
+    "accuracy": "准确率",
+    "pnl": "盈亏",
+    "sharpness": "敏锐度",
+    "category": "利润"
+  },
+  "qualification": {
+    "accuracy": "结算足够市场即可获得准确率排名资格。",
+    "pnlWeekly": "本周结算市场即可获得资格。",
+    "sharpness": "结算足够市场即可获得敏锐度排名资格。",
+    "category": "在此分类中结算市场即可获得资格。"
+  },
+  "categories": {
+    "crypto": "加密货币",
+    "politics": "政治",
+    "sports": "体育",
+    "culture": "文化",
+    "finance": "金融"
+  },
+  "table": {
+    "rankingsAria": "{{board}} 排名",
+    "caption": "{{board}} 排名 — {{window}}",
+    "rank": "排名",
+    "trader": "交易者",
+    "settled": "已结算",
+    "youRank": "#{{rank}} 你",
+    "viewerRow": "#{{rank}} 你 · {{metric}}"
+  }
+}

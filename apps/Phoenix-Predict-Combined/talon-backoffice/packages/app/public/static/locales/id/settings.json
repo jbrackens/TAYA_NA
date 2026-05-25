@@ -1,3 +1,28 @@
 {
-  "TITLE": "Settings"
+  "TITLE": "Pengaturan",
+  "subtitle": "Preferensi bahasa dan zona waktu untuk akun Anda.",
+  "back": "Kembali",
+  "flash": {
+    "languageUpdated": "Language updated",
+    "timezoneUpdated": "Timezone updated"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Translations apply across the app immediately, and persist for future sessions on this device.",
+    "display": "Display language"
+  },
+  "timezone": {
+    "title": "Timezone",
+    "description": "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
+    "display": "Display timezone",
+    "browser": "browser",
+    "preview": "Preview"
+  },
+  "footer": {
+    "beforeLinks": "Need security, password, or notification settings? Find them in",
+    "security": "Security",
+    "alerts": "Alerts",
+    "and": "and",
+    "account": "Account"
+  }
 }

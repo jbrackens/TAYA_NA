@@ -6,5 +6,61 @@
   "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
   "SELF_EXCLUSION": "Self Exclusion",
   "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits"
+  "DEPOSIT_LIMITS": "Deposit Limits",
+  "hub": {
+    "title": "Account",
+    "subtitle": "Profile, wallet, security, and notification preferences.",
+    "availableBalance": "Available balance"
+  },
+  "actions": {
+    "profile": {
+      "title": "Profile",
+      "desc": "Update your details and account setup"
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "desc": "Open positions, orders, settled history"
+    },
+    "cashier": {
+      "title": "Cashier",
+      "desc": "Deposits and withdrawals"
+    },
+    "walletActivity": {
+      "title": "Wallet activity",
+      "desc": "Ledger entries and transaction history"
+    },
+    "security": {
+      "title": "Security",
+      "desc": "Password, sessions, and sign-in protection"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "desc": "Control market and account notifications"
+    },
+    "responsible": {
+      "title": "Play responsibly",
+      "desc": "Deposit limits, cool-offs, and self-exclusion"
+    }
+  },
+  "privacy": {
+    "kicker": "Privacy",
+    "title": "Appearance on public boards",
+    "label": "Appear anonymously on leaderboards",
+    "descriptionBeforeRank": "When on, your username is hidden on public boards and replaced with your rank (e.g.",
+    "rankExample": "Trader #14",
+    "descriptionAfterRank": "). Your rank and stats still show; only your handle is hidden.",
+    "saveError": "Couldn’t save that change"
+  },
+  "portfolio": {
+    "kicker": "Portfolio",
+    "title": "Your positions at a glance",
+    "open": "Open portfolio"
+  },
+  "stats": {
+    "invested": "Invested",
+    "realizedPnl": "Realized P&L",
+    "openPositions": "Open positions",
+    "accuracy": "Accuracy",
+    "noSettledMarkets": "No settled markets yet"
+  }
 }

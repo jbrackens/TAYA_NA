@@ -6,5 +6,61 @@
   "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
   "SELF_EXCLUSION": "Self Exclusion",
   "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits"
+  "DEPOSIT_LIMITS": "Deposit Limits",
+  "hub": {
+    "title": "Account",
+    "subtitle": "Profile, wallet, security, at notification preferences.",
+    "availableBalance": "Available balance"
+  },
+  "actions": {
+    "profile": {
+      "title": "Profile",
+      "desc": "I-update ang detalye at setup ng account"
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "desc": "Open positions, orders, at settled history"
+    },
+    "cashier": {
+      "title": "Cashier",
+      "desc": "Deposits at withdrawals"
+    },
+    "walletActivity": {
+      "title": "Wallet activity",
+      "desc": "Ledger entries at transaction history"
+    },
+    "security": {
+      "title": "Security",
+      "desc": "Password, sessions, at sign-in protection"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "desc": "Kontrolin ang market at account notifications"
+    },
+    "responsible": {
+      "title": "Play responsibly",
+      "desc": "Deposit limits, cool-offs, at self-exclusion"
+    }
+  },
+  "privacy": {
+    "kicker": "Privacy",
+    "title": "Pagpapakita sa public boards",
+    "label": "Magpakita nang anonymous sa leaderboards",
+    "descriptionBeforeRank": "Kapag naka-on, nakatago ang username mo sa public boards at papalitan ng rank mo (hal.",
+    "rankExample": "Trader #14",
+    "descriptionAfterRank": "). Makikita pa rin ang rank at stats; handle lang ang nakatago.",
+    "saveError": "Hindi ma-save ang pagbabago"
+  },
+  "portfolio": {
+    "kicker": "Portfolio",
+    "title": "Mabilisang tingin sa positions mo",
+    "open": "Buksan ang portfolio"
+  },
+  "stats": {
+    "invested": "Invested",
+    "realizedPnl": "Realized P&L",
+    "openPositions": "Open positions",
+    "accuracy": "Accuracy",
+    "noSettledMarkets": "Wala pang settled markets"
+  }
 }
