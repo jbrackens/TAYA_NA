@@ -1,66 +1,66 @@
 {
-  "TITLE": "User Profile",
-  "PERSONAL_DETAILS": "Personal Details",
-  "WALLET_AND_INVENTORY": "Wallet and Inventory",
-  "SECURITY": "Security",
-  "LANGUAGE_AND_TIME_ZONE": "Language and Time Zone",
-  "SELF_EXCLUSION": "Self Exclusion",
-  "EMAIL_SETTINGS": "Email Settings",
-  "DEPOSIT_LIMITS": "Deposit Limits",
+  "TITLE": "Profil Pengguna",
+  "PERSONAL_DETAILS": "Detail Pribadi",
+  "WALLET_AND_INVENTORY": "Dompet dan Inventaris",
+  "SECURITY": "Keamanan",
+  "LANGUAGE_AND_TIME_ZONE": "Bahasa dan Zona Waktu",
+  "SELF_EXCLUSION": "Pengecualian Diri",
+  "EMAIL_SETTINGS": "Pengaturan Email",
+  "DEPOSIT_LIMITS": "Batas Deposit",
   "hub": {
     "title": "Akun",
-    "subtitle": "Profil, dompet, keamanan, dan preferensi notifikasi.",
+    "subtitle": "Preferensi profil, dompet, keamanan, dan notifikasi.",
     "availableBalance": "Saldo tersedia"
   },
   "actions": {
     "profile": {
-      "title": "Profile",
-      "desc": "Update your details and account setup"
+      "title": "Profil",
+      "desc": "Perbarui detail dan pengaturan akun Anda"
     },
     "portfolio": {
-      "title": "Portfolio",
-      "desc": "Open positions, orders, settled history"
+      "title": "Portofolio",
+      "desc": "Posisi terbuka, order, dan riwayat selesai"
     },
     "cashier": {
       "title": "Cashier",
-      "desc": "Deposits and withdrawals"
+      "desc": "Deposit dan penarikan"
     },
     "walletActivity": {
-      "title": "Wallet activity",
-      "desc": "Ledger entries and transaction history"
+      "title": "Aktivitas dompet",
+      "desc": "Entri ledger dan riwayat transaksi"
     },
     "security": {
-      "title": "Security",
-      "desc": "Password, sessions, and sign-in protection"
+      "title": "Keamanan",
+      "desc": "Kata sandi, sesi, dan perlindungan login"
     },
     "alerts": {
-      "title": "Alerts",
-      "desc": "Control market and account notifications"
+      "title": "Peringatan",
+      "desc": "Kontrol notifikasi market dan akun"
     },
     "responsible": {
-      "title": "Play responsibly",
-      "desc": "Deposit limits, cool-offs, and self-exclusion"
+      "title": "Bermain secara bertanggung jawab",
+      "desc": "Batas deposit, jeda bermain, dan pengecualian diri"
     }
   },
   "privacy": {
-    "kicker": "Privacy",
-    "title": "Appearance on public boards",
-    "label": "Appear anonymously on leaderboards",
-    "descriptionBeforeRank": "When on, your username is hidden on public boards and replaced with your rank (e.g.",
+    "kicker": "Privasi",
+    "title": "Tampilan di papan publik",
+    "label": "Tampil anonim di leaderboard",
+    "descriptionBeforeRank": "Jika aktif, username Anda disembunyikan di papan publik dan diganti dengan peringkat Anda (mis.",
     "rankExample": "Trader #14",
-    "descriptionAfterRank": "). Your rank and stats still show; only your handle is hidden.",
-    "saveError": "Couldn’t save that change"
+    "descriptionAfterRank": "). Peringkat dan statistik tetap tampil; hanya handle Anda yang disembunyikan.",
+    "saveError": "Perubahan itu tidak dapat disimpan"
   },
   "portfolio": {
-    "kicker": "Portfolio",
-    "title": "Your positions at a glance",
-    "open": "Open portfolio"
+    "kicker": "Portofolio",
+    "title": "Ringkasan posisi Anda",
+    "open": "Buka portofolio"
   },
   "stats": {
-    "invested": "Invested",
-    "realizedPnl": "Realized P&L",
-    "openPositions": "Open positions",
-    "accuracy": "Accuracy",
-    "noSettledMarkets": "No settled markets yet"
+    "invested": "Diinvestasikan",
+    "realizedPnl": "P&L terealisasi",
+    "openPositions": "Posisi terbuka",
+    "accuracy": "Akurasi",
+    "noSettledMarkets": "Belum ada market selesai"
   }
 }

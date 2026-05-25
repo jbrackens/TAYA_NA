@@ -1,28 +1,28 @@
 {
   "TITLE": "Tetapan",
-  "subtitle": "Pilihan bahasa dan zon waktu untuk akaun anda.",
+  "subtitle": "Keutamaan bahasa dan zon masa untuk akaun anda.",
   "back": "Kembali",
   "flash": {
-    "languageUpdated": "Language updated",
-    "timezoneUpdated": "Timezone updated"
+    "languageUpdated": "Bahasa dikemas kini",
+    "timezoneUpdated": "Zon masa dikemas kini"
   },
   "language": {
-    "title": "Language",
-    "description": "Translations apply across the app immediately, and persist for future sessions on this device.",
-    "display": "Display language"
+    "title": "Bahasa",
+    "description": "Terjemahan digunakan serta-merta di seluruh app dan disimpan untuk sesi akan datang pada peranti ini.",
+    "display": "Bahasa paparan"
   },
   "timezone": {
-    "title": "Timezone",
-    "description": "Used to display market close times and trade history in your local time. Defaults to your browser’s timezone",
-    "display": "Display timezone",
-    "browser": "browser",
-    "preview": "Preview"
+    "title": "Zon masa",
+    "description": "Digunakan untuk memaparkan masa tutup pasaran dan sejarah dagangan dalam masa tempatan anda. Lalai kepada zon masa pelayar anda",
+    "display": "Zon masa paparan",
+    "browser": "pelayar",
+    "preview": "Pratonton"
   },
   "footer": {
-    "beforeLinks": "Need security, password, or notification settings? Find them in",
-    "security": "Security",
-    "alerts": "Alerts",
-    "and": "and",
-    "account": "Account"
+    "beforeLinks": "Perlukan tetapan keselamatan, kata laluan atau notifikasi? Cari di",
+    "security": "Keselamatan",
+    "alerts": "Amaran",
+    "and": "dan",
+    "account": "Akaun"
   }
 }

@@ -1,67 +1,67 @@
 {
   "title": "Portofolio",
-  "subtitle": "Posisi terbuka, order aktif, pembayaran yang selesai.",
+  "subtitle": "Posisi terbuka, order aktif, dan pembayaran selesai.",
   "state": {
-    "loading": "Loading portfolio…",
-    "signIn": "Sign in to see your portfolio.",
-    "login": "Log in"
+    "loading": "Memuat portofolio…",
+    "signIn": "Login untuk melihat portofolio Anda.",
+    "login": "Login"
   },
   "summary": {
-    "invested": "Invested",
-    "realizedPnl": "Realized P&L",
-    "openPositions": "Open positions",
-    "accuracy": "Accuracy",
-    "correctCount": "{{correct}}/{{total}} correct",
-    "noSettledPredictions": "No settled predictions yet"
+    "invested": "Diinvestasikan",
+    "realizedPnl": "P&L terealisasi",
+    "openPositions": "Posisi terbuka",
+    "accuracy": "Akurasi",
+    "correctCount": "{{correct}}/{{total}} benar",
+    "noSettledPredictions": "Belum ada prediksi selesai"
   },
   "rank": {
-    "label": "Rank",
-    "notRanked": "Not ranked yet",
-    "qualify": "Settle more markets to qualify",
-    "metricAccuracy": "{{value}}% correct",
+    "label": "Peringkat",
+    "notRanked": "Belum masuk peringkat",
+    "qualify": "Selesaikan lebih banyak market agar memenuhi syarat",
+    "metricAccuracy": "{{value}}% benar",
     "metricSharpness": "{{value}}% ROI",
     "metricPnl": "{{value}} P&L"
   },
   "boards": {
-    "accuracy": "Accuracy",
-    "pnlWeekly": "Weekly P&L",
+    "accuracy": "Akurasi",
+    "pnlWeekly": "P&L mingguan",
     "sharpness": "Sharpness"
   },
   "tabs": {
-    "positions": "Positions",
-    "orders": "Open orders",
-    "history": "History"
+    "positions": "Posisi",
+    "orders": "Order terbuka",
+    "history": "Riwayat"
   },
   "positions": {
-    "empty": "No open positions.",
-    "browse": "Browse markets"
+    "empty": "Tidak ada posisi terbuka.",
+    "browse": "Jelajahi market"
   },
   "orders": {
-    "empty": "No open orders.",
-    "cancelled": "Order cancelled",
-    "released": "Reserved cash released on {{ticker}}",
-    "cancelFailed": "Cancel failed",
-    "cancel": "Cancel"
+    "empty": "Tidak ada order terbuka.",
+    "cancelled": "Order dibatalkan",
+    "released": "Dana cadangan dilepas pada {{ticker}}",
+    "cancelFailed": "Pembatalan gagal",
+    "cancel": "Batalkan"
   },
   "history": {
-    "empty": "Settled positions will appear here after markets resolve.",
-    "earnedPoints": "Earned {{points}} points",
+    "empty": "Posisi selesai akan muncul di sini setelah market diselesaikan.",
+    "earnedPoints": "Mendapat {{points}} poin",
     "pointsShort": "+{{points}} pts"
   },
   "table": {
     "market": "Market",
     "side": "Side",
     "qty": "Qty",
-    "available": "Available",
-    "avgPrice": "Avg price",
-    "cost": "Cost",
+    "available": "Tersedia",
+    "avgPrice": "Harga rata-rata",
+    "cost": "Biaya",
     "status": "Status",
-    "placed": "Placed",
-    "entry": "Entry",
-    "exit": "Exit",
+    "placed": "Dipasang",
+    "entry": "Masuk",
+    "exit": "Keluar",
     "pnl": "P&L",
-    "points": "Points",
-    "settled": "Settled"
+    "points": "Poin",
+    "settled": "Selesai"
   },
   "side": {
     "yes": "YES",

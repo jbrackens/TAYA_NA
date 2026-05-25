@@ -1,21 +1,21 @@
 {
-  "title": "Portfolio",
-  "subtitle": "Open positions, active orders, settled payouts.",
+  "title": "Portfolio mo",
+  "subtitle": "Bukas na posisyon, aktibong order, at settled payouts.",
   "state": {
-    "loading": "Loading portfolio…",
+    "loading": "Nilo-load ang portfolio…",
     "signIn": "Mag-sign in para makita ang portfolio mo.",
-    "login": "Log in"
+    "login": "Mag-log in"
   },
   "summary": {
-    "invested": "Invested",
-    "realizedPnl": "Realized P&L",
-    "openPositions": "Open positions",
-    "accuracy": "Accuracy",
+    "invested": "Naka-invest",
+    "realizedPnl": "Na-realize na P&L",
+    "openPositions": "Bukas na posisyon",
+    "accuracy": "Katumpakan",
     "correctCount": "{{correct}}/{{total}} tama",
     "noSettledPredictions": "Wala pang settled predictions"
   },
   "rank": {
-    "label": "Rank",
+    "label": "Ranggo",
     "notRanked": "Wala pang rank",
     "qualify": "Mag-settle ng mas maraming markets para mag-qualify",
     "metricAccuracy": "{{value}}% tama",
@@ -23,25 +23,25 @@
     "metricPnl": "{{value}} P&L"
   },
   "boards": {
-    "accuracy": "Accuracy",
-    "pnlWeekly": "Weekly P&L",
-    "sharpness": "Sharpness"
+    "accuracy": "Katumpakan",
+    "pnlWeekly": "Lingguhang P&L",
+    "sharpness": "Sharpness score"
   },
   "tabs": {
-    "positions": "Positions",
-    "orders": "Open orders",
-    "history": "History"
+    "positions": "Mga posisyon",
+    "orders": "Bukas na order",
+    "history": "Kasaysayan"
   },
   "positions": {
     "empty": "Walang open positions.",
-    "browse": "Browse markets"
+    "browse": "Mag-browse ng markets"
   },
   "orders": {
     "empty": "Walang open orders.",
     "cancelled": "Nakansela ang order",
     "released": "Na-release ang reserved cash sa {{ticker}}",
-    "cancelFailed": "Cancel failed",
-    "cancel": "Cancel"
+    "cancelFailed": "Hindi nakansela",
+    "cancel": "Kanselahin"
   },
   "history": {
     "empty": "Lalabas dito ang settled positions pagkatapos ma-resolve ang markets.",
@@ -49,22 +49,22 @@
     "pointsShort": "+{{points}} pts"
   },
   "table": {
-    "market": "Market",
-    "side": "Side",
-    "qty": "Qty",
-    "available": "Available",
-    "avgPrice": "Avg price",
-    "cost": "Cost",
-    "status": "Status",
-    "placed": "Placed",
-    "entry": "Entry",
-    "exit": "Exit",
+    "market": "Merkado",
+    "side": "Panig",
+    "qty": "Dami",
+    "available": "Available pa",
+    "avgPrice": "Average price",
+    "cost": "Gastos",
+    "status": "Kalagayan",
+    "placed": "Nailagay",
+    "entry": "Pasok",
+    "exit": "Labas",
     "pnl": "P&L",
-    "points": "Points",
-    "settled": "Settled"
+    "points": "Puntos",
+    "settled": "Settled na"
   },
   "side": {
-    "yes": "YES",
-    "no": "NO"
+    "yes": "OO",
+    "no": "HINDI"
   }
 }

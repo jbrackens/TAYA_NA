@@ -1,28 +1,28 @@
 {
-  "TITLE": "Settings",
-  "subtitle": "Language at timezone preferences para sa account mo.",
-  "back": "Back",
+  "TITLE": "Settings mo",
+  "subtitle": "Mga preference ng wika at time zone para sa account mo.",
+  "back": "Bumalik",
   "flash": {
-    "languageUpdated": "Na-update ang language",
-    "timezoneUpdated": "Na-update ang timezone"
+    "languageUpdated": "Na-update ang wika",
+    "timezoneUpdated": "Na-update ang time zone"
   },
   "language": {
-    "title": "Language",
-    "description": "Agad na maa-apply ang translations sa app at mase-save sa device na ito.",
-    "display": "Display language"
+    "title": "Wika",
+    "description": "Agad na nalalapat ang translations sa buong app at nase-save para sa susunod na sessions sa device na ito.",
+    "display": "Wika sa display"
   },
   "timezone": {
-    "title": "Timezone",
-    "description": "Ginagamit para ipakita ang market close times at trade history sa local time mo. Default ang browser timezone",
-    "display": "Display timezone",
-    "browser": "browser",
-    "preview": "Preview"
+    "title": "Time zone",
+    "description": "Ginagamit para ipakita ang market close times at trade history sa lokal mong oras. Default ang timezone ng browser mo",
+    "display": "Timezone sa display",
+    "browser": "browser setting",
+    "preview": "Preview time"
   },
   "footer": {
-    "beforeLinks": "Kailangan ng security, password, o notification settings? Hanapin sa",
-    "security": "Security",
-    "alerts": "Alerts",
+    "beforeLinks": "Kailangan ng security, password, o notification settings? Makikita ang mga iyon sa",
+    "security": "Seguridad",
+    "alerts": "Mga alerto",
     "and": "at",
-    "account": "Account"
+    "account": "Account mo"
   }
 }
