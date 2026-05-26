@@ -3,9 +3,9 @@
 import { useState, useMemo } from "react";
 
 const headerCellClass =
-  "cursor-pointer select-none border-b border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] p-3 text-left text-xs font-semibold uppercase tracking-[0.04em] text-[var(--t2,#4a4a4a)] hover:bg-[var(--accent-soft,rgba(43,228,128,0.14))]";
+  "cursor-pointer select-none truncate border-b border-[var(--border-1,#e5dfd2)] bg-[var(--surface-2,#fcfaf5)] p-3 text-left text-xs font-semibold uppercase tracking-[0.04em] text-[var(--t2,#4a4a4a)] hover:bg-[var(--accent-soft,rgba(43,228,128,0.14))]";
 const bodyCellClass =
-  "border-b border-[var(--border-1,#e5dfd2)] p-3 text-sm text-[var(--t1,#1a1a1a)]";
+  "max-w-0 truncate border-b border-[var(--border-1,#e5dfd2)] p-3 text-sm text-[var(--t1,#1a1a1a)]";
 const paginationButtonClass =
   "cursor-pointer rounded-lg border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] px-3 py-1.5 text-xs font-semibold text-[var(--t1,#1a1a1a)] transition-all duration-200 hover:enabled:border-[var(--focus-ring,#0e7a53)] hover:enabled:bg-[var(--surface-2,#fcfaf5)] hover:enabled:text-[var(--focus-ring,#0e7a53)] disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -75,9 +75,9 @@ export function DataTable<T extends Record<string, any>>({
   };
 
   return (
-    <div>
-      <div className="w-full overflow-x-auto">
-        <table className="w-full overflow-hidden rounded-xl border-collapse bg-[var(--surface-1,#ffffff)]">
+    <div className="min-w-0">
+      <div className="w-full max-w-full overflow-x-auto">
+        <table className="w-full min-w-[760px] table-fixed overflow-hidden rounded-xl border-collapse bg-[var(--surface-1,#ffffff)]">
           <thead>
             <tr>
               {columns.map((col) => (

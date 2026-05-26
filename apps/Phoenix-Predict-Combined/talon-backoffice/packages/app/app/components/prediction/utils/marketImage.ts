@@ -14,7 +14,9 @@
 
 interface MarketImageInput {
   ticker: string;
-  imagePath?: string;
+  imagePath?: string | null;
+  imageUrl?: string | null;
+  image_url?: string | null;
   categoryLabel?: string;
 }
 
@@ -46,8 +48,11 @@ function tickerToMonogram(ticker: string): string {
 export function getMarketImageProps(
   market: MarketImageInput,
 ): MarketImageProps {
-  if (market.imagePath && market.imagePath.trim().length > 0) {
-    return { kind: "image", src: market.imagePath };
+  const src = [market.imagePath, market.imageUrl, market.image_url].find(
+    (value) => value && value.trim().length > 0,
+  );
+  if (src) {
+    return { kind: "image", src };
   }
   return {
     kind: "monogram",

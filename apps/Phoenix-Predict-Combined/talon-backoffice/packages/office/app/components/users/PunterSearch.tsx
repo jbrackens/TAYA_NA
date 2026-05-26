@@ -29,7 +29,7 @@ interface PunterSearchProps {
 }
 
 const panelClassName =
-  "rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5";
+  "min-w-0 rounded-md border border-[var(--border-1,#e5dfd2)] bg-[var(--surface-1,#ffffff)] p-5";
 const titleClassName =
   "m-0 mb-4 text-base font-semibold text-[var(--t1,#1a1a1a)]";
 const filterGroupClassName = "flex flex-col gap-1.5";

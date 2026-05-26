@@ -74,6 +74,8 @@ export interface PredictionMarket {
   closeAt: string;
   createdAt: string;
   imagePath?: string;
+  imageUrl?: string;
+  image_url?: string;
 
   // Exchange engine fields (migration 019). Markets created before
   // 019 default executionMode='amm'; new markets default 'order_book'.

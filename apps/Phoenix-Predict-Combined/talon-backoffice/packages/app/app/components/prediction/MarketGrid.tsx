@@ -33,6 +33,8 @@ export function MarketGrid({ markets }: Props) {
             closeAt={m.closeAt}
             status={m.status}
             imagePath={m.imagePath}
+            imageUrl={m.imageUrl}
+            image_url={m.image_url}
           />
         );
       })}

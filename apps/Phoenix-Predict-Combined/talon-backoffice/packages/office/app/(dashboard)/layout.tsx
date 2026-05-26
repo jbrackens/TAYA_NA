@@ -160,7 +160,7 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <div className="ml-[240px] flex min-h-screen flex-1 flex-col max-[768px]:ml-0">
+      <div className="ml-[240px] flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden max-[768px]:ml-0">
         <header className="sticky top-0 z-[5] flex items-center justify-between border-b border-[color:var(--border-1)] bg-[var(--surface-1)] px-7 py-[18px] max-[768px]:flex-wrap max-[768px]:gap-[10px] max-[768px]:px-4 max-[768px]:py-[14px]">
           <span className="text-[15px] font-semibold tracking-[-0.01em] text-[color:var(--t1)]">
             {navItems.find((i) => pathname?.startsWith(i.href))?.label ||
@@ -175,7 +175,9 @@ export default function DashboardLayout({
             </span>
           </div>
         </header>
-        <div className="flex-1 p-7 max-[768px]:p-4">{children}</div>
+        <div className="min-w-0 flex-1 overflow-x-hidden p-7 max-[768px]:p-4">
+          {children}
+        </div>
       </div>
     </div>
   );

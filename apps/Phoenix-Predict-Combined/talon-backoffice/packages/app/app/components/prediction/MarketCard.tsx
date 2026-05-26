@@ -25,6 +25,7 @@
  */
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatCompactUsd } from "./market-display";
 import { getMarketImageProps } from "./utils/marketImage";
@@ -39,7 +40,9 @@ interface MarketCardProps {
   closeAt: string;
   status: string;
   categoryLabel?: string;
-  imagePath?: string;
+  imagePath?: string | null;
+  imageUrl?: string | null;
+  image_url?: string | null;
 }
 
 function formatCloseAt(iso: string): string {
@@ -70,10 +73,28 @@ export function MarketCard({
   closeAt,
   categoryLabel,
   imagePath,
+  imageUrl,
+  image_url,
 }: MarketCardProps) {
   const { t } = useTranslation("prediction");
 
-  const image = getMarketImageProps({ ticker, imagePath, categoryLabel });
+  const image = getMarketImageProps({
+    ticker,
+    imagePath,
+    imageUrl,
+    image_url,
+    categoryLabel,
+  });
+  const imageSrc = image.kind === "image" ? image.src : "";
+  const [failedImageSrc, setFailedImageSrc] = useState<string | null>(null);
+  useEffect(() => {
+    setFailedImageSrc(null);
+  }, [imageSrc]);
+  const fallbackImage = getMarketImageProps({ ticker, categoryLabel });
+  const visibleImage =
+    image.kind === "image" && failedImageSrc !== image.src
+      ? image
+      : fallbackImage;
 
   return (
     <article className="flex flex-col gap-3.5 rounded-[14px] border border-[var(--border-1)] bg-[var(--surface-1)] p-5 font-sans text-[var(--t1)] transition-[transform,box-shadow,border-color] duration-[140ms] hover:-translate-y-0.5 hover:border-[var(--border-2)] hover:shadow-[0_10px_24px_rgba(60,50,30,0.08)] focus-within:-translate-y-0.5 focus-within:border-[var(--border-2)] focus-within:shadow-[0_10px_24px_rgba(60,50,30,0.08)]">
@@ -96,19 +117,20 @@ export function MarketCard({
               {title}
             </h3>
           </div>
-          {image.kind === "image" ? (
+          {visibleImage.kind === "image" ? (
             <img
               className="inline-flex h-11 w-11 flex-none items-center justify-center rounded-full object-cover text-[15px] font-bold text-white"
-              src={image.src}
+              src={visibleImage.src}
               alt=""
               aria-hidden="true"
+              onError={() => setFailedImageSrc(visibleImage.src)}
             />
           ) : (
             <span
-              className={`inline-flex h-11 w-11 flex-none items-center justify-center rounded-full font-sans text-[15px] font-bold text-white ${monogramBgClasses[image.bgClass] ?? monogramBgClasses["bg-slate"]}`}
+              className={`inline-flex h-11 w-11 flex-none items-center justify-center rounded-full font-sans text-[15px] font-bold text-white ${monogramBgClasses[visibleImage.bgClass] ?? monogramBgClasses["bg-slate"]}`}
               aria-hidden="true"
             >
-              {image.monogram}
+              {visibleImage.monogram}
             </span>
           )}
         </div>

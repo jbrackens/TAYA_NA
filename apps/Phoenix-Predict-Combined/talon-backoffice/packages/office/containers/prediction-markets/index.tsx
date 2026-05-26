@@ -91,9 +91,11 @@ export default function PredictionMarketsContainer() {
     setLoading(true);
     try {
       const [mkts, cats, evts] = await Promise.all([
-        // Admin list: includes pre-launch `unopened` drafts (the public endpoint
-        // hides them) so admins can review + open AI-drafted / unopened markets.
-        predictionClient.getAdminMarkets({ pageSize: 100 }),
+        // The gateway exposes POST /api/v1/admin/markets for creation, but
+        // GET on that path is not a list endpoint. Use the authenticated
+        // market list for the operator table so the page renders without a
+        // noisy 405 probe; lifecycle/create actions still use admin routes.
+        predictionClient.getMarkets({ pageSize: 100 }),
         predictionClient.getCategories(),
         predictionClient.getEvents({ pageSize: 100 }),
       ]);
@@ -476,6 +478,7 @@ export default function PredictionMarketsContainer() {
           rowKey="id"
           loading={loading}
           size="small"
+          scroll={{ x: 1366 }}
           pagination={{ pageSize: 20 }}
         />
       </Card>
