@@ -21,6 +21,7 @@ Closes the gap between "the trading engine works" and "the platform can run a re
 
 ### Fixed
 
+- Backoffice dashboard tables now stay inside the responsive shell after the Tailwind migration, and player market cards tolerate all supported gathered-image fields with a safe fallback for missing or broken thumbnails.
 - The market maker no longer floods the logs with a warning for every market on every tick when it holds no position there (a missing position is the normal cold-market case, not an error).
 
 ### For contributors
