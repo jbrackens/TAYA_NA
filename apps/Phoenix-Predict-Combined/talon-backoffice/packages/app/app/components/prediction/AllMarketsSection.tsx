@@ -32,6 +32,7 @@ import type {
 const api = createPredictionClient();
 
 const PAGE_SIZE = 12;
+const SUBCATEGORY_CORPUS_SIZE = 120;
 
 type DateWindow = "all" | "24h" | "7d" | "30d";
 
@@ -110,6 +111,20 @@ function dateWindowToCloseBefore(w: DateWindow): string | undefined {
   return new Date(Date.now() + ms * 60 * 60 * 1000).toISOString();
 }
 
+function mergeMarkets(
+  current: PredictionMarket[],
+  next: PredictionMarket[],
+): PredictionMarket[] {
+  const seen = new Set(current.map((market) => market.id));
+  const merged = [...current];
+  for (const market of next) {
+    if (seen.has(market.id)) continue;
+    seen.add(market.id);
+    merged.push(market);
+  }
+  return merged;
+}
+
 interface Props {
   categories: Category[];
 }
@@ -118,6 +133,9 @@ export function AllMarketsSection({ categories }: Props) {
   const { t } = useTranslation("prediction");
   const { t: contentT } = useTranslation("market-content");
   const [markets, setMarkets] = useState<PredictionMarket[]>([]);
+  const [subcategoryCorpus, setSubcategoryCorpus] = useState<
+    PredictionMarket[]
+  >([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -134,17 +152,22 @@ export function AllMarketsSection({ categories }: Props) {
     : categorySlug;
   const showSubnavCategory =
     categorySlug !== "all" && categorySlug !== "general";
+  const subcategorySource =
+    subcategoryCorpus.length > 0 ? subcategoryCorpus : markets;
   const subcategories = useMemo(
     () =>
       showSubnavCategory
-        ? extractMarketSubcategories(markets, activeCategory ?? categorySlug)
+        ? extractMarketSubcategories(
+            subcategorySource,
+            activeCategory ?? categorySlug,
+          )
         : [],
-    [activeCategory, categorySlug, markets, showSubnavCategory],
+    [activeCategory, categorySlug, showSubnavCategory, subcategorySource],
   );
   const visibleMarkets = useMemo(
     () =>
       subcategory
-        ? markets.filter((market) =>
+        ? subcategorySource.filter((market) =>
             marketMatchesSubcategory(
               market,
               subcategory,
@@ -152,7 +175,7 @@ export function AllMarketsSection({ categories }: Props) {
             ),
           )
         : markets,
-    [activeCategory, categorySlug, markets, subcategory],
+    [activeCategory, categorySlug, markets, subcategory, subcategorySource],
   );
   const hasSecondaryNav = showSubnavCategory && subcategories.length > 0;
 
@@ -174,18 +197,33 @@ export function AllMarketsSection({ categories }: Props) {
     let cancelled = false;
     setLoading(true);
     setMarkets([]);
+    setSubcategoryCorpus([]);
     setPage(1);
-    api
-      .getMarkets({
+    const baseParams = {
         status: "open",
-        page: 1,
-        pageSize: PAGE_SIZE,
         categoryId,
         closeBefore: dateWindowToCloseBefore(dateWindow),
-      })
-      .then((res) => {
+      };
+    const pageRequest = api.getMarkets({
+      ...baseParams,
+      page: 1,
+      pageSize: PAGE_SIZE,
+    });
+    const corpusRequest = showSubnavCategory
+      ? api
+          .getMarkets({
+            ...baseParams,
+            page: 1,
+            pageSize: SUBCATEGORY_CORPUS_SIZE,
+          })
+          .catch(() => null)
+      : Promise.resolve(null);
+
+    Promise.all([pageRequest, corpusRequest])
+      .then(([res, corpusRes]) => {
         if (cancelled) return;
         setMarkets(res.data || []);
+        setSubcategoryCorpus(corpusRes?.data || res.data || []);
         setPage(res.meta.page);
         setHasNext(res.meta.hasNext);
         setError(null);
@@ -200,7 +238,7 @@ export function AllMarketsSection({ categories }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [categoryId, dateWindow]);
+  }, [categoryId, categorySlug, dateWindow, showSubnavCategory]);
 
   function loadMore() {
     if (loadingMore || !hasNext) return;
@@ -214,7 +252,9 @@ export function AllMarketsSection({ categories }: Props) {
         closeBefore: dateWindowToCloseBefore(dateWindow),
       })
       .then((res) => {
-        setMarkets((prev) => [...prev, ...(res.data || [])]);
+        const next = res.data || [];
+        setMarkets((prev) => [...prev, ...next]);
+        setSubcategoryCorpus((prev) => mergeMarkets(prev, next));
         setPage(res.meta.page);
         setHasNext(res.meta.hasNext);
       })
@@ -359,7 +399,7 @@ export function AllMarketsSection({ categories }: Props) {
               emptyState
             )
           )}
-          {hasNext && (
+          {hasNext && subcategory === null && (
             <div className={LOAD_MORE_CLASS}>
               <button
                 type="button"

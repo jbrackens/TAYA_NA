@@ -12,6 +12,14 @@ function emptyFallback(value: string): string {
   return value.trim();
 }
 
+function currentLocale(): string {
+  return i18n.resolvedLanguage || i18n.language || "en";
+}
+
+function usesEnglishCopy(): boolean {
+  return currentLocale().toLowerCase().startsWith("en");
+}
+
 function localizedCopy(
   market: PredictionMarket,
   field: "title" | "description",
@@ -19,7 +27,7 @@ function localizedCopy(
   const translations = market.translations;
   if (!translations) return undefined;
 
-  const locale = i18n.resolvedLanguage || i18n.language || "en";
+  const locale = currentLocale();
   const candidates = [locale, locale.split("-")[0]].filter(Boolean);
 
   for (const candidate of candidates) {
@@ -29,13 +37,80 @@ function localizedCopy(
   return undefined;
 }
 
+function staticCopy(
+  t: Translate,
+  market: PredictionMarket,
+  field: "title" | "description",
+): string | undefined {
+  const fallback = field === "title" ? market.title : market.description;
+  if (!fallback) return undefined;
+  const trimmedFallback = emptyFallback(fallback);
+
+  const value = emptyFallback(
+    t(`markets.${market.ticker}.${field}`, { defaultValue: fallback }),
+  );
+  return value && value !== trimmedFallback ? value : undefined;
+}
+
+interface WinCompetitionTemplate {
+  team: string;
+  year: string;
+  competition: string;
+}
+
+function matchWinCompetition(title: string): WinCompetitionTemplate | null {
+  const match = /^Will (?:the )?(.+?) win the (\d{4}) (.+?)\?$/i.exec(
+    title.trim(),
+  );
+  if (!match) return null;
+  return {
+    team: match[1].trim(),
+    year: match[2],
+    competition: match[3].trim(),
+  };
+}
+
+function templateCopy(
+  t: Translate,
+  market: PredictionMarket,
+  field: "title" | "description",
+): string | undefined {
+  if (usesEnglishCopy()) return undefined;
+  if (field === "description" && !market.description) return undefined;
+
+  const winCompetition = matchWinCompetition(market.title);
+  if (!winCompetition) return undefined;
+
+  const competition = emptyFallback(
+    t(`competitions.${winCompetition.competition}`, {
+      defaultValue: winCompetition.competition,
+    }),
+  );
+  const key = `templates.winCompetition.${field}`;
+  const value = emptyFallback(
+    t(key, {
+      defaultValue: "",
+      team: winCompetition.team,
+      year: winCompetition.year,
+      competition,
+    }),
+  );
+
+  if (!value || value === key) return undefined;
+  return value;
+}
+
 export function marketTitle(t: Translate, market: PredictionMarket): string {
   const apiTitle = localizedCopy(market, "title");
   if (apiTitle) return apiTitle;
 
-  return emptyFallback(
-    t(`markets.${market.ticker}.title`, { defaultValue: market.title }),
-  );
+  const bundledTitle = staticCopy(t, market, "title");
+  if (bundledTitle) return bundledTitle;
+
+  const templatedTitle = templateCopy(t, market, "title");
+  if (templatedTitle) return templatedTitle;
+
+  return emptyFallback(market.title);
 }
 
 export function marketDescription(
@@ -46,11 +121,13 @@ export function marketDescription(
   const apiDescription = localizedCopy(market, "description");
   if (apiDescription) return apiDescription;
 
-  return emptyFallback(
-    t(`markets.${market.ticker}.description`, {
-      defaultValue: market.description,
-    }),
-  );
+  const bundledDescription = staticCopy(t, market, "description");
+  if (bundledDescription) return bundledDescription;
+
+  const templatedDescription = templateCopy(t, market, "description");
+  if (templatedDescription) return templatedDescription;
+
+  return emptyFallback(market.description);
 }
 
 export function localizedMarket(

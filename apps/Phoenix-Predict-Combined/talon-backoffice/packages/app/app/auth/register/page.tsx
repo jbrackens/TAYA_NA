@@ -9,9 +9,10 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "../../hooks/useAuth";
 import { register as registerUser } from "../../lib/api";
-import { returnUrlSuffix } from "../../lib/safeReturnPath";
+import { safeReturnPath, returnUrlSuffix } from "../../lib/safeReturnPath";
 import { FEATURE_SOCIAL_AUTH } from "../../lib/features";
 import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 
@@ -100,6 +101,8 @@ function progressWidthClass(step: number): string {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
@@ -167,24 +170,28 @@ export default function RegisterPage() {
     setSubmitting(true);
     setErrorMessage("");
     setSuccessMessage("");
+    let accountCreated = false;
     try {
       await registerUser({
         username: form.username,
         email: form.email,
         password: form.password,
       });
-      setSuccessMessage("Account created. Redirecting to sign-in…");
-      setTimeout(() => {
-        window.location.href = "/auth/login" + returnSuffix;
-      }, 1500);
+      accountCreated = true;
+      setSuccessMessage("Account created. Signing you in…");
+      await login(form.username, form.password);
+      router.replace(safeReturnPath(searchParams.get("returnUrl")));
     } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Registration failed";
       setErrorMessage(
-        err instanceof Error ? err.message : "Registration failed",
+        accountCreated
+          ? `Account created, but automatic sign-in failed: ${message}`
+          : message,
       );
     } finally {
       setSubmitting(false);
     }
-  }, [form, validate, returnSuffix]);
+  }, [form, validate, login, router, searchParams]);
 
   return (
     <div className={SHELL_CLASS}>

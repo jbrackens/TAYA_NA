@@ -11,6 +11,16 @@
     "fed": "聯準會",
     "senate": "參議院"
   },
+  "competitions": {
+    "NHL Stanley Cup": "NHL史丹利盃",
+    "FIFA World Cup": "FIFA世界盃"
+  },
+  "templates": {
+    "winCompetition": {
+      "title": "{{team}}會贏得{{year}}年{{competition}}嗎？",
+      "description": "如果{{team}}贏得{{year}}年{{competition}}，則結算為YES；如果他們已不可能奪冠，則結算為NO。"
+    }
+  },
   "markets": {
     "FED-CUT-MAY26": {
       "title": "聯準會會在5月FOMC降息嗎？",

@@ -11,6 +11,16 @@
     "fed": "Fed",
     "senate": "Senate"
   },
+  "competitions": {
+    "NHL Stanley Cup": "NHL Stanley Cup",
+    "FIFA World Cup": "FIFA World Cup"
+  },
+  "templates": {
+    "winCompetition": {
+      "title": "Mananalo ba ang {{team}} sa {{year}} {{competition}}?",
+      "description": "Magre-resolve sa YES kung mananalo ang {{team}} sa {{year}} {{competition}}. Magiging NO kung imposible na silang manalo batay sa rules ng kompetisyon."
+    }
+  },
   "markets": {
     "FED-CUT-MAY26": {
       "title": "Magka-cut ba ng rates ang Fed sa May FOMC?",

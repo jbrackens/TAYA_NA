@@ -11,6 +11,16 @@
     "fed": "Fed",
     "senate": "Senate"
   },
+  "competitions": {
+    "NHL Stanley Cup": "NHL Stanley Cup",
+    "FIFA World Cup": "FIFA World Cup"
+  },
+  "templates": {
+    "winCompetition": {
+      "title": "Will {{team}} win the {{year}} {{competition}}?",
+      "description": "Resolves YES if {{team}} wins the {{year}} {{competition}}. Resolves NO if it becomes impossible for them to win under competition rules."
+    }
+  },
   "markets": {
     "FED-CUT-MAY26": {
       "title": "Fed cuts rates at May FOMC",

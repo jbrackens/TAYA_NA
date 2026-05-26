@@ -11,6 +11,16 @@
     "fed": "美联储",
     "senate": "参议院"
   },
+  "competitions": {
+    "NHL Stanley Cup": "NHL斯坦利杯",
+    "FIFA World Cup": "FIFA世界杯"
+  },
+  "templates": {
+    "winCompetition": {
+      "title": "{{team}}会赢得{{year}}年{{competition}}吗？",
+      "description": "如果{{team}}赢得{{year}}年{{competition}}，则结算为YES；如果他们已不可能夺冠，则结算为NO。"
+    }
+  },
   "markets": {
     "FED-CUT-MAY26": {
       "title": "美联储会在5月FOMC降息吗？",

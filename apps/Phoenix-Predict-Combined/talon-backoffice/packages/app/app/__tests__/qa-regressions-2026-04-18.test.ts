@@ -440,6 +440,26 @@ describe("Social auth feature gate", () => {
   });
 });
 
+describe("Registration auth flow", () => {
+  const registerSource = read("auth/register/page.tsx");
+
+  it("signs the user in after account creation instead of returning to login", () => {
+    assert.ok(
+      registerSource.includes("const { login } = useAuth();") &&
+        registerSource.includes("await login(form.username, form.password);"),
+      "register page should establish an authenticated session after successful signup",
+    );
+    assert.ok(
+      registerSource.includes("router.replace(safeReturnPath(searchParams.get(\"returnUrl\")))"),
+      "register page should land on the validated returnUrl after automatic login",
+    );
+    assert.ok(
+      !registerSource.includes("window.location.href = \"/auth/login\""),
+      "register page should not force users back through the sign-in screen after signup",
+    );
+  });
+});
+
 describe("Mobile navigation and chat parity", () => {
   const mobileTabBarSource = read("components/MobileTabBar.tsx");
   const chatSidebarSource = read("components/chat/ChatSidebar.tsx");
@@ -499,15 +519,33 @@ describe("Market copy localization", () => {
       "market-content should read dynamic translations from the market payload",
     );
     assert.ok(
-      marketContentSource.indexOf('localizedCopy(market, "title")') <
-        marketContentSource.indexOf("t(`markets.${market.ticker}.title`"),
+      marketContentSource.indexOf(
+        'const apiTitle = localizedCopy(market, "title")',
+      ) <
+        marketContentSource.indexOf(
+          'const bundledTitle = staticCopy(t, market, "title")',
+        ) &&
+        marketContentSource.indexOf(
+          'const bundledTitle = staticCopy(t, market, "title")',
+        ) <
+          marketContentSource.indexOf(
+            'const templatedTitle = templateCopy(t, market, "title")',
+          ),
       "marketTitle should prefer API translations before bundled market-content fallbacks",
     );
     assert.ok(
-      marketContentSource.indexOf('localizedCopy(market, "description")') <
+      marketContentSource.indexOf(
+        'const apiDescription = localizedCopy(market, "description")',
+      ) <
         marketContentSource.indexOf(
-          "t(`markets.${market.ticker}.description`",
-        ),
+          'const bundledDescription = staticCopy(t, market, "description")',
+        ) &&
+        marketContentSource.indexOf(
+          'const bundledDescription = staticCopy(t, market, "description")',
+        ) <
+          marketContentSource.indexOf(
+            'const templatedDescription = templateCopy(t, market, "description")',
+          ),
       "marketDescription should prefer API translations before bundled market-content fallbacks",
     );
   });

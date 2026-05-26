@@ -18,16 +18,41 @@ const TAXONOMY: Record<string, TaxonomyEntry[]> = {
   politics: [
     {
       label: "US Elections",
-      aliases: ["us elections", "election", "elections", "midterms"],
+      aliases: [
+        "us elections",
+        "election",
+        "elections",
+        "midterms",
+        "primary",
+        "runoff",
+        "ballot",
+        "vote",
+      ],
     },
     { label: "Congress", aliases: ["congress", "senate", "house"] },
     {
       label: "White House",
-      aliases: ["white house", "president", "presidential"],
+      aliases: [
+        "white house",
+        "president",
+        "presidential",
+        "jd vance",
+        "trump",
+        "biden",
+      ],
     },
     {
       label: "Global Policy",
-      aliases: ["global policy", "foreign policy", "geopolitics", "nato"],
+      aliases: [
+        "global policy",
+        "foreign policy",
+        "geopolitics",
+        "nato",
+        "china",
+        "taiwan",
+        "putin",
+        "zelenskyy",
+      ],
     },
   ],
   crypto: [
@@ -46,42 +71,103 @@ const TAXONOMY: Record<string, TaxonomyEntry[]> = {
   sports: [
     { label: "NFL", aliases: ["nfl", "american football"] },
     { label: "NBA", aliases: ["nba", "basketball"] },
-    { label: "MLB", aliases: ["mlb", "baseball"] },
+    {
+      label: "NHL",
+      aliases: ["nhl", "hockey", "stanley cup", "professional hockey"],
+    },
+    {
+      label: "MLB",
+      aliases: ["mlb", "baseball", "world series", "professional baseball"],
+    },
+    { label: "FIFA", aliases: ["fifa", "world cup", "fifa world cup"] },
     {
       label: "Soccer",
       aliases: ["soccer", "football", "uefa", "ucl", "champions league"],
     },
     { label: "UFC", aliases: ["ufc", "mma"] },
+    { label: "Tennis", aliases: ["tennis", "wimbledon", "atp", "wta"] },
   ],
   entertainment: [
     { label: "Oscars", aliases: ["oscars", "academy awards"] },
     { label: "Box Office", aliases: ["box office", "movies", "film"] },
-    { label: "Pop Culture", aliases: ["pop culture", "celebrity", "music"] },
+    {
+      label: "Pop Culture",
+      aliases: [
+        "pop culture",
+        "celebrity",
+        "music",
+        "album",
+        "rihanna",
+        "playboi carti",
+        "taylor swift",
+        "travis kelce",
+      ],
+    },
     { label: "Gaming", aliases: ["gaming", "game", "esports"] },
   ],
   technology: [
     {
       label: "AI & Models",
-      aliases: ["ai", "artificial intelligence", "llm", "model", "models", "gpt"],
+      aliases: [
+        "ai",
+        "artificial intelligence",
+        "llm",
+        "model",
+        "models",
+        "gpt",
+        "openai",
+        "anthropic",
+        "claude",
+      ],
     },
     {
       label: "Big Tech",
-      aliases: ["big tech", "apple", "google", "meta", "amazon", "microsoft"],
+      aliases: [
+        "big tech",
+        "apple",
+        "google",
+        "meta",
+        "amazon",
+        "microsoft",
+        "tesla",
+        "musk",
+      ],
     },
     { label: "SpaceX", aliases: ["spacex", "starship"] },
     {
       label: "Hardware",
-      aliases: ["hardware", "chips", "semiconductor", "iphone", "device"],
+      aliases: [
+        "hardware",
+        "chips",
+        "semiconductor",
+        "iphone",
+        "device",
+        "nvidia",
+        "gpu",
+        "rtx",
+      ],
     },
   ],
   economics: [
     {
       label: "Fed Rates",
-      aliases: ["fed rates", "fed", "fomc", "interest rates", "federal reserve"],
+      aliases: [
+        "fed rates",
+        "fed",
+        "fomc",
+        "interest rates",
+        "federal reserve",
+        "rate cut",
+        "rate hike",
+        "ecb",
+        "boj",
+        "boe",
+        "pbc",
+      ],
     },
     {
       label: "Inflation/CPI",
-      aliases: ["inflation", "cpi", "consumer price index"],
+      aliases: ["inflation", "cpi", "pce", "consumer price index"],
     },
     {
       label: "Stock Market",
@@ -90,6 +176,11 @@ const TAXONOMY: Record<string, TaxonomyEntry[]> = {
     {
       label: "Crypto Markets",
       aliases: ["crypto markets", "crypto market", "bitcoin etf"],
+    },
+    { label: "GDP/Growth", aliases: ["gdp", "real gdp", "economic growth"] },
+    {
+      label: "Labor Market",
+      aliases: ["unemployment", "jobs report", "labor market"],
     },
   ],
 };
@@ -118,19 +209,23 @@ const DIRECT_FIELDS = [
   "group_slug",
   "labels",
   "league",
+  "leagueKey",
+  "league_key",
   "marketType",
   "market_type",
-  "metadata",
   "series",
+  "seriesSlug",
+  "series_slug",
   "seriesTitle",
   "series_title",
-  "settlementParams",
-  "settlement_params",
   "sport",
+  "sportKey",
+  "sport_key",
   "tag",
   "tags",
   "topic",
   "topics",
+  "tournament",
   "type",
 ];
 
@@ -144,6 +239,9 @@ const SEARCH_FIELDS = [
   "question",
   "rules",
   "rules_primary",
+  "metadata",
+  "settlementParams",
+  "settlement_params",
   "subTitle",
   "subtitle",
   "title",
@@ -224,7 +322,7 @@ function readField(record: MarketLike, field: string): unknown {
 }
 
 function collectStrings(value: unknown, depth = 0): string[] {
-  if (value == null || depth > 2) return [];
+  if (value == null || depth > 4) return [];
   if (typeof value === "string") return value.trim() ? [value] : [];
   if (typeof value === "number" || typeof value === "boolean") return [];
   if (Array.isArray(value)) {
