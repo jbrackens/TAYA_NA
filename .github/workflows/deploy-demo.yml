@@ -14,9 +14,9 @@ name: Deploy demo (Hetzner)
 # the backend steps are typically far shorter than the two ~15-20 min Next.js
 # builds; total bounded by
 # `concurrency` and `timeout-minutes` below.
-# Does NOT run migrate/seed/sync-markets — those are one-time data ops, not
-# per-deploy. Market thumbnails live on the `market_images` Docker volume,
-# so `rsync --delete` is safe (it can't touch the volume).
+# Runs gateway migrations on every deploy. Catalog sync and market translation
+# backfills are opt-in data ops. Market thumbnails live on the `market_images`
+# Docker volume, so `rsync --delete` is safe (it can't touch the volume).
 #
 # Requires repo secret DEPLOY_SSH_KEY = the private key whose public half is
 # in the box's root authorized_keys (a DEDICATED, revocable deploy key —
@@ -46,7 +46,7 @@ concurrency:
 
 env:
   BOX: 91.98.118.132
-  SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15
+  SSH_OPTS: -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20
   DEMO_DEPLOY_BRANCH_ALLOWLIST: feat/binary-exchange-engine integration/cashier-on-live-feature
 
 jobs:
@@ -336,13 +336,20 @@ jobs:
             IFS= read -r GITHUB_OPENROUTER_API_KEY
             cd /opt/phoenix
             set -a && . ./.env && set +a
+            echo "Starting market translation backfill..."
             JWT_SECRET=unused docker compose -f docker-compose.yml -f docker-compose.demo.yml \
               run --rm --no-deps \
                 -e AI_TRANSLATION_API_KEY="${GITHUB_OPENROUTER_API_KEY}" \
                 -e AI_TRANSLATION_ENDPOINT=https://openrouter.ai/api/v1 \
                 -e AI_TRANSLATION_MODEL=openai/gpt-4o-mini \
                 -e AI_TRANSLATION_PROVIDER=openai-compatible \
-                gateway ./translate-markets -limit 120 -timeout 900 -request-timeout 45
+                gateway ./translate-markets -limit 120 -timeout 900 -request-timeout 45 &
+            backfill_pid=$!
+            while kill -0 "$backfill_pid" 2>/dev/null; do
+              echo "market translation backfill still running..."
+              sleep 30
+            done
+            wait "$backfill_pid"
           '
 
       - name: Health check (player)
