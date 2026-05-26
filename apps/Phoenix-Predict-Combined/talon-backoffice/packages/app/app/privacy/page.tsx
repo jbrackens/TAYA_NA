@@ -24,10 +24,11 @@ export default function PrivacyPage() {
             1. Information We Collect
           </h2>
           <p className="text-sm leading-[1.7] text-[var(--t2)]">
-            We collect information you provide when creating an account (name,
-            email, date of birth, address), payment information for deposits and
-            withdrawals, and usage data including trading history, device
-            information, and IP address.
+            We collect information you provide when creating an account, such
+            as username and email, plus identity, payment, and address
+            information when needed for withdrawals, verification, or
+            compliance. We also collect usage data including trading history,
+            device information, and IP address.
           </p>
         </section>
 

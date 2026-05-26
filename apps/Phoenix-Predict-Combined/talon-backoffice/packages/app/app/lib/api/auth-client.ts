@@ -8,12 +8,12 @@ export interface GoLoginRequest {
 
 export interface RegisterRequest {
   username: string;
-  email: string;
   password: string;
-  first_name: string;
-  last_name: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
   phone?: string;
-  date_of_birth: string;
+  date_of_birth?: string;
   ssn_last4?: string;
   address?: {
     street: string;
@@ -73,11 +73,13 @@ interface GoRefreshResponseRaw {
 }
 
 interface RegisterResponseRaw {
-  user_id: string;
+  user_id?: string;
+  userId?: string;
   username: string;
-  email: string;
-  requires_email_verification: boolean;
-  requires_mfa: boolean;
+  email?: string;
+  role?: string;
+  requires_email_verification?: boolean;
+  requires_mfa?: boolean;
 }
 
 interface ForgotPasswordResponseRaw {
@@ -143,9 +145,10 @@ export interface SessionResponse {
 export interface RegisterResponse {
   userId: string;
   username: string;
-  email: string;
-  requiresEmailVerification: boolean;
-  requiresMfa: boolean;
+  email?: string;
+  role?: string;
+  requiresEmailVerification?: boolean;
+  requiresMfa?: boolean;
 }
 
 export interface ForgotPasswordResponse {

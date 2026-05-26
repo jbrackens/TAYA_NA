@@ -5,10 +5,61 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"phoenix-revival/platform/transport/httpx"
 )
+
+func TestRegisterAcceptsShortUsernameAndSevenCharacterPassword(t *testing.T) {
+	auth := NewAuthService()
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "auth", auth)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	registerPayload, _ := json.Marshal(map[string]string{
+		"username": "abc",
+		"password": "Aa12345",
+	})
+	registerReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(registerPayload))
+	registerRes := httptest.NewRecorder()
+	handler.ServeHTTP(registerRes, registerReq)
+
+	if registerRes.Code != http.StatusCreated {
+		t.Fatalf("expected register status 201, got %d, body=%s", registerRes.Code, registerRes.Body.String())
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(registerRes.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("decode register response: %v", err)
+	}
+	userID, _ := payload["userId"].(string)
+	if userID == "" || payload["username"] != "abc" || payload["role"] != rolePlayer {
+		t.Fatalf("unexpected register response: %#v", payload)
+	}
+}
+
+func TestRegisterRejectsSixCharacterPassword(t *testing.T) {
+	auth := NewAuthService()
+	mux := http.NewServeMux()
+	RegisterRoutes(mux, "auth", auth)
+	handler := httpx.Chain(mux, httpx.RequestID(), httpx.Recovery(nil))
+
+	registerPayload, _ := json.Marshal(map[string]string{
+		"username": "newuser",
+		"password": "Aa1234",
+	})
+	registerReq := httptest.NewRequest(http.MethodPost, "/api/v1/auth/register", bytes.NewBuffer(registerPayload))
+	registerRes := httptest.NewRecorder()
+	handler.ServeHTTP(registerRes, registerReq)
+
+	if registerRes.Code != http.StatusBadRequest {
+		t.Fatalf("expected register status 400, got %d, body=%s", registerRes.Code, registerRes.Body.String())
+	}
+	if !strings.Contains(registerRes.Body.String(), "at least 7 characters") {
+		t.Fatalf("expected minimum-length validation message, got %s", registerRes.Body.String())
+	}
+}
 
 func TestLoginSessionAndMetricsFlow(t *testing.T) {
 	t.Setenv("AUTH_DEMO_USERNAME", "demo@phoenix.local")

@@ -904,7 +904,8 @@ func (a *AuthService) Register(username, password, _ string) (user, error) {
 		return user{}, httpx.Internal("failed to hash password", err)
 	}
 
-	newID := fmt.Sprintf("u-%s", hex.EncodeToString([]byte(username))[:12])
+	userIDSuffix := sha256.Sum256([]byte(strings.ToLower(username)))
+	newID := fmt.Sprintf("u-%s", hex.EncodeToString(userIDSuffix[:])[:12])
 	newUser := user{
 		ID:           newID,
 		Username:     username,
@@ -1285,7 +1286,7 @@ func getEnvOrDefault(name string, fallback string) string {
 
 // ─── Password Strength ──────────────────────────────────────────
 
-const minPasswordLength = 12
+const minPasswordLength = 7
 
 func validatePasswordStrength(password string) error {
 	if len(password) < minPasswordLength {

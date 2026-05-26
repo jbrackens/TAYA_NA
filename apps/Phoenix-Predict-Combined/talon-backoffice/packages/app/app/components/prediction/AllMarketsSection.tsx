@@ -15,11 +15,15 @@
  * scan price columns, and infinite scroll plays badly with that pattern.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MarketGrid } from "./MarketGrid";
 import { createPredictionClient } from "@phoenix-ui/api-client/src/prediction-client";
 import { categoryName } from "./market-content";
+import {
+  extractMarketSubcategories,
+  marketMatchesSubcategory,
+} from "./marketSubcategories";
 import type {
   Category,
   PredictionMarket,
@@ -58,6 +62,18 @@ const LOAD_MORE_CLASS = "mt-6 mb-0 flex justify-center";
 const LOAD_MORE_BUTTON_CLASS =
   "cursor-pointer appearance-none rounded-[var(--r-pill)] border border-[var(--border-1)] bg-[var(--surface-1)] px-7 py-3 font-['Inter',_sans-serif] text-sm font-semibold text-[var(--t1)] transition-colors duration-[120ms] [&:not(:disabled):hover]:border-[rgba(43,228,128,0.5)] [&:not(:disabled):hover]:bg-[var(--surface-2)] [&:not(:disabled):hover]:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-[0.55]";
 
+const FEED_WITH_SUBNAV_CLASS =
+  "grid grid-cols-4 items-start gap-4 max-[1120px]:grid-cols-1";
+const FEED_MARKETS_CLASS = "col-span-3 min-w-0 max-[1120px]:col-span-1";
+const SUBNAV_CLASS =
+  "sticky top-4 self-start border-l border-[var(--border-1)] pl-4 max-[1120px]:order-first max-[1120px]:sticky max-[1120px]:top-0 max-[1120px]:border-b max-[1120px]:border-l-0 max-[1120px]:pb-3 max-[1120px]:pl-0";
+const SUBNAV_LABEL_CLASS =
+  "mb-3 font-['IBM_Plex_Mono',_monospace] text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--t3)]";
+const SUBNAV_LIST_CLASS =
+  "flex flex-col items-stretch gap-1 max-[1120px]:flex-row max-[1120px]:overflow-x-auto max-[1120px]:[scrollbar-width:none] max-[1120px]:[-ms-overflow-style:none] max-[1120px]:[-webkit-overflow-scrolling:touch] max-[1120px]:[&::-webkit-scrollbar]:hidden";
+const SUBNAV_BUTTON_BASE_CLASS =
+  "cursor-pointer appearance-none rounded-md border-0 px-3 py-2 text-left [font-family:inherit] text-[13px] transition-colors duration-[120ms] focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--accent-soft)] max-[1120px]:flex-[0_0_auto]";
+
 const EMPTY_CLASS =
   "rounded-[var(--r-rh-lg)] border border-[var(--border-1)] bg-[var(--surface-1)] p-14 text-center";
 
@@ -77,6 +93,14 @@ function timePillClass(active: boolean): string {
     active
       ? "bg-[var(--yes)] text-[#061a10]"
       : "bg-transparent text-[var(--t3)] hover:text-[var(--t1)]"
+  }`;
+}
+
+function subcategoryButtonClass(active: boolean): string {
+  return `${SUBNAV_BUTTON_BASE_CLASS} ${
+    active
+      ? "bg-[var(--yes)] font-semibold text-[#061a10]"
+      : "bg-transparent font-medium text-[var(--t2)] hover:bg-white/[0.06] hover:text-[var(--t1)]"
   }`;
 }
 
@@ -100,9 +124,47 @@ export function AllMarketsSection({ categories }: Props) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categorySlug, setCategorySlug] = useState<string>("all");
+  const [subcategory, setSubcategory] = useState<string | null>(null);
   const [dateWindow, setDateWindow] = useState<DateWindow>("all");
 
-  const categoryId = categories.find((c) => c.slug === categorySlug)?.id;
+  const activeCategory = categories.find((c) => c.slug === categorySlug);
+  const categoryId = activeCategory?.id;
+  const activeCategoryLabel = activeCategory
+    ? categoryName(contentT, activeCategory)
+    : categorySlug;
+  const showSubnavCategory =
+    categorySlug !== "all" && categorySlug !== "general";
+  const subcategories = useMemo(
+    () =>
+      showSubnavCategory
+        ? extractMarketSubcategories(markets, activeCategory ?? categorySlug)
+        : [],
+    [activeCategory, categorySlug, markets, showSubnavCategory],
+  );
+  const visibleMarkets = useMemo(
+    () =>
+      subcategory
+        ? markets.filter((market) =>
+            marketMatchesSubcategory(
+              market,
+              subcategory,
+              activeCategory ?? categorySlug,
+            ),
+          )
+        : markets,
+    [activeCategory, categorySlug, markets, subcategory],
+  );
+  const hasSecondaryNav = showSubnavCategory && subcategories.length > 0;
+
+  useEffect(() => {
+    setSubcategory(null);
+  }, [categorySlug, dateWindow]);
+
+  useEffect(() => {
+    if (subcategory && !subcategories.includes(subcategory)) {
+      setSubcategory(null);
+    }
+  }, [subcategory, subcategories]);
 
   // Initial load + refetch when either filter changes.
   // closeBefore is computed inside the effect (NOT outside) because it
@@ -165,7 +227,18 @@ export function AllMarketsSection({ categories }: Props) {
       });
   }
 
-  const filtered = categorySlug !== "all" || dateWindow !== "all";
+  const filtered =
+    categorySlug !== "all" || dateWindow !== "all" || subcategory !== null;
+  const emptyState = (
+    <div className={EMPTY_CLASS}>
+      <h3 className={EMPTY_TITLE_CLASS}>
+        {filtered ? t("NO_FILTER_MATCH") : t("NO_OPEN_MARKETS")}
+      </h3>
+      <p className={EMPTY_TEXT_CLASS}>
+        {filtered ? t("TRY_DIFFERENT_FILTER") : t("CHECK_BACK_SOON")}
+      </p>
+    </div>
+  );
 
   return (
     <>
@@ -180,7 +253,10 @@ export function AllMarketsSection({ categories }: Props) {
             role="tab"
             aria-selected={categorySlug === "all"}
             className={categoryPillClass(categorySlug === "all")}
-            onClick={() => setCategorySlug("all")}
+            onClick={() => {
+              setCategorySlug("all");
+              setSubcategory(null);
+            }}
           >
             {t("ALL")}
           </button>
@@ -193,7 +269,10 @@ export function AllMarketsSection({ categories }: Props) {
                 role="tab"
                 aria-selected={isActive}
                 className={categoryPillClass(isActive)}
-                onClick={() => setCategorySlug(c.slug)}
+                onClick={() => {
+                  setCategorySlug(c.slug);
+                  setSubcategory(null);
+                }}
               >
                 {categoryName(contentT, c)}
               </button>
@@ -234,21 +313,52 @@ export function AllMarketsSection({ categories }: Props) {
           </p>
         </div>
       ) : !loading && markets.length === 0 ? (
-        <div className={EMPTY_CLASS}>
-          <h3 className={EMPTY_TITLE_CLASS}>
-            {filtered
-              ? t("NO_FILTER_MATCH")
-              : t("NO_OPEN_MARKETS")}
-          </h3>
-          <p className={EMPTY_TEXT_CLASS}>
-            {filtered
-              ? t("TRY_DIFFERENT_FILTER")
-              : t("CHECK_BACK_SOON")}
-          </p>
-        </div>
+        emptyState
       ) : (
         <>
-          <MarketGrid markets={markets} />
+          {hasSecondaryNav ? (
+            <div className={FEED_WITH_SUBNAV_CLASS}>
+              <div className={FEED_MARKETS_CLASS}>
+                {visibleMarkets.length > 0 ? (
+                  <MarketGrid markets={visibleMarkets} columns={3} />
+                ) : (
+                  emptyState
+                )}
+              </div>
+              <aside className={SUBNAV_CLASS} aria-label={activeCategoryLabel}>
+                <div className={SUBNAV_LABEL_CLASS}>{activeCategoryLabel}</div>
+                <nav className={SUBNAV_LIST_CLASS} role="tablist">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={subcategory === null}
+                    className={subcategoryButtonClass(subcategory === null)}
+                    onClick={() => setSubcategory(null)}
+                  >
+                    {t("ALL")}
+                  </button>
+                  {subcategories.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      role="tab"
+                      aria-selected={subcategory === item}
+                      className={subcategoryButtonClass(subcategory === item)}
+                      onClick={() => setSubcategory(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </nav>
+              </aside>
+            </div>
+          ) : (
+            visibleMarkets.length > 0 ? (
+              <MarketGrid markets={visibleMarkets} columns={4} />
+            ) : (
+              emptyState
+            )
+          )}
           {hasNext && (
             <div className={LOAD_MORE_CLASS}>
               <button

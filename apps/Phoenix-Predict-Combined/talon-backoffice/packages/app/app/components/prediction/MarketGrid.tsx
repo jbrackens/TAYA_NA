@@ -12,13 +12,19 @@ import { localizedMarket } from "./market-content";
 
 interface Props {
   markets: PredictionMarket[];
+  columns?: 3 | 4;
 }
 
-export function MarketGrid({ markets }: Props) {
+const GRID_CLASS_BY_COLUMNS: Record<NonNullable<Props["columns"]>, string> = {
+  3: "grid grid-cols-3 gap-4 max-[1120px]:grid-cols-2 max-[640px]:grid-cols-1",
+  4: "grid grid-cols-4 gap-4 max-[1280px]:grid-cols-3 max-[960px]:grid-cols-2 max-[640px]:grid-cols-1",
+};
+
+export function MarketGrid({ markets, columns = 4 }: Props) {
   const { t } = useTranslation("market-content");
   if (!markets || markets.length === 0) return null;
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-4">
+    <div className={GRID_CLASS_BY_COLUMNS[columns]}>
       {markets.map((market) => {
         const m = localizedMarket(t, market);
         return (

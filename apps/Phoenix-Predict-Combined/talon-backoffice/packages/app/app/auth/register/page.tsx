@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * RegisterPage — 4-step wizard on Predict design tokens.
+ * RegisterPage — 2-step wizard on Predict design tokens.
  *
- * Keeps the original KYC shape (account, personal, address, terms) but
- * renders on the Predict auth shell. Step progress bar uses --accent.
+ * Keeps signup lightweight (account, terms) and leaves identity details for
+ * withdrawal-time verification flows.
  */
 
 import { useCallback, useState } from "react";
@@ -20,15 +20,6 @@ interface FormData {
   email: string;
   password: string;
   confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  phone: string;
-  street: string;
-  city: string;
-  state: string;
-  zip: string;
-  country: string;
   acceptTerms: boolean;
 }
 
@@ -39,20 +30,11 @@ const EMPTY_FORM: FormData = {
   email: "",
   password: "",
   confirmPassword: "",
-  firstName: "",
-  lastName: "",
-  dateOfBirth: "",
-  phone: "",
-  street: "",
-  city: "",
-  state: "",
-  zip: "",
-  country: "",
   acceptTerms: false,
 };
 
-const TOTAL_STEPS = 4;
-const STEP_TITLES = ["Account", "Personal", "Address", "Terms"];
+const TOTAL_STEPS = 2;
+const STEP_TITLES = ["Account", "Terms"];
 
 const SHELL_CLASS = "flex min-h-screen items-center justify-center px-5 py-10";
 const CARD_CLASS =
@@ -77,7 +59,6 @@ const BANNER_ERROR_CLASS =
 const BANNER_SUCCESS_CLASS =
   "border border-[var(--border-2)] bg-[var(--accent-soft)] text-[var(--accent)]";
 const FORM_CLASS = "flex flex-col gap-3.5";
-const ROW_CLASS = "grid grid-cols-2 gap-3";
 const FIELD_CLASS = "flex flex-col gap-1.5";
 const FIELD_LABEL_CLASS =
   "text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--t3)]";
@@ -115,16 +96,7 @@ const LINK_ACCENT_CLASS =
   "font-semibold text-[var(--accent)] no-underline hover:brightness-110";
 
 function progressWidthClass(step: number): string {
-  switch (step) {
-    case 1:
-      return "w-1/4";
-    case 2:
-      return "w-1/2";
-    case 3:
-      return "w-3/4";
-    default:
-      return "w-full";
-  }
+  return step === 1 ? "w-1/2" : "w-full";
 }
 
 export default function RegisterPage() {
@@ -158,26 +130,13 @@ export default function RegisterPage() {
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
           next.email = "Invalid email";
         if (!form.password) next.password = "Required";
-        else if (form.password.length < 8)
-          next.password = "At least 8 characters";
+        else if (form.password.length < 7)
+          next.password = "At least 7 characters";
         if (!form.confirmPassword) next.confirmPassword = "Required";
         else if (form.password !== form.confirmPassword)
           next.confirmPassword = "Passwords don't match";
       }
       if (currentStep === 2) {
-        if (!form.firstName.trim()) next.firstName = "Required";
-        if (!form.lastName.trim()) next.lastName = "Required";
-        if (!form.dateOfBirth) next.dateOfBirth = "Required";
-        if (!form.phone.trim()) next.phone = "Required";
-      }
-      if (currentStep === 3) {
-        if (!form.street.trim()) next.street = "Required";
-        if (!form.city.trim()) next.city = "Required";
-        if (!form.state.trim()) next.state = "Required";
-        if (!form.zip.trim()) next.zip = "Required";
-        if (!form.country.trim()) next.country = "Required";
-      }
-      if (currentStep === 4) {
         if (!form.acceptTerms) next.acceptTerms = "You must accept the terms";
       }
       return next;
@@ -201,7 +160,7 @@ export default function RegisterPage() {
   }, [step]);
 
   const onSubmit = useCallback(async () => {
-    const v = validate(4);
+    const v = validate(TOTAL_STEPS);
     setErrors(v);
     if (Object.keys(v).length > 0) return;
 
@@ -213,17 +172,6 @@ export default function RegisterPage() {
         username: form.username,
         email: form.email,
         password: form.password,
-        first_name: form.firstName,
-        last_name: form.lastName,
-        phone: form.phone,
-        date_of_birth: form.dateOfBirth,
-        address: {
-          street: form.street,
-          city: form.city,
-          state: form.state,
-          zip: form.zip,
-          country: form.country,
-        },
       });
       setSuccessMessage("Account created. Redirecting to sign-in…");
       setTimeout(() => {
@@ -300,7 +248,7 @@ export default function RegisterPage() {
               type="password"
               value={form.password}
               onChange={(v) => update("password", v)}
-              placeholder="At least 8 characters"
+              placeholder="At least 7 characters"
               error={errors.password}
               autoComplete="new-password"
             />
@@ -317,87 +265,6 @@ export default function RegisterPage() {
         )}
 
         {step === 2 && (
-          <div className={FORM_CLASS}>
-            <Field
-              label="First name"
-              value={form.firstName}
-              onChange={(v) => update("firstName", v)}
-              error={errors.firstName}
-              autoComplete="given-name"
-            />
-            <Field
-              label="Last name"
-              value={form.lastName}
-              onChange={(v) => update("lastName", v)}
-              error={errors.lastName}
-              autoComplete="family-name"
-            />
-            <Field
-              label="Date of birth"
-              type="date"
-              value={form.dateOfBirth}
-              onChange={(v) => update("dateOfBirth", v)}
-              error={errors.dateOfBirth}
-              autoComplete="bday"
-            />
-            <Field
-              label="Phone"
-              type="tel"
-              value={form.phone}
-              onChange={(v) => update("phone", v)}
-              placeholder="+1 555 000 1234"
-              error={errors.phone}
-              autoComplete="tel"
-            />
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className={FORM_CLASS}>
-            <Field
-              label="Street"
-              value={form.street}
-              onChange={(v) => update("street", v)}
-              placeholder="123 Main St"
-              error={errors.street}
-              autoComplete="address-line1"
-            />
-            <div className={ROW_CLASS}>
-              <Field
-                label="City"
-                value={form.city}
-                onChange={(v) => update("city", v)}
-                error={errors.city}
-                autoComplete="address-level2"
-              />
-              <Field
-                label="State"
-                value={form.state}
-                onChange={(v) => update("state", v)}
-                error={errors.state}
-                autoComplete="address-level1"
-              />
-            </div>
-            <div className={ROW_CLASS}>
-              <Field
-                label="ZIP"
-                value={form.zip}
-                onChange={(v) => update("zip", v)}
-                error={errors.zip}
-                autoComplete="postal-code"
-              />
-              <Field
-                label="Country"
-                value={form.country}
-                onChange={(v) => update("country", v)}
-                error={errors.country}
-                autoComplete="country"
-              />
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
           <div className={FORM_CLASS}>
             <div className={TERMS_CLASS}>
               <h3 className={TERMS_TITLE_CLASS}>Terms and conditions</h3>
@@ -438,12 +305,6 @@ export default function RegisterPage() {
                 <div className={SUMMARY_ROW_CLASS}>
                   <dt className={SUMMARY_TERM_CLASS}>Email</dt>
                   <dd className={SUMMARY_DESC_CLASS}>{form.email}</dd>
-                </div>
-                <div className={SUMMARY_ROW_CLASS}>
-                  <dt className={SUMMARY_TERM_CLASS}>Name</dt>
-                  <dd className={SUMMARY_DESC_CLASS}>
-                    {form.firstName} {form.lastName}
-                  </dd>
                 </div>
               </dl>
             </div>
